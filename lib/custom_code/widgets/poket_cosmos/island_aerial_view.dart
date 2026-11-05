@@ -115,36 +115,45 @@ class IslandAerialPainter extends CustomPainter {
       _drawSatelliteIslets(canvas);
     }
 
-    // 3. Shallow Cyan Reef Contour (Translucent turquoise water)
+    // 3. Shallow Cyan Reef Contour & Foamy Surf (Translucent turquoise water hugging the shore)
     _drawShallowCoralReef(canvas);
 
-    // 4. Sandy Golden Shoreline Beach
+    // 4. Sandy Golden Shoreline Beach with Wet Sand Margin
     _drawSandyBeach(canvas);
 
     // 5. Expansive Lush Tropical Green Island Body (Generous landmass)
     _drawGreenIslandBody(canvas);
 
-    // 6. Central Lagoon / Saltwater Pool (if applicable)
+    // 6. Central Lagoon / Resort Swimming Lake
     _drawInteriorWaterBody(canvas);
 
-    // 7. Winding Paved Trails & Roadways
+    // 7. Winding Paved Trails & Roadways Connecting the Island
     _drawRoadways(canvas);
 
-    // 8. Wooden Pier with Moored Speedboats & Yachts
-    _drawWoodenPierAndBoats(canvas);
+    // 8. Mini Sports Pitch (Football Turf Lawn with White Markings)
+    if (!island.isPresidential) {
+      _drawSportsTurfPitch(canvas);
+    }
 
-    // 9. Habit Houses / Plots (Strictly inside the green landmass with safe buffer)
+    // 9. Wooden Pier with Moored Speedboats & Cruising Boats with Foam Wakes
+    _drawWoodenPierAndBoats(canvas);
+    _drawCruisingBoatsWithWakes(canvas);
+
+    // 10. Habit Houses / Plots (Strictly inside the green landmass with safe buffer)
     if (island.isPresidential) {
       _drawPresidentialCitadel(canvas);
     } else {
       _draw50HabitHousePlots(canvas);
     }
 
-    // 10. Clustered Palm Tree Canopies
+    // 11. Clustered Palm Tree Canopies with Organic Shadows
     _drawPalmTreeCanopies(canvas);
 
-    // 11. Beach Umbrellas along the Sand
+    // 12. Beach Umbrellas & Sunbed Loungers along the Golden Sand
     _drawBeachUmbrellas(canvas);
+
+    // 13. Soaring Seagulls gliding over the azure ocean
+    _drawSoaringSeagulls(canvas);
 
     canvas.restore();
   }
@@ -342,43 +351,56 @@ class IslandAerialPainter extends CustomPainter {
   }
 
   // =========================================================================
-  // 3. REEF, BEACH & GREEN TERRAIN
+  // 3. REEF, BEACH & GREEN TERRAIN (MATCHING REALISTIC RESORT BENCHMARKS)
   // =========================================================================
   void _drawShallowCoralReef(Canvas canvas) {
     final islandPath = _getIslandPath();
 
+    // Outermost translucent shallow reef contour
     final reefPaint = Paint()
-      ..color = const Color(0xFF38BDF8).withValues(alpha: 0.36)
+      ..color = const Color(0xFF38BDF8).withValues(alpha: 0.32)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 42
+      ..strokeWidth = 52
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
     canvas.drawPath(islandPath, reefPaint);
 
+    // Inner bright aquamarine shimmer
     final reefInnerPaint = Paint()
-      ..color = const Color(0xFF67E8F9).withValues(alpha: 0.52)
+      ..color = const Color(0xFF22D3EE).withValues(alpha: 0.48)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 20
+      ..strokeWidth = 28
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
     canvas.drawPath(islandPath, reefInnerPaint);
+
+    // Delicate white wave surf / foam line kissing the shoreline
+    final foamPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.42)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.2
+      ..strokeCap = StrokeCap.round;
+    canvas.drawPath(islandPath, foamPaint);
   }
 
   void _drawSandyBeach(Canvas canvas) {
     final islandPath = _getIslandPath();
 
+    // Main golden sand beach rim
     final sandPaint = Paint()
       ..color = const Color(0xFFFDE68A) // Golden tropical sand
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 16
+      ..strokeWidth = 24
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
     canvas.drawPath(islandPath, sandPaint);
 
+    // Wet shoreline sand edge meeting the water
     final wetSandPaint = Paint()
-      ..color = const Color(0xFFFCD34D) // Wet shoreline sand
+      ..color = const Color(0xFFF59E0B).withValues(alpha: 0.55)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 5;
+      ..strokeWidth = 6.5
+      ..strokeCap = StrokeCap.round;
     canvas.drawPath(islandPath, wetSandPaint);
   }
 
@@ -386,18 +408,18 @@ class IslandAerialPainter extends CustomPainter {
     final islandPath = _getIslandPath();
 
     final landGradient = RadialGradient(
-      center: const Alignment(-0.1, -0.2),
-      radius: 0.95,
+      center: const Alignment(-0.15, -0.22),
+      radius: 0.98,
       colors: [
-        const Color(0xFF4ADE80), // Sunlit bright lush green
+        const Color(0xFF4ADE80), // Sunlit vibrant lush green
         island.landColor,        // Island signature forest green
-        Color.lerp(island.landColor, const Color(0xFF064E3B), 0.45) ?? const Color(0xFF14532D),
+        Color.lerp(island.landColor, const Color(0xFF064E3B), 0.52) ?? const Color(0xFF14532D),
       ],
-      stops: const [0.0, 0.55, 1.0],
+      stops: const [0.0, 0.52, 1.0],
     );
 
     final landPaint = Paint()
-      ..shader = landGradient.createShader(Rect.fromCircle(center: Offset.zero, radius: 220))
+      ..shader = landGradient.createShader(Rect.fromCircle(center: Offset.zero, radius: 230))
       ..style = PaintingStyle.fill;
 
     canvas.drawPath(islandPath, landPaint);
@@ -407,13 +429,18 @@ class IslandAerialPainter extends CustomPainter {
     if (island.isPresidential) return;
 
     final lagoonPaint = Paint()
-      ..color = const Color(0xFF06B6D4).withValues(alpha: 0.85)
+      ..color = const Color(0xFF06B6D4).withValues(alpha: 0.90)
       ..style = PaintingStyle.fill;
 
     final lagoonSandRim = Paint()
       ..color = const Color(0xFFFDE68A)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 4;
+      ..strokeWidth = 4.5;
+
+    final lagoonFoam = Paint()
+      ..color = Colors.white.withValues(alpha: 0.6)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4;
 
     if (island.shapeStyle == IslandShapeStyle.ringAtoll ||
         island.shapeStyle == IslandShapeStyle.crescentLagoon) {
@@ -421,19 +448,27 @@ class IslandAerialPainter extends CustomPainter {
       lagoonPath.addOval(Rect.fromCenter(center: const Offset(15, 15), width: 110, height: 80));
       canvas.drawPath(lagoonPath, lagoonSandRim);
       canvas.drawPath(lagoonPath, lagoonPaint);
+      canvas.drawPath(lagoonPath, lagoonFoam);
     } else if (island.shapeStyle == IslandShapeStyle.starAtoll) {
       final lagoonPath = Path();
-      lagoonPath.addOval(Rect.fromCenter(center: Offset.zero, width: 65, height: 65));
+      lagoonPath.addOval(Rect.fromCenter(center: Offset.zero, width: 68, height: 68));
       canvas.drawPath(lagoonPath, lagoonSandRim);
       canvas.drawPath(lagoonPath, lagoonPaint);
+      canvas.drawPath(lagoonPath, lagoonFoam);
     }
   }
 
   void _drawRoadways(Canvas canvas) {
     final roadPaint = Paint()
-      ..color = const Color(0xFFCBD5E1).withValues(alpha: 0.85)
+      ..color = const Color(0xFFE2E8F0).withValues(alpha: 0.85) // Crisp light pathway
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.6
+      ..strokeCap = StrokeCap.round;
+
+    final roadBorder = Paint()
+      ..color = const Color(0xFF94A3B8).withValues(alpha: 0.45)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5.2
       ..strokeCap = StrokeCap.round;
 
     final rPath = Path();
@@ -452,28 +487,183 @@ class IslandAerialPainter extends CustomPainter {
       rPath.moveTo(65, -65);
       rPath.lineTo(65, 65);
     }
+    canvas.drawPath(rPath, roadBorder);
     canvas.drawPath(rPath, roadPaint);
   }
 
+  // =========================================================================
+  // ⚽ MINI SPORTS TURF PITCH (FOOTBALL TURF WITH WHITE MARKINGS - BENCHMARK #2)
+  // =========================================================================
+  void _drawSportsTurfPitch(Canvas canvas) {
+    const pitchCenter = Offset(24, -36);
+    const w = 36.0;
+    const h = 22.0;
+    final pitchRect = Rect.fromCenter(center: pitchCenter, width: w, height: h);
+
+    // Dark turf green base
+    final turfBase = Paint()..color = const Color(0xFF15803D);
+    canvas.drawRRect(RRect.fromRectAndRadius(pitchRect, const Radius.circular(3)), turfBase);
+
+    // Subtle turf lawn mowing stripes
+    final stripePaint = Paint()..color = const Color(0xFF16A34A).withValues(alpha: 0.55);
+    for (int s = 0; s < 5; s++) {
+      if (s % 2 == 0) {
+        final sx = pitchRect.left + s * (w / 5);
+        canvas.drawRect(Rect.fromLTWH(sx, pitchRect.top, w / 5, h), stripePaint);
+      }
+    }
+
+    // Crisp white field markings
+    final linePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.88)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.85;
+
+    // Outer boundary
+    canvas.drawRect(pitchRect, linePaint);
+    // Half-way line
+    canvas.drawLine(Offset(pitchCenter.dx, pitchRect.top), Offset(pitchCenter.dx, pitchRect.bottom), linePaint);
+    // Center circle
+    canvas.drawCircle(pitchCenter, 3.8, linePaint);
+    // Center spot
+    canvas.drawCircle(pitchCenter, 0.8, Paint()..color = Colors.white);
+
+    // Left Goal Penalty Box
+    canvas.drawRect(Rect.fromLTWH(pitchRect.left, pitchCenter.dy - 5.5, 6.0, 11.0), linePaint);
+    // Right Goal Penalty Box
+    canvas.drawRect(Rect.fromLTWH(pitchRect.right - 6.0, pitchCenter.dy - 5.5, 6.0, 11.0), linePaint);
+  }
+
+  // =========================================================================
+  // 🚤 CRUISING BOATS WITH V-SHAPED FOAM WAKES (BENCHMARKS #1, #2, #3)
+  // =========================================================================
+  void _drawCruisingBoatsWithWakes(Canvas canvas) {
+    if (island.isPresidential) return;
+
+    // 1. Northwest Cruising Speedboat with Expanding Wake
+    _drawBoatWithWake(
+      canvas,
+      pos: const Offset(-175, -140),
+      angle: -0.65,
+      boatLength: 14,
+      boatWidth: 6,
+      wakeLength: 48,
+    );
+
+    // 2. Southeast Cruising Yacht with Expanding Wake
+    _drawBoatWithWake(
+      canvas,
+      pos: const Offset(185, 170),
+      angle: 2.45,
+      boatLength: 17,
+      boatWidth: 7,
+      wakeLength: 55,
+    );
+
+    // 3. East Off-Shore Tender Boat
+    _drawBoatWithWake(
+      canvas,
+      pos: const Offset(210, -85),
+      angle: 0.45,
+      boatLength: 11,
+      boatWidth: 5,
+      wakeLength: 35,
+    );
+  }
+
+  void _drawBoatWithWake(
+    Canvas canvas, {
+    required Offset pos,
+    required double angle,
+    required double boatLength,
+    required double boatWidth,
+    required double wakeLength,
+  }) {
+    canvas.save();
+    canvas.translate(pos.dx, pos.dy);
+    canvas.rotate(angle);
+
+    // Expanding V-Shaped White Wake Trails
+    final wakePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.48)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.3
+      ..strokeCap = StrokeCap.round;
+
+    final wakeFade = Paint()
+      ..color = Colors.white.withValues(alpha: 0.22)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.4;
+
+    // Dual wake plumes
+    final wakePath = Path();
+    wakePath.moveTo(-boatLength * 0.4, -boatWidth * 0.4);
+    wakePath.lineTo(-boatLength * 0.4 - wakeLength, -boatWidth * 1.8);
+    wakePath.moveTo(-boatLength * 0.4, boatWidth * 0.4);
+    wakePath.lineTo(-boatLength * 0.4 - wakeLength, boatWidth * 1.8);
+    canvas.drawPath(wakePath, wakePaint);
+    canvas.drawPath(wakePath, wakeFade);
+
+    // Hull (Top-Down boat body)
+    final hull = Path();
+    hull.moveTo(-boatLength * 0.5, -boatWidth * 0.5);
+    hull.lineTo(boatLength * 0.25, -boatWidth * 0.5);
+    hull.lineTo(boatLength * 0.5, 0); // Pointed bow
+    hull.lineTo(boatLength * 0.25, boatWidth * 0.5);
+    hull.lineTo(-boatLength * 0.5, boatWidth * 0.5);
+    hull.close();
+
+    // Boat shadow in water
+    canvas.drawPath(hull.shift(const Offset(1.5, 2.0)), Paint()..color = Colors.black38);
+    // Crisp white boat deck
+    canvas.drawPath(hull, Paint()..color = Colors.white);
+    // Cockpit windshield
+    canvas.drawRect(
+      Rect.fromCenter(center: Offset(boatLength * 0.05, 0), width: boatLength * 0.35, height: boatWidth * 0.65),
+      Paint()..color = const Color(0xFF0284C7),
+    );
+
+    canvas.restore();
+  }
+
+  // =========================================================================
+  // 🪵 WOODEN PIER, MARINA & TIED BOATS
+  // =========================================================================
   void _drawWoodenPierAndBoats(Canvas canvas) {
     final pierPaint = Paint()
-      ..color = const Color(0xFF92400E)
+      ..color = const Color(0xFF854D0E) // Rich wooden plank tone
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 7.5
+      ..strokeWidth = 8.5
       ..strokeCap = StrokeCap.square;
+
+    final pierDeckLight = Paint()
+      ..color = const Color(0xFFA16207)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 6.0;
 
     if (island.isPresidential) {
       // Royal Pier
-      canvas.drawLine(const Offset(-125, 0), const Offset(-180, 0), pierPaint);
-      canvas.drawLine(const Offset(-180, -28), const Offset(-180, 28), pierPaint);
-      _drawYacht(canvas, const Offset(-198, 0), angle: -math.pi / 2, isGold: true);
+      canvas.drawLine(const Offset(-125, 0), const Offset(-185, 0), pierPaint);
+      canvas.drawLine(const Offset(-125, 0), const Offset(-185, 0), pierDeckLight);
+      canvas.drawLine(const Offset(-185, -30), const Offset(-185, 30), pierPaint);
+      _drawYacht(canvas, const Offset(-202, 0), angle: -math.pi / 2, isGold: true);
     } else {
-      // East Side Marina
-      canvas.drawLine(const Offset(155, 20), const Offset(215, 20), pierPaint);
-      canvas.drawLine(const Offset(215, -12), const Offset(215, 52), pierPaint);
-      _drawYacht(canvas, const Offset(228, 2), angle: 0);
-      _drawYacht(canvas, const Offset(228, 38), angle: 0);
-      _drawYacht(canvas, const Offset(185, -35), angle: -0.35);
+      // East Side Marina Pier extending into clear turquoise water
+      canvas.drawLine(const Offset(150, 20), const Offset(218, 20), pierPaint);
+      canvas.drawLine(const Offset(150, 20), const Offset(218, 20), pierDeckLight);
+      canvas.drawLine(const Offset(218, -14), const Offset(218, 56), pierPaint);
+      canvas.drawLine(const Offset(218, -14), const Offset(218, 56), pierDeckLight);
+
+      // Wooden plank cross-lines for boardwalk authenticity
+      final plankLine = Paint()..color = const Color(0xFF713F12)..strokeWidth = 1.0;
+      for (double px = 155; px <= 215; px += 8) {
+        canvas.drawLine(Offset(px, 15), Offset(px, 25), plankLine);
+      }
+
+      // Tied boats moored along the marina pier
+      _drawYacht(canvas, const Offset(230, 0), angle: 0);
+      _drawYacht(canvas, const Offset(230, 42), angle: 0);
+      _drawYacht(canvas, const Offset(186, -32), angle: -0.42);
     }
   }
 
@@ -483,20 +673,67 @@ class IslandAerialPainter extends CustomPainter {
     canvas.rotate(angle);
 
     final hullPath = Path();
-    hullPath.moveTo(-11, -5);
-    hullPath.lineTo(5, -5);
-    hullPath.lineTo(14, 0); // Bow
-    hullPath.lineTo(5, 5);
-    hullPath.lineTo(-11, 5);
+    hullPath.moveTo(-12, -5.5);
+    hullPath.lineTo(6, -5.5);
+    hullPath.lineTo(15, 0); // Bow
+    hullPath.lineTo(6, 5.5);
+    hullPath.lineTo(-12, 5.5);
     hullPath.close();
+
+    // Shadow
+    canvas.drawPath(hullPath.shift(const Offset(1.5, 2.0)), Paint()..color = Colors.black38);
 
     final hullPaint = Paint()..color = isGold ? const Color(0xFFFFD700) : Colors.white;
     canvas.drawPath(hullPath, hullPaint);
 
     final deckPaint = Paint()..color = isGold ? Colors.black87 : const Color(0xFF0284C7);
-    canvas.drawRect(const Rect.fromLTWH(-4, -3, 8, 6), deckPaint);
+    canvas.drawRect(const Rect.fromLTWH(-4.5, -3.2, 9, 6.4), deckPaint);
 
     canvas.restore();
+  }
+
+  // =========================================================================
+  // 🕊️ SOARING SEAGULLS GLIDING OVER AZURE WATER (BENCHMARK #3)
+  // =========================================================================
+  void _drawSoaringSeagulls(Canvas canvas) {
+    final List<Offset> gulls = [
+      const Offset(-130, -210),
+      const Offset(-145, -195),
+      const Offset(160, -185),
+      const Offset(225, 120),
+      const Offset(-190, 85),
+    ];
+
+    for (final pt in gulls) {
+      _drawSingleSeagull(canvas, pt);
+    }
+  }
+
+  void _drawSingleSeagull(Canvas canvas, Offset pt) {
+    final shadowPaint = Paint()
+      ..color = Colors.black26
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+
+    final gullPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.3
+      ..strokeCap = StrokeCap.round;
+
+    // Shadow
+    final sp = Path();
+    sp.moveTo(pt.dx - 5.5 + 4, pt.dy - 1.5 + 5);
+    sp.quadraticBezierTo(pt.dx - 2.5 + 4, pt.dy + 1.8 + 5, pt.dx + 4, pt.dy - 0.5 + 5);
+    sp.quadraticBezierTo(pt.dx + 2.5 + 4, pt.dy + 1.8 + 5, pt.dx + 5.5 + 4, pt.dy - 1.5 + 5);
+    canvas.drawPath(sp, shadowPaint);
+
+    // White wings
+    final p = Path();
+    p.moveTo(pt.dx - 5.5, pt.dy - 1.5);
+    p.quadraticBezierTo(pt.dx - 2.5, pt.dy + 1.8, pt.dx, pt.dy - 0.5);
+    p.quadraticBezierTo(pt.dx + 2.5, pt.dy + 1.8, pt.dx + 5.5, pt.dy - 1.5);
+    canvas.drawPath(p, gullPaint);
   }
 
   // =========================================================================
@@ -580,56 +817,87 @@ class IslandAerialPainter extends CustomPainter {
     }
   }
 
-  /// 🏛️ Top-Down Habit House Roof based on Day 1-90 Progression
+  /// 🏛️ Top-Down Habit House Roof based on Day 1-90 Progression (Matching Reference Benchmark Villas)
   void _drawTopDownHabitHouse(Canvas canvas, Offset pos, int day, bool isSelected) {
+    // 0. Soft House Drop Shadow (giving true top-down aerial elevation)
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(center: pos.translate(2.2, 2.8), width: 15, height: 13),
+        const Radius.circular(2.5),
+      ),
+      Paint()..color = Colors.black26,
+    );
+
     if (day <= 15) {
-      // ⛺ Stage 1 (Day 1-15): Starter Camp / Wooden Thatched Cottage
-      final roofPaint = Paint()..color = const Color(0xFFD97706);
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(Rect.fromCenter(center: pos, width: 12, height: 10), const Radius.circular(2)),
-        roofPaint,
+      // ⛺ Stage 1 (Day 1-15): Starter Camp / Wooden Thatched Bungalow (Image #1 style)
+      final roofRect = Rect.fromCenter(center: pos, width: 13, height: 11);
+      final roofPaint = Paint()..color = const Color(0xFFB45309); // Timber thatch
+      canvas.drawRRect(RRect.fromRectAndRadius(roofRect, const Radius.circular(2)), roofPaint);
+
+      // Thatch ridge center line
+      canvas.drawLine(
+        Offset(roofRect.left + 2, pos.dy),
+        Offset(roofRect.right - 2, pos.dy),
+        Paint()..color = const Color(0xFF78350F)..strokeWidth = 1.2,
       );
-      canvas.drawLine(pos.translate(-5, 0), pos.translate(5, 0), Paint()..color = const Color(0xFF78350F)..strokeWidth = 1.0);
     } else if (day <= 35) {
-      // 🏡 Stage 2 (Day 16-35): Terracotta Stone Villa with Chimney
-      final roofPaint = Paint()..color = const Color(0xFFEA580C);
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(Rect.fromCenter(center: pos, width: 14, height: 12), const Radius.circular(2)),
-        roofPaint,
-      );
-      canvas.drawLine(pos.translate(-5.5, 0), pos.translate(5.5, 0), Paint()..color = Colors.white54..strokeWidth = 1.2);
-      canvas.drawCircle(pos.translate(3.5, -3.5), 1.8, Paint()..color = const Color(0xFF475569));
+      // 🏡 Stage 2 (Day 16-35): Terracotta Villa with 4-Way Hipped Roof
+      final villaRect = Rect.fromCenter(center: pos, width: 14, height: 12);
+      final roofPaint = Paint()..color = const Color(0xFFEA580C); // Warm terracotta tile
+      canvas.drawRRect(RRect.fromRectAndRadius(villaRect, const Radius.circular(2)), roofPaint);
+
+      // Hipped Roof 4-Corner Ridge Lines
+      final ridgePaint = Paint()..color = Colors.white60..strokeWidth = 0.9;
+      canvas.drawLine(villaRect.topLeft, Offset(pos.dx - 2.5, pos.dy), ridgePaint);
+      canvas.drawLine(villaRect.bottomLeft, Offset(pos.dx - 2.5, pos.dy), ridgePaint);
+      canvas.drawLine(villaRect.topRight, Offset(pos.dx + 2.5, pos.dy), ridgePaint);
+      canvas.drawLine(villaRect.bottomRight, Offset(pos.dx + 2.5, pos.dy), ridgePaint);
+      canvas.drawLine(Offset(pos.dx - 2.5, pos.dy), Offset(pos.dx + 2.5, pos.dy), ridgePaint);
+
+      // Stone chimney
+      canvas.drawCircle(pos.translate(4.0, -3.5), 1.6, Paint()..color = const Color(0xFF475569));
     } else if (day <= 60) {
-      // 🏢 Stage 3 (Day 36-60): Modern Executive Villa with Private Swimming Pool
-      final villaPaint = Paint()..color = const Color(0xFFF8FAFC);
+      // 🏢 Stage 3 (Day 36-60): Crisp White Resort Villa with Turquoise Plunge Pool (Image #1 & #2 style)
+      // Villa Main Body (White Hipped Roof)
+      final villaRect = Rect.fromCenter(center: pos.translate(-3, 0), width: 13, height: 13);
+      final villaPaint = Paint()..color = const Color(0xFFF8FAFC); // Crisp white roof
+      canvas.drawRRect(RRect.fromRectAndRadius(villaRect, const Radius.circular(2)), villaPaint);
+
+      // White hip roof diagonal ridges
+      final ridge = Paint()..color = const Color(0xFFCBD5E1)..strokeWidth = 0.9;
+      canvas.drawLine(villaRect.topLeft, villaRect.bottomRight, ridge);
+      canvas.drawLine(villaRect.topRight, villaRect.bottomLeft, ridge);
+
+      // Private Turquoise Plunge Pool with White Coping Stone
+      final poolRect = Rect.fromCenter(center: pos.translate(5.8, 0), width: 6.5, height: 10.5);
       canvas.drawRRect(
-        RRect.fromRectAndRadius(Rect.fromCenter(center: pos.translate(-2, 0), width: 12, height: 13), const Radius.circular(2)),
-        villaPaint,
+        RRect.fromRectAndRadius(poolRect, const Radius.circular(1.8)),
+        Paint()..color = Colors.white,
       );
-      final poolPaint = Paint()..color = const Color(0xFF06B6D4);
       canvas.drawRRect(
-        RRect.fromRectAndRadius(Rect.fromCenter(center: pos.translate(5.5, 0), width: 5.5, height: 10), const Radius.circular(1.5)),
-        poolPaint,
+        RRect.fromRectAndRadius(poolRect.deflate(0.8), const Radius.circular(1.2)),
+        Paint()..color = const Color(0xFF06B6D4), // Turquoise pool water
       );
     } else if (day <= 89) {
-      // 🏰 Stage 4 (Day 61-89): Luxury Glass Manor with Skylight & Pool
-      final manorPaint = Paint()..color = const Color(0xFF0284C7);
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(Rect.fromCenter(center: pos.translate(-2, 0), width: 14, height: 14), const Radius.circular(2.5)),
-        manorPaint,
-      );
-      canvas.drawLine(pos.translate(-7, 0), pos.translate(3, 0), Paint()..color = Colors.white70..strokeWidth = 0.8);
-      canvas.drawLine(pos.translate(-2, -5), pos.translate(-2, 5), Paint()..color = Colors.white70..strokeWidth = 0.8);
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(Rect.fromCenter(center: pos.translate(6.5, 0), width: 6, height: 12), const Radius.circular(1.5)),
-        Paint()..color = const Color(0xFF38BDF8),
-      );
+      // 🏰 Stage 4 (Day 61-89): Luxury Glass & Ocean Villa with Expanded L-Pool
+      final manorRect = Rect.fromCenter(center: pos.translate(-3.2, 0), width: 14, height: 14);
+      final manorPaint = Paint()..color = const Color(0xFF0284C7); // Sapphire glass roof
+      canvas.drawRRect(RRect.fromRectAndRadius(manorRect, const Radius.circular(2.5)), manorPaint);
+
+      final glassGlaze = Paint()..color = Colors.white70..strokeWidth = 0.8;
+      canvas.drawLine(Offset(manorRect.left + 2, pos.dy), Offset(manorRect.right - 2, pos.dy), glassGlaze);
+      canvas.drawLine(Offset(pos.dx - 3.2, manorRect.top + 2), Offset(pos.dx - 3.2, manorRect.bottom - 2), glassGlaze);
+
+      // Large private pool
+      final poolRect = Rect.fromCenter(center: pos.translate(6.5, 0), width: 7.0, height: 13.0);
+      canvas.drawRRect(RRect.fromRectAndRadius(poolRect, const Radius.circular(2)), Paint()..color = Colors.white);
+      canvas.drawRRect(RRect.fromRectAndRadius(poolRect.deflate(0.9), const Radius.circular(1.5)), Paint()..color = const Color(0xFF22D3EE));
     } else {
       // 👑 Stage 5 (Day 90): Sovereign Golden Apex Palace
       final goldPaint = Paint()..color = const Color(0xFFFFD700);
-      canvas.drawCircle(pos, 8.5, goldPaint);
-      canvas.drawCircle(pos, 4.5, Paint()..color = const Color(0xFFF59E0B));
-      canvas.drawCircle(pos, 2.0, Paint()..color = Colors.white);
+      canvas.drawCircle(pos, 9.0, goldPaint);
+      canvas.drawCircle(pos, 5.0, Paint()..color = const Color(0xFFF59E0B));
+      canvas.drawCircle(pos, 2.2, Paint()..color = Colors.white);
     }
   }
 
@@ -695,38 +963,133 @@ class IslandAerialPainter extends CustomPainter {
     crownPainter.paint(canvas, Offset(-crownPainter.width / 2, 42));
   }
 
+  // =========================================================================
+  // 🌴 CLUSTERED PALM TREE CANOPIES WITH REALISTIC SHADOWS (BENCHMARKS #1, #2, #3)
+  // =========================================================================
   void _drawPalmTreeCanopies(Canvas canvas) {
     final List<Offset> trees = island.isPresidential
         ? [
             const Offset(-80, -65), const Offset(80, -65),
             const Offset(-80, 65), const Offset(80, 65),
             const Offset(0, 95), const Offset(-105, 0),
+            const Offset(-45, -75), const Offset(45, -75),
           ]
         : [
-            const Offset(-145, -45), const Offset(-135, 0), const Offset(-135, 45),
-            const Offset(130, -65), const Offset(135, 65), const Offset(0, 120),
-            const Offset(-55, 115), const Offset(65, 115),
+            // Lush palm groves along pathways, beach perimeters, and between villas
+            const Offset(-155, -55), const Offset(-145, -15), const Offset(-150, 25), const Offset(-140, 65),
+            const Offset(-125, -95), const Offset(-115, -60), const Offset(-110, 50), const Offset(-105, 95),
+            const Offset(-85, -125), const Offset(-75, -80), const Offset(-80, 75), const Offset(-70, 125),
+            const Offset(-45, -145), const Offset(-35, -45), const Offset(-40, 45), const Offset(-30, 135),
+            const Offset(-5, -150), const Offset(5, -65), const Offset(0, 70), const Offset(0, 140),
+            const Offset(35, -140), const Offset(45, -75), const Offset(40, 60), const Offset(35, 130),
+            const Offset(75, -120), const Offset(70, -45), const Offset(75, 45), const Offset(70, 115),
+            const Offset(115, -95), const Offset(110, -55), const Offset(115, 55), const Offset(105, 95),
+            const Offset(145, -60), const Offset(140, -20), const Offset(135, 20), const Offset(135, 65),
+            const Offset(-15, -20), const Offset(-10, 15), const Offset(10, 18), const Offset(48, -12),
           ];
 
-    for (final pos in trees) {
-      canvas.drawCircle(pos.translate(2.0, 2.5), 9.0, Paint()..color = Colors.black26);
-      canvas.drawCircle(pos, 8.5, Paint()..color = const Color(0xFF15803D));
-      canvas.drawCircle(pos.translate(-1.0, -1.0), 6.0, Paint()..color = const Color(0xFF22C55E));
+    for (int idx = 0; idx < trees.length; idx++) {
+      final pos = trees[idx];
+      final treeSize = 8.5 + (idx % 3) * 1.5;
+
+      // 1. Soft tree drop shadow (angled southeast)
+      canvas.drawCircle(
+        pos.translate(2.5, 3.2),
+        treeSize,
+        Paint()..color = Colors.black.withValues(alpha: 0.28),
+      );
+
+      // 2. Base deep jungle green canopy
+      canvas.drawCircle(pos, treeSize, Paint()..color = const Color(0xFF14532D));
+
+      // 3. 6 Radiating Palm Star Fronds / Leaves (like tropical palm trees)
+      final leafPaint = Paint()..color = const Color(0xFF16A34A)..strokeWidth = 2.2..strokeCap = StrokeCap.round;
+      for (int f = 0; f < 6; f++) {
+        final fa = (f * math.pi / 3) + (idx * 0.4);
+        final lx = pos.dx + (treeSize * 1.1) * math.cos(fa);
+        final ly = pos.dy + (treeSize * 1.1) * math.sin(fa);
+        canvas.drawLine(pos, Offset(lx, ly), leafPaint);
+      }
+
+      // 4. Sunlit vibrant emerald center leaf layer
+      canvas.drawCircle(
+        pos.translate(-0.8, -1.0),
+        treeSize * 0.72,
+        Paint()..color = const Color(0xFF22C55E),
+      );
+
+      // 5. Bright highlight crown
+      canvas.drawCircle(
+        pos.translate(-1.4, -1.6),
+        treeSize * 0.38,
+        Paint()..color = const Color(0xFF86EFAC),
+      );
     }
   }
 
+  // =========================================================================
+  // ⛱️ BEACH PARASOLS & SUNBED LOUNGERS (BENCHMARKS #1, #2, #3)
+  // =========================================================================
   void _drawBeachUmbrellas(Canvas canvas) {
     final List<Offset> umbrellas = island.isPresidential
         ? [const Offset(105, -15), const Offset(105, 15)]
         : [
-            const Offset(-170, -85), const Offset(-165, 85),
-            const Offset(165, -85), const Offset(160, 90),
+            // Beach umbrellas dotted along the golden sands facing the sea
+            const Offset(-175, -85), const Offset(-172, -45), const Offset(-170, 45), const Offset(-165, 95),
+            const Offset(-115, -170), const Offset(-65, -185), const Offset(65, -185), const Offset(120, -165),
+            const Offset(168, -85), const Offset(165, 80), const Offset(115, 175), const Offset(-65, 190),
           ];
 
     for (int i = 0; i < umbrellas.length; i++) {
       final pos = umbrellas[i];
-      canvas.drawCircle(pos, 5.5, Paint()..color = i.isEven ? const Color(0xFFEF4444) : const Color(0xFF3B82F6));
-      canvas.drawCircle(pos, 1.8, Paint()..color = Colors.white);
+      final isRed = i % 2 == 0;
+
+      // 1. Parasol Drop Shadow
+      canvas.drawCircle(pos.translate(2.2, 2.5), 5.5, Paint()..color = Colors.black26);
+
+      // 2. White Sunbed Lounger next to Umbrella
+      final loungerOffset = pos.translate(7.5, (i % 3 == 0) ? -2.0 : 2.0);
+      final loungerRect = Rect.fromCenter(center: loungerOffset, width: 4.2, height: 8.5);
+      // Lounger shadow
+      canvas.drawRect(loungerRect.shift(const Offset(1.0, 1.2)), Paint()..color = Colors.black12);
+      // Lounger mattress
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(loungerRect, const Radius.circular(1.0)),
+        Paint()..color = Colors.white,
+      );
+      // Pillow crease line
+      canvas.drawLine(
+        Offset(loungerRect.left, loungerRect.top + 2.5),
+        Offset(loungerRect.right, loungerRect.top + 2.5),
+        Paint()..color = const Color(0xFFCBD5E1)..strokeWidth = 0.8,
+      );
+
+      // 3. Striped Parasol Canopy
+      final canopyColor = isRed ? const Color(0xFFEF4444) : const Color(0xFF0284C7);
+      canvas.drawCircle(pos, 5.8, Paint()..color = canopyColor);
+
+      // Alternating 4 White Radial Segments for Authentic Beach Resort Stripe Look
+      final stripePaint = Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.fill;
+
+      for (int s = 0; s < 4; s++) {
+        final startAngle = (s * math.pi / 2) + (i * 0.3);
+        final stripePath = Path();
+        stripePath.moveTo(pos.dx, pos.dy);
+        stripePath.arcTo(
+          Rect.fromCircle(center: pos, radius: 5.8),
+          startAngle,
+          math.pi / 4,
+          false,
+        );
+        stripePath.close();
+        canvas.drawPath(stripePath, stripePaint);
+      }
+
+      // Center umbrella pole cap
+      canvas.drawCircle(pos, 1.4, Paint()..color = Colors.white);
+      canvas.drawCircle(pos, 0.7, Paint()..color = Colors.black54);
     }
   }
 

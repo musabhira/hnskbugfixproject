@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
-import 'package:flame/components.dart';
 import 'poket_cosmos_models.dart';
 
 /// 🚗✈️ Flame Game simulating Google Maps travel across Poket World

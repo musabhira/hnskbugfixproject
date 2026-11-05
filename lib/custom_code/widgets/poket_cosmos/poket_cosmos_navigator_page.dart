@@ -75,11 +75,10 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
       final coords =
           IslandAerialPainter.get50PlotCoordinates(island.shapeStyle);
 
-      if (res is List && res.isNotEmpty) {
+      if (res.isNotEmpty) {
         int idx = 0;
-        for (final row in res) {
+        for (final map in res) {
           if (idx >= 50) break;
-          final map = row as Map<String, dynamic>;
           final userName = (map['name'] as String?)?.trim().isNotEmpty == true
               ? (map['name'] as String).trim()
               : 'Citizen #${idx + 1}';
@@ -460,6 +459,36 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
           ),
         ],
       ),
+      // 🛡️ Ganymede (Jupiter's Super-Moon, larger than Mercury)
+      const PoketPlanet(
+        id: 52,
+        name: 'Ganymede 🛡️',
+        theme: 'Largest Moon in Solar System • Jovian Titan',
+        tagLine: 'Magnetic Ocean Vault • Silicate Highlands',
+        primaryColor: Color(0xFF94A3B8),
+        glowColor: Color(0xFF64748B),
+        radius: 13,
+        orbitDistance: 310,
+        orbitSpeed: 0.49,
+        totalPlots: 50,
+        occupiedPlots: 26,
+        countryMaps: [
+          PoketCountryMap(
+            id: 5201,
+            name: 'Perrine Regio',
+            tag: 'Magnetic Ocean Citadel',
+            landColor: Color(0xFF475569),
+            waterColor: Color(0xFF0284C7),
+            totalSlots: 50,
+            filledSlots: 26,
+            climate: 'Magnetic Glow ⚡',
+            climateIcon: Icons.shield_rounded,
+            islandEmoji: '🛡️',
+            shapeStyle: IslandShapeStyle.fortressPlateau,
+          ),
+        ],
+      ),
+
       const PoketPlanet(
         id: 9,
         name: 'Pluto ❄️',
@@ -485,6 +514,36 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
             climateIcon: Icons.ac_unit_rounded,
             islandEmoji: '🤍',
             shapeStyle: IslandShapeStyle.heartSanctuary,
+          ),
+        ],
+      ),
+
+      // 🌿 Kepler-452b (Earth 2.0 - Interstellar Habitable Frontier)
+      const PoketPlanet(
+        id: 452,
+        name: 'Kepler-452b 🌿',
+        theme: 'Earth 2.0 • Habitable Goldilocks Exoplanet',
+        tagLine: 'Cygnus Constellation • Super-Earth Biosphere',
+        primaryColor: Color(0xFF10B981),
+        glowColor: Color(0xFF059669),
+        radius: 20,
+        orbitDistance: 560,
+        orbitSpeed: 0.12,
+        totalPlots: 50,
+        occupiedPlots: 15,
+        countryMaps: [
+          PoketCountryMap(
+            id: 45201,
+            name: 'Cygnus Haven',
+            tag: 'Interstellar Earth 2.0',
+            landColor: Color(0xFF15803D),
+            waterColor: Color(0xFF0D9488),
+            totalSlots: 50,
+            filledSlots: 15,
+            climate: 'Eternal Spring 🌸',
+            climateIcon: Icons.eco_rounded,
+            islandEmoji: '🌿',
+            shapeStyle: IslandShapeStyle.crescentLagoon,
           ),
         ],
       ),
@@ -1022,17 +1081,17 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
       _activeScreen = 2;
     });
     _loadIslandPlots(island);
-    _aerialMapZoomController.value = Matrix4.identity()..scale(1.0);
+    _aerialMapZoomController.value = Matrix4.identity();
   }
 
   void _zoomOrbit(double factor) {
     final currentScale = _orbitInteractiveController.value.getMaxScaleOnAxis();
     final newScale = (currentScale * factor).clamp(0.4, 3.2);
-    _orbitInteractiveController.value = Matrix4.identity()..scale(newScale);
+    _orbitInteractiveController.value = Matrix4.diagonal3Values(newScale, newScale, 1.0);
   }
 
   void _resetOrbitZoom() {
-    _orbitInteractiveController.value = Matrix4.identity()..scale(1.0);
+    _orbitInteractiveController.value = Matrix4.identity();
   }
 
   void _toggleTiltAngle() {
@@ -1822,8 +1881,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                     onPressed: () {
                       final current =
                           _aerialMapZoomController.value.getMaxScaleOnAxis();
-                      _aerialMapZoomController.value = Matrix4.identity()
-                        ..scale((current * 1.3).clamp(0.65, 6.5));
+                      final s = (current * 1.3).clamp(0.65, 6.5);
+                      _aerialMapZoomController.value = Matrix4.diagonal3Values(s, s, 1.0);
                     },
                     constraints:
                         const BoxConstraints(minWidth: 36, minHeight: 36),
@@ -1836,8 +1895,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                     onPressed: () {
                       final current =
                           _aerialMapZoomController.value.getMaxScaleOnAxis();
-                      _aerialMapZoomController.value = Matrix4.identity()
-                        ..scale((current * 0.77).clamp(0.65, 6.5));
+                      final s = (current * 0.77).clamp(0.65, 6.5);
+                      _aerialMapZoomController.value = Matrix4.diagonal3Values(s, s, 1.0);
                     },
                     constraints:
                         const BoxConstraints(minWidth: 36, minHeight: 36),
@@ -1848,8 +1907,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                         color: Color(0xFFFFD700), size: 20),
                     tooltip: 'Reset Zoom',
                     onPressed: () {
-                      _aerialMapZoomController.value = Matrix4.identity()
-                        ..scale(1.0);
+                      _aerialMapZoomController.value = Matrix4.identity();
                     },
                     constraints:
                         const BoxConstraints(minWidth: 36, minHeight: 36),
@@ -2163,15 +2221,23 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Your Auto-Allocated Home Deed',
+                          const Text('🌟 Birthplace (ജനിച്ച സ്ഥലം) & Residence',
                               style: TextStyle(
                                   color: Colors.white54, fontSize: 11)),
+                          const SizedBox(height: 2),
                           Text(
-                            '${_selectedPlanet?.name ?? "Earth Prime 🌍"} • ${_selectedIsland?.name ?? "Vocabulary Bay"}',
+                            '🌟 Birthplace: The Moon 🌕 • Tranquility Base',
+                            style: const TextStyle(
+                                color: Color(0xFF38BDF8),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12),
+                          ),
+                          Text(
+                            '🏡 Current: ${_selectedPlanet?.name ?? "Earth Prime 🌍"} • ${_selectedIsland?.name ?? "Vocabulary Bay"}',
                             style: const TextStyle(
                                 color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12.5),
                           ),
                           const Text('Deed: Plot #14 • PIN: PK-P3-IS002-SL14',
                               style: TextStyle(
