@@ -1,5 +1,16 @@
 # POKET Release Notes
 
+## Version 1.0.160 (Build 361) — November 5, 2026
+
+### 🚀 Highlights & Native iOS Release
+- **Day-Based Course Progression & Level Decoupling**: User level and citadel home progression are strictly anchored to completed daily lessons (`day`) with pocket score serving as the pass mark floor. Replaying lessons or high scores no longer artificially jump user levels.
+- **Pocket Talk Decoupling**: Completely separated Pocket Talk challenges from Pocket Mate friend requests across swiper cards, profile widgets, and conversation tiles.
+- **Premature Green Ring Fix**: Spoken Pact avatar indicator strictly awaits recipient acceptance.
+- **Multi-Language Spoken Pact Agreement**: Fully localized agreement terms and modal sheets across Malayalam, Tamil, Hindi, and English.
+- **CI/CD Pipeline Artifact Colon Fix**: Standardized IPA output path (`pocket_mates_app.ipa`) to ensure flawless GitHub Actions artifact upload and native TestFlight delivery via `altool`.
+
+---
+
 ## Version 1.0.159 (Build 334) — November 4, 2026
 
 ### 🚀 Highlights & CI/CD Pipeline Correction

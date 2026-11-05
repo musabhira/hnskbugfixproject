@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       version_name:
-        description: 'Marketing Version (e.g. 1.0.159, leave empty to read from pubspec.yaml)'
+        description: 'Marketing Version (e.g. 1.0.160, leave empty to read from pubspec.yaml)'
         required: false
         default: ''
       build_number:
@@ -79,19 +79,19 @@ jobs:
             VERSION_NAME=$(grep '^version:' pubspec.yaml | head -n 1 | sed 's/version: //' | sed 's/+.*//' | tr -d '\r\n ')
           fi
           if [ -z "$VERSION_NAME" ]; then
-            VERSION_NAME="1.0.159"
+            VERSION_NAME="1.0.160"
           fi
 
           # 2. Build Number (CFBundleVersion) - Monotonically increasing & retry-safe
-          BASE_BUILD=360
+          BASE_BUILD=361
           if [ -n "${{ inputs.build_number }}" ]; then
             BUILD_NUMBER="${{ inputs.build_number }}"
           else
             if [ -n "${{ vars.IOS_BUILD_NUMBER_BASE }}" ]; then
               BASE_BUILD="${{ vars.IOS_BUILD_NUMBER_BASE }}"
             fi
-            # Count commits since anchor commit 1ccd501
-            RAW_COMMIT_COUNT=$(git rev-list --count 1ccd501..HEAD 2>/dev/null || echo 1)
+            # Count commits since anchor commit dce649e
+            RAW_COMMIT_COUNT=$(git rev-list --count dce649e..HEAD 2>/dev/null || echo 1)
             COMMIT_OFFSET=$(( RAW_COMMIT_COUNT > 0 ? RAW_COMMIT_COUNT - 1 : 0 ))
             ATTEMPT_OFFSET=$(( GITHUB_RUN_ATTEMPT - 1 ))
             BUILD_NUMBER=$(( BASE_BUILD + COMMIT_OFFSET + ATTEMPT_OFFSET ))
