@@ -2,44 +2,41 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 import 'package:flame/events.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'poket_cosmos_models.dart';
 
-/// 🌌 Flame Solar System Simulation Game with Realistic Planetary Orbits
+/// 🌌 Scientific 3D Flame Solar System Simulation with Moons & Deep Space
 class FlameSolarSystemGame extends FlameGame with TapCallbacks {
   final List<PoketPlanet> planets;
   final PoketPlanet? selectedPlanet;
   final ValueChanged<PoketPlanet> onPlanetSelected;
-  final ValueChanged<PoketPlanet> onPlanetDoubleTapped;
   final double tiltAngle; // 3D bend / side perspective
 
   FlameSolarSystemGame({
     required this.planets,
     required this.selectedPlanet,
     required this.onPlanetSelected,
-    required this.onPlanetDoubleTapped,
-    this.tiltAngle = 0.0, // 0.0 = top down, up to 0.75 = 3D isometric tilt
+    this.tiltAngle = 0.45,
   });
 
   double _orbitElapsedSeconds = 0.0;
-  final math.Random _random = math.Random(42);
+  final math.Random _random = math.Random(101);
   late List<_StarParticle> _stars;
 
   @override
-  Color backgroundColor() => const Color(0xFF030712); // Deep Cosmos Starlight
+  Color backgroundColor() => const Color(0xFF0D121D); // Deep midnight cosmos
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
 
-    // Generate starry cosmos background
-    _stars = List.generate(120, (i) {
+    // 140 subtle twinkling stars
+    _stars = List.generate(140, (i) {
       return _StarParticle(
-        x: (_random.nextDouble() - 0.5) * 1200,
-        y: (_random.nextDouble() - 0.5) * 1200,
-        radius: 0.8 + _random.nextDouble() * 1.6,
-        alpha: 0.3 + _random.nextDouble() * 0.7,
-        blinkSpeed: 1.5 + _random.nextDouble() * 3.0,
+        x: (_random.nextDouble() - 0.5) * 1400,
+        y: (_random.nextDouble() - 0.5) * 1400,
+        radius: 0.7 + _random.nextDouble() * 1.5,
+        alpha: 0.25 + _random.nextDouble() * 0.7,
+        blinkSpeed: 1.0 + _random.nextDouble() * 2.5,
       );
     });
   }
@@ -58,27 +55,26 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
     canvas.save();
     canvas.translate(center.x, center.y);
 
-    // 1. Draw Starry Space
+    // 1. Draw Starfield
     for (final star in _stars) {
       final blink = (math.sin(_orbitElapsedSeconds * star.blinkSpeed) + 1) / 2;
       final starPaint = Paint()
-        ..color = Colors.white.withValues(alpha: (star.alpha * (0.4 + blink * 0.6)).clamp(0.0, 1.0));
+        ..color = Colors.white.withValues(alpha: (star.alpha * (0.35 + blink * 0.65)).clamp(0.0, 1.0));
       canvas.drawCircle(Offset(star.x, star.y), star.radius, starPaint);
     }
 
-    // 2. Apply 3D Tilt Matrix (Side Perspective / Isometric Bend)
-    // Scale Y by cos(tiltAngle) to create the elliptical 3D orbit plane
-    final double yCompress = math.cos(tiltAngle).clamp(0.45, 1.0);
+    // 2. 3D Tilt perspective ratio
+    final double yCompress = math.cos(tiltAngle).clamp(0.35, 1.0);
 
-    // 3. Draw Orbit Rings
+    // 3. Draw Orbit Track Rings
     for (final planet in planets) {
       final isSel = planet.id == selectedPlanet?.id;
       final ringPaint = Paint()
         ..color = isSel
-            ? planet.primaryColor.withValues(alpha: 0.65)
-            : Colors.white.withValues(alpha: 0.18)
+            ? planet.primaryColor.withValues(alpha: 0.6)
+            : Colors.white.withValues(alpha: 0.12)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = isSel ? 2.0 : 0.8;
+        ..strokeWidth = isSel ? 1.8 : 0.75;
 
       canvas.drawOval(
         Rect.fromCenter(
@@ -90,13 +86,13 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
       );
     }
 
-    // 4. Draw Fiery Glowing Sun at Center
+    // 4. Draw Fiery Central Sun
     _renderSun(canvas);
 
-    // 5. Draw Orbiting Planets (Sorted by Y for correct 3D depth overlap)
+    // 5. Draw Orbiting Planets with Scientific Moons (Sorted by Y for true 3D depth)
     final List<_RenderablePlanet> renderList = [];
     for (final planet in planets) {
-      final angle = (_orbitElapsedSeconds * 0.4 * planet.orbitSpeed) % (2 * math.pi);
+      final angle = (_orbitElapsedSeconds * 0.35 * planet.orbitSpeed) % (2 * math.pi);
       final double px = planet.orbitDistance * math.cos(angle);
       final double py = planet.orbitDistance * math.sin(angle) * yCompress;
 
@@ -107,7 +103,6 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
       ));
     }
 
-    // Sort: farther away planets (smaller py) drawn behind Sun, closer ones drawn in front
     renderList.sort((a, b) => a.position.dy.compareTo(b.position.dy));
 
     for (final item in renderList) {
@@ -118,21 +113,21 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
   }
 
   void _renderSun(Canvas canvas) {
-    final sunPulse = (math.sin(_orbitElapsedSeconds * 2.0) + 1) / 2;
+    final sunPulse = (math.sin(_orbitElapsedSeconds * 2.2) + 1) / 2;
 
-    // Corona Outer Aura
+    // Glowing Sun Corona
     final outerCorona = Paint()
       ..shader = RadialGradient(
         colors: [
-          const Color(0xFFF59E0B).withValues(alpha: 0.5 + sunPulse * 0.2),
-          const Color(0xFFEA580C).withValues(alpha: 0.2),
+          const Color(0xFFF59E0B).withValues(alpha: 0.45 + sunPulse * 0.25),
+          const Color(0xFFEA580C).withValues(alpha: 0.15),
           Colors.transparent,
         ],
-        stops: const [0.3, 0.7, 1.0],
-      ).createShader(Rect.fromCircle(center: Offset.zero, radius: 64));
-    canvas.drawCircle(Offset.zero, 64, outerCorona);
+        stops: const [0.3, 0.75, 1.0],
+      ).createShader(Rect.fromCircle(center: Offset.zero, radius: 58));
+    canvas.drawCircle(Offset.zero, 58, outerCorona);
 
-    // Inner Core
+    // Sun Core
     final sunCore = Paint()
       ..shader = const RadialGradient(
         colors: [
@@ -142,16 +137,15 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
           Color(0xFFEA580C),
         ],
         stops: [0.0, 0.35, 0.75, 1.0],
-      ).createShader(Rect.fromCircle(center: Offset.zero, radius: 36));
-    canvas.drawCircle(Offset.zero, 34, sunCore);
+      ).createShader(Rect.fromCircle(center: Offset.zero, radius: 32));
+    canvas.drawCircle(Offset.zero, 30, sunCore);
 
-    // Center text label
     final tp = TextPainter(
       text: const TextSpan(
         text: 'Sun ☀️',
         style: TextStyle(
           color: Colors.black87,
-          fontSize: 10,
+          fontSize: 9.5,
           fontWeight: FontWeight.w900,
         ),
       ),
@@ -166,29 +160,29 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
     final isSel = p.id == selectedPlanet?.id;
     final radius = p.radius;
 
-    // Planet Glow if selected
+    // Planet Selection Aura
     if (isSel) {
       final glowPaint = Paint()
-        ..color = p.glowColor.withValues(alpha: 0.45)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 16);
-      canvas.drawCircle(pos, radius + 8, glowPaint);
+        ..color = p.glowColor.withValues(alpha: 0.5)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 14);
+      canvas.drawCircle(pos, radius + 6, glowPaint);
     }
 
     // 🪐 Saturn Rings
-    if (p.id == 6) { // Saturn
+    if (p.id == 6) {
       canvas.save();
       canvas.translate(pos.dx, pos.dy);
-      canvas.rotate(-0.35);
+      canvas.rotate(-0.32);
       final ringPaint = Paint()
         ..shader = LinearGradient(
           colors: [
             const Color(0xFFD4AF37).withValues(alpha: 0.7),
             const Color(0xFFFDE68A).withValues(alpha: 0.9),
-            const Color(0xFF78350F).withValues(alpha: 0.5),
+            const Color(0xFF78350F).withValues(alpha: 0.4),
           ],
-        ).createShader(Rect.fromCenter(center: Offset.zero, width: radius * 3.8, height: radius * 1.2))
+        ).createShader(Rect.fromCenter(center: Offset.zero, width: radius * 3.6, height: radius * 1.1))
         ..style = PaintingStyle.stroke
-        ..strokeWidth = radius * 0.45;
+        ..strokeWidth = radius * 0.4;
 
       canvas.drawOval(
         Rect.fromCenter(center: Offset.zero, width: radius * 3.6, height: radius * 1.1),
@@ -197,39 +191,75 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
       canvas.restore();
     }
 
-    // Planet Sphere (3D Shaded Sphere)
+    // 3D Shaded Planet Sphere
     final planetPaint = Paint()
       ..shader = RadialGradient(
-        center: const Alignment(-0.3, -0.3),
+        center: const Alignment(-0.35, -0.35),
         radius: 0.85,
         colors: [
-          Colors.white.withValues(alpha: 0.8),
+          Colors.white.withValues(alpha: 0.85),
           p.primaryColor,
           p.glowColor,
-          const Color(0xFF030712), // Deep shadow away from sun
+          const Color(0xFF030712),
         ],
-        stops: const [0.0, 0.45, 0.8, 1.0],
+        stops: const [0.0, 0.45, 0.82, 1.0],
       ).createShader(Rect.fromCircle(center: pos, radius: radius));
 
     canvas.drawCircle(pos, radius, planetPaint);
 
-    // Planet Selection Ring
+    // Selected Border
     if (isSel) {
       final selBorder = Paint()
         ..color = const Color(0xFFFFD700)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.2;
-      canvas.drawCircle(pos, radius + 4, selBorder);
+        ..strokeWidth = 2.0;
+      canvas.drawCircle(pos, radius + 3, selBorder);
     }
 
-    // Label above/below planet
+    // 🌕 Scientific Moon for Earth (Earth Prime)
+    if (p.id == 3) {
+      final moonAngle = _orbitElapsedSeconds * 2.2;
+      final moonDist = radius + 11.0;
+      final mx = pos.dx + moonDist * math.cos(moonAngle);
+      final my = pos.dy + moonDist * math.sin(moonAngle) * yCompress;
+
+      // Moon orbit track
+      final moonOrbitPaint = Paint()
+        ..color = Colors.white.withValues(alpha: 0.15)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.5;
+      canvas.drawOval(
+        Rect.fromCenter(center: pos, width: moonDist * 2, height: moonDist * 2 * yCompress),
+        moonOrbitPaint,
+      );
+
+      // Moon body
+      final moonPaint = Paint()..color = const Color(0xFFE2E8F0);
+      canvas.drawCircle(Offset(mx, my), 3.2, moonPaint);
+    }
+
+    // 🌕 Scientific Galilean Moons for Jupiter
+    if (p.id == 5) {
+      for (int mi = 0; mi < 3; mi++) {
+        final mAngle = _orbitElapsedSeconds * (1.6 + mi * 0.7) + mi * 2.0;
+        final mDist = radius + 9.0 + mi * 6.0;
+        final jmx = pos.dx + mDist * math.cos(mAngle);
+        final jmy = pos.dy + mDist * math.sin(mAngle) * yCompress;
+
+        final jMoonPaint = Paint()
+          ..color = [const Color(0xFFFED7AA), const Color(0xFFFDE68A), const Color(0xFFE2E8F0)][mi];
+        canvas.drawCircle(Offset(jmx, jmy), 2.2, jMoonPaint);
+      }
+    }
+
+    // Planet Label
     final namePainter = TextPainter(
       text: TextSpan(
         text: p.name,
         style: TextStyle(
-          color: isSel ? const Color(0xFFFFD700) : Colors.white,
-          fontSize: isSel ? 11 : 9.5,
-          fontWeight: isSel ? FontWeight.bold : FontWeight.w600,
+          color: isSel ? const Color(0xFFFFD700) : Colors.white70,
+          fontSize: isSel ? 10.5 : 9.0,
+          fontWeight: isSel ? FontWeight.bold : FontWeight.w500,
           shadows: const [
             Shadow(color: Colors.black, blurRadius: 4),
           ],
@@ -243,20 +273,16 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
   @override
   void onTapDown(TapDownEvent event) {
     final localTap = event.localPosition - size / 2;
-    final double yCompress = math.cos(tiltAngle).clamp(0.45, 1.0);
+    final double yCompress = math.cos(tiltAngle).clamp(0.35, 1.0);
 
     for (final planet in planets) {
-      final angle = (_orbitElapsedSeconds * 0.4 * planet.orbitSpeed) % (2 * math.pi);
+      final angle = (_orbitElapsedSeconds * 0.35 * planet.orbitSpeed) % (2 * math.pi);
       final px = planet.orbitDistance * math.cos(angle);
       final py = planet.orbitDistance * math.sin(angle) * yCompress;
 
       final dist = (Offset(px, py) - Offset(localTap.x, localTap.y)).distance;
       if (dist <= planet.radius + 18) {
-        if (selectedPlanet?.id == planet.id) {
-          onPlanetDoubleTapped(planet);
-        } else {
-          onPlanetSelected(planet);
-        }
+        onPlanetSelected(planet);
         return;
       }
     }
