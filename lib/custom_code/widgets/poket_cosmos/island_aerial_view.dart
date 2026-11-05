@@ -81,7 +81,7 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
     final cx = size.width / 2;
     final cy = size.height / 2;
     final scale = widget.isInteractive
-        ? (size.height / 700.0).clamp(0.85, 1.45)
+        ? ((size.height / 850.0) * 1.15).clamp(0.95, 1.50)
         : (math.min(size.width, size.height) / 540.0);
 
     final islandX = (details.localPosition.dx - cx) / scale;
@@ -89,7 +89,7 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
     final tapPoint = Offset(islandX, islandY);
 
     CitizenPlot? hitPlot;
-    double minDistance = 24.0; // Responsive touch hit radius
+    double minDistance = 22.0 * scale; // Responsive touch hit radius
 
     for (final plot in widget.plots) {
       final d = (plot.coordinates - tapPoint).distance;
@@ -135,7 +135,7 @@ class IslandAerialPainter extends CustomPainter {
     final cy = size.height / 2;
     // Responsive island scale: proportional to screen height in fullscreen mode, scaled to fit in carousel cards
     final double scale = isInteractive
-        ? (size.height / 700.0).clamp(0.85, 1.45)
+        ? ((size.height / 850.0) * 1.15).clamp(0.95, 1.50)
         : (math.min(size.width, size.height) / 540.0);
 
     canvas.save();
@@ -642,45 +642,48 @@ class IslandAerialPainter extends CustomPainter {
   }
 
   // =========================================================================
-  // 🚤 CRUISING BOATS WITH V-SHAPED FOAM WAKES (LIVE 60FPS MOTION)
+  // 🚤 CRUISING BOATS WITH V-SHAPED FOAM WAKES (LIVE 60FPS DEEP SEA MOTION)
+  // Strictly in deep open ocean! Never touches island shores or beaches!
   // =========================================================================
   void _drawCruisingBoatsWithWakes(Canvas canvas) {
     if (island.isPresidential) return;
 
-    // 1. Moving Cruising Speedboat orbiting around the outer turquoise reef
-    final t1 = (timeSeconds * 0.14) % (2 * math.pi);
-    final pos1 = Offset(215.0 * math.cos(t1), 165.0 * math.sin(t1));
+    // 1. Moving Offshore Speedboat cruising in wide deep blue waters
+    final t1 = (timeSeconds * 0.12) % (2 * math.pi);
+    final pos1 = Offset(330.0 * math.cos(t1), 275.0 * math.sin(t1));
     final angle1 = t1 + math.pi / 2;
     _drawBoatWithWake(
       canvas,
       pos: pos1,
       angle: angle1,
-      boatLength: 14,
-      boatWidth: 6,
-      wakeLength: 46,
+      boatLength: 15,
+      boatWidth: 6.5,
+      wakeLength: 48,
     );
 
-    // 2. Southeast Cruising Yacht traveling along southern waters
-    final t2 = (-timeSeconds * 0.10) % (2 * math.pi);
-    final pos2 = Offset(205.0 * math.cos(t2) * 0.9, 155.0 * math.sin(t2) + 25);
+    // 2. Luxury Cruising Yacht traveling along outer southern deep sea
+    final t2 = (-timeSeconds * 0.08) % (2 * math.pi);
+    final pos2 = Offset(380.0 * math.cos(t2), 320.0 * math.sin(t2));
     final angle2 = t2 - math.pi / 2;
     _drawBoatWithWake(
       canvas,
       pos: pos2,
       angle: angle2,
-      boatLength: 16,
-      boatWidth: 7,
-      wakeLength: 52,
+      boatLength: 17,
+      boatWidth: 7.5,
+      wakeLength: 55,
     );
 
-    // 3. East Off-Shore Tender Boat
+    // 3. Open Ocean Horizon Tender Boat
+    final t3 = (timeSeconds * 0.09) % (2 * math.pi);
+    final pos3 = Offset(-340.0 + math.cos(t3) * 40.0, 260.0 + math.sin(t3) * 30.0);
     _drawBoatWithWake(
       canvas,
-      pos: const Offset(210, -85),
-      angle: 0.45,
-      boatLength: 11,
-      boatWidth: 5,
-      wakeLength: 35,
+      pos: pos3,
+      angle: 0.85,
+      boatLength: 12,
+      boatWidth: 5.5,
+      wakeLength: 38,
     );
   }
 
@@ -918,8 +921,9 @@ class IslandAerialPainter extends CustomPainter {
   }
 
   // =========================================================================
-  // 🏡 50 HABIT HOUSE PLOTS (3-TIER DRONE LOD: HOMESTEAD DOTS -> PARTITIONS -> VILLAS)
-  // Strictly on green land! Every plot has a demarcated property boundary wall!
+  // 🏡 50 HABIT HOUSE PLOTS (DEMARCATED BOUNDARY WALLS & CITIZEN PARCELS)
+  // Strictly on green land! Every citizen has their own boundary wall partition & house dot!
+  // Naturally scales with camera zoom without artificial shape swapping or clutter.
   // =========================================================================
   void _draw50HabitHousePlots(Canvas canvas) {
     final List<Offset> positions = get50PlotCoordinates(island.shapeStyle);
@@ -945,196 +949,57 @@ class IslandAerialPainter extends CustomPainter {
               coordinates: pos,
             );
 
-      // Three-Tier Smooth Drone Level of Detail (LOD):
-      if (zoomScale < 1.45) {
-        // 🔭 TIER 1: HIGH DRONE / AIRPLANE OVERVIEW (zoomScale < 1.45)
-        // Clean, tiny minimal glowing homestead dots nestled deeply in the green landscape
-        final dotPaint = Paint()
-          ..color = isSel
-              ? const Color(0xFFFFD700)
-              : (plot.day >= 90
-                  ? const Color(0xFFFFD700)
-                  : (plot.day >= 60 ? const Color(0xFF38BDF8) : Colors.white.withValues(alpha: 0.95)));
-        canvas.drawCircle(pos, 2.4, Paint()..color = Colors.black26); // Drop shadow
-        canvas.drawCircle(pos, 1.8, dotPaint); // Sleek minimal homestead dot
-      } else if (zoomScale < 2.5) {
-        // 🚁 TIER 2: INTERMEDIATE DRONE VIEW (1.45 <= zoomScale < 2.5)
-        // Demarcated partitioned lots with low stone property boundary walls, lawn & compact roof!
-        final plotRect = Rect.fromCenter(center: pos, width: 22, height: 22);
+      // 1. Demarcated Property Boundary Parcel (Stone Wall & Private Lawn)
+      final parcelRect = Rect.fromCenter(center: pos, width: 17.5, height: 17.5);
 
-        // Partitioned Lot Lawn
-        final lawnPaint = Paint()
-          ..color = isSel
-              ? const Color(0xFFFFD700).withValues(alpha: 0.35)
-              : const Color(0xFF166534).withValues(alpha: 0.50);
-        canvas.drawRRect(RRect.fromRectAndRadius(plotRect, const Radius.circular(3)), lawnPaint);
+      // Private Lawn Courtyard
+      final lawnPaint = Paint()
+        ..color = isSel
+            ? const Color(0xFFFFD700).withValues(alpha: 0.38)
+            : const Color(0xFF14532D).withValues(alpha: 0.52)
+        ..style = PaintingStyle.fill;
+      canvas.drawRRect(RRect.fromRectAndRadius(parcelRect, const Radius.circular(2.8)), lawnPaint);
 
-        // Property Boundary Partition Wall (Stone Wall / Hedge Border)
-        final partitionWall = Paint()
-          ..color = isSel
-              ? const Color(0xFFFFD700)
-              : Colors.white.withValues(alpha: 0.45)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = isSel ? 1.6 : 0.8;
-        canvas.drawRRect(RRect.fromRectAndRadius(plotRect, const Radius.circular(3)), partitionWall);
+      // Demarcated Boundary Partition Wall (Low Stone Wall / Hedge)
+      final boundaryWall = Paint()
+        ..color = isSel
+            ? const Color(0xFFFFD700)
+            : const Color(0xFFF1F5F9).withValues(alpha: 0.85)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = isSel ? 1.8 : 0.95;
+      canvas.drawRRect(RRect.fromRectAndRadius(parcelRect, const Radius.circular(2.8)), boundaryWall);
 
-        // Compact House Footprint Roof
-        _drawCompactHouseFootprint(canvas, pos, plot.day, isSel);
-      } else {
-        // 🔬 TIER 3: DEEP DRONE INSPECTION (zoomScale >= 2.5)
-        // Full partitioned estate: boundary wall, garden courtyard, terracotta villa, plunge pool & deed badge!
-        final plotRect = Rect.fromCenter(center: pos, width: 26, height: 26);
+      // 2. Central Homestead House (Drop Shadow & Streak Color Dot)
+      // Soft 3D aerial drop shadow
+      canvas.drawCircle(pos.translate(0.6, 0.8), 3.2, Paint()..color = Colors.black38);
 
-        // Demarcated Boundary Courtyard
-        final courtyardPaint = Paint()
-          ..color = isSel
-              ? const Color(0xFFFFD700).withValues(alpha: 0.45)
-              : const Color(0xFF14532D).withValues(alpha: 0.55);
-        canvas.drawRRect(RRect.fromRectAndRadius(plotRect, const Radius.circular(4)), courtyardPaint);
+      // House roof dot based on 90-day learning streak
+      final dotPaint = Paint()
+        ..color = isSel
+            ? const Color(0xFFFFD700)
+            : (plot.day >= 90
+                ? const Color(0xFFFFD700) // 90-Day Sovereign Gold
+                : (plot.day >= 60
+                    ? const Color(0xFF38BDF8) // 60-Day Azure High Villa
+                    : (plot.day >= 30
+                        ? const Color(0xFFFB923C) // 30-Day Warm Terracotta
+                        : Colors.white.withValues(alpha: 0.95)))); // Ivory Cottage
+      canvas.drawCircle(pos, 2.7, dotPaint);
 
-        // Low Stone Boundary Partition Wall with Property Gate
-        final boundaryWall = Paint()
-          ..color = isSel ? const Color(0xFFFFD700) : const Color(0xFFE2E8F0).withValues(alpha: 0.75)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = isSel ? 2.0 : 1.1;
-        canvas.drawRRect(RRect.fromRectAndRadius(plotRect, const Radius.circular(4)), boundaryWall);
+      // Inner roof apex / chimney glint
+      canvas.drawCircle(pos, 1.0, Paint()..color = Colors.white.withValues(alpha: 0.85));
 
-        // Private Plunge Pool / Patio in Corner
-        final poolRect = Rect.fromLTWH(plotRect.left + 2, plotRect.bottom - 8, 6, 6);
-        canvas.drawRRect(RRect.fromRectAndRadius(poolRect, const Radius.circular(1.5)), Paint()..color = const Color(0xFF38BDF8));
-
-        // Full Architectural 90-Day Habit Villa Roof
-        _drawTopDownHabitHouse(canvas, pos, plot.day, isSel);
-
-        // Plot Deed Number Badge
-        _drawPlotBadge(canvas, pos, plotNumber, isSel);
+      // 3. Golden Beacon Aura on Selected Plot
+      if (isSel) {
+        canvas.drawCircle(
+          pos,
+          13.0,
+          Paint()
+            ..color = const Color(0xFFFFD700).withValues(alpha: 0.35)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2.0,
+        );
       }
-    }
-  }
-
-  void _drawCompactHouseFootprint(Canvas canvas, Offset pos, int day, bool isSel) {
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromCenter(center: pos.translate(1.2, 1.5), width: 11, height: 9),
-        const Radius.circular(2),
-      ),
-      Paint()..color = Colors.black26,
-    );
-    final roofColor = day >= 90
-        ? const Color(0xFFD97706)
-        : (day >= 45 ? const Color(0xFFEA580C) : const Color(0xFFB45309));
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromCenter(center: pos, width: 10, height: 8),
-        const Radius.circular(1.8),
-      ),
-      Paint()..color = roofColor,
-    );
-  }
-
-  void _drawPlotBadge(Canvas canvas, Offset pos, int plotNumber, bool isSel) {
-    final tp = TextPainter(
-      text: TextSpan(
-        text: '$plotNumber',
-        style: TextStyle(
-          color: isSel ? Colors.black : Colors.white,
-          fontSize: 6.8,
-          fontWeight: FontWeight.w900,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-
-    final badgePos = pos.translate(-tp.width / 2, -16);
-    final badgeBg = RRect.fromRectAndRadius(
-      Rect.fromLTWH(badgePos.dx - 2, badgePos.dy - 1, tp.width + 4, tp.height + 2),
-      const Radius.circular(3),
-    );
-    canvas.drawRRect(badgeBg, Paint()..color = isSel ? const Color(0xFFFFD700) : Colors.black87);
-    tp.paint(canvas, badgePos);
-  }
-
-  /// 🏛️ Top-Down Habit House Roof based on Day 1-90 Progression (Matching Reference Benchmark Villas)
-  void _drawTopDownHabitHouse(Canvas canvas, Offset pos, int day, bool isSelected) {
-    // 0. Soft House Drop Shadow (giving true top-down aerial elevation)
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromCenter(center: pos.translate(2.2, 2.8), width: 15, height: 13),
-        const Radius.circular(2.5),
-      ),
-      Paint()..color = Colors.black26,
-    );
-
-    if (day <= 15) {
-      // ⛺ Stage 1 (Day 1-15): Starter Camp / Wooden Thatched Bungalow (Image #1 style)
-      final roofRect = Rect.fromCenter(center: pos, width: 13, height: 11);
-      final roofPaint = Paint()..color = const Color(0xFFB45309); // Timber thatch
-      canvas.drawRRect(RRect.fromRectAndRadius(roofRect, const Radius.circular(2)), roofPaint);
-
-      // Thatch ridge center line
-      canvas.drawLine(
-        Offset(roofRect.left + 2, pos.dy),
-        Offset(roofRect.right - 2, pos.dy),
-        Paint()..color = const Color(0xFF78350F)..strokeWidth = 1.2,
-      );
-    } else if (day <= 35) {
-      // 🏡 Stage 2 (Day 16-35): Terracotta Villa with 4-Way Hipped Roof
-      final villaRect = Rect.fromCenter(center: pos, width: 14, height: 12);
-      final roofPaint = Paint()..color = const Color(0xFFEA580C); // Warm terracotta tile
-      canvas.drawRRect(RRect.fromRectAndRadius(villaRect, const Radius.circular(2)), roofPaint);
-
-      // Hipped Roof 4-Corner Ridge Lines
-      final ridgePaint = Paint()..color = Colors.white60..strokeWidth = 0.9;
-      canvas.drawLine(villaRect.topLeft, Offset(pos.dx - 2.5, pos.dy), ridgePaint);
-      canvas.drawLine(villaRect.bottomLeft, Offset(pos.dx - 2.5, pos.dy), ridgePaint);
-      canvas.drawLine(villaRect.topRight, Offset(pos.dx + 2.5, pos.dy), ridgePaint);
-      canvas.drawLine(villaRect.bottomRight, Offset(pos.dx + 2.5, pos.dy), ridgePaint);
-      canvas.drawLine(Offset(pos.dx - 2.5, pos.dy), Offset(pos.dx + 2.5, pos.dy), ridgePaint);
-
-      // Stone chimney
-      canvas.drawCircle(pos.translate(4.0, -3.5), 1.6, Paint()..color = const Color(0xFF475569));
-    } else if (day <= 60) {
-      // 🏢 Stage 3 (Day 36-60): Crisp White Resort Villa with Turquoise Plunge Pool (Image #1 & #2 style)
-      // Villa Main Body (White Hipped Roof)
-      final villaRect = Rect.fromCenter(center: pos.translate(-3, 0), width: 13, height: 13);
-      final villaPaint = Paint()..color = const Color(0xFFF8FAFC); // Crisp white roof
-      canvas.drawRRect(RRect.fromRectAndRadius(villaRect, const Radius.circular(2)), villaPaint);
-
-      // White hip roof diagonal ridges
-      final ridge = Paint()..color = const Color(0xFFCBD5E1)..strokeWidth = 0.9;
-      canvas.drawLine(villaRect.topLeft, villaRect.bottomRight, ridge);
-      canvas.drawLine(villaRect.topRight, villaRect.bottomLeft, ridge);
-
-      // Private Turquoise Plunge Pool with White Coping Stone
-      final poolRect = Rect.fromCenter(center: pos.translate(5.8, 0), width: 6.5, height: 10.5);
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(poolRect, const Radius.circular(1.8)),
-        Paint()..color = Colors.white,
-      );
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(poolRect.deflate(0.8), const Radius.circular(1.2)),
-        Paint()..color = const Color(0xFF06B6D4), // Turquoise pool water
-      );
-    } else if (day <= 89) {
-      // 🏰 Stage 4 (Day 61-89): Luxury Glass & Ocean Villa with Expanded L-Pool
-      final manorRect = Rect.fromCenter(center: pos.translate(-3.2, 0), width: 14, height: 14);
-      final manorPaint = Paint()..color = const Color(0xFF0284C7); // Sapphire glass roof
-      canvas.drawRRect(RRect.fromRectAndRadius(manorRect, const Radius.circular(2.5)), manorPaint);
-
-      final glassGlaze = Paint()..color = Colors.white70..strokeWidth = 0.8;
-      canvas.drawLine(Offset(manorRect.left + 2, pos.dy), Offset(manorRect.right - 2, pos.dy), glassGlaze);
-      canvas.drawLine(Offset(pos.dx - 3.2, manorRect.top + 2), Offset(pos.dx - 3.2, manorRect.bottom - 2), glassGlaze);
-
-      // Large private pool
-      final poolRect = Rect.fromCenter(center: pos.translate(6.5, 0), width: 7.0, height: 13.0);
-      canvas.drawRRect(RRect.fromRectAndRadius(poolRect, const Radius.circular(2)), Paint()..color = Colors.white);
-      canvas.drawRRect(RRect.fromRectAndRadius(poolRect.deflate(0.9), const Radius.circular(1.5)), Paint()..color = const Color(0xFF22D3EE));
-    } else {
-      // 👑 Stage 5 (Day 90): Sovereign Golden Apex Palace
-      final goldPaint = Paint()..color = const Color(0xFFFFD700);
-      canvas.drawCircle(pos, 9.0, goldPaint);
-      canvas.drawCircle(pos, 5.0, Paint()..color = const Color(0xFFF59E0B));
-      canvas.drawCircle(pos, 2.2, Paint()..color = Colors.white);
     }
   }
 
@@ -1347,19 +1212,30 @@ class IslandAerialPainter extends CustomPainter {
 
     switch (style) {
       case IslandShapeStyle.crescentLagoon:
-        // 🌙 Crescent Green Belt: 2 neat parallel rows of 25 villas hugging the boulevard
-        // Outer radius of crescent is ~190, inner lagoon is ~90.
-        // Green belt is at r = 125..170. Boulevard is at r = 149.
-        // Row 1 (inner green row): r = 135.0, Row 2 (outer green row): r = 162.0.
-        for (int i = 0; i < 25; i++) {
-          final t = i / 24.0;
-          final angle = -2.15 + t * 3.70;
-          coords.add(Offset(135.0 * math.cos(angle) - 6, 135.0 * math.sin(angle) * 0.92 + 5));
+        // 🌙 Crescent Green Belt: 50 plots distributed safely across the 3 thick green sectors
+        // 1. West Green Arm (16 plots: x = -180..-140, y = -110..+15)
+        for (int i = 0; i < 16; i++) {
+          final t = i / 15.0;
+          final y = -105.0 + t * 115.0;
+          final xBase = -165.0 - math.sin(t * math.pi) * 10.0;
+          final lane = (i % 2 == 0 ? -9.5 : 9.5);
+          coords.add(Offset(xBase + lane, y));
         }
-        for (int i = 0; i < 25; i++) {
-          final t = i / 24.0;
-          final angle = -2.15 + t * 3.70;
-          coords.add(Offset(162.0 * math.cos(angle) - 6, 162.0 * math.sin(angle) * 0.92 + 5));
+        // 2. North Green Cape (18 plots: x = -105..+105, y = -185..-135)
+        for (int i = 0; i < 18; i++) {
+          final t = i / 17.0;
+          final x = -100.0 + t * 200.0;
+          final yBase = -168.0 + (x * x) / 580.0;
+          final lane = (i % 2 == 0 ? -10.0 : 10.0);
+          coords.add(Offset(x, yBase + lane));
+        }
+        // 3. East Green Peninsula (16 plots: x = 145..195, y = -75..+125)
+        for (int i = 0; i < 16; i++) {
+          final t = i / 15.0;
+          final y = -75.0 + t * 200.0;
+          final xBase = 168.0 + math.sin(t * math.pi) * 12.0;
+          final lane = (i % 2 == 0 ? -10.0 : 10.0);
+          coords.add(Offset(xBase + lane, y));
         }
         break;
 
