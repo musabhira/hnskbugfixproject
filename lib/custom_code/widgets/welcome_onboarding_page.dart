@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_pure_kids_home_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
@@ -1273,9 +1274,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           // Restore paired kid profile progress from parent's cloud account
           await PocketKidsService.loadKidProgressFromParentCloud();
 
-          final isKid =
-              await PocketKidsService.syncAndVerifyUserAccountType(
-                  user.uid ?? '');
+          final isKid = await PocketKidsService.syncAndVerifyUserAccountType(
+              user.uid ?? '');
           if (isKid && mounted) {
             setState(() {
               _loadingMessage =
@@ -1286,7 +1286,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
             await PocketGameAudioService.instance.stop();
             if (mounted) {
               Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (_) => const PocketPureKidsHomePage()),
+                MaterialPageRoute(
+                    builder: (_) => const PocketPureKidsHomePage()),
                 (route) => false,
               );
               return;

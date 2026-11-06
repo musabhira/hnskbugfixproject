@@ -123,10 +123,51 @@ class _PoketCosmosTestCenterModalState extends State<PoketCosmosTestCenterModal>
             const SizedBox(height: 10),
 
             _buildActionCard(
-              icon: '👤',
-              title: 'Full Flow: Profile Edit ➔ Born Ceremony',
-              subtitle: 'Name, Phone, DOB, Avatar setup -> Save -> Seamless Born Ceremony',
+              icon: '🪐',
+              title: 'Direct 4-Step Born Ceremony (Newborn)',
+              subtitle: 'Step 1: Planet -> Step 2: Island -> Step 3: Plot Zoom & Green Tap -> Step 4: Home & Address',
               color: const Color(0xFF38BDF8),
+              onTap: () async {
+                Navigator.pop(context);
+                await PoketCosmosAllocationService.instance.resetLocalBirthplace();
+                if (context.mounted) {
+                  await PoketCosmosBornAddressPage.launch(
+                    context,
+                    userName: 'Learner',
+                    userAvatar: '🦁',
+                    userAge: 10,
+                  );
+                }
+              },
+            ),
+            const SizedBox(height: 8),
+
+            _buildActionCard(
+              icon: '🤝',
+              title: 'Test Jupiter Referral Code (User A ➔ User B)',
+              subtitle: 'Enters PKT-JUPITER: Switches to Jupiter and reserves Plot #15 adjacent to User A!',
+              color: const Color(0xFFF59E0B),
+              onTap: () async {
+                Navigator.pop(context);
+                await PoketCosmosAllocationService.instance.resetLocalBirthplace();
+                if (context.mounted) {
+                  await PoketCosmosBornAddressPage.launch(
+                    context,
+                    userName: 'User B',
+                    userAvatar: '🦊',
+                    userAge: 11,
+                    initialInviteCode: 'PKT-JUPITER',
+                  );
+                }
+              },
+            ),
+            const SizedBox(height: 8),
+
+            _buildActionCard(
+              icon: '👤',
+              title: 'Full Flow: Profile Setup ➔ Born Ceremony',
+              subtitle: 'Name, Phone, DOB, Avatar setup -> Save -> Seamless 4-Step Born Ceremony',
+              color: const Color(0xFF10B981),
               onTap: () async {
                 Navigator.pop(context);
                 await PoketCosmosAllocationService.instance.resetLocalBirthplace();
@@ -139,47 +180,6 @@ class _PoketCosmosTestCenterModalState extends State<PoketCosmosTestCenterModal>
                         body: SafeArea(child: ProfileSetupOnboardingPage()),
                       ),
                     ),
-                  );
-                }
-              },
-            ),
-            const SizedBox(height: 8),
-
-            _buildActionCard(
-              icon: '👶',
-              title: 'Direct Born Ceremony as Newborn (Day 1)',
-              subtitle: 'God\'s Plan allocation -> Zoom -> Day 1 Cabin -> Digital Deed',
-              color: const Color(0xFF10B981),
-              onTap: () async {
-                Navigator.pop(context);
-                await PoketCosmosAllocationService.instance.resetLocalBirthplace();
-                if (context.mounted) {
-                  await PoketCosmosBornAddressPage.launch(
-                    context,
-                    userName: 'Junior Adventurer',
-                    userAvatar: '🦁',
-                    userAge: 10,
-                  );
-                }
-              },
-            ),
-            const SizedBox(height: 8),
-
-            _buildActionCard(
-              icon: '🤝',
-              title: 'Test Friend Neighbor Pass (PKT-TEST)',
-              subtitle: 'Claims Plot #12 right next to friend with 5-hour reservation',
-              color: const Color(0xFF6366F1),
-              onTap: () async {
-                final pass = await PoketCosmosAllocationService.instance.generateQuickTestFriendPass(plotNumber: 12);
-                if (context.mounted) {
-                  Navigator.pop(context);
-                  await PoketCosmosBornAddressPage.launch(
-                    context,
-                    userName: 'Friend Neighbor',
-                    userAvatar: '🦊',
-                    userAge: 11,
-                    initialInviteCode: pass.code,
                   );
                 }
               },
