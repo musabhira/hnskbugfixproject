@@ -36,6 +36,7 @@ class PoketCosmosBornAddressPage extends StatefulWidget {
     String userAvatar = '🦁',
     int? userAge,
     String? initialInviteCode,
+    String? inviteCode,
   }) {
     return Navigator.of(context).push(
       MaterialPageRoute(
@@ -43,7 +44,7 @@ class PoketCosmosBornAddressPage extends StatefulWidget {
           userName: userName,
           userAvatar: userAvatar,
           userAge: userAge,
-          initialInviteCode: initialInviteCode,
+          initialInviteCode: initialInviteCode ?? inviteCode,
         ),
       ),
     );

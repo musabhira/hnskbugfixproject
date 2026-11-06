@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_born_address_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_navigator_page.dart';
-import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 
 /// 🪐 Poket Cosmos Testing & Demo Center Modal
 /// Allows pairs/testers/admins to:
@@ -156,7 +155,7 @@ class _PoketCosmosTestCenterModalState extends State<PoketCosmosTestCenterModal>
                     userName: 'Friend Neighbor',
                     userAvatar: '🦊',
                     userAge: 11,
-                    inviteCode: pass.code,
+                    initialInviteCode: pass.code,
                   );
                 }
               },
@@ -456,3 +455,4 @@ class _PoketCosmosTestCenterModalState extends State<PoketCosmosTestCenterModal>
     );
   }
 }
+

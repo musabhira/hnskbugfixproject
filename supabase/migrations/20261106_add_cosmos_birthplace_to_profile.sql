@@ -59,3 +59,4 @@ SET
 FROM numbered_existing_users neu
 JOIN island_catalog ic ON ic.island_idx = ((neu.row_idx / 35) % 10)
 WHERE p.id = neu.id;
+
