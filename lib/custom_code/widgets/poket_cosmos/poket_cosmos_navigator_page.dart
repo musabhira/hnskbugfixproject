@@ -111,7 +111,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
           final rawName = (map['name'] as String?)?.trim();
           final userName = (rawName != null && rawName.isNotEmpty)
               ? rawName
-              : IslandAerialPainter.fallbackCitizenNames[idx % IslandAerialPainter.fallbackCitizenNames.length];
+              : IslandAerialPainter.fallbackCitizenNames[
+                  idx % IslandAerialPainter.fallbackCitizenNames.length];
           final day = (map['day'] as num?)?.toInt() ??
               (map['learning_day'] as num?)?.toInt() ??
               1;
@@ -133,7 +134,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
               postOffice: island.name,
               countryName: island.name,
               planetName: 'Earth Prime',
-              coordinates: coords[idx % coords.length],
+              coordinates: coords[idx % coords.length] +
+                  IslandAerialPainter.getHousePlacementOffset(idx + 1),
               isVip: isVip,
               isPresident: isPres,
               tier: island.isPresidential
@@ -153,7 +155,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
       // All plots have authentic citizen names (NO "#Plot 7")
       final currentCount = plots.length;
       for (int i = currentCount; i < island.totalSlots && i < 35; i++) {
-        final fallbackName = IslandAerialPainter.fallbackCitizenNames[i % IslandAerialPainter.fallbackCitizenNames.length];
+        final fallbackName = IslandAerialPainter.fallbackCitizenNames[
+            i % IslandAerialPainter.fallbackCitizenNames.length];
         plots.add(
           CitizenPlot(
             plotNumber: i + 1,
@@ -166,7 +169,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
             postOffice: island.name,
             countryName: island.name,
             planetName: 'Earth Prime',
-            coordinates: coords[i % coords.length],
+            coordinates: coords[i % coords.length] +
+                IslandAerialPainter.getHousePlacementOffset(i + 1),
             status: PlotStatus.occupied,
             postalPinCode:
                 'PK-${island.id.toString().padLeft(2, '0')}${(i + 1).toString().padLeft(3, '0')}',
@@ -1357,7 +1361,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
   Widget _buildFlameOrbitContent() {
     return InteractiveViewer(
       transformationController: _orbitInteractiveController,
-      minScale: 0.16, // Zoom all the way out to comfortably see Pluto and Kepler-452b
+      minScale:
+          0.16, // Zoom all the way out to comfortably see Pluto and Kepler-452b
       maxScale: 4.0,
       boundaryMargin: const EdgeInsets.all(600),
       child: SizedBox(
@@ -1412,7 +1417,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                   borderRadius: BorderRadius.circular(16),
                   onTap: () => _navigateToPlanetArchipelago(p),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 12),
                     child: Row(
                       children: [
                         // 3D Spherical Planetary Icon (with atmospheric shading & rings)
@@ -1567,7 +1573,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                                         decoration: BoxDecoration(
                                           color: sat.primaryColor
                                               .withValues(alpha: 0.22),
-                                          borderRadius: BorderRadius.circular(4),
+                                          borderRadius:
+                                              BorderRadius.circular(4),
                                           border: Border.all(
                                               color: sat.primaryColor
                                                   .withValues(alpha: 0.5),
@@ -1969,7 +1976,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                 final screenWidth = constraints.maxWidth;
                 final screenHeight = constraints.maxHeight;
                 final worldHeight = screenHeight * 1.45;
-                final worldWidth = math.max(screenWidth * 2.8, screenHeight * 2.2);
+                final worldWidth =
+                    math.max(screenWidth * 2.8, screenHeight * 2.2);
                 final minScale = screenHeight / worldHeight;
                 const focusScale = 1.15;
                 final focusX = -(worldWidth * focusScale - screenWidth) / 2;
@@ -1978,7 +1986,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                 // Auto-center island on entry at focused scale (never starts uninitialized or void)
                 if (_aerialMapZoomController.value == Matrix4.identity()) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (mounted && _aerialMapZoomController.value == Matrix4.identity()) {
+                    if (mounted &&
+                        _aerialMapZoomController.value == Matrix4.identity()) {
                       _aerialMapZoomController.value =
                           Matrix4.translationValues(focusX, focusY, 0.0)
                             ..scaleByDouble(focusScale, focusScale, 1.0, 1.0);
@@ -1990,8 +1999,10 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                   transformationController: _aerialMapZoomController,
                   constrained: false,
                   boundaryMargin: EdgeInsets.zero,
-                  minScale: minScale, // Strictly locked to screen height! Never shrinks into a card box!
-                  maxScale: 20.0, // Ultra-deep habit house, nameplate board, car & pool inspection
+                  minScale:
+                      minScale, // Strictly locked to screen height! Never shrinks into a card box!
+                  maxScale:
+                      20.0, // Ultra-deep habit house, nameplate board, car & pool inspection
                   clipBehavior: Clip.none,
                   child: SizedBox(
                     width: worldWidth,
@@ -2073,7 +2084,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                   ),
                   // 🎵 Ambient Music / Audio Toggle Button (Central BGM Loop Engine)
                   ValueListenableBuilder<bool>(
-                    valueListenable: PocketGameAudioService.instance.isMutedNotifier,
+                    valueListenable:
+                        PocketGameAudioService.instance.isMutedNotifier,
                     builder: (context, isMuted, _) {
                       final isPlaying = !isMuted;
                       return InkWell(
@@ -2095,12 +2107,14 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                               horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
                             color: isPlaying
-                                ? const Color(0xFF38BDF8).withValues(alpha: 0.18)
+                                ? const Color(0xFF38BDF8)
+                                    .withValues(alpha: 0.18)
                                 : Colors.white.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: isPlaying
-                                  ? const Color(0xFF38BDF8).withValues(alpha: 0.6)
+                                  ? const Color(0xFF38BDF8)
+                                      .withValues(alpha: 0.6)
                                   : Colors.white24,
                             ),
                           ),
@@ -2240,14 +2254,19 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                       final wW = math.max(sW * 2.8, sH * 2.2);
                       const targetScale = 14.0;
 
-                      final coords = IslandAerialPainter.get35PlotCoordinates(island.shapeStyle);
-                      final targetPlotCoord = (_inspectedPlot != null && coords.isNotEmpty)
+                      final coords = IslandAerialPainter.get35PlotCoordinates(
+                          island.shapeStyle);
+                      final targetPlotCoord = (_inspectedPlot != null &&
+                              coords.isNotEmpty)
                           ? _inspectedPlot!.coordinates
                           : (coords.isNotEmpty ? coords.first : Offset.zero);
 
-                      final painterScale = ((wH / 850.0) * 1.15).clamp(0.95, 1.50);
-                      final targetWorldX = wW / 2 + targetPlotCoord.dx * painterScale;
-                      final targetWorldY = wH / 2 + targetPlotCoord.dy * painterScale;
+                      final painterScale =
+                          ((wH / 850.0) * 1.15).clamp(0.95, 1.50);
+                      final targetWorldX =
+                          wW / 2 + targetPlotCoord.dx * painterScale;
+                      final targetWorldY =
+                          wH / 2 + targetPlotCoord.dy * painterScale;
 
                       final dx = -(targetWorldX * targetScale - sW / 2);
                       final dy = -(targetWorldY * targetScale - sH / 2);

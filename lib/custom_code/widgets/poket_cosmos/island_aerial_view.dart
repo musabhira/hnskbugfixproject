@@ -1165,12 +1165,33 @@ class IslandAerialPainter extends CustomPainter {
     return fallbackCitizenNames[idx];
   }
 
+  static Offset getHousePlacementOffset(int plotNumber) {
+    final int variation = (plotNumber * 7) % 8;
+    switch (variation) {
+      case 0:
+        return Offset.zero; // Natural center
+      case 1:
+        return const Offset(6.0, -4.5); // Deep north-east corner
+      case 2:
+        return const Offset(-5.5, 4.0); // South-west corner
+      case 3:
+        return const Offset(6.5, 1.5); // East side
+      case 4:
+        return const Offset(-6.0, -2.0); // West side
+      case 5:
+        return const Offset(-4.5, -5.0); // North-west nook
+      case 6:
+        return const Offset(3.0, 5.0); // South-east nook
+      case 7:
+      default:
+        return const Offset(-2.0, 4.0); // South nook
+    }
+  }
+
   // =========================================================================
-  // 11. 35 ARCHITECTURAL HABIT HOMESTEADS (NATURAL CONTINUOUS ZOOM - NO IFS!)
-  // Directly drawn onto canvas at realistic true scale alongside trees & boats.
-  // When viewed from high altitude (overview), houses appear naturally small.
-  // As the user pinches to zoom in, camera magnification smoothly reveals
-  // every architectural detail: cars, pools, gazebos, paths, and citizen nameplates!
+  // 11. 35 ARCHITECTURAL HABIT HOMESTEADS (PETITE, SCATTERED & CONTINUOUS ZOOM)
+  // Scaled down to petite proportions (~58%) so houses sit gracefully with plenty
+  // of lush green lawn and trees around them. Scattered organically across each territory.
   // =========================================================================
   void _drawCitizenPlots(Canvas canvas) {
     final List<Offset> positions = get35PlotCoordinates(island.shapeStyle);
@@ -1194,38 +1215,20 @@ class IslandAerialPainter extends CustomPainter {
               postOffice: island.name,
               countryName: island.name,
               planetName: 'Earth Prime',
-              coordinates: pos,
+              coordinates: pos + getHousePlacementOffset(plotNumber),
             );
 
       final day = plot.day;
-
-      // Natural, organic placement within the district (സെന്ററിൽ, സൈഡിൽ, മൂലയിൽ)
-      // Varies between center, east, west, north-east, south-west, north-west
-      final int variation = (plotNumber * 7) % 6;
-      Offset houseOffset;
-      switch (variation) {
-        case 0:
-          houseOffset = Offset.zero; // Center
-          break;
-        case 1:
-          houseOffset = const Offset(4.0, -3.2); // North-east nook
-          break;
-        case 2:
-          houseOffset = const Offset(-4.0, 2.8); // South-west nook
-          break;
-        case 3:
-          houseOffset = const Offset(4.5, 1.2); // East side
-          break;
-        case 4:
-          houseOffset = const Offset(-4.2, -1.5); // West side
-          break;
-        case 5:
-        default:
-          houseOffset = const Offset(-2.0, -3.6); // North-west corner
-          break;
-      }
+      final houseOffset = getHousePlacementOffset(plotNumber);
       final housePos = pos + houseOffset;
       final parcelRect = Rect.fromCenter(center: housePos, width: 34.0, height: 28.0);
+
+      // 🏡 Scale the house compound down cleanly (58% petite scale)
+      // Creates abundant green breathing space and expansive island feel!
+      canvas.save();
+      canvas.translate(housePos.dx, housePos.dy);
+      canvas.scale(0.58);
+      canvas.translate(-housePos.dx, -housePos.dy);
 
       // 1. Driveway & Parked Vehicle (കാർപോർച്ചും വാഹനങ്ങളും - വ്യത്യസ്ത കാറുകൾ)
       _drawDrivewayAndCar(canvas, parcelRect, day, plotNumber);
@@ -1255,18 +1258,20 @@ class IslandAerialPainter extends CustomPainter {
       canvas.drawCircle(petPos, 0.95, Paint()..color = petColor);
       canvas.drawCircle(petPos.translate(0.5, 0.25), 0.6, Paint()..color = petColor);
 
+      canvas.restore();
+
       // 7. Golden Selection Beacon Aura
       if (isSel) {
         canvas.drawCircle(
           housePos,
-          18.0,
+          13.0,
           Paint()
             ..color = const Color(0xFFFFD700).withValues(alpha: 0.28)
             ..style = PaintingStyle.fill,
         );
         canvas.drawCircle(
           housePos,
-          18.0,
+          13.0,
           Paint()
             ..color = const Color(0xFFFFD700)
             ..style = PaintingStyle.stroke
@@ -1489,12 +1494,12 @@ class IslandAerialPainter extends CustomPainter {
   // 6. Estate Entrance Nameplate Signboard (ഒരു ബോർഡ് വെച്ചിട്ട് യൂസർ നെയിം എന്ന് എഴുതിയിട്ടുണ്ടാവും)
   void _drawEstateNameBoard(Canvas canvas, Rect parcelRect, CitizenPlot plot, bool isSel) {
     final boardCenter = Offset(parcelRect.left + 14.0, parcelRect.bottom - 2.8);
-    final boardRect = Rect.fromCenter(center: boardCenter, width: 18.0, height: 4.8);
+    final boardRect = Rect.fromCenter(center: boardCenter, width: 22.0, height: 5.6);
 
     // Signpost wooden/slate legs
-    final postPaint = Paint()..color = const Color(0xFF334155)..strokeWidth = 0.7;
-    canvas.drawLine(Offset(boardRect.left + 2.0, boardRect.bottom), Offset(boardRect.left + 2.0, boardRect.bottom + 2.2), postPaint);
-    canvas.drawLine(Offset(boardRect.right - 2.0, boardRect.bottom), Offset(boardRect.right - 2.0, boardRect.bottom + 2.2), postPaint);
+    final postPaint = Paint()..color = const Color(0xFF334155)..strokeWidth = 0.8;
+    canvas.drawLine(Offset(boardRect.left + 2.0, boardRect.bottom), Offset(boardRect.left + 2.0, boardRect.bottom + 2.4), postPaint);
+    canvas.drawLine(Offset(boardRect.right - 2.0, boardRect.bottom), Offset(boardRect.right - 2.0, boardRect.bottom + 2.4), postPaint);
 
     // Signboard shadow & body
     canvas.drawRRect(
@@ -1511,7 +1516,7 @@ class IslandAerialPainter extends CustomPainter {
       Paint()
         ..color = isSel ? const Color(0xFFFFD700) : const Color(0xFF94A3B8).withValues(alpha: 0.8)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = isSel ? 0.8 : 0.45,
+        ..strokeWidth = isSel ? 0.9 : 0.55,
     );
 
     // Real Citizen Name Text on Estate Board (No "#Plot 7", genuine names on signboards)
@@ -1522,7 +1527,7 @@ class IslandAerialPainter extends CustomPainter {
         text: label,
         style: TextStyle(
           color: isSel ? const Color(0xFFFFD700) : Colors.white,
-          fontSize: 2.3,
+          fontSize: 3.0,
           fontWeight: FontWeight.bold,
           letterSpacing: 0.2,
         ),
