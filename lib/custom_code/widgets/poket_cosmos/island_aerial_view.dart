@@ -105,6 +105,38 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
   }
 }
 
+// =============================================================================
+// 🏝️ 5 ROCK-SOLID NATURAL ISLAND ARCHETYPES (Spacious, Organic & 100% Solid)
+// Zero thin necks, zero houses falling into the ocean!
+// =============================================================================
+enum IslandArchetype {
+  naturalOval,    // 1. Broad Continental Oval with natural coastal coves
+  capePeninsula,  // 2. Wide Northern Mainland tapering to expansive Southern Cape
+  horseshoeBay,   // 3. Thick U-shaped Horseshoe Island around calm turquoise bay
+  twinSanctuary,  // 4. Two broad circular highlands joined by massive central bridge
+  citadelPlateau, // 5. Royal Hexagonal Bastion Citadel
+}
+
+IslandArchetype getIslandArchetype(IslandShapeStyle style) {
+  switch (style) {
+    case IslandShapeStyle.ringAtoll:
+    case IslandShapeStyle.cloverBays:
+      return IslandArchetype.naturalOval;
+    case IslandShapeStyle.hookPeninsula:
+    case IslandShapeStyle.heartSanctuary:
+      return IslandArchetype.capePeninsula;
+    case IslandShapeStyle.crescentLagoon:
+    case IslandShapeStyle.starAtoll:
+      return IslandArchetype.horseshoeBay;
+    case IslandShapeStyle.dualIsletBridge:
+    case IslandShapeStyle.sCurveArchipelago:
+      return IslandArchetype.twinSanctuary;
+    case IslandShapeStyle.fortressPlateau:
+    case IslandShapeStyle.citadelApex:
+      return IslandArchetype.citadelPlateau;
+  }
+}
+
 /// 🎨 Island Aerial CustomPainter with Expansive Green Terrains & Safe In-Land Habit Plots
 class IslandAerialPainter extends CustomPainter {
   final PoketCountryMap island;
@@ -125,6 +157,13 @@ class IslandAerialPainter extends CustomPainter {
 
   double get animProgress => animation?.value ?? 0.0;
   double get timeSeconds => animProgress * 40.0;
+
+  bool get isMoon => island.name.toLowerCase().contains('moon') || island.waterColor.toARGB32() == 0xFF0F172A;
+  bool get isMars => island.name.toLowerCase().contains('mars') || island.climate.contains('Rusty');
+  bool get isJupiter => island.name.toLowerCase().contains('jupiter');
+  bool get isSaturn => island.name.toLowerCase().contains('saturn');
+  bool get isPluto => island.name.toLowerCase().contains('pluto');
+  bool get isVenus => island.name.toLowerCase().contains('venus');
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -153,8 +192,8 @@ class IslandAerialPainter extends CustomPainter {
     // 4. Sandy Golden Shoreline Beach with Wet Sand Margin
     _drawSandyBeach(canvas);
 
-    // 5. Expansive Lush Tropical Green Island Body (Generous landmass)
-    _drawGreenIslandBody(canvas);
+    // 5. Expansive Authentic Planetary Island Terrain (Generous landmass & authentic planetary ground)
+    _drawIslandTerrainBody(canvas);
 
     // 5b. 35 Territorial Districts (State/District Map Partition with Border Lines!)
     // Like US / Indian states on a map, entire island is partitioned into 35 contiguous districts!
@@ -290,153 +329,121 @@ class IslandAerialPainter extends CustomPainter {
   }
 
   // =========================================================================
-  // 🏝️ EXPANSIVE ISLAND PATH GEOMETRIES (Large Landmass)
+  // 🏝️ 5 ROCK-SOLID EXPANSIVE NATURAL ISLAND ARCHETYPES (100% Solid & Safe)
+  // Replaces narrow/broken S-curves. Seed-based gentle harmonics make each island unique!
   // =========================================================================
   Path _getIslandPath() {
-    final path = Path();
-
     if (island.isPresidential || island.shapeStyle == IslandShapeStyle.citadelApex) {
-      // 👑 Symmetrical Imperial Octagonal Island
-      const r = 135.0;
-      for (int i = 0; i < 8; i++) {
-        final angle = (i * math.pi / 4) - math.pi / 8;
-        final x = r * math.cos(angle);
-        final y = r * math.sin(angle);
-        if (i == 0) {
-          path.moveTo(x, y);
-        } else {
-          path.lineTo(x, y);
-        }
+      return _buildCitadelPlateauPath(island.id);
+    }
+
+    final seed = island.shapeSeed != 0 ? island.shapeSeed : island.id;
+    final archetype = getIslandArchetype(island.shapeStyle);
+
+    switch (archetype) {
+      case IslandArchetype.naturalOval:
+        return _buildNaturalOvalPath(seed);
+      case IslandArchetype.capePeninsula:
+        return _buildCapePeninsulaPath(seed);
+      case IslandArchetype.horseshoeBay:
+        return _buildHorseshoeBayPath(seed);
+      case IslandArchetype.twinSanctuary:
+        return _buildTwinSanctuaryPath(seed);
+      case IslandArchetype.citadelPlateau:
+        return _buildCitadelPlateauPath(seed);
+    }
+  }
+
+  // 1. Broad Continental Oval with natural coastal coves
+  Path _buildNaturalOvalPath(int seed) {
+    final path = Path();
+    const count = 36;
+    for (int i = 0; i <= count; i++) {
+      final a = (i / count) * 2 * math.pi;
+      final delta = math.sin(a * 3.0 + seed * 1.5) * 6.5 + math.cos(a * 5.0 + seed * 0.8) * 4.0;
+      final rx = 195.0 + delta;
+      final ry = 155.0 + delta * 0.8;
+      final x = rx * math.cos(a);
+      final y = ry * math.sin(a);
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
       }
-      path.close();
-      return path;
     }
+    path.close();
+    return path;
+  }
 
-    switch (island.shapeStyle) {
-      case IslandShapeStyle.crescentLagoon:
-        // 🌙 Wide C-shaped Crescent wrapping around turquoise lagoon
-        path.moveTo(-160, -120);
-        path.cubicTo(-90, -210, 115, -200, 180, -90);
-        path.cubicTo(225, 15, 190, 140, 110, 185);
-        path.cubicTo(65, 205, 15, 160, 45, 115);
-        path.cubicTo(95, 45, 100, -45, 30, -90);
-        path.cubicTo(-35, -120, -110, -75, -130, -20);
-        path.cubicTo(-150, 20, -195, 30, -200, -20);
-        path.cubicTo(-210, -80, -190, -110, -160, -120);
-        path.close();
-        break;
-
-      case IslandShapeStyle.sCurveArchipelago:
-        // 🐉 Expansive S-Curve Dragon Island (Image 3 Style) - Wide 110px tropical landmass
-        path.moveTo(-60, -185);
-        path.cubicTo(-10, -210, 60, -185, 85, -140);
-        path.cubicTo(115, -90, 110, -20, 55, 25);
-        path.cubicTo(10, 60, 10, 110, 50, 150);
-        path.cubicTo(85, 185, 95, 205, 75, 225);
-        path.cubicTo(45, 245, -45, 240, -75, 200);
-        path.cubicTo(-110, 155, -95, 80, -45, 35);
-        path.cubicTo(10, -5, 10, -60, -30, -100);
-        path.cubicTo(-68, -135, -88, -165, -60, -185);
-        path.close();
-        break;
-
-      case IslandShapeStyle.starAtoll:
-        // ⭐ Expansive 5-Pointed Tropical Coral Star Island
-        const int points = 5;
-        const outerR = 185.0;
-        const innerR = 100.0;
-        for (int i = 0; i < points * 2; i++) {
-          final r = i.isEven ? outerR : innerR;
-          final angle = (i * math.pi / points) - math.pi / 2;
-          final x = r * math.cos(angle);
-          final y = r * math.sin(angle);
-          if (i == 0) {
-            path.moveTo(x, y);
-          } else {
-            path.quadraticBezierTo(
-              (r * 0.9) * math.cos(angle - 0.2),
-              (r * 0.9) * math.sin(angle - 0.2),
-              x,
-              y,
-            );
-          }
-        }
-        path.close();
-        break;
-
-      case IslandShapeStyle.dualIsletBridge:
-        // 🏝️-🏝️ Two Large Twin Islands linked by arched land bridge
-        path.moveTo(-190, -90);
-        path.cubicTo(-115, -165, -45, -125, -30, -45);
-        path.lineTo(30, -35); // Bridge north
-        path.cubicTo(45, -125, 125, -155, 190, -80);
-        path.cubicTo(240, -15, 220, 105, 150, 155);
-        path.cubicTo(80, 190, 35, 125, 30, 45);
-        path.lineTo(-30, 35); // Bridge south
-        path.cubicTo(-45, 125, -115, 175, -180, 125);
-        path.cubicTo(-240, 75, -240, -30, -190, -90);
-        path.close();
-        break;
-
-      case IslandShapeStyle.ringAtoll:
-        // ⭕ Expansive Circular Ring Atoll with wide green belt
-        path.moveTo(-170, -140);
-        path.cubicTo(-75, -215, 95, -200, 175, -120);
-        path.cubicTo(240, -35, 225, 110, 160, 175);
-        path.cubicTo(90, 225, -90, 210, -170, 145);
-        path.cubicTo(-235, 75, -235, -65, -170, -140);
-        path.close();
-        break;
-
-      case IslandShapeStyle.hookPeninsula:
-        // 🪝 Broad J-Shaped Hook Peninsula
-        path.moveTo(-75, -200);
-        path.cubicTo(0, -215, 75, -165, 80, -75);
-        path.cubicTo(90, 30, 110, 125, 185, 155);
-        path.cubicTo(230, 175, 210, 230, 140, 230);
-        path.cubicTo(50, 230, 0, 170, -15, 80);
-        path.cubicTo(-30, -15, -40, -90, -110, -120);
-        path.cubicTo(-170, -140, -150, -215, -75, -200);
-        path.close();
-        break;
-
-      case IslandShapeStyle.heartSanctuary:
-        // 💖 Spacious Heart-Shaped Tropical Island
-        path.moveTo(0, -75);
-        path.cubicTo(55, -180, 185, -165, 185, -45);
-        path.cubicTo(185, 65, 90, 140, 0, 215);
-        path.cubicTo(-90, 140, -185, 65, -185, -45);
-        path.cubicTo(-185, -165, -55, -180, 0, -75);
-        path.close();
-        break;
-
-      case IslandShapeStyle.cloverBays:
-        // 🍀 Broad 3-Leaf Clover Island
-        path.moveTo(0, -200);
-        path.cubicTo(105, -200, 105, -65, 45, -30);
-        path.cubicTo(140, 0, 195, 120, 105, 185);
-        path.cubicTo(30, 225, 0, 110, 0, 65);
-        path.cubicTo(0, 110, -30, 225, -105, 185);
-        path.cubicTo(-195, 120, -140, 0, -45, -30);
-        path.cubicTo(-105, -65, -105, -200, 0, -200);
-        path.close();
-        break;
-
-      case IslandShapeStyle.fortressPlateau:
-        // 🛡️ Spacious Hexagonal Plateau
-        path.moveTo(0, -190);
-        path.lineTo(185, -65);
-        path.lineTo(165, 110);
-        path.lineTo(0, 200);
-        path.lineTo(-165, 110);
-        path.lineTo(-185, -65);
-        path.close();
-        break;
-
-      case IslandShapeStyle.citadelApex:
-        break;
+  // 2. Wide Northern Mainland tapering to expansive Southern Cape
+  Path _buildCapePeninsulaPath(int seed) {
+    final path = Path();
+    const count = 36;
+    for (int i = 0; i <= count; i++) {
+      final a = (i / count) * 2 * math.pi;
+      final taper = (math.sin(a) + 1.0) * 0.5; // 0 north, 1 south
+      final baseRx = 188.0 - taper * 52.0; // 188 down to 136px
+      final baseRy = 162.0;
+      final delta = math.sin(a * 4.0 + seed * 1.2) * 5.5 + math.cos(a * 2.0 + seed * 0.9) * 4.0;
+      final x = (baseRx + delta) * math.cos(a);
+      final y = (baseRy + delta * 0.7) * math.sin(a);
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
     }
+    path.close();
+    return path;
+  }
 
+  // 3. Thick U-shaped Horseshoe Island around calm turquoise bay (110px thick arms!)
+  Path _buildHorseshoeBayPath(int seed) {
+    final path = Path();
+    final d = math.sin(seed * 0.7) * 4.0;
+    path.moveTo(-185 + d, -125);
+    path.cubicTo(-185, -185, 185, -185, 185 - d, -125);
+    path.cubicTo(195, 25, 165, 155, 100, 165);
+    path.cubicTo(45, 170, 35, 115, 55, 55);
+    // Inner sheltered cove
+    path.cubicTo(70, -25, -70, -25, -55, 55);
+    path.cubicTo(-35, 115, -45, 170, -100, 165);
+    path.cubicTo(-165, 155, -195, 25, -185 + d, -125);
+    path.close();
+    return path;
+  }
+
+  // 4. Two broad circular highlands joined by massive central bridge (Replaces S-curve)
+  Path _buildTwinSanctuaryPath(int seed) {
+    final path = Path();
+    final d = math.cos(seed * 1.1) * 4.0;
+    path.moveTo(-190, -95);
+    path.cubicTo(-190, -165, -65, -165, -35, -95 + d);
+    path.cubicTo(-20, -55, 20, -55, 35, -95 - d);
+    path.cubicTo(65, -165, 190, -165, 190, -95);
+    path.cubicTo(200, 35, 145, 155, 75, 145);
+    path.cubicTo(25, 85, -25, 85, -75, 145);
+    path.cubicTo(-145, 155, -200, 35, -190, -95);
+    path.close();
+    return path;
+  }
+
+  // 5. Royal Hexagonal Bastion Citadel
+  Path _buildCitadelPlateauPath(int seed) {
+    final path = Path();
+    const count = 8;
+    const r = 168.0;
+    for (int i = 0; i < count; i++) {
+      final a = (i * math.pi / 4) - math.pi / 8;
+      final x = r * math.cos(a);
+      final y = r * math.sin(a);
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
+    path.close();
     return path;
   }
 
@@ -475,22 +482,27 @@ class IslandAerialPainter extends CustomPainter {
   void _drawSandyBeach(Canvas canvas) {
     final islandPath = _getIslandPath();
 
-    // Planet-responsive beach sand tone:
-    // Moon: Platinum/silver lunar regolith dust
-    // Mars: Terracotta copper sand
-    // Earth: Warm golden tropical sand
-    Color beachSandColor = const Color(0xFFFDE68A);
-    Color wetSandColor = const Color(0xFFF59E0B).withValues(alpha: 0.55);
+    Color beachSandColor;
+    Color wetSandColor;
 
-    if (island.name.toLowerCase().contains('moon') || island.waterColor.toARGB32() == 0xFF0F172A) {
+    if (isMoon) {
       beachSandColor = const Color(0xFFCBD5E1); // Silver lunar dust
-      wetSandColor = const Color(0xFF94A3B8).withValues(alpha: 0.55);
-    } else if (island.name.toLowerCase().contains('mars') || island.climate.contains('Rusty')) {
-      beachSandColor = const Color(0xFFFDBA74); // Warm copper sand
-      wetSandColor = const Color(0xFFEA580C).withValues(alpha: 0.55);
-    } else if (island.name.toLowerCase().contains('jupiter')) {
+      wetSandColor = const Color(0xFF94A3B8).withValues(alpha: 0.60);
+    } else if (isMars) {
+      beachSandColor = const Color(0xFFFDBA74); // Terracotta copper sand
+      wetSandColor = const Color(0xFFEA580C).withValues(alpha: 0.60);
+    } else if (isJupiter) {
       beachSandColor = const Color(0xFFFDE047); // Golden brass shoreline
-      wetSandColor = const Color(0xFFD97706).withValues(alpha: 0.55);
+      wetSandColor = const Color(0xFFD97706).withValues(alpha: 0.60);
+    } else if (isSaturn) {
+      beachSandColor = const Color(0xFFFEF08A); // Pale rose-gold sand
+      wetSandColor = const Color(0xFFCA8A04).withValues(alpha: 0.60);
+    } else if (isPluto) {
+      beachSandColor = const Color(0xFFF1F5F9); // Glacial ice crystal shore
+      wetSandColor = const Color(0xFF94A3B8).withValues(alpha: 0.60);
+    } else {
+      beachSandColor = const Color(0xFFFDE68A); // Earth golden tropical sand
+      wetSandColor = const Color(0xFFF59E0B).withValues(alpha: 0.55);
     }
 
     // Main sand beach rim
@@ -510,23 +522,54 @@ class IslandAerialPainter extends CustomPainter {
     canvas.drawPath(islandPath, wetSandPaint);
   }
 
-  void _drawGreenIslandBody(Canvas canvas) {
+  void _drawIslandTerrainBody(Canvas canvas) {
     final islandPath = _getIslandPath();
 
-    // Preserve lush vibrant green base while harmonizing with planetary biome
-    // (User: "പച്ചപ്പൊക്കെ അടിയിൽ വേണം. ഇല്ലാന്നല്ല. പക്ഷെ ചെറിയൊരു ഡിഫറൻസ് വേണം")
-    final sunlitGreen = Color.lerp(const Color(0xFF4ADE80), island.landColor, 0.20) ?? const Color(0xFF4ADE80);
-    final coreGreen = Color.lerp(const Color(0xFF16A34A), island.landColor, 0.25) ?? const Color(0xFF16A34A);
-    final deepForestGreen = Color.lerp(const Color(0xFF14532D), island.landColor, 0.35) ?? const Color(0xFF14532D);
+    Color sunlitColor;
+    Color coreColor;
+    Color deepColor;
+
+    if (isMoon) {
+      // 🌕 Authentic Lunar Regolith Slate
+      sunlitColor = const Color(0xFF64748B);
+      coreColor = const Color(0xFF475569);
+      deepColor = const Color(0xFF334155);
+    } else if (isMars) {
+      // 🔴 Authentic Martian Iron Rust Red
+      sunlitColor = const Color(0xFFC2410C);
+      coreColor = const Color(0xFF9A3412);
+      deepColor = const Color(0xFF7C2D12);
+    } else if (isJupiter) {
+      // 🟠 Authentic Jovian Banded Amber
+      sunlitColor = const Color(0xFFD97706);
+      coreColor = const Color(0xFFB45309);
+      deepColor = const Color(0xFF78350F);
+    } else if (isSaturn) {
+      // 🪐 Golden Sandstone & Deep Bronze
+      sunlitColor = const Color(0xFFCA8A04);
+      coreColor = const Color(0xFF854D0E);
+      deepColor = const Color(0xFF713F12);
+    } else if (isPluto) {
+      // ❄️ Glacial Nitrogen Ice Slate
+      sunlitColor = const Color(0xFFE2E8F0);
+      coreColor = const Color(0xFF64748B);
+      deepColor = const Color(0xFF475569);
+    } else if (isVenus) {
+      // 🟡 Sulfuric Volcanic Ochre
+      sunlitColor = const Color(0xFFF59E0B);
+      coreColor = const Color(0xFFB45309);
+      deepColor = const Color(0xFF78350F);
+    } else {
+      // 🌍 Earth Prime: Lush Emerald Green Paradise
+      sunlitColor = const Color(0xFF4ADE80);
+      coreColor = island.landColor;
+      deepColor = Color.lerp(island.landColor, const Color(0xFF064E3B), 0.52) ?? const Color(0xFF14532D);
+    }
 
     final landGradient = RadialGradient(
       center: const Alignment(-0.15, -0.22),
       radius: 0.98,
-      colors: [
-        sunlitGreen,     // Sunlit vibrant lush green
-        coreGreen,       // Island signature green
-        deepForestGreen, // Rich deep forest edge
-      ],
+      colors: [sunlitColor, coreColor, deepColor],
       stops: const [0.0, 0.52, 1.0],
     );
 
@@ -535,11 +578,46 @@ class IslandAerialPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     canvas.drawPath(islandPath, landPaint);
+
+    // 🌕 Authentic Lunar Craters on the Moon!
+    if (isMoon) {
+      _drawLunarCraters(canvas, islandPath);
+    }
+  }
+
+  // 🌕 Authentic Soft Circular Lunar Impact Craters on the Moon
+  void _drawLunarCraters(Canvas canvas, Path islandPath) {
+    canvas.save();
+    canvas.clipPath(islandPath);
+
+    final craterPaint = Paint()..color = const Color(0xFF1E293B).withValues(alpha: 0.45);
+    final craterRim = Paint()
+      ..color = const Color(0xFF94A3B8).withValues(alpha: 0.55)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+
+    const craters = [
+      (Offset(-115, -75), 18.0),
+      (Offset(125, -60), 22.0),
+      (Offset(-85, 85), 16.0),
+      (Offset(105, 80), 19.0),
+      (Offset(-25, -100), 14.0),
+      (Offset(30, 95), 15.0),
+    ];
+
+    for (final c in craters) {
+      canvas.drawCircle(c.$1, c.$2, craterPaint);
+      canvas.drawCircle(c.$1, c.$2, craterRim);
+      canvas.drawCircle(c.$1.translate(-1.0, -1.0), c.$2 * 0.28, Paint()..color = const Color(0xFF64748B));
+    }
+
+    canvas.restore();
   }
 
   void _drawInteriorWaterBody(Canvas canvas) {
     if (island.isPresidential) return;
 
+    final archetype = getIslandArchetype(island.shapeStyle);
     final lagoonPaint = Paint()
       ..color = const Color(0xFF06B6D4).withValues(alpha: 0.90)
       ..style = PaintingStyle.fill;
@@ -554,15 +632,16 @@ class IslandAerialPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.4;
 
-    if (island.shapeStyle == IslandShapeStyle.ringAtoll) {
-      final lagoonPath = Path();
-      lagoonPath.addOval(Rect.fromCenter(center: const Offset(10, 10), width: 95, height: 75));
-      canvas.drawPath(lagoonPath, lagoonSandRim);
-      canvas.drawPath(lagoonPath, lagoonPaint);
-      canvas.drawPath(lagoonPath, lagoonFoam);
-    } else if (island.shapeStyle == IslandShapeStyle.starAtoll) {
-      final lagoonPath = Path();
-      lagoonPath.addOval(Rect.fromCenter(center: Offset.zero, width: 55, height: 55));
+    final lagoonPath = Path();
+    if (archetype == IslandArchetype.naturalOval) {
+      lagoonPath.addOval(Rect.fromCenter(center: Offset.zero, width: 75, height: 55));
+    } else if (archetype == IslandArchetype.horseshoeBay) {
+      lagoonPath.addOval(Rect.fromCenter(center: const Offset(0, 50), width: 85, height: 65));
+    } else if (archetype == IslandArchetype.twinSanctuary) {
+      lagoonPath.addOval(Rect.fromCenter(center: Offset.zero, width: 50, height: 40));
+    }
+
+    if (!lagoonPath.getBounds().isEmpty) {
       canvas.drawPath(lagoonPath, lagoonSandRim);
       canvas.drawPath(lagoonPath, lagoonPaint);
       canvas.drawPath(lagoonPath, lagoonFoam);
@@ -570,6 +649,7 @@ class IslandAerialPainter extends CustomPainter {
   }
 
   void _drawRoadways(Canvas canvas) {
+    final archetype = getIslandArchetype(island.shapeStyle);
     final roadPaint = Paint()
       ..color = const Color(0xFFE2E8F0).withValues(alpha: 0.85) // Crisp light pathway
       ..style = PaintingStyle.stroke
@@ -583,51 +663,45 @@ class IslandAerialPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     final rPath = Path();
-    if (island.isPresidential) {
+    if (island.isPresidential || archetype == IslandArchetype.citadelPlateau) {
       rPath.moveTo(-115, 0);
-      rPath.lineTo(-35, 0);
-    } else if (island.shapeStyle == IslandShapeStyle.crescentLagoon) {
-      // 🌙 Grand Crescent Coastal Boulevard running directly between the two rows of villas at r = 145!
+      rPath.lineTo(115, 0);
+      rPath.moveTo(0, -95);
+      rPath.lineTo(0, 95);
+    } else if (archetype == IslandArchetype.naturalOval) {
+      // Loop avenue between inner and outer ring
+      rPath.addOval(Rect.fromCenter(center: Offset.zero, width: 205, height: 160));
+    } else if (archetype == IslandArchetype.capePeninsula) {
+      // North-South spine boulevard with cross avenues
+      rPath.moveTo(0, -145);
+      rPath.lineTo(0, 135);
+      rPath.moveTo(-85, -55);
+      rPath.lineTo(85, -55);
+      rPath.moveTo(-65, 38);
+      rPath.lineTo(65, 38);
+    } else if (archetype == IslandArchetype.horseshoeBay) {
+      // Curved horseshoe boulevard
       const r = 145.0;
       for (int i = 0; i <= 36; i++) {
-        final a = -2.15 + (i / 36.0) * 3.9;
-        final x = r * math.cos(a) - 6;
-        final y = r * math.sin(a) * 0.92 + 5;
+        final a = -2.35 + (i / 36.0) * 4.3;
+        final x = r * math.cos(a);
+        final y = r * math.sin(a) * 0.92;
         if (i == 0) {
           rPath.moveTo(x, y);
         } else {
           rPath.lineTo(x, y);
         }
       }
-      // Connection to the wooden pier on the east shore
-      rPath.moveTo(145, 15);
-      rPath.lineTo(175, 18);
-    } else if (island.shapeStyle == IslandShapeStyle.sCurveArchipelago) {
-      // 🐉 Spine boulevard along the S-curve
-      for (int i = 0; i <= 30; i++) {
-        final t = (i / 30.0) * 2 - 1;
-        final y = t * 122.0;
-        final x = 46.0 * math.sin(t * math.pi);
-        if (i == 0) {
-          rPath.moveTo(x, y);
-        } else {
-          rPath.lineTo(x, y);
-        }
-      }
-      rPath.moveTo(46, 15);
-      rPath.lineTo(165, 20); // Pier link
-    } else if (island.shapeStyle == IslandShapeStyle.starAtoll) {
-      // ⭐ Radial avenues from center to each star point
-      const points = 5;
-      for (int k = 0; k < points; k++) {
-        final a = (k * 2 * math.pi / points) - math.pi / 2;
-        rPath.moveTo(35 * math.cos(a), 35 * math.sin(a));
-        rPath.lineTo(135 * math.cos(a), 135 * math.sin(a));
-      }
-    } else {
-      // Safe inland circular promenade
-      rPath.addOval(Rect.fromCenter(center: Offset.zero, width: 230, height: 160));
+    } else if (archetype == IslandArchetype.twinSanctuary) {
+      // Highway connecting West and East sanctuaries
+      rPath.moveTo(-120, -75);
+      rPath.lineTo(-120, 45);
+      rPath.moveTo(120, -75);
+      rPath.lineTo(120, 45);
+      rPath.moveTo(-120, -15);
+      rPath.lineTo(120, -15); // Land bridge link
     }
+
     canvas.drawPath(rPath, roadBorder);
     canvas.drawPath(rPath, roadPaint);
   }
@@ -637,22 +711,24 @@ class IslandAerialPainter extends CustomPainter {
   // Strictly on green land! Never inside water bays or lagoons!
   // =========================================================================
   void _drawSportsTurfPitch(Canvas canvas) {
+    final archetype = getIslandArchetype(island.shapeStyle);
     Offset pitchCenter;
-    switch (island.shapeStyle) {
-      case IslandShapeStyle.crescentLagoon:
-        pitchCenter = const Offset(0, -145); // Thick northern green cape
+    switch (archetype) {
+      case IslandArchetype.naturalOval:
+        pitchCenter = const Offset(0, 85);
         break;
-      case IslandShapeStyle.sCurveArchipelago:
-        pitchCenter = const Offset(42, -65); // East green bend
+      case IslandArchetype.capePeninsula:
+        pitchCenter = const Offset(0, -145);
         break;
-      case IslandShapeStyle.starAtoll:
-        pitchCenter = const Offset(0, -95); // North star arm
+      case IslandArchetype.horseshoeBay:
+        pitchCenter = const Offset(0, -115);
         break;
-      case IslandShapeStyle.dualIsletBridge:
-        pitchCenter = const Offset(-105, 25); // West islet green center
+      case IslandArchetype.twinSanctuary:
+        pitchCenter = const Offset(0, 65);
         break;
-      default:
-        pitchCenter = const Offset(20, -75);
+      case IslandArchetype.citadelPlateau:
+        pitchCenter = const Offset(0, 105);
+        break;
     }
     const w = 36.0;
     const h = 22.0;
@@ -1046,14 +1122,35 @@ class IslandAerialPainter extends CustomPainter {
     canvas.save();
     canvas.clipPath(islandPath);
 
-    // 1. Subtle distinct territorial fill per district (alternating harmonious emerald & forest hues)
-    final districtPaints = [
-      Paint()..color = const Color(0xFF15803D).withValues(alpha: 0.28),
-      Paint()..color = const Color(0xFF16A34A).withValues(alpha: 0.20),
-      Paint()..color = const Color(0xFF047857).withValues(alpha: 0.26),
-      Paint()..color = const Color(0xFF166534).withValues(alpha: 0.32),
-      Paint()..color = const Color(0xFF0F766E).withValues(alpha: 0.22),
-    ];
+    // 1. Subtle distinct territorial fill per district (harmonized with planetary biome)
+    final List<Paint> districtPaints;
+    if (isMoon) {
+      districtPaints = [
+        Paint()..color = const Color(0xFF475569).withValues(alpha: 0.25),
+        Paint()..color = const Color(0xFF64748B).withValues(alpha: 0.20),
+        Paint()..color = const Color(0xFF334155).withValues(alpha: 0.30),
+      ];
+    } else if (isMars) {
+      districtPaints = [
+        Paint()..color = const Color(0xFF9A3412).withValues(alpha: 0.25),
+        Paint()..color = const Color(0xFFC2410C).withValues(alpha: 0.20),
+        Paint()..color = const Color(0xFF7C2D12).withValues(alpha: 0.30),
+      ];
+    } else if (isJupiter) {
+      districtPaints = [
+        Paint()..color = const Color(0xFFB45309).withValues(alpha: 0.25),
+        Paint()..color = const Color(0xFFD97706).withValues(alpha: 0.20),
+        Paint()..color = const Color(0xFF78350F).withValues(alpha: 0.30),
+      ];
+    } else {
+      districtPaints = [
+        Paint()..color = const Color(0xFF15803D).withValues(alpha: 0.28),
+        Paint()..color = const Color(0xFF16A34A).withValues(alpha: 0.20),
+        Paint()..color = const Color(0xFF047857).withValues(alpha: 0.26),
+        Paint()..color = const Color(0xFF166534).withValues(alpha: 0.32),
+        Paint()..color = const Color(0xFF0F766E).withValues(alpha: 0.22),
+      ];
+    }
 
     for (int i = 0; i < cells.length; i++) {
       final cellPath = cells[i];
@@ -1261,15 +1358,20 @@ class IslandAerialPainter extends CustomPainter {
               coordinates: pos + getHousePlacementOffset(plotNumber),
             );
 
+      final plotRot = getPlotFacingAngle(island.shapeStyle, i);
       final day = plot.day;
       final houseOffset = getHousePlacementOffset(plotNumber);
       final housePos = pos + houseOffset;
       final parcelRect = Rect.fromCenter(center: housePos, width: 34.0, height: 28.0);
 
+      // 🏡 0. Designated Property Parcel Box (പെട്ടി / ഗ്രിഡ്) matching Image 3!
+      _drawPropertyParcelBox(canvas, housePos, plotRot, parcelRect, plotNumber, isSel);
+
       // 🏡 Scale the house compound down cleanly (40% petite architectural scale)
-      // Creates abundant green breathing space and expansive island feel!
+      // and rotate towards its distinct facing orientation! (പല പല ഡിഫറെന്റ് സൈഡുകളിലേക്ക്)
       canvas.save();
       canvas.translate(housePos.dx, housePos.dy);
+      canvas.rotate(plotRot);
       canvas.scale(0.40);
       canvas.translate(-housePos.dx, -housePos.dy);
 
@@ -1316,6 +1418,61 @@ class IslandAerialPainter extends CustomPainter {
         );
       }
     }
+  }
+
+  // 🏡 0. Designated Property Parcel Box (പെട്ടി / ഗ്രിഡ്) matching Image 3
+  void _drawPropertyParcelBox(
+    Canvas canvas,
+    Offset housePos,
+    double rotation,
+    Rect parcelRect,
+    int plotNumber,
+    bool isSel,
+  ) {
+    canvas.save();
+    canvas.translate(housePos.dx, housePos.dy);
+    canvas.rotate(rotation);
+
+    final lotRect = Rect.fromCenter(center: Offset.zero, width: 32.0, height: 25.0);
+    final lotRRect = RRect.fromRectAndRadius(lotRect, const Radius.circular(2.2));
+
+    // 1. Manicured property parcel lawn tint (soft property green or planet surface tone)
+    final lotColor = isMoon
+        ? const Color(0xFF334155).withValues(alpha: 0.35)
+        : (isMars
+            ? const Color(0xFF7C2D12).withValues(alpha: 0.35)
+            : (isJupiter
+                ? const Color(0xFF78350F).withValues(alpha: 0.35)
+                : const Color(0xFF22C55E).withValues(alpha: 0.14)));
+    canvas.drawRRect(lotRRect, Paint()..color = lotColor);
+
+    // 2. Distinct boundary hedge / parcel border line (മാപ്പിൽ കാണുന്നതുപോലെ ഓരോ പ്ലോട്ടിനും വ്യക്തമായ അതിർത്തി)
+    final boundaryColor = isMoon
+        ? const Color(0xFF94A3B8).withValues(alpha: 0.65)
+        : (isMars
+            ? const Color(0xFFEA580C).withValues(alpha: 0.65)
+            : (isJupiter
+                ? const Color(0xFFD97706).withValues(alpha: 0.65)
+                : const Color(0xFF166534).withValues(alpha: 0.75)));
+
+    final boundaryPaint = Paint()
+      ..color = boundaryColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.95;
+    canvas.drawRRect(lotRRect, boundaryPaint);
+
+    // 3. Golden selection beacon aura on selected parcel box
+    if (isSel) {
+      canvas.drawRRect(
+        lotRRect,
+        Paint()
+          ..color = const Color(0xFFFFD700)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.0,
+      );
+    }
+
+    canvas.restore();
   }
 
   // 5. Private Yard Animals & Outdoor Items (Sheep, horses, pets & garden benches)
@@ -2183,182 +2340,142 @@ class IslandAerialPainter extends CustomPainter {
   // 📍 50 CITIZEN PLOT COORDINATES (100% Strictly Inland on Solid Green Landmass)
   // Houses NEVER touch the ocean or water lagoon! Guaranteed dry inland plots!
   // =========================================================================
-  // 📍 35 CITIZEN PLOT COORDINATES (100% Strictly Inland on Solid Green Landmass)
-  // 35 generous parcels per island with cadastral boundary walls!
+  // 📍 35 CITIZEN PLOT COORDINATES (5 Rock-Solid Archetypes, 100% Solid Land)
+  // Houses NEVER touch the ocean or beach! Guaranteed dry inland plots!
   // =========================================================================
   static List<Offset> get35PlotCoordinates(IslandShapeStyle style) {
+    final archetype = getIslandArchetype(style);
     final List<Offset> coords = [];
 
-    switch (style) {
-      case IslandShapeStyle.crescentLagoon:
-        // 🌙 Crescent Green Belt: 35 plots distributed safely across the 3 thick green sectors
-        // 1. West Green Arm (11 plots: safe inland corridor x = -175..-150, y = -90..+5)
-        for (int i = 0; i < 11; i++) {
-          final t = i / 10.0;
-          final y = -90.0 + t * 95.0; // Avoid narrow southern cape tip
-          final xBase = -168.0 - math.sin(t * math.pi) * 6.0;
-          final lane = (i % 2 == 0 ? -6.0 : 6.0); // Gentle 6px lane, never touches beach!
-          coords.add(Offset(xBase + lane, y));
-        }
-        // 2. North Green Cape (13 plots: x = -95..+95, y = -175..-155, SKIPPING football pitch at x = -20..+20!)
-        // 6 plots on West side of pitch
-        for (int i = 0; i < 6; i++) {
-          final t = i / 5.0;
-          final x = -95.0 + t * 65.0; // x = -95 to -30 (safely west of football pitch!)
-          final yBase = -168.0 + (x * x) / 750.0;
-          final lane = (i % 2 == 0 ? -5.5 : 5.5);
-          coords.add(Offset(x, yBase + lane));
-        }
-        // 1 scenic hilltop plot north of pitch
-        coords.add(const Offset(0, -182)); // High on northern ridge, 37px above football pitch!
-        // 6 plots on East side of pitch
-        for (int i = 0; i < 6; i++) {
-          final t = i / 5.0;
-          final x = 30.0 + t * 65.0; // x = 30 to 95 (safely east of football pitch!)
-          final yBase = -168.0 + (x * x) / 750.0;
-          final lane = (i % 2 == 0 ? -5.5 : 5.5);
-          coords.add(Offset(x, yBase + lane));
-        }
-        // 3. East Green Peninsula (11 plots: safe inland corridor x = 150..180, y = -60..+105)
-        for (int i = 0; i < 11; i++) {
-          final t = i / 10.0;
-          final y = -60.0 + t * 165.0; // Avoid extreme south tip
-          final xBase = 165.0 + math.sin(t * math.pi) * 8.0;
-          final lane = (i % 2 == 0 ? -6.0 : 6.0);
-          coords.add(Offset(xBase + lane, y));
-        }
-        break;
-
-      case IslandShapeStyle.sCurveArchipelago:
-        // 🐉 Expansive S-Curve dragon spine: 2 parallel lanes (17 West lane, 18 East lane = 35 total)
+    switch (archetype) {
+      case IslandArchetype.naturalOval:
+        // 17 inner ring plots (r = 65-76px)
         for (int i = 0; i < 17; i++) {
-          final t = (i / 16.0) * 2.0 - 1.0;
-          final y = t * 150.0;
-          final xCenter = 40.0 * math.sin(t * math.pi);
-          coords.add(Offset(xCenter - 13.0, y));
+          final a = (i * 2 * math.pi / 17) - math.pi / 2;
+          coords.add(Offset(76.0 * math.cos(a), 58.0 * math.sin(a)));
         }
+        // 18 outer ring plots (r = 100-130px)
         for (int i = 0; i < 18; i++) {
-          final t = (i / 17.0) * 2.0 - 1.0;
-          final y = t * 150.0;
-          final xCenter = 40.0 * math.sin(t * math.pi);
-          coords.add(Offset(xCenter + 13.0, y));
+          final a = (i * 2 * math.pi / 18) - math.pi / 2;
+          coords.add(Offset(130.0 * math.cos(a), 98.0 * math.sin(a)));
         }
         break;
 
-      case IslandShapeStyle.starAtoll:
-        // ⭐ 7 plots on each of the 5 coral star arms = 35 plots total
-        // Star arms reach out to r = 185, inner indentation is r = 100
-        // Safe inland arm corridor: r = 118 to 164 along arm centerlines (NEVER in lagoon or beach!)
-        for (int k = 0; k < 5; k++) {
-          final angle = (k * 2 * math.pi / 5) - math.pi / 2;
-          final perp = angle + math.pi / 2;
-          for (int j = 0; j < 7; j++) {
-            final r = 118.0 + j * 7.5; // Strictly along solid green arm!
-            final offset = (j % 2 == 0 ? -4.5 : 4.5);
-            final x = r * math.cos(angle) + offset * math.cos(perp);
-            final y = r * math.sin(angle) + offset * math.sin(perp);
-            coords.add(Offset(x, y));
+      case IslandArchetype.capePeninsula:
+        // North Mainland (18 plots): 3 rows of 6
+        final yRowsNorth = [-115.0, -75.0, -35.0];
+        for (int r = 0; r < 3; r++) {
+          for (int c = 0; c < 6; c++) {
+            final x = -95.0 + c * 38.0;
+            coords.add(Offset(x, yRowsNorth[r]));
           }
         }
-        break;
-
-      case IslandShapeStyle.dualIsletBridge:
-        // 🏝️ 18 plots in West Islet core, 17 plots in East Islet core = 35 total
-        for (int i = 0; i < 18; i++) {
-          final row = i ~/ 6;
-          final col = i % 6;
-          coords.add(Offset(-130.0 + col * 16.0, -28.0 + row * 18.0));
+        // South Cape (17 plots): 3 rows (6, 6, 5)
+        for (int c = 0; c < 6; c++) {
+          coords.add(Offset(-75.0 + c * 30.0, 15.0));
         }
-        for (int i = 0; i < 17; i++) {
-          final row = i ~/ 6;
-          final col = i % 6;
-          coords.add(Offset(74.0 + col * 16.0, -28.0 + row * 18.0));
+        for (int c = 0; c < 6; c++) {
+          coords.add(Offset(-65.0 + c * 26.0, 58.0));
+        }
+        for (int c = 0; c < 5; c++) {
+          coords.add(Offset(-50.0 + c * 25.0, 102.0));
         }
         break;
 
-      case IslandShapeStyle.ringAtoll:
-        // ⭕ Concentric rings safely within circular green body (17 inner, 18 outer = 35 total)
-        for (int i = 0; i < 17; i++) {
-          final angle = (i * 2 * math.pi / 17) - math.pi / 2;
-          coords.add(Offset(118.0 * math.cos(angle) + 10, 118.0 * math.sin(angle) * 0.95 + 10));
+      case IslandArchetype.horseshoeBay:
+        // 1. North Crest (13 plots: 6 West of pitch, 1 ridge overlook, 6 East of pitch)
+        for (int i = 0; i < 6; i++) {
+          final x = -105.0 + i * 14.0; // x: -105..-35
+          coords.add(Offset(x, -145.0 + (x * x) / 1200.0));
         }
-        for (int i = 0; i < 18; i++) {
-          final angle = (i * 2 * math.pi / 18) - math.pi / 2;
-          coords.add(Offset(146.0 * math.cos(angle) + 10, 146.0 * math.sin(angle) * 0.95 + 10));
+        coords.add(const Offset(0, -165.0)); // Ridge overlook
+        for (int i = 0; i < 6; i++) {
+          final x = 35.0 + i * 14.0; // x: 35..105
+          coords.add(Offset(x, -145.0 + (x * x) / 1200.0));
+        }
+        // 2. West Arm (11 plots)
+        for (int i = 0; i < 11; i++) {
+          final t = i / 10.0;
+          coords.add(Offset(-148.0 + (i % 2 == 0 ? -5.0 : 5.0), -85.0 + t * 180.0));
+        }
+        // 3. East Arm (11 plots)
+        for (int i = 0; i < 11; i++) {
+          final t = i / 10.0;
+          coords.add(Offset(148.0 + (i % 2 == 0 ? -5.0 : 5.0), -85.0 + t * 180.0));
         }
         break;
 
-      case IslandShapeStyle.hookPeninsula:
-        // 🪝 35 plots firmly inside the J-hook land ridge
-        for (int i = 0; i < 35; i++) {
-          final t = i / 34.0;
-          final offsetSide = (i % 2 == 0 ? -11.0 : 11.0);
-          if (t < 0.45) {
-            final subT = t / 0.45;
-            coords.add(Offset(-35.0 + subT * 75.0 + offsetSide, -110.0 + subT * 105.0));
-          } else {
-            final subT = (t - 0.45) / 0.55;
-            final angle = subT * math.pi * 0.95;
-            coords.add(Offset(40.0 + 50.0 * math.sin(angle) + offsetSide, -5.0 + subT * 135.0));
+      case IslandArchetype.twinSanctuary:
+        // West Sanctuary (18 plots): 3 rows of 6
+        final yRowsWest = [-75.0, -20.0, 35.0];
+        for (int r = 0; r < 3; r++) {
+          for (int c = 0; c < 6; c++) {
+            coords.add(Offset(-142.0 + c * 15.0, yRowsWest[r]));
           }
         }
-        break;
-
-      case IslandShapeStyle.heartSanctuary:
-        // ❤️ 18 Left atrium, 17 Right atrium = 35 total
-        for (int i = 0; i < 18; i++) {
-          final col = i % 6;
-          final row = i ~/ 6;
-          coords.add(Offset(-78.0 + col * 13.0, -42.0 + row * 18.0));
+        // East Sanctuary (17 plots): rows of 6, 6, 5
+        for (int c = 0; c < 6; c++) {
+          coords.add(Offset(68.0 + c * 15.0, -75.0));
         }
-        for (int i = 0; i < 17; i++) {
-          final col = i % 6;
-          final row = i ~/ 6;
-          coords.add(Offset(22.0 + col * 13.0, -42.0 + row * 18.0));
+        for (int c = 0; c < 6; c++) {
+          coords.add(Offset(68.0 + c * 15.0, -20.0));
+        }
+        for (int c = 0; c < 5; c++) {
+          coords.add(Offset(75.0 + c * 16.0, 35.0));
         }
         break;
 
-      case IslandShapeStyle.cloverBays:
-        // ☘️ 12 Top lobe, 12 Right lobe, 11 Left lobe = 35 total
-        for (int i = 0; i < 12; i++) {
-          final r = 24.0 + (i % 3) * 11.0;
-          final a = (i / 11.0) * math.pi - math.pi;
-          coords.add(Offset(r * math.cos(a), -70.0 + r * math.sin(a)));
-        }
-        for (int i = 0; i < 12; i++) {
-          final r = 24.0 + (i % 3) * 11.0;
-          final a = (i / 11.0) * math.pi - math.pi / 4;
-          coords.add(Offset(55.0 + r * math.cos(a), 48.0 + r * math.sin(a)));
-        }
-        for (int i = 0; i < 11; i++) {
-          final r = 24.0 + (i % 3) * 11.0;
-          final a = (i / 10.0) * math.pi - 3 * math.pi / 4;
-          coords.add(Offset(-55.0 + r * math.cos(a), 48.0 + r * math.sin(a)));
-        }
-        break;
-
-      case IslandShapeStyle.fortressPlateau:
-        // 💎 Diamond grid safely inside hexagonal plateau core: 35 plots in 5x7 grid
+      case IslandArchetype.citadelPlateau:
+        // 5 rows of 7 = 35 plots
         for (int i = 0; i < 35; i++) {
           final row = i ~/ 7;
           final col = i % 7;
-          final x = (col - 3) * 23.0;
-          final y = (row - 2) * 23.0;
-          coords.add(Offset(x, y));
-        }
-        break;
-
-      default:
-        // General safe internal grid: 35 plots in 5 rows of 7
-        for (int i = 0; i < 35; i++) {
-          final row = i ~/ 7;
-          final col = i % 7;
-          coords.add(Offset(-66.0 + col * 22.0, -44.0 + row * 22.0));
+          coords.add(Offset((col - 3) * 25.0, (row - 2) * 25.0));
         }
         break;
     }
 
     return coords;
+  }
+
+  // 🧭 Natural House Facing Angle (Houses face in various directions, never one flat direction!)
+  static double getPlotFacingAngle(IslandShapeStyle style, int index) {
+    final archetype = getIslandArchetype(style);
+    switch (archetype) {
+      case IslandArchetype.naturalOval:
+        if (index < 17) {
+          // Inner ring faces outward towards boulevard
+          return (index * 2 * math.pi / 17) - math.pi / 2;
+        } else {
+          // Outer ring faces inward towards boulevard
+          return ((index - 17) * 2 * math.pi / 18) - math.pi / 2 + math.pi;
+        }
+
+      case IslandArchetype.capePeninsula:
+        if (index < 6) return math.pi; // Row 0 faces South
+        if (index < 12) return 0.0; // Row 1 faces North
+        if (index < 18) return math.pi; // Row 2 faces South
+        if (index < 24) return 0.0; // Row 3 faces North
+        if (index < 30) return math.pi; // Row 4 faces South
+        return 0.0; // Row 5 faces North
+
+      case IslandArchetype.horseshoeBay:
+        if (index < 13) return math.pi; // North crest faces South towards bay
+        if (index < 24) return math.pi / 2; // West arm faces East towards bay
+        return -math.pi / 2; // East arm faces West towards bay
+
+      case IslandArchetype.twinSanctuary:
+        if (index < 18) return math.pi / 2; // West sanctuary faces East towards valley
+        return -math.pi / 2; // East sanctuary faces West towards valley
+
+      case IslandArchetype.citadelPlateau:
+        final row = index ~/ 7;
+        final col = index % 7;
+        if (row == 0) return math.pi; // Top faces South
+        if (row == 4) return 0.0; // Bottom faces North
+        if (col < 3) return math.pi / 2; // Left faces East
+        return -math.pi / 2; // Right faces West
+    }
   }
 
   /// Backward-compatible alias
