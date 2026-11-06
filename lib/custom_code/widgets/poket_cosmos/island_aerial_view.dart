@@ -1140,6 +1140,38 @@ class IslandAerialPainter extends CustomPainter {
   // private lawn, architectural hipped villa roof, driveway with parked car,
   // swimming pool with deck & beach umbrella, garden gazebo, and 90-day progression!
   // =========================================================================
+  // =========================================================================
+  // 👥 AUTHENTIC CITIZEN NAMES (NO "#Plot 7", REAL HUMAN NAMES ON SIGNBOARDS)
+  // =========================================================================
+  static const List<String> fallbackCitizenNames = [
+    'Anas', 'Sneha', 'Rahul', 'Fathima', 'Arjun',
+    'Diya', 'Nihal', 'Ananya', 'Rohan', 'Meera',
+    'Aadithya', 'Farhan', 'Kavya', 'Gokul', 'Hiba',
+    'Vishnu', 'Devika', 'Adil', 'Pooja', 'Aswin',
+    'Riya', 'Salman', 'Malavika', 'Sanjay', 'Shahana',
+    'Akshay', 'Archana', 'Naveen', 'Keerthi', 'Bilal',
+    'Gopika', 'Sreerag', 'Amina', 'Midhun', 'Haritha',
+  ];
+
+  static String getCitizenDisplayName(CitizenPlot plot) {
+    final raw = plot.userName.trim();
+    if (raw.isNotEmpty &&
+        !raw.toLowerCase().startsWith('plot #') &&
+        !raw.toLowerCase().startsWith('empty_') &&
+        !raw.toLowerCase().startsWith('vacant_')) {
+      return raw;
+    }
+    final idx = (plot.plotNumber - 1).clamp(0, fallbackCitizenNames.length - 1);
+    return fallbackCitizenNames[idx];
+  }
+
+  // =========================================================================
+  // 11. 35 ARCHITECTURAL HABIT HOMESTEADS (NATURAL CONTINUOUS ZOOM - NO IFS!)
+  // Directly drawn onto canvas at realistic true scale alongside trees & boats.
+  // When viewed from high altitude (overview), houses appear naturally small.
+  // As the user pinches to zoom in, camera magnification smoothly reveals
+  // every architectural detail: cars, pools, gazebos, paths, and citizen nameplates!
+  // =========================================================================
   void _drawCitizenPlots(Canvas canvas) {
     final List<Offset> positions = get35PlotCoordinates(island.shapeStyle);
     final int count = math.min(35, positions.length);
@@ -1153,8 +1185,8 @@ class IslandAerialPainter extends CustomPainter {
           ? plots[i]
           : CitizenPlot(
               plotNumber: plotNumber,
-              userId: 'empty_$plotNumber',
-              userName: 'Plot #$plotNumber',
+              userId: 'user_$plotNumber',
+              userName: fallbackCitizenNames[i % fallbackCitizenNames.length],
               userAvatar: '',
               day: (plotNumber * 2) % 90 + 1,
               pocketScore: 500,
@@ -1195,58 +1227,46 @@ class IslandAerialPainter extends CustomPainter {
       final housePos = pos + houseOffset;
       final parcelRect = Rect.fromCenter(center: housePos, width: 34.0, height: 28.0);
 
-      // Level of Detail:
-      // In Overview mode (zoomScale < 2.0), draw neat minimal architectural homestead dots & badges
-      // In Deep Zoom mode (zoomScale >= 2.0) or when selected, draw full villas with car, pool, & nameboard!
-      final bool showFullDetail = zoomScale >= 2.0 || isSel;
+      // 1. Driveway & Parked Vehicle (കാർപോർച്ചും വാഹനങ്ങളും - വ്യത്യസ്ത കാറുകൾ)
+      _drawDrivewayAndCar(canvas, parcelRect, day, plotNumber);
 
-      if (!showFullDetail) {
-        // OVERVIEW: Clean, crisp architectural homestead dot & district badge
-        _drawOverviewHomesteadDot(canvas, housePos, day, plotNumber, isSel);
-        _drawDistrictMarkerBadge(canvas, housePos, plotNumber, isSel);
-      } else {
-        // ULTRA ZOOM: Full architectural compound (NO box walls!)
-        // 1. Driveway & Parked Vehicle (കാർപോർച്ചും വാഹനങ്ങളും)
-        _drawDrivewayAndCar(canvas, parcelRect, day, plotNumber);
-
-        // 2. Swimming Pool with Sun Deck & Beach Umbrella or Garden Gazebo
-        if (day >= 45) {
-          _drawSwimmingPoolAndDeck(canvas, parcelRect, day, plotNumber);
-        } else if (day >= 20) {
-          _drawGardenGazebo(canvas, parcelRect, day);
-        }
-
-        // 3. Connecting Sandstone Walkway Paths
-        _drawWalkwayPaths(canvas, parcelRect, housePos, day);
-
-        // 4. 90-Day Progression Architectural Villa Roof
-        _drawArchitecturalRoof(canvas, housePos, day, isSel, plotNumber);
-
-        // 5. Estate Entrance Nameplate Signboard
-        _drawEstateNameBoard(canvas, parcelRect, plot, isSel);
-
-        // 6. Courtyard Pet
-        final petT = timeSeconds * 0.8 + i;
-        final petDriftX = math.cos(petT) * 1.8;
-        final petDriftY = math.sin(petT) * 1.3;
-        final petPos = housePos.translate(-8.5 + petDriftX, 7.5 + petDriftY);
-        final petColor = (i % 2 == 0) ? const Color(0xFFD97706) : const Color(0xFF475569);
-        canvas.drawCircle(petPos, 0.95, Paint()..color = petColor);
-        canvas.drawCircle(petPos.translate(0.5, 0.25), 0.6, Paint()..color = petColor);
+      // 2. Swimming Pool with Sun Deck & Beach Umbrella or Garden Gazebo
+      if (day >= 45) {
+        _drawSwimmingPoolAndDeck(canvas, parcelRect, day, plotNumber);
+      } else if (day >= 20) {
+        _drawGardenGazebo(canvas, parcelRect, day);
       }
 
-      // Golden Selection Beacon Aura
+      // 3. Connecting Sandstone Walkway Paths
+      _drawWalkwayPaths(canvas, parcelRect, housePos, day);
+
+      // 4. 90-Day Progression Architectural Villa Roof
+      _drawArchitecturalRoof(canvas, housePos, day, isSel, plotNumber);
+
+      // 5. Estate Entrance Nameplate Signboard with Real Citizen Name
+      _drawEstateNameBoard(canvas, parcelRect, plot, isSel);
+
+      // 6. Courtyard Pet (Drifts peacefully in yard)
+      final petT = timeSeconds * 0.8 + i;
+      final petDriftX = math.cos(petT) * 1.8;
+      final petDriftY = math.sin(petT) * 1.3;
+      final petPos = housePos.translate(-8.5 + petDriftX, 7.5 + petDriftY);
+      final petColor = (i % 2 == 0) ? const Color(0xFFD97706) : const Color(0xFF475569);
+      canvas.drawCircle(petPos, 0.95, Paint()..color = petColor);
+      canvas.drawCircle(petPos.translate(0.5, 0.25), 0.6, Paint()..color = petColor);
+
+      // 7. Golden Selection Beacon Aura
       if (isSel) {
         canvas.drawCircle(
           housePos,
-          showFullDetail ? 20.0 : 8.5,
+          18.0,
           Paint()
             ..color = const Color(0xFFFFD700).withValues(alpha: 0.28)
             ..style = PaintingStyle.fill,
         );
         canvas.drawCircle(
           housePos,
-          showFullDetail ? 20.0 : 8.5,
+          18.0,
           Paint()
             ..color = const Color(0xFFFFD700)
             ..style = PaintingStyle.stroke
@@ -1256,41 +1276,6 @@ class IslandAerialPainter extends CustomPainter {
     }
   }
 
-  // 1. Minimal Crisp Homestead Dot for Clean Map Overview
-  void _drawOverviewHomesteadDot(Canvas canvas, Offset pos, int day, int plotNumber, bool isSel) {
-    // Soft shadow
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromCenter(center: pos.translate(0.6, 0.8), width: 7.5, height: 6.0),
-        const Radius.circular(1.2),
-      ),
-      Paint()..color = Colors.black38,
-    );
-
-    // Color based on plotNumber & day
-    final colorVariant = (plotNumber * 7 + day) % 5;
-    final roofColors = [
-      const Color(0xFFF97316), // Terracotta Orange
-      const Color(0xFF0D9488), // Slate Teal
-      const Color(0xFFDC2626), // Crimson
-      const Color(0xFF2563EB), // Cobalt Blue
-      const Color(0xFFD97706), // Sovereign Gold
-    ];
-    final color = isSel ? const Color(0xFFFFD700) : roofColors[colorVariant];
-
-    // Roof body
-    final roofRect = Rect.fromCenter(center: pos, width: 7.0, height: 5.5);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(roofRect, const Radius.circular(1.0)),
-      Paint()..color = color,
-    );
-
-    // Ridge glint
-    final ridgePaint = Paint()
-      ..color = Colors.white70
-      ..strokeWidth = 0.75;
-    canvas.drawLine(pos.translate(-2.0, 0), pos.translate(2.0, 0), ridgePaint);
-  }
 
   // 2. Driveway & Parked Vehicle (കാർപോർച്ചും വാഹനങ്ങളും - വ്യത്യസ്ത കാറുകൾ)
   void _drawDrivewayAndCar(Canvas canvas, Rect parcelRect, int day, int plotNumber) {
@@ -1529,15 +1514,15 @@ class IslandAerialPainter extends CustomPainter {
         ..strokeWidth = isSel ? 0.8 : 0.45,
     );
 
-    // User Name Text on Estate Board
-    final nameText = plot.userName.length > 8 ? '${plot.userName.substring(0, 8)}..' : plot.userName;
-    final label = '#${plot.plotNumber} $nameText';
+    // Real Citizen Name Text on Estate Board (No "#Plot 7", genuine names on signboards)
+    final displayName = getCitizenDisplayName(plot);
+    final label = displayName.length > 12 ? '${displayName.substring(0, 12)}..' : displayName;
     final tp = TextPainter(
       text: TextSpan(
         text: label,
         style: TextStyle(
           color: isSel ? const Color(0xFFFFD700) : Colors.white,
-          fontSize: 2.2,
+          fontSize: 2.3,
           fontWeight: FontWeight.bold,
           letterSpacing: 0.2,
         ),
@@ -1546,33 +1531,6 @@ class IslandAerialPainter extends CustomPainter {
     )..layout();
 
     tp.paint(canvas, Offset(boardCenter.dx - tp.width / 2, boardCenter.dy - tp.height / 2));
-  }
-
-  // 7. District Marker Badge in overview (#1, #2, ... #35)
-  void _drawDistrictMarkerBadge(Canvas canvas, Offset pos, int plotNumber, bool isSel) {
-    final badgeCenter = pos.translate(0.0, -5.8);
-    canvas.drawCircle(badgeCenter.translate(0.2, 0.3), 3.0, Paint()..color = Colors.black26);
-    canvas.drawCircle(badgeCenter, 2.7, Paint()..color = const Color(0xFF0F172A).withValues(alpha: 0.88));
-    canvas.drawCircle(
-      badgeCenter,
-      2.7,
-      Paint()
-        ..color = isSel ? const Color(0xFFFFD700) : Colors.white70
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = isSel ? 1.0 : 0.55,
-    );
-    final badgeTp = TextPainter(
-      text: TextSpan(
-        text: '$plotNumber',
-        style: TextStyle(
-          color: isSel ? const Color(0xFFFFD700) : Colors.white,
-          fontSize: 2.4,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    badgeTp.paint(canvas, Offset(badgeCenter.dx - badgeTp.width / 2, badgeCenter.dy - badgeTp.height / 2));
   }
 
   // 8. Architectural Top-Down Villa Roof with 90-Day Progression & Diverse Colors

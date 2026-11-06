@@ -9,6 +9,7 @@ import 'flame_solar_system_game.dart';
 import 'island_aerial_view.dart';
 import 'planet_sphere_icon_widget.dart';
 import '../verified_switch_page.dart';
+import '../../services/pocket_game_audio_service.dart';
 
 /// 🌌 Poket Cosmos Explorer:
 /// - Screen 0: Fullscreen Solar System & Scientific Moons (compact 3D tilt bend button & iOS back).
@@ -54,6 +55,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
   @override
   void initState() {
     super.initState();
+    // 🎵 Start pleasant ambient loop BGM using app's central audio engine
+    PocketGameAudioService.instance.playAmbientAppTheme();
     _ambientOceanAnimController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 40),
@@ -105,9 +108,10 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         int idx = 0;
         for (final map in res) {
           if (idx >= 35) break;
-          final userName = (map['name'] as String?)?.trim().isNotEmpty == true
-              ? (map['name'] as String).trim()
-              : 'Citizen #${idx + 1}';
+          final rawName = (map['name'] as String?)?.trim();
+          final userName = (rawName != null && rawName.isNotEmpty)
+              ? rawName
+              : IslandAerialPainter.fallbackCitizenNames[idx % IslandAerialPainter.fallbackCitizenNames.length];
           final day = (map['day'] as num?)?.toInt() ??
               (map['learning_day'] as num?)?.toInt() ??
               1;
@@ -146,13 +150,15 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
       }
 
       // Fill remaining plots up to island.totalSlots (35 plots per island)
+      // All plots have authentic citizen names (NO "#Plot 7")
       final currentCount = plots.length;
       for (int i = currentCount; i < island.totalSlots && i < 35; i++) {
+        final fallbackName = IslandAerialPainter.fallbackCitizenNames[i % IslandAerialPainter.fallbackCitizenNames.length];
         plots.add(
           CitizenPlot(
             plotNumber: i + 1,
-            userId: 'vacant_${i + 1}',
-            userName: 'Plot #${i + 1}',
+            userId: 'user_${i + 1}',
+            userName: fallbackName,
             userAvatar: '',
             day: ((i + 1) * 3) % 90 + 1,
             pocketScore: 300,
@@ -161,7 +167,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
             countryName: island.name,
             planetName: 'Earth Prime',
             coordinates: coords[i % coords.length],
-            status: PlotStatus.forSale,
+            status: PlotStatus.occupied,
             postalPinCode:
                 'PK-${island.id.toString().padLeft(2, '0')}${(i + 1).toString().padLeft(3, '0')}',
           ),
@@ -2065,63 +2071,67 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                       ],
                     ),
                   ),
-                  // 🎵 Ambient Music / Audio Toggle Button
-                  InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () {
-                      setState(() {
-                        _isAmbientAudioPlaying = !_isAmbientAudioPlaying;
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(_isAmbientAudioPlaying
-                              ? '🎵 Ambient Ocean Waves & Breeze Active'
-                              : '🔇 Audio Muted'),
-                          duration: const Duration(milliseconds: 1400),
-                          behavior: SnackBarBehavior.floating,
+                  // 🎵 Ambient Music / Audio Toggle Button (Central BGM Loop Engine)
+                  ValueListenableBuilder<bool>(
+                    valueListenable: PocketGameAudioService.instance.isMutedNotifier,
+                    builder: (context, isMuted, _) {
+                      final isPlaying = !isMuted;
+                      return InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () {
+                          PocketGameAudioService.instance.toggleMute();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(!isMuted
+                                  ? '🔇 BGM Audio Muted'
+                                  : '🎵 Ambient Loop BGM Active'),
+                              duration: const Duration(milliseconds: 1400),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: isPlaying
+                                ? const Color(0xFF38BDF8).withValues(alpha: 0.18)
+                                : Colors.white.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isPlaying
+                                  ? const Color(0xFF38BDF8).withValues(alpha: 0.6)
+                                  : Colors.white24,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                isPlaying
+                                    ? Icons.volume_up_rounded
+                                    : Icons.volume_off_rounded,
+                                color: isPlaying
+                                    ? const Color(0xFF38BDF8)
+                                    : Colors.white60,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                isPlaying ? 'BGM' : 'Muted',
+                                style: TextStyle(
+                                  color: isPlaying
+                                      ? const Color(0xFF38BDF8)
+                                      : Colors.white60,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: _isAmbientAudioPlaying
-                            ? const Color(0xFF38BDF8).withValues(alpha: 0.18)
-                            : Colors.white.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: _isAmbientAudioPlaying
-                              ? const Color(0xFF38BDF8).withValues(alpha: 0.6)
-                              : Colors.white24,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            _isAmbientAudioPlaying
-                                ? Icons.volume_up_rounded
-                                : Icons.volume_off_rounded,
-                            color: _isAmbientAudioPlaying
-                                ? const Color(0xFF38BDF8)
-                                : Colors.white60,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 5),
-                          Text(
-                            _isAmbientAudioPlaying ? 'BGM' : 'Muted',
-                            style: TextStyle(
-                              color: _isAmbientAudioPlaying
-                                  ? const Color(0xFF38BDF8)
-                                  : Colors.white60,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                   ),
                 ],
               ),
