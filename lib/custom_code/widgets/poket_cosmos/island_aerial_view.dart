@@ -1171,27 +1171,27 @@ class IslandAerialPainter extends CustomPainter {
       case 0:
         return Offset.zero; // Natural center
       case 1:
-        return const Offset(6.0, -4.5); // Deep north-east corner
+        return const Offset(3.5, -3.0); // North-east nook
       case 2:
-        return const Offset(-5.5, 4.0); // South-west corner
+        return const Offset(-3.5, 2.5); // South-west nook
       case 3:
-        return const Offset(6.5, 1.5); // East side
+        return const Offset(3.5, 1.0); // East side
       case 4:
-        return const Offset(-6.0, -2.0); // West side
+        return const Offset(-3.5, -1.2); // West side
       case 5:
-        return const Offset(-4.5, -5.0); // North-west nook
+        return const Offset(-2.5, -3.0); // North-west nook
       case 6:
-        return const Offset(3.0, 5.0); // South-east nook
+        return const Offset(2.0, 3.0); // South-east nook
       case 7:
       default:
-        return const Offset(-2.0, 4.0); // South nook
+        return const Offset(-1.5, 2.5); // South nook
     }
   }
 
   // =========================================================================
   // 11. 35 ARCHITECTURAL HABIT HOMESTEADS (PETITE, SCATTERED & CONTINUOUS ZOOM)
-  // Scaled down to petite proportions (~58%) so houses sit gracefully with plenty
-  // of lush green lawn and trees around them. Scattered organically across each territory.
+  // Scaled down to dainty petite proportions (~40%) so houses sit gracefully with plenty
+  // of lush green rolling lawn and trees around them. Scattered organically across each territory.
   // =========================================================================
   void _drawCitizenPlots(Canvas canvas) {
     final List<Offset> positions = get35PlotCoordinates(island.shapeStyle);
@@ -1223,11 +1223,11 @@ class IslandAerialPainter extends CustomPainter {
       final housePos = pos + houseOffset;
       final parcelRect = Rect.fromCenter(center: housePos, width: 34.0, height: 28.0);
 
-      // 🏡 Scale the house compound down cleanly (58% petite scale)
+      // 🏡 Scale the house compound down cleanly (40% petite architectural scale)
       // Creates abundant green breathing space and expansive island feel!
       canvas.save();
       canvas.translate(housePos.dx, housePos.dy);
-      canvas.scale(0.58);
+      canvas.scale(0.40);
       canvas.translate(-housePos.dx, -housePos.dy);
 
       // 1. Driveway & Parked Vehicle (കാർപോർച്ചും വാഹനങ്ങളും - വ്യത്യസ്ത കാറുകൾ)
@@ -1246,17 +1246,11 @@ class IslandAerialPainter extends CustomPainter {
       // 4. 90-Day Progression Architectural Villa Roof
       _drawArchitecturalRoof(canvas, housePos, day, isSel, plotNumber);
 
-      // 5. Estate Entrance Nameplate Signboard with Real Citizen Name
-      _drawEstateNameBoard(canvas, parcelRect, plot, isSel);
+      // 5. Private Yard Animals & Items (Sheep, pony, pets, garden benches)
+      _drawPrivateYardAnimalsAndItems(canvas, parcelRect, day, plotNumber);
 
-      // 6. Courtyard Pet (Drifts peacefully in yard)
-      final petT = timeSeconds * 0.8 + i;
-      final petDriftX = math.cos(petT) * 1.8;
-      final petDriftY = math.sin(petT) * 1.3;
-      final petPos = housePos.translate(-8.5 + petDriftX, 7.5 + petDriftY);
-      final petColor = (i % 2 == 0) ? const Color(0xFFD97706) : const Color(0xFF475569);
-      canvas.drawCircle(petPos, 0.95, Paint()..color = petColor);
-      canvas.drawCircle(petPos.translate(0.5, 0.25), 0.6, Paint()..color = petColor);
+      // 6. Estate Entrance Nameplate Signboard on the side (No "#Plot 7", genuine names)
+      _drawEstateNameBoard(canvas, parcelRect, plot, isSel);
 
       canvas.restore();
 
@@ -1264,20 +1258,86 @@ class IslandAerialPainter extends CustomPainter {
       if (isSel) {
         canvas.drawCircle(
           housePos,
-          13.0,
+          10.5,
           Paint()
             ..color = const Color(0xFFFFD700).withValues(alpha: 0.28)
             ..style = PaintingStyle.fill,
         );
         canvas.drawCircle(
           housePos,
-          13.0,
+          10.5,
           Paint()
             ..color = const Color(0xFFFFD700)
             ..style = PaintingStyle.stroke
-            ..strokeWidth = 2.0,
+            ..strokeWidth = 1.8,
         );
       }
+    }
+  }
+
+  // 5. Private Yard Animals & Outdoor Items (Sheep, horses, pets & garden benches)
+  void _drawPrivateYardAnimalsAndItems(Canvas canvas, Rect parcelRect, int day, int plotNumber) {
+    // Private Yard Animal (Drifts peacefully in their private garden)
+    final animT = timeSeconds * 0.7 + plotNumber;
+    final driftX = math.cos(animT) * 1.5;
+    final driftY = math.sin(animT) * 1.1;
+
+    if (day >= 65) {
+      // 🐑 / 🐴 Grand Meadow Animal: Private Grazing Sheep or Pony
+      final isHorse = (plotNumber % 2 == 0);
+      final animalCenter = Offset(parcelRect.left + 6.0 + driftX, parcelRect.bottom - 7.0 + driftY);
+
+      // Animal shadow
+      canvas.drawOval(
+        Rect.fromCenter(center: animalCenter.translate(0.3, 0.5), width: isHorse ? 4.8 : 3.6, height: 2.2),
+        Paint()..color = Colors.black26,
+      );
+
+      if (isHorse) {
+        // Chestnut Brown Pony / Foal
+        final horseBody = Paint()..color = const Color(0xFF78350F);
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromCenter(center: animalCenter, width: 4.2, height: 2.4),
+            const Radius.circular(1.0),
+          ),
+          horseBody,
+        );
+        // Head / Neck
+        canvas.drawCircle(animalCenter.translate(-1.8, -1.0), 1.1, horseBody);
+        // Mane
+        canvas.drawCircle(animalCenter.translate(-1.3, -1.2), 0.6, Paint()..color = const Color(0xFF451A03));
+      } else {
+        // Fluffy White Meadow Sheep
+        final sheepWool = Paint()..color = const Color(0xFFF8FAFC);
+        canvas.drawCircle(animalCenter, 1.8, sheepWool);
+        canvas.drawCircle(animalCenter.translate(-1.2, 0.2), 1.2, sheepWool);
+        // Dark head & ears
+        canvas.drawCircle(animalCenter.translate(-2.0, -0.4), 0.85, Paint()..color = const Color(0xFF334155));
+      }
+    } else {
+      // 🐕 / 🐈 Friendly Yard Pet: Dog or Cat lounging in lawn
+      final petPos = Offset(parcelRect.left + 6.0 + driftX, parcelRect.bottom - 7.0 + driftY);
+      final isDog = (plotNumber % 2 == 0);
+      final petColor = isDog ? const Color(0xFFD97706) : const Color(0xFFE2E8F0);
+
+      // Pet shadow
+      canvas.drawCircle(petPos.translate(0.3, 0.4), 1.3, Paint()..color = Colors.black26);
+      // Pet body
+      canvas.drawCircle(petPos, 1.2, Paint()..color = petColor);
+      // Pet head
+      canvas.drawCircle(petPos.translate(0.6, -0.4), 0.8, Paint()..color = petColor);
+    }
+
+    // Garden Bench / Patio Dining Table (for day >= 15)
+    if (day >= 15) {
+      final benchPos = Offset(parcelRect.right - 5.5, parcelRect.top + 5.5);
+      final benchRect = Rect.fromCenter(center: benchPos, width: 5.2, height: 2.4);
+      canvas.drawRect(benchRect.shift(const Offset(0.3, 0.4)), Paint()..color = Colors.black12);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(benchRect, const Radius.circular(0.6)),
+        Paint()..color = const Color(0xFFB45309),
+      );
     }
   }
 
@@ -1491,9 +1551,10 @@ class IslandAerialPainter extends CustomPainter {
     }
   }
 
-  // 6. Estate Entrance Nameplate Signboard (ഒരു ബോർഡ് വെച്ചിട്ട് യൂസർ നെയിം എന്ന് എഴുതിയിട്ടുണ്ടാവും)
+  // 6. Estate Entrance Nameplate Signboard on the side (യൂസർ നെയിം ഒരു സൈഡിൽ കൊണ്ട് ഇടാം)
   void _drawEstateNameBoard(Canvas canvas, Rect parcelRect, CitizenPlot plot, bool isSel) {
-    final boardCenter = Offset(parcelRect.left + 14.0, parcelRect.bottom - 2.8);
+    // Placed neatly on the side of the property entrance
+    final boardCenter = Offset(parcelRect.left + 6.0, parcelRect.bottom + 1.2);
     final boardRect = Rect.fromCenter(center: boardCenter, width: 22.0, height: 5.6);
 
     // Signpost wooden/slate legs
@@ -2018,28 +2079,39 @@ class IslandAerialPainter extends CustomPainter {
     switch (style) {
       case IslandShapeStyle.crescentLagoon:
         // 🌙 Crescent Green Belt: 35 plots distributed safely across the 3 thick green sectors
-        // 1. West Green Arm (11 plots: x = -175..-145, y = -105..+15)
+        // 1. West Green Arm (11 plots: safe inland corridor x = -175..-150, y = -90..+5)
         for (int i = 0; i < 11; i++) {
           final t = i / 10.0;
-          final y = -100.0 + t * 110.0;
-          final xBase = -165.0 - math.sin(t * math.pi) * 10.0;
-          final lane = (i % 2 == 0 ? -10.0 : 10.0);
+          final y = -90.0 + t * 95.0; // Avoid narrow southern cape tip
+          final xBase = -168.0 - math.sin(t * math.pi) * 6.0;
+          final lane = (i % 2 == 0 ? -6.0 : 6.0); // Gentle 6px lane, never touches beach!
           coords.add(Offset(xBase + lane, y));
         }
-        // 2. North Green Cape (13 plots: x = -100..+100, y = -180..-135)
-        for (int i = 0; i < 13; i++) {
-          final t = i / 12.0;
-          final x = -95.0 + t * 190.0;
-          final yBase = -166.0 + (x * x) / 600.0;
-          final lane = (i % 2 == 0 ? -10.0 : 10.0);
+        // 2. North Green Cape (13 plots: x = -95..+95, y = -175..-155, SKIPPING football pitch at x = -20..+20!)
+        // 6 plots on West side of pitch
+        for (int i = 0; i < 6; i++) {
+          final t = i / 5.0;
+          final x = -95.0 + t * 65.0; // x = -95 to -30 (safely west of football pitch!)
+          final yBase = -168.0 + (x * x) / 750.0;
+          final lane = (i % 2 == 0 ? -5.5 : 5.5);
           coords.add(Offset(x, yBase + lane));
         }
-        // 3. East Green Peninsula (11 plots: x = 145..195, y = -75..+120)
+        // 1 scenic hilltop plot north of pitch
+        coords.add(const Offset(0, -182)); // High on northern ridge, 37px above football pitch!
+        // 6 plots on East side of pitch
+        for (int i = 0; i < 6; i++) {
+          final t = i / 5.0;
+          final x = 30.0 + t * 65.0; // x = 30 to 95 (safely east of football pitch!)
+          final yBase = -168.0 + (x * x) / 750.0;
+          final lane = (i % 2 == 0 ? -5.5 : 5.5);
+          coords.add(Offset(x, yBase + lane));
+        }
+        // 3. East Green Peninsula (11 plots: safe inland corridor x = 150..180, y = -60..+105)
         for (int i = 0; i < 11; i++) {
           final t = i / 10.0;
-          final y = -70.0 + t * 190.0;
-          final xBase = 168.0 + math.sin(t * math.pi) * 12.0;
-          final lane = (i % 2 == 0 ? -10.0 : 10.0);
+          final y = -60.0 + t * 165.0; // Avoid extreme south tip
+          final xBase = 165.0 + math.sin(t * math.pi) * 8.0;
+          final lane = (i % 2 == 0 ? -6.0 : 6.0);
           coords.add(Offset(xBase + lane, y));
         }
         break;
@@ -2062,12 +2134,14 @@ class IslandAerialPainter extends CustomPainter {
 
       case IslandShapeStyle.starAtoll:
         // ⭐ 7 plots on each of the 5 coral star arms = 35 plots total
+        // Star arms reach out to r = 185, inner indentation is r = 100
+        // Safe inland arm corridor: r = 118 to 164 along arm centerlines (NEVER in lagoon or beach!)
         for (int k = 0; k < 5; k++) {
           final angle = (k * 2 * math.pi / 5) - math.pi / 2;
           final perp = angle + math.pi / 2;
           for (int j = 0; j < 7; j++) {
-            final r = 74.0 + j * 12.5;
-            final offset = (j % 2 == 0 ? -9.5 : 9.5);
+            final r = 118.0 + j * 7.5; // Strictly along solid green arm!
+            final offset = (j % 2 == 0 ? -4.5 : 4.5);
             final x = r * math.cos(angle) + offset * math.cos(perp);
             final y = r * math.sin(angle) + offset * math.sin(perp);
             coords.add(Offset(x, y));
