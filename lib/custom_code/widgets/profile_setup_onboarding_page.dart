@@ -18,6 +18,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_pure_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_born_address_page.dart';
 
 
 /// 🌟 Clean Step-by-Step Profile Creation Flow
@@ -452,10 +453,6 @@ class _ProfileSetupOnboardingPageState
             isParentSwitched: false,
             isPureKid: true,
           );
-          if (mounted) {
-            PocketPureKidsHomePage.launch(context);
-            return;
-          }
         } else if (calculatedAge >= 9 && calculatedAge <= 16) {
           // Student World (Ages 9-16) - Can visit Kids, but locked from Adult
           await PocketKidsService.activateStudentAccount(
@@ -465,10 +462,6 @@ class _ProfileSetupOnboardingPageState
             isParentSwitched: false,
             isPureStudent: true,
           );
-          if (mounted) {
-            PocketKidsHomePage.launch(context, promptProfileSetup: false);
-            return;
-          }
         } else {
           // Adult Mode (Ages 17+)
           await PocketKidsService.activateAdultAccount();
@@ -487,11 +480,17 @@ class _ProfileSetupOnboardingPageState
               await _showPostSignupVipOffer(context);
             }
           }
+        }
 
-          if (mounted) {
-            context.goNamedAuth(HomePageWidget.routeName, context.mounted);
-            return;
-          }
+        // 🌌 Seamless Transition to Pocket Cosmos Born Address Ceremony (പോക്കറ്റ് വേൾഡിലെ ജനന സ്ഥലം)
+        if (mounted) {
+          await PoketCosmosBornAddressPage.launch(
+            context,
+            userName: name,
+            userAvatar: _selectedPresetAvatar ?? '🦁',
+            userAge: calculatedAge,
+          );
+          return;
         }
       }
     } catch (e, st) {

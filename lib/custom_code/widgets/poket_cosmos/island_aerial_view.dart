@@ -1,5 +1,9 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_service.dart';
 import 'poket_cosmos_models.dart';
 
 /// 🏝️ Aerial Top-Down Island View Widget with:
@@ -101,7 +105,134 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
 
     if (hitPlot != null) {
       widget.onPlotTapped!(hitPlot);
+      return;
     }
+
+    // 🤝 Check if a vacant neighbor parcel was tapped (to invite a friend!)
+    final allCoords = IslandAerialPainter.get35PlotCoordinates(widget.island.shapeStyle);
+    int? hitVacantPlotNum;
+    for (int i = 0; i < allCoords.length; i++) {
+      final plotNum = i + 1;
+      final isOccupied = widget.plots.any((p) => p.plotNumber == plotNum);
+      if (!isOccupied) {
+        final d = (allCoords[i] - tapPoint).distance;
+        if (d < 30.0) {
+          hitVacantPlotNum = plotNum;
+          break;
+        }
+      }
+    }
+
+    if (hitVacantPlotNum != null) {
+      _showNeighborInviteSheet(context, hitVacantPlotNum);
+    }
+  }
+
+  void _showNeighborInviteSheet(BuildContext context, int plotNumber) {
+    HapticFeedback.mediumImpact();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Color(0xFF0F172A),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          border: Border(top: BorderSide(color: Color(0xFF38BDF8), width: 1.6)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Text('🤝', style: TextStyle(fontSize: 26)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Invite Friend as Neighbor',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Plot #$plotNumber on ${widget.island.name} is currently vacant!',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: const Color(0xFF38BDF8),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Text(
+              'Reserve this private parcel right next to your home for 5 hours. Share the generated Born Pass with your friend on WhatsApp so they settle right next to you!',
+              style: GoogleFonts.plusJakartaSans(
+                color: Colors.white70,
+                fontSize: 13,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                final pass = await PoketCosmosAllocationService.instance.createNeighborInvitePass(
+                  islandId: widget.island.id,
+                  islandName: widget.island.name,
+                  planetName: 'Earth Prime 🌍',
+                  streetName: 'Reefway Avenue',
+                  plotNumber: plotNumber,
+                  hostUserName: 'Neighbor',
+                );
+
+                try {
+                  await Share.share(pass.shareMessage);
+                } catch (_) {
+                  Clipboard.setData(ClipboardData(text: pass.shareMessage));
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Reservation Code ${pass.code} copied to clipboard! Share with your friend.'),
+                        backgroundColor: const Color(0xFF16A34A),
+                      ),
+                    );
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0284C7),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('🎟️', style: TextStyle(fontSize: 18)),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Generate 5-Hour Pass & Share (കോഡ് അയക്കുക)',
+                    style: GoogleFonts.outfit(fontSize: 14.5, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -1364,37 +1495,39 @@ class IslandAerialPainter extends CustomPainter {
       final housePos = pos + houseOffset;
       final parcelRect = Rect.fromCenter(center: housePos, width: 34.0, height: 28.0);
 
-      // 🏡 0. Designated Property Parcel Box (പെട്ടി / ഗ്രിഡ്) matching Image 3!
-      _drawPropertyParcelBox(canvas, housePos, plotRot, parcelRect, plotNumber, isSel);
-
-      // 🏡 Scale the house compound down cleanly (40% petite architectural scale)
+      // 🏡 Scale the house compound down cleanly (~28% petite architectural scale matching reference images)
       // and rotate towards its distinct facing orientation! (പല പല ഡിഫറെന്റ് സൈഡുകളിലേക്ക്)
       canvas.save();
       canvas.translate(housePos.dx, housePos.dy);
       canvas.rotate(plotRot);
-      canvas.scale(0.40);
+      canvas.scale(0.28);
       canvas.translate(-housePos.dx, -housePos.dy);
 
-      // 1. Driveway & Parked Vehicle (കാർപോർച്ചും വാഹനങ്ങളും - വ്യത്യസ്ത കാറുകൾ)
-      _drawDrivewayAndCar(canvas, parcelRect, day, plotNumber);
+      // 1. Lush Organic Tree Clusters & Hedgerow on Yard Corners (Images 1 & 3)
+      _drawYardTreeClusters(canvas, parcelRect, plotNumber);
 
-      // 2. Swimming Pool with Sun Deck & Beach Umbrella or Garden Gazebo
-      if (day >= 45) {
+      // 2. Driveway & Parked Vehicle (കാർപോർച്ചും വാഹനങ്ങളും - വ്യത്യസ്ത കാറുകൾ, Image 2 & 3)
+      if (day >= 20) {
+        _drawDrivewayAndCar(canvas, parcelRect, day, plotNumber);
+      }
+
+      // 3. Swimming Pool with Sun Deck & Beach Umbrella or Garden Gazebo (Images 1 & 2)
+      if (day >= 50) {
         _drawSwimmingPoolAndDeck(canvas, parcelRect, day, plotNumber);
-      } else if (day >= 20) {
+      } else if (day >= 12) {
         _drawGardenGazebo(canvas, parcelRect, day);
       }
 
-      // 3. Connecting Sandstone Walkway Paths
+      // 4. Connecting Sandstone Walkway Paths (Images 1 & 2)
       _drawWalkwayPaths(canvas, parcelRect, housePos, day);
 
-      // 4. 90-Day Progression Architectural Villa Roof
+      // 5. 90-Day Progression Architectural Faceted Hip Roof (Images 1, 2, 3)
       _drawArchitecturalRoof(canvas, housePos, day, isSel, plotNumber);
 
-      // 5. Private Yard Animals & Items (Sheep, pony, pets, garden benches)
+      // 6. Private Yard Animals & Items (Sheep, pony, pets, garden benches)
       _drawPrivateYardAnimalsAndItems(canvas, parcelRect, day, plotNumber);
 
-      // 6. Estate Entrance Nameplate Signboard on the side (No "#Plot 7", genuine names)
+      // 7. Estate Entrance Nameplate Signboard on the side (No "#Plot 7", genuine names)
       _drawEstateNameBoard(canvas, parcelRect, plot, isSel);
 
       canvas.restore();
@@ -1418,61 +1551,6 @@ class IslandAerialPainter extends CustomPainter {
         );
       }
     }
-  }
-
-  // 🏡 0. Designated Property Parcel Box (പെട്ടി / ഗ്രിഡ്) matching Image 3
-  void _drawPropertyParcelBox(
-    Canvas canvas,
-    Offset housePos,
-    double rotation,
-    Rect parcelRect,
-    int plotNumber,
-    bool isSel,
-  ) {
-    canvas.save();
-    canvas.translate(housePos.dx, housePos.dy);
-    canvas.rotate(rotation);
-
-    final lotRect = Rect.fromCenter(center: Offset.zero, width: 32.0, height: 25.0);
-    final lotRRect = RRect.fromRectAndRadius(lotRect, const Radius.circular(2.2));
-
-    // 1. Manicured property parcel lawn tint (soft property green or planet surface tone)
-    final lotColor = isMoon
-        ? const Color(0xFF334155).withValues(alpha: 0.35)
-        : (isMars
-            ? const Color(0xFF7C2D12).withValues(alpha: 0.35)
-            : (isJupiter
-                ? const Color(0xFF78350F).withValues(alpha: 0.35)
-                : const Color(0xFF22C55E).withValues(alpha: 0.14)));
-    canvas.drawRRect(lotRRect, Paint()..color = lotColor);
-
-    // 2. Distinct boundary hedge / parcel border line (മാപ്പിൽ കാണുന്നതുപോലെ ഓരോ പ്ലോട്ടിനും വ്യക്തമായ അതിർത്തി)
-    final boundaryColor = isMoon
-        ? const Color(0xFF94A3B8).withValues(alpha: 0.65)
-        : (isMars
-            ? const Color(0xFFEA580C).withValues(alpha: 0.65)
-            : (isJupiter
-                ? const Color(0xFFD97706).withValues(alpha: 0.65)
-                : const Color(0xFF166534).withValues(alpha: 0.75)));
-
-    final boundaryPaint = Paint()
-      ..color = boundaryColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.95;
-    canvas.drawRRect(lotRRect, boundaryPaint);
-
-    // 3. Golden selection beacon aura on selected parcel box
-    if (isSel) {
-      canvas.drawRRect(
-        lotRRect,
-        Paint()
-          ..color = const Color(0xFFFFD700)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.0,
-      );
-    }
-
-    canvas.restore();
   }
 
   // 5. Private Yard Animals & Outdoor Items (Sheep, horses, pets & garden benches)
@@ -1869,11 +1947,50 @@ class IslandAerialPainter extends CustomPainter {
     tp.paint(canvas, Offset(boardCenter.dx - tp.width / 2, boardCenter.dy - tp.height / 2));
   }
 
+  // 1. Clustered Round Trees on Yard Corners (Images 1 & 3)
+  void _drawYardTreeClusters(Canvas canvas, Rect parcelRect, int plotNumber) {
+    final treePaints = [
+      (
+        shadow: const Color(0xFF0F3E22).withValues(alpha: 0.35),
+        body: const Color(0xFF15803D),
+        highlight: const Color(0xFF4ADE80).withValues(alpha: 0.85),
+      ),
+      (
+        shadow: const Color(0xFF064E3B).withValues(alpha: 0.35),
+        body: const Color(0xFF047857),
+        highlight: const Color(0xFF34D399).withValues(alpha: 0.85),
+      ),
+      (
+        shadow: const Color(0xFF14532D).withValues(alpha: 0.35),
+        body: const Color(0xFF16A34A),
+        highlight: const Color(0xFF86EFAC).withValues(alpha: 0.85),
+      ),
+    ];
+
+    // Northeast corner tree cluster
+    final neBase = Offset(parcelRect.right - 4.5, parcelRect.top + 4.5);
+    final theme1 = treePaints[plotNumber % treePaints.length];
+    _drawLayeredTreeCircle(canvas, neBase, 3.2, theme1);
+    _drawLayeredTreeCircle(canvas, neBase.translate(-2.2, 1.2), 2.4, theme1);
+
+    // Southwest corner tree cluster (or hedgerow bushes)
+    final swBase = Offset(parcelRect.left + 4.0, parcelRect.bottom - 4.0);
+    final theme2 = treePaints[(plotNumber + 1) % treePaints.length];
+    _drawLayeredTreeCircle(canvas, swBase, 2.8, theme2);
+    _drawLayeredTreeCircle(canvas, swBase.translate(1.8, -1.5), 2.2, theme2);
+  }
+
+  void _drawLayeredTreeCircle(Canvas canvas, Offset center, double radius, ({Color shadow, Color body, Color highlight}) theme) {
+    // Tree drop shadow
+    canvas.drawCircle(center.translate(0.6, 0.8), radius, Paint()..color = theme.shadow);
+    // Tree canopy body
+    canvas.drawCircle(center, radius, Paint()..color = theme.body);
+    // Tree sunlit inner highlight circle
+    canvas.drawCircle(center.translate(-radius * 0.25, -radius * 0.25), radius * 0.60, Paint()..color = theme.highlight);
+  }
+
   // 8. Architectural Top-Down Villa Roof with 90-Day Progression & Diverse Colors
   void _drawArchitecturalRoof(Canvas canvas, Offset pos, int day, bool isSel, int plotNumber) {
-    // Soft 3D drop shadow underneath the entire roof structure
-    final roofShadowPaint = Paint()..color = Colors.black45;
-
     // 5 Distinct Roof Tile Palettes across the 35 houses so adjacent houses never look identical!
     final colorVariant = (plotNumber * 7 + day) % 5;
     Color roofBase;
@@ -1884,7 +2001,7 @@ class IslandAerialPainter extends CustomPainter {
       ridgeHighlight = const Color(0xFFFFF9C4);
     } else {
       switch (colorVariant) {
-        case 0: // Classic Terracotta Orange
+        case 0: // Classic Terracotta Orange (Images 1, 2, 3)
           roofBase = day >= 90 ? const Color(0xFFEA580C) : (day >= 60 ? const Color(0xFFF97316) : const Color(0xFFFB923C));
           ridgeHighlight = const Color(0xFFFFEDD5);
           break;
@@ -1908,202 +2025,227 @@ class IslandAerialPainter extends CustomPainter {
       }
     }
 
-    if (day <= 15) {
+    if (day <= 10) {
       // -------------------------------------------------------------
-      // LEVEL 1 (Day 1 - 15): Compact Starter Cottage
+      // LEVEL 1 (Day 1 - 10): Compact Starter Cottage (Image 3)
       // -------------------------------------------------------------
-      final roofRect = Rect.fromCenter(center: pos, width: 11.0, height: 9.0);
-      // Shadow
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(roofRect.translate(0.8, 1.0), const Radius.circular(1.4)),
-        roofShadowPaint,
-      );
-      // Roof Body
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(roofRect, const Radius.circular(1.2)),
-        Paint()..color = roofBase,
-      );
-      // Hipped Ridge Lines
-      final ridge = Paint()
-        ..color = ridgeHighlight
-        ..strokeWidth = 0.85
-        ..style = PaintingStyle.stroke;
-      canvas.drawLine(pos.translate(-2.2, 0), pos.translate(2.2, 0), ridge);
-      canvas.drawLine(pos.translate(-2.2, 0), roofRect.topLeft, ridge);
-      canvas.drawLine(pos.translate(-2.2, 0), roofRect.bottomLeft, ridge);
-      canvas.drawLine(pos.translate(2.2, 0), roofRect.topRight, ridge);
-      canvas.drawLine(pos.translate(2.2, 0), roofRect.bottomRight, ridge);
+      final roofRect = Rect.fromCenter(center: pos, width: 10.0, height: 7.5);
+      _drawFacetedHippedRoof(canvas, roofRect, roofBase, ridgeHighlight);
 
-      // Single Chimney
-      _drawChimney(canvas, pos.translate(2.5, -2.2));
+      // Single Chimney with subtle smoke
+      _drawChimney(canvas, pos.translate(2.4, -1.8));
 
-    } else if (day <= 30) {
+    } else if (day <= 25) {
       // -------------------------------------------------------------
-      // LEVEL 2 (Day 16 - 30): Suburban Ranch House with Skylight
+      // LEVEL 2 (Day 11 - 25): Suburban Ranch House with Skylight (Image 2)
       // -------------------------------------------------------------
-      final roofRect = Rect.fromCenter(center: pos, width: 14.0, height: 10.5);
-      // Shadow
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(roofRect.translate(0.9, 1.1), const Radius.circular(1.5)),
-        roofShadowPaint,
-      );
-      // Roof Body
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(roofRect, const Radius.circular(1.2)),
-        Paint()..color = roofBase,
-      );
-      // Hipped Ridge Lines
-      final ridge = Paint()
-        ..color = ridgeHighlight
-        ..strokeWidth = 0.9
-        ..style = PaintingStyle.stroke;
-      canvas.drawLine(pos.translate(-3.2, 0), pos.translate(3.2, 0), ridge);
-      canvas.drawLine(pos.translate(-3.2, 0), roofRect.topLeft, ridge);
-      canvas.drawLine(pos.translate(-3.2, 0), roofRect.bottomLeft, ridge);
-      canvas.drawLine(pos.translate(3.2, 0), roofRect.topRight, ridge);
-      canvas.drawLine(pos.translate(3.2, 0), roofRect.bottomRight, ridge);
+      final roofRect = Rect.fromCenter(center: pos, width: 13.5, height: 9.0);
+      _drawFacetedHippedRoof(canvas, roofRect, roofBase, ridgeHighlight);
 
       // 1 Skylight Window on sunny slope (Image 2)
-      _drawSkylight(canvas, pos.translate(-1.0, -2.5));
+      _drawSkylight(canvas, pos.translate(-1.0, -2.2));
 
       // Chimney
-      _drawChimney(canvas, pos.translate(3.6, -2.4));
+      _drawChimney(canvas, pos.translate(3.6, -2.0));
 
-    } else if (day <= 60) {
+    } else if (day <= 50) {
       // -------------------------------------------------------------
-      // LEVEL 3 (Day 31 - 60): L-Shaped Executive Villa (Image 2 Iconic Shape!)
+      // LEVEL 3 (Day 26 - 50): L-Shaped Executive Villa (Images 1 & 2 Iconic Shape!)
       // -------------------------------------------------------------
       final isLeftWing = (plotNumber % 2 == 0);
-      final mainRect = Rect.fromCenter(center: pos.translate(1.0, -1.5), width: 15.0, height: 8.5);
+      final mainRect = Rect.fromCenter(center: pos.translate(1.0, -1.5), width: 15.0, height: 8.0);
       final wingRect = Rect.fromCenter(
-        center: pos.translate(isLeftWing ? -3.0 : 5.0, 3.5),
+        center: pos.translate(isLeftWing ? -3.0 : 5.0, 3.2),
         width: 7.0,
-        height: 11.5,
+        height: 11.0,
       );
 
-      // Composite Drop Shadow
-      final shadowPath = Path()
-        ..addRRect(RRect.fromRectAndRadius(mainRect.translate(0.9, 1.1), const Radius.circular(1.4)))
-        ..addRRect(RRect.fromRectAndRadius(wingRect.translate(0.9, 1.1), const Radius.circular(1.4)));
-      canvas.drawPath(shadowPath, roofShadowPaint);
-
-      // Roof Wings
-      final roofPaint = Paint()..color = roofBase;
-      canvas.drawRRect(RRect.fromRectAndRadius(mainRect, const Radius.circular(1.2)), roofPaint);
-      canvas.drawRRect(RRect.fromRectAndRadius(wingRect, const Radius.circular(1.2)), roofPaint);
-
-      // Hipped Ridges
-      final ridge = Paint()
-        ..color = ridgeHighlight
-        ..strokeWidth = 0.9
-        ..style = PaintingStyle.stroke;
-
-      // Main Wing Ridge
-      canvas.drawLine(mainRect.center.translate(-3.0, 0), mainRect.center.translate(4.0, 0), ridge);
-      canvas.drawLine(mainRect.center.translate(4.0, 0), mainRect.topRight, ridge);
-      canvas.drawLine(mainRect.center.translate(4.0, 0), mainRect.bottomRight, ridge);
-
-      // Side Wing Ridge
-      canvas.drawLine(wingRect.center.translate(0, -2.5), wingRect.center.translate(0, 3.5), ridge);
-      canvas.drawLine(wingRect.center.translate(0, 3.5), wingRect.bottomLeft, ridge);
-      canvas.drawLine(wingRect.center.translate(0, 3.5), wingRect.bottomRight, ridge);
+      // Draw both wings with 3D faceted hipped roofs
+      _drawFacetedHippedRoof(canvas, mainRect, roofBase, ridgeHighlight);
+      _drawFacetedHippedRoof(canvas, wingRect, roofBase, ridgeHighlight);
 
       // 2 Blue Skylight Windows on main roof (Image 2)
-      _drawSkylight(canvas, mainRect.center.translate(0.5, -2.2));
-      _drawSkylight(canvas, mainRect.center.translate(3.5, -2.2));
+      _drawSkylight(canvas, mainRect.center.translate(0.5, -2.0));
+      _drawSkylight(canvas, mainRect.center.translate(3.5, -2.0));
 
       // Chimney
-      _drawChimney(canvas, mainRect.center.translate(4.8, 2.2));
+      _drawChimney(canvas, mainRect.center.translate(4.8, 1.8));
 
-    } else if (day <= 89) {
+    } else if (day <= 85) {
       // -------------------------------------------------------------
-      // LEVEL 4 (Day 61 - 89): Luxury Multi-Wing Estate Compound (Image 1 & 2)
+      // LEVEL 4 (Day 51 - 85): Luxury Multi-Wing Estate Compound (Images 1 & 2)
       // -------------------------------------------------------------
-      final mainRect = Rect.fromCenter(center: pos.translate(0.0, -2.0), width: 17.5, height: 9.0);
-      final westWing = Rect.fromCenter(center: pos.translate(-4.5, 3.5), width: 8.5, height: 11.0);
-      final eastPorch = Rect.fromCenter(center: pos.translate(5.0, 2.0), width: 6.5, height: 6.5);
+      final mainRect = Rect.fromCenter(center: pos.translate(0.0, -2.0), width: 17.0, height: 8.5);
+      final westWing = Rect.fromCenter(center: pos.translate(-4.5, 3.2), width: 8.0, height: 10.5);
+      final eastPorch = Rect.fromCenter(center: pos.translate(5.0, 1.8), width: 6.5, height: 6.5);
 
-      // Compound Shadow
-      final shadowPath = Path()
-        ..addRRect(RRect.fromRectAndRadius(mainRect.translate(1.0, 1.2), const Radius.circular(1.5)))
-        ..addRRect(RRect.fromRectAndRadius(westWing.translate(1.0, 1.2), const Radius.circular(1.5)))
-        ..addRRect(RRect.fromRectAndRadius(eastPorch.translate(1.0, 1.2), const Radius.circular(1.5)));
-      canvas.drawPath(shadowPath, roofShadowPaint);
-
-      // Roof Bodies
-      final roofPaint = Paint()..color = roofBase;
-      canvas.drawRRect(RRect.fromRectAndRadius(mainRect, const Radius.circular(1.2)), roofPaint);
-      canvas.drawRRect(RRect.fromRectAndRadius(westWing, const Radius.circular(1.2)), roofPaint);
-      canvas.drawRRect(RRect.fromRectAndRadius(eastPorch, const Radius.circular(1.2)), roofPaint);
-
-      // Hipped Ridge Highlights
-      final ridge = Paint()
-        ..color = ridgeHighlight
-        ..strokeWidth = 0.95
-        ..style = PaintingStyle.stroke;
-
-      // Main Ridge
-      canvas.drawLine(mainRect.center.translate(-4.0, 0), mainRect.center.translate(5.0, 0), ridge);
-      canvas.drawLine(mainRect.center.translate(5.0, 0), mainRect.topRight, ridge);
-      canvas.drawLine(mainRect.center.translate(5.0, 0), mainRect.bottomRight, ridge);
-
-      // West Wing Ridge
-      canvas.drawLine(westWing.center.translate(0, -2.5), westWing.center.translate(0, 3.5), ridge);
-      canvas.drawLine(westWing.center.translate(0, 3.5), westWing.bottomLeft, ridge);
-      canvas.drawLine(westWing.center.translate(0, 3.5), westWing.bottomRight, ridge);
+      _drawFacetedHippedRoof(canvas, mainRect, roofBase, ridgeHighlight);
+      _drawFacetedHippedRoof(canvas, westWing, roofBase, ridgeHighlight);
+      _drawFacetedHippedRoof(canvas, eastPorch, roofBase, ridgeHighlight);
 
       // 3 Blue Skylights (Image 2)
-      _drawSkylight(canvas, mainRect.center.translate(-1.5, -2.3));
-      _drawSkylight(canvas, mainRect.center.translate(1.8, -2.3));
-      _drawSkylight(canvas, mainRect.center.translate(5.0, -2.3));
+      _drawSkylight(canvas, mainRect.center.translate(-1.5, -2.2));
+      _drawSkylight(canvas, mainRect.center.translate(1.8, -2.2));
+      _drawSkylight(canvas, mainRect.center.translate(5.0, -2.2));
 
       // Dual Chimneys
-      _drawChimney(canvas, mainRect.center.translate(-5.5, 2.0));
-      _drawChimney(canvas, mainRect.center.translate(6.0, 2.0));
+      _drawChimney(canvas, mainRect.center.translate(-5.5, 1.8));
+      _drawChimney(canvas, mainRect.center.translate(6.0, 1.8));
 
     } else {
       // -------------------------------------------------------------
-      // LEVEL 5 (Day 90 / Max Streak): Sovereign Grand Palace Manor (U-Shape)
+      // LEVEL 5 (Day 86 - 90 / Max Streak): Sovereign Grand Palace Manor (U-Shape)
       // -------------------------------------------------------------
-      final centerHall = Rect.fromCenter(center: pos.translate(0, -3.5), width: 19.0, height: 9.5);
-      final leftWing = Rect.fromCenter(center: pos.translate(-6.0, 2.5), width: 7.5, height: 13.0);
-      final rightWing = Rect.fromCenter(center: pos.translate(6.0, 2.5), width: 7.5, height: 13.0);
+      final centerHall = Rect.fromCenter(center: pos.translate(0, -3.5), width: 19.0, height: 9.0);
+      final leftWing = Rect.fromCenter(center: pos.translate(-6.0, 2.5), width: 7.5, height: 12.5);
+      final rightWing = Rect.fromCenter(center: pos.translate(6.0, 2.5), width: 7.5, height: 12.5);
 
-      // Sovereign Shadow
-      final shadowPath = Path()
-        ..addRRect(RRect.fromRectAndRadius(centerHall.translate(1.2, 1.4), const Radius.circular(1.8)))
-        ..addRRect(RRect.fromRectAndRadius(leftWing.translate(1.2, 1.4), const Radius.circular(1.8)))
-        ..addRRect(RRect.fromRectAndRadius(rightWing.translate(1.2, 1.4), const Radius.circular(1.8)));
-      canvas.drawPath(shadowPath, roofShadowPaint);
-
-      // Grand Terracotta Palace Wings
-      final roofPaint = Paint()..color = roofBase;
-      canvas.drawRRect(RRect.fromRectAndRadius(centerHall, const Radius.circular(1.5)), roofPaint);
-      canvas.drawRRect(RRect.fromRectAndRadius(leftWing, const Radius.circular(1.5)), roofPaint);
-      canvas.drawRRect(RRect.fromRectAndRadius(rightWing, const Radius.circular(1.5)), roofPaint);
-
-      // Sovereign Golden Hip Ridge Lines
-      final ridge = Paint()
-        ..color = const Color(0xFFFFD700)
-        ..strokeWidth = 1.1
-        ..style = PaintingStyle.stroke;
-
-      canvas.drawLine(centerHall.center.translate(-5.5, 0), centerHall.center.translate(5.5, 0), ridge);
-      canvas.drawLine(leftWing.center.translate(0, -3.5), leftWing.center.translate(0, 4.5), ridge);
-      canvas.drawLine(rightWing.center.translate(0, -3.5), rightWing.center.translate(0, 4.5), ridge);
+      _drawFacetedHippedRoof(canvas, centerHall, roofBase, ridgeHighlight);
+      _drawFacetedHippedRoof(canvas, leftWing, roofBase, ridgeHighlight);
+      _drawFacetedHippedRoof(canvas, rightWing, roofBase, ridgeHighlight);
 
       // 4 Cyan Skylights
-      _drawSkylight(canvas, centerHall.center.translate(-3.0, -2.5));
-      _drawSkylight(canvas, centerHall.center.translate(3.0, -2.5));
+      _drawSkylight(canvas, centerHall.center.translate(-3.0, -2.2));
+      _drawSkylight(canvas, centerHall.center.translate(3.0, -2.2));
       _drawSkylight(canvas, leftWing.center.translate(0, 3.0));
       _drawSkylight(canvas, rightWing.center.translate(0, 3.0));
 
       // Dual Grand Chimneys
-      _drawChimney(canvas, centerHall.center.translate(-6.5, -2.5));
-      _drawChimney(canvas, centerHall.center.translate(6.5, -2.5));
+      _drawChimney(canvas, centerHall.center.translate(-6.5, -2.2));
+      _drawChimney(canvas, centerHall.center.translate(6.5, -2.2));
 
       // Golden Sovereign Prestige Crest atop central ridge
       canvas.drawCircle(centerHall.center, 1.2, Paint()..color = const Color(0xFFFFD700));
+    }
+  }
+
+  /// 🏛️ 3D Faceted Hipped Roof (Replicating Images 1, 2, 3 with True Top-Down Isometric Relief)
+  void _drawFacetedHippedRoof(
+    Canvas canvas,
+    Rect rect,
+    Color roofBase,
+    Color ridgeHighlight, {
+    bool hasPatio = true,
+  }) {
+    // 1. Warm Sandstone / Buff Paved Terrace Base (Images 1 & 3 under the orange roof)
+    if (hasPatio) {
+      final patioRect = rect.inflate(2.2);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(patioRect, const Radius.circular(1.6)),
+        Paint()..color = const Color(0xFFFBE6C2).withValues(alpha: 0.90),
+      );
+    }
+
+    // 2. Soft Drop Shadow Underneath
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(rect.translate(0.9, 1.1), const Radius.circular(1.2)),
+      Paint()..color = Colors.black38,
+    );
+
+    // 3. Faceted Slopes & Hip Ridges
+    final northSlopeColor = Color.lerp(roofBase, Colors.white, 0.20)!; // Sunlit facet
+    final southSlopeColor = Color.lerp(roofBase, Colors.black, 0.20)!; // Shadowed facet
+    final eastSlopeColor = Color.lerp(roofBase, Colors.black, 0.10)!;
+    final westSlopeColor = roofBase;
+
+    final ridgePaint = Paint()
+      ..color = ridgeHighlight
+      ..strokeWidth = 0.85
+      ..style = PaintingStyle.stroke;
+
+    if (rect.width >= rect.height) {
+      // Horizontal Ridge Hipped Roof
+      final double ridgeLength = (rect.width - rect.height * 0.70).clamp(1.5, rect.width * 0.75);
+      final pLeft = Offset(rect.center.dx - ridgeLength / 2, rect.center.dy);
+      final pRight = Offset(rect.center.dx + ridgeLength / 2, rect.center.dy);
+
+      // North Trapezoid Slope (Sunlit)
+      final northPath = Path()
+        ..moveTo(rect.left, rect.top)
+        ..lineTo(rect.right, rect.top)
+        ..lineTo(pRight.dx, pRight.dy)
+        ..lineTo(pLeft.dx, pLeft.dy)
+        ..close();
+      canvas.drawPath(northPath, Paint()..color = northSlopeColor);
+
+      // South Trapezoid Slope (Shadowed)
+      final southPath = Path()
+        ..moveTo(pLeft.dx, pLeft.dy)
+        ..lineTo(pRight.dx, pRight.dy)
+        ..lineTo(rect.right, rect.bottom)
+        ..lineTo(rect.left, rect.bottom)
+        ..close();
+      canvas.drawPath(southPath, Paint()..color = southSlopeColor);
+
+      // West Triangle Hip (Left)
+      final westPath = Path()
+        ..moveTo(rect.left, rect.top)
+        ..lineTo(pLeft.dx, pLeft.dy)
+        ..lineTo(rect.left, rect.bottom)
+        ..close();
+      canvas.drawPath(westPath, Paint()..color = westSlopeColor);
+
+      // East Triangle Hip (Right)
+      final eastPath = Path()
+        ..moveTo(rect.right, rect.top)
+        ..lineTo(rect.right, rect.bottom)
+        ..lineTo(pRight.dx, pRight.dy)
+        ..close();
+      canvas.drawPath(eastPath, Paint()..color = eastSlopeColor);
+
+      // Ridge Lines
+      canvas.drawLine(rect.topLeft, pLeft, ridgePaint);
+      canvas.drawLine(rect.bottomLeft, pLeft, ridgePaint);
+      canvas.drawLine(pLeft, pRight, ridgePaint);
+      canvas.drawLine(rect.topRight, pRight, ridgePaint);
+      canvas.drawLine(rect.bottomRight, pRight, ridgePaint);
+
+    } else {
+      // Vertical Ridge Hipped Roof
+      final double ridgeLength = (rect.height - rect.width * 0.70).clamp(1.5, rect.height * 0.75);
+      final pTop = Offset(rect.center.dx, rect.center.dy - ridgeLength / 2);
+      final pBottom = Offset(rect.center.dx, rect.center.dy + ridgeLength / 2);
+
+      // West Slope (Sunlit)
+      final westPath = Path()
+        ..moveTo(rect.left, rect.top)
+        ..lineTo(pTop.dx, pTop.dy)
+        ..lineTo(pBottom.dx, pBottom.dy)
+        ..lineTo(rect.left, rect.bottom)
+        ..close();
+      canvas.drawPath(westPath, Paint()..color = northSlopeColor);
+
+      // East Slope (Shadowed)
+      final eastPath = Path()
+        ..moveTo(pTop.dx, pTop.dy)
+        ..lineTo(rect.right, rect.top)
+        ..lineTo(rect.right, rect.bottom)
+        ..lineTo(pBottom.dx, pBottom.dy)
+        ..close();
+      canvas.drawPath(eastPath, Paint()..color = southSlopeColor);
+
+      // North Triangle Hip (Top)
+      final northPath = Path()
+        ..moveTo(rect.left, rect.top)
+        ..lineTo(rect.right, rect.top)
+        ..lineTo(pTop.dx, pTop.dy)
+        ..close();
+      canvas.drawPath(northPath, Paint()..color = westSlopeColor);
+
+      // South Triangle Hip (Bottom)
+      final southPath = Path()
+        ..moveTo(rect.left, rect.bottom)
+        ..lineTo(pBottom.dx, pBottom.dy)
+        ..lineTo(rect.right, rect.bottom)
+        ..close();
+      canvas.drawPath(southPath, Paint()..color = eastSlopeColor);
+
+      // Ridge Lines
+      canvas.drawLine(rect.topLeft, pTop, ridgePaint);
+      canvas.drawLine(rect.topRight, pTop, ridgePaint);
+      canvas.drawLine(pTop, pBottom, ridgePaint);
+      canvas.drawLine(rect.bottomLeft, pBottom, ridgePaint);
+      canvas.drawLine(rect.bottomRight, pBottom, ridgePaint);
     }
   }
 
