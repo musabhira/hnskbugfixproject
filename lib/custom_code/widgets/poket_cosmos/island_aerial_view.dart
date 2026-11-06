@@ -308,17 +308,16 @@ class IslandAerialPainter extends CustomPainter {
         break;
 
       case IslandShapeStyle.sCurveArchipelago:
-        // 🐉 Expansive S-Curve dragon island
-        path.moveTo(-130, -185);
-        path.cubicTo(-45, -215, 65, -165, 95, -90);
-        path.cubicTo(120, -20, 35, 25, -35, 35);
-        path.cubicTo(-110, 50, -125, 125, -80, 185);
-        path.cubicTo(-35, 230, 80, 215, 140, 165);
-        path.cubicTo(185, 120, 205, 180, 155, 215);
-        path.cubicTo(90, 260, -80, 260, -145, 185);
-        path.cubicTo(-195, 120, -180, 15, -100, -15);
-        path.cubicTo(-30, -35, 15, -80, -10, -140);
-        path.cubicTo(-25, -185, -95, -200, -130, -185);
+        // 🐉 Expansive S-Curve Dragon Island (Image 3 Style) - Wide 110px tropical landmass
+        path.moveTo(-60, -185);
+        path.cubicTo(-10, -210, 60, -185, 85, -140);
+        path.cubicTo(115, -90, 110, -20, 55, 25);
+        path.cubicTo(10, 60, 10, 110, 50, 150);
+        path.cubicTo(85, 185, 95, 205, 75, 225);
+        path.cubicTo(45, 245, -45, 240, -75, 200);
+        path.cubicTo(-110, 155, -95, 80, -45, 35);
+        path.cubicTo(10, -5, 10, -60, -30, -100);
+        path.cubicTo(-68, -135, -88, -165, -60, -185);
         path.close();
         break;
 
@@ -1036,6 +1035,26 @@ class IslandAerialPainter extends CustomPainter {
       canvas.drawPath(cellPath, borderShadowPaint);
     }
 
+    // 3. Highlight Selected District Territory with Radiant Golden Glow
+    if (selectedPlotNumber != null &&
+        selectedPlotNumber! >= 1 &&
+        selectedPlotNumber! <= cells.length) {
+      final selCell = cells[selectedPlotNumber! - 1];
+      canvas.drawPath(
+        selCell,
+        Paint()
+          ..color = const Color(0xFFFFD700).withValues(alpha: 0.30)
+          ..style = PaintingStyle.fill,
+      );
+      canvas.drawPath(
+        selCell,
+        Paint()
+          ..color = const Color(0xFFFFD700)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.4,
+      );
+    }
+
     canvas.restore();
   }
 
@@ -1147,108 +1166,130 @@ class IslandAerialPainter extends CustomPainter {
             );
 
       final day = plot.day;
-      // Generous Cadastral Parcel Box (34.0 x 28.0)
-      final parcelRect = Rect.fromCenter(center: pos, width: 34.0, height: 28.0);
-      final housePos = pos.translate(day >= 31 ? 1.5 : 0.0, day >= 45 ? -2.5 : 0.0);
 
-      // 1. Cadastral Demarcated Boundary Parcel (മാപ്പിൽ ജില്ലകൾ തിരിക്കുന്നതുപോലെ വരയിട്ട് തിരിച്ച ചുറ്റുമതിൽ)
-      _drawCadastralBoundaryParcel(canvas, parcelRect, isSel, day);
+      // Natural, organic placement within the district (സെന്ററിൽ, സൈഡിൽ, മൂലയിൽ)
+      // Varies between center, east, west, north-east, south-west, north-west
+      final int variation = (plotNumber * 7) % 6;
+      Offset houseOffset;
+      switch (variation) {
+        case 0:
+          houseOffset = Offset.zero; // Center
+          break;
+        case 1:
+          houseOffset = const Offset(4.0, -3.2); // North-east nook
+          break;
+        case 2:
+          houseOffset = const Offset(-4.0, 2.8); // South-west nook
+          break;
+        case 3:
+          houseOffset = const Offset(4.5, 1.2); // East side
+          break;
+        case 4:
+          houseOffset = const Offset(-4.2, -1.5); // West side
+          break;
+        case 5:
+        default:
+          houseOffset = const Offset(-2.0, -3.6); // North-west corner
+          break;
+      }
+      final housePos = pos + houseOffset;
+      final parcelRect = Rect.fromCenter(center: housePos, width: 34.0, height: 28.0);
 
-      // 2. Driveway & Parked Vehicle (കാർപോർച്ചും വാഹനങ്ങളും - വ്യത്യസ്ത കാറുകൾ)
-      _drawDrivewayAndCar(canvas, parcelRect, day, plotNumber);
+      // Level of Detail:
+      // In Overview mode (zoomScale < 2.0), draw neat minimal architectural homestead dots & badges
+      // In Deep Zoom mode (zoomScale >= 2.0) or when selected, draw full villas with car, pool, & nameboard!
+      final bool showFullDetail = zoomScale >= 2.0 || isSel;
 
-      // 3. Swimming Pool with Sun Deck & Striped Beach Umbrella (സ്വിമ്മിംഗ് പൂളും ഡെക്കും)
-      if (day >= 45) {
-        _drawSwimmingPoolAndDeck(canvas, parcelRect, day, plotNumber);
-      } else if (day >= 20) {
-        // Garden Gazebo / Shed with yellow pitched roof (Image 2)
-        _drawGardenGazebo(canvas, parcelRect, day);
+      if (!showFullDetail) {
+        // OVERVIEW: Clean, crisp architectural homestead dot & district badge
+        _drawOverviewHomesteadDot(canvas, housePos, day, plotNumber, isSel);
+        _drawDistrictMarkerBadge(canvas, housePos, plotNumber, isSel);
+      } else {
+        // ULTRA ZOOM: Full architectural compound (NO box walls!)
+        // 1. Driveway & Parked Vehicle (കാർപോർച്ചും വാഹനങ്ങളും)
+        _drawDrivewayAndCar(canvas, parcelRect, day, plotNumber);
+
+        // 2. Swimming Pool with Sun Deck & Beach Umbrella or Garden Gazebo
+        if (day >= 45) {
+          _drawSwimmingPoolAndDeck(canvas, parcelRect, day, plotNumber);
+        } else if (day >= 20) {
+          _drawGardenGazebo(canvas, parcelRect, day);
+        }
+
+        // 3. Connecting Sandstone Walkway Paths
+        _drawWalkwayPaths(canvas, parcelRect, housePos, day);
+
+        // 4. 90-Day Progression Architectural Villa Roof
+        _drawArchitecturalRoof(canvas, housePos, day, isSel, plotNumber);
+
+        // 5. Estate Entrance Nameplate Signboard
+        _drawEstateNameBoard(canvas, parcelRect, plot, isSel);
+
+        // 6. Courtyard Pet
+        final petT = timeSeconds * 0.8 + i;
+        final petDriftX = math.cos(petT) * 1.8;
+        final petDriftY = math.sin(petT) * 1.3;
+        final petPos = housePos.translate(-8.5 + petDriftX, 7.5 + petDriftY);
+        final petColor = (i % 2 == 0) ? const Color(0xFFD97706) : const Color(0xFF475569);
+        canvas.drawCircle(petPos, 0.95, Paint()..color = petColor);
+        canvas.drawCircle(petPos.translate(0.5, 0.25), 0.6, Paint()..color = petColor);
       }
 
-      // 4. Connecting Paved Footpaths (നടപ്പാതകൾ)
-      _drawWalkwayPaths(canvas, parcelRect, housePos, day);
-
-      // 5. 90-Day Progression Architectural Villa Roof (വ്യത്യസ്ത നിറങ്ങളും രൂപകൽപ്പനകളും!)
-      _drawArchitecturalRoof(canvas, housePos, day, isSel, plotNumber);
-
-      // 6. Estate Entrance Nameplate Signboard (ഒരു ബോർഡ് വെച്ചിട്ട് യൂസർ നെയിം എന്ന് എഴുതിയിട്ടുണ്ടാവും)
-      _drawEstateNameBoard(canvas, parcelRect, plot, isSel);
-
-      // 7. District Marker Badge in overview (#1, #2, ... #35)
-      _drawDistrictMarkerBadge(canvas, pos, plotNumber, isSel);
-
-      // 8. Courtyard Pet / Dog / Cat (Drifts peacefully in yard)
-      final petT = timeSeconds * 0.8 + i;
-      final petDriftX = math.cos(petT) * 1.8;
-      final petDriftY = math.sin(petT) * 1.3;
-      final petPos = pos.translate(-10.5 + petDriftX, 8.5 + petDriftY);
-      final petColor = (i % 2 == 0) ? const Color(0xFFD97706) : const Color(0xFF475569);
-      canvas.drawCircle(petPos, 0.95, Paint()..color = petColor);
-      canvas.drawCircle(petPos.translate(0.5, 0.25), 0.6, Paint()..color = petColor);
-
-      // 9. Golden Selection Beacon Aura
+      // Golden Selection Beacon Aura
       if (isSel) {
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(
-            parcelRect.inflate(2.5),
-            const Radius.circular(5.0),
-          ),
+        canvas.drawCircle(
+          housePos,
+          showFullDetail ? 20.0 : 8.5,
+          Paint()
+            ..color = const Color(0xFFFFD700).withValues(alpha: 0.28)
+            ..style = PaintingStyle.fill,
+        );
+        canvas.drawCircle(
+          housePos,
+          showFullDetail ? 20.0 : 8.5,
           Paint()
             ..color = const Color(0xFFFFD700)
             ..style = PaintingStyle.stroke
-            ..strokeWidth = 2.2,
-        );
-        canvas.drawCircle(
-          pos,
-          18.0,
-          Paint()
-            ..color = const Color(0xFFFFD700).withValues(alpha: 0.25)
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 1.5,
+            ..strokeWidth = 2.0,
         );
       }
     }
   }
 
-  // 1. Cadastral Boundary Parcel Demarcation (ചുറ്റുമതിലും സ്വകാര്യ പുൽത്തകിടിയും)
-  void _drawCadastralBoundaryParcel(Canvas canvas, Rect parcelRect, bool isSel, int day) {
-    // Ground Shadow for boundary wall
-    final wallShadow = parcelRect.translate(0.7, 0.9);
+  // 1. Minimal Crisp Homestead Dot for Clean Map Overview
+  void _drawOverviewHomesteadDot(Canvas canvas, Offset pos, int day, int plotNumber, bool isSel) {
+    // Soft shadow
     canvas.drawRRect(
-      RRect.fromRectAndRadius(wallShadow, const Radius.circular(3.8)),
-      Paint()..color = Colors.black26,
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(center: pos.translate(0.6, 0.8), width: 7.5, height: 6.0),
+        const Radius.circular(1.2),
+      ),
+      Paint()..color = Colors.black38,
     );
 
-    // Private Lawn Turf inside parcel
-    final lawnPaint = Paint()
-      ..color = isSel
-          ? const Color(0xFFFFD700).withValues(alpha: 0.35)
-          : (day >= 60 ? const Color(0xFF15803D) : const Color(0xFF16A34A))
-      ..style = PaintingStyle.fill;
-    canvas.drawRRect(RRect.fromRectAndRadius(parcelRect, const Radius.circular(3.5)), lawnPaint);
+    // Color based on plotNumber & day
+    final colorVariant = (plotNumber * 7 + day) % 5;
+    final roofColors = [
+      const Color(0xFFF97316), // Terracotta Orange
+      const Color(0xFF0D9488), // Slate Teal
+      const Color(0xFFDC2626), // Crimson
+      const Color(0xFF2563EB), // Cobalt Blue
+      const Color(0xFFD97706), // Sovereign Gold
+    ];
+    final color = isSel ? const Color(0xFFFFD700) : roofColors[colorVariant];
 
-    // Demarcated Boundary Partition Wall (Enclosure Wall ചുറ്റുമതിൽ)
-    final boundaryWall = Paint()
-      ..color = isSel
-          ? const Color(0xFFFFD700)
-          : const Color(0xFFF8FAFC) // Crisp limestone white boundary wall
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = isSel ? 2.0 : 1.15;
-    canvas.drawRRect(RRect.fromRectAndRadius(parcelRect, const Radius.circular(3.5)), boundaryWall);
+    // Roof body
+    final roofRect = Rect.fromCenter(center: pos, width: 7.0, height: 5.5);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(roofRect, const Radius.circular(1.0)),
+      Paint()..color = color,
+    );
 
-    // Corner Pillar Accents on boundary wall
-    final pillarPaint = Paint()..color = isSel ? const Color(0xFFFFD700) : Colors.white;
-    canvas.drawCircle(parcelRect.topLeft.translate(1.2, 1.2), 0.9, pillarPaint);
-    canvas.drawCircle(parcelRect.topRight.translate(-1.2, 1.2), 0.9, pillarPaint);
-    canvas.drawCircle(parcelRect.bottomLeft.translate(1.2, -1.2), 0.9, pillarPaint);
-    canvas.drawCircle(parcelRect.bottomRight.translate(-1.2, -1.2), 0.9, pillarPaint);
-
-    // Topiary hedge dots along outer boundary perimeter (Image 2 style)
-    final hedgePaint = Paint()..color = const Color(0xFF14532D);
-    for (double hx = parcelRect.left + 3.5; hx <= parcelRect.right - 3.5; hx += 4.5) {
-      canvas.drawCircle(Offset(hx, parcelRect.top + 1.2), 0.85, hedgePaint);
-      canvas.drawCircle(Offset(hx, parcelRect.bottom - 1.2), 0.85, hedgePaint);
-    }
+    // Ridge glint
+    final ridgePaint = Paint()
+      ..color = Colors.white70
+      ..strokeWidth = 0.75;
+    canvas.drawLine(pos.translate(-2.0, 0), pos.translate(2.0, 0), ridgePaint);
   }
 
   // 2. Driveway & Parked Vehicle (കാർപോർച്ചും വാഹനങ്ങളും - വ്യത്യസ്ത കാറുകൾ)
@@ -1509,23 +1550,23 @@ class IslandAerialPainter extends CustomPainter {
 
   // 7. District Marker Badge in overview (#1, #2, ... #35)
   void _drawDistrictMarkerBadge(Canvas canvas, Offset pos, int plotNumber, bool isSel) {
-    final badgeCenter = pos.translate(-11.5, -9.5);
-    canvas.drawCircle(badgeCenter.translate(0.3, 0.4), 3.2, Paint()..color = Colors.black26);
-    canvas.drawCircle(badgeCenter, 3.0, Paint()..color = const Color(0xFF0F172A).withValues(alpha: 0.88));
+    final badgeCenter = pos.translate(0.0, -5.8);
+    canvas.drawCircle(badgeCenter.translate(0.2, 0.3), 3.0, Paint()..color = Colors.black26);
+    canvas.drawCircle(badgeCenter, 2.7, Paint()..color = const Color(0xFF0F172A).withValues(alpha: 0.88));
     canvas.drawCircle(
       badgeCenter,
-      3.0,
+      2.7,
       Paint()
         ..color = isSel ? const Color(0xFFFFD700) : Colors.white70
         ..style = PaintingStyle.stroke
-        ..strokeWidth = isSel ? 1.0 : 0.6,
+        ..strokeWidth = isSel ? 1.0 : 0.55,
     );
     final badgeTp = TextPainter(
       text: TextSpan(
         text: '$plotNumber',
         style: TextStyle(
           color: isSel ? const Color(0xFFFFD700) : Colors.white,
-          fontSize: 2.6,
+          fontSize: 2.4,
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -2045,14 +2086,14 @@ class IslandAerialPainter extends CustomPainter {
         for (int i = 0; i < 17; i++) {
           final t = (i / 16.0) * 2.0 - 1.0;
           final y = t * 150.0;
-          final xCenter = 44.0 * math.sin(t * math.pi);
-          coords.add(Offset(xCenter - 16.0, y));
+          final xCenter = 40.0 * math.sin(t * math.pi);
+          coords.add(Offset(xCenter - 13.0, y));
         }
         for (int i = 0; i < 18; i++) {
           final t = (i / 17.0) * 2.0 - 1.0;
           final y = t * 150.0;
-          final xCenter = 44.0 * math.sin(t * math.pi);
-          coords.add(Offset(xCenter + 16.0, y));
+          final xCenter = 40.0 * math.sin(t * math.pi);
+          coords.add(Offset(xCenter + 13.0, y));
         }
         break;
 
