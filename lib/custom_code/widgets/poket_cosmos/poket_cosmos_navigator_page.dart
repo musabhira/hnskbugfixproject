@@ -1985,7 +1985,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                   constrained: false,
                   boundaryMargin: EdgeInsets.zero,
                   minScale: minScale, // Strictly locked to screen height! Never shrinks into a card box!
-                  maxScale: 12.0, // Ultra-deep habit house, car, pool & courtyard inspection
+                  maxScale: 20.0, // Ultra-deep habit house, nameplate board, car & pool inspection
                   clipBehavior: Clip.none,
                   child: SizedBox(
                     width: worldWidth,
@@ -2159,7 +2159,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                       final minS = sH / wH;
                       final current =
                           _aerialMapZoomController.value.getMaxScaleOnAxis();
-                      final s = (current * 1.25).clamp(minS, 12.0);
+                      final s = (current * 1.25).clamp(minS, 20.0);
                       final dx = -(wW * s - sW) / 2;
                       final dy = -(wH * s - sH) / 2;
                       _aerialMapZoomController.value =
@@ -2184,7 +2184,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                       final minS = sH / wH;
                       final current =
                           _aerialMapZoomController.value.getMaxScaleOnAxis();
-                      final s = (current * 0.80).clamp(minS, 12.0);
+                      final s = (current * 0.80).clamp(minS, 20.0);
                       final dx = -(wW * s - sW) / 2;
                       final dy = -(wH * s - sH) / 2;
                       _aerialMapZoomController.value =
@@ -2217,7 +2217,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                         const BoxConstraints(minWidth: 36, minHeight: 36),
                     padding: EdgeInsets.zero,
                   ),
-                  // 4. Ultra Focus Home 🏡 (zooms 9.5x directly onto selected plot or Plot #1 villa, car & pool)
+                  // 4. Ultra Focus Home 🏡 (zooms 14.0x directly onto selected plot or Plot #1 villa, car & pool)
                   IconButton(
                     icon: const Icon(Icons.home_work_rounded,
                         color: Color(0xFF4ADE80), size: 20),
@@ -2228,7 +2228,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                       final sH = size.height;
                       final wH = sH * 1.45;
                       final wW = math.max(sW * 2.8, sH * 2.2);
-                      const targetScale = 9.5;
+                      const targetScale = 14.0;
 
                       final coords = IslandAerialPainter.get35PlotCoordinates(island.shapeStyle);
                       final targetPlotCoord = (_inspectedPlot != null && coords.isNotEmpty)
