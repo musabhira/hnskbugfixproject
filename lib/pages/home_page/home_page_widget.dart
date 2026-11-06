@@ -1,7 +1,6 @@
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
 import '/custom_code/widgets/index.dart' as custom_widgets;
-import '/custom_code/widgets/kids/pocket_kids_home_page.dart';
 import '/custom_code/widgets/kids/pocket_pure_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
@@ -54,14 +53,8 @@ class _HomePageWidgetState extends State<HomePageWidget> {
         key: ValueKey('pocket_pure_kids_active_home_root'),
       );
     }
-    if (PocketKidsService.isStudentWorld || PocketKidsService.isKidAccount) {
-      return const PocketKidsHomePage(
-        key: ValueKey('pocket_student_active_home_root'),
-      );
-    }
     return const custom_widgets.HomePageWidgetTree(
       key: ValueKey('adult_active_home_root'),
     );
   }
 }
-

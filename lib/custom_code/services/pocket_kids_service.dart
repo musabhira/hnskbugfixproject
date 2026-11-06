@@ -1078,7 +1078,7 @@ class PocketKidsService {
     }
   }
 
-  /// Activate Student Account Mode (SS Score, PopArt Cards, Citadel Fights, School Missions)
+  /// Activate Student Account Mode (Student Mode Removed - Redirects to Adult)
   static Future<void> activateStudentAccount({
     required String name,
     required String ageGroup,
@@ -1087,9 +1087,13 @@ class PocketKidsService {
     bool isParentSwitched = false,
     bool isPureStudent = false,
   }) async {
-    _isKidAccount = true;
-    _currentWorldMode = AppWorldMode.student;
-    currentWorldModeNotifier.value = AppWorldMode.student;
+    // Student world is completely removed per user directive.
+    // All users aged 10+ are routed strictly to Adult Mode.
+    await activateAdultAccount();
+    return;
+    _isKidAccount = false;
+    _currentWorldMode = AppWorldMode.adult;
+    currentWorldModeNotifier.value = AppWorldMode.adult;
     if (isParentSwitched) {
       _isParentSwitched = true;
       _isPureKidAccount = false;
@@ -1936,20 +1940,43 @@ class PocketKidsService {
       if (profile != null) {
         final accType =
             profile['account_type']?.toString().toLowerCase().trim();
-        if (accType == 'pure_kid' || accType == 'kid' || accType == 'student') {
-          final kName = profile['kid_name']?.toString() ?? 'Young Scholar';
+        if (accType == 'pure_kid' || accType == 'kid') {
+          final kName = profile['kid_name']?.toString() ?? 'Young Explorer';
           final kAvatar = profile['kid_avatar']?.toString() ?? '🦁';
           final kAge = profile['kid_age_group']?.toString() ?? '6-8';
           await activateKidAccount(
             name: kName,
             ageGroup: kAge,
             avatar: kAvatar,
-            isPureKid: accType == 'pure_kid' ||
-                accType == 'student' ||
-                accType == 'kid',
+            isPureKid: true,
           );
           return true;
-        } else if (accType == 'adult') {
+        } else if (accType == 'adult' || accType == 'student') {
+          // If legacy 'student', migrate to 'adult' in remote database
+          if (accType == 'student') {
+            await SupaFlow.client
+                .from('profile')
+                .update({'account_type': 'adult'})
+                .eq('user_id', userId)
+                .catchError((_) {});
+          }
+          await activateAdultAccount();
+          return false;
+        }
+      }
+
+      // Check stored local age (Strict boundary: 1-9 Kid, 10+ Adult)
+      final localAge = prefs.getInt('pm_age_$userId');
+      if (localAge != null) {
+        if (localAge <= 9) {
+          await activateKidAccount(
+            name: _kidName.isNotEmpty ? _kidName : 'Little Explorer',
+            ageGroup: localAge <= 6 ? '4-6' : '6-8',
+            avatar: _kidAvatar.isNotEmpty ? _kidAvatar : '🦁',
+            isPureKid: true,
+          );
+          return true;
+        } else {
           await activateAdultAccount();
           return false;
         }

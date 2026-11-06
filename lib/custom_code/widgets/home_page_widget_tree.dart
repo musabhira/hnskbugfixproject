@@ -1149,9 +1149,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     if (PocketKidsService.isKidsWorld) {
       return const PocketPureKidsHomePage();
     }
-    if (PocketKidsService.isStudentWorld || PocketKidsService.isKidAccount) {
-      return const PocketKidsHomePage();
-    }
+
     final conversationsAsync = ref.watch(conversationsProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final gradientColors = const [Color(0xFF111B21), Color(0xFF0B141A)];

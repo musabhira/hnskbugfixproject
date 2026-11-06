@@ -4,7 +4,6 @@ import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_pure_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/welcome_onboarding_page.dart';
 export 'auth_page_model.dart';
@@ -43,21 +42,17 @@ class _AuthPageWidgetState extends State<AuthPageWidget> {
         if (isKid && mounted) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
-              builder: (_) => PocketKidsService.isKidsWorld
-                  ? const PocketPureKidsHomePage()
-                  : const PocketKidsHomePage(),
+              builder: (_) => const PocketPureKidsHomePage(),
             ),
           );
           return;
         }
       }
-      if (mounted && PocketKidsService.isKidAccount) {
-        debugPrint('AuthPage: Kid account active. Redirecting to Kids/Student Home.');
+      if (mounted && PocketKidsService.isKidsWorld) {
+        debugPrint('AuthPage: Kid account active. Redirecting to Kids Home.');
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (_) => PocketKidsService.isKidsWorld
-                ? const PocketPureKidsHomePage()
-                : const PocketKidsHomePage(),
+            builder: (_) => const PocketPureKidsHomePage(),
           ),
         );
       } else if (mounted && loggedIn) {
@@ -72,9 +67,6 @@ class _AuthPageWidgetState extends State<AuthPageWidget> {
   Widget build(BuildContext context) {
     if (PocketKidsService.isKidsWorld) {
       return const PocketPureKidsHomePage();
-    }
-    if (PocketKidsService.isStudentWorld || PocketKidsService.isKidAccount) {
-      return const PocketKidsHomePage();
     }
     if (loggedIn) {
       return const Scaffold(backgroundColor: Colors.black);

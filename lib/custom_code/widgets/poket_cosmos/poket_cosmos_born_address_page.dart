@@ -191,10 +191,8 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
     if (!mounted) return;
 
     final age = widget.userAge ?? 20;
-    if (age <= 8) {
+    if (age <= 9) {
       PocketPureKidsHomePage.launch(context);
-    } else if (age <= 16) {
-      PocketKidsHomePage.launch(context, promptProfileSetup: false);
     } else {
       context.goNamedAuth(HomePageWidget.routeName, context.mounted);
     }

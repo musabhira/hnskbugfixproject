@@ -183,7 +183,7 @@ class _PocketKidsAuthPageState extends State<PocketKidsAuthPage> {
         if (isYoungKid) {
           PocketPureKidsHomePage.launch(context);
         } else {
-          PocketKidsHomePage.launch(context);
+          PocketPureKidsHomePage.launch(context);
         }
       }
     } catch (e) {
@@ -207,7 +207,7 @@ class _PocketKidsAuthPageState extends State<PocketKidsAuthPage> {
           if (isYoungKid) {
             PocketPureKidsHomePage.launch(context);
           } else {
-            PocketKidsHomePage.launch(context);
+            PocketPureKidsHomePage.launch(context);
           }
         }
       }
@@ -232,7 +232,7 @@ class _PocketKidsAuthPageState extends State<PocketKidsAuthPage> {
       if (isYoungKid) {
         PocketPureKidsHomePage.launch(context);
       } else {
-        PocketKidsHomePage.launch(context);
+        PocketPureKidsHomePage.launch(context);
       }
     }
   }

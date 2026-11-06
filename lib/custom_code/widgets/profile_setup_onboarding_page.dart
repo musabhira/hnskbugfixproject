@@ -415,8 +415,14 @@ class _ProfileSetupOnboardingPageState
       if (_selectedDob != null) {
         await prefs.setString('pm_dob_$userId', _selectedDob!.toIso8601String());
         calculatedAge = DateTime.now().year - _selectedDob!.year;
+        if (DateTime.now().month < _selectedDob!.month ||
+            (DateTime.now().month == _selectedDob!.month &&
+                DateTime.now().day < _selectedDob!.day)) {
+          calculatedAge--;
+        }
         await prefs.setInt('pm_age_$userId', calculatedAge);
       }
+      profilePayload['account_type'] = calculatedAge <= 9 ? 'kid' : 'adult';
       await prefs.setInt('pm_daily_goal_mins_$userId', _selectedDailyGoalMins);
       await prefs.setString('pm_active_island_$userId', 'english');
 
@@ -443,27 +449,20 @@ class _ProfileSetupOnboardingPageState
 
         if (!mounted) return;
 
-        // Route automatically based on age:
-        if (calculatedAge < 9) {
-          // Pure Kids World (Ages 4-8) - Strictly locked to Kids
+        // Route strictly based on age:
+        // 🧒 Age 1 to 9 -> Kids World (PocketPureKidsHomePage)
+        // 🧑 Age 10 to unlimited -> Adult World (No student mode!)
+        if (calculatedAge <= 9) {
+          // Pure Kids World (Ages 1-9)
           await PocketKidsService.activateKidAccount(
             name: name,
-            ageGroup: '4-6',
+            ageGroup: calculatedAge <= 6 ? '4-6' : '6-8',
             avatar: _selectedPresetAvatar ?? '🦁',
             isParentSwitched: false,
             isPureKid: true,
           );
-        } else if (calculatedAge >= 9 && calculatedAge <= 16) {
-          // Student World (Ages 9-16) - Can visit Kids, but locked from Adult
-          await PocketKidsService.activateStudentAccount(
-            name: name,
-            ageGroup: '9-12',
-            avatar: _selectedPresetAvatar ?? '🦁',
-            isParentSwitched: false,
-            isPureStudent: true,
-          );
         } else {
-          // Adult Mode (Ages 17+)
+          // Adult Mode (Ages 10 to unlimited - 100% Student Mode Removed)
           await PocketKidsService.activateAdultAccount();
           if (!mounted) return;
 

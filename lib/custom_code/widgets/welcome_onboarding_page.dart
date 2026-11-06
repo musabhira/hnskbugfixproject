@@ -1273,20 +1273,20 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           // Restore paired kid profile progress from parent's cloud account
           await PocketKidsService.loadKidProgressFromParentCloud();
 
-          final isStudent =
+          final isKid =
               await PocketKidsService.syncAndVerifyUserAccountType(
                   user.uid ?? '');
-          if (isStudent && mounted) {
+          if (isKid && mounted) {
             setState(() {
               _loadingMessage =
-                  'Welcome to Student Adventure! Opening your home...';
+                  'Welcome to Kids Adventure! Opening your home...';
             });
             await Future.delayed(const Duration(milliseconds: 350));
             await _bgmPlayer?.stop();
             await PocketGameAudioService.instance.stop();
             if (mounted) {
               Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (_) => const PocketKidsHomePage()),
+                MaterialPageRoute(builder: (_) => const PocketPureKidsHomePage()),
                 (route) => false,
               );
               return;
