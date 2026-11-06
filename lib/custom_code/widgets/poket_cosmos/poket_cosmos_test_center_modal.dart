@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_born_address_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_navigator_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/profile_setup_onboarding_page.dart';
 
 /// 🪐 Poket Cosmos Testing & Demo Center Modal
 /// Allows pairs/testers/admins to:
@@ -122,8 +123,31 @@ class _PoketCosmosTestCenterModalState extends State<PoketCosmosTestCenterModal>
             const SizedBox(height: 10),
 
             _buildActionCard(
+              icon: '👤',
+              title: 'Full Flow: Profile Edit ➔ Born Ceremony',
+              subtitle: 'Name, Phone, DOB, Avatar setup -> Save -> Seamless Born Ceremony',
+              color: const Color(0xFF38BDF8),
+              onTap: () async {
+                Navigator.pop(context);
+                await PoketCosmosAllocationService.instance.resetLocalBirthplace();
+                if (context.mounted) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const Scaffold(
+                        backgroundColor: Color(0xFF0F172A),
+                        body: SafeArea(child: ProfileSetupOnboardingPage()),
+                      ),
+                    ),
+                  );
+                }
+              },
+            ),
+            const SizedBox(height: 8),
+
+            _buildActionCard(
               icon: '👶',
-              title: 'Test as Newborn Citizen (Day 1)',
+              title: 'Direct Born Ceremony as Newborn (Day 1)',
               subtitle: 'God\'s Plan allocation -> Zoom -> Day 1 Cabin -> Digital Deed',
               color: const Color(0xFF10B981),
               onTap: () async {

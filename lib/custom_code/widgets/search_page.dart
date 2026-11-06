@@ -21,6 +21,8 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citad
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_street_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_navigator_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_test_center_modal.dart';
+import 'package:flutter/services.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({
@@ -296,23 +298,53 @@ class _SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: const Color(0xFF0284C7),
-        foregroundColor: Colors.white,
-        elevation: 6,
-        icon: const Icon(Icons.satellite_alt_rounded, size: 20),
-        label: const Text(
-          'Poket Cosmos Map 🚀',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-        ),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const PoketCosmosNavigatorPage(),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          // 🪐 Button 1: Cosmos Test Lab & Born Ceremony (Positioned directly on top of Cosmos Map button!)
+          FloatingActionButton.extended(
+            heroTag: 'fab_search_cosmos_test_lab',
+            backgroundColor: const Color(0xFF0F172A),
+            foregroundColor: const Color(0xFFFFD700),
+            elevation: 8,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: Color(0xFFFFD700), width: 1.8),
             ),
-          );
-        },
+            icon: const Text('🪐', style: TextStyle(fontSize: 18)),
+            label: const Text(
+              'COSMOS TEST LAB 🧪',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 0.5),
+            ),
+            onPressed: () {
+              HapticFeedback.mediumImpact();
+              PoketCosmosTestCenterModal.show(context);
+            },
+          ),
+          const SizedBox(height: 10),
+
+          // 🚀 Button 2: Poket Cosmos Map
+          FloatingActionButton.extended(
+            heroTag: 'fab_search_cosmos_map',
+            backgroundColor: const Color(0xFF0284C7),
+            foregroundColor: Colors.white,
+            elevation: 6,
+            icon: const Icon(Icons.satellite_alt_rounded, size: 20),
+            label: const Text(
+              'Poket Cosmos Map 🚀',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const PoketCosmosNavigatorPage(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child: Column(
