@@ -211,6 +211,113 @@ class PoketCosmosAllocationService {
     return pass;
   }
 
+  /// 🧹 Resets local birthplace preferences to allow fresh re-testing of the Born Ceremony
+  Future<void> resetLocalBirthplace() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_kPlanetName);
+    await prefs.remove(_kIslandId);
+    await prefs.remove(_kIslandName);
+    await prefs.remove(_kPlotNumber);
+    await prefs.remove(_kStreetName);
+    await prefs.remove(_kCosmosPin);
+    await prefs.remove(_kDeedClaimed);
+    _cachedBirthPlot = null;
+  }
+
+  /// 🎟️ Generates a quick test neighbor reservation pass (PKT-TEST)
+  Future<NeighborReservationPass> generateQuickTestFriendPass({int plotNumber = 12}) async {
+    const testCode = 'PKT-TEST';
+    final expiresAt = DateTime.now().add(const Duration(hours: 5));
+    final pass = NeighborReservationPass(
+      code: testCode,
+      islandId: 301,
+      islandName: 'Ocean Whisper Atoll',
+      planetName: 'Earth Prime 🌍',
+      streetName: 'Reefway Avenue',
+      plotNumber: plotNumber,
+      hostUserName: 'Musab (Host)',
+      cosmosPin: 'PKT-EP301-P$plotNumber',
+      createdAt: DateTime.now(),
+      expiresAt: expiresAt,
+    );
+
+    final prefs = await SharedPreferences.getInstance();
+    final rawJson = prefs.getString(_kReservationsKey);
+    final Map<String, dynamic> store = rawJson != null ? jsonDecode(rawJson) : {};
+    store[testCode] = pass.toJson();
+    await prefs.setString(_kReservationsKey, jsonEncode(store));
+
+    return pass;
+  }
+
+  /// 👥 Backfills & Allocates all existing registered users across Earth Prime's islands
+  /// Assigns 35 citizens per island. Seniority by created_at. Guarantees 100% exclusivity!
+  Future<Map<String, dynamic>> syncAndAllocateExistingUsers() async {
+    try {
+      final res = await SupaFlow.client
+          .from('profile')
+          .select('id, name, created_at, day, country, city, bio')
+          .order('created_at', ascending: true);
+
+      final List<dynamic> profiles = res as List<dynamic>;
+      if (profiles.isEmpty) {
+        return {'total': 0, 'newlyAllocated': 0, 'alreadyAllocated': 0};
+      }
+
+      final islandCatalog = [
+        (301, 'Ocean Whisper Atoll', 'Earth Prime 🌍', 'Reefway Avenue'),
+        (302, 'Haven Peninsula', 'Earth Prime 🌍', 'Highland Crest Road'),
+        (303, 'Tranquil Bay Isle', 'Earth Prime 🌍', 'Emerald Coastal Boulevard'),
+        (304, 'Sunset Sanctuary', 'Earth Prime 🌍', 'Golden Beach Drive'),
+        (305, 'Azure Coral Isle', 'Earth Prime 🌍', 'Palm Shore Walkway'),
+        (306, 'Crescent Cove', 'Earth Prime 🌍', 'Marina View Way'),
+        (307, 'Emerald Key', 'Earth Prime 🌍', 'Coconut Palm Terrace'),
+        (308, 'Starfish Haven', 'Earth Prime 🌍', 'Seashell Passage'),
+        (309, 'Breeze Lagoon', 'Earth Prime 🌍', 'Windward Trail'),
+        (310, 'Coral Citadel', 'Earth Prime 🌍', 'Sunburst Walk'),
+      ];
+
+      int newlyAllocated = 0;
+      int alreadyAllocated = 0;
+
+      for (int i = 0; i < profiles.length; i++) {
+        final item = profiles[i] as Map<String, dynamic>;
+        final String userId = item['id'] as String;
+        final String? existingBio = item['bio'] as String?;
+
+        // If user already has an allocated bio/PIN, count as already allocated
+        if (existingBio != null && existingBio.contains('PKT-EP')) {
+          alreadyAllocated++;
+          continue;
+        }
+
+        // Determine island and plot number (35 per island)
+        final islandIdx = (i ~/ 35) % islandCatalog.length;
+        final targetIsland = islandCatalog[islandIdx];
+        final plotNum = (i % 35) + 1;
+        final cosmosPin = 'PKT-EP${targetIsland.$1}-P$plotNum';
+
+        // Update profile in Supabase
+        await SupaFlow.client.from('profile').update({
+          'country': targetIsland.$2,
+          'city': targetIsland.$4,
+          'bio': '🏡 Citizen of ${targetIsland.$2}, ${targetIsland.$3} ($cosmosPin)',
+        }).eq('id', userId);
+
+        newlyAllocated++;
+      }
+
+      return {
+        'total': profiles.length,
+        'newlyAllocated': newlyAllocated,
+        'alreadyAllocated': alreadyAllocated,
+      };
+    } catch (e) {
+      debugPrint('⚠️ syncAndAllocateExistingUsers error: $e');
+      return {'error': e.toString(), 'newlyAllocated': 0};
+    }
+  }
+
   /// 🔍 Validates a Neighbor Pre-Booking Code
   Future<NeighborReservationPass?> validateNeighborInviteCode(String code) async {
     final cleanCode = code.trim().toUpperCase();

@@ -28,6 +28,7 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/games/pocket_kids_art_
 import 'package:pocket_mates_app/custom_code/widgets/kids/games/pocket_kids_kumi_word_builder_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/games/pocket_kids_match_it_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/games/pocket_kids_picture_quiz_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_test_center_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/spoken/pocket_kids_spoken_dialogue_lab_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_hero_card_claim_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_profile_setup_dialog.dart';
@@ -221,21 +222,67 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
       backgroundColor: const Color(0xFFE8F8F5), // Kumi Soft Mint
       body: SafeArea(
         bottom: false,
-        child: Column(
+        child: Stack(
           children: [
-            _buildTopKidHeader(),
-            Expanded(
-              child: IndexedStack(
-                index: _currentTab,
-                children: [
-                  _buildKidWorldTab(),        // Tab 0: Homes
-                  _buildCartoonTrailTab(),     // Tab 1: Trails (300-day learning journey)
-                  _buildArcadePlaygroundTab(), // Tab 2: Arcade (mini-games playground)
-                  _buildKidProfileTab(),      // Tab 3: Profile (growing tree world)
-                ],
+            Column(
+              children: [
+                _buildTopKidHeader(),
+                Expanded(
+                  child: IndexedStack(
+                    index: _currentTab,
+                    children: [
+                      _buildKidWorldTab(),        // Tab 0: Homes
+                      _buildCartoonTrailTab(),     // Tab 1: Trails (300-day learning journey)
+                      _buildArcadePlaygroundTab(), // Tab 2: Arcade (mini-games playground)
+                      _buildKidProfileTab(),      // Tab 3: Profile (growing tree world)
+                    ],
+                  ),
+                ),
+                _buildBottomKidNav(),
+              ],
+            ),
+            // 🪐 Floating Cosmos Test Lab Pill
+            Positioned(
+              top: 6,
+              right: 12,
+              child: GestureDetector(
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  PoketCosmosTestCenterModal.show(context);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A).withValues(alpha: 0.94),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFFFD700), width: 1.4),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('🪐', style: TextStyle(fontSize: 15)),
+                      const SizedBox(width: 5),
+                      Text(
+                        'TEST LAB',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-            _buildBottomKidNav(),
           ],
         ),
       ),

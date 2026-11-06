@@ -30,6 +30,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_globa
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_tasks_master_hub.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day_open_world_adventure_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_pure_kids_home_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_test_center_modal.dart';
 
 /// 🧸 Dedicated Kids Adventure Mountain Roadmap Page
 ///
@@ -832,24 +833,71 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
     return ScaffoldMessenger(
       child: Material(
         color: const Color(0xFF0284C7),
-        child: Column(
+        child: Stack(
           children: [
-            Expanded(
-              child: IndexedStack(
-                index: _currentTab,
-                children: [
-                  PocketHomesReelsFeedWidget(
-                    isActive: _currentTab == 0,
-                    userLevel: unlockedDay,
+            Column(
+              children: [
+                Expanded(
+                  child: IndexedStack(
+                    index: _currentTab,
+                    children: [
+                      PocketHomesReelsFeedWidget(
+                        isActive: _currentTab == 0,
+                        userLevel: unlockedDay,
+                      ),
+                      const PocketStudentChatHubWidget(),
+                      const PocketKidsTasksMasterHubPage(),
+                      const PocketKidsStudyToolsPage(),
+                      const PocketKidsProfilePage(),
+                    ],
                   ),
-                  const PocketStudentChatHubWidget(),
-                  const PocketKidsTasksMasterHubPage(),
-                  const PocketKidsStudyToolsPage(),
-                  const PocketKidsProfilePage(),
-                ],
+                ),
+                _buildBottomNav(),
+              ],
+            ),
+
+            // 🪐 Floating Cosmos Test Lab Pill (Direct 1-tap testing for Born Address, Islands & Allocations!)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 8,
+              right: 12,
+              child: GestureDetector(
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  PoketCosmosTestCenterModal.show(context);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A).withValues(alpha: 0.94),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('🪐', style: TextStyle(fontSize: 16)),
+                      const SizedBox(width: 6),
+                      Text(
+                        'COSMOS TEST LAB',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-            _buildBottomNav(),
           ],
         ),
       ),

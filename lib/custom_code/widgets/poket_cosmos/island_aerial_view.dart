@@ -528,33 +528,45 @@ class IslandAerialPainter extends CustomPainter {
     return path;
   }
 
-  // 3. Thick U-shaped Horseshoe Island around calm turquoise bay (110px thick arms!)
+  // 3. Lagoon Atoll: Broad solid rounded island with natural coastal contours
   Path _buildHorseshoeBayPath(int seed) {
     final path = Path();
-    final d = math.sin(seed * 0.7) * 4.0;
-    path.moveTo(-185 + d, -125);
-    path.cubicTo(-185, -185, 185, -185, 185 - d, -125);
-    path.cubicTo(195, 25, 165, 155, 100, 165);
-    path.cubicTo(45, 170, 35, 115, 55, 55);
-    // Inner sheltered cove
-    path.cubicTo(70, -25, -70, -25, -55, 55);
-    path.cubicTo(-35, 115, -45, 170, -100, 165);
-    path.cubicTo(-165, 155, -195, 25, -185 + d, -125);
+    const count = 36;
+    for (int i = 0; i <= count; i++) {
+      final a = (i / count) * 2 * math.pi;
+      final delta = math.sin(a * 4.0 + seed * 1.3) * 6.0 + math.cos(a * 2.0 + seed * 0.7) * 4.5;
+      final rx = 192.0 + delta;
+      final ry = 162.0 + delta * 0.75;
+      final x = rx * math.cos(a);
+      final y = ry * math.sin(a);
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
     path.close();
     return path;
   }
 
-  // 4. Two broad circular highlands joined by massive central bridge (Replaces S-curve)
+  // 4. Emerald Arch Haven: Expansive rounded continental island
   Path _buildTwinSanctuaryPath(int seed) {
     final path = Path();
-    final d = math.cos(seed * 1.1) * 4.0;
-    path.moveTo(-190, -95);
-    path.cubicTo(-190, -165, -65, -165, -35, -95 + d);
-    path.cubicTo(-20, -55, 20, -55, 35, -95 - d);
-    path.cubicTo(65, -165, 190, -165, 190, -95);
-    path.cubicTo(200, 35, 145, 155, 75, 145);
-    path.cubicTo(25, 85, -25, 85, -75, 145);
-    path.cubicTo(-145, 155, -200, 35, -190, -95);
+    const count = 36;
+    for (int i = 0; i <= count; i++) {
+      final a = (i / count) * 2 * math.pi;
+      // Gentle natural coves on 4 corners
+      final delta = math.sin(a * 4.0 + seed * 1.1) * 7.0 + math.cos(a * 6.0 + seed * 0.5) * 3.5;
+      final rx = 190.0 + delta;
+      final ry = 160.0 + delta * 0.8;
+      final x = rx * math.cos(a);
+      final y = ry * math.sin(a);
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
     path.close();
     return path;
   }
@@ -2491,79 +2503,55 @@ class IslandAerialPainter extends CustomPainter {
 
     switch (archetype) {
       case IslandArchetype.naturalOval:
-        // 17 inner ring plots (r = 65-76px)
-        for (int i = 0; i < 17; i++) {
-          final a = (i * 2 * math.pi / 17) - math.pi / 2;
-          coords.add(Offset(76.0 * math.cos(a), 58.0 * math.sin(a)));
-        }
-        // 18 outer ring plots (r = 100-130px)
-        for (int i = 0; i < 18; i++) {
-          final a = (i * 2 * math.pi / 18) - math.pi / 2;
-          coords.add(Offset(130.0 * math.cos(a), 98.0 * math.sin(a)));
+        // 5 balanced rows (5 + 7 + 8 + 8 + 7 = 35 plots) for equal, spacious parcel partitioning
+        const rowCounts = [5, 7, 8, 8, 7];
+        const yPositions = [-105.0, -52.0, 0.0, 52.0, 105.0];
+        const rowSpans = [160.0, 220.0, 260.0, 250.0, 190.0];
+        for (int r = 0; r < 5; r++) {
+          final count = rowCounts[r];
+          final span = rowSpans[r];
+          final step = count > 1 ? span / (count - 1) : 0.0;
+          for (int c = 0; c < count; c++) {
+            coords.add(Offset(-span / 2 + c * step, yPositions[r]));
+          }
         }
         break;
 
       case IslandArchetype.capePeninsula:
-        // North Mainland (18 plots): 3 rows of 6
-        final yRowsNorth = [-115.0, -75.0, -35.0];
-        for (int r = 0; r < 3; r++) {
-          for (int c = 0; c < 6; c++) {
-            final x = -95.0 + c * 38.0;
-            coords.add(Offset(x, yRowsNorth[r]));
+        // 7 rows of 5 plots = 35 plots (Cadastral suburban grid matching Images 1 & 3)
+        const yPositions = [-120.0, -80.0, -40.0, 0.0, 40.0, 80.0, 120.0];
+        for (int r = 0; r < 7; r++) {
+          for (int c = 0; c < 5; c++) {
+            final x = -100.0 + c * 50.0;
+            coords.add(Offset(x, yPositions[r]));
           }
-        }
-        // South Cape (17 plots): 3 rows (6, 6, 5)
-        for (int c = 0; c < 6; c++) {
-          coords.add(Offset(-75.0 + c * 30.0, 15.0));
-        }
-        for (int c = 0; c < 6; c++) {
-          coords.add(Offset(-65.0 + c * 26.0, 58.0));
-        }
-        for (int c = 0; c < 5; c++) {
-          coords.add(Offset(-50.0 + c * 25.0, 102.0));
         }
         break;
 
       case IslandArchetype.horseshoeBay:
-        // 1. North Crest (13 plots: 6 West of pitch, 1 ridge overlook, 6 East of pitch)
-        for (int i = 0; i < 6; i++) {
-          final x = -105.0 + i * 14.0; // x: -105..-35
-          coords.add(Offset(x, -145.0 + (x * x) / 1200.0));
+        // Lagoon Atoll: 2 concentric circular rings (15 inner + 20 outer = 35 plots)
+        for (int i = 0; i < 15; i++) {
+          final a = (i * 2 * math.pi / 15) - math.pi / 2;
+          coords.add(Offset(85.0 * math.cos(a), 68.0 * math.sin(a)));
         }
-        coords.add(const Offset(0, -165.0)); // Ridge overlook
-        for (int i = 0; i < 6; i++) {
-          final x = 35.0 + i * 14.0; // x: 35..105
-          coords.add(Offset(x, -145.0 + (x * x) / 1200.0));
-        }
-        // 2. West Arm (11 plots)
-        for (int i = 0; i < 11; i++) {
-          final t = i / 10.0;
-          coords.add(Offset(-148.0 + (i % 2 == 0 ? -5.0 : 5.0), -85.0 + t * 180.0));
-        }
-        // 3. East Arm (11 plots)
-        for (int i = 0; i < 11; i++) {
-          final t = i / 10.0;
-          coords.add(Offset(148.0 + (i % 2 == 0 ? -5.0 : 5.0), -85.0 + t * 180.0));
+        for (int i = 0; i < 20; i++) {
+          final a = (i * 2 * math.pi / 20) - math.pi / 2;
+          coords.add(Offset(138.0 * math.cos(a), 110.0 * math.sin(a)));
         }
         break;
 
       case IslandArchetype.twinSanctuary:
-        // West Sanctuary (18 plots): 3 rows of 6
-        final yRowsWest = [-75.0, -20.0, 35.0];
-        for (int r = 0; r < 3; r++) {
-          for (int c = 0; c < 6; c++) {
-            coords.add(Offset(-142.0 + c * 15.0, yRowsWest[r]));
+        // Emerald Arch Haven: 5 balanced rows (6 + 7 + 8 + 7 + 7 = 35 plots)
+        const rowCounts = [6, 7, 8, 7, 7];
+        const yPositions = [-105.0, -52.0, 0.0, 52.0, 105.0];
+        const rowSpans = [180.0, 230.0, 260.0, 230.0, 180.0];
+        for (int r = 0; r < 5; r++) {
+          final count = rowCounts[r];
+          final span = rowSpans[r];
+          final step = count > 1 ? span / (count - 1) : 0.0;
+          for (int c = 0; c < count; c++) {
+            coords.add(Offset(-span / 2 + c * step, yPositions[r]));
           }
-        }
-        // East Sanctuary (17 plots): rows of 6, 6, 5
-        for (int c = 0; c < 6; c++) {
-          coords.add(Offset(68.0 + c * 15.0, -75.0));
-        }
-        for (int c = 0; c < 6; c++) {
-          coords.add(Offset(68.0 + c * 15.0, -20.0));
-        }
-        for (int c = 0; c < 5; c++) {
-          coords.add(Offset(75.0 + c * 16.0, 35.0));
         }
         break;
 
@@ -2572,7 +2560,7 @@ class IslandAerialPainter extends CustomPainter {
         for (int i = 0; i < 35; i++) {
           final row = i ~/ 7;
           final col = i % 7;
-          coords.add(Offset((col - 3) * 25.0, (row - 2) * 25.0));
+          coords.add(Offset((col - 3) * 32.0, (row - 2) * 34.0));
         }
         break;
     }
@@ -2585,38 +2573,33 @@ class IslandAerialPainter extends CustomPainter {
     final archetype = getIslandArchetype(style);
     switch (archetype) {
       case IslandArchetype.naturalOval:
-        if (index < 17) {
-          // Inner ring faces outward towards boulevard
-          return (index * 2 * math.pi / 17) - math.pi / 2;
-        } else {
-          // Outer ring faces inward towards boulevard
-          return ((index - 17) * 2 * math.pi / 18) - math.pi / 2 + math.pi;
-        }
+        // Varied natural facing angles across rows
+        final row = (index * 5) ~/ 35;
+        return row.isEven ? 0.0 : math.pi;
 
       case IslandArchetype.capePeninsula:
-        if (index < 6) return math.pi; // Row 0 faces South
-        if (index < 12) return 0.0; // Row 1 faces North
-        if (index < 18) return math.pi; // Row 2 faces South
-        if (index < 24) return 0.0; // Row 3 faces North
-        if (index < 30) return math.pi; // Row 4 faces South
-        return 0.0; // Row 5 faces North
+        // Alternating north and south facing rows
+        final row = index ~/ 5;
+        return row.isEven ? math.pi : 0.0;
 
       case IslandArchetype.horseshoeBay:
-        if (index < 13) return math.pi; // North crest faces South towards bay
-        if (index < 24) return math.pi / 2; // West arm faces East towards bay
-        return -math.pi / 2; // East arm faces West towards bay
+        if (index < 15) {
+          return (index * 2 * math.pi / 15) - math.pi / 2;
+        } else {
+          return ((index - 15) * 2 * math.pi / 20) - math.pi / 2 + math.pi;
+        }
 
       case IslandArchetype.twinSanctuary:
-        if (index < 18) return math.pi / 2; // West sanctuary faces East towards valley
-        return -math.pi / 2; // East sanctuary faces West towards valley
+        final row = (index * 5) ~/ 35;
+        return row.isEven ? math.pi : 0.0;
 
       case IslandArchetype.citadelPlateau:
         final row = index ~/ 7;
         final col = index % 7;
-        if (row == 0) return math.pi; // Top faces South
-        if (row == 4) return 0.0; // Bottom faces North
-        if (col < 3) return math.pi / 2; // Left faces East
-        return -math.pi / 2; // Right faces West
+        if (row == 0) return math.pi;
+        if (row == 4) return 0.0;
+        if (col < 3) return math.pi / 2;
+        return -math.pi / 2;
     }
   }
 
