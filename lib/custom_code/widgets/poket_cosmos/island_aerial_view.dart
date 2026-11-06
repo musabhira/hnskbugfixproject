@@ -207,17 +207,25 @@ class IslandAerialPainter extends CustomPainter {
   // =========================================================================
   void _drawUnifiedWorldOcean(Canvas canvas, Size size) {
     final fullRect = Offset.zero & size;
+    final baseWater = island.waterColor;
+    final isStarlightCosmic = (baseWater.toARGB32() == 0xFF0F172A) ||
+        island.name.toLowerCase().contains('moon') ||
+        island.name.toLowerCase().contains('pluto');
 
-    // 1. Vast Depth Gradient (matches Scaffold ocean color at edge)
+    final oceanMid1 = Color.lerp(baseWater, Colors.black, 0.25) ?? baseWater;
+    final oceanMid2 = Color.lerp(baseWater, Colors.black, 0.50) ?? Colors.black;
+    final oceanOuter = Color.lerp(baseWater, const Color(0xFF020617), 0.75) ?? const Color(0xFF020617);
+
+    // 1. Vast Celestial Depth Gradient
     final oceanGradient = RadialGradient(
       center: Alignment.center,
       radius: 1.15,
       colors: [
-        Color.lerp(island.waterColor, const Color(0xFF0284C7), 0.65) ?? const Color(0xFF0284C7),
-        Color.lerp(island.waterColor, const Color(0xFF0369A1), 0.80) ?? const Color(0xFF0369A1),
-        const Color(0xFF075985),
-        const Color(0xFF033F63),
-        const Color(0xFF022B45), // Outermost edge matches Scaffold background identically!
+        baseWater,
+        Color.lerp(baseWater, oceanMid1, 0.5)!,
+        oceanMid1,
+        oceanMid2,
+        oceanOuter,
       ],
       stops: const [0.0, 0.35, 0.65, 0.85, 1.0],
     );
@@ -225,13 +233,24 @@ class IslandAerialPainter extends CustomPainter {
     final oceanPaint = Paint()..shader = oceanGradient.createShader(fullRect);
     canvas.drawRect(fullRect, oceanPaint);
 
-    // 2. High-Altitude Sunlight Sheen (Subtle Specular Glint)
+    // 2. Cosmic Starlight Glints (For Moon & Pluto)
+    if (isStarlightCosmic) {
+      final starPaint = Paint()..color = Colors.white.withValues(alpha: 0.45);
+      for (int s = 0; s < 30; s++) {
+        final sx = (s * 83.0 + 47.0) % size.width;
+        final sy = (s * 127.0 + 19.0) % size.height;
+        final twinkle = (math.sin(timeSeconds * 3.0 + s) + 1.0) * 0.5;
+        canvas.drawCircle(Offset(sx, sy), 0.7 + 0.6 * twinkle, starPaint);
+      }
+    }
+
+    // 3. High-Altitude Atmospheric Sheen
     final sunGlintPaint = Paint()
       ..shader = RadialGradient(
         center: const Alignment(-0.35, -0.45),
         radius: 0.9,
         colors: [
-          Colors.white.withValues(alpha: 0.12),
+          Colors.white.withValues(alpha: isStarlightCosmic ? 0.06 : 0.12),
           Colors.white.withValues(alpha: 0.03),
           Colors.transparent,
         ],
@@ -239,7 +258,7 @@ class IslandAerialPainter extends CustomPainter {
       ).createShader(fullRect);
     canvas.drawRect(fullRect, sunGlintPaint);
 
-    // 3. Living Wave Crest Arcs across the open sea
+    // 4. Living Wave Crest Arcs across the open sea
     final wavePaint = Paint()
       ..color = Colors.white.withValues(alpha: 0.16)
       ..style = PaintingStyle.stroke
@@ -456,9 +475,27 @@ class IslandAerialPainter extends CustomPainter {
   void _drawSandyBeach(Canvas canvas) {
     final islandPath = _getIslandPath();
 
-    // Main golden sand beach rim
+    // Planet-responsive beach sand tone:
+    // Moon: Platinum/silver lunar regolith dust
+    // Mars: Terracotta copper sand
+    // Earth: Warm golden tropical sand
+    Color beachSandColor = const Color(0xFFFDE68A);
+    Color wetSandColor = const Color(0xFFF59E0B).withValues(alpha: 0.55);
+
+    if (island.name.toLowerCase().contains('moon') || island.waterColor.toARGB32() == 0xFF0F172A) {
+      beachSandColor = const Color(0xFFCBD5E1); // Silver lunar dust
+      wetSandColor = const Color(0xFF94A3B8).withValues(alpha: 0.55);
+    } else if (island.name.toLowerCase().contains('mars') || island.climate.contains('Rusty')) {
+      beachSandColor = const Color(0xFFFDBA74); // Warm copper sand
+      wetSandColor = const Color(0xFFEA580C).withValues(alpha: 0.55);
+    } else if (island.name.toLowerCase().contains('jupiter')) {
+      beachSandColor = const Color(0xFFFDE047); // Golden brass shoreline
+      wetSandColor = const Color(0xFFD97706).withValues(alpha: 0.55);
+    }
+
+    // Main sand beach rim
     final sandPaint = Paint()
-      ..color = const Color(0xFFFDE68A) // Golden tropical sand
+      ..color = beachSandColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 16
       ..strokeCap = StrokeCap.round;
@@ -466,7 +503,7 @@ class IslandAerialPainter extends CustomPainter {
 
     // Wet shoreline sand edge meeting the water
     final wetSandPaint = Paint()
-      ..color = const Color(0xFFF59E0B).withValues(alpha: 0.55)
+      ..color = wetSandColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 5.0
       ..strokeCap = StrokeCap.round;
@@ -476,13 +513,19 @@ class IslandAerialPainter extends CustomPainter {
   void _drawGreenIslandBody(Canvas canvas) {
     final islandPath = _getIslandPath();
 
+    // Preserve lush vibrant green base while harmonizing with planetary biome
+    // (User: "പച്ചപ്പൊക്കെ അടിയിൽ വേണം. ഇല്ലാന്നല്ല. പക്ഷെ ചെറിയൊരു ഡിഫറൻസ് വേണം")
+    final sunlitGreen = Color.lerp(const Color(0xFF4ADE80), island.landColor, 0.20) ?? const Color(0xFF4ADE80);
+    final coreGreen = Color.lerp(const Color(0xFF16A34A), island.landColor, 0.25) ?? const Color(0xFF16A34A);
+    final deepForestGreen = Color.lerp(const Color(0xFF14532D), island.landColor, 0.35) ?? const Color(0xFF14532D);
+
     final landGradient = RadialGradient(
       center: const Alignment(-0.15, -0.22),
       radius: 0.98,
       colors: [
-        const Color(0xFF4ADE80), // Sunlit vibrant lush green
-        island.landColor,        // Island signature forest green
-        Color.lerp(island.landColor, const Color(0xFF064E3B), 0.52) ?? const Color(0xFF14532D),
+        sunlitGreen,     // Sunlit vibrant lush green
+        coreGreen,       // Island signature green
+        deepForestGreen, // Rich deep forest edge
       ],
       stops: const [0.0, 0.52, 1.0],
     );
@@ -1462,6 +1505,27 @@ class IslandAerialPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
     canvas.drawLine(poolRect.topLeft.translate(1.8, 2.2), poolRect.topLeft.translate(3.8, 2.2), ripplePaint);
 
+    // 🐟 LIVING SWIMMING KOI FISH (Visible upon Deep Zoom!)
+    // Calico orange & golden Koi with tail wiggle, fins, and micro eye dots!
+    final poolWaterCenter = poolCenter.translate(-1.8, 0);
+    // Fish 1: Calico Orange-White Koi swimming in an elliptical loop
+    final fishAngle1 = timeSeconds * 1.8 + plotNumber * 1.5;
+    final fish1Pos = poolWaterCenter.translate(
+      math.cos(fishAngle1) * 1.8,
+      math.sin(fishAngle1) * 1.3,
+    );
+    _drawDetailedKoiFish(canvas, fish1Pos, fishAngle1 + math.pi / 2, const Color(0xFFEA580C), const Color(0xFFFED7AA));
+
+    // Fish 2: Golden / Platinum Koi swimming in counter-arc (for higher tiers)
+    if (day >= 65) {
+      final fishAngle2 = -timeSeconds * 1.4 + plotNumber * 2.3;
+      final fish2Pos = poolWaterCenter.translate(
+        math.cos(fishAngle2) * 1.4,
+        math.sin(fishAngle2) * 1.1,
+      );
+      _drawDetailedKoiFish(canvas, fish2Pos, fishAngle2 - math.pi / 2, const Color(0xFFEAB308), Colors.white);
+    }
+
     // White Sun Loungers (2 side-by-side sunbeds)
     final bedPaint = Paint()..color = Colors.white;
     final bed1 = Rect.fromLTWH(poolCenter.dx + 3.2, poolCenter.dy - 3.8, 1.8, 3.2);
@@ -1496,6 +1560,55 @@ class IslandAerialPainter extends CustomPainter {
     }
     // Umbrella apex finial
     canvas.drawCircle(umbrellaCenter, 0.5, Paint()..color = Colors.white);
+  }
+
+  // 🐟 Detailed Animated Swimming Koi Fish with Eyes, Fins & Wagging Tail (Deep Zoom!)
+  void _drawDetailedKoiFish(Canvas canvas, Offset pos, double heading, Color primaryColor, Color patternColor) {
+    canvas.save();
+    canvas.translate(pos.dx, pos.dy);
+    canvas.rotate(heading);
+
+    // Torpedo Body (streamlined carp shape)
+    final fishBodyPath = Path();
+    fishBodyPath.moveTo(0, -1.2); // snout
+    fishBodyPath.cubicTo(0.65, -0.6, 0.65, 0.5, 0.25, 1.1); // right flank
+    fishBodyPath.lineTo(-0.25, 1.1); // tail peduncle
+    fishBodyPath.cubicTo(-0.65, 0.5, -0.65, -0.6, 0, -1.2); // left flank
+    fishBodyPath.close();
+
+    // Body base
+    canvas.drawPath(fishBodyPath, Paint()..color = primaryColor);
+
+    // Calico dorsal pattern patch
+    canvas.drawCircle(const Offset(0.08, -0.15), 0.35, Paint()..color = patternColor.withValues(alpha: 0.9));
+
+    // Tail fin (gently wagging with high-frequency sine wave)
+    final wag = math.sin(timeSeconds * 7.5 + pos.dx * 8.0) * 0.35;
+    final tailPath = Path();
+    tailPath.moveTo(0, 1.05);
+    tailPath.lineTo(-0.45 + wag, 1.75);
+    tailPath.quadraticBezierTo(wag, 1.45, 0.45 + wag, 1.75);
+    tailPath.close();
+    canvas.drawPath(tailPath, Paint()..color = primaryColor.withValues(alpha: 0.8));
+
+    // Pectoral side fins (translucent fans)
+    final finPaint = Paint()..color = Colors.white.withValues(alpha: 0.65);
+    canvas.drawOval(Rect.fromCenter(center: const Offset(-0.6, -0.2), width: 0.5, height: 0.25), finPaint);
+    canvas.drawOval(Rect.fromCenter(center: const Offset(0.6, -0.2), width: 0.5, height: 0.25), finPaint);
+
+    // Micro-detailed Koi Eye Dots (Clearly visible when user pinches to zoom in!)
+    final eyeWhite = Paint()..color = Colors.white;
+    final eyePupil = Paint()..color = Colors.black;
+
+    // Left eye (sclera + black pupil)
+    canvas.drawCircle(const Offset(-0.35, -0.75), 0.18, eyeWhite);
+    canvas.drawCircle(const Offset(-0.35, -0.75), 0.10, eyePupil);
+
+    // Right eye (sclera + black pupil)
+    canvas.drawCircle(const Offset(0.35, -0.75), 0.18, eyeWhite);
+    canvas.drawCircle(const Offset(0.35, -0.75), 0.10, eyePupil);
+
+    canvas.restore();
   }
 
   // 4. Garden Gazebo (Yellow pitched roof like Image 2)
