@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_models.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/island_aerial_view.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 
 /// 🪐 Definition of a Permanent Celestial Colony in Pocket Cosmos
 class CelestialColonyInfo {
