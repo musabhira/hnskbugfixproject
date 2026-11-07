@@ -288,6 +288,67 @@ class PocketAdMobService {
   DateTime? _lastInterstitialShownTime;
   static const Duration minInterstitialInterval = Duration(minutes: 3);
 
+  // 🛡️ Legal Google AdMob Policy Compliance & Rate Limiting for Rewarded Ads
+  static const int kMaxRewardedAdsPerDay = 5; // Prevents ad-farming & invalid traffic policy limits
+  static const Duration minRewardedInterval = Duration(seconds: 60); // 1-minute cooldown
+  DateTime? _lastRewardedShownTime;
+
+  /// Checks daily limit & cooldown compliance for Rewarded Ads according to Google AdMob Policies
+  Future<Map<String, dynamic>> checkRewardedAdEligibility() async {
+    final prefs = await SharedPreferences.getInstance();
+    final today = DateTime.now().toIso8601String().split('T')[0];
+    final storedDate = prefs.getString('admob_rewarded_date') ?? '';
+    int count = prefs.getInt('admob_rewarded_daily_count') ?? 0;
+
+    if (storedDate != today) {
+      count = 0;
+      await prefs.setString('admob_rewarded_date', today);
+      await prefs.setInt('admob_rewarded_daily_count', 0);
+    }
+
+    if (count >= kMaxRewardedAdsPerDay) {
+      return {
+        'allowed': false,
+        'reason': 'limit',
+        'remaining': 0,
+        'message': 'Daily sponsor video limit reached ($kMaxRewardedAdsPerDay/$kMaxRewardedAdsPerDay). Earn more PS by completing lessons & battles!',
+      };
+    }
+
+    if (_lastRewardedShownTime != null) {
+      final elapsed = DateTime.now().difference(_lastRewardedShownTime!);
+      if (elapsed < minRewardedInterval) {
+        final waitSec = minRewardedInterval.inSeconds - elapsed.inSeconds;
+        return {
+          'allowed': false,
+          'reason': 'cooldown',
+          'remaining': kMaxRewardedAdsPerDay - count,
+          'wait': waitSec,
+          'message': 'Please wait ${waitSec}s before watching another sponsor video.',
+        };
+      }
+    }
+
+    return {
+      'allowed': true,
+      'remaining': kMaxRewardedAdsPerDay - count,
+    };
+  }
+
+  /// Records successful rewarded ad completion for daily quota
+  Future<void> _recordRewardedAdCompletion() async {
+    _lastRewardedShownTime = DateTime.now();
+    final prefs = await SharedPreferences.getInstance();
+    final today = DateTime.now().toIso8601String().split('T')[0];
+    final storedDate = prefs.getString('admob_rewarded_date') ?? '';
+    int count = prefs.getInt('admob_rewarded_daily_count') ?? 0;
+    if (storedDate != today) {
+      count = 0;
+      await prefs.setString('admob_rewarded_date', today);
+    }
+    await prefs.setInt('admob_rewarded_daily_count', count + 1);
+  }
+
   // 📊 Live Telemetry Cache
   final PocketAdTelemetryData _telemetry = PocketAdTelemetryData();
   PocketAdTelemetryData get telemetry => _telemetry;
@@ -638,6 +699,7 @@ class PocketAdMobService {
   }
 
   /// 🎬 Show Rewarded Video Ad (e.g. after completing a day or to claim bonus rewards)
+  /// Enforces Google AdMob legal frequency caps (max 5/day, 60s cooldown) to protect publisher account from invalid activity.
   /// If user is VIP, skips ad and immediately executes onUserEarnedReward!
   Future<void> showRewardedAd({
     required BuildContext context,
@@ -648,6 +710,35 @@ class PocketAdMobService {
     if (vip) {
       // VIPs get reward instantly without watching any ad
       onUserEarnedReward(RewardItem(50, 'bonus_vip'));
+      onAdClosed?.call();
+      return;
+    }
+
+    // 🛡️ Policy Compliance Check: Daily Cap & Cooldown
+    final eligibility = await checkRewardedAdEligibility();
+    if (eligibility['allowed'] != true) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.shield_outlined, color: Color(0xFFFFD700), size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    eligibility['message'] as String? ?? 'Sponsor video limit reached.',
+                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF0F172A),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      }
       onAdClosed?.call();
       return;
     }
@@ -701,9 +792,9 @@ class PocketAdMobService {
                     color: const Color(0xFF065F46).withValues(alpha: 0.4),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Text(
-                    '🎁 Reward: +50 Pocket Score (PS)',
-                    style: TextStyle(color: Color(0xFF6EE7B7), fontWeight: FontWeight.bold, fontSize: 12),
+                  child: Text(
+                    '🎁 Reward: +50 Pocket Score (${eligibility['remaining']} remaining today)',
+                    style: const TextStyle(color: Color(0xFF6EE7B7), fontWeight: FontWeight.bold, fontSize: 12),
                   ),
                 ),
               ],
@@ -725,6 +816,7 @@ class PocketAdMobService {
           ),
         );
         if (watched == true) {
+          await _recordRewardedAdCompletion();
           onUserEarnedReward(RewardItem(50, 'bonus_pocket_score'));
         }
       }
@@ -750,11 +842,13 @@ class PocketAdMobService {
           onAdClosed?.call();
         },
       );
-      _rewardedAd!.show(onUserEarnedReward: (_, reward) {
+      _rewardedAd!.show(onUserEarnedReward: (_, reward) async {
+        await _recordRewardedAdCompletion();
         onUserEarnedReward(reward);
       });
     } else {
       // Ad was not ready, immediately grant reward and reload
+      await _recordRewardedAdCompletion();
       onUserEarnedReward(RewardItem(50, 'fallback'));
       onAdClosed?.call();
       _loadRewardedAd();
