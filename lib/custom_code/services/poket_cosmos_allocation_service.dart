@@ -228,6 +228,28 @@ class PoketCosmosAllocationService {
   String _userKey(String? uid, String key) =>
       (uid != null && uid.isNotEmpty) ? '${uid}_$key' : key;
 
+  /// 🌍 Ensures the current user (new or existing) has a permanent Cosmos Born Address allocated
+  Future<CitizenPlot> ensureUserHasAllocatedPlot({String? defaultName, String? defaultAvatar}) async {
+    final uid = SupaFlow.client.auth.currentUser?.id;
+    String name = defaultName ?? '';
+    String avatar = defaultAvatar ?? '🦁';
+
+    if (uid != null && name.isEmpty) {
+      try {
+        final res = await SupaFlow.client.from('profile').select('name, profile_image_url').eq('id', uid).maybeSingle();
+        if (res != null) {
+          name = res['name']?.toString() ?? 'Citizen';
+          avatar = res['profile_image_url']?.toString() ?? '🦁';
+        }
+      } catch (_) {}
+    }
+
+    return allocateUserBirthplace(
+      userName: name.isNotEmpty ? name : 'Citizen',
+      avatar: avatar,
+    );
+  }
+
   /// 📬 Allocates the user's permanent birthplace in Pocket Cosmos
   Future<CitizenPlot> allocateUserBirthplace({
     String? inviteCode,

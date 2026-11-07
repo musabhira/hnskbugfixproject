@@ -25,6 +25,7 @@ import 'custom_code/services/app_store_review_service.dart';
 import 'services/iap_service.dart';
 import 'custom_code/services/pocket_admob_service.dart';
 import 'custom_code/services/pocket_personal_chat_language_service.dart';
+import 'custom_code/services/poket_cosmos_allocation_service.dart';
 
 void main() {
   runZonedGuarded(() async {
@@ -118,6 +119,11 @@ void main() {
       // 5e. Initialize Personal Chat Background Language Check Worker (English-Only)
       try {
         PocketPersonalChatLanguageService.instance.startBackgroundWorker();
+      } catch (_) {}
+
+      // 5f. Initialize Poket Cosmos Born Address & Plot Allocation Engine
+      try {
+        PoketCosmosAllocationService.instance.ensureUserHasAllocatedPlot();
       } catch (_) {}
 
       // 6. Initialize Pocket Native Language service (Hindi, Tamil, Malayalam, etc.)
