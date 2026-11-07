@@ -319,7 +319,12 @@ class _SearchPageState extends State<SearchPage> {
             ),
             onPressed: () {
               HapticFeedback.mediumImpact();
-              PoketCosmosTestCenterModal.show(context);
+              PoketCosmosBornAddressPage.launch(
+                context,
+                userName: 'Learner',
+                userAvatar: '🦁',
+                userAge: 20,
+              );
             },
           ),
           const SizedBox(height: 10),

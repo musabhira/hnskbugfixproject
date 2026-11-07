@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -10,19 +11,18 @@ import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_se
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_models.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/island_aerial_view.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/planet_sphere_icon_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_avatar_house_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/painters/citadel_scenic_landscape_painter.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/flame_english_house_game.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_pure_kids_home_page.dart';
 
-/// 🌌 The 4-Stage Pocket Cosmos Born Address Ceremony (ജനന സ്ഥലം)
+/// 🌌 Sleek, Minimal, Interactive 4-Stage Pocket Cosmos Born Ceremony
 ///
-/// Flow:
-/// 1. STAGE 0: THIS IS YOUR PLANET (ഫുൾ സ്ക്രീൻ പ്ലാനറ്റ് - Jupiter, Saturn, Earth)
-///    - Referral / Island code check (കൂട്ടുകാരന്റെ ഐലൻഡ് കോഡ് ഉണ്ടോ?)
-///    - If friend's referral code entered (e.g. User A on Jupiter), switches to User A's planet and adjacent plot!
-///    - If no code, automatically assigns planet.
-/// 2. STAGE 1: THIS IS YOUR ISLAND (ഫുൾ സ്ക്രീൻ ഐലൻഡ് - Aerial view of 35 plots)
-/// 3. STAGE 2: THIS IS YOUR PLOT (ദ്വീപിലെ സ്ഥലം - സൂം ഇൻ & പച്ച ടാപ്പ് ബട്ടൺ)
-/// 4. STAGE 3: YOUR HOME & ATMOSPHERE (ഫുൾ സ്ക്രീൻ അമോസ്ഫിയറും വീടും & ഹോം അഡ്രസ്സ്)
+/// Features:
+/// 1. iOS-style back navigation on all screens
+/// 2. Stage 0: THIS IS YOUR PLANET (Steady 3D rotating planet, pinch-to-zoom & spin, minimal text, referral code prompt)
+/// 3. Stage 1: THIS IS YOUR ISLAND (Pinch-to-zoom & pan across the full 35-plot island map, steady relaxed speed)
+/// 4. Stage 2: THIS IS YOUR PLOT (Deep zoom into the exact plot space with interactive zoom & pulsing green tap badge)
+/// 5. Stage 3: FULLSCREEN ATTACKING PROFILE ATMOSPHERE (Open world landscape, Day 1 house, interactive zoom & pan, minimal address)
 class PoketCosmosBornAddressPage extends StatefulWidget {
   final String userName;
   final String userAvatar;
@@ -64,53 +64,40 @@ class PoketCosmosBornAddressPage extends StatefulWidget {
 
 class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
     with TickerProviderStateMixin {
-  // 4 Ceremony Stages:
-  // 0 = THIS IS YOUR PLANET (ഫുൾ സ്ക്രീൻ പ്ലാനറ്റ്)
-  // 1 = THIS IS YOUR ISLAND (ഫുൾ സ്ക്രീൻ ഐലൻഡ്)
-  // 2 = THIS IS YOUR PLOT (ദ്വീപിലെ സ്ഥലം - സൂം ഇൻ & പച്ച ടാപ്പ് ബട്ടൺ)
-  // 3 = YOUR HOME & ATMOSPHERE (ഫുൾ സ്ക്രീൻ അമോസ്ഫിയറും വീടും & ഹോം അഡ്രസ്)
   int _currentStage = 0;
-
   bool _isLoading = true;
+
   late CitizenPlot _assignedPlot;
   late PoketCountryMap _assignedIsland;
   String? _activeReferralCode;
-  String? _referralFeedback;
 
-  // Zoom and Pan Animation Controllers
-  late AnimationController _cameraAnimController;
-  late Animation<double> _zoomAnim;
-  late Animation<Offset> _panAnim;
-
-  // Beacon Pulse Animation & Cosmic Breathe
-  late AnimationController _beaconController;
+  // Gentle, calm ambient breathe controller (8s relaxed period)
   late AnimationController _ambientBreatheController;
-  late AnimationController _planetSpinController;
+
+  // Transformation controllers for smooth InteractiveViewer control
+  final TransformationController _islandTransformController =
+      TransformationController();
+  final TransformationController _estateTransformController =
+      TransformationController();
+  final TransformationController _planetTransformController =
+      TransformationController();
 
   final TextEditingController _inviteCodeController = TextEditingController();
+
+  // World dimensions for Adult Attacking Profile Atmosphere
+  static const double _worldW = 1200.0;
+  static const double _worldH = 1600.0;
+  static const double _groundY = 920.0;
+  static const double _houseW = 420.0;
+  static const double _houseH = 380.0;
 
   @override
   void initState() {
     super.initState();
 
-    _cameraAnimController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2200),
-    );
-
-    _beaconController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1400),
-    )..repeat(reverse: true);
-
     _ambientBreatheController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 4000),
-    )..repeat();
-
-    _planetSpinController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 24),
+      duration: const Duration(seconds: 8),
     )..repeat();
 
     _initializeBirthplace();
@@ -118,10 +105,10 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
 
   @override
   void dispose() {
-    _cameraAnimController.dispose();
-    _beaconController.dispose();
     _ambientBreatheController.dispose();
-    _planetSpinController.dispose();
+    _islandTransformController.dispose();
+    _estateTransformController.dispose();
+    _planetTransformController.dispose();
     _inviteCodeController.dispose();
     super.dispose();
   }
@@ -143,7 +130,6 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
       avatar: widget.userAvatar,
     );
 
-    // Build the country map representation for the aerial painter
     final isJupiter = plot.planetName.toLowerCase().contains('jup');
     final island = PoketCountryMap(
       id: isJupiter ? 401 : 301,
@@ -161,7 +147,6 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
       shapeStyle: isJupiter ? IslandShapeStyle.crescentLagoon : IslandShapeStyle.ringAtoll,
     );
 
-    // Compute plot coordinates
     final coords = IslandAerialPainter.get35PlotCoordinates(island.shapeStyle);
     final targetPos = (plot.plotNumber >= 1 && plot.plotNumber <= coords.length)
         ? coords[plot.plotNumber - 1]
@@ -169,52 +154,78 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
 
     final updatedPlot = plot.copyWith(coordinates: targetPos);
 
-    // Setup Camera Zoom & Pan Interpolation
-    _zoomAnim = Tween<double>(begin: 1.0, end: 4.8).animate(
-      CurvedAnimation(
-          parent: _cameraAnimController, curve: Curves.easeInOutCubic),
-    );
-
-    _panAnim = Tween<Offset>(begin: Offset.zero, end: -targetPos).animate(
-      CurvedAnimation(
-          parent: _cameraAnimController, curve: Curves.easeInOutCubic),
-    );
-
     if (mounted) {
       setState(() {
         _assignedPlot = updatedPlot;
         _assignedIsland = island;
         _isLoading = false;
-        if (inviteCode != null && inviteCode.isNotEmpty) {
-          _referralFeedback = '🤝 Friend pass applied! Reserving adjacent plot on ${_assignedPlot.planetName}!';
-        }
       });
     }
   }
 
-  // Trigger Stage 0 -> Stage 1 (Planet -> Full Island View)
-  void _goToIslandOverview() {
-    HapticFeedback.mediumImpact();
-    setState(() => _currentStage = 1);
+  // Focus camera deep into the designated plot in Stage 2
+  void _zoomDeepToPlot() {
+    final target = _assignedPlot.coordinates;
+    const scale = 3.6;
+
+    final matrix = Matrix4.identity();
+    matrix.translate(-target.dx * scale + 180, -target.dy * scale + 340);
+    matrix.scale(scale, scale);
+
+    setState(() {
+      _currentStage = 2;
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _islandTransformController.value = matrix;
+      }
+    });
   }
 
-  // Trigger Stage 1 -> Stage 2 (Island -> Cinematic Zoom into designated plot)
-  void _startCinematicZoomToPlot() {
-    HapticFeedback.mediumImpact();
-    setState(() => _currentStage = 2);
-    _cameraAnimController.forward(from: 0.0);
+  // Reset island camera to full overview in Stage 1
+  void _resetIslandToOverview() {
+    setState(() {
+      _currentStage = 1;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _islandTransformController.value = Matrix4.identity();
+      }
+    });
   }
 
-  // Trigger Stage 2 -> Stage 3 (Green Tap on Plot -> Reveal Fullscreen Attacking House Atmosphere)
   void _revealGroundAtmosphere() {
     HapticFeedback.heavyImpact();
     try {
       PocketGameAudioService.instance.playVictorySfx();
     } catch (_) {}
+
     setState(() => _currentStage = 3);
+
+    // Smoothly initialize camera centered on the Day 1 house in the scenic landscape
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final houseCenterX = _worldW / 2;
+        final houseCenterY = (_groundY - 14.0 - _houseH) + (_houseH * 0.52);
+
+        final w = MediaQuery.of(context).size.width;
+        final h = MediaQuery.of(context).size.height;
+        const defaultScale = 1.05;
+
+        final tx = ((w / 2) - (houseCenterX * defaultScale));
+        final ty = ((h * 0.44) - (houseCenterY * defaultScale));
+
+        final matrix = Matrix4.identity();
+        matrix.setEntry(0, 0, defaultScale);
+        matrix.setEntry(1, 1, defaultScale);
+        matrix.setEntry(0, 3, tx);
+        matrix.setEntry(1, 3, ty);
+        _estateTransformController.value = matrix;
+      }
+    });
   }
 
-  // Final Action: Claim & Begin Day 1 Journey
   Future<void> _settleAndBeginJourney() async {
     HapticFeedback.heavyImpact();
     await PoketCosmosAllocationService.instance.saveBirthplace(_assignedPlot);
@@ -229,7 +240,6 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
     }
   }
 
-  // Dialog for entering a friend's neighbor / referral code
   void _showInviteCodeDialog() {
     _inviteCodeController.text = _activeReferralCode ?? '';
     showDialog(
@@ -237,21 +247,19 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF0F172A),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(22),
-          side: const BorderSide(color: Color(0xFF38BDF8), width: 1.5),
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Color(0xFF38BDF8), width: 1.2),
         ),
         title: Row(
           children: [
-            const Text('🤝', style: TextStyle(fontSize: 22)),
+            const Text('🎟️', style: TextStyle(fontSize: 20)),
             const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Island / Referral Code',
-                style: GoogleFonts.outfit(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
+            Text(
+              'Island Referral Code',
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 17,
               ),
             ),
           ],
@@ -261,28 +269,27 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'കൂട്ടുകാരന്റെ ഐലൻഡ് കോഡോ റെഫറൽ കോഡോ നൽകിയാൽ അവരുടെ വീടിനടുത്തുള്ള പ്ലോട്ടിലേക്ക് നിങ്ങളുടെ ഗ്രഹം ഓട്ടോമാറ്റിക്കായി സ്വിച്ച് ചെയ്യപ്പെടും!',
+              'കൂട്ടുകാരന്റെ ഐലൻഡ് കോഡ് ഉണ്ടെങ്കിൽ ഇവിടെ നൽകുക:',
               style: GoogleFonts.plusJakartaSans(
-                  color: Colors.white70, fontSize: 13, height: 1.4),
+                  color: Colors.white70, fontSize: 13),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             TextField(
               controller: _inviteCodeController,
               textCapitalization: TextCapitalization.characters,
               style: GoogleFonts.outfit(
                 color: const Color(0xFFFDE047),
                 fontWeight: FontWeight.bold,
-                fontSize: 18,
-                letterSpacing: 2,
+                fontSize: 17,
+                letterSpacing: 1.5,
               ),
               decoration: InputDecoration(
                 hintText: 'e.g. PKT-JUPITER',
-                hintStyle:
-                    GoogleFonts.outfit(color: Colors.white30, letterSpacing: 1),
+                hintStyle: GoogleFonts.outfit(color: Colors.white24),
                 filled: true,
                 fillColor: const Color(0xFF1E293B),
                 contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(color: Colors.white24),
@@ -290,31 +297,27 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide:
-                      const BorderSide(color: Color(0xFF38BDF8), width: 1.8),
+                      const BorderSide(color: Color(0xFF38BDF8), width: 1.5),
                 ),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             Wrap(
               spacing: 8,
               children: [
                 ActionChip(
-                  label: const Text('Try PKT-JUPITER 🪐',
+                  label: const Text('PKT-JUPITER 🪐',
                       style: TextStyle(fontSize: 11, color: Color(0xFFFDE047))),
                   backgroundColor: const Color(0xFF1E293B),
                   side: const BorderSide(color: Color(0xFFF59E0B)),
-                  onPressed: () {
-                    _inviteCodeController.text = 'PKT-JUPITER';
-                  },
+                  onPressed: () => _inviteCodeController.text = 'PKT-JUPITER',
                 ),
                 ActionChip(
-                  label: const Text('Try PKT-TEST 🌍',
+                  label: const Text('PKT-TEST 🌍',
                       style: TextStyle(fontSize: 11, color: Color(0xFF38BDF8))),
                   backgroundColor: const Color(0xFF1E293B),
                   side: const BorderSide(color: Color(0xFF38BDF8)),
-                  onPressed: () {
-                    _inviteCodeController.text = 'PKT-TEST';
-                  },
+                  onPressed: () => _inviteCodeController.text = 'PKT-TEST',
                 ),
               ],
             ),
@@ -323,8 +326,8 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child:
-                Text('Cancel', style: GoogleFonts.outfit(color: Colors.white60)),
+            child: Text('Cancel',
+                style: GoogleFonts.outfit(color: Colors.white60)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -338,9 +341,9 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
               backgroundColor: const Color(0xFF0284C7),
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(10)),
             ),
-            child: const Text('Apply Code'),
+            child: const Text('Apply'),
           ),
         ],
       ),
@@ -366,30 +369,12 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Scaffold(
-        backgroundColor: const Color(0xFF050B14),
+      return const Scaffold(
+        backgroundColor: Color(0xFF050B14),
         body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(
-                width: 44,
-                height: 44,
-                child: CircularProgressIndicator(
-                  color: Color(0xFF38BDF8),
-                  strokeWidth: 3.2,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'Seeking your destined planet & birthplace in Cosmos...',
-                style: GoogleFonts.plusJakartaSans(
-                  color: Colors.white70,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+          child: CircularProgressIndicator(
+            color: Color(0xFF38BDF8),
+            strokeWidth: 2.5,
           ),
         ),
       );
@@ -399,33 +384,32 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
       backgroundColor: const Color(0xFF050B14),
       body: Stack(
         children: [
-          // 🪐 STAGE 0: Fullscreen Planet Presentation
+          // 🪐 STAGE 0: Steady, Round 3D Rotating Planet (Pinch-to-zoom & Drag-to-spin)
           if (_currentStage == 0) _buildPlanetStageView(),
 
-          // 🏝️ STAGE 1 & 2: Island Aerial Viewport (Overview or Zoomed to Plot)
+          // 🏝️ STAGE 1 & 2: Interactive Island Aerial Map (Overview or Deep Plot Zoom)
           if (_currentStage == 1 || _currentStage == 2) _buildAerialViewport(),
 
-          // 🏡 STAGE 3: Fullscreen Attacking Profile Atmosphere (House + Address)
-          if (_currentStage == 3) _buildGroundLevelAtmosphere(),
+          // 🏡 STAGE 3: Fullscreen Adult Attacking Profile Atmosphere (Living Scenery + House)
+          if (_currentStage == 3) _buildAdultAttackingEstateView(),
 
-          // 🏷️ Overhead Header Bar
-          _buildTopHeaderBar(),
+          // 🏷️ Top Minimal Navigation Bar with iOS Back Button
+          _buildTopNavigationBar(),
 
-          // 🔘 Floating Bottom Action Bar (Stages 0, 1, 3)
-          if (_currentStage != 2)
-            Positioned(
-              left: 20,
-              right: 20,
-              bottom: MediaQuery.of(context).padding.bottom + 20,
-              child: _buildBottomActionBar(),
-            ),
+          // 🔘 Minimal Floating Bottom Action Bar
+          Positioned(
+            left: 20,
+            right: 20,
+            bottom: MediaQuery.of(context).padding.bottom + 16,
+            child: _buildBottomActionBar(),
+          ),
         ],
       ),
     );
   }
 
   // =========================================================================
-  // 🪐 STAGE 0: THIS IS YOUR PLANET (ഫുൾ സ്ക്രീൻ പ്ലാനറ്റ്)
+  // 🪐 STAGE 0: THIS IS YOUR PLANET (Clean, Minimal, Steady 3D Rotation)
   // =========================================================================
   Widget _buildPlanetStageView() {
     final planetName = _assignedPlot.planetName;
@@ -434,57 +418,22 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
 
     return Container(
       decoration: const BoxDecoration(
-        gradient: RadialGradient(
-          center: Alignment.center,
-          radius: 1.2,
-          colors: [
-            Color(0xFF0F172A),
-            Color(0xFF050B14),
-            Color(0xFF020617),
-          ],
-        ),
+        color: Color(0xFF050B14),
       ),
       child: SafeArea(
         child: Column(
           children: [
             const SizedBox(height: 70),
 
-            // Top Badge
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-              decoration: BoxDecoration(
-                color: primaryColor.withValues(alpha: 0.18),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: primaryColor.withValues(alpha: 0.45)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('🪐', style: TextStyle(fontSize: 16)),
-                  const SizedBox(width: 8),
-                  Text(
-                    'POKET COSMOS DESTINY',
-                    style: GoogleFonts.outfit(
-                      color: glowColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.4,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 14),
-
-            // Title: THIS IS YOUR PLANET
+            // Minimal Title
             Text(
               'THIS IS YOUR PLANET',
               textAlign: TextAlign.center,
               style: GoogleFonts.outfit(
-                color: Colors.white,
-                fontSize: 26,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.2,
+                color: Colors.white60,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 2.5,
               ),
             ),
             const SizedBox(height: 4),
@@ -492,86 +441,39 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
               planetName.toUpperCase(),
               textAlign: TextAlign.center,
               style: GoogleFonts.outfit(
-                color: glowColor,
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 2,
+                color: Colors.white,
+                fontSize: 26,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1.5,
               ),
             ),
 
-            if (_referralFeedback != null) ...[
-              const SizedBox(height: 10),
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 24),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFF10B981)),
-                ),
-                child: Text(
-                  _referralFeedback!,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.plusJakartaSans(
-                    color: const Color(0xFFA7F3D0),
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-
             const Spacer(),
 
-            // Grand Floating Planet Sphere
-            AnimatedBuilder(
-              animation: _ambientBreatheController,
-              builder: (context, child) {
-                final breathe = math.sin(_ambientBreatheController.value * 2 * math.pi) * 8;
-                return Transform.translate(
-                  offset: Offset(0, breathe),
+            // Interactive 3D Planet: Steady (No wobbling!), Pinch-to-zoom & Touch-to-spin
+            Expanded(
+              flex: 5,
+              child: Center(
+                child: InteractiveViewer(
+                  transformationController: _planetTransformController,
+                  minScale: 0.8,
+                  maxScale: 2.6,
+                  boundaryMargin: const EdgeInsets.all(40),
                   child: Center(
                     child: PlanetSphereIconWidget(
                       name: planetName.toLowerCase(),
                       primaryColor: primaryColor,
                       glowColor: glowColor,
-                      size: 260.0,
+                      size: 280.0,
+                      enableInteractiveSpin: true,
                     ),
                   ),
-                );
-              },
+                ),
+              ),
             ),
 
             const Spacer(),
-
-            // Planet Description Card
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 28),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0F172A).withValues(alpha: 0.85),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white12),
-                boxShadow: [
-                  BoxShadow(
-                    color: primaryColor.withValues(alpha: 0.15),
-                    blurRadius: 20,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-              child: Text(
-                'A magnificent celestial realm hosting 35-plot sovereign islands floating above cosmic atmospheric currents. Your journey begins here!',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.plusJakartaSans(
-                  color: Colors.white70,
-                  fontSize: 12.5,
-                  height: 1.45,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 100),
+            const SizedBox(height: 90),
           ],
         ),
       ),
@@ -579,343 +481,301 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
   }
 
   // =========================================================================
-  // 🗺️ STAGE 1 & 2: Island Aerial Viewport (Overview or Zoomed to Plot)
+  // 🏝️ STAGE 1 & 2: Island Aerial Map (Interactive Pan & Pinch-to-Zoom)
   // =========================================================================
   Widget _buildAerialViewport() {
-    return AnimatedBuilder(
-      animation: _cameraAnimController,
-      builder: (context, child) {
-        final zoom = _currentStage == 2 ? _zoomAnim.value : 1.0;
-        final pan = _currentStage == 2 ? _panAnim.value : Offset.zero;
+    final targetPos = _assignedPlot.coordinates;
 
-        return Stack(
-          children: [
-            Positioned.fill(
-              child: Transform.scale(
-                scale: zoom,
-                child: Transform.translate(
-                  offset: pan,
-                  child: CustomPaint(
-                    painter: IslandAerialPainter(
-                      island: _assignedIsland,
-                      isInteractive: true,
-                      selectedPlotNumber: _assignedPlot.plotNumber,
-                      plots: [_assignedPlot],
-                      animation: _ambientBreatheController,
+    return Stack(
+      children: [
+        // Interactive Island Canvas with Pinch-to-Zoom & Pan
+        Positioned.fill(
+          child: InteractiveViewer(
+            transformationController: _islandTransformController,
+            minScale: 0.7,
+            maxScale: 4.8,
+            boundaryMargin: const EdgeInsets.all(200),
+            clipBehavior: Clip.none,
+            child: SizedBox(
+              width: 1000,
+              height: 1000,
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: CustomPaint(
+                      painter: IslandAerialPainter(
+                        island: _assignedIsland,
+                        isInteractive: true,
+                        selectedPlotNumber: _assignedPlot.plotNumber,
+                        plots: [_assignedPlot],
+                        animation: _ambientBreatheController,
+                      ),
                     ),
                   ),
-                ),
-              ),
-            ),
 
-            // Pulsing Neon-Green "TAP HERE" on the plot in Stage 2
-            if (_currentStage == 2)
-              Center(
-                child: GestureDetector(
-                  onTap: _revealGroundAtmosphere,
-                  child: AnimatedBuilder(
-                    animation: _beaconController,
-                    builder: (context, _) {
-                      final pulse = _beaconController.value;
-                      return Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 18, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF052E16).withValues(alpha: 0.95),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                  color: const Color(0xFF22C55E), width: 2.2),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF22C55E)
-                                      .withValues(alpha: 0.50 * pulse + 0.3),
-                                  blurRadius: 22,
-                                  spreadRadius: 4,
-                                ),
-                              ],
-                            ),
-                            child: Row(
+                  // In Stage 2 (Deep Zoom): Glowing green target directly over the house
+                  if (_currentStage == 2)
+                    Positioned(
+                      left: targetPos.dx - 45,
+                      top: targetPos.dy - 45,
+                      child: GestureDetector(
+                        onTap: _revealGroundAtmosphere,
+                        child: AnimatedBuilder(
+                          animation: _ambientBreatheController,
+                          builder: (context, _) {
+                            final pulse = math.sin(_ambientBreatheController.value * math.pi * 4).abs();
+                            return Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Text('🟢', style: TextStyle(fontSize: 16)),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'TAP HERE TO CLAIM PLOT #${_assignedPlot.plotNumber} 🎯',
-                                  style: GoogleFonts.outfit(
-                                    color: const Color(0xFF86EFAC),
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 13,
-                                    letterSpacing: 1.2,
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 14, vertical: 7),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF052E16)
+                                        .withValues(alpha: 0.95),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                        color: const Color(0xFF22C55E),
+                                        width: 1.8),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFF22C55E)
+                                            .withValues(alpha: 0.45 * pulse + 0.25),
+                                        blurRadius: 18,
+                                        spreadRadius: 2,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Text('🟢',
+                                          style: TextStyle(fontSize: 13)),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'TAP HERE 🎯',
+                                        style: GoogleFonts.outfit(
+                                          color: const Color(0xFF86EFAC),
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 12,
+                                          letterSpacing: 1.0,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
+                                const SizedBox(height: 6),
+                                Icon(
+                                  Icons.touch_app_rounded,
+                                  color: const Color(0xFF22C55E),
+                                  size: 28 + 4 * pulse,
+                                ),
                               ],
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Icon(
-                            Icons.touch_app_rounded,
-                            color: const Color(0xFF22C55E),
-                            size: 32 + 6 * pulse,
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                ],
               ),
-          ],
-        );
-      },
-    );
-  }
-
-  // =========================================================================
-  // 🏡 STAGE 3: Fullscreen Attacking Profile Atmosphere (House + Address)
-  // =========================================================================
-  Widget _buildGroundLevelAtmosphere() {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF021B2F),
-            Color(0xFF075985),
-            Color(0xFF0284C7),
-            Color(0xFF14532D),
-          ],
-          stops: [0.0, 0.40, 0.70, 1.0],
+            ),
+          ),
         ),
-      ),
-      child: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+
+        // Stage 1 & 2 Minimal Title Header
+        Positioned(
+          top: MediaQuery.of(context).padding.top + 60,
+          left: 20,
+          right: 20,
           child: Column(
             children: [
-              const SizedBox(height: 55),
-
-              // Title: THIS IS YOUR HOME & ADDRESS
               Text(
-                'THIS IS YOUR HOME & ADDRESS',
-                textAlign: TextAlign.center,
+                _currentStage == 1
+                    ? 'THIS IS YOUR ISLAND'
+                    : 'THIS IS YOUR PLOT',
+                style: GoogleFonts.outfit(
+                  color: Colors.white60,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 2.0,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                _currentStage == 1
+                    ? _assignedIsland.name.toUpperCase()
+                    : 'PLOT #${_assignedPlot.plotNumber}',
                 style: GoogleFonts.outfit(
                   color: Colors.white,
-                  fontSize: 22,
+                  fontSize: 20,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 1.2,
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                'പോക്കറ്റ് വേൾഡിലെ നിങ്ങളുടെ ജനന സ്ഥലം',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.plusJakartaSans(
-                  color: const Color(0xFFFEF08A),
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Fullscreen Attacking Profile House Container
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                  borderRadius: BorderRadius.circular(28),
-                  border: Border.all(
-                    color: const Color(0xFF38BDF8).withValues(alpha: 0.4),
-                    width: 1.8,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF0284C7).withValues(alpha: 0.28),
-                      blurRadius: 22,
-                      spreadRadius: 3,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    // Avatar & Level Tag
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Text(_assignedPlot.userAvatar,
-                                style: const TextStyle(fontSize: 22)),
-                            const SizedBox(width: 8),
-                            Text(
-                              _assignedPlot.userName.toUpperCase(),
-                              style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                                letterSpacing: 1,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.25),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                                color: const Color(0xFF10B981), width: 1.2),
-                          ),
-                          child: Text(
-                            '🌱 DAY 1 STARTER HOME',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFF86EFAC),
-                              fontWeight: FontWeight.w900,
-                              fontSize: 10.5,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Level 1 Flame Architectural Starter House
-                    PocketAvatarHouseWidget(
-                      day: 1,
-                      width: 230,
-                      height: 175,
-                    ),
-                    const SizedBox(height: 10),
-
-                    Text(
-                      'Cozy Day 1 Homestead on ${_assignedPlot.streetName}',
-                      style: GoogleFonts.outfit(
-                        color: Colors.white70,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // 📮 Official Unique Born Address Card
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0F172A).withValues(alpha: 0.92),
-                  borderRadius: BorderRadius.circular(22),
-                  border: Border.all(
-                    color: const Color(0xFFFFD700).withValues(alpha: 0.5),
-                    width: 1.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.45),
-                      blurRadius: 18,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Text('📜', style: TextStyle(fontSize: 20)),
-                        const SizedBox(width: 8),
-                        Text(
-                          'OFFICIAL POKET COSMOS ADDRESS',
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFFFFD700),
-                            fontWeight: FontWeight.w900,
-                            fontSize: 13,
-                            letterSpacing: 1.2,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    const Divider(color: Colors.white12, height: 1),
-                    const SizedBox(height: 12),
-
-                    _buildAddressRow('👤 Citizen Name', _assignedPlot.userName),
-                    const SizedBox(height: 8),
-                    _buildAddressRow('📍 Plot & Street',
-                        'Plot #${_assignedPlot.plotNumber}, ${_assignedPlot.streetName}'),
-                    const SizedBox(height: 8),
-                    _buildAddressRow('🏝️ Island Name', _assignedPlot.countryName),
-                    const SizedBox(height: 8),
-                    _buildAddressRow('🪐 Planet', _assignedPlot.planetName),
-                    const SizedBox(height: 8),
-                    _buildAddressRow('📮 Postal Pin', _assignedPlot.postalPinCode),
-
-                    const SizedBox(height: 12),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.4)),
-                      ),
-                      child: Text(
-                        '🔒 100% Unique to this Plot • Permanent Birthplace',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.plusJakartaSans(
-                          color: const Color(0xFFA7F3D0),
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 100),
             ],
           ),
         ),
-      ),
+
+        // Focus plot button in Stage 2
+        if (_currentStage == 2)
+          Positioned(
+            right: 18,
+            top: MediaQuery.of(context).padding.top + 56,
+            child: IconButton(
+              onPressed: _zoomDeepToPlot,
+              icon: const Icon(Icons.my_location_rounded,
+                  color: Color(0xFF22C55E), size: 22),
+              tooltip: 'Re-center plot',
+            ),
+          ),
+      ],
     );
   }
 
-  Widget _buildAddressRow(String label, String value) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  // =========================================================================
+  // 🏡 STAGE 3: Fullscreen Adult Attacking Profile Atmosphere (House & Scenery)
+  // =========================================================================
+  Widget _buildAdultAttackingEstateView() {
+    const houseLeft = (_worldW - _houseW) / 2;
+    const houseTop = _groundY - 14.0 - _houseH;
+
+    return Stack(
       children: [
-        SizedBox(
-          width: 110,
-          child: Text(
-            label,
-            style: GoogleFonts.plusJakartaSans(
-              color: Colors.white54,
-              fontSize: 11.5,
-              fontWeight: FontWeight.w600,
+        // 🌄 Fullscreen Interactive Estate with Pinch-to-Zoom & Pan (from Attacking Profile)
+        Positioned.fill(
+          child: InteractiveViewer(
+            transformationController: _estateTransformController,
+            minScale: 0.45,
+            maxScale: 3.2,
+            boundaryMargin: const EdgeInsets.all(200),
+            clipBehavior: Clip.none,
+            child: SizedBox(
+              width: _worldW,
+              height: _worldH,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  // 1. Living Scenery Landscape Painter (Lush hills, clouds, balloon, swans, windmill)
+                  Positioned.fill(
+                    child: AnimatedBuilder(
+                      animation: _ambientBreatheController,
+                      builder: (context, _) {
+                        return CustomPaint(
+                          painter: CitadelScenicLandscapePainter(
+                            isDamaged: false,
+                            groundBaseY: _groundY,
+                            isNight: false,
+                            isDay90: false,
+                            ambientProg: _ambientBreatheController.value,
+                            isPresident: false,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  // 2. Day 1 Starter House in the Center
+                  Positioned(
+                    left: houseLeft,
+                    top: houseTop,
+                    width: _houseW,
+                    height: _houseH,
+                    child: IgnorePointer(
+                      child: RepaintBoundary(
+                        child: FlameEnglishHouseWidget(
+                          currentDay: 1,
+                          streak: 1,
+                          isDamaged: false,
+                          houseId: 'starter_home',
+                          showTestingControls: false,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-        Expanded(
-          child: Text(
-            value,
-            style: GoogleFonts.outfit(
-              color: Colors.white,
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
+
+        // Top Minimal Title
+        Positioned(
+          top: MediaQuery.of(context).padding.top + 60,
+          left: 20,
+          right: 20,
+          child: Column(
+            children: [
+              Text(
+                'THIS IS YOUR HOME',
+                style: GoogleFonts.outfit(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 2.0,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Day 1 Starter Homestead',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Sleek Minimal Address Card floating above the bottom action bar
+        Positioned(
+          left: 20,
+          right: 20,
+          bottom: MediaQuery.of(context).padding.bottom + 85,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F172A).withValues(alpha: 0.88),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white24, width: 1.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.4),
+                  blurRadius: 16,
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                const Text('🏡', style: TextStyle(fontSize: 22)),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Plot #${_assignedPlot.plotNumber}, ${_assignedPlot.streetName}',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${_assignedPlot.countryName} • ${_assignedPlot.planetName}',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.white60,
+                          fontSize: 11.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -924,127 +784,124 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
   }
 
   // =========================================================================
-  // 🏷️ Top Header Navigation Bar
+  // 🏷️ Top Navigation Bar (iOS-Style Back Button & Minimal Referral Trigger)
   // =========================================================================
-  Widget _buildTopHeaderBar() {
+  Widget _buildTopNavigationBar() {
     return Positioned(
       top: MediaQuery.of(context).padding.top + 8,
       left: 16,
       right: 16,
       child: Row(
         children: [
-          // Back button if past Stage 0
-          if (_currentStage > 0)
-            GestureDetector(
-              onTap: () {
-                HapticFeedback.lightImpact();
-                setState(() => _currentStage--);
-              },
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0F172A).withValues(alpha: 0.8),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white24),
-                ),
-                child: const Icon(Icons.arrow_back_ios_new_rounded,
-                    color: Colors.white, size: 16),
-              ),
-            )
-          else
-            const SizedBox(width: 36),
-
-          const Spacer(),
-
-          // Referral Code Chip
+          // iOS-style Back Button
           GestureDetector(
-            onTap: _showInviteCodeDialog,
+            onTap: () {
+              HapticFeedback.lightImpact();
+              if (_currentStage == 2) {
+                _resetIslandToOverview();
+              } else if (_currentStage > 0) {
+                setState(() => _currentStage--);
+              } else {
+                Navigator.pop(context);
+              }
+            },
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: const Color(0xFF0F172A).withValues(alpha: 0.85),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: _activeReferralCode != null
-                      ? const Color(0xFF10B981)
-                      : const Color(0xFF38BDF8),
-                  width: 1.4,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF0284C7).withValues(alpha: 0.25),
-                    blurRadius: 10,
-                  ),
-                ],
+                color: const Color(0xFF0F172A).withValues(alpha: 0.8),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white24, width: 1.0),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    _activeReferralCode != null ? '🤝 Code Applied' : '🎟️ Referral Code?',
-                    style: GoogleFonts.outfit(
-                      color: _activeReferralCode != null
-                          ? const Color(0xFFA7F3D0)
-                          : const Color(0xFF38BDF8),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
+                children: const [
+                  Icon(Icons.arrow_back_ios_new_rounded,
+                      color: Colors.white, size: 14),
+                  SizedBox(width: 4),
+                  Text('Back',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600)),
                 ],
               ),
             ),
           ),
+
+          const Spacer(),
+
+          // Minimal Referral Code Trigger (Only in Stage 0)
+          if (_currentStage == 0)
+            GestureDetector(
+              onTap: _showInviteCodeDialog,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.85),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: _activeReferralCode != null
+                        ? const Color(0xFF10B981)
+                        : Colors.white24,
+                  ),
+                ),
+                child: Text(
+                  _activeReferralCode != null ? '🤝 Applied' : '🎟️ Referral Code?',
+                  style: GoogleFonts.outfit(
+                    color: _activeReferralCode != null
+                        ? const Color(0xFFA7F3D0)
+                        : Colors.white70,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
   }
 
   // =========================================================================
-  // 🔘 Floating Bottom Action Bar
+  // 🔘 Minimal Floating Bottom Action Bar
   // =========================================================================
   Widget _buildBottomActionBar() {
     String buttonText = 'NEXT ➔';
     VoidCallback? onTap;
 
     if (_currentStage == 0) {
-      buttonText = 'NEXT: EXPLORE ISLAND ➔';
-      onTap = _goToIslandOverview;
+      buttonText = 'NEXT ➔';
+      onTap = _resetIslandToOverview;
     } else if (_currentStage == 1) {
-      buttonText = 'NEXT: ZOOM TO YOUR PLOT ➔';
-      onTap = _startCinematicZoomToPlot;
+      buttonText = 'NEXT ➔';
+      onTap = _zoomDeepToPlot;
+    } else if (_currentStage == 2) {
+      // In Stage 2, user taps on the glowing green indicator directly over the plot
+      return const SizedBox.shrink();
     } else if (_currentStage == 3) {
-      buttonText = 'START JOURNEY 🚀 (ഹോം പേജിലേക്ക്)';
+      buttonText = 'START JOURNEY 🚀';
       onTap = _settleAndBeginJourney;
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x660284C7),
-            blurRadius: 20,
-            offset: Offset(0, 6),
-          ),
-        ],
-      ),
+    return SizedBox(
+      width: double.infinity,
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF0284C7),
           foregroundColor: Colors.white,
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          elevation: 4,
+          padding: const EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
-            side: const BorderSide(color: Color(0xFF38BDF8), width: 1.5),
+            borderRadius: BorderRadius.circular(14),
           ),
         ),
         child: Text(
           buttonText,
           style: GoogleFonts.outfit(
-            fontSize: 15,
-            fontWeight: FontWeight.w900,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
             letterSpacing: 1.2,
           ),
         ),
