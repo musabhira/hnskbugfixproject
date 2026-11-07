@@ -1182,8 +1182,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           combinedFeed.add(ReelFeedItem.story(stories[storyIdx++]));
         }
 
-        if (i > 0 && i % 4 == 0) {
-          // Native Ad insertion every 7-8 total cards for non-VIP players
+        if (i > 0 && i % 3 == 0) {
+          // Native Ad insertion every 3 houses for non-VIP players
           combinedFeed.add(const ReelFeedItem.ad());
         }
 

@@ -12,6 +12,7 @@ import 'pocket_pronunciation_evaluator.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'curriculum_data/pocket_90day_speech_practice_data.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 
 /// 📢 Model for Mini Speech Exercise
 class MiniSpeechTopic {
@@ -279,7 +280,12 @@ class _PocketMiniSpeechPracticePageState
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
+              // 📢 Step Completion Modal AdMob placement per Master Monetization Plan
+              const PocketBannerAdWidget(
+                margin: EdgeInsets.symmetric(vertical: 6),
+              ),
+              const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,
                 height: 48,

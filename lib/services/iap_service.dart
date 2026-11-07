@@ -107,30 +107,44 @@ class IAPService {
     } else if (planType == 'certificate') {
       targetId = certificateProductId;
     }
-    
-    if (!_available) {
-      debugPrint('IAPService: Store billing not available');
+
+    if (!Platform.isAndroid && !Platform.isIOS) {
+      debugPrint('IAPService: In-App Purchases are only supported on Android & iOS mobile platforms.');
       return false;
     }
 
-    // Refresh products if not cached
-    if (_products.isEmpty) {
-      await fetchProducts([
-        vipMonthlyProductId,
-        vipQuarterlyProductId,
-        vipYearlyProductId,
-        certificateProductId,
-      ]);
-    }
+    try {
+      if (!_available) {
+        _available = await _iap.isAvailable();
+      }
 
-    final product = getProduct(targetId);
-    if (product == null) {
-      debugPrint('IAPService: Product $targetId not found in store catalog yet');
+      if (!_available) {
+        debugPrint('IAPService: Store billing not available');
+        return false;
+      }
+
+      // Refresh products if not cached or targetId not present
+      if (_products.isEmpty || getProduct(targetId) == null) {
+        await fetchProducts([
+          vipMonthlyProductId,
+          vipQuarterlyProductId,
+          vipYearlyProductId,
+          certificateProductId,
+        ]);
+      }
+
+      final product = getProduct(targetId);
+      if (product == null) {
+        debugPrint('IAPService: Product $targetId not found in store catalog yet');
+        return false;
+      }
+
+      final PurchaseParam purchaseParam = PurchaseParam(productDetails: product);
+      return await _iap.buyNonConsumable(purchaseParam: purchaseParam);
+    } catch (e) {
+      debugPrint('IAPService buyVipSubscription error: $e');
       return false;
     }
-
-    final PurchaseParam purchaseParam = PurchaseParam(productDetails: product);
-    return await _iap.buyNonConsumable(purchaseParam: purchaseParam);
   }
 
   /// Initiates purchase for a specific ProductDetails object

@@ -18,6 +18,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score
 import 'package:pocket_mates_app/custom_code/widgets/chat/pocket_thought_game_card.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/pocket_reels_game_engine.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 
 class ThoughtsFeedSection extends StatefulWidget {
   final String currentUserId;
@@ -565,7 +566,7 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
         }
 
         final thread = threads[index];
-        return TwitterThreadCard(
+        final card = TwitterThreadCard(
           key: ValueKey(thread['id']),
           thread: thread,
           currentUserId: widget.currentUserId,
@@ -584,6 +585,22 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
             ).then((_) => _fetchThreads(refresh: true));
           },
         );
+
+        // 📢 Interleave Native Sponsored Card every 4 thoughts for non-VIP players per Master Monetization Plan
+        if (index > 0 && index % 4 == 0) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const PocketNativeAdCard(
+                placement: PocketAdPlacement.home,
+                margin: EdgeInsets.only(bottom: 12),
+              ),
+              card,
+            ],
+          );
+        }
+
+        return card;
       },
     );
   }

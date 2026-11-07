@@ -236,11 +236,15 @@ class PocketCitadelAttackPage extends StatefulWidget {
     }
 
     // Secondary fallback: query 'users' table if profile returned no progression
-    if (data == null || (data['learning_day'] == null && data['level'] == null && data['pocket_score'] == null)) {
+    if (data == null ||
+        (data['learning_day'] == null &&
+            data['level'] == null &&
+            data['pocket_score'] == null)) {
       try {
         final userRes = await SupaFlow.client
             .from('users')
-            .select('id, name, display_name, learning_day, level, avatar_config')
+            .select(
+                'id, name, display_name, learning_day, level, avatar_config')
             .eq('id', userId)
             .maybeSingle();
         if (userRes != null) {
@@ -304,8 +308,8 @@ class PocketCitadelAttackPage extends StatefulWidget {
       userPlanetCode = pinMatch.group(2);
       userPlotNum = int.tryParse(pinMatch.group(4) ?? '1');
       if (userPlanetCode != null) {
-        final colony =
-            PoketCosmosAllocationService.instance.getColonyByCode(userPlanetCode);
+        final colony = PoketCosmosAllocationService.instance
+            .getColonyByCode(userPlanetCode);
         userPlanetName = colony.planetName;
         userIslandName = colony.islandName;
         userStreetName = colony.streetName;
@@ -1517,7 +1521,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             final double palaceW = 540.0;
             final double palaceH = 410.0;
             final double palaceLeft = (worldW - palaceW) / 2;
-            final double palaceTop = groundY - 14.0 - houseH + (houseH - palaceH);
+            final double palaceTop =
+                groundY - 14.0 - houseH + (houseH - palaceH);
 
             _savedViewportW = w;
             _savedViewportH = h;
@@ -1616,7 +1621,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                     isDay90: isDay90 || isPresident,
                                     ambientProg: _ambientController.value,
                                     isPresident: false,
-                                    planetCode: widget.neighbor.effectivePlanetCode,
+                                    planetCode:
+                                        widget.neighbor.effectivePlanetCode,
                                   ),
                                 );
                               },
@@ -3587,11 +3593,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                              color: const Color(0xFFFFD700)
+                                  .withValues(alpha: 0.15),
                               shape: BoxShape.circle,
-                              border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+                              border: Border.all(
+                                  color: const Color(0xFFFFD700), width: 1.2),
                             ),
-                            child: const Text('🔒', style: TextStyle(fontSize: 22)),
+                            child: const Text('🔒',
+                                style: TextStyle(fontSize: 22)),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -3627,7 +3636,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           color: Colors.white.withValues(alpha: 0.05),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                            color:
+                                const Color(0xFFFFD700).withValues(alpha: 0.25),
                           ),
                         ),
                         child: Column(
@@ -3635,7 +3645,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           children: [
                             Row(
                               children: [
-                                const Text('🏛️', style: TextStyle(fontSize: 16)),
+                                const Text('🏛️',
+                                    style: TextStyle(fontSize: 16)),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
@@ -3695,7 +3706,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           value: (_attackerDay / 19.0).clamp(0.0, 1.0),
                           minHeight: 8,
                           backgroundColor: Colors.white12,
-                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFFD700)),
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                              Color(0xFFFFD700)),
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -5383,7 +5395,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     decoration: BoxDecoration(
                       color: const Color(0xFF0284C7).withValues(alpha: 0.25),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFF38BDF8), width: 1.2),
+                      border: Border.all(
+                          color: const Color(0xFF38BDF8), width: 1.2),
                     ),
                     child: Center(
                       child: Text(
@@ -5438,9 +5451,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     const Divider(color: Colors.white12, height: 16),
                     _buildAddressRow('🛣️ Street', n.effectiveStreetName),
                     const Divider(color: Colors.white12, height: 16),
-                    _buildAddressRow('📍 Plot Number', 'Plot #${n.effectivePlotNumber}'),
+                    _buildAddressRow(
+                        '📍 Plot Number', 'Plot #${n.effectivePlotNumber}'),
                     const Divider(color: Colors.white12, height: 16),
-                    _buildAddressRow('📮 Born Address PIN', n.effectiveCosmosPin, isHighlight: true),
+                    _buildAddressRow(
+                        '📮 Born Address PIN', n.effectiveCosmosPin,
+                        isHighlight: true),
                   ],
                 ),
               ),
@@ -5449,22 +5465,27 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: () {
-                    Clipboard.setData(ClipboardData(text: n.effectiveCosmosPin));
+                    Clipboard.setData(
+                        ClipboardData(text: n.effectiveCosmosPin));
                     HapticFeedback.lightImpact();
                     Navigator.pop(ctx);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Copied PIN ${n.effectiveCosmosPin} to clipboard!'),
+                        content: Text(
+                            'Copied PIN ${n.effectiveCosmosPin} to clipboard!'),
                         backgroundColor: const Color(0xFF0284C7),
                       ),
                     );
                   },
-                  icon: const Icon(Icons.copy_rounded, size: 16, color: Color(0xFF38BDF8)),
+                  icon: const Icon(Icons.copy_rounded,
+                      size: 16, color: Color(0xFF38BDF8)),
                   label: Text('Copy Cosmos Address PIN',
-                      style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
+                      style: GoogleFonts.outfit(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Color(0xFF38BDF8)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                     padding: const EdgeInsets.symmetric(vertical: 11),
                   ),
                 ),
@@ -5476,13 +5497,15 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     );
   }
 
-  Widget _buildAddressRow(String label, String value, {bool isHighlight = false}) {
+  Widget _buildAddressRow(String label, String value,
+      {bool isHighlight = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           label,
-          style: GoogleFonts.plusJakartaSans(color: Colors.white60, fontSize: 12),
+          style:
+              GoogleFonts.plusJakartaSans(color: Colors.white60, fontSize: 12),
         ),
         Text(
           value,

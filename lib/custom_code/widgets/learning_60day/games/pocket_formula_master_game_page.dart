@@ -8,6 +8,7 @@ import 'package:flame/components.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 import '../pocket_formula_blueprint_builder_card.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 
 /// 🌟 Flame Particle Sparkle for Formula Master
 class FormulaSparkle extends PositionComponent {
@@ -343,6 +344,11 @@ class _PocketFormulaMasterGamePageState
                   ),
                 ],
               ),
+            ),
+            const SizedBox(height: 12),
+            // 📢 Step Completion Modal AdMob placement per Master Monetization Plan
+            const PocketBannerAdWidget(
+              margin: EdgeInsets.symmetric(vertical: 4),
             ),
           ],
         ),

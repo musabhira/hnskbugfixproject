@@ -1484,12 +1484,12 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
               listOverride: onlyGroups),
         );
 
-        if (widget.isVertical && index > 0 && index % 6 == 0) {
+        if (widget.isVertical && index > 0 && index % 4 == 0) {
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               statusItem,
-              const PocketTrueNativeAdWidget(
+              const PocketNativeAdCard(
                 placement: PocketAdPlacement.vibes,
                 margin: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               ),

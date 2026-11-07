@@ -173,17 +173,43 @@ class _SubscriptionPageState extends State<SubscriptionPage>
       final messenger = ScaffoldMessenger.of(context);
       HapticFeedback.mediumImpact();
       final planType = plan['id'] as String? ?? 'monthly';
+
+      messenger.showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                    strokeWidth: 2, color: Colors.white),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(Platform.isIOS
+                    ? 'Connecting to Apple Pay & App Store...'
+                    : 'Connecting to Google Play In-App Billing...'),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF1E293B),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+
       final initiated = await IAPService().buyVipSubscription(
         isYearly: planType == 'yearly',
         planType: planType,
       );
       if (!initiated && mounted) {
+        messenger.hideCurrentSnackBar();
         messenger.showSnackBar(
           SnackBar(
             content: Text(Platform.isIOS
-                ? 'Connecting to Apple Pay / App Store In-App Purchases...'
-                : 'Connecting to Google Play In-App Billing...'),
-            backgroundColor: const Color(0xFF1E293B),
+                ? '⚠️ App Store product is syncing or store sandbox is offline. Tap "Restore Purchases" below if previously bought.'
+                : '⚠️ Google Play In-App Billing could not be reached. Please check your network connection.'),
+            backgroundColor: const Color(0xFFE11D48),
+            duration: const Duration(seconds: 4),
           ),
         );
       }

@@ -13,6 +13,7 @@ import '../pocket_90day_vocab_curriculum.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import '../../kids/pocket_kids_curriculum_adapter.dart';
 import '../../../services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 
 /// 📖 Essential Word Item Model
 class EssentialWordModel {
@@ -841,6 +842,12 @@ class _PocketEssentialSpellingPageState
 
                 // Bottom Action Bar in Study Mode
                 if (!_isPracticeExamMode) _buildBottomStudyBar(),
+
+                // 📢 Sticky Bottom AdMob Banner for Non-VIP players per Master Monetization Plan
+                if (!PocketKidsService.isKidAccount)
+                  const PocketBannerAdWidget(
+                    margin: EdgeInsets.only(top: 4, bottom: 2),
+                  ),
               ],
             ),
           ),

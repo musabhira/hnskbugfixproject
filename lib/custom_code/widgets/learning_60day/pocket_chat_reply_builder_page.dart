@@ -9,6 +9,7 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 import 'pocket_fortress_defense_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 
 import 'curriculum_data/pocket_90day_chat_reply_data.dart';
 
@@ -303,7 +304,12 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
+              // 📢 Step Completion Modal AdMob placement per Master Monetization Plan
+              const PocketBannerAdWidget(
+                margin: EdgeInsets.symmetric(vertical: 6),
+              ),
+              const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,
                 height: 48,

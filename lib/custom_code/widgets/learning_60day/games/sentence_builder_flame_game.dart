@@ -14,6 +14,7 @@ import '../pocket_fortress_defense_service.dart';
 import '../curriculum_data/pocket_90day_sentence_builder_data.dart';
 import '../../kids/pocket_kids_curriculum_adapter.dart';
 import '../../../services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 
 /// 🧩 Sentence Challenge Question Model
 class SentenceChallengeRound {
@@ -535,6 +536,11 @@ class _PocketSentenceBuilderGamePageState
                   ),
                 ],
               ),
+            ),
+            const SizedBox(height: 12),
+            // 📢 Step Completion Modal AdMob placement per Master Monetization Plan
+            const PocketBannerAdWidget(
+              margin: EdgeInsets.symmetric(vertical: 4),
             ),
           ],
         ),

@@ -1641,7 +1641,12 @@ class _PocketDayOpenWorldAdventurePageState
                   ),
                 ),
               ],
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
+              // 📢 Curriculum Sheet AdMob placement per Master Monetization Plan
+              const PocketBannerAdWidget(
+                margin: EdgeInsets.symmetric(vertical: 4),
+              ),
+              const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,
                 height: 48,

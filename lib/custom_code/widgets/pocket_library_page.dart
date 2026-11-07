@@ -9,6 +9,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ai_prompt_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_house_ad_widget.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 
 class BookItem {
   final String id;
@@ -794,6 +795,12 @@ Tap the "Open Web Edition" button in the top bar to preview and read full chapte
 
             const SizedBox(height: 40),
           ],
+        ),
+      ),
+      bottomNavigationBar: const SafeArea(
+        top: false,
+        child: PocketBannerAdWidget(
+          margin: EdgeInsets.symmetric(vertical: 4),
         ),
       ),
     );
