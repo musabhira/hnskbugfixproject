@@ -45,6 +45,8 @@
 	<!-- Google Mobile Ads (AdMob) Application ID -->
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-8489571803367790~7234734906</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>This identifier will be used to deliver personalized ads and relevant content tailored to your learning interests.</string>
 	<key>SKAdNetworkItems</key>
 	<array>
 		<dict>

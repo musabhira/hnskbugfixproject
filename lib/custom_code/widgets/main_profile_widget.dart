@@ -6066,26 +6066,80 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     );
   }
 
+  String _getCleanPlanetName(String? code, String fullName) {
+    switch (code?.toUpperCase()) {
+      case 'EP':
+        return 'Earth';
+      case 'MAR':
+        return 'Mars';
+      case 'JUP':
+        return 'Jupiter';
+      case 'SAT':
+        return 'Saturn';
+      case 'LUN':
+        return 'Moon';
+      case 'EUR':
+        return 'Europa';
+      case 'VEN':
+        return 'Venus';
+      case 'TTN':
+        return 'Titan';
+      case 'PLT':
+        return 'Pluto';
+      case 'NEP':
+        return 'Neptune';
+      default:
+        final lower = fullName.toLowerCase();
+        if (lower.contains('moon')) return 'Moon';
+        if (lower.contains('earth')) return 'Earth';
+        if (lower.contains('mars')) return 'Mars';
+        if (lower.contains('jupiter')) return 'Jupiter';
+        if (lower.contains('saturn')) return 'Saturn';
+        if (lower.contains('venus')) return 'Venus';
+        if (lower.contains('europa')) return 'Europa';
+        if (lower.contains('titan')) return 'Titan';
+        if (lower.contains('neptune')) return 'Neptune';
+        if (lower.contains('pluto')) return 'Pluto';
+        String clean = fullName.replaceAll(RegExp(r'[^\w\s]'), '').trim();
+        clean = clean.replaceFirst(RegExp(r'^The\s+', caseSensitive: false), '');
+        return clean.split(' ').first;
+    }
+  }
+
   String _getResolvedCosmosAddressText(String bio) {
+    // 1. Check if user is a robot
+    final uid = widget.userId;
+    if (uid.startsWith('robot_')) {
+      final robot = PocketRobotService.getRobotById(uid);
+      if (robot != null) {
+        final colony = PoketCosmosAllocationService.instance.getColonyByPlanetName(robot.planetName);
+        final cleanPlanet = _getCleanPlanetName(colony.code, robot.planetName);
+        return '$cleanPlanet • ${robot.islandName} • Plot #${robot.plotNumber}';
+      }
+    }
+
+    // 2. Check for Cosmos Address PIN in user's bio
     final match = RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(bio);
     if (match != null) {
       final code = match.group(2) ?? 'EP';
       final plot = int.tryParse(match.group(4) ?? '1') ?? 1;
       final colony =
           PoketCosmosAllocationService.instance.getColonyByCode(code);
-      return '${colony.planetName} • ${colony.islandName} • Plot #$plot';
+      final cleanPlanet = _getCleanPlanetName(code, colony.planetName);
+      return '$cleanPlanet • ${colony.islandName} • Plot #$plot';
     }
-    final country = _profileData?['country']?.toString();
-    if (country != null && country.isNotEmpty) {
-      final city = _profileData?['city']?.toString() ?? '';
-      return '$country${city.isNotEmpty ? ' • $city' : ''}';
-    }
+
+    // 3. Fallback to current authenticated user's allocated plot
     final currentPlot =
         PoketCosmosAllocationService.instance.currentBirthPlot;
     if (currentPlot != null) {
-      return '${currentPlot.planetName} • ${currentPlot.countryName} • Plot #${currentPlot.plotNumber}';
+      final colony =
+          PoketCosmosAllocationService.instance.getColonyByPlanetName(currentPlot.planetName);
+      final cleanPlanet = _getCleanPlanetName(colony.code, currentPlot.planetName);
+      return '$cleanPlanet • ${currentPlot.countryName} • Plot #${currentPlot.plotNumber}';
     }
-    return 'Earth Prime 🌍 • Ocean Whisper Atoll • Plot #01';
+
+    return 'Earth • Ocean Whisper Atoll • Plot #01';
   }
 
   Widget _buildVerifiedGoldenTick({double size = 18}) {

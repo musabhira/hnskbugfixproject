@@ -20,7 +20,7 @@ class HomePageWidget extends StatefulWidget {
 
 class _HomePageWidgetState extends State<HomePageWidget> {
   late HomePageModel _model;
-  final PageController _homeHorizontalPageController = PageController(initialPage: 0);
+  final PageController _homeHorizontalPageController = PageController(initialPage: 1);
 
   void _onModeChanged() {
     if (mounted) {
@@ -60,11 +60,11 @@ class _HomePageWidgetState extends State<HomePageWidget> {
       controller: _homeHorizontalPageController,
       physics: const ClampingScrollPhysics(),
       children: const [
-        custom_widgets.HomePageWidgetTree(
-          key: ValueKey('adult_active_home_root'),
-        ),
         PocketHomesReelsFeedWidget(
           key: ValueKey('adult_active_homes_reels_root'),
+        ),
+        custom_widgets.HomePageWidgetTree(
+          key: ValueKey('adult_active_home_root'),
         ),
       ],
     );

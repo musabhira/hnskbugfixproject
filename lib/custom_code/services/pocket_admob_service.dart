@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import '/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 
@@ -471,8 +472,27 @@ class PocketAdMobService {
       _telemetry.sdkInitTime = DateTime.now();
       await _loadRemoteAdConfig();
       preloadAds();
+      // 🎯 Request Apple App Tracking Transparency (ATT) permission for interest-based personalized ads
+      requestAppTrackingConsent();
     } catch (e) {
       if (kDebugMode) print('PocketAdMobService initialize error: $e');
+    }
+  }
+
+  /// 🎯 Request App Tracking Transparency (ATT) on iOS and Consent on Android
+  /// Prompts user permission to track interest-based preferences, unlocking high-CPM personalized ads!
+  Future<void> requestAppTrackingConsent() async {
+    try {
+      if (!kIsWeb && Platform.isIOS) {
+        final status = await AppTrackingTransparency.trackingAuthorizationStatus;
+        if (status == TrackingStatus.notDetermined) {
+          // Wait a brief delay after startup for iOS window hierarchy to stabilize
+          await Future.delayed(const Duration(milliseconds: 1500));
+          await AppTrackingTransparency.requestTrackingAuthorization();
+        }
+      }
+    } catch (e) {
+      debugPrint('ATT permission request non-fatal: $e');
     }
   }
 

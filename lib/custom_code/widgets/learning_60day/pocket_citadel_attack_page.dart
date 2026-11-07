@@ -5073,7 +5073,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       const SizedBox(width: 5),
                       Flexible(
                         child: Text(
-                          '${widget.neighbor.effectivePlanetName.split(' ').first} • #${widget.neighbor.effectivePlotNumber}',
+                          '${_getCleanPlanetName(widget.neighbor.effectivePlanetCode, widget.neighbor.effectivePlanetName)} • #${widget.neighbor.effectivePlotNumber}',
                           style: GoogleFonts.outfit(
                             color: Colors.white,
                             fontSize: 11,
@@ -5356,6 +5356,46 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     }
   }
 
+  String _getCleanPlanetName(String? code, String fullName) {
+    switch (code?.toUpperCase()) {
+      case 'EP':
+        return 'Earth';
+      case 'MAR':
+        return 'Mars';
+      case 'JUP':
+        return 'Jupiter';
+      case 'SAT':
+        return 'Saturn';
+      case 'LUN':
+        return 'Moon';
+      case 'EUR':
+        return 'Europa';
+      case 'VEN':
+        return 'Venus';
+      case 'TTN':
+        return 'Titan';
+      case 'PLT':
+        return 'Pluto';
+      case 'NEP':
+        return 'Neptune';
+      default:
+        final lower = fullName.toLowerCase();
+        if (lower.contains('moon')) return 'Moon';
+        if (lower.contains('earth')) return 'Earth';
+        if (lower.contains('mars')) return 'Mars';
+        if (lower.contains('jupiter')) return 'Jupiter';
+        if (lower.contains('saturn')) return 'Saturn';
+        if (lower.contains('venus')) return 'Venus';
+        if (lower.contains('europa')) return 'Europa';
+        if (lower.contains('titan')) return 'Titan';
+        if (lower.contains('neptune')) return 'Neptune';
+        if (lower.contains('pluto')) return 'Pluto';
+        String clean = fullName.replaceAll(RegExp(r'[^\w\s]'), '').trim();
+        clean = clean.replaceFirst(RegExp(r'^The\s+', caseSensitive: false), '');
+        return clean.split(' ').first;
+    }
+  }
+
   void _showDefenderCosmosAddressSheet(BuildContext context) {
     HapticFeedback.lightImpact();
     final n = widget.neighbor;
@@ -5445,7 +5485,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 ),
                 child: Column(
                   children: [
-                    _buildAddressRow('🪐 Planet', n.effectivePlanetName),
+                    _buildAddressRow('🪐 Planet',
+                        _getCleanPlanetName(n.effectivePlanetCode, n.effectivePlanetName)),
                     const Divider(color: Colors.white12, height: 16),
                     _buildAddressRow('🏝️ Island', n.effectiveIslandName),
                     const Divider(color: Colors.white12, height: 16),

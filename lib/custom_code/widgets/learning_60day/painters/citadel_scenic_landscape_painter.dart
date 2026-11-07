@@ -1399,7 +1399,7 @@ class CitadelScenicLandscapePainter extends CustomPainter {
 
     switch (planetCode) {
       case 'MAR':
-        title = 'MARS COLONY';
+        title = 'MARS';
         subtitle = 'SEC-01 • VALLES PRIME';
         boardColor = const Color(0xFF7C2D12);
         boardBorderColor = const Color(0xFFF97316);
@@ -1407,7 +1407,7 @@ class CitadelScenicLandscapePainter extends CustomPainter {
         legColor = const Color(0xFF431407);
         break;
       case 'LUN':
-        title = 'MOON BASE';
+        title = 'MOON';
         subtitle = 'SEC-01 • TRANQUILITY';
         boardColor = const Color(0xFF334155);
         boardBorderColor = const Color(0xFF94A3B8);
@@ -1415,7 +1415,7 @@ class CitadelScenicLandscapePainter extends CustomPainter {
         legColor = const Color(0xFF1E293B);
         break;
       case 'JUP':
-        title = 'JUPITER HOMESTEAD';
+        title = 'JUPITER';
         subtitle = 'SEC-01 • JOVIAN BASE';
         boardColor = const Color(0xFF78350F);
         boardBorderColor = const Color(0xFFF59E0B);
@@ -1423,7 +1423,7 @@ class CitadelScenicLandscapePainter extends CustomPainter {
         legColor = const Color(0xFF451A03);
         break;
       case 'EUR':
-        title = 'EUROPA CITADEL';
+        title = 'EUROPA';
         subtitle = 'SEC-01 • CRYO HAVEN';
         boardColor = const Color(0xFF0C4A6E);
         boardBorderColor = const Color(0xFF38BDF8);
@@ -1431,7 +1431,7 @@ class CitadelScenicLandscapePainter extends CustomPainter {
         legColor = const Color(0xFF082F49);
         break;
       case 'SAT':
-        title = 'SATURN OUTPOST';
+        title = 'SATURN';
         subtitle = 'SEC-01 • CASSINI REACH';
         boardColor = const Color(0xFF713F12);
         boardBorderColor = const Color(0xFFEAB308);
@@ -1439,7 +1439,7 @@ class CitadelScenicLandscapePainter extends CustomPainter {
         legColor = const Color(0xFF422006);
         break;
       case 'VEN':
-        title = 'VENUS AEROSTAT';
+        title = 'VENUS';
         subtitle = 'SEC-01 • ISHTAR REACH';
         boardColor = const Color(0xFF78350F);
         boardBorderColor = const Color(0xFFFB923C);
@@ -1447,7 +1447,7 @@ class CitadelScenicLandscapePainter extends CustomPainter {
         legColor = const Color(0xFF431407);
         break;
       case 'TTN':
-        title = 'TITAN HABITAT';
+        title = 'TITAN';
         subtitle = 'SEC-01 • KRAKEN MARE';
         boardColor = const Color(0xFF064E3B);
         boardBorderColor = const Color(0xFF34D399);
@@ -1455,7 +1455,7 @@ class CitadelScenicLandscapePainter extends CustomPainter {
         legColor = const Color(0xFF022C22);
         break;
       case 'NEP':
-        title = 'NEPTUNE VOYAGER';
+        title = 'NEPTUNE';
         subtitle = 'SEC-01 • AZURE ABYSS';
         boardColor = const Color(0xFF1E3A8A);
         boardBorderColor = const Color(0xFF60A5FA);
@@ -1463,7 +1463,7 @@ class CitadelScenicLandscapePainter extends CustomPainter {
         legColor = const Color(0xFF172554);
         break;
       case 'PLT':
-        title = 'PLUTO REACH';
+        title = 'PLUTO';
         subtitle = 'SEC-01 • TOMBAUGH';
         boardColor = const Color(0xFF581C87);
         boardBorderColor = const Color(0xFFC084FC);
@@ -1471,7 +1471,7 @@ class CitadelScenicLandscapePainter extends CustomPainter {
         legColor = const Color(0xFF3B0764);
         break;
       default:
-        title = 'EARTH PRIME';
+        title = 'EARTH';
         subtitle = 'SEC-01 • CITADEL SECTOR';
         boardColor = const Color(0xFF78350F);
         boardBorderColor = const Color(0xFFB45309);
