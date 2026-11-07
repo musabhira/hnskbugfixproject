@@ -74,6 +74,7 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
 
   late CitizenPlot _assignedPlot;
   late PoketCountryMap _assignedIsland;
+  Map<int, NeighborReservationPass> _activeReservations = {};
 
   PoketPlanet? _selectedCosmosPlanet;
   FlameSolarSystemGame? _flameSolarSystemGame;
@@ -236,10 +237,14 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
     _estateTransformInitialized = false;
     _planetTransformInitialized = false;
 
+    final activeRes = await PoketCosmosAllocationService.instance
+        .getActiveReservationsMap(island.id);
+
     if (mounted) {
       setState(() {
         _assignedPlot = updatedPlot;
         _assignedIsland = island;
+        _activeReservations = activeRes;
         _isLoading = false;
       });
     }
@@ -595,6 +600,7 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
                       isInteractive: true,
                       selectedPlotNumber: _assignedPlot.plotNumber,
                       plots: [_assignedPlot],
+                      reservations: _activeReservations,
                       animation: _islandWaveController,
                     ),
                   ),
