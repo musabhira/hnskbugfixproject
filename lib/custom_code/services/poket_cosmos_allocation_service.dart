@@ -58,10 +58,10 @@ class PoketCosmosAllocationService {
   static const _kWaveOccupancyCountPrefix = 'poket_cosmos_wave_occ_count_';
   static const _kPlanetOccupiedPlotsPrefix = 'poket_cosmos_planet_occ_plots_';
 
-  // Scaling Constants
-  static const int maxPlotsPerIsland = 18;
+  // Scaling Constants (25 plots per island, 250 citizens per wave)
+  static const int maxPlotsPerIsland = 25;
   static const int totalPlanetsCount = 10;
-  static const int waveCapacity = 180; // 10 planets * 18 plots
+  static const int waveCapacity = 250; // 10 planets * 25 plots
 
   // 🪐 10 Permanent Celestial Colonies Catalog
   static const List<CelestialColonyInfo> colonies = [

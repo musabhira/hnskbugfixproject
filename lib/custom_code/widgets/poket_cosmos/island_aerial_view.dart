@@ -473,103 +473,6 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
       ),
     );
   }
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-          border: Border(top: BorderSide(color: Color(0xFF38BDF8), width: 1.6)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Text('🤝', style: TextStyle(fontSize: 26)),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Invite Friend as Neighbor',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        'Plot #$plotNumber on ${widget.island.name} is currently vacant!',
-                        style: GoogleFonts.plusJakartaSans(
-                          color: const Color(0xFF38BDF8),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            Text(
-              'Reserve this private parcel right next to your home for 5 hours. Share the generated Born Pass with your friend on WhatsApp so they settle right next to you!',
-              style: GoogleFonts.plusJakartaSans(
-                color: Colors.white70,
-                fontSize: 13,
-                height: 1.4,
-              ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.pop(ctx);
-                final pass = await PoketCosmosAllocationService.instance.createNeighborInvitePass(
-                  islandId: widget.island.id,
-                  islandName: widget.island.name,
-                  planetName: 'Earth Prime 🌍',
-                  streetName: 'Reefway Avenue',
-                  plotNumber: plotNumber,
-                  hostUserName: 'Neighbor',
-                );
-
-                try {
-                  await Share.share(pass.shareMessage);
-                } catch (_) {
-                  Clipboard.setData(ClipboardData(text: pass.shareMessage));
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Reservation Code ${pass.code} copied to clipboard! Share with your friend.'),
-                        backgroundColor: const Color(0xFF16A34A),
-                      ),
-                    );
-                  }
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0284C7),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('🎟️', style: TextStyle(fontSize: 18)),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Generate 5-Hour Pass & Share (കോഡ് അയക്കുക)',
-                    style: GoogleFonts.outfit(fontSize: 14.5, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 // =============================================================================
@@ -762,11 +665,9 @@ class IslandAerialPainter extends CustomPainter {
       _drawSportsTurfPitch(canvas);
     }
 
-    // 9. Marine Piers & Cruising Boats (Only on liquid ocean worlds)
-    if (isEarth || isTitan || isNeptune) {
-      _drawWoodenPierAndBoats(canvas);
-      _drawCruisingBoatsWithWakes(canvas);
-    }
+    // 9. Marine Piers & Cruising Boats across all celestial oceans
+    _drawWoodenPierAndBoats(canvas);
+    _drawCruisingBoatsWithWakes(canvas);
 
     // 10. Living Wildlife & Grazing Animals (Peaceful sheep & horses on Earth)
     if (isEarth) {
@@ -2186,7 +2087,7 @@ class IslandAerialPainter extends CustomPainter {
   // The entire green island is partitioned into 35 contiguous territorial provinces
   // with curved cartographic district boundary lines (വരകൾ)!
   // =========================================================================
-  static final Map<IslandShapeStyle, List<Path>> _cachedDistrictCells = {};
+  static final Map<String, List<Path>> _cachedDistrictCells = {};
 
   void _draw35TerritorialDistricts(Canvas canvas) {
     final islandPath = _getIslandPath();
@@ -2319,11 +2220,13 @@ class IslandAerialPainter extends CustomPainter {
   }
 
   static List<Path> _getOrComputeDistrictCells(IslandShapeStyle style) {
-    if (_cachedDistrictCells.containsKey(style)) {
-      return _cachedDistrictCells[style]!;
+    final key = '${style.name}_${PoketCosmosAllocationService.maxPlotsPerIsland}';
+    if (_cachedDistrictCells.containsKey(key)) {
+      return _cachedDistrictCells[key]!;
     }
 
-    final coords = get35PlotCoordinates(style);
+    // Generate exactly 25 territorial district cells (or maxPlotsPerIsland)
+    final coords = get35PlotCoordinates(style).take(PoketCosmosAllocationService.maxPlotsPerIsland).toList();
     final count = coords.length;
     final List<Path> paths = [];
 
@@ -2352,7 +2255,7 @@ class IslandAerialPainter extends CustomPainter {
       paths.add(p);
     }
 
-    _cachedDistrictCells[style] = paths;
+    _cachedDistrictCells[key] = paths;
     return paths;
   }
 

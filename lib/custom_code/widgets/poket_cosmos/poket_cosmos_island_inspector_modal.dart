@@ -7,23 +7,19 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citad
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/island_aerial_view.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_models.dart';
 
-/// 🪐 Poket Cosmos Island Inspector Modal & Fullscreen Carousel
-/// Allows the user/tester to test and inspect all 10 Celestial Colonies:
-/// - Earth Prime 🌍 (Tropical Emerald Atoll)
-/// - Mars 🔴 (Iron Rust Red Rock & Crimson Abyss)
-/// - Jupiter 🪐 (Swirling Jovian Amber/Bronze & Cosmic Azure Storm)
-/// - Saturn 🪐 (Golden Sandstone & Methane Ring Ocean)
-/// - The Moon 🌕 (Silver Regolith Basalt & Starlight Void)
-/// - Europa 🧊 (Glacial Polar Ice & Cryogenic Subsurface Ocean)
-/// - Venus ☀️ (Sulfuric Volcanic Ochre & Golden Acid Smog)
-/// - Titan 🪐 (Emerald Hydrocarbon Dunes & Kraken Mare)
-/// - Pluto 🌌 (Cryogenic Nitrogen Glaciers & Lavender/Violet Cosmic Void)
-/// - Neptune 🌊 (Supersonic Cobalt Tempest & Deep Oceanic Trench)
-///
-/// Each island features:
-/// - Edge-to-edge gradient oceans with zero broken bottom/top bounds
-/// - Real interactive 18 citizen plots with vacant `+` and pre-booked states
-/// - Tap handlers for neighbor reservations, deed inspections, and citadel visits
+/// 🪐 Poket Cosmos Island Inspector Modal & Fullscreen Living Landscape
+/// Features:
+/// - Exact rectangular landscape viewport as Earth Prime:
+///   - Top and bottom touch the screen edges (no void, no black bars)
+///   - Horizontally expansive & scrollable (panning left & right across the full island & ocean)
+///   - Peak-level zooming (1.0x up to 25.0x) clamped safely at minScale = 1.0
+/// - 25 equal partitioned territorial district cells with crisp cartographic boundary lines
+/// - 25 plots per island:
+///   - Plot #1: Occupied Pioneer Citadel
+///   - Plot #2: 5-Hour pre-booked neighbor reservation with live countdown timer
+///   - Plots #3 to #25: Vacant parcels with center pulsing `➕` button
+/// - Cruising speedboats & yachts with white foaming wake trails on all celestial gradient oceans
+/// - Top 10-planet selector chips + Prev/Next chevron buttons
 class PoketCosmosIslandInspectorModal extends StatefulWidget {
   final int initialPlanetIndex;
 
@@ -49,18 +45,32 @@ class PoketCosmosIslandInspectorModal extends StatefulWidget {
 }
 
 class _PoketCosmosIslandInspectorModalState
-    extends State<PoketCosmosIslandInspectorModal> {
-  late PageController _pageController;
+    extends State<PoketCosmosIslandInspectorModal>
+    with SingleTickerProviderStateMixin {
   late ScrollController _chipScrollController;
+  late AnimationController _waveAnimController;
+  final TransformationController _transformController = TransformationController();
+
   int _currentIndex = 0;
+  bool _transformInitialized = false;
   final List<CelestialColonyInfo> _colonies = PoketCosmosAllocationService.colonies;
+
+  late PoketCountryMap _currentIsland;
+  List<CitizenPlot> _currentPlots = [];
+  Map<int, NeighborReservationPass> _currentReservations = {};
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialPlanetIndex.clamp(0, _colonies.length - 1);
-    _pageController = PageController(initialPage: _currentIndex);
     _chipScrollController = ScrollController();
+    _waveAnimController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 40),
+    )..repeat();
+
+    _loadColonyData(_currentIndex);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToChip(_currentIndex);
     });
@@ -68,9 +78,68 @@ class _PoketCosmosIslandInspectorModalState
 
   @override
   void dispose() {
-    _pageController.dispose();
     _chipScrollController.dispose();
+    _waveAnimController.dispose();
+    _transformController.dispose();
     super.dispose();
+  }
+
+  void _loadColonyData(int index) {
+    final colony = _colonies[index];
+    _currentIsland = PoketCountryMap(
+      id: colony.planetId * 100 + 1,
+      name: colony.islandName,
+      tag: '${colony.planetName} Living Colony',
+      landColor: colony.landColor,
+      waterColor: colony.waterColor,
+      totalSlots: PoketCosmosAllocationService.maxPlotsPerIsland,
+      filledSlots: 1,
+      climate: colony.climate,
+      climateIcon: Icons.travel_explore_rounded,
+      shapeSeed: 42 + index * 19,
+      shapeStyle: colony.shapeStyle,
+    );
+
+    // Get 35 coordinates and take 25 plots
+    final coords = IslandAerialPainter.get35PlotCoordinates(_currentIsland.shapeStyle);
+
+    // Plot #1: Presidential / Citizen Citadel with "Explorer" (occupied)
+    final plot1 = CitizenPlot(
+      plotNumber: 1,
+      userId: 'inspector_host_${colony.code}',
+      userName: 'Cosmic Pioneer',
+      userAvatar: '👑',
+      day: 75,
+      pocketScore: 920,
+      streetName: colony.streetName,
+      postOffice: colony.islandName,
+      countryName: colony.islandName,
+      planetName: colony.planetName,
+      coordinates: coords.isNotEmpty ? coords[0] : Offset.zero,
+      postalPinCode: 'PKT-W01-${colony.code}-I01-P01',
+      tier: PlotDeedTier.presidential,
+      status: PlotStatus.occupied,
+    );
+
+    _currentPlots = [plot1];
+
+    // Plot #2: Pre-booked Neighbor Reservation with active 5-hour countdown timer
+    const reservationPlotNum = 2;
+    final pass = NeighborReservationPass(
+      code: 'PKT-W01-${colony.code}-I01-P02',
+      cosmosPin: 'PKT-W01-${colony.code}-I01-P02',
+      planetName: colony.planetName,
+      islandId: _currentIsland.id,
+      islandName: colony.islandName,
+      streetName: colony.streetName,
+      plotNumber: reservationPlotNum,
+      hostUserName: 'Cosmic Pioneer',
+      createdAt: DateTime.now().subtract(const Duration(minutes: 28)),
+      expiresAt: DateTime.now().add(const Duration(hours: 4, minutes: 32)),
+    );
+
+    _currentReservations = {reservationPlotNum: pass};
+    _transformInitialized = false; // Reset view centering for new planet
   }
 
   void _scrollToChip(int index) {
@@ -84,14 +153,29 @@ class _PoketCosmosIslandInspectorModalState
   }
 
   void _onPlanetSelected(int index) {
+    if (index == _currentIndex) return;
     HapticFeedback.selectionClick();
-    setState(() => _currentIndex = index);
-    _pageController.animateToPage(
-      index,
-      duration: const Duration(milliseconds: 380),
-      curve: Curves.easeInOutCubic,
-    );
+    setState(() {
+      _currentIndex = index;
+      _loadColonyData(index);
+    });
     _scrollToChip(index);
+  }
+
+  void _goToPrevPlanet() {
+    if (_currentIndex > 0) {
+      _onPlanetSelected(_currentIndex - 1);
+    } else {
+      _onPlanetSelected(_colonies.length - 1); // Wrap around
+    }
+  }
+
+  void _goToNextPlanet() {
+    if (_currentIndex < _colonies.length - 1) {
+      _onPlanetSelected(_currentIndex + 1);
+    } else {
+      _onPlanetSelected(0); // Wrap around
+    }
   }
 
   @override
@@ -99,27 +183,126 @@ class _PoketCosmosIslandInspectorModalState
     final colony = _colonies[_currentIndex];
 
     return Scaffold(
-      backgroundColor: const Color(0xFF030712),
+      backgroundColor: _currentIsland.waterColor,
       body: Stack(
+        fit: StackFit.expand,
         children: [
-          // 1. Horizontal PageView of All 10 Celestial Islands
-          PageView.builder(
-            controller: _pageController,
-            itemCount: _colonies.length,
-            onPageChanged: (index) {
-              HapticFeedback.selectionClick();
-              setState(() => _currentIndex = index);
-              _scrollToChip(index);
-            },
-            itemBuilder: (context, index) {
-              return _CelestialIslandPageViewItem(
-                colony: _colonies[index],
-                colonyIndex: index,
+          // 1. Expansive Rectangular Landscape Interactive Viewer (Top & Bottom touch screen edges)
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final screenWidth = constraints.maxWidth;
+              final screenHeight = constraints.maxHeight;
+              final worldHeight = screenHeight;
+              final worldWidth = math.max(screenWidth * 2.6, screenHeight * 1.8);
+              const minScale = 1.0;
+              const maxScale = 25.0;
+              final focusX = (screenWidth - worldWidth) / 2;
+              const focusY = 0.0;
+
+              if (!_transformInitialized) {
+                _transformInitialized = true;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) {
+                    _transformController.value =
+                        Matrix4.translationValues(focusX, focusY, 0.0)
+                          ..scaleByDouble(1.0, 1.0, 1.0, 1.0);
+                  }
+                });
+              }
+
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  // Full-bleed Interactive Island Canvas (boundaryMargin: EdgeInsets.zero prevents void & jumps!)
+                  Positioned.fill(
+                    child: InteractiveViewer(
+                      transformationController: _transformController,
+                      constrained: false,
+                      boundaryMargin: EdgeInsets.zero, // Zero boundary margin: Locks edges cleanly, no black void!
+                      minScale: minScale, // Locked to 1.0: top & bottom touch screen edges!
+                      maxScale: maxScale, // Peak level zoom down to individual house & pool
+                      clipBehavior: Clip.hardEdge,
+                      panEnabled: true,
+                      scaleEnabled: true,
+                      child: SizedBox(
+                        width: worldWidth,
+                        height: worldHeight,
+                        child: IslandAerialViewWidget(
+                          island: _currentIsland,
+                          isInteractive: true,
+                          planetName: colony.planetName,
+                          plots: _currentPlots,
+                          initialReservations: _currentReservations,
+                          onPlotTapped: (plot) {
+                            HapticFeedback.mediumImpact();
+                            PocketCitadelAttackPage.openForUser(
+                              context,
+                              userId: plot.userId,
+                              targetName: plot.userName,
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               );
             },
           ),
 
-          // 2. Top Header & Planet Carousel Bar
+          // 2. Left Chevron Button: Previous Planet
+          Positioned(
+            left: 12,
+            top: MediaQuery.of(context).size.height / 2 - 26,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: _goToPrevPlanet,
+                borderRadius: BorderRadius.circular(26),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A).withValues(alpha: 0.85),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white24, width: 1.2),
+                    boxShadow: const [
+                      BoxShadow(color: Colors.black45, blurRadius: 10, offset: Offset(0, 2)),
+                    ],
+                  ),
+                  child: const Icon(Icons.chevron_left_rounded, color: Colors.white, size: 28),
+                ),
+              ),
+            ),
+          ),
+
+          // 3. Right Chevron Button: Next Planet
+          Positioned(
+            right: 12,
+            top: MediaQuery.of(context).size.height / 2 - 26,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: _goToNextPlanet,
+                borderRadius: BorderRadius.circular(26),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A).withValues(alpha: 0.85),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white24, width: 1.2),
+                    boxShadow: const [
+                      BoxShadow(color: Colors.black45, blurRadius: 10, offset: Offset(0, 2)),
+                    ],
+                  ),
+                  child: const Icon(Icons.chevron_right_rounded, color: Colors.white, size: 28),
+                ),
+              ),
+            ),
+          ),
+
+          // 4. Top Header & Planet Carousel Bar
           Positioned(
             top: 0,
             left: 0,
@@ -127,7 +310,7 @@ class _PoketCosmosIslandInspectorModalState
             child: _buildTopHeaderAndCarousel(context, colony),
           ),
 
-          // 3. Bottom Glassmorphic Colony Information Pill
+          // 5. Bottom Glassmorphic Colony Information Pill
           Positioned(
             bottom: 24,
             left: 16,
@@ -392,7 +575,7 @@ class _PoketCosmosIslandInspectorModalState
                   border: Border.all(color: const Color(0xFF10B981), width: 1.0),
                 ),
                 child: Text(
-                  '18 PLOTS',
+                  '25 PLOTS',
                   style: GoogleFonts.jetBrainsMono(
                     color: const Color(0xFF86EFAC),
                     fontSize: 11,
@@ -404,7 +587,7 @@ class _PoketCosmosIslandInspectorModalState
           ),
           const SizedBox(height: 10),
 
-          // Row 2: Biome & Climate Badge
+          // Row 2: Biome & Climate Badge + Action
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
             decoration: BoxDecoration(
@@ -429,7 +612,7 @@ class _PoketCosmosIslandInspectorModalState
                   ),
                 ),
                 Text(
-                  'Tap ➕ to Pre-Book',
+                  '25 Plots • Tap ➕ to Pre-Book',
                   style: GoogleFonts.plusJakartaSans(
                     color: const Color(0xFF38BDF8),
                     fontSize: 11.5,
@@ -444,138 +627,3 @@ class _PoketCosmosIslandInspectorModalState
     );
   }
 }
-
-/// 🏝️ Single Island Interactive PageView Item
-class _CelestialIslandPageViewItem extends StatefulWidget {
-  final CelestialColonyInfo colony;
-  final int colonyIndex;
-
-  const _CelestialIslandPageViewItem({
-    required this.colony,
-    required this.colonyIndex,
-  });
-
-  @override
-  State<_CelestialIslandPageViewItem> createState() =>
-      _CelestialIslandPageViewItemState();
-}
-
-class _CelestialIslandPageViewItemState extends State<_CelestialIslandPageViewItem> {
-  final TransformationController _transformController = TransformationController();
-  late PoketCountryMap _island;
-  List<CitizenPlot> _plots = [];
-  Map<int, NeighborReservationPass> _reservations = {};
-
-  @override
-  void initState() {
-    super.initState();
-    _initIslandData();
-  }
-
-  @override
-  void dispose() {
-    _transformController.dispose();
-    super.dispose();
-  }
-
-  void _initIslandData() {
-    final colony = widget.colony;
-    _island = PoketCountryMap(
-      id: colony.planetId * 100 + 1,
-      name: colony.islandName,
-      tag: '${colony.planetName} Living Colony',
-      landColor: colony.landColor,
-      waterColor: colony.waterColor,
-      totalSlots: PoketCosmosAllocationService.maxPlotsPerIsland,
-      filledSlots: 1,
-      climate: colony.climate,
-      climateIcon: Icons.travel_explore_rounded,
-      shapeSeed: 42 + widget.colonyIndex * 19,
-      shapeStyle: colony.shapeStyle,
-    );
-
-    // Get 35 coordinates
-    final coords = IslandAerialPainter.get35PlotCoordinates(_island.shapeStyle);
-
-    // Plot #1: Presidential / Citizen Citadel with "Explorer" (occupied)
-    final plot1 = CitizenPlot(
-      plotNumber: 1,
-      userId: 'inspector_host_${colony.code}',
-      userName: 'Cosmic Pioneer',
-      userAvatar: '👑',
-      day: 75,
-      pocketScore: 920,
-      streetName: colony.streetName,
-      postOffice: colony.islandName,
-      countryName: colony.islandName,
-      planetName: colony.planetName,
-      coordinates: coords.isNotEmpty ? coords[0] : Offset.zero,
-      postalPinCode: 'PKT-W01-${colony.code}-I01-P01',
-      tier: PlotDeedTier.presidential,
-      status: PlotStatus.occupied,
-    );
-
-    _plots = [plot1];
-
-    // Plot #2: Pre-booked Neighbor Reservation with active 5-hour countdown timer
-    final reservationPlotNum = 2;
-    final pass = NeighborReservationPass(
-      code: 'PKT-W01-${colony.code}-I01-P02',
-      cosmosPin: 'PKT-W01-${colony.code}-I01-P02',
-      planetName: colony.planetName,
-      islandId: _island.id,
-      islandName: colony.islandName,
-      streetName: colony.streetName,
-      plotNumber: reservationPlotNum,
-      hostUserName: 'Cosmic Pioneer',
-      createdAt: DateTime.now().subtract(const Duration(minutes: 28)),
-      expiresAt: DateTime.now().add(const Duration(hours: 4, minutes: 32)),
-    );
-
-    _reservations = {reservationPlotNum: pass};
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final screenSize = Size(constraints.maxWidth, constraints.maxHeight);
-
-        return Stack(
-          children: [
-            // Interactive Aerial Island View with locked zero-letterbox bounds
-            Positioned.fill(
-              child: InteractiveViewer(
-                transformationController: _transformController,
-                minScale: 1.0,
-                maxScale: 3.5,
-                clipBehavior: Clip.none,
-                panEnabled: true,
-                scaleEnabled: true,
-                child: SizedBox(
-                  width: screenSize.width,
-                  height: screenSize.height,
-                  child: IslandAerialViewWidget(
-                    island: _island,
-                    isInteractive: true,
-                    plots: _plots,
-                    initialReservations: _reservations,
-                    onPlotTapped: (plot) {
-                      HapticFeedback.mediumImpact();
-                      PocketCitadelAttackPage.openForUser(
-                        context,
-                        userId: plot.userId,
-                        targetName: plot.userName,
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
