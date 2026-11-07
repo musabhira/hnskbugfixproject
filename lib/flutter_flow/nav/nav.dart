@@ -93,14 +93,14 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       navigatorKey: appNavigatorKey,
       errorBuilder: (context, state) => PocketKidsService.isKidsWorld
           ? const PocketPureKidsHomePage()
-          : (appStateNotifier.loggedIn ? const HomePageWidget() : const AuthPageWidget())),
+          : (appStateNotifier.loggedIn ? const HomePageWidget() : const AuthPageWidget()),
       routes: [
         FFRoute(
           name: '_initialize',
           path: '/',
           builder: (context, _) => PocketKidsService.isKidsWorld
               ? const PocketPureKidsHomePage()
-              : (appStateNotifier.loggedIn ? const HomePageWidget() : const AuthPageWidget())),
+              : (appStateNotifier.loggedIn ? const HomePageWidget() : const AuthPageWidget()),
         ),
         FFRoute(
           name: HomePageWidget.routeName,
