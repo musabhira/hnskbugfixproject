@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_born_address_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_referral_gateway_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_navigator_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/profile_setup_onboarding_page.dart';
 
@@ -121,6 +122,26 @@ class _PoketCosmosTestCenterModalState extends State<PoketCosmosTestCenterModal>
             // SECTION 1: Born Address Ceremony Tests
             _buildSectionHeader('🎬 1. BORN ADDRESS CEREMONY (ജനന ചടങ്ങ്)', 'ടെസ്റ്റ് സിനാരിയോ തിരഞ്ഞെടുക്കുക'),
             const SizedBox(height: 10),
+
+            _buildActionCard(
+              icon: '🚪',
+              title: 'Full Flow: Referral Gateway ➔ Born Ceremony',
+              subtitle: 'Asks "Do you have an Island Referral Code?" -> Verifies neighbor or assigns destiny',
+              color: const Color(0xFF10B981),
+              onTap: () async {
+                Navigator.pop(context);
+                await PoketCosmosAllocationService.instance.resetLocalBirthplace();
+                if (context.mounted) {
+                  await PoketCosmosReferralGatewayPage.launch(
+                    context,
+                    userName: 'Learner',
+                    userAvatar: '🦁',
+                    userAge: 10,
+                  );
+                }
+              },
+            ),
+            const SizedBox(height: 8),
 
             _buildActionCard(
               icon: '🪐',
@@ -250,7 +271,7 @@ class _PoketCosmosTestCenterModalState extends State<PoketCosmosTestCenterModal>
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'All existing users in the profile table are ordered by join date. Every 35 users fill 1 island (Island 301, 302, 303...). Each citizen gets a 100% exclusive Cosmos PIN (e.g. PKT-EP301-P14) with zero duplicates!',
+                    'All existing users in the profile table are ordered by join date. Every 18 users fill 1 island across 10 celestial colonies (180 citizens per Wave). Each citizen gets a 100% exclusive Cosmos PIN (e.g. PKT-W01-EP-I01-P07) with zero duplicates!',
                     style: GoogleFonts.plusJakartaSans(color: Colors.white70, fontSize: 12, height: 1.4),
                   ),
                   if (_allocationResult != null) ...[

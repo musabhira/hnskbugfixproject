@@ -430,6 +430,65 @@ class PoketCosmosAllocationService {
     }
   }
 
+  /// 👥 Backfills & Allocates all existing registered users across the 100-Crore Wave Engine
+  /// Assigns 18 citizens per island, 180 per wave across the 10 permanent Celestial Colonies.
+  Future<Map<String, dynamic>> syncAndAllocateExistingUsers() async {
+    try {
+      final res = await SupaFlow.client
+          .from('profile')
+          .select('id, name, created_at, day, country, city, bio')
+          .order('created_at', ascending: true);
+
+      final List<dynamic> profiles = res as List<dynamic>;
+      if (profiles.isEmpty) {
+        return {'total': 0, 'newlyAllocated': 0, 'alreadyAllocated': 0};
+      }
+
+      int newlyAllocated = 0;
+      int alreadyAllocated = 0;
+
+      for (int i = 0; i < profiles.length; i++) {
+        final item = profiles[i] as Map<String, dynamic>;
+        final String userId = item['id'] as String;
+        final String? existingBio = item['bio'] as String?;
+
+        // If user already has an allocated bio/PIN, count as already allocated
+        if (existingBio != null && (existingBio.contains('PKT-EP') || existingBio.contains('PKT-W'))) {
+          alreadyAllocated++;
+          continue;
+        }
+
+        // Determine wave, colony and plot number (18 per island, 180 per wave)
+        final waveIdx = (i ~/ waveCapacity) + 1;
+        final colonyIdx = ((i % waveCapacity) ~/ maxPlotsPerIsland) % colonies.length;
+        final targetColony = colonies[colonyIdx];
+        final plotNum = (i % maxPlotsPerIsland) + 1;
+
+        final waveStr = waveIdx.toString().padLeft(2, '0');
+        final plotStr = plotNum.toString().padLeft(2, '0');
+        final cosmosPin = 'PKT-W$waveStr-${targetColony.code}-I$waveStr-P$plotStr';
+
+        // Update profile in Supabase
+        await SupaFlow.client.from('profile').update({
+          'country': targetColony.islandName,
+          'city': targetColony.streetName,
+          'bio': '🏡 Citizen of ${targetColony.islandName}, ${targetColony.planetName} ($cosmosPin)',
+        }).eq('id', userId);
+
+        newlyAllocated++;
+      }
+
+      return {
+        'total': profiles.length,
+        'newlyAllocated': newlyAllocated,
+        'alreadyAllocated': alreadyAllocated,
+      };
+    } catch (e) {
+      debugPrint('⚠️ syncAndAllocateExistingUsers error: $e');
+      return {'error': e.toString(), 'newlyAllocated': 0};
+    }
+  }
+
   /// 🧹 Resets local birthplace preferences to allow fresh re-testing of the Born Ceremony
   Future<void> resetLocalBirthplace() async {
     final prefs = await SharedPreferences.getInstance();

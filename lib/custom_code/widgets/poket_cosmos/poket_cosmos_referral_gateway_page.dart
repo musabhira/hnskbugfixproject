@@ -624,3 +624,4 @@ class _CosmicGatewayBackdropPainter extends CustomPainter {
   bool shouldRepaint(covariant _CosmicGatewayBackdropPainter oldDelegate) =>
       oldDelegate.animValue != animValue;
 }
+
