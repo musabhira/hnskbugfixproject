@@ -4471,10 +4471,12 @@ class CitadelScenicLandscapePainter extends CustomPainter {
 class CitadelInfiniteOceanSkyBackdropPainter extends CustomPainter {
   final bool isNight;
   final double ambientProg;
+  final String? planetCode;
 
   CitadelInfiniteOceanSkyBackdropPainter({
     required this.isNight,
     this.ambientProg = 0.0,
+    this.planetCode,
   });
 
   @override
@@ -4484,6 +4486,151 @@ class CitadelInfiniteOceanSkyBackdropPainter extends CustomPainter {
     if (w <= 0 || h <= 0) return;
 
     final horizonY = h * 0.44;
+
+    final List<Color> daySkyColors;
+    final List<Color> dayOceanColors;
+    switch (planetCode) {
+      case 'MAR':
+        daySkyColors = const [
+          Color(0xFF9F1239),
+          Color(0xFFE11D48),
+          Color(0xFFF97316),
+          Color(0xFFFED7AA),
+        ];
+        dayOceanColors = const [
+          Color(0xFF7C2D12),
+          Color(0xFF991B1B),
+          Color(0xFF450A0A),
+          Color(0xFF290808),
+        ];
+        break;
+      case 'LUN':
+        daySkyColors = const [
+          Color(0xFF000000),
+          Color(0xFF020617),
+          Color(0xFF0F172A),
+          Color(0xFF1E293B),
+        ];
+        dayOceanColors = const [
+          Color(0xFF334155),
+          Color(0xFF1E293B),
+          Color(0xFF0F172A),
+          Color(0xFF020617),
+        ];
+        break;
+      case 'JUP':
+        daySkyColors = const [
+          Color(0xFF1E1B4B),
+          Color(0xFF1D4ED8),
+          Color(0xFF0284C7),
+          Color(0xFFF59E0B),
+        ];
+        dayOceanColors = const [
+          Color(0xFF0369A1),
+          Color(0xFF1E3A8A),
+          Color(0xFF0F172A),
+          Color(0xFF020617),
+        ];
+        break;
+      case 'SAT':
+        daySkyColors = const [
+          Color(0xFF3B0764),
+          Color(0xFF9D174D),
+          Color(0xFFDB2777),
+          Color(0xFFFEF08A),
+        ];
+        dayOceanColors = const [
+          Color(0xFF92400E),
+          Color(0xFF78350F),
+          Color(0xFF451A03),
+          Color(0xFF1C0A00),
+        ];
+        break;
+      case 'EUR':
+        daySkyColors = const [
+          Color(0xFF1E1B4B),
+          Color(0xFF701A75),
+          Color(0xFF0284C7),
+          Color(0xFFE0F2FE),
+        ];
+        dayOceanColors = const [
+          Color(0xFF0369A1),
+          Color(0xFF075985),
+          Color(0xFF0C4A6E),
+          Color(0xFF082F49),
+        ];
+        break;
+      case 'VEN':
+        daySkyColors = const [
+          Color(0xFF4A044E),
+          Color(0xFFC2410C),
+          Color(0xFFF59E0B),
+          Color(0xFFFEF08A),
+        ];
+        dayOceanColors = const [
+          Color(0xFFB45309),
+          Color(0xFF78350F),
+          Color(0xFF451A03),
+          Color(0xFF2E1065),
+        ];
+        break;
+      case 'TTN':
+        daySkyColors = const [
+          Color(0xFF042F2E),
+          Color(0xFF0D9488),
+          Color(0xFF10B981),
+          Color(0xFFD97706),
+        ];
+        dayOceanColors = const [
+          Color(0xFF065F46),
+          Color(0xFF064E3B),
+          Color(0xFF022C22),
+          Color(0xFF011A14),
+        ];
+        break;
+      case 'PLT':
+        daySkyColors = const [
+          Color(0xFF2E1065),
+          Color(0xFF6B21A8),
+          Color(0xFFA855F7),
+          Color(0xFFF5D0FE),
+        ];
+        dayOceanColors = const [
+          Color(0xFF581C87),
+          Color(0xFF3B0764),
+          Color(0xFF1E1B4B),
+          Color(0xFF0F172A),
+        ];
+        break;
+      case 'NEP':
+        daySkyColors = const [
+          Color(0xFF0B192C),
+          Color(0xFF1E3E62),
+          Color(0xFF2563EB),
+          Color(0xFF38BDF8),
+        ];
+        dayOceanColors = const [
+          Color(0xFF1E3A8A),
+          Color(0xFF172554),
+          Color(0xFF0A1128),
+          Color(0xFF030712),
+        ];
+        break;
+      default:
+        daySkyColors = const [
+          Color(0xFF0284C7),
+          Color(0xFF38BDF8),
+          Color(0xFF7DD3FC),
+          Color(0xFFBAE6FD),
+        ];
+        dayOceanColors = const [
+          Color(0xFF0284C7),
+          Color(0xFF0369A1),
+          Color(0xFF075985),
+          Color(0xFF0C4A6E),
+        ];
+        break;
+    }
 
     // 1. Sky Gradient (Upper 44% of infinite viewport)
     final skyPaint = Paint()
@@ -4495,12 +4642,7 @@ class CitadelInfiniteOceanSkyBackdropPainter extends CustomPainter {
                 Color(0xFF0F203C),
                 Color(0xFF193252), // Atmospheric horizon glow
               ]
-            : const [
-                Color(0xFF0284C7),
-                Color(0xFF38BDF8),
-                Color(0xFF7DD3FC),
-                Color(0xFFBAE6FD),
-              ],
+            : daySkyColors,
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
       ).createShader(Rect.fromLTWH(0, 0, w, horizonY + 2));
@@ -4533,12 +4675,7 @@ class CitadelInfiniteOceanSkyBackdropPainter extends CustomPainter {
                 Color(0xFF041224),
                 Color(0xFF020A14), // Abyssal deep base
               ]
-            : const [
-                Color(0xFF0284C7),
-                Color(0xFF0369A1),
-                Color(0xFF075985),
-                Color(0xFF0C4A6E),
-              ],
+            : dayOceanColors,
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
       ).createShader(Rect.fromLTWH(0, horizonY, w, h - horizonY));
@@ -4581,5 +4718,7 @@ class CitadelInfiniteOceanSkyBackdropPainter extends CustomPainter {
   @override
   bool shouldRepaint(
           covariant CitadelInfiniteOceanSkyBackdropPainter oldDelegate) =>
-      oldDelegate.isNight != isNight || oldDelegate.ambientProg != ambientProg;
+      oldDelegate.isNight != isNight ||
+      oldDelegate.ambientProg != ambientProg ||
+      oldDelegate.planetCode != planetCode;
 }

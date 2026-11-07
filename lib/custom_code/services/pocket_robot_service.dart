@@ -15,6 +15,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_avatar_system.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_spoken_dialogue_catalog.dart';
+import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_service.dart';
 
 
 /// 🎭 Archetypes for Pocket Robot Personalities
@@ -115,6 +116,21 @@ class PocketRobot {
   /// 🏆 Level 90 Grandmaster Trophy milestone or Prestige loop trophies
   bool get hasTrophy => trophies > 0 || level == 90;
 
+  /// 🪐 Pocket Cosmos Permanent Celestial Colony & Plot Allocation
+  CelestialColonyInfo get cosmosColony {
+    final colonies = PoketCosmosAllocationService.colonies;
+    final idx = (baseLevel - 1).clamp(0, 999999) % colonies.length;
+    return colonies[idx];
+  }
+
+  String get planetCode => cosmosColony.code;
+  String get planetName => cosmosColony.planetName;
+  String get islandName => cosmosColony.islandName;
+  String get streetName => cosmosColony.streetName;
+  int get plotNumber => (((baseLevel - 1).clamp(0, 999999) ~/ 10) % 9) + 2; // Plots 2..10
+  String get cosmosPin =>
+      'PKT-W01-$planetCode-I01-P${plotNumber.toString().padLeft(2, '0')}';
+
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
@@ -131,6 +147,12 @@ class PocketRobot {
         'openingMessage': openingMessage,
         'catchphrases': catchphrases,
         'isRobot': true,
+        'planetCode': planetCode,
+        'planetName': planetName,
+        'islandName': islandName,
+        'streetName': streetName,
+        'plotNumber': plotNumber,
+        'cosmosPin': cosmosPin,
       };
 
   factory PocketRobot.fromJson(Map<String, dynamic> json) {
@@ -212,6 +234,36 @@ class PocketRobotService {
   /// Retrieve all 90 registered Pocket Robots dynamically progressed according to their growth cycle
   static List<PocketRobot> getAllRobots() {
     return _baseRobots.map((r) => getDynamicRobot(r)).toList();
+  }
+
+  /// 🪐 Returns Cosmos Address metadata for any robot or animal companion ID
+  static Map<String, dynamic> getCosmosAddressForRobotId(String id, {int? level}) {
+    if (id.startsWith('kid_bot_')) {
+      final animal = PocketKidsRobotsData.getAnimalById(id);
+      final lvl = (level ?? animal?.dayLevel ?? 1).clamp(1, 100);
+      final colonies = PoketCosmosAllocationService.colonies;
+      final colony = colonies[(lvl - 1) % colonies.length];
+      final plotNum = (((lvl - 1) ~/ 10) % 10) + 11; // Plots 11..20
+      final pin =
+          'PKT-W01-${colony.code}-I01-P${plotNum.toString().padLeft(2, '0')}';
+      return {
+        'planetCode': colony.code,
+        'planetName': colony.planetName,
+        'islandName': colony.islandName,
+        'streetName': colony.streetName,
+        'plotNumber': plotNum,
+        'cosmosPin': pin,
+      };
+    }
+    final robot = getRobotById(id) ?? getRobotByLevel(level ?? 1);
+    return {
+      'planetCode': robot.planetCode,
+      'planetName': robot.planetName,
+      'islandName': robot.islandName,
+      'streetName': robot.streetName,
+      'plotNumber': robot.plotNumber,
+      'cosmosPin': robot.cosmosPin,
+    };
   }
 
   /// Retrieve all robots and animal companions (for active vibes, stories & interactions)

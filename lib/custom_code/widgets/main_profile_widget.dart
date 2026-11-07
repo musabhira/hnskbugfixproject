@@ -28,6 +28,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_resident_island_view.dart';
+import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_challenge_generator.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
@@ -5993,10 +5994,98 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               ),
             ),
           ],
+
+          // 🪐 Poket Cosmos Citizen Address Badge (Tapping slides right to Island Map!)
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.mediumImpact();
+              _profileHorizontalPageController.animateToPage(
+                1,
+                duration: const Duration(milliseconds: 350),
+                curve: Curves.easeInOutCubic,
+              );
+            },
+            child: Container(
+              margin: const EdgeInsets.only(top: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF0284C7).withValues(alpha: 0.18),
+                    const Color(0xFF0F172A).withValues(alpha: 0.70),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.4),
+                  width: 1.0,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('🪐', style: TextStyle(fontSize: 14)),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Cosmos Citizen Address',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF38BDF8),
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 1),
+                        Text(
+                          _getResolvedCosmosAddressText(bio),
+                          style: GoogleFonts.plusJakartaSans(
+                            color: Colors.white,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  const Icon(Icons.arrow_forward_ios_rounded,
+                      color: Color(0xFF38BDF8), size: 10),
+                ],
+              ),
+            ),
+          ),
           // Hand Skill 3D Web link hidden per user request
         ],
       ),
     );
+  }
+
+  String _getResolvedCosmosAddressText(String bio) {
+    final match = RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(bio);
+    if (match != null) {
+      final code = match.group(2) ?? 'EP';
+      final plot = int.tryParse(match.group(4) ?? '1') ?? 1;
+      final colony =
+          PoketCosmosAllocationService.instance.getColonyByCode(code);
+      return '${colony.planetName} • ${colony.islandName} • Plot #$plot';
+    }
+    final country = _profileData?['country']?.toString();
+    if (country != null && country.isNotEmpty) {
+      final city = _profileData?['city']?.toString() ?? '';
+      return '$country${city.isNotEmpty ? ' • $city' : ''}';
+    }
+    final currentPlot =
+        PoketCosmosAllocationService.instance.currentBirthPlot;
+    if (currentPlot != null) {
+      return '${currentPlot.planetName} • ${currentPlot.countryName} • Plot #${currentPlot.plotNumber}';
+    }
+    return 'Earth Prime 🌍 • Ocean Whisper Atoll • Plot #01';
   }
 
   Widget _buildVerifiedGoldenTick({double size = 18}) {

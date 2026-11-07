@@ -196,6 +196,15 @@ class PoketCosmosAllocationService {
     ),
   ];
 
+  /// Finds colony info matching a planet code (e.g. 'EP', 'MAR', 'JUP')
+  CelestialColonyInfo getColonyByCode(String code) {
+    final upper = code.trim().toUpperCase();
+    for (final c in colonies) {
+      if (c.code.toUpperCase() == upper) return c;
+    }
+    return getColonyByPlanetName(code);
+  }
+
   /// Finds colony info matching a planet name or code
   CelestialColonyInfo getColonyByPlanetName(String planetName) {
     final lower = planetName.toLowerCase();
@@ -248,7 +257,6 @@ class PoketCosmosAllocationService {
           final pinRegex = RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)');
           final match = pinRegex.firstMatch(bio);
           if (match != null) {
-            final wave = int.tryParse(match.group(1) ?? '1') ?? 1;
             final planetCode = match.group(2) ?? 'EP';
             final plotNum = int.tryParse(match.group(4) ?? '1') ?? 1;
             final colony = getColonyByCode(planetCode);

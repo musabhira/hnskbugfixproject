@@ -15,6 +15,8 @@ import 'pocket_world_game_rules_modal.dart';
 
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_service.dart';
 
 /// 🌍 Pocket World Street Model: A resident on the neighborhood street
 class PocketNeighbor {
@@ -34,6 +36,12 @@ class PocketNeighbor {
   final int hp;
   final int maxHp;
   final bool isVip;
+  final String? planetCode;
+  final String? planetName;
+  final String? islandName;
+  final String? streetName;
+  final int? plotNumber;
+  final String? cosmosPin;
 
   const PocketNeighbor({
     required this.id,
@@ -52,6 +60,12 @@ class PocketNeighbor {
     this.hp = 100,
     this.maxHp = 100,
     this.isVip = false,
+    this.planetCode,
+    this.planetName,
+    this.islandName,
+    this.streetName,
+    this.plotNumber,
+    this.cosmosPin,
   });
 
   /// 🏛️ Official Sovereign Citadel Neighbor representation for The President
@@ -70,6 +84,12 @@ class PocketNeighbor {
       isDamaged: false,
       hp: 10000,
       maxHp: 10000,
+      planetCode: 'EP',
+      planetName: 'Earth Prime 🌍',
+      islandName: 'Ocean Whisper Atoll',
+      streetName: 'Reefway Avenue',
+      plotNumber: 1,
+      cosmosPin: 'PKT-W01-EP-I01-P01',
     );
   }
 
@@ -78,6 +98,86 @@ class PocketNeighbor {
       PocketPresidentService.isPresidentId(id) ||
       id == 'pocket_president' ||
       name.toLowerCase().contains('president');
+
+  /// 🪐 Pocket Cosmos Permanent Celestial Colony & Plot Allocation Getters
+  String get effectivePlanetCode {
+    if (planetCode != null && planetCode!.isNotEmpty) return planetCode!;
+    if (isPresident) return 'EP';
+    if (isPocketRobo || PocketRobotService.isRobotId(id)) {
+      final meta = PocketRobotService.getCosmosAddressForRobotId(id, level: day);
+      return meta['planetCode'] as String? ?? 'EP';
+    }
+    // Check if statusMessage has PIN
+    final match = RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(statusMessage);
+    if (match != null) return match.group(2) ?? 'EP';
+    final colonies = PoketCosmosAllocationService.colonies;
+    final idx = id.hashCode.abs() % colonies.length;
+    return colonies[idx].code;
+  }
+
+  String get effectivePlanetName {
+    if (planetName != null && planetName!.isNotEmpty) return planetName!;
+    if (isPresident) return 'Earth Prime 🌍';
+    if (isPocketRobo || PocketRobotService.isRobotId(id)) {
+      final meta = PocketRobotService.getCosmosAddressForRobotId(id, level: day);
+      return meta['planetName'] as String? ?? 'Earth Prime 🌍';
+    }
+    final code = effectivePlanetCode;
+    final colony = PoketCosmosAllocationService.instance.getColonyByCode(code);
+    return colony.planetName;
+  }
+
+  String get effectiveIslandName {
+    if (islandName != null && islandName!.isNotEmpty) return islandName!;
+    if (isPresident) return 'Ocean Whisper Atoll';
+    if (isPocketRobo || PocketRobotService.isRobotId(id)) {
+      final meta = PocketRobotService.getCosmosAddressForRobotId(id, level: day);
+      return meta['islandName'] as String? ?? 'Ocean Whisper Atoll';
+    }
+    final code = effectivePlanetCode;
+    final colony = PoketCosmosAllocationService.instance.getColonyByCode(code);
+    return colony.islandName;
+  }
+
+  String get effectiveStreetName {
+    if (streetName != null && streetName!.isNotEmpty) return streetName!;
+    if (isPresident) return 'Reefway Avenue';
+    if (isPocketRobo || PocketRobotService.isRobotId(id)) {
+      final meta = PocketRobotService.getCosmosAddressForRobotId(id, level: day);
+      return meta['streetName'] as String? ?? 'Reefway Avenue';
+    }
+    final code = effectivePlanetCode;
+    final colony = PoketCosmosAllocationService.instance.getColonyByCode(code);
+    return colony.streetName;
+  }
+
+  int get effectivePlotNumber {
+    if (plotNumber != null && plotNumber! > 0) return plotNumber!;
+    if (isPresident) return 1;
+    if (isPocketRobo || PocketRobotService.isRobotId(id)) {
+      final meta = PocketRobotService.getCosmosAddressForRobotId(id, level: day);
+      return meta['plotNumber'] as int? ?? 2;
+    }
+    final match = RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(statusMessage);
+    if (match != null) {
+      return int.tryParse(match.group(4) ?? '1') ?? 1;
+    }
+    return (id.hashCode.abs() ~/ 10) % 20 + 1;
+  }
+
+  String get effectiveCosmosPin {
+    if (cosmosPin != null && cosmosPin!.isNotEmpty) return cosmosPin!;
+    if (isPresident) return 'PKT-W01-EP-I01-P01';
+    if (isPocketRobo || PocketRobotService.isRobotId(id)) {
+      final meta = PocketRobotService.getCosmosAddressForRobotId(id, level: day);
+      return meta['cosmosPin'] as String? ?? 'PKT-W01-EP-I01-P02';
+    }
+    final match = RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(statusMessage);
+    if (match != null) return match.group(0)!;
+    final code = effectivePlanetCode;
+    final pNum = effectivePlotNumber.toString().padLeft(2, '0');
+    return 'PKT-W01-$code-I01-P$pNum';
+  }
 
   /// 🛡️ Avatar emoji or icon representation for this neighbor
   String get avatar {

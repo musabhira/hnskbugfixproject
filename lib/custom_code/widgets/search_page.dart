@@ -1508,6 +1508,45 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                     ),
                   ),
                 ),
+
+              // 🪐 Robot Permanent Cosmos Address Chip
+              Builder(builder: (context) {
+                final cosmosMeta = PocketRobotService.getCosmosAddressForRobotId(
+                  robotData['user_id'] ?? 'robot_1',
+                  level: (robotData['robot_level'] as num?)?.toInt() ?? 1,
+                );
+                return Container(
+                  margin: const EdgeInsets.only(top: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('🪐', style: TextStyle(fontSize: 14)),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          '${cosmosMeta['planetName']} • Plot #${cosmosMeta['plotNumber']} (${cosmosMeta['cosmosPin']})',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF38BDF8),
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
               const SizedBox(height: 20),
               Row(
                 children: [
@@ -1589,6 +1628,11 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                     Navigator.pop(ctx);
                     final robotLvl =
                         (robotData['robot_level'] as num?)?.toInt() ?? 1;
+                    final cosmosMeta =
+                        PocketRobotService.getCosmosAddressForRobotId(
+                      robotData['user_id'] ?? 'robot_1',
+                      level: robotLvl,
+                    );
                     final robotNeighbor = PocketNeighbor(
                       id: robotData['user_id'] ?? 'robot_1',
                       name: robotData['name'] ?? 'Pocket Robot',
@@ -1601,6 +1645,12 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                       statusMessage: '🤖 Autonomous English Fortress Sentinel',
                       hp: 100,
                       maxHp: 100,
+                      planetCode: cosmosMeta['planetCode'],
+                      planetName: cosmosMeta['planetName'],
+                      islandName: cosmosMeta['islandName'],
+                      streetName: cosmosMeta['streetName'],
+                      plotNumber: cosmosMeta['plotNumber'],
+                      cosmosPin: cosmosMeta['cosmosPin'],
                     );
                     Navigator.push(
                       context,
