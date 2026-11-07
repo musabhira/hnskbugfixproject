@@ -60,10 +60,10 @@ class PoketCosmosAllocationService {
   static const _kWaveOccupancyCountPrefix = 'poket_cosmos_wave_occ_count_';
   static const _kPlanetOccupiedPlotsPrefix = 'poket_cosmos_planet_occ_plots_';
 
-  // Scaling Constants (20 plots per island, 200 citizens per wave across 10 planets)
-  static const int maxPlotsPerIsland = 20;
+  // Scaling Constants (25 plots per island, 250 citizens per wave across 10 planets)
+  static const int maxPlotsPerIsland = 25;
   static const int totalPlanetsCount = 10;
-  static const int waveCapacity = 200; // 10 planets * 20 plots
+  static const int waveCapacity = 250; // 10 planets * 25 plots
 
   /// 🏷️ Algorithmic Infinite Island Naming Loop Engine
   /// Generates endless unique celestial island titles across infinite waves
@@ -249,6 +249,43 @@ class PoketCosmosAllocationService {
       'localPlotNumber': localPlot,
       'globalPlotNumber': gNum,
     };
+  }
+
+  /// 🌐 Returns all islands generated across planets for the given active wave count
+  static List<Map<String, dynamic>> getAllIslandsCatalog({int maxWaves = 1}) {
+    final List<Map<String, dynamic>> list = [];
+    for (int w = 1; w <= math.max(1, maxWaves); w++) {
+      for (final colony in colonies) {
+        final islandName = (w == 1)
+            ? colony.islandName
+            : generateInfiniteIslandName(colony.code, w, w);
+        list.add({
+          'wave': w,
+          'colony': colony,
+          'planetCode': colony.code,
+          'planetName': colony.planetName,
+          'islandName': islandName,
+          'streetName': colony.streetName,
+          'climate': colony.climate,
+          'shapeStyle': colony.shapeStyle,
+          'totalPlots': maxPlotsPerIsland,
+          'occupiedCount': math.min(maxPlotsPerIsland, 8 + (w * 3) + (colony.planetId % 9)),
+        });
+      }
+    }
+    return list;
+  }
+
+  /// 🌐 Returns 250 sequential plots for the Search Page Plots Grid
+  static List<Map<String, dynamic>> getWavePlotsCatalog({int wave = 1}) {
+    final List<Map<String, dynamic>> list = [];
+    final startPlot = ((wave - 1) * waveCapacity) + 1;
+    final endPlot = wave * waveCapacity;
+    for (int gNum = startPlot; gNum <= endPlot; gNum++) {
+      final parsed = parseGlobalPlotNumber(gNum);
+      list.add(parsed);
+    }
+    return list;
   }
 
   /// 🌟 Cached Result of a Birthplace Allocation

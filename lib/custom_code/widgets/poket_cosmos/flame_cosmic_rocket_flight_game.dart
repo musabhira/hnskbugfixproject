@@ -67,6 +67,7 @@ class FlameCosmicRocketFlightGame extends FlameGame {
   double _flightProgress = 0.0; // 0.0 to 1.0
   double _currentSpeedMultiplier = 1.0;
   double _boostTimer = 0.0;
+  bool _isHoldingThrust = false;
   bool _hasArrived = false;
   double _gameTime = 0.0;
 
@@ -102,19 +103,35 @@ class FlameCosmicRocketFlightGame extends FlameGame {
     }
   }
 
-  /// ⚡ Boost action called when user taps or holds the Boost Button
+  /// ⚡ Single Tap Burst
   void applyThrustBoost() {
-    _boostTimer = 0.8;
+    _boostTimer = 0.85;
     _currentSpeedMultiplier = 2.8;
+    _burstPlasmaSparks(count: 18);
+  }
 
-    // Burst extra plasma sparks
-    for (int i = 0; i < 18; i++) {
+  /// 🔥 Continuous Long-Press Hyperthrust
+  void startContinuousThrust() {
+    _isHoldingThrust = true;
+    _currentSpeedMultiplier = 3.4;
+    _burstPlasmaSparks(count: 12);
+  }
+
+  void stopContinuousThrust() {
+    _isHoldingThrust = false;
+    if (_boostTimer <= 0) {
+      _currentSpeedMultiplier = 1.0;
+    }
+  }
+
+  void _burstPlasmaSparks({int count = 12}) {
+    for (int i = 0; i < count; i++) {
       _thrustParticles.add(
         PlasmaThrustParticle(
-          x: 0,
-          y: 42.0,
-          vx: (_rng.nextDouble() - 0.5) * 70,
-          vy: 80.0 + _rng.nextDouble() * 140,
+          x: (_rng.nextDouble() - 0.5) * 14.0,
+          y: 40.0,
+          vx: (_rng.nextDouble() - 0.5) * 75,
+          vy: 85.0 + _rng.nextDouble() * 140,
           maxLife: 0.35 + _rng.nextDouble() * 0.25,
           color: (i % 2 == 0) ? const Color(0xFFFFD700) : const Color(0xFF00E5FF),
           radius: 2.5 + _rng.nextDouble() * 2.5,
@@ -130,19 +147,24 @@ class FlameCosmicRocketFlightGame extends FlameGame {
 
     if (_hasArrived) return;
 
-    // Manage boost decay
-    if (_boostTimer > 0) {
+    // Manage continuous hold or single tap boost decay
+    if (_isHoldingThrust) {
+      _currentSpeedMultiplier = 3.4;
+      if (_rng.nextDouble() < 0.4) {
+        _burstPlasmaSparks(count: 3);
+      }
+    } else if (_boostTimer > 0) {
       _boostTimer -= dt;
       if (_boostTimer <= 0) {
         _currentSpeedMultiplier = 1.0;
       }
     }
 
-    // Normal flight speed: base transit ~10-12s, boost cuts it to ~5-6s
+    // Normal flight speed: base transit ~10-12s, boost cuts it to ~4-5s
     final double baseSpeed = manifest.isSamePlanet ? 0.16 : 0.085;
     final double step = baseSpeed * _currentSpeedMultiplier * dt;
 
-    // Slingshot loop logic around intermediate planet (e.g. Mars)
+    // Slingshot loop logic around intermediate planet (e.g. Moon or Mars)
     final intermediateCount = manifest.intermediatePlanetCodes.length;
     if (intermediateCount > 0 && _flightProgress >= 0.40 && _flightProgress <= 0.62) {
       if (!_isSlingshotLooping) {
@@ -221,12 +243,10 @@ class FlameCosmicRocketFlightGame extends FlameGame {
     }
     canvas.restore();
 
-    // 3. Render Origin Celestial Sphere (Receding downward at start: 0.0 to 0.3)
-    if (_flightProgress < 0.35) {
-      final originAlpha = (1.0 - (_flightProgress / 0.35)).clamp(0.0, 1.0);
-      final originY = h * 0.80 + (_flightProgress * h * 0.75);
-      final originRadius = 85.0 * (1.0 - (_flightProgress * 0.45));
-      _drawPlanetSphere(canvas, cx, originY, originRadius, manifest.originCode, alpha: originAlpha);
+    // 3. Render Origin Atmosphere & Planetary Launch Surface (Receding as rocket climbs)
+    if (_flightProgress < 0.42) {
+      final originAlpha = (1.0 - (_flightProgress / 0.42)).clamp(0.0, 1.0);
+      _drawOriginAtmosphereAndSurface(canvas, w, h, originAlpha);
     }
 
     // 4. Render Intermediate Planet & Gravitational Slingshot Loop (0.3 to 0.7)
@@ -444,6 +464,146 @@ class FlameCosmicRocketFlightGame extends FlameGame {
     }
 
     canvas.restore();
+  }
+
+  /// 🌍 Realistic Origin Atmosphere & Ground Launch Surface with House
+  void _drawOriginAtmosphereAndSurface(Canvas canvas, double w, double h, double alpha) {
+    final cx = w / 2;
+    final code = manifest.originCode.toUpperCase();
+
+    // 1. Atmosphere Gradient (Sky layer transitioning into space)
+    final Color skyTop;
+    final Color skyBottom;
+    final Color landColor;
+
+    switch (code) {
+      case 'MAR':
+        skyBottom = const Color(0xFFDC2626);
+        skyTop = const Color(0xFF7C2D12);
+        landColor = const Color(0xFF991B1B);
+        break;
+      case 'JUP':
+        skyBottom = const Color(0xFF059669);
+        skyTop = const Color(0xFF0369A1);
+        landColor = const Color(0xFF065F46);
+        break;
+      case 'SAT':
+        skyBottom = const Color(0xFFD97706);
+        skyTop = const Color(0xFF78350F);
+        landColor = const Color(0xFF92400E);
+        break;
+      case 'LUN':
+        skyBottom = const Color(0xFF64748B);
+        skyTop = const Color(0xFF1E293B);
+        landColor = const Color(0xFF475569);
+        break;
+      case 'EUR':
+        skyBottom = const Color(0xFF38BDF8);
+        skyTop = const Color(0xFF0369A1);
+        landColor = const Color(0xFF0284C7);
+        break;
+      case 'VEN':
+        skyBottom = const Color(0xFFF59E0B);
+        skyTop = const Color(0xFF78350F);
+        landColor = const Color(0xFFB45309);
+        break;
+      case 'TTN':
+        skyBottom = const Color(0xFF10B981);
+        skyTop = const Color(0xFF064E3B);
+        landColor = const Color(0xFF047857);
+        break;
+      case 'NEP':
+        skyBottom = const Color(0xFF2563EB);
+        skyTop = const Color(0xFF1E3A8A);
+        landColor = const Color(0xFF1D4ED8);
+        break;
+      case 'PLT':
+        skyBottom = const Color(0xFFA855F7);
+        skyTop = const Color(0xFF3B0764);
+        landColor = const Color(0xFF7E22CE);
+        break;
+      default: // Earth
+        skyBottom = const Color(0xFF0284C7);
+        skyTop = const Color(0xFF0F172A);
+        landColor = const Color(0xFF16A34A);
+    }
+
+    final skyPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.bottomCenter,
+        end: Alignment.topCenter,
+        colors: [
+          skyBottom.withValues(alpha: 0.85 * alpha),
+          skyTop.withValues(alpha: 0.35 * alpha),
+          Colors.transparent,
+        ],
+        stops: const [0.0, 0.45, 1.0],
+      ).createShader(Rect.fromLTWH(0, 0, w, h));
+    canvas.drawRect(Rect.fromLTWH(0, 0, w, h), skyPaint);
+
+    // 2. Horizon ground surface curve that drops down during ascent
+    final surfaceY = h * 0.72 + (_flightProgress * h * 1.55);
+    final surfacePath = Path()
+      ..moveTo(-50, surfaceY)
+      ..quadraticBezierTo(cx, surfaceY - 26, w + 50, surfaceY)
+      ..lineTo(w + 50, h + 100)
+      ..lineTo(-50, h + 100)
+      ..close();
+
+    final landPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          landColor.withValues(alpha: 0.95 * alpha),
+          const Color(0xFF0B132B).withValues(alpha: 0.95 * alpha),
+        ],
+      ).createShader(Rect.fromLTWH(0, surfaceY - 26, w, h - surfaceY + 126));
+    canvas.drawPath(surfacePath, landPaint);
+
+    // 3. Citizen Launchpad & Home Base (At center-left of the launch surface)
+    final houseX = cx - 65;
+    final houseY = surfaceY - 14;
+
+    // Launch Gantry Tower
+    final gantryPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.4 * alpha)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+    canvas.drawLine(Offset(cx + 40, houseY), Offset(cx + 40, houseY - 45), gantryPaint);
+    canvas.drawLine(Offset(cx + 34, houseY - 30), Offset(cx + 40, houseY - 20), gantryPaint);
+
+    // Launchpad Lights
+    final lightPaint = Paint()..color = const Color(0xFFFFD700).withValues(alpha: 0.85 * alpha);
+    canvas.drawCircle(Offset(cx - 30, houseY + 6), 3, lightPaint);
+    canvas.drawCircle(Offset(cx + 30, houseY + 6), 3, lightPaint);
+
+    // Citizen House Base
+    final housePaint = Paint()..color = const Color(0xFF1E293B).withValues(alpha: 0.95 * alpha);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(center: Offset(houseX, houseY), width: 34, height: 22),
+        const Radius.circular(5),
+      ),
+      housePaint,
+    );
+    // House Roof
+    final roofPaint = Paint()..color = const Color(0xFFE2E8F0).withValues(alpha: 0.95 * alpha);
+    final roofPath = Path()
+      ..moveTo(houseX - 20, houseY - 11)
+      ..lineTo(houseX, houseY - 24)
+      ..lineTo(houseX + 20, houseY - 11)
+      ..close();
+    canvas.drawPath(roofPath, roofPaint);
+
+    // Origin Location Label Pill
+    _drawText(
+      canvas,
+      '🏡 ${manifest.originName.toUpperCase()} SURFACE',
+      cx,
+      surfaceY + 18,
+      color: Colors.white.withValues(alpha: 0.85 * alpha),
+    );
   }
 
   void _drawText(Canvas canvas, String text, double x, double y, {Color color = Colors.white}) {

@@ -26,6 +26,7 @@ import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_n
 import 'package:pocket_mates_app/custom_code/services/poket_cosmos_distance_service.dart';
 import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmic_flight_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_resident_island_view.dart';
 import 'package:flutter/services.dart';
 
 class SearchPage extends StatefulWidget {
@@ -120,8 +121,15 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Widget _buildTopTabs() {
+    final tabs = [
+      {'id': 'people', 'label': 'Citizens', 'icon': Icons.people_alt_rounded},
+      {'id': 'planets', 'label': 'Planets', 'icon': Icons.public_rounded},
+      {'id': 'plots', 'label': 'Plots', 'icon': Icons.grid_view_rounded},
+      {'id': 'islands', 'label': 'Islands', 'icon': Icons.explore_rounded},
+    ];
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       child: Container(
         height: 38,
         decoration: BoxDecoration(
@@ -131,22 +139,20 @@ class _SearchPageState extends State<SearchPage> {
         ),
         padding: const EdgeInsets.all(3),
         child: Row(
-          children: [
-            Expanded(
+          children: tabs.map((tab) {
+            final isSelected = _selectedTab == tab['id'];
+            return Expanded(
               child: GestureDetector(
                 onTap: () {
-                  if (_selectedTab != 'people') {
-                    safeSetState(() {
-                      _selectedTab = 'people';
-                    });
-                  }
+                  HapticFeedback.selectionClick();
+                  safeSetState(() {
+                    _selectedTab = tab['id'] as String;
+                  });
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
                   decoration: BoxDecoration(
-                    color: _selectedTab == 'people'
-                        ? const Color(0xFFFFFC00)
-                        : Colors.transparent,
+                    color: isSelected ? const Color(0xFFFFFC00) : Colors.transparent,
                     borderRadius: BorderRadius.circular(9),
                   ),
                   alignment: Alignment.center,
@@ -154,76 +160,705 @@ class _SearchPageState extends State<SearchPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        Icons.people_alt_rounded,
-                        size: 15,
-                        color: _selectedTab == 'people'
-                            ? Colors.black
-                            : Colors.white60,
+                        tab['icon'] as IconData,
+                        size: 13,
+                        color: isSelected ? Colors.black : Colors.white60,
                       ),
-                      const SizedBox(width: 6),
-                      Text(
-                        'People',
-                        style: GoogleFonts.outfit(
-                          color: _selectedTab == 'people'
-                              ? Colors.black
-                              : Colors.white70,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          tab['label'] as String,
+                          style: GoogleFonts.outfit(
+                            color: isSelected ? Colors.black : Colors.white70,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  /// 🪐 Dedicated Planets Tab: 10 Living Celestial Bodies with Horizontally Scrollable Islands
+  Widget _buildPlanetsTab() {
+    final query = _currentSearchQuery.trim().toLowerCase();
+    final colonies = PoketCosmosAllocationService.colonies.where((c) {
+      if (query.isEmpty) return true;
+      return c.planetName.toLowerCase().contains(query) ||
+          c.code.toLowerCase().contains(query) ||
+          c.climate.toLowerCase().contains(query);
+    }).toList();
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      children: [
+        // 🌌 3D Solar System View Launcher Header
+        GestureDetector(
+          onTap: () {
+            HapticFeedback.mediumImpact();
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const PoketCosmosNavigatorPage()),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF0F172A), Color(0xFF1E1B4B)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.35), width: 1.0),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.12),
+                  blurRadius: 14,
+                ),
+              ],
             ),
-            const SizedBox(width: 4),
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  if (_selectedTab != 'market') {
-                    safeSetState(() {
-                      _selectedTab = 'market';
-                    });
-                  }
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(9),
                   decoration: BoxDecoration(
-                    color: _selectedTab == 'market'
-                        ? const Color(0xFFFFFC00)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(9),
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
                   ),
-                  alignment: Alignment.center,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  child: const Icon(Icons.public_rounded, color: Color(0xFF38BDF8), size: 22),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.storefront_rounded,
-                        size: 17,
-                        color: _selectedTab == 'market'
-                            ? Colors.black
-                            : Colors.white60,
-                      ),
-                      const SizedBox(width: 6),
                       Text(
-                        'Market',
+                        'POCKET SOLAR SYSTEM',
                         style: GoogleFonts.outfit(
-                          color: _selectedTab == 'market'
-                              ? Colors.black
-                              : Colors.white70,
-                          fontSize: 14,
+                          color: const Color(0xFF38BDF8),
+                          fontSize: 11,
                           fontWeight: FontWeight.bold,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '10 Colonies • Interactive 3D Orbit View',
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
                   ),
                 ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFC00),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '3D VIEW',
+                        style: GoogleFonts.outfit(
+                          color: Colors.black,
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(width: 3),
+                      const Icon(Icons.arrow_forward_rounded, color: Colors.black, size: 12),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Section Title
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '10 LIVING CELESTIAL COLONIES',
+              style: GoogleFonts.outfit(
+                color: const Color(0xFF94A3B8),
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.0,
+              ),
+            ),
+            Text(
+              '25 Plots / Island',
+              style: GoogleFonts.inter(
+                color: const Color(0xFF64748B),
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
         ),
+
+        const SizedBox(height: 10),
+
+        // List of Planets with Horizontal Archipelago Island Cards
+        ...colonies.map((colony) {
+          final manifest = PoketCosmosDistanceService.instance
+              .calculateFlightManifest(originCode: 'EP', destinationCode: colony.code);
+          final distanceStr = manifest.formattedDistance;
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 14),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F172A).withValues(alpha: 0.82),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: Colors.white10),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Planet Header Row
+                Row(
+                  children: [
+                    Text(
+                      PoketCosmosDistanceService.instance.getPlanetEmoji(colony.code),
+                      style: const TextStyle(fontSize: 22),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                colony.planetName,
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                decoration: BoxDecoration(
+                                  color: Colors.white10,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  colony.code,
+                                  style: GoogleFonts.orbitron(
+                                    color: const Color(0xFF38BDF8),
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            colony.climate,
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF94A3B8),
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Distance Tag
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0284C7).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3)),
+                      ),
+                      child: Text(
+                        distanceStr,
+                        style: GoogleFonts.orbitron(
+                          color: const Color(0xFF38BDF8),
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+
+                // Horizontally Scrollable Islands (1 Island in Wave 1, 2 in Wave 2, etc.)
+                SizedBox(
+                  height: 100,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: 1, // Wave 1 has 1 primary island per planet (user directive)
+                    separatorBuilder: (_, __) => const SizedBox(width: 10),
+                    itemBuilder: (context, islandIdx) {
+                      return GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => PoketCosmosResidentIslandView(
+                                userId: SupaFlow.client.auth.currentUser?.id,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: 210,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                colony.landColor.withValues(alpha: 0.25),
+                                const Color(0xFF1E293B).withValues(alpha: 0.65),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: colony.landColor.withValues(alpha: 0.4), width: 1.0),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.wb_sunny_rounded, color: Color(0xFFFFD700), size: 14),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      colony.islandName,
+                                      style: GoogleFonts.outfit(
+                                        color: Colors.white,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Text(
+                                '${colony.streetName} • 25 Plots',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white70,
+                                  fontSize: 11,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black45,
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      'Wave 1 Active',
+                                      style: GoogleFonts.inter(
+                                        color: const Color(0xFF10B981),
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white54, size: 11),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  /// 🏡 Dedicated Plots Tab: Responsive Grid of 250 Plots across 10 Planets with Direct Number Search
+  Widget _buildPlotsTab() {
+    final query = _currentSearchQuery.trim().toLowerCase();
+    final allPlots = PoketCosmosAllocationService.getWavePlotsCatalog(wave: 1);
+
+    final filteredPlots = allPlots.where((item) {
+      if (query.isEmpty) return true;
+      final gNum = item['globalPlotNumber']?.toString() ?? '';
+      final localNum = item['localPlotNumber']?.toString() ?? '';
+      final planet = item['planetName']?.toString().toLowerCase() ?? '';
+      final code = item['planetCode']?.toString().toLowerCase() ?? '';
+      return gNum.contains(query) ||
+          localNum.contains(query) ||
+          planet.contains(query) ||
+          code.contains(query);
+    }).toList();
+
+    return Column(
+      children: [
+        // Plot Search & Stats Bar
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'WAVE 1 • 250 PLOTS (10 PLANETS)',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFF94A3B8),
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.0,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+                ),
+                child: Text(
+                  '${filteredPlots.length} Plots Found',
+                  style: GoogleFonts.orbitron(
+                    color: const Color(0xFF10B981),
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Responsive Grid
+        Expanded(
+          child: GridView.builder(
+            padding: const EdgeInsets.fromLTRB(14, 4, 14, 20),
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 95,
+              childAspectRatio: 0.88,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+            ),
+            itemCount: filteredPlots.length,
+            itemBuilder: (context, idx) {
+              final plot = filteredPlots[idx];
+              final int gNum = plot['globalPlotNumber'] as int;
+              final int lNum = plot['localPlotNumber'] as int;
+              final String code = plot['planetCode'] as String;
+              final String planetName = plot['planetName'] as String;
+              final isCrown = (lNum == 1);
+              final isBeachfront = (lNum <= 6);
+
+              return GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  _showPlotDetailSheet(context, gNum, lNum, code, planetName);
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A).withValues(alpha: 0.88),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isCrown
+                          ? const Color(0xFFFFD700)
+                          : (isBeachfront
+                              ? const Color(0xFF38BDF8).withValues(alpha: 0.6)
+                              : Colors.white12),
+                      width: isCrown ? 1.4 : 0.8,
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            PoketCosmosDistanceService.instance.getPlanetEmoji(code),
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                          Text(
+                            '#$gNum',
+                            style: GoogleFonts.orbitron(
+                              color: isCrown ? const Color(0xFFFFD700) : Colors.white,
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        isCrown ? '👑 Crown' : (isBeachfront ? '🏖️ Beach' : '🏡 Plot $lNum'),
+                        style: GoogleFonts.inter(
+                          color: isCrown
+                              ? const Color(0xFFFFD700)
+                              : (isBeachfront ? const Color(0xFF38BDF8) : Colors.white70),
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Container(
+                        width: double.infinity,
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.06),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          code,
+                          style: GoogleFonts.outfit(
+                            color: Colors.white54,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 🏝️ Dedicated Islands Tab: Container Tile List of Celestial Living Islands
+  Widget _buildIslandsTab() {
+    final query = _currentSearchQuery.trim().toLowerCase();
+    final allIslands = PoketCosmosAllocationService.getAllIslandsCatalog(maxWaves: 1);
+
+    final filteredIslands = allIslands.where((isl) {
+      if (query.isEmpty) return true;
+      final name = isl['islandName']?.toString().toLowerCase() ?? '';
+      final planet = isl['planetName']?.toString().toLowerCase() ?? '';
+      final code = isl['planetCode']?.toString().toLowerCase() ?? '';
+      return name.contains(query) || planet.contains(query) || code.contains(query);
+    }).toList();
+
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      itemCount: filteredIslands.length,
+      itemBuilder: (context, idx) {
+        final isl = filteredIslands[idx];
+        final colony = isl['colony'] as CelestialColonyInfo;
+        final islandName = isl['islandName'] as String;
+        final planetName = isl['planetName'] as String;
+        final climate = isl['climate'] as String;
+        final street = isl['streetName'] as String;
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F172A).withValues(alpha: 0.85),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: colony.landColor.withValues(alpha: 0.35), width: 1.0),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [colony.landColor, colony.waterColor],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  PoketCosmosDistanceService.instance.getPlanetEmoji(colony.code),
+                  style: const TextStyle(fontSize: 22),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      islandName,
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '$planetName • $street',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF94A3B8),
+                        fontSize: 11.5,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      climate,
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF38BDF8),
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => PoketCosmosResidentIslandView(
+                        userId: SupaFlow.client.auth.currentUser?.id,
+                      ),
+                    ),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFC00),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    'EXPLORE',
+                    style: GoogleFonts.outfit(
+                      color: Colors.black,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showPlotDetailSheet(BuildContext context, int globalNum, int localNum, String code, String planetName) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF0F172A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    PoketCosmosDistanceService.instance.getPlanetEmoji(code),
+                    style: const TextStyle(fontSize: 26),
+                  ),
+                  const SizedBox(width: 10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Global Plot #$globalNum',
+                        style: GoogleFonts.orbitron(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        '$planetName • Local Plot #$localNum',
+                        style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'This exclusive deed parcel is allocated within Wave 1 on $planetName. You can launch an interplanetary rocket journey to inspect this sector or explore neighboring citadel defenses.',
+                style: GoogleFonts.inter(color: const Color(0xFFCBD5E1), fontSize: 13, height: 1.4),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => PoketCosmosResidentIslandView(
+                          userId: SupaFlow.client.auth.currentUser?.id,
+                        ),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFFC00),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: Text(
+                    'VIEW ON ISLAND MAP ➔',
+                    style: GoogleFonts.outfit(color: Colors.black, fontSize: 13.5, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -478,8 +1113,8 @@ class _SearchPageState extends State<SearchPage> {
               onSearchChanged: _handleSearchChanged,
             ),
 
-            // Top Tabs (People vs Market) - Market tab hidden per directive
-            // _buildTopTabs(),
+            // Top 4 Cosmic Tabs: Citizens, Planets, Plots, Islands
+            _buildTopTabs(),
 
             if (_selectedTab == 'people') ...[
               // Quick Minimal Filter Chips (All, Humans, Robots)
@@ -511,8 +1146,20 @@ class _SearchPageState extends State<SearchPage> {
                   onResultsChanged: _handleResultsChanged,
                 ),
               ),
+            ] else if (_selectedTab == 'planets') ...[
+              Expanded(
+                child: _buildPlanetsTab(),
+              ),
+            ] else if (_selectedTab == 'plots') ...[
+              Expanded(
+                child: _buildPlotsTab(),
+              ),
+            ] else if (_selectedTab == 'islands') ...[
+              Expanded(
+                child: _buildIslandsTab(),
+              ),
             ] else ...[
-              // Market Content
+              // Fallback Market Content
               Expanded(
                 child: MarketSearchResultsWidget(
                   searchQuery: _currentSearchQuery,
