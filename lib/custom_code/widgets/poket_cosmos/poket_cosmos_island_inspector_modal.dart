@@ -578,3 +578,4 @@ class _CelestialIslandPageViewItemState extends State<_CelestialIslandPageViewIt
     );
   }
 }
+

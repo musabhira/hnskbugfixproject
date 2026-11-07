@@ -249,7 +249,7 @@ class PoketCosmosAllocationService {
     int currentWave = await getActiveWaveIndex();
 
     // Find the colony in the current wave with the least occupancy
-    CelestialColonyInfo? pickedColony;
+    CelestialColonyInfo pickedColony = colonies.first;
     int pickedPlotNum = 1;
 
     // Check all 10 colonies
