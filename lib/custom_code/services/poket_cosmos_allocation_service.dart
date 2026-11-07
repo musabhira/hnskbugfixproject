@@ -351,7 +351,7 @@ class PoketCosmosAllocationService {
             coordinates: Offset.zero,
             isVip: false,
             isPresident: false,
-            tier: (plotNum == 1) ? PlotDeedTier.sovereignCrown : (plotNum <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+            tier: (plotNum == 1) ? PlotDeedTier.royalCitadel : (plotNum <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
             status: PlotStatus.occupied,
           );
           _userBirthPlots[userId] = plot;
@@ -383,7 +383,7 @@ class PoketCosmosAllocationService {
       coordinates: Offset.zero,
       isVip: false,
       isPresident: false,
-      tier: (plotNumber == 1) ? PlotDeedTier.sovereignCrown : (plotNumber <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+      tier: (plotNumber == 1) ? PlotDeedTier.royalCitadel : (plotNumber <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
       status: PlotStatus.occupied,
     );
 

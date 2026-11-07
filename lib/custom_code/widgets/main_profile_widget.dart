@@ -6204,9 +6204,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   String _getResolvedCosmosAddressText(String bio) {
     // 1. Check if user is a robot
-    final uid = widget.userId;
-    if (uid.startsWith('robot_')) {
-      final robot = PocketRobotService.getRobotById(uid);
+    final currentUserId = userId;
+    if (PocketRobotService.isRobotId(currentUserId)) {
+      final robot = PocketRobotService.getRobotById(currentUserId);
       if (robot != null) {
         final colony = PoketCosmosAllocationService.instance.getColonyByPlanetName(robot.planetName);
         final cleanPlanet = _getCleanPlanetName(colony.code, robot.planetName);
