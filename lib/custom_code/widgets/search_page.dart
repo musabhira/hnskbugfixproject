@@ -23,6 +23,9 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_wid
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_street_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_navigator_page.dart';
+import 'package:pocket_mates_app/custom_code/services/poket_cosmos_distance_service.dart';
+import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmic_flight_page.dart';
 import 'package:flutter/services.dart';
 
 class SearchPage extends StatefulWidget {
@@ -1115,23 +1118,102 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
             ? null
             : LearningMilestoneStage.getStageForDay(userDay);
 
+        // 🌌 Resolve Scientific Interplanetary Flight Manifest
+        final myPlanetCode = PoketCosmosDistanceService.instance.resolvePlanetCode(
+          PoketCosmosAllocationService.instance.currentBirthPlot?.planetName,
+        );
+        String targetPlanetCode = 'EP';
+        if (isPresident) {
+          targetPlanetCode = 'EP';
+        } else if (isRobot) {
+          final robotLvl = (profile['robot_level'] as num?)?.toInt() ?? 1;
+          final cosmosMeta = PocketRobotService.getCosmosAddressForRobotId(
+            profile['user_id'] ?? 'robot_1',
+            level: robotLvl,
+          );
+          targetPlanetCode = PoketCosmosDistanceService.instance.resolvePlanetCode(
+            cosmosMeta['planetCode'] ?? cosmosMeta['planetName'],
+          );
+        } else {
+          targetPlanetCode = PoketCosmosDistanceService.instance.resolvePlanetCode(
+            profile['planet_name'] ??
+                profile['planet_code'] ??
+                profile['cosmos_pin'] ??
+                profile['bio'] ??
+                'EP',
+          );
+        }
+        final flightManifest =
+            PoketCosmosDistanceService.instance.calculateFlightManifest(
+          originCode: myPlanetCode,
+          destinationCode: targetPlanetCode,
+        );
+
         return GestureDetector(
           onTap: () {
             if (isPresident) {
-              PocketCitadelAttackPage.openForUser(
+              Navigator.push(
                 context,
-                userId: PocketPresidentService.presidentId,
+                MaterialPageRoute(
+                  builder: (context) => PoketCosmicFlightPage(
+                    manifest: flightManifest,
+                    targetUserId: PocketPresidentService.presidentId,
+                    targetName: 'The Sovereign President',
+                  ),
+                ),
               );
               return;
             }
             if (isRobot) {
-              _showPocketRobotProfileSheet(context, profile);
+              final robotLvl = (profile['robot_level'] as num?)?.toInt() ?? 1;
+              final cosmosMeta = PocketRobotService.getCosmosAddressForRobotId(
+                profile['user_id'] ?? 'robot_1',
+                level: robotLvl,
+              );
+              final robotNeighbor = PocketNeighbor(
+                id: profile['user_id'] ?? 'robot_1',
+                name: profile['name'] ?? 'Pocket Robot',
+                day: robotLvl,
+                streak: 7,
+                rank: 'AI Robot Citadel',
+                paletteId: 'cyber_neon',
+                isMe: false,
+                hasActiveShield: true,
+                statusMessage: '🤖 Autonomous English Fortress Sentinel',
+                hp: 100,
+                maxHp: 100,
+                planetCode: cosmosMeta['planetCode'],
+                planetName: cosmosMeta['planetName'],
+                islandName: cosmosMeta['islandName'],
+                streetName: cosmosMeta['streetName'],
+                plotNumber: cosmosMeta['plotNumber'],
+                cosmosPin: cosmosMeta['cosmosPin'],
+              );
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PoketCosmicFlightPage(
+                    manifest: flightManifest,
+                    targetUserId: profile['user_id'] ?? 'robot_1',
+                    targetName: profile['name'] ?? 'Pocket Robot',
+                    neighbor: robotNeighbor,
+                    isRobot: true,
+                    robotData: profile,
+                  ),
+                ),
+              );
               return;
             }
-            PocketCitadelAttackPage.openForUser(
+            Navigator.push(
               context,
-              userId: profile['user_id'] ?? '',
-              preloadedProfile: profile,
+              MaterialPageRoute(
+                builder: (context) => PoketCosmicFlightPage(
+                  manifest: flightManifest,
+                  targetUserId: profile['user_id'] ?? '',
+                  targetName: name,
+                  preloadedProfile: profile,
+                ),
+              ),
             );
           },
           child: Container(
@@ -1396,6 +1478,56 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                           ],
                         ],
                       ),
+                      // 🪐 Interplanetary Distance Badge
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4.0),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6.5, vertical: 2),
+                          decoration: BoxDecoration(
+                            color:
+                                const Color(0xFF1E1B4B).withValues(alpha: 0.7),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: const Color(0xFF818CF8)
+                                  .withValues(alpha: 0.35),
+                              width: 0.6,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '${PoketCosmosDistanceService.instance.getPlanetEmoji(flightManifest.destinationCode)} ${flightManifest.destinationName}',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFC7D2FE),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(width: 4.5),
+                              Text(
+                                '•',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.35),
+                                  fontSize: 9,
+                                ),
+                              ),
+                              const SizedBox(width: 4.5),
+                              Text(
+                                flightManifest.isSamePlanet
+                                    ? 'Local Orbit 🚀'
+                                    : '${flightManifest.formattedDistance} away 🚀',
+                                style: GoogleFonts.orbitron(
+                                  color: const Color(0xFF38BDF8),
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -1652,12 +1784,32 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                       plotNumber: cosmosMeta['plotNumber'],
                       cosmosPin: cosmosMeta['cosmosPin'],
                     );
+
+                    final myPlanetCode = PoketCosmosDistanceService.instance
+                        .resolvePlanetCode(
+                      PoketCosmosAllocationService
+                          .instance.currentBirthPlot?.planetName,
+                    );
+                    final targetPlanetCode = PoketCosmosDistanceService.instance
+                        .resolvePlanetCode(
+                      cosmosMeta['planetCode'] ?? cosmosMeta['planetName'],
+                    );
+                    final flightManifest = PoketCosmosDistanceService.instance
+                        .calculateFlightManifest(
+                      originCode: myPlanetCode,
+                      destinationCode: targetPlanetCode,
+                    );
+
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => PocketCitadelAttackPage(
+                        builder: (context) => PoketCosmicFlightPage(
+                          manifest: flightManifest,
+                          targetUserId: robotNeighbor.id,
+                          targetName: robotNeighbor.name,
                           neighbor: robotNeighbor,
-                          attackerDay: 1,
+                          isRobot: true,
+                          robotData: robotData,
                         ),
                       ),
                     );

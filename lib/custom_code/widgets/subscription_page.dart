@@ -39,13 +39,31 @@ class _SubscriptionPageState extends State<SubscriptionPage>
       'icon': Icons.flash_on_rounded,
       'popular': false,
       'features': [
-        {'text': '🚫 100% Ad-Free Everywhere (Zero Interruptions)', 'included': true},
-        {'text': '⚡ Instant 90-Day Binge Mode (No Waiting Locks)', 'included': true},
+        {
+          'text': '🚫 100% Ad-Free Everywhere (Zero Interruptions)',
+          'included': true
+        },
+        {
+          'text': '⚡ Instant 90-Day Binge Mode (No Waiting Locks)',
+          'included': true
+        },
         {'text': '👑 Golden Verified VIP Tick & Badge', 'included': true},
-        {'text': '🛡️ Presidential Escort Guard (10 Bonus Defense Qs)', 'included': true},
-        {'text': '🎙️ Unlimited AI Pronunciation & Voice Coach', 'included': true},
-        {'text': '💬 Unlimited Random Speaking Chat (No Daily Limit)', 'included': true},
-        {'text': '📜 Official Verified Day 90 C2 Diploma Included', 'included': true},
+        {
+          'text': '🛡️ Presidential Escort Guard (10 Bonus Defense Qs)',
+          'included': true
+        },
+        {
+          'text': '🎙️ Unlimited AI Pronunciation & Voice Coach',
+          'included': true
+        },
+        {
+          'text': '💬 Unlimited Random Speaking Chat (No Daily Limit)',
+          'included': true
+        },
+        {
+          'text': '📜 Official Verified Day 90 C2 Diploma Included',
+          'included': true
+        },
         {'text': 'Priority Instant Peer Matchmaking Routing', 'included': true},
       ],
     },
@@ -62,14 +80,35 @@ class _SubscriptionPageState extends State<SubscriptionPage>
       'icon': Icons.workspace_premium_rounded,
       'popular': true,
       'features': [
-        {'text': '⚡ Complete 90-Day Fluency Journey (All 90 Houses)', 'included': true},
+        {
+          'text': '⚡ Complete 90-Day Fluency Journey (All 90 Houses)',
+          'included': true
+        },
         {'text': '🚫 100% Zero Ads for the Entire 3 Months', 'included': true},
-        {'text': '👑 Golden Verified VIP Tick across Entire App', 'included': true},
-        {'text': '🛡️ Presidential Escort Guard (10 Bonus Defense Qs)', 'included': true},
-        {'text': '📜 Free High-Res Cryptographic C2 Mastery Diploma', 'included': true},
-        {'text': '🎙️ Unlimited AI Voice Practice & Speaking Simulators', 'included': true},
-        {'text': '💬 Unlimited Community Speaking & Peer Practice', 'included': true},
-        {'text': 'Exclusive 24/7 Streak Protector & Cloud Backup', 'included': true},
+        {
+          'text': '👑 Golden Verified VIP Tick across Entire App',
+          'included': true
+        },
+        {
+          'text': '🛡️ Presidential Escort Guard (10 Bonus Defense Qs)',
+          'included': true
+        },
+        {
+          'text': '📜 Free High-Res Cryptographic C2 Mastery Diploma',
+          'included': true
+        },
+        {
+          'text': '🎙️ Unlimited AI Voice Practice & Speaking Simulators',
+          'included': true
+        },
+        {
+          'text': '💬 Unlimited Community Speaking & Peer Practice',
+          'included': true
+        },
+        {
+          'text': 'Exclusive 24/7 Streak Protector & Cloud Backup',
+          'included': true
+        },
       ],
     },
     {
@@ -89,9 +128,18 @@ class _SubscriptionPageState extends State<SubscriptionPage>
         {'text': 'All 90-Day Fluency Pass Features Included', 'included': true},
         {'text': 'IELTS & Job Interview Speaking Simulators', 'included': true},
         {'text': 'Unlimited AI Pronunciation Scoring', 'included': true},
-        {'text': '👑 Golden Verified VIP Tick & Elite Crown Profile', 'included': true},
-        {'text': 'Official Cryptographic Day 90 C2 Diploma Included', 'included': true},
-        {'text': 'Full Access to All Future Masterclass Expansions', 'included': true},
+        {
+          'text': '👑 Golden Verified VIP Tick & Elite Crown Profile',
+          'included': true
+        },
+        {
+          'text': 'Official Cryptographic Day 90 C2 Diploma Included',
+          'included': true
+        },
+        {
+          'text': 'Full Access to All Future Masterclass Expansions',
+          'included': true
+        },
         {'text': '24/7 Priority Support & Streak Protector', 'included': true},
       ],
     },
@@ -143,27 +191,32 @@ class _SubscriptionPageState extends State<SubscriptionPage>
           if (p['id'] == 'monthly') {
             p['monthlyPrice'] = campaign.inAppMonthlyPrice;
             p['retailPrice'] = campaign.inAppMonthlyRetailPrice;
-            p['tagline'] = '₹${campaign.inAppMonthlyPrice}/mo • 100% Ad-Free + Instant Binge Access';
+            p['tagline'] =
+                '₹${campaign.inAppMonthlyPrice}/mo • 100% Ad-Free + Instant Binge Access';
           } else if (p['id'] == 'quarterly') {
             p['monthlyPrice'] = campaign.inAppQuarterlyPrice;
             p['retailPrice'] = campaign.inAppQuarterlyRetailPrice;
-            p['tagline'] = '₹${campaign.inAppQuarterlyPrice} (One-Time) • Best Value for 90-Day Mastery!';
+            p['tagline'] =
+                '₹${campaign.inAppQuarterlyPrice} (One-Time) • Best Value for 90-Day Mastery!';
           } else if (p['id'] == 'yearly') {
             p['monthlyPrice'] = campaign.inAppYearlyPrice;
             p['retailPrice'] = campaign.inAppYearlyRetailPrice;
-            p['tagline'] = '₹${campaign.inAppYearlyPrice}/year • Full Year VIP + C2 Diploma Included';
+            p['tagline'] =
+                '₹${campaign.inAppYearlyPrice}/year • Full Year VIP + C2 Diploma Included';
           }
         }
       });
     }
   }
 
-  static const bool _allowDirectUpi = false; // Strictly false for official Google Play & Apple App Store compliance
+  static const bool _allowDirectUpi =
+      false; // Strictly false for official Google Play & Apple App Store compliance
 
   Future<void> _selectPlan(String planId) async {
     if (planId == _currentPlan) return;
 
-    final plan = _plans.firstWhere((p) => p['id'] == planId, orElse: () => _plans.first);
+    final plan =
+        _plans.firstWhere((p) => p['id'] == planId, orElse: () => _plans.first);
     final price = plan['monthlyPrice'] as int;
 
     if (!mounted) return;
@@ -262,7 +315,8 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                   final messenger = ScaffoldMessenger.of(context);
                   Navigator.pop(ctx);
                   HapticFeedback.mediumImpact();
-                  final planType = plan['id'] as String? ?? (_isYearly ? 'yearly' : 'monthly');
+                  final planType = plan['id'] as String? ??
+                      (_isYearly ? 'yearly' : 'monthly');
                   final initiated = await IAPService().buyVipSubscription(
                     isYearly: _isYearly,
                     planType: planType,
@@ -286,18 +340,22 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                       colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
                     ),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+                    border:
+                        Border.all(color: const Color(0xFFFFD700), width: 1.2),
                   ),
                   child: Row(
                     children: [
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                          color:
+                              const Color(0xFFFFD700).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
-                          Platform.isIOS ? Icons.apple_rounded : Icons.shop_two_rounded,
+                          Platform.isIOS
+                              ? Icons.apple_rounded
+                              : Icons.shop_two_rounded,
                           color: const Color(0xFFFFD700),
                           size: 26,
                         ),
@@ -308,7 +366,9 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              Platform.isIOS ? 'Apple Pay (App Store) 🍏' : 'Google Play Billing ⚡',
+                              Platform.isIOS
+                                  ? 'Apple Pay (App Store) 🍏'
+                                  : 'Google Play Billing ⚡',
                               style: GoogleFonts.outfit(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -319,12 +379,14 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                               Platform.isIOS
                                   ? '1-Tap Apple Touch/Face ID • Official In-App Purchase'
                                   : '1-Tap Secure Payment • Official Store Checkout',
-                              style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
+                              style: GoogleFonts.inter(
+                                  color: Colors.white54, fontSize: 11),
                             ),
                           ],
                         ),
                       ),
-                      const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white54, size: 14),
+                      const Icon(Icons.arrow_forward_ios_rounded,
+                          color: Colors.white54, size: 14),
                     ],
                   ),
                 ),
@@ -341,7 +403,8 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                       isScrollControlled: true,
                       backgroundColor: const Color(0xFF131722),
                       shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(28)),
                       ),
                       builder: (_) => _buildDirectUpiPaymentSheet(plan, price),
                     );
@@ -359,10 +422,14 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF0F9D58).withValues(alpha: 0.15),
+                            color:
+                                const Color(0xFF0F9D58).withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Icon(Icons.account_balance_wallet_rounded, color: Color(0xFF0F9D58), size: 26),
+                          child: const Icon(
+                              Icons.account_balance_wallet_rounded,
+                              color: Color(0xFF0F9D58),
+                              size: 26),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
@@ -379,12 +446,14 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                               ),
                               Text(
                                 'Pay via any UPI App • Instant activation',
-                                style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
+                                style: GoogleFonts.inter(
+                                    color: Colors.white54, fontSize: 11),
                               ),
                             ],
                           ),
                         ),
-                        const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white54, size: 14),
+                        const Icon(Icons.arrow_forward_ios_rounded,
+                            color: Colors.white54, size: 14),
                       ],
                     ),
                   ),
@@ -438,9 +507,12 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                     decoration: BoxDecoration(
                       color: (plan['color'] as Color).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: (plan['color'] as Color).withValues(alpha: 0.4)),
+                      border: Border.all(
+                          color:
+                              (plan['color'] as Color).withValues(alpha: 0.4)),
                     ),
-                    child: Icon(plan['icon'] as IconData, color: plan['color'] as Color, size: 28),
+                    child: Icon(plan['icon'] as IconData,
+                        color: plan['color'] as Color, size: 28),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -457,7 +529,8 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                         ),
                         Text(
                           'Instant 100% Ad-Free & Verified VIP',
-                          style: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
+                          style: GoogleFonts.inter(
+                              color: Colors.white54, fontSize: 12),
                         ),
                       ],
                     ),
@@ -475,7 +548,8 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                       ),
                       Text(
                         _isYearly ? '/year' : '/month',
-                        style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
+                        style: GoogleFonts.inter(
+                            color: Colors.white38, fontSize: 11),
                       ),
                     ],
                   ),
@@ -561,7 +635,8 @@ class _SubscriptionPageState extends State<SubscriptionPage>
 
               // Or Pay using Mobile Number / UPI ID
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1E2333),
                   borderRadius: BorderRadius.circular(14),
@@ -569,16 +644,19 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.phone_android_rounded, color: Colors.white54, size: 20),
+                    const Icon(Icons.phone_android_rounded,
+                        color: Colors.white54, size: 20),
                     const SizedBox(width: 10),
                     Expanded(
                       child: TextField(
                         controller: phoneController,
                         keyboardType: TextInputType.phone,
-                        style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
+                        style: GoogleFonts.inter(
+                            color: Colors.white, fontSize: 13),
                         decoration: InputDecoration(
                           hintText: 'Enter UPI Number / Phone',
-                          hintStyle: GoogleFonts.inter(color: Colors.white38, fontSize: 13),
+                          hintStyle: GoogleFonts.inter(
+                              color: Colors.white38, fontSize: 13),
                           border: InputBorder.none,
                         ),
                       ),
@@ -588,7 +666,9 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                         final val = phoneController.text.trim();
                         if (val.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Please enter phone number or UPI ID')),
+                            const SnackBar(
+                                content: Text(
+                                    'Please enter phone number or UPI ID')),
                           );
                           return;
                         }
@@ -601,13 +681,16 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFFFFC00),
                         foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 8),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
                         minimumSize: const Size(60, 34),
                       ),
                       child: Text(
                         'Pay',
-                        style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
+                        style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.bold, fontSize: 12),
                       ),
                     ),
                   ],
@@ -618,11 +701,13 @@ class _SubscriptionPageState extends State<SubscriptionPage>
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.lock_rounded, color: Color(0xFF10B981), size: 14),
+                  const Icon(Icons.lock_rounded,
+                      color: Color(0xFF10B981), size: 14),
                   const SizedBox(width: 6),
                   Text(
                     'Direct 100% Encrypted UPI • NPCI & Bank Secured',
-                    style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
+                    style:
+                        GoogleFonts.inter(color: Colors.white38, fontSize: 11),
                   ),
                 ],
               ),
@@ -661,7 +746,9 @@ class _SubscriptionPageState extends State<SubscriptionPage>
             Text(
               name,
               style: GoogleFonts.outfit(
-                color: textColor == Colors.black ? const Color(0xFFFFFC00) : Colors.white,
+                color: textColor == Colors.black
+                    ? const Color(0xFFFFFC00)
+                    : Colors.white,
                 fontWeight: FontWeight.bold,
                 fontSize: 13,
               ),
@@ -702,7 +789,8 @@ class _SubscriptionPageState extends State<SubscriptionPage>
     if (!mounted) return;
 
     // Show 5-Minute Railway / Flipkart Confirmation Timer Dialog
-    _showPaymentConfirmationTimerDialog(appName: appName, price: price, plan: plan);
+    _showPaymentConfirmationTimerDialog(
+        appName: appName, price: price, plan: plan);
   }
 
   /// 5-Minute Awaiting Payment Verification Dialog
@@ -736,7 +824,9 @@ class _SubscriptionPageState extends State<SubscriptionPage>
               backgroundColor: const Color(0xFF131722),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
-                side: BorderSide(color: const Color(0xFFFFFC00).withValues(alpha: 0.4), width: 1.5),
+                side: BorderSide(
+                    color: const Color(0xFFFFFC00).withValues(alpha: 0.4),
+                    width: 1.5),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(24),
@@ -750,10 +840,12 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
                         shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFFFFFC00), width: 2),
+                        border: Border.all(
+                            color: const Color(0xFFFFFC00), width: 2),
                       ),
                       child: const Center(
-                        child: Icon(Icons.hourglass_top_rounded, color: Color(0xFFFFFC00), size: 34),
+                        child: Icon(Icons.hourglass_top_rounded,
+                            color: Color(0xFFFFFC00), size: 34),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -770,13 +862,15 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                     Text(
                       'Please complete payment of ₹$price in $appName and return here.',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                      style: GoogleFonts.inter(
+                          color: Colors.white70, fontSize: 12),
                     ),
                     const SizedBox(height: 14),
 
                     // Countdown Clock
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
                         color: const Color(0xFF1E2333),
                         borderRadius: BorderRadius.circular(12),
@@ -785,7 +879,8 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.timer_outlined, color: Color(0xFFFFFC00), size: 16),
+                          const Icon(Icons.timer_outlined,
+                              color: Color(0xFFFFFC00), size: 16),
                           const SizedBox(width: 8),
                           Text(
                             '$minutes:$seconds',
@@ -805,10 +900,12 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                     TextField(
                       controller: utrController,
                       keyboardType: TextInputType.number,
-                      style: GoogleFonts.inter(color: Colors.white, fontSize: 12),
+                      style:
+                          GoogleFonts.inter(color: Colors.white, fontSize: 12),
                       decoration: InputDecoration(
                         hintText: 'Optional: Enter 12-digit UPI UTR / Ref No',
-                        hintStyle: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
+                        hintStyle: GoogleFonts.inter(
+                            color: Colors.white38, fontSize: 11),
                         filled: true,
                         fillColor: const Color(0xFF1A1F2C),
                         isDense: true,
@@ -836,7 +933,8 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                           final messenger = ScaffoldMessenger.of(context);
                           // Instant Activation & Upgrade
                           final prefs = await SharedPreferences.getInstance();
-                          await prefs.setString('handskill_plan', plan['id'] as String);
+                          await prefs.setString(
+                              'handskill_plan', plan['id'] as String);
                           setState(() => _currentPlan = plan['id'] as String);
 
                           HapticFeedback.heavyImpact();
@@ -846,7 +944,8 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                               SnackBar(
                                 content: Text(
                                   '🎉 Payment Successful! ${plan['name']} VIP Activated!',
-                                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                                  style: GoogleFonts.outfit(
+                                      fontWeight: FontWeight.bold),
                                 ),
                                 backgroundColor: const Color(0xFF10B981),
                                 duration: const Duration(seconds: 3),
@@ -858,11 +957,13 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                           backgroundColor: const Color(0xFFFFFC00),
                           foregroundColor: Colors.black,
                           padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
                         ),
                         child: Text(
                           'I Have Completed Payment ✓',
-                          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13),
+                          style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.bold, fontSize: 13),
                         ),
                       ),
                     ),
@@ -875,7 +976,8 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                       },
                       child: Text(
                         'Cancel Payment',
-                        style: GoogleFonts.inter(color: Colors.white38, fontSize: 12),
+                        style: GoogleFonts.inter(
+                            color: Colors.white38, fontSize: 12),
                       ),
                     ),
                   ],
@@ -918,11 +1020,15 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                     children: [
                       const SizedBox(height: 48),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 6),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                          color:
+                              const Color(0xFFFFD700).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.3)),
+                          border: Border.all(
+                              color: const Color(0xFFFFD700)
+                                  .withValues(alpha: 0.3)),
                         ),
                         child: Text(
                           '✦ POKET MATES FLUENT PRO',
@@ -963,29 +1069,36 @@ class _SubscriptionPageState extends State<SubscriptionPage>
           ),
 
           // Current Plan banner (Shown ONLY when VIP is active)
-          if (_currentPlan != 'free' && _plans.any((p) => p['id'] == _currentPlan))
+          if (_currentPlan != 'free' &&
+              _plans.any((p) => p['id'] == _currentPlan))
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
                     ),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                    border: Border.all(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.workspace_premium_rounded, color: Color(0xFFFFD700), size: 20),
+                      const Icon(Icons.workspace_premium_rounded,
+                          color: Color(0xFFFFD700), size: 20),
                       const SizedBox(width: 10),
                       Text(
                         'Active Plan: ',
-                        style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13),
+                        style: GoogleFonts.outfit(
+                            color: Colors.white70, fontSize: 13),
                       ),
                       Text(
-                        _plans.firstWhere((p) => p['id'] == _currentPlan)['name'] as String,
+                        _plans.firstWhere(
+                            (p) => p['id'] == _currentPlan)['name'] as String,
                         style: GoogleFonts.outfit(
                           color: const Color(0xFFFFD700),
                           fontSize: 13,
@@ -994,7 +1107,8 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                       ),
                       const Spacer(),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
                           color: const Color(0xFF10B981).withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(6),
@@ -1034,7 +1148,8 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                   Text(
                     '🔒 Real-time AI encryption • 100% Secure calls\n⚡ Low latency WebRTC voice & video\n🌏 Connect with spoken English learners worldwide',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.outfit(color: Colors.white38, fontSize: 13, height: 1.8),
+                    style: GoogleFonts.outfit(
+                        color: Colors.white38, fontSize: 13, height: 1.8),
                   ),
                   const SizedBox(height: 18),
 
@@ -1044,7 +1159,8 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                       HapticFeedback.lightImpact();
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Checking store for previous purchases...'),
+                          content:
+                              Text('Checking store for previous purchases...'),
                           backgroundColor: Color(0xFF1E293B),
                           duration: Duration(seconds: 2),
                         ),
@@ -1052,7 +1168,8 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                       await IAPService().restorePurchases();
                       await _loadCurrentPlan();
                     },
-                    icon: const Icon(Icons.restore_rounded, color: Color(0xFFFFD700), size: 18),
+                    icon: const Icon(Icons.restore_rounded,
+                        color: Color(0xFFFFD700), size: 18),
                     label: Text(
                       'Restore Purchases',
                       style: GoogleFonts.outfit(
@@ -1082,7 +1199,9 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                           ),
                         ),
                       ),
-                      const Text('  •  ', style: TextStyle(color: Colors.white24, fontSize: 11)),
+                      const Text('  •  ',
+                          style:
+                              TextStyle(color: Colors.white24, fontSize: 11)),
                       InkWell(
                         onTap: () => launchUrl(
                           Uri.parse('https://pocketmates.app/privacy'),
@@ -1143,7 +1262,8 @@ class _SubscriptionPageState extends State<SubscriptionPage>
             children: [
               // Header
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: (plan['gradientColors'] as List<Color>)
@@ -1152,7 +1272,8 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(24)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1165,7 +1286,8 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                           children: [
                             if (isPopular)
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
                                   color: color,
                                   borderRadius: BorderRadius.circular(6),
@@ -1184,11 +1306,14 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                               const SizedBox(width: 8),
                             if (plan['discountBadge'] != null)
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF10B981).withValues(alpha: 0.18),
+                                  color: const Color(0xFF10B981)
+                                      .withValues(alpha: 0.18),
                                   borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: const Color(0xFF10B981), width: 1),
+                                  border: Border.all(
+                                      color: const Color(0xFF10B981), width: 1),
                                 ),
                                 child: Text(
                                   plan['discountBadge'] as String,
@@ -1214,7 +1339,8 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                             color: color.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(14),
                           ),
-                          child: Icon(plan['icon'] as IconData, color: color, size: 24),
+                          child: Icon(plan['icon'] as IconData,
+                              color: color, size: 24),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -1246,7 +1372,8 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                           crossAxisAlignment: CrossAxisAlignment.end,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (plan['retailPrice'] != null && (plan['retailPrice'] as int) > 0)
+                            if (plan['retailPrice'] != null &&
+                                (plan['retailPrice'] as int) > 0)
                               Text(
                                 '₹${plan['retailPrice']}',
                                 style: GoogleFonts.outfit(
@@ -1267,7 +1394,9 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                             ),
                             if (price > 0)
                               Text(
-                                plan['periodText'] != null && (plan['periodText'] as String).isNotEmpty
+                                plan['periodText'] != null &&
+                                        (plan['periodText'] as String)
+                                            .isNotEmpty
                                     ? plan['periodText'] as String
                                     : (_isYearly ? '/year' : '/month'),
                                 style: GoogleFonts.outfit(
@@ -1292,16 +1421,20 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                     ...features.take(6).map((f) => _buildFeatureRow(f, color)),
                     if (features.length > 6)
                       Theme(
-                        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                        data: Theme.of(context)
+                            .copyWith(dividerColor: Colors.transparent),
                         child: ExpansionTile(
                           title: Text(
                             'See all features',
-                            style: GoogleFonts.outfit(color: color, fontSize: 13),
+                            style:
+                                GoogleFonts.outfit(color: color, fontSize: 13),
                           ),
                           iconColor: color,
                           collapsedIconColor: color,
                           children: [
-                            ...features.skip(6).map((f) => _buildFeatureRow(f, color)),
+                            ...features
+                                .skip(6)
+                                .map((f) => _buildFeatureRow(f, color)),
                           ],
                         ),
                       ),
@@ -1312,19 +1445,23 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                         style: ElevatedButton.styleFrom(
                           backgroundColor: isSelected
                               ? Colors.white10
-                              : (isPopular ? color : color.withValues(alpha: 0.15)),
+                              : (isPopular
+                                  ? color
+                                  : color.withValues(alpha: 0.15)),
                           foregroundColor: isSelected
                               ? Colors.white54
                               : (isPopular ? Colors.black : color),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14)),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
-                        onPressed: isSelected ? null : () => _selectPlan(plan['id'] as String),
+                        onPressed: isSelected
+                            ? null
+                            : () => _selectPlan(plan['id'] as String),
                         child: Text(
-                          isSelected
-                              ? '✓ Active Plan'
-                              : 'Get ${plan['name']}',
-                          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15),
+                          isSelected ? '✓ Active Plan' : 'Get ${plan['name']}',
+                          style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.bold, fontSize: 15),
                         ),
                       ),
                     ),
