@@ -5,9 +5,40 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_models.dart';
 
-/// 🌌 Pocket Cosmos Birthplace & Plot Allocation Service
-/// Handles "God's Plan" destiny allocation, 5-hour neighbor pre-booking passes,
-/// exclusive Cosmos PIN generation, and permanent deed persistence.
+/// 🪐 Definition of a Permanent Celestial Colony in Pocket Cosmos
+class CelestialColonyInfo {
+  final int planetId;
+  final String planetName;
+  final String code; // 'EP', 'MAR', 'JUP', 'SAT', 'LUN', 'EUR', 'VEN', 'TTN', 'PLT', 'NEP'
+  final String islandName;
+  final String streetName;
+  final Color landColor;
+  final Color waterColor;
+  final String climate;
+  final IslandShapeStyle shapeStyle;
+
+  const CelestialColonyInfo({
+    required this.planetId,
+    required this.planetName,
+    required this.code,
+    required this.islandName,
+    required this.streetName,
+    required this.landColor,
+    required this.waterColor,
+    required this.climate,
+    required this.shapeStyle,
+  });
+}
+
+/// 🌌 Pocket Cosmos Birthplace & 100-Crore Citizen Wave Allocation Engine
+/// Features:
+/// - 10 Permanent Celestial Bodies (Earth, Mars, Jupiter, Saturn, Moon, Europa, Venus, Titan, Pluto, Neptune)
+/// - 18 Exclusive Citizen Plots per Island (Plot #1 to #18)
+/// - 180 Citizens per Wave (10 Planets x 18 Plots)
+/// - Balanced Random Distribution to avoid clustering
+/// - "HOUSE FULL!" event trigger auto-advancing to Wave W_(k+1)
+/// - Immutable Unique Born Address: PKT-W{Wave}-{PlanetCode}-I{IslandNum}-P{PlotNum}
+/// - 5-Hour Neighbor Pre-booking Pass & Direct Referral Gateway routing
 class PoketCosmosAllocationService {
   PoketCosmosAllocationService._();
   static final PoketCosmosAllocationService instance = PoketCosmosAllocationService._();
@@ -22,7 +53,144 @@ class PoketCosmosAllocationService {
   static const _kDeedClaimed = 'poket_birth_claimed';
   static const _kReservationsKey = 'poket_neighbor_reservations_json';
 
-  /// 🌟 Result of a Birthplace Allocation
+  // 100-Crore Wave Engine Keys
+  static const _kActiveWaveIndexKey = 'poket_cosmos_active_wave_index';
+  static const _kWaveOccupancyCountPrefix = 'poket_cosmos_wave_occ_count_';
+  static const _kPlanetOccupiedPlotsPrefix = 'poket_cosmos_planet_occ_plots_';
+
+  // Scaling Constants
+  static const int maxPlotsPerIsland = 18;
+  static const int totalPlanetsCount = 10;
+  static const int waveCapacity = 180; // 10 planets * 18 plots
+
+  // 🪐 10 Permanent Celestial Colonies Catalog
+  static const List<CelestialColonyInfo> colonies = [
+    CelestialColonyInfo(
+      planetId: 3,
+      planetName: 'Earth Prime 🌍',
+      code: 'EP',
+      islandName: 'Ocean Whisper Atoll',
+      streetName: 'Reefway Avenue',
+      landColor: Color(0xFF16A34A),
+      waterColor: Color(0xFF0284C7),
+      climate: 'Tropical Azure Breeze 🌊',
+      shapeStyle: IslandShapeStyle.ringAtoll,
+    ),
+    CelestialColonyInfo(
+      planetId: 4,
+      planetName: 'Mars 🔴',
+      code: 'MAR',
+      islandName: 'Ares Crater Haven',
+      streetName: 'Olympus Ridge Trail',
+      landColor: Color(0xFFDC2626),
+      waterColor: Color(0xFF7C2D12),
+      climate: 'Crimson Rust Oasis 🔴',
+      shapeStyle: IslandShapeStyle.fortressPlateau,
+    ),
+    CelestialColonyInfo(
+      planetId: 5,
+      planetName: 'Jupiter 🪐',
+      code: 'JUP',
+      islandName: 'Solaria Crest Atoll',
+      streetName: 'Great Red Spot Promenade',
+      landColor: Color(0xFF059669),
+      waterColor: Color(0xFF0369A1),
+      climate: 'Stormy Cosmic Azure 🪐',
+      shapeStyle: IslandShapeStyle.crescentLagoon,
+    ),
+    CelestialColonyInfo(
+      planetId: 6,
+      planetName: 'Saturn 🪐',
+      code: 'SAT',
+      islandName: 'Ringside Haven',
+      streetName: 'Titan View Parkway',
+      landColor: Color(0xFFD97706),
+      waterColor: Color(0xFF92400E),
+      climate: 'Golden Amber Ring Sanctuary 🪐',
+      shapeStyle: IslandShapeStyle.sCurveArchipelago,
+    ),
+    CelestialColonyInfo(
+      planetId: 30,
+      planetName: 'The Moon 🌕',
+      code: 'LUN',
+      islandName: 'Mare Tranquillitatis Isle',
+      streetName: 'Apollo Lunar Boulevard',
+      landColor: Color(0xFF94A3B8),
+      waterColor: Color(0xFF334155),
+      climate: 'Silvery Starlit Crater 🌕',
+      shapeStyle: IslandShapeStyle.hookPeninsula,
+    ),
+    CelestialColonyInfo(
+      planetId: 51,
+      planetName: 'Europa 🧊',
+      code: 'EUR',
+      islandName: 'Glacier Rift Sanctuary',
+      streetName: 'Subsurface Ocean Way',
+      landColor: Color(0xFF38BDF8),
+      waterColor: Color(0xFF0369A1),
+      climate: 'Crystalline Ice Ocean ❄️',
+      shapeStyle: IslandShapeStyle.dualIsletBridge,
+    ),
+    CelestialColonyInfo(
+      planetId: 2,
+      planetName: 'Venus ☀️',
+      code: 'VEN',
+      islandName: 'Aphrodite Highland Atoll',
+      streetName: 'Sulfur Dawn Expressway',
+      landColor: Color(0xFFF59E0B),
+      waterColor: Color(0xFFB45309),
+      climate: 'Golden Cloud Horizon ☀️',
+      shapeStyle: IslandShapeStyle.starAtoll,
+    ),
+    CelestialColonyInfo(
+      planetId: 61,
+      planetName: 'Titan 🪐',
+      code: 'TTN',
+      islandName: 'Kraken Mare Shore',
+      streetName: 'Methane Dunes Parkway',
+      landColor: Color(0xFF10B981),
+      waterColor: Color(0xFF065F46),
+      climate: 'Emerald Hydrocarbon Bay 🪐',
+      shapeStyle: IslandShapeStyle.heartSanctuary,
+    ),
+    CelestialColonyInfo(
+      planetId: 9,
+      planetName: 'Pluto 🌌',
+      code: 'PLT',
+      islandName: 'Tombaugh Heart Outpost',
+      streetName: 'Cryo Frost Path',
+      landColor: Color(0xFFA855F7),
+      waterColor: Color(0xFF581C87),
+      climate: 'Deep Cosmic Frost 🌌',
+      shapeStyle: IslandShapeStyle.cloverBays,
+    ),
+    CelestialColonyInfo(
+      planetId: 8,
+      planetName: 'Neptune 🌊',
+      code: 'NEP',
+      islandName: 'Triton Deep Bay',
+      streetName: 'Azure Tempest Causeway',
+      landColor: Color(0xFF2563EB),
+      waterColor: Color(0xFF1E3A8A),
+      climate: 'Deep Oceanic Tempest 🌊',
+      shapeStyle: IslandShapeStyle.citadelApex,
+    ),
+  ];
+
+  /// Finds colony info matching a planet name or code
+  CelestialColonyInfo getColonyByPlanetName(String planetName) {
+    final lower = planetName.toLowerCase();
+    for (final c in colonies) {
+      if (lower.contains(c.code.toLowerCase()) ||
+          lower.contains(c.planetName.toLowerCase()) ||
+          c.planetName.toLowerCase().contains(lower.split(' ').first)) {
+        return c;
+      }
+    }
+    return colonies.first; // Earth Prime fallback
+  }
+
+  /// 🌟 Cached Result of a Birthplace Allocation
   CitizenPlot? _cachedBirthPlot;
   CitizenPlot? get currentBirthPlot => _cachedBirthPlot;
 
@@ -47,6 +215,12 @@ class PoketCosmosAllocationService {
     if (inviteCode != null && inviteCode.trim().isNotEmpty) {
       final reservation = await validateNeighborInviteCode(inviteCode.trim());
       if (reservation != null) {
+        final colony = getColonyByPlanetName(reservation.planetName);
+        final activeWave = await getActiveWaveIndex();
+
+        // Mark the reserved plot occupied in this wave & colony
+        await _markPlotOccupied(activeWave, colony.code, reservation.plotNumber);
+
         final plot = CitizenPlot(
           plotNumber: reservation.plotNumber,
           userId: SupaFlow.client.auth.currentUser?.id ?? 'user_${DateTime.now().millisecondsSinceEpoch}',
@@ -60,7 +234,9 @@ class PoketCosmosAllocationService {
           planetName: reservation.planetName,
           coordinates: Offset.zero,
           postalPinCode: reservation.cosmosPin,
-          tier: PlotDeedTier.standard,
+          tier: (reservation.plotNumber == 1)
+              ? PlotDeedTier.presidential
+              : (reservation.plotNumber <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
           status: PlotStatus.occupied,
         );
         await saveBirthplace(plot);
@@ -69,44 +245,82 @@ class PoketCosmosAllocationService {
       }
     }
 
-    // 3. Case A: "God's Plan" / System Destiny Allocation
-    // Allocates a fresh, dedicated plot on Earth Prime's learning islands
-    final int seed = (userName.hashCode ^ DateTime.now().millisecondsSinceEpoch).abs();
-    final random = math.Random(seed);
+    // 3. Case A: Universal "Destiny" Allocation via 100-Crore Wave Engine
+    int currentWave = await getActiveWaveIndex();
 
-    // Island choices (Earth Prime's premier habit learning islands)
-    final islandCatalog = [
-      (401, 'Solaria Crest Atoll', 'Jupiter 🪐', 'Great Red Spot Promenade'),
-      (301, 'Ocean Whisper Atoll', 'Earth Prime 🌍', 'Reefway Avenue'),
-      (402, 'Emerald Ridge Isle', 'Jupiter 🪐', 'Storm Cloud Boulevard'),
-      (302, 'Haven Peninsula', 'Earth Prime 🌍', 'Highland Crest Road'),
-      (501, 'Ringside Haven', 'Saturn 🪐', 'Titan View Parkway'),
-      (303, 'Tranquil Bay Isle', 'Earth Prime 🌍', 'Emerald Coastal Boulevard'),
-      (304, 'Sunset Sanctuary', 'Earth Prime 🌍', 'Golden Beach Drive'),
-      (305, 'Azure Coral Isle', 'Earth Prime 🌍', 'Palm Shore Walkway'),
-    ];
+    // Find the colony in the current wave with the least occupancy
+    CelestialColonyInfo? pickedColony;
+    int pickedPlotNum = 1;
 
-    final pickedIsland = islandCatalog[random.nextInt(islandCatalog.length)];
-    // Plot Number between 1 and 35
-    final int plotNum = random.nextInt(35) + 1;
+    // Check all 10 colonies
+    final colonyOccupancy = <CelestialColonyInfo, List<int>>{};
+    for (final col in colonies) {
+      final occ = await _getOccupiedPlotsForPlanet(currentWave, col.code);
+      colonyOccupancy[col] = occ;
+    }
 
-    // Exclusive Cosmos PIN code: PKT-EP{ISLAND_ID}-P{PLOT_NUM}
-    final String cosmosPin = 'PKT-EP${pickedIsland.$1}-P$plotNum';
+    // Filter colonies that still have space (< 18)
+    final availableColonies = colonies.where((c) => (colonyOccupancy[c]?.length ?? 0) < maxPlotsPerIsland).toList();
+
+    if (availableColonies.isEmpty) {
+      // 🎉 ALL 180 PLOTS FULL! "HOUSE FULL" EVENT! Auto-advance to Wave W_(k+1)!
+      currentWave++;
+      await prefs.setInt(_kActiveWaveIndexKey, currentWave);
+      debugPrint('🎉 HOUSE FULL! All 180 plots occupied. Advancing to Wave W$currentWave!');
+
+      // On the fresh wave, pick colony evenly
+      final randIdx = math.Random().nextInt(colonies.length);
+      pickedColony = colonies[randIdx];
+      pickedPlotNum = 1;
+    } else {
+      // Find minimum occupied count to ensure balanced distribution across all 10 planets
+      int minCount = maxPlotsPerIsland;
+      for (final c in availableColonies) {
+        final count = colonyOccupancy[c]?.length ?? 0;
+        if (count < minCount) minCount = count;
+      }
+
+      final leastOccupiedColonies = availableColonies
+          .where((c) => (colonyOccupancy[c]?.length ?? 0) == minCount)
+          .toList();
+
+      // Deterministic yet balanced pick based on user name seed
+      final seed = (userName.hashCode ^ DateTime.now().microsecondsSinceEpoch).abs();
+      pickedColony = leastOccupiedColonies[seed % leastOccupiedColonies.length];
+
+      final occupiedInPicked = colonyOccupancy[pickedColony] ?? [];
+      for (int p = 1; p <= maxPlotsPerIsland; p++) {
+        if (!occupiedInPicked.contains(p)) {
+          pickedPlotNum = p;
+          break;
+        }
+      }
+    }
+
+    // Mark plot occupied
+    await _markPlotOccupied(currentWave, pickedColony.code, pickedPlotNum);
+
+    // Format Immutable Born Address: PKT-W{Wave}-{PlanetCode}-I{IslandNum}-P{PlotNum}
+    final waveStr = currentWave.toString().padLeft(2, '0');
+    final plotStr = pickedPlotNum.toString().padLeft(2, '0');
+    final cosmosPin = 'PKT-W$waveStr-${pickedColony.code}-I$waveStr-P$plotStr';
 
     final plot = CitizenPlot(
-      plotNumber: plotNum,
+      plotNumber: pickedPlotNum,
       userId: SupaFlow.client.auth.currentUser?.id ?? 'user_${DateTime.now().millisecondsSinceEpoch}',
       userName: userName.isNotEmpty ? userName : 'Adventurer',
       userAvatar: avatar.isNotEmpty ? avatar : '🦁',
       day: 1,
       pocketScore: 500,
-      streetName: pickedIsland.$4,
-      postOffice: pickedIsland.$2,
-      countryName: pickedIsland.$2,
-      planetName: pickedIsland.$3,
+      streetName: pickedColony.streetName,
+      postOffice: pickedColony.islandName,
+      countryName: pickedColony.islandName,
+      planetName: pickedColony.planetName,
       coordinates: Offset.zero,
       postalPinCode: cosmosPin,
-      tier: (plotNum == 1) ? PlotDeedTier.presidential : (plotNum <= 10 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+      tier: (pickedPlotNum == 1)
+          ? PlotDeedTier.presidential
+          : (pickedPlotNum <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
       status: PlotStatus.occupied,
     );
 
@@ -133,7 +347,7 @@ class PoketCosmosAllocationService {
         await SupaFlow.client.from('profile').update({
           'country': plot.countryName,
           'city': plot.streetName,
-          'bio': '🏡 Proud Citizen of ${plot.countryName}, ${plot.planetName} (Plot #${plot.plotNumber})',
+          'bio': '🏡 Citizen of ${plot.countryName}, ${plot.planetName} (${plot.postalPinCode})',
         }).eq('id', user.id);
       }
     } catch (e) {
@@ -162,10 +376,71 @@ class PoketCosmosAllocationService {
         countryName: island,
         planetName: planet,
         coordinates: Offset.zero,
-        postalPinCode: pin ?? 'PKT-EP301-P$plotNum',
+        postalPinCode: pin ?? 'PKT-W01-EP-I01-P${plotNum.toString().padLeft(2, '0')}',
       );
     }
     return null;
+  }
+
+  // =========================================================================
+  // 🌊 100-CRORE WAVE OCCUPANCY & "HOUSE FULL" ENGINE
+  // =========================================================================
+
+  /// Gets the currently active Wave Index (starts at 1)
+  Future<int> getActiveWaveIndex() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_kActiveWaveIndexKey) ?? 1;
+  }
+
+  /// Gets occupied plot numbers (1..18) for a planet in a given wave
+  Future<List<int>> _getOccupiedPlotsForPlanet(int wave, String planetCode) async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = '$_kPlanetOccupiedPlotsPrefix' 'W${wave}_$planetCode';
+    final raw = prefs.getString(key);
+    if (raw == null) return [];
+    try {
+      final list = jsonDecode(raw) as List<dynamic>;
+      return list.map((e) => e as int).toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  /// Marks a plot occupied and checks for "HOUSE FULL!" wave completion
+  Future<void> _markPlotOccupied(int wave, String planetCode, int plotNumber) async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = '$_kPlanetOccupiedPlotsPrefix' 'W${wave}_$planetCode';
+    final currentPlots = await _getOccupiedPlotsForPlanet(wave, planetCode);
+
+    if (!currentPlots.contains(plotNumber)) {
+      currentPlots.add(plotNumber);
+      await prefs.setString(key, jsonEncode(currentPlots));
+
+      // Increment wave total occupancy count
+      final waveCountKey = '$_kWaveOccupancyCountPrefix$wave';
+      final currentWaveTotal = (prefs.getInt(waveCountKey) ?? 0) + 1;
+      await prefs.setInt(waveCountKey, currentWaveTotal);
+
+      // Check for "HOUSE FULL!" (180 citizens in wave)
+      if (currentWaveTotal >= waveCapacity) {
+        final nextWave = wave + 1;
+        await prefs.setInt(_kActiveWaveIndexKey, nextWave);
+        debugPrint('🎉 HOUSE FULL REACHED! Wave W$wave is 100% full. Wave W$nextWave unlocked!');
+      }
+    }
+  }
+
+  /// 🧹 Resets local birthplace preferences to allow fresh re-testing of the Born Ceremony
+  Future<void> resetLocalBirthplace() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_kPlanetName);
+    await prefs.remove(_kIslandId);
+    await prefs.remove(_kIslandName);
+    await prefs.remove(_kPlotNumber);
+    await prefs.remove(_kStreetName);
+    await prefs.remove(_kCosmosPin);
+    await prefs.remove(_kDeedClaimed);
+    _cachedBirthPlot = null;
   }
 
   // =========================================================================
@@ -183,14 +458,13 @@ class PoketCosmosAllocationService {
   }) async {
     final prefs = await SharedPreferences.getInstance();
 
-    // Generate concise 6-character code (e.g. PKT-74A9)
     final chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     final rand = math.Random();
     final randomSuffix = List.generate(4, (_) => chars[rand.nextInt(chars.length)]).join();
     final code = 'PKT-$randomSuffix';
 
     final expiresAt = DateTime.now().add(const Duration(hours: 5));
-    final cosmosPin = 'PKT-EP$islandId-P$plotNumber';
+    final cosmosPin = 'PKT-W01-EP-I01-P${plotNumber.toString().padLeft(2, '0')}';
 
     final pass = NeighborReservationPass(
       code: code,
@@ -205,26 +479,12 @@ class PoketCosmosAllocationService {
       expiresAt: expiresAt,
     );
 
-    // Save to local registry
     final rawJson = prefs.getString(_kReservationsKey);
     final Map<String, dynamic> store = rawJson != null ? jsonDecode(rawJson) : {};
     store[code] = pass.toJson();
     await prefs.setString(_kReservationsKey, jsonEncode(store));
 
     return pass;
-  }
-
-  /// 🧹 Resets local birthplace preferences to allow fresh re-testing of the Born Ceremony
-  Future<void> resetLocalBirthplace() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_kPlanetName);
-    await prefs.remove(_kIslandId);
-    await prefs.remove(_kIslandName);
-    await prefs.remove(_kPlotNumber);
-    await prefs.remove(_kStreetName);
-    await prefs.remove(_kCosmosPin);
-    await prefs.remove(_kDeedClaimed);
-    _cachedBirthPlot = null;
   }
 
   /// 🎟️ Generates a quick test neighbor reservation pass (PKT-TEST)
@@ -239,7 +499,7 @@ class PoketCosmosAllocationService {
       streetName: 'Reefway Avenue',
       plotNumber: plotNumber,
       hostUserName: 'Musab (Host)',
-      cosmosPin: 'PKT-EP301-P$plotNumber',
+      cosmosPin: 'PKT-W01-EP-I01-P${plotNumber.toString().padLeft(2, '0')}',
       createdAt: DateTime.now(),
       expiresAt: expiresAt,
     );
@@ -253,109 +513,87 @@ class PoketCosmosAllocationService {
     return pass;
   }
 
-  /// 👥 Backfills & Allocates all existing registered users across Earth Prime's islands
-  /// Assigns 35 citizens per island. Seniority by created_at. Guarantees 100% exclusivity!
-  Future<Map<String, dynamic>> syncAndAllocateExistingUsers() async {
-    try {
-      final res = await SupaFlow.client
-          .from('profile')
-          .select('id, name, created_at, day, country, city, bio')
-          .order('created_at', ascending: true);
-
-      final List<dynamic> profiles = res as List<dynamic>;
-      if (profiles.isEmpty) {
-        return {'total': 0, 'newlyAllocated': 0, 'alreadyAllocated': 0};
-      }
-
-      final islandCatalog = [
-        (301, 'Ocean Whisper Atoll', 'Earth Prime 🌍', 'Reefway Avenue'),
-        (302, 'Haven Peninsula', 'Earth Prime 🌍', 'Highland Crest Road'),
-        (303, 'Tranquil Bay Isle', 'Earth Prime 🌍', 'Emerald Coastal Boulevard'),
-        (304, 'Sunset Sanctuary', 'Earth Prime 🌍', 'Golden Beach Drive'),
-        (305, 'Azure Coral Isle', 'Earth Prime 🌍', 'Palm Shore Walkway'),
-        (306, 'Crescent Cove', 'Earth Prime 🌍', 'Marina View Way'),
-        (307, 'Emerald Key', 'Earth Prime 🌍', 'Coconut Palm Terrace'),
-        (308, 'Starfish Haven', 'Earth Prime 🌍', 'Seashell Passage'),
-        (309, 'Breeze Lagoon', 'Earth Prime 🌍', 'Windward Trail'),
-        (310, 'Coral Citadel', 'Earth Prime 🌍', 'Sunburst Walk'),
-      ];
-
-      int newlyAllocated = 0;
-      int alreadyAllocated = 0;
-
-      for (int i = 0; i < profiles.length; i++) {
-        final item = profiles[i] as Map<String, dynamic>;
-        final String userId = item['id'] as String;
-        final String? existingBio = item['bio'] as String?;
-
-        // If user already has an allocated bio/PIN, count as already allocated
-        if (existingBio != null && existingBio.contains('PKT-EP')) {
-          alreadyAllocated++;
-          continue;
-        }
-
-        // Determine island and plot number (35 per island)
-        final islandIdx = (i ~/ 35) % islandCatalog.length;
-        final targetIsland = islandCatalog[islandIdx];
-        final plotNum = (i % 35) + 1;
-        final cosmosPin = 'PKT-EP${targetIsland.$1}-P$plotNum';
-
-        // Update profile in Supabase
-        await SupaFlow.client.from('profile').update({
-          'country': targetIsland.$2,
-          'city': targetIsland.$4,
-          'bio': '🏡 Citizen of ${targetIsland.$2}, ${targetIsland.$3} ($cosmosPin)',
-        }).eq('id', userId);
-
-        newlyAllocated++;
-      }
-
-      return {
-        'total': profiles.length,
-        'newlyAllocated': newlyAllocated,
-        'alreadyAllocated': alreadyAllocated,
-      };
-    } catch (e) {
-      debugPrint('⚠️ syncAndAllocateExistingUsers error: $e');
-      return {'error': e.toString(), 'newlyAllocated': 0};
-    }
-  }
-
-  /// 🔍 Validates a Neighbor Pre-Booking Code
+  /// 🔍 Validates a Neighbor Pre-Booking Code or Born Address
   Future<NeighborReservationPass?> validateNeighborInviteCode(String code) async {
     final cleanCode = code.trim().toUpperCase();
 
-    // Check specific preset referral passes (e.g. Jupiter User A invite)
+    // 1. Check Jupiter test presets
     if (cleanCode.contains('JUP') || cleanCode == 'PKT-JUPITER' || cleanCode == 'JUPITER') {
-      return NeighborReservationPass(
-        code: cleanCode,
-        islandId: 401,
-        islandName: 'Solaria Crest Atoll',
-        planetName: 'Jupiter 🪐',
-        streetName: 'Great Red Spot Promenade',
-        plotNumber: 15, // Adjacent to User A on Plot #14
-        hostUserName: 'User A',
-        cosmosPin: 'PKT-JUP-P15',
-        createdAt: DateTime.now(),
-        expiresAt: DateTime.now().add(const Duration(hours: 5)),
-      );
-    }
-
-    if (cleanCode.contains('SAT') || cleanCode == 'PKT-SATURN' || cleanCode == 'SATURN') {
+      final col = colonies[2]; // Jupiter
       return NeighborReservationPass(
         code: cleanCode,
         islandId: 501,
-        islandName: 'Ringside Haven',
-        planetName: 'Saturn 🪐',
-        streetName: 'Titan View Parkway',
-        plotNumber: 8,
-        hostUserName: 'Saturn Host',
-        cosmosPin: 'PKT-SAT-P08',
+        islandName: col.islandName,
+        planetName: col.planetName,
+        streetName: col.streetName,
+        plotNumber: 15, // Neighbor to Plot #14
+        hostUserName: 'Jupiter Citizen A',
+        cosmosPin: 'PKT-W01-JUP-I01-P15',
         createdAt: DateTime.now(),
         expiresAt: DateTime.now().add(const Duration(hours: 5)),
       );
     }
 
+    // 2. Check Saturn test presets
+    if (cleanCode.contains('SAT') || cleanCode == 'PKT-SATURN' || cleanCode == 'SATURN') {
+      final col = colonies[3]; // Saturn
+      return NeighborReservationPass(
+        code: cleanCode,
+        islandId: 601,
+        islandName: col.islandName,
+        planetName: col.planetName,
+        streetName: col.streetName,
+        plotNumber: 8,
+        hostUserName: 'Saturn Host',
+        cosmosPin: 'PKT-W01-SAT-I01-P08',
+        createdAt: DateTime.now(),
+        expiresAt: DateTime.now().add(const Duration(hours: 5)),
+      );
+    }
+
+    // 3. Check Earth Prime test presets (PKT-TEST)
+    if (cleanCode == 'PKT-TEST' || cleanCode == 'TEST') {
+      return generateQuickTestFriendPass();
+    }
+
+    // 4. Check dynamic Born Address format: PKT-W{wave}-{planetCode}-I{island}-P{plot}
+    // e.g. PKT-W01-JUP-I01-P07
+    final pinRegex = RegExp(r'^PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)$');
+    final match = pinRegex.firstMatch(cleanCode);
+    if (match != null) {
+      final wave = match.group(1)!;
+      final planetCode = match.group(2)!;
+      final island = match.group(3)!;
+      final hostPlot = int.tryParse(match.group(4)!) ?? 1;
+
+      final colony = colonies.firstWhere(
+        (c) => c.code == planetCode,
+        orElse: () => colonies.first,
+      );
+
+      // Reserve adjacent neighbor plot (clamped within 1..18)
+      int neighborPlot = hostPlot + 1;
+      if (neighborPlot > maxPlotsPerIsland) neighborPlot = hostPlot - 1;
+      if (neighborPlot < 1) neighborPlot = 2;
+
+      final neighborPlotStr = neighborPlot.toString().padLeft(2, '0');
+      final pin = 'PKT-W$wave-$planetCode-I$island-P$neighborPlotStr';
+
+      return NeighborReservationPass(
+        code: cleanCode,
+        islandId: colony.planetId * 100 + int.parse(island),
+        islandName: colony.islandName,
+        planetName: colony.planetName,
+        streetName: colony.streetName,
+        plotNumber: neighborPlot,
+        hostUserName: 'Neighbor Friend (Plot #$hostPlot)',
+        cosmosPin: pin,
+        createdAt: DateTime.now(),
+        expiresAt: DateTime.now().add(const Duration(hours: 5)),
+      );
+    }
+
+    // 5. Check local registry of created passes
     final prefs = await SharedPreferences.getInstance();
     final rawJson = prefs.getString(_kReservationsKey);
     if (rawJson != null) {
@@ -368,18 +606,21 @@ class PoketCosmosAllocationService {
       }
     }
 
-    // Graceful fallback for any valid user referral code string
+    // 6. Graceful deterministic fallback for valid custom referral codes
     if (cleanCode.length >= 3) {
-      final isJupiter = cleanCode.hashCode.abs() % 2 == 0;
+      final hash = cleanCode.hashCode.abs();
+      final colony = colonies[hash % colonies.length];
+      final plot = (hash % (maxPlotsPerIsland - 1)) + 2; // plot between 2 and 18
+
       return NeighborReservationPass(
         code: cleanCode,
-        islandId: isJupiter ? 401 : 301,
-        islandName: isJupiter ? 'Solaria Crest Atoll' : 'Ocean Whisper Atoll',
-        planetName: isJupiter ? 'Jupiter 🪐' : 'Earth Prime 🌍',
-        streetName: isJupiter ? 'Great Red Spot Promenade' : 'Reefway Avenue',
-        plotNumber: 15,
-        hostUserName: 'User A (Friend)',
-        cosmosPin: 'PKT-${cleanCode.replaceAll('-', '').substring(0, math.min(4, cleanCode.length))}-P15',
+        islandId: colony.planetId * 100 + 1,
+        islandName: colony.islandName,
+        planetName: colony.planetName,
+        streetName: colony.streetName,
+        plotNumber: plot,
+        hostUserName: 'Cosmos Citizen (Host)',
+        cosmosPin: 'PKT-W01-${colony.code}-I01-P${plot.toString().padLeft(2, '0')}',
         createdAt: DateTime.now(),
         expiresAt: DateTime.now().add(const Duration(hours: 5)),
       );

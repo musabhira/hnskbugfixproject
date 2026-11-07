@@ -171,21 +171,19 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
       avatar: widget.userAvatar,
     );
 
-    final isJupiter = plot.planetName.toLowerCase().contains('jup');
+    final colony = PoketCosmosAllocationService.instance.getColonyByPlanetName(plot.planetName);
     final island = PoketCountryMap(
-      id: isJupiter ? 401 : 301,
+      id: colony.planetId * 100 + 1,
       name: plot.countryName,
-      tag: isJupiter ? 'Jupiter Living Colony' : 'Premier Habit Colony',
-      landColor: isJupiter ? const Color(0xFF059669) : const Color(0xFF16A34A),
-      waterColor: isJupiter ? const Color(0xFF0369A1) : const Color(0xFF0284C7),
-      totalSlots: 35,
-      filledSlots: 31,
-      climate: isJupiter
-          ? 'Stormy Cosmic Azure 🪐'
-          : 'Tropical Azure Breeze 🌊',
+      tag: '${colony.planetName} Living Colony',
+      landColor: colony.landColor,
+      waterColor: colony.waterColor,
+      totalSlots: PoketCosmosAllocationService.maxPlotsPerIsland,
+      filledSlots: math.min(plot.plotNumber + 3, PoketCosmosAllocationService.maxPlotsPerIsland),
+      climate: colony.climate,
       climateIcon: Icons.water_drop_rounded,
       shapeSeed: plot.plotNumber * 13,
-      shapeStyle: isJupiter ? IslandShapeStyle.crescentLagoon : IslandShapeStyle.ringAtoll,
+      shapeStyle: colony.shapeStyle,
     );
 
     final coords = IslandAerialPainter.get35PlotCoordinates(island.shapeStyle);
@@ -195,7 +193,7 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
 
     final updatedPlot = plot.copyWith(coordinates: targetPos);
 
-    // Setup Solar System Game with Camera centered on assigned planet (e.g. Jupiter)
+    // Setup Solar System Game with Camera centered on assigned planet (or parent of satellite)
     final allPlanets = PoketCosmosNavigatorPage.buildCosmosPlanets();
     PoketPlanet? matchingPlanet;
     final plotPlanetLower = updatedPlot.planetName.toLowerCase();
@@ -205,6 +203,18 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
           plotPlanetLower.contains(nameLower.split(' ').first)) {
         matchingPlanet = p;
         break;
+      }
+    }
+    if (matchingPlanet == null) {
+      for (final p in allPlanets) {
+        for (final sat in p.satellites) {
+          if (sat.name.toLowerCase().contains(plotPlanetLower) ||
+              plotPlanetLower.contains(sat.name.toLowerCase().split(' ').first)) {
+            matchingPlanet = p;
+            break;
+          }
+        }
+        if (matchingPlanet != null) break;
       }
     }
     matchingPlanet ??= allPlanets.firstWhere((p) => p.id == 5, orElse: () => allPlanets.first);

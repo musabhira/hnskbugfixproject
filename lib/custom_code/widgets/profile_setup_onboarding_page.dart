@@ -19,6 +19,7 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_pure_kids_home_
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_born_address_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_referral_gateway_page.dart';
 
 
 /// 🌟 Clean Step-by-Step Profile Creation Flow
@@ -481,9 +482,9 @@ class _ProfileSetupOnboardingPageState
           }
         }
 
-        // 🌌 Seamless Transition to Pocket Cosmos Born Address Ceremony (പോക്കറ്റ് വേൾഡിലെ ജനന സ്ഥലം)
+        // 🌌 Seamless Transition to Pocket Cosmos Referral Gateway & Born Address Ceremony (പോക്കറ്റ് വേൾഡിലെ ജനന സ്ഥലം)
         if (mounted) {
-          await PoketCosmosBornAddressPage.launch(
+          await PoketCosmosReferralGatewayPage.launch(
             context,
             userName: name,
             userAvatar: _selectedPresetAvatar ?? '🦁',

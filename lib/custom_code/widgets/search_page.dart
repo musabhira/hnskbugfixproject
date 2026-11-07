@@ -1,6 +1,7 @@
 // Automatic FlutterFlow imports
 import 'package:flutter/material.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_born_address_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_referral_gateway_page.dart';
 
 import '/backend/supabase/supabase.dart';
 import 'index.dart'; // Imports other custom widgets
@@ -331,7 +332,7 @@ class _SearchPageState extends State<SearchPage> {
             ),
             onPressed: () {
               HapticFeedback.mediumImpact();
-              PoketCosmosBornAddressPage.launch(
+              PoketCosmosReferralGatewayPage.launch(
                 context,
                 userName: 'Learner',
                 userAvatar: '🦁',
