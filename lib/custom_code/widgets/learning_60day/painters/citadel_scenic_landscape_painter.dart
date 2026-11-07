@@ -52,65 +52,135 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     } else {
       switch (planetCode) {
         case 'MAR':
+          // Mars: Deep rose-wine to sunset pink & coral, transitioning into warm amber & peach
           skyShader = const LinearGradient(
-            colors: [Color(0xFF7F1D1D), Color(0xFFC2410C), Color(0xFFFDBA74)],
+            colors: [
+              Color(0xFF4C0519), // Deep Rose-Wine Twilight
+              Color(0xFF9F1239), // Sunset Magenta-Pink
+              Color(0xFFE11D48), // Vivid Coral Pink
+              Color(0xFFF97316), // Warm Amber Glow
+              Color(0xFFFED7AA), // Peach Horizon Haze
+            ],
+            stops: [0.0, 0.22, 0.48, 0.78, 1.0],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ).createShader(Rect.fromLTWH(0, 0, w, h));
           break;
         case 'JUP':
+          // Jupiter: Cosmic void into royal indigo nebula, electric cobalt, and auroral gold
           skyShader = const LinearGradient(
-            colors: [Color(0xFF0F172A), Color(0xFF1E3A8A), Color(0xFF0284C7), Color(0xFF78350F)],
-            stops: [0.0, 0.40, 0.80, 1.0],
+            colors: [
+              Color(0xFF020617), // Deep Space Abyss
+              Color(0xFF1E1B4B), // Royal Indigo Nebula
+              Color(0xFF1D4ED8), // Electric Jovian Cobalt
+              Color(0xFF0284C7), // Azure Storm Ribbon
+              Color(0xFFF59E0B), // Auroral Gold Horizon
+            ],
+            stops: [0.0, 0.25, 0.55, 0.82, 1.0],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ).createShader(Rect.fromLTWH(0, 0, w, h));
           break;
         case 'LUN':
+          // Moon: Pure obsidian starry cosmos down to subtle slate horizon
           skyShader = const LinearGradient(
-            colors: [Color(0xFF020617), Color(0xFF0B0F19), Color(0xFF1E293B)],
+            colors: [
+              Color(0xFF000000), // Pure Black Void
+              Color(0xFF020617), // Deep Obsidian
+              Color(0xFF0F172A), // Slate Space Dusk
+              Color(0xFF1E293B), // Horizon Lunar Ash
+            ],
+            stops: [0.0, 0.38, 0.76, 1.0],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ).createShader(Rect.fromLTWH(0, 0, w, h));
           break;
         case 'PLT':
+          // Pluto: Deep space obsidian to cosmic royal amethyst, neon violet and frozen rose-ice
           skyShader = const LinearGradient(
-            colors: [Color(0xFF1E1B4B), Color(0xFF3B0764), Color(0xFF581C87)],
+            colors: [
+              Color(0xFF030712), // Deep Space Obsidian
+              Color(0xFF2E1065), // Cosmic Amethyst Twilight
+              Color(0xFF6B21A8), // Vibrant Violet Nebula
+              Color(0xFFA855F7), // Neon Purple Aurora
+              Color(0xFFF5D0FE), // Distant Frozen Rose Horizon
+            ],
+            stops: [0.0, 0.28, 0.58, 0.84, 1.0],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ).createShader(Rect.fromLTWH(0, 0, w, h));
           break;
         case 'EUR':
+          // Europa: Cosmic violet-indigo, twilight magenta, shimmering cyan aurora & glacial white
           skyShader = const LinearGradient(
-            colors: [Color(0xFF0C4A6E), Color(0xFF0284C7), Color(0xFF38BDF8), Color(0xFFE0F2FE)],
+            colors: [
+              Color(0xFF1E1B4B), // Cosmic Indigo Void
+              Color(0xFF701A75), // Deep Magenta Glow
+              Color(0xFFC026D3), // Rose-Violet Twilight
+              Color(0xFF0284C7), // Shimmering Cyan Ice
+              Color(0xFFE0F2FE), // Glacial White Horizon
+            ],
+            stops: [0.0, 0.26, 0.52, 0.80, 1.0],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ).createShader(Rect.fromLTWH(0, 0, w, h));
           break;
         case 'SAT':
+          // Saturn: Cosmic purple void into sunset rose-pink, radiant amber and warm gold
           skyShader = const LinearGradient(
-            colors: [Color(0xFF451A03), Color(0xFF78350F), Color(0xFFD97706), Color(0xFFFDE68A)],
+            colors: [
+              Color(0xFF3B0764), // Cosmic Purple Void
+              Color(0xFF9D174D), // Twilight Rose-Pink
+              Color(0xFFDB2777), // Sunset Pink Glow
+              Color(0xFFD97706), // Golden Amber
+              Color(0xFFFEF08A), // Radiant Gold Horizon
+            ],
+            stops: [0.0, 0.25, 0.52, 0.80, 1.0],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ).createShader(Rect.fromLTWH(0, 0, w, h));
           break;
         case 'VEN':
+          // Venus: Deep plum twilight, burning sunset apricot & coral, radiant sulfuric dawn
           skyShader = const LinearGradient(
-            colors: [Color(0xFF78350F), Color(0xFFB45309), Color(0xFFF59E0B)],
+            colors: [
+              Color(0xFF4A044E), // Deep Plum Twilight
+              Color(0xFF831843), // Sunset Wine
+              Color(0xFFC2410C), // Deep Terracotta
+              Color(0xFFF59E0B), // Sulfuric Golden Dawn
+              Color(0xFFFEF08A), // Radiant Warm Corona
+            ],
+            stops: [0.0, 0.24, 0.50, 0.76, 1.0],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ).createShader(Rect.fromLTWH(0, 0, w, h));
           break;
         case 'TTN':
+          // Titan: Deep petrol teal, emerald twilight, methane cyan and amber smog horizon
           skyShader = const LinearGradient(
-            colors: [Color(0xFF064E3B), Color(0xFF065F46), Color(0xFF10B981), Color(0xFFA7F3D0)],
+            colors: [
+              Color(0xFF042F2E), // Deep Petrol Teal
+              Color(0xFF065F46), // Emerald Twilight
+              Color(0xFF0F766E), // Methane Cyan Glow
+              Color(0xFFB45309), // Amber Smog Layer
+              Color(0xFFFBBF24), // Golden Methane Horizon
+            ],
+            stops: [0.0, 0.26, 0.52, 0.80, 1.0],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ).createShader(Rect.fromLTWH(0, 0, w, h));
           break;
         case 'NEP':
+          // Neptune: Deep space abyss, midnight indigo, electric violet ribbon & pale silver-ice
           skyShader = const LinearGradient(
-            colors: [Color(0xFF172554), Color(0xFF1E3A8A), Color(0xFF2563EB), Color(0xFF93C5FD)],
+            colors: [
+              Color(0xFF020617), // Deep Space Abyss
+              Color(0xFF1E1B4B), // Midnight Indigo
+              Color(0xFF4338CA), // Electric Violet Ribbon
+              Color(0xFF0284C7), // Shimmering Cyan Aurora
+              Color(0xFFE0E7FF), // Pale Icy Silver Horizon
+            ],
+            stops: [0.0, 0.28, 0.58, 0.84, 1.0],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ).createShader(Rect.fromLTWH(0, 0, w, h));
@@ -345,43 +415,154 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     mountainPath.lineTo(0, h);
     mountainPath.close();
 
-    final Color mountainColor;
+    final Shader mountainShader;
     if (isNight) {
-      mountainColor = const Color(0xFF1E1B4B).withValues(alpha: 0.65);
+      mountainShader = const LinearGradient(
+        colors: [Color(0xFF0F172A), Color(0xFF1E1B4B), Color(0xFF312E81)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(0, gy - 200, w, 220));
     } else {
       switch (planetCode) {
         case 'MAR':
-          mountainColor = const Color(0xFF7C2D12).withValues(alpha: 0.65);
+          // Mars: Dramatic jagged red-rock peaks with golden highlights and dusty dark volcanic base
+          mountainShader = const LinearGradient(
+            colors: [
+              Color(0xFFFED7AA), // Dry-ice frosty peak tip
+              Color(0xFFDC2626), // Crimson red rock
+              Color(0xFF991B1B), // Deep rust mountain face
+              Color(0xFF450A0A), // Shadowed dark volcanic base
+            ],
+            stops: [0.0, 0.20, 0.58, 1.0],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 200, w, 220));
           break;
         case 'JUP':
-          mountainColor = const Color(0xFF1E3A8A).withValues(alpha: 0.55);
+          // Jupiter: Majestic cobalt/indigo storm peaks with electric cyan crown
+          mountainShader = const LinearGradient(
+            colors: [
+              Color(0xFF67E8F9), // Auroral cyan glowing peak
+              Color(0xFF2563EB), // Electric blue face
+              Color(0xFF1E3A8A), // Royal navy mid
+              Color(0xFF0F172A), // Deep abyss base
+            ],
+            stops: [0.0, 0.22, 0.62, 1.0],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 200, w, 220));
           break;
         case 'LUN':
-          mountainColor = const Color(0xFF475569).withValues(alpha: 0.60);
+          // Moon: High-contrast crater ridge with gleaming white rim and dark basalt rock
+          mountainShader = const LinearGradient(
+            colors: [
+              Color(0xFFFFFFFF), // Brilliant white sunlit rim
+              Color(0xFFCBD5E1), // Lunar silver rock
+              Color(0xFF475569), // Slate grey slope
+              Color(0xFF0F172A), // Inky shadow base
+            ],
+            stops: [0.0, 0.18, 0.58, 1.0],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 200, w, 220));
           break;
         case 'PLT':
-          mountainColor = const Color(0xFF581C87).withValues(alpha: 0.60);
+          // Pluto: Crystalline amethyst mountain with sparkling white ice glaciers
+          mountainShader = const LinearGradient(
+            colors: [
+              Color(0xFFFFFFFF), // Frozen methane white peak
+              Color(0xFFE879F9), // Glowing neon magenta crest
+              Color(0xFF7E22CE), // Rich royal purple face
+              Color(0xFF1E1B4B), // Deep obsidian void base
+            ],
+            stops: [0.0, 0.18, 0.60, 1.0],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 200, w, 220));
           break;
         case 'EUR':
-          mountainColor = const Color(0xFF0284C7).withValues(alpha: 0.50);
+          // Europa: Translucent glacial ice peaks with azure crevasses and white snow
+          mountainShader = const LinearGradient(
+            colors: [
+              Color(0xFFFFFFFF), // Pure glacial snowcap
+              Color(0xFF38BDF8), // Radiant cyan ice wall
+              Color(0xFF0284C7), // Deep azure crevasse
+              Color(0xFF082F49), // Deep abyssal ice base
+            ],
+            stops: [0.0, 0.22, 0.62, 1.0],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 200, w, 220));
           break;
         case 'SAT':
-          mountainColor = const Color(0xFF78350F).withValues(alpha: 0.55);
+          // Saturn: Royal bronze & rose-gold mountains
+          mountainShader = const LinearGradient(
+            colors: [
+              Color(0xFFFDE68A), // Golden sunlit peak
+              Color(0xFFF59E0B), // Warm amber slope
+              Color(0xFF9A3412), // Deep terracotta face
+              Color(0xFF451A03), // Dark bronze base
+            ],
+            stops: [0.0, 0.20, 0.60, 1.0],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 200, w, 220));
           break;
         case 'VEN':
-          mountainColor = const Color(0xFF92400E).withValues(alpha: 0.60);
+          // Venus: Jagged volcanic basalt ribs glowing with golden sulfur veins
+          mountainShader = const LinearGradient(
+            colors: [
+              Color(0xFFFEF08A), // Glowing sulfur-gold crest
+              Color(0xFFEA580C), // Red-hot terracotta face
+              Color(0xFF78350F), // Dark basalt rock
+              Color(0xFF1C1917), // Black obsidian base
+            ],
+            stops: [0.0, 0.18, 0.58, 1.0],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 200, w, 220));
           break;
         case 'TTN':
-          mountainColor = const Color(0xFF064E3B).withValues(alpha: 0.55);
+          // Titan: Emerald hydrocarbon mountains with golden methane frost
+          mountainShader = const LinearGradient(
+            colors: [
+              Color(0xFFA7F3D0), // Pale emerald frost peak
+              Color(0xFF10B981), // Vivid jade slope
+              Color(0xFF047857), // Deep emerald face
+              Color(0xFF022C22), // Dark hydrocarbon base
+            ],
+            stops: [0.0, 0.20, 0.60, 1.0],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 200, w, 220));
           break;
         case 'NEP':
-          mountainColor = const Color(0xFF1E3A8A).withValues(alpha: 0.60);
+          // Neptune: Shimmering cryo-sapphire ice needles with silver crests
+          mountainShader = const LinearGradient(
+            colors: [
+              Color(0xFFFFFFFF), // Silver ice frost peak
+              Color(0xFF93C5FD), // Radiant sky ice
+              Color(0xFF2563EB), // Deep sapphire wall
+              Color(0xFF0F172A), // Midnight ocean base
+            ],
+            stops: [0.0, 0.20, 0.60, 1.0],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 200, w, 220));
           break;
         default:
-          mountainColor = const Color(0xFF0D9488).withValues(alpha: 0.40);
+          mountainShader = const LinearGradient(
+            colors: [
+              Color(0xFF2DD4BF),
+              Color(0xFF0D9488),
+              Color(0xFF115E59),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 200, w, 220));
       }
     }
-    final mountainPaint = Paint()..color = mountainColor;
+    final mountainPaint = Paint()..shader = mountainShader;
     canvas.drawPath(mountainPath, mountainPaint);
 
     // Mountain Peak highlights
@@ -415,43 +596,87 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     foothillPath.lineTo(0, h);
     foothillPath.close();
 
-    final Color foothillColor;
+    final Shader foothillShader;
     if (isNight) {
-      foothillColor = const Color(0xFF064E3B).withValues(alpha: 0.70);
+      foothillShader = const LinearGradient(
+        colors: [Color(0xFF064E3B), Color(0xFF022C22)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(0, gy - 80, w, 90));
     } else {
       switch (planetCode) {
         case 'MAR':
-          foothillColor = const Color(0xFF9A3412).withValues(alpha: 0.75);
+          foothillShader = const LinearGradient(
+            colors: [Color(0xFFEA580C), Color(0xFF7C2D12)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 80, w, 90));
           break;
         case 'JUP':
-          foothillColor = const Color(0xFF047857).withValues(alpha: 0.70);
+          foothillShader = const LinearGradient(
+            colors: [Color(0xFF059669), Color(0xFF064E3B)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 80, w, 90));
           break;
         case 'LUN':
-          foothillColor = const Color(0xFF334155).withValues(alpha: 0.70);
+          foothillShader = const LinearGradient(
+            colors: [Color(0xFF475569), Color(0xFF1E293B)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 80, w, 90));
           break;
         case 'PLT':
-          foothillColor = const Color(0xFF3B0764).withValues(alpha: 0.75);
+          foothillShader = const LinearGradient(
+            colors: [Color(0xFF7E22CE), Color(0xFF3B0764)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 80, w, 90));
           break;
         case 'EUR':
-          foothillColor = const Color(0xFF0369A1).withValues(alpha: 0.65);
+          foothillShader = const LinearGradient(
+            colors: [Color(0xFF0284C7), Color(0xFF082F49)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 80, w, 90));
           break;
         case 'SAT':
-          foothillColor = const Color(0xFFB45309).withValues(alpha: 0.70);
+          foothillShader = const LinearGradient(
+            colors: [Color(0xFFD97706), Color(0xFF78350F)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 80, w, 90));
           break;
         case 'VEN':
-          foothillColor = const Color(0xFFB45309).withValues(alpha: 0.70);
+          foothillShader = const LinearGradient(
+            colors: [Color(0xFFEA580C), Color(0xFF78350F)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 80, w, 90));
           break;
         case 'TTN':
-          foothillColor = const Color(0xFF065F46).withValues(alpha: 0.70);
+          foothillShader = const LinearGradient(
+            colors: [Color(0xFF10B981), Color(0xFF022C22)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 80, w, 90));
           break;
         case 'NEP':
-          foothillColor = const Color(0xFF1D4ED8).withValues(alpha: 0.70);
+          foothillShader = const LinearGradient(
+            colors: [Color(0xFF2563EB), Color(0xFF0F172A)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 80, w, 90));
           break;
         default:
-          foothillColor = const Color(0xFF15803D).withValues(alpha: 0.65);
+          foothillShader = const LinearGradient(
+            colors: [Color(0xFF16A34A), Color(0xFF14532D)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 80, w, 90));
       }
     }
-    final foothillPaint = Paint()..color = foothillColor;
+    final foothillPaint = Paint()..shader = foothillShader;
     canvas.drawPath(foothillPath, foothillPaint);
 
     // 💨 4. Traditional Dutch Windmill with Rotating Sails on Hilltop
@@ -494,15 +719,17 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     } else {
       switch (planetCode) {
         case 'MAR':
+          // Mars: Fresh green terraform moss rim, flowing into warm Martian red-clay, terracotta, and dark volcanic rock
           hillColors = [
-            const Color(0xFFEA580C),
-            const Color(0xFFC2410C),
-            const Color(0xFF9A3412),
-            const Color(0xFF7C2D12),
+            const Color(0xFF15803D), // Lush terraform moss green rim
+            const Color(0xFFEA580C), // Rich Martian warm red-clay
+            const Color(0xFFC2410C), // Deep terracotta soil
+            const Color(0xFF7C2D12), // Dark volcanic rock loam
           ];
-          ridgeBorderColor = const Color(0xFFFDBA74);
+          ridgeBorderColor = const Color(0xFF86EFAC); // Fresh green ridge glow
           break;
         case 'JUP':
+          // Jupiter: Emerald Jovian sanctuary turf with gold auroral ridge
           hillColors = [
             const Color(0xFF10B981),
             const Color(0xFF059669),
@@ -512,67 +739,74 @@ class CitadelScenicLandscapePainter extends CustomPainter {
           ridgeBorderColor = const Color(0xFF6EE7B7);
           break;
         case 'LUN':
+          // Moon: Biosphere garden turf rim over silver-slate lunar regolith
           hillColors = [
-            const Color(0xFF64748B),
-            const Color(0xFF475569),
-            const Color(0xFF334155),
-            const Color(0xFF1E293B),
+            const Color(0xFF16A34A), // Biosphere garden turf rim
+            const Color(0xFF94A3B8), // Lunar silver regolith
+            const Color(0xFF475569), // Slate basalt
+            const Color(0xFF1E293B), // Deep lunar bedrock
           ];
-          ridgeBorderColor = const Color(0xFF94A3B8);
+          ridgeBorderColor = const Color(0xFFCBD5E1); // Silver lunar rim
           break;
         case 'PLT':
+          // Pluto: Shimmering neon amethyst frost rim over royal purple cryo-turf
           hillColors = [
-            const Color(0xFFA855F7),
-            const Color(0xFF9333EA),
-            const Color(0xFF7E22CE),
-            const Color(0xFF581C87),
+            const Color(0xFFE879F9), // Shimmering neon amethyst frost rim
+            const Color(0xFFA855F7), // Royal purple cryo-turf
+            const Color(0xFF6B21A8), // Deep violet loam
+            const Color(0xFF1E1B4B), // Dark obsidian ice
           ];
-          ridgeBorderColor = const Color(0xFFD8B4FE);
+          ridgeBorderColor = const Color(0xFFF5D0FE);
           break;
         case 'EUR':
+          // Europa: Pure white glacial snow rim, geothermal emerald-teal moss, azure ice sheet
           hillColors = [
-            const Color(0xFF38BDF8),
-            const Color(0xFF0EA5E9),
-            const Color(0xFF0284C7),
-            const Color(0xFF0369A1),
+            const Color(0xFFFFFFFF), // Pure glacial snow rim
+            const Color(0xFF0D9488), // Geothermal emerald-teal moss
+            const Color(0xFF0284C7), // Shimmering azure ice sheet
+            const Color(0xFF0C4A6E), // Deep abyssal sapphire ice
           ];
-          ridgeBorderColor = const Color(0xFFBAE6FD);
+          ridgeBorderColor = const Color(0xFFE0F2FE); // Crystalline white-cyan ice ridge
           break;
         case 'SAT':
+          // Saturn: Fresh green meadow rim blending with golden amber soil and rich bronze loam
           hillColors = [
-            const Color(0xFFD97706),
-            const Color(0xFFB45309),
-            const Color(0xFF92400E),
-            const Color(0xFF78350F),
+            const Color(0xFF16A34A), // Fresh green meadow rim
+            const Color(0xFFD97706), // Warm golden amber soil
+            const Color(0xFFB45309), // Rich bronze loam
+            const Color(0xFF78350F), // Deep earthen base
           ];
-          ridgeBorderColor = const Color(0xFFFDE68A);
+          ridgeBorderColor = const Color(0xFFFDE68A); // Sunlit gold ridge
           break;
         case 'VEN':
+          // Venus: Golden sulfur sand rim, warm terracotta soil, volcanic basalt rock
           hillColors = [
-            const Color(0xFFF59E0B),
-            const Color(0xFFD97706),
-            const Color(0xFFB45309),
-            const Color(0xFF78350F),
+            const Color(0xFFFDE047), // Golden sulfur sand rim
+            const Color(0xFFEA580C), // Warm terracotta soil
+            const Color(0xFF9A3412), // Deep burnt sienna
+            const Color(0xFF451A03), // Volcanic basalt rock
           ];
           ridgeBorderColor = const Color(0xFFFEF08A);
           break;
         case 'TTN':
+          // Titan: Bioluminescent emerald moss rim over vivid jade loam
           hillColors = [
-            const Color(0xFF10B981),
-            const Color(0xFF059669),
-            const Color(0xFF047857),
-            const Color(0xFF064E3B),
+            const Color(0xFF34D399), // Bioluminescent emerald moss rim
+            const Color(0xFF059669), // Vivid jade loam
+            const Color(0xFF047857), // Deep emerald turf
+            const Color(0xFF064E3B), // Dark hydrocarbon base
           ];
           ridgeBorderColor = const Color(0xFFA7F3D0);
           break;
         case 'NEP':
+          // Neptune: Radiant turquoise ice rim over deep electric sapphire and midnight ocean turf
           hillColors = [
-            const Color(0xFF2563EB),
-            const Color(0xFF1D4ED8),
-            const Color(0xFF1E3A8A),
-            const Color(0xFF172554),
+            const Color(0xFF67E8F9), // Radiant turquoise ice rim
+            const Color(0xFF2563EB), // Deep electric sapphire
+            const Color(0xFF1E3A8A), // Midnight ocean turf
+            const Color(0xFF0F172A), // Inky abyss loam
           ];
-          ridgeBorderColor = const Color(0xFF93C5FD);
+          ridgeBorderColor = const Color(0xFFBAE6FD);
           break;
         default:
           hillColors = [
@@ -635,9 +869,9 @@ class CitadelScenicLandscapePainter extends CustomPainter {
         switch (planetCode) {
           case 'MAR':
             riverColors = [
-              const Color(0xFFB45309),
-              const Color(0xFFD97706),
-              const Color(0xFFF59E0B),
+              const Color(0xFF0284C7), // Shimmering azure glacial meltwater
+              const Color(0xFF38BDF8), // Vibrant turquoise
+              const Color(0xFFF472B6), // Rosy sunset reflections
             ];
             break;
           case 'JUP':
@@ -663,9 +897,9 @@ class CitadelScenicLandscapePainter extends CustomPainter {
             break;
           case 'EUR':
             riverColors = [
-              const Color(0xFF0284C7),
-              const Color(0xFF38BDF8),
-              const Color(0xFFE0F2FE),
+              const Color(0xFF0369A1), // Deep thermal sapphire
+              const Color(0xFF06B6D4), // Cyan thermal stream
+              const Color(0xFFE0F2FE), // White frost water
             ];
             break;
           case 'SAT':
@@ -807,6 +1041,9 @@ class CitadelScenicLandscapePainter extends CustomPainter {
         );
       }
 
+      // 🌟 Illuminated Courtyard Walkway Border Gems (Steps accents)
+      _drawCourtyardPathGems(canvas, w, gy, planetCode: planetCode);
+
       // 🚩 9. Festive Celebration Bunting Flags (Triangle party flags)
       _drawPartyBunting(canvas, w * 0.24, gy - 16, w * 0.36, gy - 12);
       _drawPartyBunting(canvas, w * 0.64, gy - 12, w * 0.76, gy - 16);
@@ -851,16 +1088,16 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       }
 
       // 13. Lush Trees: Orchard Apples & Japanese Cherry Blossom (Sakura)
-      _drawTree(canvas, w * 0.12, gy - 8, scale: 1.3);
+      _drawTree(canvas, w * 0.12, gy - 8, scale: 1.3, planetCode: planetCode);
       _drawCherryBlossomTree(canvas, w * 0.22, gy - 16,
           scale: 1.1, ambientProg: ambientProg);
       _drawCherryBlossomTree(canvas, w * 0.78, gy - 4,
           scale: 1.15, ambientProg: ambientProg);
-      _drawTree(canvas, w * 0.88, gy + 6, scale: 1.35);
+      _drawTree(canvas, w * 0.88, gy + 6, scale: 1.35, planetCode: planetCode);
 
       // Riverbank shade trees
-      _drawTree(canvas, w * 0.08, ry + 10, scale: 1.1);
-      _drawTree(canvas, w * 0.92, ry + 20, scale: 1.15);
+      _drawTree(canvas, w * 0.08, ry + 10, scale: 1.1, planetCode: planetCode);
+      _drawTree(canvas, w * 0.92, ry + 20, scale: 1.15, planetCode: planetCode);
 
       // 14. Street Lamps with Warm Golden Glowing Lanterns
       _drawStreetLamp(canvas, w * 0.30, gy + 12, isNight: isNight);
@@ -875,16 +1112,51 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       lowerMeadowPath.lineTo(0, h);
       lowerMeadowPath.close();
 
-      final meadowPaint = Paint()
-        ..color = isNight ? const Color(0xFF022C22) : const Color(0xFF15803D);
+      final Color meadowColor;
+      if (isNight) {
+        meadowColor = const Color(0xFF022C22);
+      } else {
+        switch (planetCode) {
+          case 'MAR':
+            meadowColor = const Color(0xFF7C2D12); // Martian rich loam
+            break;
+          case 'JUP':
+            meadowColor = const Color(0xFF064E3B);
+            break;
+          case 'LUN':
+            meadowColor = const Color(0xFF1E293B);
+            break;
+          case 'PLT':
+            meadowColor = const Color(0xFF3B0764);
+            break;
+          case 'EUR':
+            meadowColor = const Color(0xFF075985);
+            break;
+          case 'SAT':
+            meadowColor = const Color(0xFF78350F);
+            break;
+          case 'VEN':
+            meadowColor = const Color(0xFF78350F);
+            break;
+          case 'TTN':
+            meadowColor = const Color(0xFF064E3B);
+            break;
+          case 'NEP':
+            meadowColor = const Color(0xFF172554);
+            break;
+          default:
+            meadowColor = const Color(0xFF15803D);
+        }
+      }
+      final meadowPaint = Paint()..color = meadowColor;
       canvas.drawPath(lowerMeadowPath, meadowPaint);
 
       // Trees in the lower valley
-      _drawTree(canvas, w * 0.18, ry + 180, scale: 1.1);
+      _drawTree(canvas, w * 0.18, ry + 180, scale: 1.1, planetCode: planetCode);
       _drawCherryBlossomTree(canvas, w * 0.42, ry + 220,
           scale: 1.05, ambientProg: ambientProg);
-      _drawTree(canvas, w * 0.68, ry + 200, scale: 1.2);
-      _drawTree(canvas, w * 0.84, ry + 240, scale: 1.05);
+      _drawTree(canvas, w * 0.68, ry + 200, scale: 1.2, planetCode: planetCode);
+      _drawTree(canvas, w * 0.84, ry + 240, scale: 1.05, planetCode: planetCode);
     }
 
     // 💨 Cozy Chimney Smoke Drifting Gently from Starter House
@@ -1044,6 +1316,22 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     final satX = w * 0.28 + math.sin(ambientProg * 2 * math.pi) * 20.0;
     final satY = gy * 0.16;
     _drawLunarSatellite(canvas, satX, satY, ambientProg);
+
+    // 🚩 Lunar Surface Mission Flag
+    _drawLunarSurfaceDetails(canvas, w, gy);
+  }
+
+  void _drawLunarSurfaceDetails(Canvas canvas, double w, double gy) {
+    final flagX = w * 0.22;
+    final flagY = gy - 10;
+    canvas.drawLine(Offset(flagX, flagY), Offset(flagX, flagY - 26), Paint()..color = const Color(0xFFE2E8F0)..strokeWidth = 2);
+    final flagPath = Path();
+    flagPath.moveTo(flagX, flagY - 26);
+    flagPath.lineTo(flagX + 16, flagY - 21);
+    flagPath.lineTo(flagX, flagY - 16);
+    flagPath.close();
+    canvas.drawPath(flagPath, Paint()..color = const Color(0xFF38BDF8));
+    canvas.drawCircle(Offset(flagX + 6, flagY - 21), 2.0, Paint()..color = const Color(0xFFFFD700));
   }
 
   void _drawLunarSatellite(Canvas canvas, double x, double y, double ambientProg) {
@@ -1199,62 +1487,155 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     canvas.drawCircle(Offset(w * 0.32, gy * 0.16), 5.5, Paint()..color = const Color(0xFFF8FAFC));
   }
 
-  /// 🔴 Mars: Pale sun, Phobos & Deimos twin moons and red dust haze
+  /// 🔴 Mars: Pink-amber sunset sky, stars, Phobos & Deimos, rock boulders & green moss
   void _drawMarsCelestialAtmosphere(
       Canvas canvas, double w, double gy, double ambientProg) {
+    // 1. Twinkling stars in thin upper martian atmosphere
+    final starPaint = Paint()..color = Colors.white.withValues(alpha: 0.75);
+    for (int i = 0; i < 30; i++) {
+      final sx = ((i * 97.0) % w);
+      final sy = ((i * 41.0) % (gy * 0.52));
+      final sz = 0.8 + ((i % 3) * 0.45);
+      canvas.drawCircle(Offset(sx, sy), sz, starPaint);
+    }
+
+    // 2. Pale Golden Martian Sun with Dusty Corona
     final sunCenter = Offset(w * 0.80, gy * 0.22);
     canvas.drawCircle(
       sunCenter,
-      50,
+      52,
       Paint()
-        ..color = const Color(0xFFFDBA74).withValues(alpha: 0.22)
+        ..color = const Color(0xFFFDBA74).withValues(alpha: 0.25)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20),
     );
     canvas.drawCircle(sunCenter, 22, Paint()..color = const Color(0xFFFED7AA));
 
-    // Phobos (larger, cratered potato moon)
+    // 3. Phobos (larger, cratered potato moon)
     final phobosX = w * 0.32 + math.sin(ambientProg * 2 * math.pi) * 12.0;
     final phobosY = gy * 0.18;
     final phobosPaint = Paint()..color = const Color(0xFFCBD5E1);
-    canvas.drawOval(Rect.fromCenter(center: Offset(phobosX, phobosY), width: 18, height: 13), phobosPaint);
-    canvas.drawCircle(Offset(phobosX - 3, phobosY - 2), 2.2, Paint()..color = const Color(0xFF64748B));
-    canvas.drawCircle(Offset(phobosX + 3, phobosY + 2), 1.8, Paint()..color = const Color(0xFF64748B));
+    canvas.drawOval(Rect.fromCenter(center: Offset(phobosX, phobosY), width: 20, height: 14), phobosPaint);
+    canvas.drawCircle(Offset(phobosX - 4, phobosY - 2), 2.5, Paint()..color = const Color(0xFF64748B));
+    canvas.drawCircle(Offset(phobosX + 3, phobosY + 2), 2.0, Paint()..color = const Color(0xFF64748B));
 
-    // Deimos (smaller distant moon)
+    // 4. Deimos (smaller distant pebble moon)
     final deimosX = w * 0.60 - math.sin(ambientProg * 2 * math.pi) * 8.0;
     final deimosY = gy * 0.12;
-    canvas.drawCircle(Offset(deimosX, deimosY), 4.5, Paint()..color = const Color(0xFFE2E8F0));
+    canvas.drawCircle(Offset(deimosX, deimosY), 4.8, Paint()..color = const Color(0xFFE2E8F0));
 
-    // Drifting red dust wisps
+    // 5. Drifting warm red dust wisps
     final dustPaint = Paint()
       ..color = const Color(0xFFEA580C).withValues(alpha: 0.12)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
     final dustOffset = math.sin(ambientProg * 2 * math.pi) * 20.0;
     canvas.drawRect(Rect.fromLTWH(0, gy * 0.30 + dustOffset, w, 35), dustPaint);
+
+    // 6. 🪨 Martian Rocky Boulders with Shaded Facets & Living Green Moss Accents
+    _drawMarsRockBoulders(canvas, w, gy);
+
+    // 7. Compact Martian Exploration Rover
+    _drawMarsRover(canvas, w * 0.62, gy - 12);
   }
 
-  /// 🌀 Jupiter: Jovian storm auroras, Io & Europa crescent moons
+  void _drawMarsRockBoulders(Canvas canvas, double w, double gy) {
+    _drawShadedRock(canvas, w * 0.14, gy + 12, width: 38, height: 24, isMars: true);
+    _drawShadedRock(canvas, w * 0.36, gy + 155, width: 30, height: 20, isMars: true);
+    _drawShadedRock(canvas, w * 0.86, gy + 16, width: 44, height: 28, isMars: true);
+  }
+
+  void _drawShadedRock(Canvas canvas, double x, double y,
+      {required double width, required double height, bool isMars = false}) {
+    final rockPath = Path();
+    rockPath.moveTo(x - width / 2, y);
+    rockPath.lineTo(x - width * 0.35, y - height * 0.7);
+    rockPath.lineTo(x, y - height);
+    rockPath.lineTo(x + width * 0.4, y - height * 0.65);
+    rockPath.lineTo(x + width / 2, y);
+    rockPath.close();
+
+    final rockShader = LinearGradient(
+      colors: isMars
+          ? [const Color(0xFFC2410C), const Color(0xFF7C2D12), const Color(0xFF450A0A)]
+          : [const Color(0xFF94A3B8), const Color(0xFF475569), const Color(0xFF1E293B)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ).createShader(Rect.fromCenter(center: Offset(x, y - height / 2), width: width, height: height));
+
+    canvas.drawPath(rockPath, Paint()..shader = rockShader);
+
+    // Green terraform moss patch on top of rock
+    if (isMars) {
+      final mossPaint = Paint()..color = const Color(0xFF16A34A).withValues(alpha: 0.90);
+      canvas.drawOval(Rect.fromCenter(center: Offset(x, y - height + 3), width: width * 0.45, height: 4.5), mossPaint);
+    }
+  }
+
+  void _drawMarsRover(Canvas canvas, double x, double y) {
+    // 6-wheel rover chassis
+    final bodyPaint = Paint()..color = const Color(0xFFE2E8F0);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromCenter(center: Offset(x, y - 10), width: 28, height: 11), const Radius.circular(3)),
+      bodyPaint,
+    );
+    // Mast cam
+    canvas.drawLine(Offset(x + 8, y - 15), Offset(x + 8, y - 24), Paint()..color = const Color(0xFF64748B)..strokeWidth = 2);
+    canvas.drawCircle(Offset(x + 8, y - 24), 2.5, Paint()..color = const Color(0xFF38BDF8));
+    // High-gain antenna dish
+    canvas.drawArc(Rect.fromCenter(center: Offset(x - 6, y - 18), width: 10, height: 8), -math.pi * 0.8, math.pi * 0.6, false, Paint()..color = const Color(0xFFFFD700)..style = PaintingStyle.stroke..strokeWidth = 1.8);
+    // Rugged rover wheels
+    final wheelPaint = Paint()..color = const Color(0xFF1E293B);
+    for (int wIdx = 0; wIdx < 3; wIdx++) {
+      canvas.drawCircle(Offset(x - 9 + (wIdx * 9.0), y - 3), 3.5, wheelPaint);
+    }
+  }
+
+  /// 🌀 Jupiter: 4 Galilean Moons (Ganymede, Callisto, Europa, Io) & Storm Auroras
   void _drawJupiterCelestialAtmosphere(
       Canvas canvas, double w, double gy, double ambientProg) {
+    // Swirling Jovian atmospheric auroral ribbons
     final wave = math.sin(ambientProg * 2 * math.pi) * 16.0;
     final aurPaint = Paint()
-      ..color = const Color(0xFFF59E0B).withValues(alpha: 0.14)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18);
-    canvas.drawRect(Rect.fromLTWH(0, gy * 0.18 + wave, w, 40), aurPaint);
-    canvas.drawRect(Rect.fromLTWH(0, gy * 0.34 - wave, w, 32), aurPaint);
+      ..color = const Color(0xFFF59E0B).withValues(alpha: 0.18)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20);
+    canvas.drawRect(Rect.fromLTWH(0, gy * 0.16 + wave, w, 44), aurPaint);
+    canvas.drawRect(Rect.fromLTWH(0, gy * 0.32 - wave, w, 36), aurPaint);
 
-    final eurX = w * 0.34;
-    final eurY = gy * 0.14;
-    canvas.drawCircle(Offset(eurX, eurY), 8.0, Paint()..color = const Color(0xFFE0F2FE));
-    canvas.drawCircle(Offset(eurX + 2, eurY - 1), 7.0, Paint()..color = const Color(0xFF0F172A));
+    // 🪐 4 Galilean Moons of Jupiter:
+    // 1. Ganymede (Largest, silver-slate with ray craters)
+    final ganX = w * 0.22 + math.sin(ambientProg * 2 * math.pi) * 14.0;
+    final ganY = gy * 0.12;
+    canvas.drawCircle(Offset(ganX, ganY), 13.0, Paint()..color = const Color(0xFF94A3B8));
+    canvas.drawCircle(Offset(ganX + 3, ganY - 2), 11.5, Paint()..color = const Color(0xFF0F172A)); // crescent
+    canvas.drawCircle(Offset(ganX - 4, ganY + 2), 2.2, Paint()..color = const Color(0xFFE2E8F0));
 
-    final ioX = w * 0.72;
-    final ioY = gy * 0.20;
-    canvas.drawCircle(Offset(ioX, ioY), 9.0, Paint()..color = const Color(0xFFFDE047));
-    canvas.drawCircle(Offset(ioX + 3, ioY - 1), 8.0, Paint()..color = const Color(0xFF0F172A));
+    // 2. Callisto (Dark cratered ancient ice moon)
+    final calX = w * 0.44 - math.sin(ambientProg * 2 * math.pi) * 10.0;
+    final calY = gy * 0.08;
+    canvas.drawCircle(Offset(calX, calY), 10.0, Paint()..color = const Color(0xFF64748B));
+    canvas.drawCircle(Offset(calX + 2, calY - 1), 9.0, Paint()..color = const Color(0xFF0F172A));
+
+    // 3. Europa (Luminous ice pearl with cyan glow)
+    final eurX = w * 0.65;
+    final eurY = gy * 0.15;
+    canvas.drawCircle(
+      Offset(eurX, eurY),
+      12.0,
+      Paint()
+        ..color = const Color(0xFF38BDF8).withValues(alpha: 0.30)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
+    );
+    canvas.drawCircle(Offset(eurX, eurY), 8.5, Paint()..color = const Color(0xFFE0F2FE));
+    canvas.drawCircle(Offset(eurX + 2, eurY - 1), 7.5, Paint()..color = const Color(0xFF0F172A));
+
+    // 4. Io (Volcanic sulfur-gold with orange eruption plume)
+    final ioX = w * 0.82;
+    final ioY = gy * 0.22;
+    canvas.drawCircle(Offset(ioX, ioY), 9.5, Paint()..color = const Color(0xFFFBBF24));
+    canvas.drawCircle(Offset(ioX + 3, ioY - 1), 8.5, Paint()..color = const Color(0xFF0F172A));
+    canvas.drawCircle(Offset(ioX - 5, ioY - 5), 2.5, Paint()..color = const Color(0xFFEA580C));
   }
 
-  /// 🌑 Pluto: Charon companion moon & deep purple nebula starfield
+  /// 🌑 Pluto: Charon companion moon & deep purple nebula starfield & crystal spires
   void _drawPlutoCharonAtmosphere(
       Canvas canvas, double w, double gy, double ambientProg) {
     final starPaint = Paint()..color = Colors.white.withValues(alpha: 0.85);
@@ -1291,12 +1672,34 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     canvas.drawCircle(Offset(ccx - 6, ccy + 18), 5.5, craterPaint);
 
     final nebPaint = Paint()
-      ..color = const Color(0xFFC084FC).withValues(alpha: 0.12)
+      ..color = const Color(0xFFC084FC).withValues(alpha: 0.14)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20);
     canvas.drawRect(Rect.fromLTWH(0, gy * 0.32, w, 40), nebPaint);
+
+    // Glowing Amethyst Crystals on Ground
+    _drawPlutoAmethystCrystals(canvas, w * 0.16, gy + 8);
+    _drawPlutoAmethystCrystals(canvas, w * 0.84, gy + 12);
   }
 
-  /// 🟡 Venus: Golden sunbeams through sulfuric clouds & atmospheric aerostat
+  void _drawPlutoAmethystCrystals(Canvas canvas, double x, double y) {
+    final cPath = Path();
+    cPath.moveTo(x - 5, y);
+    cPath.lineTo(x - 3, y - 18);
+    cPath.lineTo(x, y - 24);
+    cPath.lineTo(x + 3, y - 18);
+    cPath.lineTo(x + 5, y);
+    cPath.close();
+
+    final cPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFF5D0FE), Color(0xFFA855F7), Color(0xFF581C87)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(x - 5, y - 24, 10, 24));
+    canvas.drawPath(cPath, cPaint);
+  }
+
+  /// 🟡 Venus: Golden sunbeams through sulfuric clouds, radiant Earth as Morning Star
   void _drawVenusCelestialAtmosphere(
       Canvas canvas, double w, double gy, double ambientProg) {
     final vSun = Offset(w * 0.76, gy * 0.20);
@@ -1309,6 +1712,7 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     );
     canvas.drawCircle(vSun, 30, Paint()..color = const Color(0xFFFEF08A));
 
+    // Slanting God-rays piercing sulfuric cloud deck
     final rayPaint = Paint()
       ..shader = LinearGradient(
         colors: [
@@ -1333,8 +1737,23 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     rayPath2.close();
     canvas.drawPath(rayPath2, rayPaint);
 
-    final aeroX = w * 0.32 + math.sin(ambientProg * 2 * math.pi) * 16.0;
-    final aeroY = gy * 0.16;
+    // 🌍 Earth as the dazzling blue "Morning Star" jewel with white companion Moon
+    final earthX = w * 0.28;
+    final earthY = gy * 0.12;
+    canvas.drawCircle(
+      Offset(earthX, earthY),
+      14,
+      Paint()
+        ..color = const Color(0xFF38BDF8).withValues(alpha: 0.35)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
+    );
+    canvas.drawCircle(Offset(earthX, earthY), 7.0, Paint()..color = const Color(0xFF0284C7));
+    canvas.drawCircle(Offset(earthX - 1.5, earthY - 1.5), 3.5, Paint()..color = const Color(0xFF10B981));
+    canvas.drawCircle(Offset(earthX + 11, earthY - 5), 2.4, Paint()..color = const Color(0xFFF8FAFC));
+
+    // Exploration aerostat
+    final aeroX = w * 0.38 + math.sin(ambientProg * 2 * math.pi) * 16.0;
+    final aeroY = gy * 0.20;
     canvas.drawOval(
       Rect.fromCenter(center: Offset(aeroX, aeroY), width: 34, height: 16),
       Paint()..color = const Color(0xFFFFFBEB),
@@ -1433,6 +1852,52 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       final alpha = (1.0 - t) * 0.32;
       smokePaint.color = Colors.white.withValues(alpha: alpha);
       canvas.drawCircle(Offset(sx, sy), radius, smokePaint);
+    }
+  }
+
+  /// 🌟 Illuminated Courtyard Walkway Border Gems
+  void _drawCourtyardPathGems(Canvas canvas, double w, double gy, {String? planetCode}) {
+    final Color gemColor;
+    switch (planetCode) {
+      case 'MAR':
+        gemColor = const Color(0xFF4ADE80); // Martian bio-green solar lights
+        break;
+      case 'SAT':
+        gemColor = const Color(0xFFFDE047); // Golden lanterns
+        break;
+      case 'EUR':
+        gemColor = const Color(0xFF38BDF8); // Cyan ice crystals
+        break;
+      case 'PLT':
+        gemColor = const Color(0xFFE879F9); // Amethyst beacon crystals
+        break;
+      case 'VEN':
+        gemColor = const Color(0xFFF59E0B); // Amber heat lamps
+        break;
+      case 'TTN':
+        gemColor = const Color(0xFF34D399); // Emerald methane moss gems
+        break;
+      case 'NEP':
+        gemColor = const Color(0xFF67E8F9); // Turquoise cryo lanterns
+        break;
+      default:
+        gemColor = const Color(0xFFFDE047); // Warm golden garden pavers
+    }
+
+    final gemPaint = Paint()..color = gemColor;
+    final glowPaint = Paint()
+      ..color = gemColor.withValues(alpha: 0.35)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+
+    for (int i = 0; i < 6; i++) {
+      final stoneY = gy + 26 + (i * 22);
+      final stoneX = w * 0.50 + math.sin(i * 1.4) * 6;
+      // Left gem
+      canvas.drawCircle(Offset(stoneX - 22, stoneY), 3.5, glowPaint);
+      canvas.drawCircle(Offset(stoneX - 22, stoneY), 2.0, gemPaint);
+      // Right gem
+      canvas.drawCircle(Offset(stoneX + 22, stoneY), 3.5, glowPaint);
+      canvas.drawCircle(Offset(stoneX + 22, stoneY), 2.0, gemPaint);
     }
   }
 
@@ -2283,18 +2748,80 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     }
   }
 
-  void _drawTree(Canvas canvas, double x, double y, {double scale = 1.0}) {
+  void _drawTree(Canvas canvas, double x, double y,
+      {double scale = 1.0, String? planetCode}) {
     // Tree Trunk
+    final trunkColor = (planetCode == 'MAR')
+        ? const Color(0xFF450A0A)
+        : (planetCode == 'PLT' || planetCode == 'LUN')
+            ? const Color(0xFF334155)
+            : const Color(0xFF78350F);
+
     canvas.drawLine(
       Offset(x, y),
       Offset(x, y - (28 * scale)),
       Paint()
-        ..color = const Color(0xFF78350F)
+        ..color = trunkColor
         ..strokeWidth = 5.0 * scale,
     );
-    // Overlapping lush foliage balls
-    final leafPaint1 = Paint()..color = const Color(0xFF15803D);
-    final leafPaint2 = Paint()..color = const Color(0xFF22C55E);
+
+    // Overlapping lush foliage balls with planet-adapted colors
+    final Color leafColor1;
+    final Color leafColor2;
+    final Color accentColor;
+
+    switch (planetCode) {
+      case 'MAR':
+        // Mars: Terraformed alpine green pine with warm amber tips
+        leafColor1 = const Color(0xFF15803D);
+        leafColor2 = const Color(0xFF22C55E);
+        accentColor = const Color(0xFFF97316);
+        break;
+      case 'SAT':
+        // Saturn: Golden amber & rose blossom foliage
+        leafColor1 = const Color(0xFFD97706);
+        leafColor2 = const Color(0xFFFBBF24);
+        accentColor = const Color(0xFFF472B6);
+        break;
+      case 'EUR':
+        // Europa: Frosted crystalline cyan foliage
+        leafColor1 = const Color(0xFF0284C7);
+        leafColor2 = const Color(0xFF38BDF8);
+        accentColor = const Color(0xFFE0F2FE);
+        break;
+      case 'PLT':
+        // Pluto: Crystalline amethyst/violet foliage
+        leafColor1 = const Color(0xFF7E22CE);
+        leafColor2 = const Color(0xFFA855F7);
+        accentColor = const Color(0xFFF5D0FE);
+        break;
+      case 'VEN':
+        // Venus: Golden desert acacia
+        leafColor1 = const Color(0xFFB45309);
+        leafColor2 = const Color(0xFFF59E0B);
+        accentColor = const Color(0xFFFEF08A);
+        break;
+      case 'TTN':
+        // Titan: Bioluminescent jade foliage
+        leafColor1 = const Color(0xFF047857);
+        leafColor2 = const Color(0xFF10B981);
+        accentColor = const Color(0xFF6EE7B7);
+        break;
+      case 'NEP':
+        // Neptune: Frosted electric turquoise foliage
+        leafColor1 = const Color(0xFF1D4ED8);
+        leafColor2 = const Color(0xFF06B6D4);
+        accentColor = const Color(0xFF93C5FD);
+        break;
+      default:
+        // Earth Prime & Moon: Rich classic green with red apples
+        leafColor1 = const Color(0xFF15803D);
+        leafColor2 = const Color(0xFF22C55E);
+        accentColor = const Color(0xFFEF4444);
+    }
+
+    final leafPaint1 = Paint()..color = leafColor1;
+    final leafPaint2 = Paint()..color = leafColor2;
     canvas.drawCircle(Offset(x, y - (38 * scale)), 16 * scale, leafPaint1);
     canvas.drawCircle(
         Offset(x - (8 * scale), y - (32 * scale)), 12 * scale, leafPaint2);
@@ -2302,14 +2829,14 @@ class CitadelScenicLandscapePainter extends CustomPainter {
         Offset(x + (8 * scale), y - (32 * scale)), 12 * scale, leafPaint2);
     canvas.drawCircle(Offset(x, y - (44 * scale)), 11 * scale, leafPaint2);
 
-    // Little red apples on branches
-    final applePaint = Paint()..color = const Color(0xFFEF4444);
+    // Fruit / blossom accents on branches
+    final accentPaint = Paint()..color = accentColor;
     canvas.drawCircle(
-        Offset(x - (4 * scale), y - (36 * scale)), 2.4 * scale, applePaint);
+        Offset(x - (4 * scale), y - (36 * scale)), 2.4 * scale, accentPaint);
     canvas.drawCircle(
-        Offset(x + (5 * scale), y - (40 * scale)), 2.4 * scale, applePaint);
+        Offset(x + (5 * scale), y - (40 * scale)), 2.4 * scale, accentPaint);
     canvas.drawCircle(
-        Offset(x + (3 * scale), y - (30 * scale)), 2.4 * scale, applePaint);
+        Offset(x + (3 * scale), y - (30 * scale)), 2.4 * scale, accentPaint);
   }
 
   void _drawStreetLamp(Canvas canvas, double x, double y,
