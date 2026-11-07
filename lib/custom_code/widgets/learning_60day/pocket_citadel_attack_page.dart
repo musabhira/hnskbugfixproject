@@ -27,6 +27,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_action_chat_service
 import 'painters/citadel_scenic_landscape_painter.dart';
 export 'painters/citadel_scenic_landscape_painter.dart';
 import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_resident_island_view.dart';
 
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
@@ -763,6 +764,20 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     } else {
       _profileDrawerController.forward();
     }
+  }
+
+  void _navigateToDefenderPlotOnIsland() {
+    HapticFeedback.lightImpact();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PoketCosmosResidentIslandView(
+          targetPlanetCode: widget.neighbor.effectivePlanetCode,
+          targetPlotNumber: widget.neighbor.effectivePlotNumber,
+          targetWave: widget.neighbor.effectiveWave,
+        ),
+      ),
+    );
   }
 
   @override
@@ -5243,8 +5258,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   onTap: _openDefenderProfile,
                   borderRadius: BorderRadius.circular(20),
                   child: Container(
-                    width: 36,
-                    height: 36,
+                    width: 34,
+                    height: 34,
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.65),
                       shape: BoxShape.circle,
@@ -5253,18 +5268,39 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     ),
                     child: const Center(
                       child: Icon(Icons.person_rounded,
-                          color: Color(0xFFA78BFA), size: 18),
+                          color: Color(0xFFA78BFA), size: 17),
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 5),
+
+                // 🗺️ Citizen Island Plot Map Button (Direct jump to their home island plot)
+                InkWell(
+                  onTap: _navigateToDefenderPlotOnIsland,
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.65),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                          color: const Color(0xFF38BDF8), width: 1.2),
+                    ),
+                    child: const Center(
+                      child: Icon(Icons.travel_explore_rounded,
+                          color: Color(0xFF38BDF8), size: 17),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 5),
 
                 // 🛡️ Safety & Options Menu Button
                 PopupMenuButton<String>(
                   tooltip: 'Citadel Options',
                   icon: Container(
-                    width: 36,
-                    height: 36,
+                    width: 34,
+                    height: 34,
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.70),
                       shape: BoxShape.circle,
@@ -5275,7 +5311,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     ),
                     child: const Center(
                       child: Icon(Icons.more_vert_rounded,
-                          color: Colors.white70, size: 18),
+                          color: Colors.white70, size: 17),
                     ),
                   ),
                   color: const Color(0xFF1E293B),
@@ -5284,7 +5320,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     side: const BorderSide(color: Colors.white24),
                   ),
                   onSelected: (val) {
-                    if (val == 'share_vibes') {
+                    if (val == 'view_plot') {
+                      _navigateToDefenderPlotOnIsland();
+                    } else if (val == 'share_vibes') {
                       _shareCitadelToVibes();
                     } else if (val == 'report_citadel') {
                       _showCitadelReportOptions();
@@ -5293,6 +5331,18 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     }
                   },
                   itemBuilder: (ctx) => [
+                    const PopupMenuItem(
+                      value: 'view_plot',
+                      child: Row(
+                        children: [
+                          Icon(Icons.travel_explore_rounded,
+                              color: Color(0xFF38BDF8), size: 18),
+                          SizedBox(width: 8),
+                          Text('View Island Plot 🏝️',
+                              style: TextStyle(color: Colors.white)),
+                        ],
+                      ),
+                    ),
                     const PopupMenuItem(
                       value: 'share_vibes',
                       child: Row(

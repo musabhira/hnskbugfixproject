@@ -139,94 +139,37 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
   }
 
   // =========================================================================
-  // 👥 FETCH REAL USERS FOR THE 35 PLOTS ON THE ACTIVE ISLAND
+  // 👥 FETCH REAL USERS FOR THE PLOTS ON THE ACTIVE ISLAND
   // =========================================================================
   Future<void> _loadIslandPlots(PoketCountryMap island) async {
     try {
-      final res = await SupaFlow.client
-          .from('profile')
-          .select(
-              'id, user_id, name, day, learning_day, pocket_score, is_vip, is_premium, created_at')
-          .order('pocket_score', ascending: false)
-          .limit(island.totalSlots.clamp(1, 35));
-
-      final List<CitizenPlot> plots = [];
-      final coords =
-          IslandAerialPainter.get35PlotCoordinates(island.shapeStyle);
-
-      if (res.isNotEmpty) {
-        int idx = 0;
-        for (final map in res) {
-          if (idx >= 35) break;
-          final rawName = (map['name'] as String?)?.trim();
-          final userName = (rawName != null && rawName.isNotEmpty)
-              ? rawName
-              : IslandAerialPainter.fallbackCitizenNames[
-                  idx % IslandAerialPainter.fallbackCitizenNames.length];
-          final day = (map['day'] as num?)?.toInt() ??
-              (map['learning_day'] as num?)?.toInt() ??
-              1;
-          final score = (map['pocket_score'] as num?)?.toInt() ?? 500;
-          final isVip = (map['is_vip'] as bool?) ?? false;
-          final isPres = island.isPresidential || idx == 0;
-
-          plots.add(
-            CitizenPlot(
-              plotNumber: idx + 1,
-              userId: (map['user_id'] as String?) ??
-                  (map['id'] as String?) ??
-                  'user_$idx',
-              userName: userName,
-              userAvatar: '',
-              day: day.clamp(1, 90),
-              pocketScore: score,
-              streetName: '${island.name} Boulevard',
-              postOffice: island.name,
-              countryName: island.name,
-              planetName: 'Earth Prime',
-              coordinates: coords[idx % coords.length] +
-                  IslandAerialPainter.getHousePlacementOffset(idx + 1),
-              isVip: isVip,
-              isPresident: isPres,
-              tier: island.isPresidential
-                  ? PlotDeedTier.presidential
-                  : (idx <= 10
-                      ? PlotDeedTier.beachfront
-                      : PlotDeedTier.standard),
-              postalPinCode:
-                  'PK-${island.id.toString().padLeft(2, '0')}${(idx + 1).toString().padLeft(3, '0')}',
-            ),
-          );
-          idx++;
-        }
-      }
-
-      // Fill remaining plots up to island.totalSlots (35 plots per island)
-      // All plots have authentic citizen names (NO "#Plot 7")
-      final currentCount = plots.length;
-      for (int i = currentCount; i < island.totalSlots && i < 35; i++) {
-        final fallbackName = IslandAerialPainter.fallbackCitizenNames[
-            i % IslandAerialPainter.fallbackCitizenNames.length];
-        plots.add(
-          CitizenPlot(
-            plotNumber: i + 1,
-            userId: 'user_${i + 1}',
-            userName: fallbackName,
-            userAvatar: '',
-            day: ((i + 1) * 3) % 90 + 1,
-            pocketScore: 300,
-            streetName: '${island.name} Avenue',
-            postOffice: island.name,
-            countryName: island.name,
-            planetName: 'Earth Prime',
-            coordinates: coords[i % coords.length] +
-                IslandAerialPainter.getHousePlacementOffset(i + 1),
-            status: PlotStatus.occupied,
-            postalPinCode:
-                'PK-${island.id.toString().padLeft(2, '0')}${(i + 1).toString().padLeft(3, '0')}',
+      if (island.isPresidential) {
+        _currentIslandPlots = [
+          const CitizenPlot(
+            plotNumber: 1,
+            userId: 'president_musab',
+            userName: "Mus'ab (President 👑)",
+            userAvatar: '👑',
+            day: 90,
+            pocketScore: 9999,
+            streetName: 'Citadel Imperial Way',
+            postOffice: 'Presidential Citadel',
+            countryName: 'Presidential Citadel',
+            planetName: 'Earth Prime 🌍',
+            isPresident: true,
+            tier: PlotDeedTier.presidential,
+            postalPinCode: 'PK-PRES-01',
           ),
-        );
+        ];
+        if (mounted) setState(() {});
+        return;
       }
+
+      final plots = await PoketCosmosAllocationService.instance.getWavePlotsCatalog(
+        islandId: island.id,
+        islandName: island.name,
+        planetName: _selectedPlanet?.name ?? 'Earth Prime 🌍',
+      );
 
       if (mounted) {
         setState(() {
@@ -692,13 +635,13 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
     ];
   }
 
-  /// 🏝️ 30 English Learning Islands with Distinct Shapes & 50 Plots
+  /// 🏝️ Earth Prime Sovereign & Citizen Colony Islands
   static List<PoketCountryMap> _buildEarth30EnglishIslands() {
     return [
-      // 👑 Island #0: President Mus'ab's Exclusive Sanctuary
+      // 👑 Island #0: Presidential Citadel (President Mus'ab's Exclusive Sovereign Sanctuary)
       const PoketCountryMap(
         id: 1,
-        name: 'Crown Apex 👑',
+        name: 'Presidential Citadel 👑',
         tag: 'Presidential Sanctuary',
         landColor: Color(0xFF15803D),
         waterColor: Color(0xFF0284C7),
@@ -713,496 +656,37 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         shapeStyle: IslandShapeStyle.citadelApex,
       ),
 
-      // 1. Vocabulary Bay
+      // 🏝️ Wave 1 Citizen Colony: Ocean Whisper Atoll (Plots 1..25)
       const PoketCountryMap(
-        id: 2,
-        name: 'Vocabulary Bay',
-        tag: 'Word Builders',
+        id: 301,
+        name: 'Ocean Whisper Atoll',
+        tag: 'Wave 1 Colony Island',
         landColor: Color(0xFF16A34A),
         waterColor: Color(0xFF06B6D4), // Coral turquoise
-        totalSlots: 35,
-        filledSlots: 44,
-        climate: 'Warm Coastal 🌊',
+        totalSlots: 25,
+        filledSlots: 25,
+        climate: 'Tropical Breeze 🌊',
         climateIcon: Icons.waves_rounded,
         description:
-            'Curved turquoise crescent bay where daily vocabulary words are mastered.',
-        islandEmoji: '📖',
+            'Verdant tropical crescent atoll where Earth Prime citizens build their lifelong homes.',
+        islandEmoji: '🏝️',
         shapeStyle: IslandShapeStyle.crescentLagoon,
       ),
 
-      // 2. Sentence Reef
+      // 🌴 Wave 2 Expansion Colony: Serenity Atoll (Plots 251..275)
       const PoketCountryMap(
-        id: 3,
-        name: 'Sentence Reef',
-        tag: 'Grammar Flow',
+        id: 302,
+        name: 'Serenity Atoll',
+        tag: 'Wave 2 Expansion Island',
         landColor: Color(0xFF0D9488),
         waterColor: Color(0xFF0EA5E9), // Aquamarine
-        totalSlots: 35,
-        filledSlots: 41,
-        climate: 'Tropical Breeze 🍃',
+        totalSlots: 25,
+        filledSlots: 25,
+        climate: 'Ocean Horizon 🍃',
         climateIcon: Icons.air_rounded,
         description:
-            'Winding dragon reef connecting clauses into powerful English sentences.',
-        islandEmoji: '✍️',
-        shapeStyle: IslandShapeStyle.sCurveArchipelago,
-      ),
-
-      // 3. Grammar Isle
-      const PoketCountryMap(
-        id: 4,
-        name: 'Grammar Isle',
-        tag: 'Core Rules',
-        landColor: Color(0xFF059669),
-        waterColor: Color(0xFF0EA5E9), // Tropical Azure Sea
-        totalSlots: 35,
-        filledSlots: 48,
-        climate: 'Clear Skies ☀️',
-        climateIcon: Icons.wb_sunny_rounded,
-        description:
-            '5-pointed coral star island forming the foundation of English grammar.',
-        islandEmoji: '⭐',
-        shapeStyle: IslandShapeStyle.starAtoll,
-      ),
-
-      // 4. Idiom Atoll
-      const PoketCountryMap(
-        id: 5,
-        name: 'Idiom Atoll',
-        tag: 'Native Expressions',
-        landColor: Color(0xFF15803D),
-        waterColor: Color(0xFF3B82F6), // Azure Sapphire
-        totalSlots: 35,
-        filledSlots: 39,
-        climate: 'Ocean Mist 🌫️',
-        climateIcon: Icons.cloud_rounded,
-        description:
-            'Circular ring atoll enclosing a tranquil inner saltwater lagoon.',
-        islandEmoji: '💡',
-        shapeStyle: IslandShapeStyle.ringAtoll,
-      ),
-
-      // 5. Phonics Cay
-      const PoketCountryMap(
-        id: 6,
-        name: 'Phonics Cay',
-        tag: 'Sound Mastery',
-        landColor: Color(0xFF166534),
-        waterColor: Color(0xFF14B8A6), // Sunlit turquoise
-        totalSlots: 35,
-        filledSlots: 36,
-        climate: 'Sunny Sand 🏖️',
-        climateIcon: Icons.beach_access_rounded,
-        description:
-            'Hook-shaped peninsula with white sand beaches for pronunciation clarity.',
-        islandEmoji: '🔊',
-        shapeStyle: IslandShapeStyle.hookPeninsula,
-      ),
-
-      // 6. Fluency Haven
-      const PoketCountryMap(
-        id: 7,
-        name: 'Fluency Haven',
-        tag: 'Continuous Speech',
-        landColor: Color(0xFF14532D),
-        waterColor: Color(0xFF0284C7), // Deep lagoon
-        totalSlots: 35,
-        filledSlots: 47,
-        climate: 'Lush Mists 🌿',
-        climateIcon: Icons.forest_rounded,
-        description:
-            'Twin islets linked by a wooden footbridge celebrating seamless speech.',
-        islandEmoji: '🗣️',
-        shapeStyle: IslandShapeStyle.dualIsletBridge,
-      ),
-
-      // 7. Syntax Strand
-      const PoketCountryMap(
-        id: 8,
-        name: 'Syntax Strand',
-        tag: 'Structure Order',
-        landColor: Color(0xFF047857),
-        waterColor: Color(0xFF06B6D4),
-        totalSlots: 35,
-        filledSlots: 42,
-        climate: 'Mild Tropical 🌴',
-        climateIcon: Icons.eco_rounded,
-        description:
-            'Heart-shaped tropical haven where word order and sentence syntax thrive.',
-        islandEmoji: '💖',
-        shapeStyle: IslandShapeStyle.heartSanctuary,
-      ),
-
-      // 8. Lexicon Oasis
-      const PoketCountryMap(
-        id: 9,
-        name: 'Lexicon Oasis',
-        tag: 'Advanced Diction',
-        landColor: Color(0xFF0F766E),
-        waterColor: Color(0xFF0D9488),
-        totalSlots: 35,
-        filledSlots: 45,
-        climate: 'Fresh Palms 🌴',
-        climateIcon: Icons.park_rounded,
-        description:
-            '3-leaf clover island rich with advanced vocabulary and synonym reserves.',
-        islandEmoji: '🍀',
-        shapeStyle: IslandShapeStyle.cloverBays,
-      ),
-
-      // 9. Verb Vista
-      const PoketCountryMap(
-        id: 10,
-        name: 'Verb Vista',
-        tag: 'Action Hub',
-        landColor: Color(0xFF115E59),
-        waterColor: Color(0xFF6366F1), // Royal Indigo
-        totalSlots: 35,
-        filledSlots: 49,
-        climate: 'Energizing Wind ⚡',
-        climateIcon: Icons.bolt_rounded,
-        description:
-            'High coral plateau commanding dynamic active verb formulations.',
-        islandEmoji: '🏃',
-        shapeStyle: IslandShapeStyle.fortressPlateau,
-      ),
-
-      // 10. Pronoun Peninsula
-      const PoketCountryMap(
-        id: 11,
-        name: 'Pronoun Peninsula',
-        tag: 'Identity & Reference',
-        landColor: Color(0xFF16A34A),
-        waterColor: Color(0xFF059669),
-        totalSlots: 35,
-        filledSlots: 35,
-        climate: 'Gentle Bay ⛵',
-        climateIcon: Icons.sailing_rounded,
-        description:
-            'Curved sandy peninsula with calm anchorages for subject/object pronouns.',
-        islandEmoji: '👥',
-        shapeStyle: IslandShapeStyle.crescentLagoon,
-      ),
-
-      // 11. Tense Territory
-      const PoketCountryMap(
-        id: 12,
-        name: 'Tense Territory',
-        tag: 'Past Present Future',
-        landColor: Color(0xFF0D9488),
-        waterColor: Color(0xFF2563EB),
-        totalSlots: 35,
-        filledSlots: 43,
-        climate: 'Time Currents ⏳',
-        climateIcon: Icons.hourglass_bottom_rounded,
-        description:
-            'Meandering S-curve spanning past, present, and continuous tense habit mastery.',
-        islandEmoji: '⏳',
-        shapeStyle: IslandShapeStyle.sCurveArchipelago,
-      ),
-
-      // 12. Adverb Archipelago
-      const PoketCountryMap(
-        id: 13,
-        name: 'Adverb Atoll',
-        tag: 'Modifying Nuance',
-        landColor: Color(0xFF059669),
-        waterColor: Color(0xFF0891B2),
-        totalSlots: 35,
-        filledSlots: 37,
-        climate: 'Speed Breeze 💨',
-        climateIcon: Icons.speed_rounded,
-        description:
-            'Star-shaped coral reef refining how, when, and where actions take place.',
-        islandEmoji: '🚀',
-        shapeStyle: IslandShapeStyle.starAtoll,
-      ),
-
-      // 13. Echo Lagoon
-      const PoketCountryMap(
-        id: 14,
-        name: 'Echo Lagoon',
-        tag: 'Active Listening',
-        landColor: Color(0xFF15803D),
-        waterColor: Color(0xFF4F46E5),
-        totalSlots: 35,
-        filledSlots: 40,
-        climate: 'Harmonic Waters 🎵',
-        climateIcon: Icons.surround_sound_rounded,
-        description:
-            'Ring atoll whose crystalline inner waters echo conversational dialogue.',
-        islandEmoji: '🎧',
-        shapeStyle: IslandShapeStyle.ringAtoll,
-      ),
-
-      // 14. Diction Dune
-      const PoketCountryMap(
-        id: 15,
-        name: 'Diction Dune',
-        tag: 'Crisp Enunciation',
-        landColor: Color(0xFF166534),
-        waterColor: Color(0xFF0284C7),
-        totalSlots: 35,
-        filledSlots: 38,
-        climate: 'Coastal Sun ☀️',
-        climateIcon: Icons.wb_sunny_rounded,
-        description:
-            'Hook peninsula of golden sand dunes shaping clear verbal expression.',
-        islandEmoji: '🗣️',
-        shapeStyle: IslandShapeStyle.hookPeninsula,
-      ),
-
-      // 15. Rhythm Reach
-      const PoketCountryMap(
-        id: 16,
-        name: 'Rhythm Reach',
-        tag: 'Cadence & Stress',
-        landColor: Color(0xFF14532D),
-        waterColor: Color(0xFF00BCD4),
-        totalSlots: 35,
-        filledSlots: 41,
-        climate: 'Warm Tide 🌊',
-        climateIcon: Icons.waves_rounded,
-        description:
-            'Connected twin islets practicing natural English sentence melody and beat.',
-        islandEmoji: '🥁',
-        shapeStyle: IslandShapeStyle.dualIsletBridge,
-      ),
-
-      // 16. Accent Isle
-      const PoketCountryMap(
-        id: 17,
-        name: 'Accent Isle',
-        tag: 'Intonation & Vibe',
-        landColor: Color(0xFF047857),
-        waterColor: Color(0xFF38BDF8),
-        totalSlots: 35,
-        filledSlots: 46,
-        climate: 'Vibrant Light ✨',
-        climateIcon: Icons.auto_awesome_rounded,
-        description:
-            'Heart sanctuary tuned for smooth international English phonetics.',
-        islandEmoji: '🎙️',
-        shapeStyle: IslandShapeStyle.heartSanctuary,
-      ),
-
-      // 17. Clause Cove
-      const PoketCountryMap(
-        id: 18,
-        name: 'Clause Cove',
-        tag: 'Complex Conjunctions',
-        landColor: Color(0xFF0F766E),
-        waterColor: Color(0xFF1D4ED8),
-        totalSlots: 35,
-        filledSlots: 39,
-        climate: 'Deep Ocean Blue 🌊',
-        climateIcon: Icons.water_rounded,
-        description:
-            '3-leaf clover bay uniting independent and dependent clauses.',
-        islandEmoji: '⚓',
-        shapeStyle: IslandShapeStyle.cloverBays,
-      ),
-
-      // 18. Metaphor Marina
-      const PoketCountryMap(
-        id: 19,
-        name: 'Metaphor Marina',
-        tag: 'Poetic Figurative',
-        landColor: Color(0xFF115E59),
-        waterColor: Color(0xFF0F766E),
-        totalSlots: 35,
-        filledSlots: 44,
-        climate: 'Scenic Marina ⛵',
-        climateIcon: Icons.anchor_rounded,
-        description:
-            'Fortress harbor where idioms and figurative English expressions anchor.',
-        islandEmoji: '🎨',
-        shapeStyle: IslandShapeStyle.fortressPlateau,
-      ),
-
-      // 19. Dialogue Drift
-      const PoketCountryMap(
-        id: 20,
-        name: 'Dialogue Drift',
-        tag: 'Casual Chat',
-        landColor: Color(0xFF16A34A),
-        waterColor: Color(0xFF0284C7),
-        totalSlots: 35,
-        filledSlots: 48,
-        climate: 'Warm Current 🌊',
-        climateIcon: Icons.chat_bubble_rounded,
-        description:
-            'Crescent beach where daily 2-person habit conversations take root.',
-        islandEmoji: '💬',
-        shapeStyle: IslandShapeStyle.crescentLagoon,
-      ),
-
-      // 20. Proverb Port
-      const PoketCountryMap(
-        id: 21,
-        name: 'Proverb Port',
-        tag: 'Timeless Wisdom',
-        landColor: Color(0xFF0D9488),
-        waterColor: Color(0xFF0EA5E9),
-        totalSlots: 35,
-        filledSlots: 42,
-        climate: 'Sunny Trade Winds ⛵',
-        climateIcon: Icons.explore_rounded,
-        description:
-            'S-curve trading port embodying classical English proverbs.',
-        islandEmoji: '📜',
-        shapeStyle: IslandShapeStyle.sCurveArchipelago,
-      ),
-
-      // 21. Synonym Shoal
-      const PoketCountryMap(
-        id: 22,
-        name: 'Synonym Shoal',
-        tag: 'Varied Vocabulary',
-        landColor: Color(0xFF059669),
-        waterColor: Color(0xFF0284C7),
-        totalSlots: 35,
-        filledSlots: 38,
-        climate: 'Emerald Waters 💎',
-        climateIcon: Icons.diamond_rounded,
-        description:
-            'Star-shaped shoal expanding diverse alternative word choices.',
-        islandEmoji: '💎',
-        shapeStyle: IslandShapeStyle.starAtoll,
-      ),
-
-      // 22. Antonym Atoll
-      const PoketCountryMap(
-        id: 23,
-        name: 'Antonym Atoll',
-        tag: 'Opposites & Contrast',
-        landColor: Color(0xFF15803D),
-        waterColor: Color(0xFF1E40AF),
-        totalSlots: 35,
-        filledSlots: 36,
-        climate: 'Contrasting Winds 🌓',
-        climateIcon: Icons.contrast_rounded,
-        description:
-            'Ring atoll contrasting antonym pairs in clear conversational contexts.',
-        islandEmoji: '🌓',
-        shapeStyle: IslandShapeStyle.ringAtoll,
-      ),
-
-      // 23. Jargon Jungle
-      const PoketCountryMap(
-        id: 24,
-        name: 'Jargon Jungle',
-        tag: 'Tech & Professional',
-        landColor: Color(0xFF166534),
-        waterColor: Color(0xFF0891B2),
-        totalSlots: 35,
-        filledSlots: 43,
-        climate: 'Rich Forest 🌲',
-        climateIcon: Icons.nature_rounded,
-        description:
-            'Hook peninsula reserved for professional, workplace, and tech vocabulary.',
-        islandEmoji: '💼',
-        shapeStyle: IslandShapeStyle.hookPeninsula,
-      ),
-
-      // 24. Poetry Point
-      const PoketCountryMap(
-        id: 25,
-        name: 'Poetry Point',
-        tag: 'Rhyme & Meter',
-        landColor: Color(0xFF14532D),
-        waterColor: Color(0xFF0EA5E9),
-        totalSlots: 35,
-        filledSlots: 41,
-        climate: 'Sunset Azure 🌅',
-        climateIcon: Icons.wb_twilight_rounded,
-        description:
-            'Twin islets honoring rhythm, rhyme, and lyrical English expression.',
-        islandEmoji: '🎭',
-        shapeStyle: IslandShapeStyle.dualIsletBridge,
-      ),
-
-      // 25. Vowel Valley
-      const PoketCountryMap(
-        id: 26,
-        name: 'Vowel Valley',
-        tag: 'A-E-I-O-U Clarity',
-        landColor: Color(0xFF047857),
-        waterColor: Color(0xFF0284C7),
-        totalSlots: 35,
-        filledSlots: 45,
-        climate: 'Clear Resonant Bay 🌿',
-        climateIcon: Icons.hearing_rounded,
-        description:
-            'Heart-shaped valley perfecting short, long, and diphthong vowel sounds.',
-        islandEmoji: '🔤',
-        shapeStyle: IslandShapeStyle.heartSanctuary,
-      ),
-
-      // 26. Consonant Coast
-      const PoketCountryMap(
-        id: 27,
-        name: 'Consonant Coast',
-        tag: 'Sharp Articulation',
-        landColor: Color(0xFF0F766E),
-        waterColor: Color(0xFF0E7490),
-        totalSlots: 35,
-        filledSlots: 39,
-        climate: 'Brisk Sea Air 🌊',
-        climateIcon: Icons.air_rounded,
-        description:
-            '3-leaf clover coastline training tongue, teeth, and lip articulation.',
-        islandEmoji: '🔠',
-        shapeStyle: IslandShapeStyle.cloverBays,
-      ),
-
-      // 27. Slang Sound
-      const PoketCountryMap(
-        id: 28,
-        name: 'Slang Sound',
-        tag: 'Modern Idiomatic',
-        landColor: Color(0xFF115E59),
-        waterColor: Color(0xFF2563EB),
-        totalSlots: 35,
-        filledSlots: 47,
-        climate: 'Vibrant Beats ⚡',
-        climateIcon: Icons.flash_on_rounded,
-        description:
-            'Coral plateau decoding contemporary colloquial idioms and native speech.',
-        islandEmoji: '🔥',
-        shapeStyle: IslandShapeStyle.fortressPlateau,
-      ),
-
-      // 28. Spelling Sand
-      const PoketCountryMap(
-        id: 29,
-        name: 'Spelling Sand',
-        tag: 'Orthography & Roots',
-        landColor: Color(0xFF16A34A),
-        waterColor: Color(0xFF0D9488),
-        totalSlots: 35,
-        filledSlots: 40,
-        climate: 'Golden Sun 🏖️',
-        climateIcon: Icons.spellcheck_rounded,
-        description:
-            'Crescent sandbar mastering Latin/Greek prefixes, roots, and silent letters.',
-        islandEmoji: '📝',
-        shapeStyle: IslandShapeStyle.crescentLagoon,
-      ),
-
-      // 29. Rhetoric Ridge
-      const PoketCountryMap(
-        id: 30,
-        name: 'Rhetoric Ridge',
-        tag: 'Persuasion & Debate',
-        landColor: Color(0xFF0D9488),
-        waterColor: Color(0xFF1E3A8A),
-        totalSlots: 35,
-        filledSlots: 50,
-        climate: 'High Ridge Wind 🦅',
-        climateIcon: Icons.campaign_rounded,
-        description:
-            'Majestic S-curve ridge where masterful English debates and speeches echo.',
-        islandEmoji: '🏛️',
+            'Wave 2 expansion island expanding the frontier of Earth Prime.',
+        islandEmoji: '🌴',
         shapeStyle: IslandShapeStyle.sCurveArchipelago,
       ),
     ];

@@ -350,53 +350,72 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
     HapticFeedback.mediumImpact();
     final colony = PoketCosmosAllocationService.instance.getColonyByPlanetName(widget.planetName ?? widget.island.name);
     final minimalPin = 'PKT-${colony.code}-$plotNumber';
+    final targetWave = (widget.island.id ~/ 100) > 0 ? (widget.island.id ~/ 100) : 1;
+    final marketPrice = PoketCosmosAllocationService.instance.calculatePlotMarketPrice(
+      wave: targetWave,
+      planetCode: colony.code,
+      localPlotNumber: plotNumber,
+    );
 
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (ctx) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         decoration: const BoxDecoration(
           color: Color(0xFF0F172A),
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          border: Border(top: BorderSide(color: Color(0xFF10B981), width: 1.5)),
+          border: Border(top: BorderSide(color: Color(0xFF38BDF8), width: 1.5)),
           boxShadow: [
-            BoxShadow(color: Color(0x6610B981), blurRadius: 20, offset: Offset(0, -4)),
+            BoxShadow(color: Color(0x660284C7), blurRadius: 25, offset: Offset(0, -4)),
           ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Handle bar
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                margin: const EdgeInsets.bottom(14),
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(9),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF059669).withValues(alpha: 0.25),
+                    color: const Color(0xFF0284C7).withValues(alpha: 0.25),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFF10B981), width: 1.0),
+                    border: Border.all(color: const Color(0xFF38BDF8), width: 1.2),
                   ),
-                  child: const Text('🎟️', style: TextStyle(fontSize: 20)),
+                  child: const Text('🏝️', style: TextStyle(fontSize: 22)),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Reserve Neighbor Plot #$plotNumber',
+                        'Parcel #$plotNumber Real Estate',
                         style: GoogleFonts.outfit(
                           color: Colors.white,
-                          fontSize: 16,
+                          fontSize: 17,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
                         '${widget.island.name} • ${colony.planetName}',
                         style: GoogleFonts.plusJakartaSans(
-                          color: const Color(0xFF34D399),
-                          fontSize: 11.5,
+                          color: const Color(0xFF7DD3FC),
+                          fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -410,12 +429,12 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
                     color: const Color(0xFF1E293B),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                        color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                        color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
                   ),
                   child: Text(
                     minimalPin,
                     style: GoogleFonts.jetBrainsMono(
-                      color: const Color(0xFF86EFAC),
+                      color: const Color(0xFFBAE6FD),
                       fontWeight: FontWeight.bold,
                       fontSize: 12.5,
                     ),
@@ -423,16 +442,126 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
                 ),
               ],
             ),
-            const SizedBox(height: 10),
-            Text(
-              'Locks this plot for 5 hours exclusively for your friend.',
-              style: GoogleFonts.plusJakartaSans(
-                color: Colors.white70,
-                fontSize: 12,
+            const SizedBox(height: 16),
+
+            // 🏷️ Dynamic Real Estate Market Valuation Box
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B).withValues(alpha: 0.8),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFF334155), width: 1),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Text('💎', style: TextStyle(fontSize: 18)),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Market Valuation',
+                          style: GoogleFonts.plusJakartaSans(
+                            color: Colors.white54,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Text(
+                              '$marketPrice ',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFBBF24),
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              'Pocket Score',
+                              style: GoogleFonts.plusJakartaSans(
+                                color: Colors.white70,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.5)),
+                    ),
+                    child: Text(
+                      plotNumber <= 5 ? 'Beachfront' : 'Prime In-land',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: const Color(0xFF6EE7B7),
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
+
+            // Option 1: Buy & Switch Plot with Pocket Score
             ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                final ok = await PoketCosmosAllocationService.instance.buyAndSwitchPlot(
+                  context: context,
+                  targetPlanetCode: colony.code,
+                  targetPlotNumber: plotNumber,
+                  targetWave: targetWave,
+                );
+                if (ok && mounted) {
+                  await _loadReservations();
+                  setState(() {});
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2563EB),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 13),
+                minimumSize: const Size(double.infinity, 46),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.storefront_rounded, size: 18),
+                  const SizedBox(width: 8),
+                  Text(
+                    'BUY & RELOCATE ($marketPrice PS)',
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            // Option 2: Pre-Book for Friend (4-Hour Pass)
+            OutlinedButton(
               onPressed: () async {
                 Navigator.pop(ctx);
                 final pass = await PoketCosmosAllocationService.instance
@@ -448,7 +577,7 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
                 await _loadReservations();
 
                 final shareText =
-                    '🏡 Become my neighbor in Pocket Mates!\nI reserved Plot #$plotNumber on ${colony.planetName} (${widget.island.name}) for you.\nEnter invite code: ${pass.code}';
+                    '🏡 Become my neighbor in Pocket Mates!\nI reserved Plot #$plotNumber on ${colony.planetName} (${widget.island.name}) for you (4-Hour Pass).\nEnter invite code: ${pass.code}';
                 try {
                   await Share.share(shareText);
                 } catch (_) {
@@ -463,9 +592,9 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
                   }
                 }
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF10B981),
-                foregroundColor: Colors.white,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF10B981),
+                side: const BorderSide(color: Color(0xFF10B981), width: 1.2),
                 padding: const EdgeInsets.symmetric(vertical: 13),
                 minimumSize: const Size(double.infinity, 46),
                 shape: RoundedRectangleBorder(
@@ -474,10 +603,10 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.share_rounded, size: 18),
+                  const Icon(Icons.lock_clock_rounded, size: 18),
                   const SizedBox(width: 8),
                   Text(
-                    'SHARE PASS WITH FRIEND',
+                    'PRE-BOOK FOR FRIEND (4-HR PASS)',
                     style: GoogleFonts.outfit(
                       fontWeight: FontWeight.bold,
                       fontSize: 13,
@@ -2820,15 +2949,15 @@ class IslandAerialPainter extends CustomPainter {
       final plotRot = getPlotFacingAngle(island.shapeStyle, i);
       final houseOffset = getHousePlacementOffset(plotNumber);
       final housePos = pos + houseOffset;
-      final parcelRect = Rect.fromCenter(center: housePos, width: 42.0, height: 34.0);
+      final parcelRect = Rect.fromCenter(center: housePos, width: 48.0, height: 38.0);
 
       if (citizenPlot != null) {
-        // 🏡 Render full architectural compound (scaled up 57% so homes are clearly visible!)
+        // 🏡 Render full architectural compound (scaled up to 0.62 so homes, cars, pools are clearly visible!)
         final day = citizenPlot.day;
         canvas.save();
         canvas.translate(housePos.dx, housePos.dy);
         canvas.rotate(plotRot);
-        canvas.scale(0.44);
+        canvas.scale(0.62);
         canvas.translate(-housePos.dx, -housePos.dy);
 
         _drawYardTreeClusters(canvas, parcelRect, plotNumber);
@@ -2848,10 +2977,10 @@ class IslandAerialPainter extends CustomPainter {
         canvas.restore();
 
         // 🌟 Minimal Green Tick (Checkmark) Badge indicating plot is claimed/bought!
-        final tickCenter = housePos + const Offset(8.0, -8.0);
-        const tickR = 4.2;
+        final tickCenter = housePos + const Offset(10.0, -10.0);
+        const tickR = 5.0;
         // Soft drop shadow
-        canvas.drawCircle(tickCenter.translate(0.3, 0.4), tickR, Paint()..color = Colors.black45);
+        canvas.drawCircle(tickCenter.translate(0.4, 0.5), tickR, Paint()..color = Colors.black45);
         // Emerald background
         canvas.drawCircle(tickCenter, tickR, Paint()..color = const Color(0xFF10B981));
         // Subtle white border
@@ -2861,24 +2990,24 @@ class IslandAerialPainter extends CustomPainter {
           Paint()
             ..color = Colors.white
             ..style = PaintingStyle.stroke
-            ..strokeWidth = 0.65,
+            ..strokeWidth = 0.8,
         );
         // White checkmark tick (✓)
         final tickP = Path()
-          ..moveTo(tickCenter.dx - 1.8, tickCenter.dy)
-          ..lineTo(tickCenter.dx - 0.5, tickCenter.dy + 1.4)
-          ..lineTo(tickCenter.dx + 1.8, tickCenter.dy - 1.4);
+          ..moveTo(tickCenter.dx - 2.2, tickCenter.dy)
+          ..lineTo(tickCenter.dx - 0.6, tickCenter.dy + 1.8)
+          ..lineTo(tickCenter.dx + 2.2, tickCenter.dy - 1.8);
         canvas.drawPath(
           tickP,
           Paint()
             ..color = Colors.white
             ..style = PaintingStyle.stroke
-            ..strokeWidth = 1.0
+            ..strokeWidth = 1.2
             ..strokeCap = StrokeCap.round
             ..strokeJoin = StrokeJoin.round,
         );
       } else if (isPreBooked) {
-        // ⏳ Render 5-Hour Animated Rotating Countdown Timer Ring
+        // ⏳ Render 4-Hour Animated Rotating Countdown Timer Ring
         _drawPreBookedParcel(canvas, housePos, parcelRect, plotRot, reservation, isSel);
       } else {
         // ➕ Render Vacant Plot with center pulsing Plus (+) icon
@@ -2980,39 +3109,39 @@ class IslandAerialPainter extends CustomPainter {
       ..strokeWidth = 1.6;
     canvas.drawLine(const Offset(0, 11), const Offset(0, 3.5), pathPaint);
 
-    // 3. Center Glowing PLUS Button (Circle with +)
+    // 3. Center Glowing PLUS Button (Coral Crimson Red with +)
     final pulse = math.sin(timeSeconds * 3.5 + plotNumber) * 0.12 + 1.0;
-    final btnRadius = 4.8 * pulse;
+    final btnRadius = 5.2 * pulse;
 
     // Glowing aura
     canvas.drawCircle(
       Offset.zero,
-      btnRadius + 2.0,
-      Paint()..color = const Color(0xFF10B981).withValues(alpha: 0.22),
+      btnRadius + 2.5,
+      Paint()..color = const Color(0xFFE11D48).withValues(alpha: 0.28),
     );
 
-    // Center button background
+    // Center button background (Coral Crimson Red)
     canvas.drawCircle(
       Offset.zero,
       btnRadius,
-      Paint()..color = const Color(0xFF059669),
+      Paint()..color = const Color(0xFFE11D48),
     );
 
     canvas.drawCircle(
       Offset.zero,
       btnRadius,
       Paint()
-        ..color = Colors.white.withValues(alpha: 0.85)
+        ..color = Colors.white.withValues(alpha: 0.9)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 0.7,
+        ..strokeWidth = 0.8,
     );
 
     // Crisp white Plus (+) icon lines
     final plusPaint = Paint()
       ..color = Colors.white
-      ..strokeWidth = 1.3
+      ..strokeWidth = 1.4
       ..strokeCap = StrokeCap.round;
-    const plusSize = 2.4;
+    const plusSize = 2.6;
     canvas.drawLine(const Offset(-plusSize, 0), const Offset(plusSize, 0), plusPaint);
     canvas.drawLine(const Offset(0, -plusSize), const Offset(0, plusSize), plusPaint);
 
@@ -3021,8 +3150,8 @@ class IslandAerialPainter extends CustomPainter {
       text: TextSpan(
         text: 'PLOT #$plotNumber',
         style: const TextStyle(
-          color: Color(0xFF86EFAC),
-          fontSize: 3.2,
+          color: Color(0xFFFDA4AF),
+          fontSize: 3.3,
           fontWeight: FontWeight.bold,
           letterSpacing: 0.3,
         ),

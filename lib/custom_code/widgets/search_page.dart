@@ -64,6 +64,9 @@ class _SearchPageState extends State<SearchPage> {
     super.initState();
     _selectedTab = 'people';
     _plotsScrollController.addListener(_onPlotsScroll);
+    PoketCosmosAllocationService.instance.loadAllRegisteredProfiles().then((_) {
+      if (mounted) setState(() {});
+    });
   }
 
   void _onPlotsScroll() {
@@ -1018,7 +1021,7 @@ class _SearchPageState extends State<SearchPage> {
           final surfaceColor = colors['surface']!;
           final borderColor = colors['border']!;
 
-          final isCrown = (lNum == 1);
+          const isCrown = false;
           final isBeachfront = (lNum <= 6);
 
           return GestureDetector(
@@ -1049,12 +1052,10 @@ class _SearchPageState extends State<SearchPage> {
                 ),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: isCrown
-                      ? const Color(0xFFFFD700)
-                      : (isOccupied
-                          ? borderColor.withValues(alpha: 0.85)
-                          : primaryColor.withValues(alpha: 0.45)),
-                  width: isCrown ? 1.4 : 0.9,
+                  color: isOccupied
+                      ? borderColor.withValues(alpha: 0.85)
+                      : primaryColor.withValues(alpha: 0.45),
+                  width: 0.9,
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -1078,7 +1079,7 @@ class _SearchPageState extends State<SearchPage> {
                       Text(
                         '#$gNum',
                         style: GoogleFonts.orbitron(
-                          color: isCrown ? const Color(0xFFFFD700) : accentColor,
+                          color: accentColor,
                           fontSize: 10.5,
                           fontWeight: FontWeight.bold,
                         ),
@@ -1087,11 +1088,9 @@ class _SearchPageState extends State<SearchPage> {
                   ),
                   // Plot Tier Subtitle
                   Text(
-                    isCrown ? '👑 Crown' : (isBeachfront ? '🏖️ Beach' : '🏡 Plot $lNum'),
+                    isBeachfront ? '🏖️ Beach' : '🏡 Plot $lNum',
                     style: GoogleFonts.inter(
-                      color: isCrown
-                          ? const Color(0xFFFFD700)
-                          : (isBeachfront ? const Color(0xFF38BDF8) : Colors.white70),
+                      color: isBeachfront ? const Color(0xFF38BDF8) : Colors.white70,
                       fontSize: 9.5,
                       fontWeight: FontWeight.w600,
                     ),
