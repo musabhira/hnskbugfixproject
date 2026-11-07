@@ -239,8 +239,8 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
   void _animateFlightToPlot(Size screenSize) {
     final sW = screenSize.width;
     final sH = screenSize.height;
-    final worldHeight = math.max(sH * 1.6, 1400.0);
-    final worldWidth = math.max(sW * 2.8, worldHeight * 1.8);
+    final worldHeight = sH;
+    final worldWidth = math.max(sW * 2.6, sH * 1.8);
     const targetScale = 14.0;
 
     final coords = IslandAerialPainter.get35PlotCoordinates(_assignedIsland.shapeStyle);
@@ -273,15 +273,11 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
   void _animateFlightToOverview(Size screenSize) {
     final sW = screenSize.width;
     final sH = screenSize.height;
-    final worldHeight = math.max(sH * 1.6, 1400.0);
-    final worldWidth = math.max(sW * 2.8, worldHeight * 1.8);
-    final baseMinScale = (sH / worldHeight);
-    final minScale = baseMinScale * 1.15; // Strictly locked above screen height: zero broken bottom!
-    final focusScale = minScale;
-    final minTx = sW - (worldWidth * focusScale);
-    final minTy = sH - (worldHeight * focusScale);
-    final focusX = ((sW - worldWidth * focusScale) / 2).clamp(minTx, 0.0);
-    final focusY = ((sH - worldHeight * focusScale) / 2).clamp(minTy, 0.0);
+    final worldHeight = sH;
+    final worldWidth = math.max(sW * 2.6, sH * 1.8);
+    const focusScale = 1.0;
+    final focusX = (sW - worldWidth) / 2;
+    const focusY = 0.0;
 
     final targetMatrix = Matrix4.translationValues(focusX, focusY, 0.0)
       ..scaleByDouble(focusScale, focusScale, 1.0, 1.0);
@@ -544,17 +540,13 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
       builder: (context, constraints) {
         final screenWidth = constraints.maxWidth;
         final screenHeight = constraints.maxHeight;
-        final worldHeight = math.max(screenHeight * 1.6, 1400.0);
-        final worldWidth = math.max(screenWidth * 2.8, worldHeight * 1.8);
-        final baseMinScale = screenHeight / worldHeight;
-        // Strictly set minScale to 1.15 * baseMinScale so that even at maximum zoomless,
-        // height is 115% of screenHeight: top and bottom NEVER separate from the screen edges!
-        final minScale = baseMinScale * 1.15;
-        final focusScale = minScale;
-        final minTx = screenWidth - (worldWidth * focusScale);
-        final minTy = screenHeight - (worldHeight * focusScale);
-        final focusX = ((screenWidth - worldWidth * focusScale) / 2).clamp(minTx, 0.0);
-        final focusY = ((screenHeight - worldHeight * focusScale) / 2).clamp(minTy, 0.0);
+        final worldHeight = screenHeight;
+        final worldWidth = math.max(screenWidth * 2.6, screenHeight * 1.8);
+        const minScale = 1.0;
+        const maxScale = 25.0;
+        const focusScale = 1.0;
+        final focusX = (screenWidth - worldWidth) / 2;
+        const focusY = 0.0;
 
         if (!_islandTransformInitialized) {
           _islandTransformInitialized = true;
@@ -581,8 +573,8 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
                 transformationController: _islandTransformController,
                 constrained: false,
                 boundaryMargin: EdgeInsets.zero, // Zero boundary margin: Locks edges cleanly, no black void!
-                minScale: minScale, // Strictly locked above screen height: zero broken bottom!
-                maxScale: 22.0,
+                minScale: minScale, // Locked to 1.0: can never zoom less than screen height!
+                maxScale: maxScale,
                 clipBehavior: Clip.hardEdge,
                 child: SizedBox(
                   width: worldWidth,
@@ -671,27 +663,31 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
       builder: (context, constraints) {
         final sW = constraints.maxWidth;
         final sH = constraints.maxHeight;
-        final baseMinScale = sH / _worldH;
-        // Strictly set minScale to 1.15 * baseMinScale so that even at maximum zoomless,
-        // height is 115% of sH: top and bottom NEVER separate from the screen edges!
-        final minScale = baseMinScale * 1.15;
+        final worldH = sH;
+        final worldW = math.max(sW * 2.4, sH * 1.4);
+        final groundY = sH * 0.62;
+        final houseH = math.min(300.0, sH * 0.35);
+        final houseW = houseH * 1.12;
+        final houseLeft = (worldW - houseW) / 2;
+        final houseTop = groundY - 10.0 - houseH;
+
+        const minScale = 1.0;
         const maxScale = 3.5;
-        // House focused and zoomed in nicely like adult attacking profile
-        final houseZoomScale = (sW / (_houseW * 1.05));
-        final defaultScale = math.max(minScale, houseZoomScale);
+        final houseZoomScale = (sW / (houseW * 1.05)).clamp(1.0, 2.2);
+        final defaultScale = math.max(1.0, houseZoomScale);
 
         if (!_estateTransformInitialized) {
           _estateTransformInitialized = true;
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {
-              final houseCenterX = _worldW / 2;
-              final houseCenterY = (_groundY - 14.0 - _houseH) + (_houseH * 0.52);
+              final houseCenterX = worldW / 2;
+              final houseCenterY = houseTop + (houseH * 0.52);
               final maxTx = 0.0;
-              final minTx = sW - (_worldW * defaultScale);
+              final minTx = sW - (worldW * defaultScale);
               final tx = ((sW / 2) - (houseCenterX * defaultScale)).clamp(minTx, maxTx);
 
               final maxTy = 0.0;
-              final minTy = sH - (_worldH * defaultScale);
+              final minTy = sH - (worldH * defaultScale);
               final targetTy = (sH * 0.44) - (houseCenterY * defaultScale);
               final ty = targetTy.clamp(minTy, maxTy);
 
@@ -705,12 +701,10 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
           });
         }
 
-        const houseLeft = (_worldW - _houseW) / 2;
-        const houseTop = _groundY - 14.0 - _houseH;
-
-        final plotPinCode = 'PKT-${_assignedPlot.plotNumber.toString().padLeft(3, '0')}';
-        final compactAddress =
-            '${widget.userName} • Plot #${_assignedPlot.plotNumber}, ${_assignedPlot.streetName} • PIN $plotPinCode • ${_assignedPlot.countryName}, ${_assignedPlot.planetName}';
+        final plotPinCode =
+            'PKT-${_assignedPlot.plotNumber.toString().padLeft(3, '0')}';
+        final fullBornAddress =
+            '${widget.userName}\nPlot #${_assignedPlot.plotNumber}, ${_assignedPlot.streetName} • PIN: $plotPinCode\n${_assignedPlot.countryName}, ${_assignedPlot.planetName}';
 
         return Stack(
           fit: StackFit.expand,
@@ -729,14 +723,14 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
             Positioned.fill(
               child: InteractiveViewer(
                 transformationController: _estateTransformController,
-                minScale: minScale, // Strictly locked so top, bottom, left & right fill screen completely! Zero broken bottom!
+                minScale: minScale, // 1.0: Strictly locks height to screen height! Zero broken bottom!
                 maxScale: maxScale,
                 boundaryMargin: EdgeInsets.zero, // Zero boundary margin: Never reveals black void! Locks cleanly at edges!
                 constrained: false,
                 clipBehavior: Clip.hardEdge,
                 child: SizedBox(
-                  width: _worldW,
-                  height: _worldH,
+                  width: worldW,
+                  height: worldH,
                   child: Stack(
                     clipBehavior: Clip.none,
                     children: [
@@ -748,7 +742,7 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
                             return CustomPaint(
                               painter: CitadelScenicLandscapePainter(
                                 isDamaged: false,
-                                groundBaseY: _groundY,
+                                groundBaseY: groundY,
                                 isNight: false,
                                 isDay90: false,
                                 ambientProg: _landscapeAmbientController.value,
@@ -763,8 +757,8 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
                       Positioned(
                         left: houseLeft,
                         top: houseTop,
-                        width: _houseW,
-                        height: _houseH,
+                        width: houseW,
+                        height: houseH,
                         child: IgnorePointer(
                           child: RepaintBoundary(
                             child: FlameEnglishHouseWidget(
@@ -812,72 +806,124 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
               ),
             ),
 
-            // Compact Minimal Gamified Born Address Pill (Non-intrusive 36px pill)
+            // 📍 Official Citizen Born Address Card (Fully visible 2-layer design)
             Positioned(
-              left: 20,
-              right: 20,
-              bottom: MediaQuery.of(context).padding.bottom + 80,
+              left: 18,
+              right: 18,
+              bottom: MediaQuery.of(context).padding.bottom + 82,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0F172A).withValues(alpha: 0.90),
-                  borderRadius: BorderRadius.circular(20),
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.94),
+                  borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                      color: const Color(0xFF10B981).withValues(alpha: 0.6),
-                      width: 1.0),
+                    color: const Color(0xFF10B981).withValues(alpha: 0.70),
+                    width: 1.2,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.45),
+                      color: Colors.black.withValues(alpha: 0.55),
+                      blurRadius: 14,
+                      offset: const Offset(0, 4),
+                    ),
+                    BoxShadow(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.20),
                       blurRadius: 10,
                     ),
                   ],
                 ),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF065F46),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        'BORN ADDRESS',
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFF86EFAC),
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
-                        compactAddress,
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Layer 1 (Top): BORN ADDRESS badge + User Name
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 7, vertical: 2.5),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF065F46),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: const Color(0xFF34D399)
+                                        .withValues(alpha: 0.5),
+                                    width: 0.8,
+                                  ),
+                                ),
+                                child: Text(
+                                  'BORN ADDRESS',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFF86EFAC),
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 1.0,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  widget.userName,
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 5),
+                          // Layer 2 (Bottom): Full Address visible completely!
+                          Text(
+                            'Plot #${_assignedPlot.plotNumber}, ${_assignedPlot.streetName} • PIN: $plotPinCode\n${_assignedPlot.countryName}, ${_assignedPlot.planetName}',
+                            style: GoogleFonts.plusJakartaSans(
+                              color: const Color(0xFFCBD5E1),
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                              height: 1.35,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: 10),
+                    // Copy button
                     GestureDetector(
                       onTap: () {
-                        Clipboard.setData(ClipboardData(text: compactAddress));
+                        Clipboard.setData(ClipboardData(text: fullBornAddress));
                         HapticFeedback.lightImpact();
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('📋 Born Address copied!'),
-                            duration: Duration(milliseconds: 1000),
+                            duration: Duration(milliseconds: 1200),
                             behavior: SnackBarBehavior.floating,
                           ),
                         );
                       },
-                      child: const Icon(Icons.copy_rounded,
-                          color: Color(0xFF34D399), size: 14),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF065F46).withValues(alpha: 0.4),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFF34D399).withValues(alpha: 0.5),
+                            width: 1.0,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.copy_rounded,
+                          color: Color(0xFF34D399),
+                          size: 16,
+                        ),
+                      ),
                     ),
                   ],
                 ),
