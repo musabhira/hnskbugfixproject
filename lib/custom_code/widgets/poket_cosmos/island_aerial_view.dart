@@ -604,6 +604,22 @@ IslandArchetype getIslandArchetype(IslandShapeStyle style) {
   }
 }
 
+// =============================================================================
+// 🪐 10 CELESTIAL COLONY TYPES & AUTHENTIC BIOME MAPPING
+// =============================================================================
+enum CelestialColonyType {
+  earth,
+  mars,
+  jupiter,
+  saturn,
+  moon,
+  europa,
+  venus,
+  titan,
+  pluto,
+  neptune,
+}
+
 /// 🎨 Island Aerial CustomPainter with Expansive Green Terrains & Safe In-Land Habit Plots
 class IslandAerialPainter extends CustomPainter {
   final PoketCountryMap island;
@@ -627,12 +643,77 @@ class IslandAerialPainter extends CustomPainter {
   double get animProgress => animation?.value ?? 0.0;
   double get timeSeconds => animProgress * 40.0;
 
-  bool get isMoon => island.name.toLowerCase().contains('moon') || island.waterColor.toARGB32() == 0xFF0F172A;
-  bool get isMars => island.name.toLowerCase().contains('mars') || island.climate.contains('Rusty');
-  bool get isJupiter => island.name.toLowerCase().contains('jupiter');
-  bool get isSaturn => island.name.toLowerCase().contains('saturn');
-  bool get isPluto => island.name.toLowerCase().contains('pluto');
-  bool get isVenus => island.name.toLowerCase().contains('venus');
+  CelestialColonyType get colonyType {
+    final text = '${island.name} ${island.tag} ${island.climate}'.toLowerCase();
+    if (text.contains('mars') ||
+        text.contains('ares') ||
+        text.contains('olympus') ||
+        text.contains('rusty') ||
+        island.shapeStyle == IslandShapeStyle.fortressPlateau) {
+      return CelestialColonyType.mars;
+    }
+    if (text.contains('jupiter') ||
+        text.contains('solaria') ||
+        text.contains('red spot') ||
+        island.shapeStyle == IslandShapeStyle.crescentLagoon) {
+      return CelestialColonyType.jupiter;
+    }
+    if (text.contains('saturn') ||
+        text.contains('ringside') ||
+        text.contains('ring sanctuary') ||
+        island.shapeStyle == IslandShapeStyle.sCurveArchipelago) {
+      return CelestialColonyType.saturn;
+    }
+    if (text.contains('moon') ||
+        text.contains('lunar') ||
+        text.contains('mare tranqu') ||
+        island.shapeStyle == IslandShapeStyle.hookPeninsula) {
+      return CelestialColonyType.moon;
+    }
+    if (text.contains('europa') ||
+        text.contains('glacier rift') ||
+        text.contains('ice ocean') ||
+        island.shapeStyle == IslandShapeStyle.dualIsletBridge) {
+      return CelestialColonyType.europa;
+    }
+    if (text.contains('venus') ||
+        text.contains('aphrodite') ||
+        text.contains('sulfur') ||
+        island.shapeStyle == IslandShapeStyle.starAtoll) {
+      return CelestialColonyType.venus;
+    }
+    if (text.contains('titan') ||
+        text.contains('kraken mare') ||
+        text.contains('hydrocarbon') ||
+        island.shapeStyle == IslandShapeStyle.heartSanctuary) {
+      return CelestialColonyType.titan;
+    }
+    if (text.contains('pluto') ||
+        text.contains('tombaugh') ||
+        text.contains('cryo') ||
+        text.contains('frost') ||
+        island.shapeStyle == IslandShapeStyle.cloverBays) {
+      return CelestialColonyType.pluto;
+    }
+    if (text.contains('neptune') ||
+        text.contains('triton') ||
+        text.contains('tempest') ||
+        island.shapeStyle == IslandShapeStyle.citadelApex) {
+      return CelestialColonyType.neptune;
+    }
+    return CelestialColonyType.earth;
+  }
+
+  bool get isMoon => colonyType == CelestialColonyType.moon;
+  bool get isMars => colonyType == CelestialColonyType.mars;
+  bool get isJupiter => colonyType == CelestialColonyType.jupiter;
+  bool get isSaturn => colonyType == CelestialColonyType.saturn;
+  bool get isEuropa => colonyType == CelestialColonyType.europa;
+  bool get isVenus => colonyType == CelestialColonyType.venus;
+  bool get isTitan => colonyType == CelestialColonyType.titan;
+  bool get isPluto => colonyType == CelestialColonyType.pluto;
+  bool get isNeptune => colonyType == CelestialColonyType.neptune;
+  bool get isEarth => colonyType == CelestialColonyType.earth;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -676,105 +757,212 @@ class IslandAerialPainter extends CustomPainter {
     // 7. Winding Paved Trails & Roadways Connecting the Island
     _drawRoadways(canvas);
 
-    // 8. Mini Sports Pitch (Football Turf Lawn with White Markings)
-    if (!island.isPresidential) {
+    // 8. Mini Sports Pitch (Football Turf Lawn with White Markings on Earth & Titan)
+    if (!island.isPresidential && (isEarth || isTitan)) {
       _drawSportsTurfPitch(canvas);
     }
 
-    // 9. Wooden Pier with Moored Speedboats & Cruising Boats with Foam Wakes
-    _drawWoodenPierAndBoats(canvas);
-    _drawCruisingBoatsWithWakes(canvas);
+    // 9. Marine Piers & Cruising Boats (Only on liquid ocean worlds)
+    if (isEarth || isTitan || isNeptune) {
+      _drawWoodenPierAndBoats(canvas);
+      _drawCruisingBoatsWithWakes(canvas);
+    }
 
-    // 10. Living Wildlife & Grazing Animals (Peaceful sheep & horses on meadow belt)
-    _drawGrazingAnimals(canvas);
+    // 10. Living Wildlife & Grazing Animals (Peaceful sheep & horses on Earth)
+    if (isEarth) {
+      _drawGrazingAnimals(canvas);
+    }
 
-    // 11. Habit Houses / Plots (Strictly inside the green landmass with safe buffer)
+    // 11. Habit Houses / Plots (Strictly inside the island terrain with safe buffer)
     if (island.isPresidential) {
       _drawPresidentialCitadel(canvas);
     } else {
       _drawCitizenPlots(canvas);
     }
 
-    // 11. Clustered Palm Tree Canopies with Organic Shadows
+    // 12. Flora / Bio-Domes / Atmospheric Telescopes
     _drawPalmTreeCanopies(canvas);
 
-    // 12. Beach Umbrellas & Sunbed Loungers along the Golden Sand
-    _drawBeachUmbrellas(canvas);
+    // 13. Beach Umbrellas & Sunbed Loungers along the Sand
+    if (isEarth || isTitan) {
+      _drawBeachUmbrellas(canvas);
+    }
 
-    // 13. High-Altitude Atmospheric Drifting Clouds & Soft Shadows
+    // 14. High-Altitude Atmospheric Drifting Clouds & Soft Shadows
     _drawAtmosphericClouds(canvas);
 
-    // 14. Soaring Seagulls gliding over the azure ocean
-    _drawSoaringSeagulls(canvas);
+    // 15. Soaring Seagulls gliding over the azure ocean (Earth only)
+    if (isEarth) {
+      _drawSoaringSeagulls(canvas);
+    }
 
     canvas.restore();
   }
 
   // =========================================================================
-  // 🌊 UNIFIED LIVING WORLD OCEAN (Edge-to-edge ocean, wave swells & sunlight)
+  // 🌊 UNIFIED LIVING WORLD OCEAN (Edge-to-edge multi-stop gradient celestial ocean)
   // =========================================================================
   void _drawUnifiedWorldOcean(Canvas canvas, Size size) {
     final fullRect = Offset.zero & size;
-    final baseWater = island.waterColor;
-    final isStarlightCosmic = (baseWater.toARGB32() == 0xFF0F172A) ||
-        island.name.toLowerCase().contains('moon') ||
-        island.name.toLowerCase().contains('pluto');
 
-    final oceanMid1 = Color.lerp(baseWater, Colors.black, 0.25) ?? baseWater;
-    final oceanMid2 = Color.lerp(baseWater, Colors.black, 0.50) ?? Colors.black;
-    final oceanOuter = Color.lerp(baseWater, const Color(0xFF020617), 0.75) ?? const Color(0xFF020617);
+    List<Color> oceanColors;
+    bool hasStars = false;
+    bool hasJovianStormSea = false;
 
-    // 1. Vast Celestial Depth Gradient
+    switch (colonyType) {
+      case CelestialColonyType.earth:
+        oceanColors = const [
+          Color(0xFF0284C7), // Vibrant tropical azure
+          Color(0xFF0369A1), // Deep maritime blue
+          Color(0xFF075985), // Deep ocean blue
+          Color(0xFF0C4A6E), // Trench navy
+          Color(0xFF020617), // Abyssal black
+        ];
+        break;
+      case CelestialColonyType.mars:
+        oceanColors = const [
+          Color(0xFFB91C1C), // Molten iron crimson
+          Color(0xFF991B1B), // Dark volcanic red
+          Color(0xFF7F1D1D), // Deep Ares mahogany
+          Color(0xFF450A0A), // Iron oxide abyss
+          Color(0xFF180303), // Carbon void
+        ];
+        break;
+      case CelestialColonyType.jupiter:
+        hasJovianStormSea = true;
+        oceanColors = const [
+          Color(0xFF0284C7), // Electric cosmic azure storm
+          Color(0xFF1E3A8A), // Deep cobalt vortex
+          Color(0xFF78350F), // Jovian amber abyss
+          Color(0xFF451A03), // Deep bronze shadow
+          Color(0xFF0B0F19), // Space black
+        ];
+        break;
+      case CelestialColonyType.saturn:
+        oceanColors = const [
+          Color(0xFFD97706), // Luminous amber liquid methane
+          Color(0xFFB45309), // Warm bronze sea
+          Color(0xFF78350F), // Deep golden ring abyss
+          Color(0xFF451A03), // Dark hydrocarbon trench
+          Color(0xFF0A0704), // Space black
+        ];
+        break;
+      case CelestialColonyType.moon:
+        hasStars = true;
+        oceanColors = const [
+          Color(0xFF334155), // Slate regolith twilight
+          Color(0xFF1E293B), // Deep lunar night
+          Color(0xFF0F172A), // Cosmic starlight void
+          Color(0xFF090D16), // Deep space
+          Color(0xFF020617), // Jet black void
+        ];
+        break;
+      case CelestialColonyType.europa:
+        oceanColors = const [
+          Color(0xFF38BDF8), // Electric cryogenic cyan
+          Color(0xFF0284C7), // Subsurface sapphire
+          Color(0xFF0369A1), // Deep glacial ocean
+          Color(0xFF0C4A6E), // Deep sub-ice abyss
+          Color(0xFF041926), // Pitch black sub-crust ocean
+        ];
+        break;
+      case CelestialColonyType.venus:
+        oceanColors = const [
+          Color(0xFFF59E0B), // Sulfuric scorched gold
+          Color(0xFFD97706), // Volcanic amber sea
+          Color(0xFF92400E), // Dense sulfuric smog
+          Color(0xFF581C87), // Magmatic dark purple
+          Color(0xFF1E0B36), // Deep volcanic void
+        ];
+        break;
+      case CelestialColonyType.titan:
+        oceanColors = const [
+          Color(0xFF059669), // Emerald liquid methane (Kraken Mare)
+          Color(0xFF047857), // Deep hydrocarbon green
+          Color(0xFF065F46), // Petroleum teal
+          Color(0xFF064E3B), // Deep methane trench
+          Color(0xFF021B14), // Pitch black hydrocarbon abyss
+        ];
+        break;
+      case CelestialColonyType.pluto:
+        hasStars = true;
+        oceanColors = const [
+          Color(0xFF6B21A8), // Deep Kuiper Belt violet
+          Color(0xFF581C87), // Cosmic purple void
+          Color(0xFF3B0764), // Deep ultraviolet shadow
+          Color(0xFF1E1B4B), // Distant solar void
+          Color(0xFF090514), // Interstellar obsidian
+        ];
+        break;
+      case CelestialColonyType.neptune:
+        oceanColors = const [
+          Color(0xFF2563EB), // Electric supersonic cobalt
+          Color(0xFF1D4ED8), // Tempestuous ultramarine
+          Color(0xFF1E3A8A), // Oceanic storm deep blue
+          Color(0xFF172554), // Abyssal navy trench
+          Color(0xFF030712), // Cosmic storm black
+        ];
+        break;
+    }
+
+    // 1. Vast Celestial Depth Radial Gradient
     final oceanGradient = RadialGradient(
       center: Alignment.center,
-      radius: 1.15,
-      colors: [
-        baseWater,
-        Color.lerp(baseWater, oceanMid1, 0.5)!,
-        oceanMid1,
-        oceanMid2,
-        oceanOuter,
-      ],
-      stops: const [0.0, 0.35, 0.65, 0.85, 1.0],
+      radius: 1.18,
+      colors: oceanColors,
+      stops: const [0.0, 0.30, 0.58, 0.82, 1.0],
     );
 
     final oceanPaint = Paint()..shader = oceanGradient.createShader(fullRect);
     canvas.drawRect(fullRect, oceanPaint);
 
-    // 2. Cosmic Starlight Glints (For Moon & Pluto)
-    if (isStarlightCosmic) {
-      final starPaint = Paint()..color = Colors.white.withValues(alpha: 0.45);
-      for (int s = 0; s < 30; s++) {
-        final sx = (s * 83.0 + 47.0) % size.width;
-        final sy = (s * 127.0 + 19.0) % size.height;
-        final twinkle = (math.sin(timeSeconds * 3.0 + s) + 1.0) * 0.5;
-        canvas.drawCircle(Offset(sx, sy), 0.7 + 0.6 * twinkle, starPaint);
+    // 2. Swirling Jovian Storm Currents for Jupiter
+    if (hasJovianStormSea) {
+      final stormPaint = Paint()
+        ..color = const Color(0xFFF59E0B).withValues(alpha: 0.08)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 24.0;
+      for (int b = -2; b <= 2; b++) {
+        final yPos = (size.height / 2) + (b * 90.0) + math.sin(timeSeconds * 0.4 + b) * 12.0;
+        canvas.drawLine(Offset(0, yPos), Offset(size.width, yPos), stormPaint);
       }
     }
 
-    // 3. High-Altitude Atmospheric Sheen
+    // 3. Cosmic Starlight Glints (For Moon & Pluto)
+    if (hasStars) {
+      final starPaint = Paint()..color = Colors.white.withValues(alpha: 0.55);
+      for (int s = 0; s < 36; s++) {
+        final sx = (s * 83.0 + 47.0) % size.width;
+        final sy = (s * 127.0 + 19.0) % size.height;
+        final twinkle = (math.sin(timeSeconds * 3.0 + s) + 1.0) * 0.5;
+        canvas.drawCircle(Offset(sx, sy), 0.7 + 0.8 * twinkle, starPaint);
+      }
+    }
+
+    // 4. High-Altitude Atmospheric Sheen
     final sunGlintPaint = Paint()
       ..shader = RadialGradient(
         center: const Alignment(-0.35, -0.45),
-        radius: 0.9,
+        radius: 0.95,
         colors: [
-          Colors.white.withValues(alpha: isStarlightCosmic ? 0.06 : 0.12),
-          Colors.white.withValues(alpha: 0.03),
+          Colors.white.withValues(alpha: hasStars ? 0.05 : 0.12),
+          Colors.white.withValues(alpha: 0.02),
           Colors.transparent,
         ],
         stops: const [0.0, 0.45, 1.0],
       ).createShader(fullRect);
     canvas.drawRect(fullRect, sunGlintPaint);
 
-    // 4. Living Wave Crest Arcs across the open sea
+    // 5. Living Wave Crest Arcs across the open sea (or atmospheric currents)
+    final waveAlpha = (colonyType == CelestialColonyType.moon || colonyType == CelestialColonyType.pluto) ? 0.08 : 0.16;
     final wavePaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.16)
+      ..color = Colors.white.withValues(alpha: waveAlpha)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.3
       ..strokeCap = StrokeCap.round;
 
     final faintWave = Paint()
-      ..color = Colors.white.withValues(alpha: 0.08)
+      ..color = Colors.white.withValues(alpha: waveAlpha * 0.5)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0
       ..strokeCap = StrokeCap.round;
@@ -929,22 +1117,79 @@ class IslandAerialPainter extends CustomPainter {
   }
 
   // =========================================================================
-  // 3. REEF, BEACH & GREEN TERRAIN (MATCHING REALISTIC RESORT BENCHMARKS)
+  // 3. REEF, BEACH & PLANETARY TERRAIN (AUTHENTIC CELESTIAL SHADERS)
   // =========================================================================
   void _drawShallowCoralReef(Canvas canvas) {
     final islandPath = _getIslandPath();
 
-    // Outermost translucent shallow reef contour (Safe GPU stroke)
+    Color outerReefColor;
+    Color innerReefColor;
+    Color foamWaveColor;
+
+    switch (colonyType) {
+      case CelestialColonyType.earth:
+        outerReefColor = const Color(0xFF0284C7).withValues(alpha: 0.35);
+        innerReefColor = const Color(0xFF38BDF8).withValues(alpha: 0.65);
+        foamWaveColor = Colors.white.withValues(alpha: 0.40);
+        break;
+      case CelestialColonyType.mars:
+        outerReefColor = const Color(0xFF991B1B).withValues(alpha: 0.40);
+        innerReefColor = const Color(0xFFF87171).withValues(alpha: 0.60);
+        foamWaveColor = const Color(0xFFFECACA).withValues(alpha: 0.30);
+        break;
+      case CelestialColonyType.jupiter:
+        outerReefColor = const Color(0xFFB45309).withValues(alpha: 0.42);
+        innerReefColor = const Color(0xFFFDE047).withValues(alpha: 0.68);
+        foamWaveColor = const Color(0xFFFEF08A).withValues(alpha: 0.35);
+        break;
+      case CelestialColonyType.saturn:
+        outerReefColor = const Color(0xFF92400E).withValues(alpha: 0.38);
+        innerReefColor = const Color(0xFFFCD34D).withValues(alpha: 0.62);
+        foamWaveColor = const Color(0xFFFEF9C3).withValues(alpha: 0.30);
+        break;
+      case CelestialColonyType.moon:
+        outerReefColor = const Color(0xFF1E293B).withValues(alpha: 0.35);
+        innerReefColor = const Color(0xFF94A3B8).withValues(alpha: 0.55);
+        foamWaveColor = const Color(0xFFE2E8F0).withValues(alpha: 0.28);
+        break;
+      case CelestialColonyType.europa:
+        outerReefColor = const Color(0xFF0369A1).withValues(alpha: 0.45);
+        innerReefColor = const Color(0xFFBAE6FD).withValues(alpha: 0.72);
+        foamWaveColor = Colors.white.withValues(alpha: 0.45);
+        break;
+      case CelestialColonyType.venus:
+        outerReefColor = const Color(0xFFB45309).withValues(alpha: 0.40);
+        innerReefColor = const Color(0xFFFEF08A).withValues(alpha: 0.62);
+        foamWaveColor = const Color(0xFFFFFBEB).withValues(alpha: 0.30);
+        break;
+      case CelestialColonyType.titan:
+        outerReefColor = const Color(0xFF064E3B).withValues(alpha: 0.42);
+        innerReefColor = const Color(0xFF34D399).withValues(alpha: 0.65);
+        foamWaveColor = const Color(0xFFA7F3D0).withValues(alpha: 0.30);
+        break;
+      case CelestialColonyType.pluto:
+        outerReefColor = const Color(0xFF581C87).withValues(alpha: 0.42);
+        innerReefColor = const Color(0xFFE9D5FF).withValues(alpha: 0.68);
+        foamWaveColor = const Color(0xFFFAF5FF).withValues(alpha: 0.32);
+        break;
+      case CelestialColonyType.neptune:
+        outerReefColor = const Color(0xFF1E3A8A).withValues(alpha: 0.45);
+        innerReefColor = const Color(0xFF93C5FD).withValues(alpha: 0.68);
+        foamWaveColor = Colors.white.withValues(alpha: 0.42);
+        break;
+    }
+
+    // Outermost translucent planetary reef/halo contour
     final reefPaint = Paint()
-      ..color = const Color(0xFF38BDF8).withValues(alpha: 0.32)
+      ..color = outerReefColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 36
       ..strokeCap = StrokeCap.round;
     canvas.drawPath(islandPath, reefPaint);
 
-    // Inner bright aquamarine shimmer
+    // Inner bright planetary luminescence
     final reefInnerPaint = Paint()
-      ..color = const Color(0xFF22D3EE).withValues(alpha: 0.48)
+      ..color = innerReefColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 18
       ..strokeCap = StrokeCap.round;
@@ -953,7 +1198,7 @@ class IslandAerialPainter extends CustomPainter {
     // Living rhythmic ocean surf tide breathing against the shore
     final tide = math.sin(timeSeconds * 2.2);
     final foamPaint = Paint()
-      ..color = Colors.white.withValues(alpha: (0.42 + 0.16 * tide).clamp(0.15, 0.75))
+      ..color = foamWaveColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.4 + 0.7 * tide
       ..strokeCap = StrokeCap.round;
@@ -966,24 +1211,47 @@ class IslandAerialPainter extends CustomPainter {
     Color beachSandColor;
     Color wetSandColor;
 
-    if (isMoon) {
-      beachSandColor = const Color(0xFFCBD5E1); // Silver lunar dust
-      wetSandColor = const Color(0xFF94A3B8).withValues(alpha: 0.60);
-    } else if (isMars) {
-      beachSandColor = const Color(0xFFFDBA74); // Terracotta copper sand
-      wetSandColor = const Color(0xFFEA580C).withValues(alpha: 0.60);
-    } else if (isJupiter) {
-      beachSandColor = const Color(0xFFFDE047); // Golden brass shoreline
-      wetSandColor = const Color(0xFFD97706).withValues(alpha: 0.60);
-    } else if (isSaturn) {
-      beachSandColor = const Color(0xFFFEF08A); // Pale rose-gold sand
-      wetSandColor = const Color(0xFFCA8A04).withValues(alpha: 0.60);
-    } else if (isPluto) {
-      beachSandColor = const Color(0xFFF1F5F9); // Glacial ice crystal shore
-      wetSandColor = const Color(0xFF94A3B8).withValues(alpha: 0.60);
-    } else {
-      beachSandColor = const Color(0xFFFDE68A); // Earth golden tropical sand
-      wetSandColor = const Color(0xFFF59E0B).withValues(alpha: 0.55);
+    switch (colonyType) {
+      case CelestialColonyType.earth:
+        beachSandColor = const Color(0xFFFDE68A); // Tropical golden coral sand
+        wetSandColor = const Color(0xFFF59E0B).withValues(alpha: 0.55);
+        break;
+      case CelestialColonyType.mars:
+        beachSandColor = const Color(0xFFFDBA74); // Terracotta copper sand
+        wetSandColor = const Color(0xFFEA580C).withValues(alpha: 0.60);
+        break;
+      case CelestialColonyType.jupiter:
+        beachSandColor = const Color(0xFFFDE047); // Golden brass & pyrite shoreline
+        wetSandColor = const Color(0xFFD97706).withValues(alpha: 0.60);
+        break;
+      case CelestialColonyType.saturn:
+        beachSandColor = const Color(0xFFFEF08A); // Pale rose-gold ring particle sand
+        wetSandColor = const Color(0xFFCA8A04).withValues(alpha: 0.60);
+        break;
+      case CelestialColonyType.moon:
+        beachSandColor = const Color(0xFFCBD5E1); // Fine silver lunar dust
+        wetSandColor = const Color(0xFF94A3B8).withValues(alpha: 0.60);
+        break;
+      case CelestialColonyType.europa:
+        beachSandColor = const Color(0xFFF0F9FF); // Glacial pure ice crystal shore
+        wetSandColor = const Color(0xFF7DD3FC).withValues(alpha: 0.60);
+        break;
+      case CelestialColonyType.venus:
+        beachSandColor = const Color(0xFFFDE68A); // Volcanic ash & sulfur sand
+        wetSandColor = const Color(0xFFD97706).withValues(alpha: 0.60);
+        break;
+      case CelestialColonyType.titan:
+        beachSandColor = const Color(0xFFA7F3D0); // Hydrocarbon dune sand
+        wetSandColor = const Color(0xFF059669).withValues(alpha: 0.60);
+        break;
+      case CelestialColonyType.pluto:
+        beachSandColor = const Color(0xFFF5F3FF); // Crystalline nitrogen frost shore (lavender-white)
+        wetSandColor = const Color(0xFFC084FC).withValues(alpha: 0.60);
+        break;
+      case CelestialColonyType.neptune:
+        beachSandColor = const Color(0xFFBFDBFE); // Diamond azure shore
+        wetSandColor = const Color(0xFF1D4ED8).withValues(alpha: 0.60);
+        break;
     }
 
     // Main sand beach rim
@@ -1010,41 +1278,65 @@ class IslandAerialPainter extends CustomPainter {
     Color coreColor;
     Color deepColor;
 
-    if (isMoon) {
-      // 🌕 Authentic Lunar Regolith Slate
-      sunlitColor = const Color(0xFF64748B);
-      coreColor = const Color(0xFF475569);
-      deepColor = const Color(0xFF334155);
-    } else if (isMars) {
-      // 🔴 Authentic Martian Iron Rust Red
-      sunlitColor = const Color(0xFFC2410C);
-      coreColor = const Color(0xFF9A3412);
-      deepColor = const Color(0xFF7C2D12);
-    } else if (isJupiter) {
-      // 🟠 Authentic Jovian Banded Amber
-      sunlitColor = const Color(0xFFD97706);
-      coreColor = const Color(0xFFB45309);
-      deepColor = const Color(0xFF78350F);
-    } else if (isSaturn) {
-      // 🪐 Golden Sandstone & Deep Bronze
-      sunlitColor = const Color(0xFFCA8A04);
-      coreColor = const Color(0xFF854D0E);
-      deepColor = const Color(0xFF713F12);
-    } else if (isPluto) {
-      // ❄️ Glacial Nitrogen Ice Slate
-      sunlitColor = const Color(0xFFE2E8F0);
-      coreColor = const Color(0xFF64748B);
-      deepColor = const Color(0xFF475569);
-    } else if (isVenus) {
-      // 🟡 Sulfuric Volcanic Ochre
-      sunlitColor = const Color(0xFFF59E0B);
-      coreColor = const Color(0xFFB45309);
-      deepColor = const Color(0xFF78350F);
-    } else {
-      // 🌍 Earth Prime: Lush Emerald Green Paradise
-      sunlitColor = const Color(0xFF4ADE80);
-      coreColor = island.landColor;
-      deepColor = Color.lerp(island.landColor, const Color(0xFF064E3B), 0.52) ?? const Color(0xFF14532D);
+    switch (colonyType) {
+      case CelestialColonyType.earth:
+        sunlitColor = const Color(0xFF4ADE80);
+        coreColor = const Color(0xFF16A34A);
+        deepColor = const Color(0xFF064E3B);
+        break;
+      case CelestialColonyType.mars:
+        sunlitColor = const Color(0xFFEA580C);
+        coreColor = const Color(0xFF9A3412);
+        deepColor = const Color(0xFF431407);
+        break;
+      case CelestialColonyType.jupiter:
+        // 🪐 Jovian Swirling Amber & Bronze
+        sunlitColor = const Color(0xFFF59E0B);
+        coreColor = const Color(0xFFB45309);
+        deepColor = const Color(0xFF78350F);
+        break;
+      case CelestialColonyType.saturn:
+        // 🪐 Golden Sandstone & Deep Bronze
+        sunlitColor = const Color(0xFFFCD34D);
+        coreColor = const Color(0xFFCA8A04);
+        deepColor = const Color(0xFF713F12);
+        break;
+      case CelestialColonyType.moon:
+        // 🌕 Authentic Lunar Regolith Slate
+        sunlitColor = const Color(0xFF94A3B8);
+        coreColor = const Color(0xFF475569);
+        deepColor = const Color(0xFF1E293B);
+        break;
+      case CelestialColonyType.europa:
+        // 🧊 Glacial Cyan & Pure White Polar Ice
+        sunlitColor = const Color(0xFFFFFFFF);
+        coreColor = const Color(0xFF7DD3FC);
+        deepColor = const Color(0xFF0284C7);
+        break;
+      case CelestialColonyType.venus:
+        // 🟡 Sulfuric Volcanic Ochre
+        sunlitColor = const Color(0xFFFBBF24);
+        coreColor = const Color(0xFFB45309);
+        deepColor = const Color(0xFF78350F);
+        break;
+      case CelestialColonyType.titan:
+        // 🪐 Emerald Hydrocarbon Dunes
+        sunlitColor = const Color(0xFF10B981);
+        coreColor = const Color(0xFF047857);
+        deepColor = const Color(0xFF064E3B);
+        break;
+      case CelestialColonyType.pluto:
+        // ❄️ Cryogenic Nitrogen Glaciers & Lavender/Cosmic Violet (Strictly non-green!)
+        sunlitColor = const Color(0xFFF3E8FF);
+        coreColor = const Color(0xFFA855F7);
+        deepColor = const Color(0xFF4C1D95);
+        break;
+      case CelestialColonyType.neptune:
+        // 🌊 Supersonic Oceanic Tempest Cobalt
+        sunlitColor = const Color(0xFF60A5FA);
+        coreColor = const Color(0xFF2563EB);
+        deepColor = const Color(0xFF172554);
+        break;
     }
 
     final landGradient = RadialGradient(
@@ -1060,10 +1352,263 @@ class IslandAerialPainter extends CustomPainter {
 
     canvas.drawPath(islandPath, landPaint);
 
-    // 🌕 Authentic Lunar Craters on the Moon!
-    if (isMoon) {
-      _drawLunarCraters(canvas, islandPath);
+    // Planet-Specific Authentic Geological Surface Features:
+    switch (colonyType) {
+      case CelestialColonyType.moon:
+        _drawLunarCraters(canvas, islandPath);
+        break;
+      case CelestialColonyType.mars:
+        _drawMartianFissures(canvas, islandPath);
+        break;
+      case CelestialColonyType.jupiter:
+        _drawJovianStormSwirls(canvas, islandPath);
+        break;
+      case CelestialColonyType.saturn:
+        _drawSaturnRingShadows(canvas, islandPath);
+        break;
+      case CelestialColonyType.europa:
+        _drawEuropaGlacialLineae(canvas, islandPath);
+        break;
+      case CelestialColonyType.venus:
+        _drawVenusianMagmaVeins(canvas, islandPath);
+        break;
+      case CelestialColonyType.titan:
+        _drawTitanMethaneDunes(canvas, islandPath);
+        break;
+      case CelestialColonyType.pluto:
+        _drawPlutoNitrogenCells(canvas, islandPath);
+        break;
+      case CelestialColonyType.neptune:
+        _drawNeptunianTempestStreaks(canvas, islandPath);
+        break;
+      case CelestialColonyType.earth:
+        break;
     }
+  }
+
+  // 🔴 Authentic Martian Canyon Fissures & Fault Lines with Volcanic Glow
+  void _drawMartianFissures(Canvas canvas, Path islandPath) {
+    canvas.save();
+    canvas.clipPath(islandPath);
+
+    final fissurePaint = Paint()
+      ..color = const Color(0xFF431407).withValues(alpha: 0.65)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round;
+
+    final glowPaint = Paint()
+      ..color = const Color(0xFFEF4444).withValues(alpha: 0.35)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4.0
+      ..strokeCap = StrokeCap.round;
+
+    const lines = [
+      [Offset(-90, -45), Offset(-30, -25), Offset(15, -60)],
+      [Offset(-40, 30), Offset(20, 55), Offset(85, 40)],
+      [Offset(-110, 60), Offset(-60, 80), Offset(-10, 95)],
+    ];
+
+    for (final seg in lines) {
+      final p = Path()..moveTo(seg[0].dx, seg[0].dy);
+      for (int i = 1; i < seg.length; i++) {
+        p.lineTo(seg[i].dx, seg[i].dy);
+      }
+      canvas.drawPath(p, glowPaint);
+      canvas.drawPath(p, fissurePaint);
+    }
+
+    canvas.restore();
+  }
+
+  // 🪐 Jovian Atmospheric Swirling Cyclone Bands
+  void _drawJovianStormSwirls(Canvas canvas, Path islandPath) {
+    canvas.save();
+    canvas.clipPath(islandPath);
+
+    final stormGold = Paint()
+      ..color = const Color(0xFFFDE047).withValues(alpha: 0.35)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4.0;
+
+    final stormDark = Paint()
+      ..color = const Color(0xFF78350F).withValues(alpha: 0.40)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5.0;
+
+    for (int i = -3; i <= 3; i++) {
+      final y = i * 36.0;
+      final wave = Path();
+      wave.moveTo(-220, y);
+      for (double x = -220; x <= 220; x += 25) {
+        final wy = y + math.sin(x * 0.03 + (timeSeconds * 0.5) + i) * 6.5;
+        wave.lineTo(x, wy);
+      }
+      canvas.drawPath(wave, (i % 2 == 0) ? stormGold : stormDark);
+    }
+
+    // Great Red Spot Eye vortex
+    final spotCenter = const Offset(65, -35);
+    final spotPaint = Paint()..color = const Color(0xFF991B1B).withValues(alpha: 0.45);
+    canvas.drawOval(Rect.fromCenter(center: spotCenter, width: 44, height: 26), spotPaint);
+
+    canvas.restore();
+  }
+
+  // 🪐 Concentric Golden Saturnian Ring Shadows
+  void _drawSaturnRingShadows(Canvas canvas, Path islandPath) {
+    canvas.save();
+    canvas.clipPath(islandPath);
+
+    final ringShadow = Paint()
+      ..color = const Color(0xFF713F12).withValues(alpha: 0.30)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 7.0;
+
+    for (int r = 0; r < 4; r++) {
+      final arcRect = Rect.fromCenter(
+        center: Offset(0, -180.0 + r * 30.0),
+        width: 380,
+        height: 180,
+      );
+      canvas.drawArc(arcRect, 0.2, 2.7, false, ringShadow);
+    }
+
+    canvas.restore();
+  }
+
+  // 🧊 Cryogenic Europa Glacial Lineae / Ice Cracks
+  void _drawEuropaGlacialLineae(Canvas canvas, Path islandPath) {
+    canvas.save();
+    canvas.clipPath(islandPath);
+
+    final crackPaint = Paint()
+      ..color = const Color(0xFF0284C7).withValues(alpha: 0.55)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4
+      ..strokeCap = StrokeCap.round;
+
+    final crackGlow = Paint()
+      ..color = const Color(0xFF38BDF8).withValues(alpha: 0.40)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.2
+      ..strokeCap = StrokeCap.round;
+
+    const rifts = [
+      [Offset(-130, -70), Offset(-40, -10), Offset(60, -50), Offset(130, -20)],
+      [Offset(-80, 80), Offset(10, 40), Offset(90, 85)],
+      [Offset(-30, -100), Offset(20, -15), Offset(-10, 75)],
+    ];
+
+    for (final seg in rifts) {
+      final p = Path()..moveTo(seg[0].dx, seg[0].dy);
+      for (int i = 1; i < seg.length; i++) {
+        p.lineTo(seg[i].dx, seg[i].dy);
+      }
+      canvas.drawPath(p, crackGlow);
+      canvas.drawPath(p, crackPaint);
+    }
+
+    canvas.restore();
+  }
+
+  // 🟡 Sulfuric Venusian Magma Veins
+  void _drawVenusianMagmaVeins(Canvas canvas, Path islandPath) {
+    canvas.save();
+    canvas.clipPath(islandPath);
+
+    final magmaGlow = Paint()
+      ..color = const Color(0xFFF59E0B).withValues(alpha: 0.45)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.5;
+
+    final magmaCore = Paint()
+      ..color = const Color(0xFFDC2626).withValues(alpha: 0.40)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+
+    for (int v = 0; v < 3; v++) {
+      final p = Path();
+      final startY = -60.0 + v * 60.0;
+      p.moveTo(-120, startY);
+      p.cubicTo(-40, startY - 25, 30, startY + 35, 110, startY - 10);
+      canvas.drawPath(p, magmaGlow);
+      canvas.drawPath(p, magmaCore);
+    }
+
+    canvas.restore();
+  }
+
+  // 🪐 Titan Hydrocarbon Dune Ripples
+  void _drawTitanMethaneDunes(Canvas canvas, Path islandPath) {
+    canvas.save();
+    canvas.clipPath(islandPath);
+
+    final dunePaint = Paint()
+      ..color = const Color(0xFF047857).withValues(alpha: 0.35)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.2;
+
+    for (int d = -4; d <= 4; d++) {
+      final y = d * 26.0;
+      final p = Path()..moveTo(-160, y);
+      for (double x = -160; x <= 160; x += 30) {
+        p.lineTo(x, y + math.sin(x * 0.04) * 4.0);
+      }
+      canvas.drawPath(p, dunePaint);
+    }
+
+    canvas.restore();
+  }
+
+  // ❄️ Pluto Crystalline Nitrogen Ice Convection Cells (Strictly Non-Green)
+  void _drawPlutoNitrogenCells(Canvas canvas, Path islandPath) {
+    canvas.save();
+    canvas.clipPath(islandPath);
+
+    final cellRim = Paint()
+      ..color = const Color(0xFFC084FC).withValues(alpha: 0.45)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.6;
+
+    final cellCenter = Paint()
+      ..color = const Color(0xFFF3E8FF).withValues(alpha: 0.25);
+
+    const cells = [
+      (Offset(-75, -45), 24.0),
+      (Offset(-25, -20), 28.0),
+      (Offset(35, -40), 22.0),
+      (Offset(-65, 35), 26.0),
+      (Offset(10, 45), 30.0),
+      (Offset(80, 20), 25.0),
+    ];
+
+    for (final c in cells) {
+      canvas.drawCircle(c.$1, c.$2, cellCenter);
+      canvas.drawCircle(c.$1, c.$2, cellRim);
+    }
+
+    canvas.restore();
+  }
+
+  // 🌊 Neptunian Supersonic Jet Streaks
+  void _drawNeptunianTempestStreaks(Canvas canvas, Path islandPath) {
+    canvas.save();
+    canvas.clipPath(islandPath);
+
+    final streakPaint = Paint()
+      ..color = const Color(0xFF93C5FD).withValues(alpha: 0.45)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.8
+      ..strokeCap = StrokeCap.round;
+
+    for (int s = -3; s <= 3; s++) {
+      final y = s * 34.0;
+      final speedX = ((timeSeconds * 40.0 + s * 90.0) % 500.0) - 250.0;
+      canvas.drawLine(Offset(speedX - 60, y), Offset(speedX + 60, y), streakPaint);
+    }
+
+    canvas.restore();
   }
 
   // 🌕 Authentic Soft Circular Lunar Impact Craters on the Moon
@@ -1099,17 +1644,64 @@ class IslandAerialPainter extends CustomPainter {
     if (island.isPresidential) return;
 
     final archetype = getIslandArchetype(island.shapeStyle);
+
+    Color lagoonColor;
+    Color sandColor;
+
+    switch (colonyType) {
+      case CelestialColonyType.earth:
+        lagoonColor = const Color(0xFF06B6D4).withValues(alpha: 0.90);
+        sandColor = const Color(0xFFFDE68A);
+        break;
+      case CelestialColonyType.mars:
+        lagoonColor = const Color(0xFF991B1B).withValues(alpha: 0.85);
+        sandColor = const Color(0xFFFDBA74);
+        break;
+      case CelestialColonyType.jupiter:
+        lagoonColor = const Color(0xFFD97706).withValues(alpha: 0.88);
+        sandColor = const Color(0xFFFDE047);
+        break;
+      case CelestialColonyType.saturn:
+        lagoonColor = const Color(0xFFB45309).withValues(alpha: 0.88);
+        sandColor = const Color(0xFFFEF08A);
+        break;
+      case CelestialColonyType.moon:
+        lagoonColor = const Color(0xFF1E293B).withValues(alpha: 0.90);
+        sandColor = const Color(0xFFCBD5E1);
+        break;
+      case CelestialColonyType.europa:
+        lagoonColor = const Color(0xFF0284C7).withValues(alpha: 0.90);
+        sandColor = const Color(0xFFF0F9FF);
+        break;
+      case CelestialColonyType.venus:
+        lagoonColor = const Color(0xFFB45309).withValues(alpha: 0.88);
+        sandColor = const Color(0xFFFDE68A);
+        break;
+      case CelestialColonyType.titan:
+        lagoonColor = const Color(0xFF047857).withValues(alpha: 0.88);
+        sandColor = const Color(0xFFA7F3D0);
+        break;
+      case CelestialColonyType.pluto:
+        lagoonColor = const Color(0xFFA855F7).withValues(alpha: 0.88);
+        sandColor = const Color(0xFFF5F3FF);
+        break;
+      case CelestialColonyType.neptune:
+        lagoonColor = const Color(0xFF1E3A8A).withValues(alpha: 0.90);
+        sandColor = const Color(0xFFBFDBFE);
+        break;
+    }
+
     final lagoonPaint = Paint()
-      ..color = const Color(0xFF06B6D4).withValues(alpha: 0.90)
+      ..color = lagoonColor
       ..style = PaintingStyle.fill;
 
     final lagoonSandRim = Paint()
-      ..color = const Color(0xFFFDE68A)
+      ..color = sandColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4.5;
 
     final lagoonFoam = Paint()
-      ..color = Colors.white.withValues(alpha: 0.6)
+      ..color = Colors.white.withValues(alpha: 0.5)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.4;
 
@@ -1605,32 +2197,79 @@ class IslandAerialPainter extends CustomPainter {
 
     // 1. Subtle distinct territorial fill per district (harmonized with planetary biome)
     final List<Paint> districtPaints;
-    if (isMoon) {
-      districtPaints = [
-        Paint()..color = const Color(0xFF475569).withValues(alpha: 0.25),
-        Paint()..color = const Color(0xFF64748B).withValues(alpha: 0.20),
-        Paint()..color = const Color(0xFF334155).withValues(alpha: 0.30),
-      ];
-    } else if (isMars) {
-      districtPaints = [
-        Paint()..color = const Color(0xFF9A3412).withValues(alpha: 0.25),
-        Paint()..color = const Color(0xFFC2410C).withValues(alpha: 0.20),
-        Paint()..color = const Color(0xFF7C2D12).withValues(alpha: 0.30),
-      ];
-    } else if (isJupiter) {
-      districtPaints = [
-        Paint()..color = const Color(0xFFB45309).withValues(alpha: 0.25),
-        Paint()..color = const Color(0xFFD97706).withValues(alpha: 0.20),
-        Paint()..color = const Color(0xFF78350F).withValues(alpha: 0.30),
-      ];
-    } else {
-      districtPaints = [
-        Paint()..color = const Color(0xFF15803D).withValues(alpha: 0.28),
-        Paint()..color = const Color(0xFF16A34A).withValues(alpha: 0.20),
-        Paint()..color = const Color(0xFF047857).withValues(alpha: 0.26),
-        Paint()..color = const Color(0xFF166534).withValues(alpha: 0.32),
-        Paint()..color = const Color(0xFF0F766E).withValues(alpha: 0.22),
-      ];
+    switch (colonyType) {
+      case CelestialColonyType.moon:
+        districtPaints = [
+          Paint()..color = const Color(0xFF475569).withValues(alpha: 0.25),
+          Paint()..color = const Color(0xFF64748B).withValues(alpha: 0.20),
+          Paint()..color = const Color(0xFF334155).withValues(alpha: 0.30),
+        ];
+        break;
+      case CelestialColonyType.mars:
+        districtPaints = [
+          Paint()..color = const Color(0xFF9A3412).withValues(alpha: 0.25),
+          Paint()..color = const Color(0xFFC2410C).withValues(alpha: 0.20),
+          Paint()..color = const Color(0xFF7C2D12).withValues(alpha: 0.30),
+        ];
+        break;
+      case CelestialColonyType.jupiter:
+        districtPaints = [
+          Paint()..color = const Color(0xFFB45309).withValues(alpha: 0.25),
+          Paint()..color = const Color(0xFFD97706).withValues(alpha: 0.20),
+          Paint()..color = const Color(0xFF78350F).withValues(alpha: 0.30),
+        ];
+        break;
+      case CelestialColonyType.saturn:
+        districtPaints = [
+          Paint()..color = const Color(0xFFCA8A04).withValues(alpha: 0.25),
+          Paint()..color = const Color(0xFFEAB308).withValues(alpha: 0.20),
+          Paint()..color = const Color(0xFF854D0E).withValues(alpha: 0.30),
+        ];
+        break;
+      case CelestialColonyType.europa:
+        districtPaints = [
+          Paint()..color = const Color(0xFF7DD3FC).withValues(alpha: 0.28),
+          Paint()..color = const Color(0xFF38BDF8).withValues(alpha: 0.22),
+          Paint()..color = const Color(0xFF0284C7).withValues(alpha: 0.26),
+        ];
+        break;
+      case CelestialColonyType.venus:
+        districtPaints = [
+          Paint()..color = const Color(0xFFF59E0B).withValues(alpha: 0.26),
+          Paint()..color = const Color(0xFFD97706).withValues(alpha: 0.22),
+          Paint()..color = const Color(0xFFB45309).withValues(alpha: 0.30),
+        ];
+        break;
+      case CelestialColonyType.titan:
+        districtPaints = [
+          Paint()..color = const Color(0xFF047857).withValues(alpha: 0.26),
+          Paint()..color = const Color(0xFF059669).withValues(alpha: 0.22),
+          Paint()..color = const Color(0xFF065F46).withValues(alpha: 0.30),
+        ];
+        break;
+      case CelestialColonyType.pluto:
+        districtPaints = [
+          Paint()..color = const Color(0xFFA855F7).withValues(alpha: 0.26),
+          Paint()..color = const Color(0xFF9333EA).withValues(alpha: 0.20),
+          Paint()..color = const Color(0xFF6B21A8).withValues(alpha: 0.30),
+        ];
+        break;
+      case CelestialColonyType.neptune:
+        districtPaints = [
+          Paint()..color = const Color(0xFF2563EB).withValues(alpha: 0.26),
+          Paint()..color = const Color(0xFF1D4ED8).withValues(alpha: 0.22),
+          Paint()..color = const Color(0xFF1E40AF).withValues(alpha: 0.30),
+        ];
+        break;
+      case CelestialColonyType.earth:
+        districtPaints = [
+          Paint()..color = const Color(0xFF15803D).withValues(alpha: 0.28),
+          Paint()..color = const Color(0xFF16A34A).withValues(alpha: 0.20),
+          Paint()..color = const Color(0xFF047857).withValues(alpha: 0.26),
+          Paint()..color = const Color(0xFF166534).withValues(alpha: 0.32),
+          Paint()..color = const Color(0xFF0F766E).withValues(alpha: 0.22),
+        ];
+        break;
     }
 
     for (int i = 0; i < cells.length; i++) {
@@ -1898,20 +2537,66 @@ class IslandAerialPainter extends CustomPainter {
     canvas.translate(housePos.dx, housePos.dy);
     canvas.rotate(plotRot);
 
-    // 1. Soft lawn turf base with subtle border
+    // 1. Soft turf base harmonized with the planetary biome
+    Color turfColor;
+    Color borderColor;
+
+    switch (colonyType) {
+      case CelestialColonyType.moon:
+        turfColor = const Color(0xFF475569);
+        borderColor = const Color(0xFF94A3B8);
+        break;
+      case CelestialColonyType.mars:
+        turfColor = const Color(0xFF9A3412);
+        borderColor = const Color(0xFFEA580C);
+        break;
+      case CelestialColonyType.jupiter:
+        turfColor = const Color(0xFFB45309);
+        borderColor = const Color(0xFFF59E0B);
+        break;
+      case CelestialColonyType.saturn:
+        turfColor = const Color(0xFFCA8A04);
+        borderColor = const Color(0xFFFCD34D);
+        break;
+      case CelestialColonyType.europa:
+        turfColor = const Color(0xFF0284C7);
+        borderColor = const Color(0xFF7DD3FC);
+        break;
+      case CelestialColonyType.venus:
+        turfColor = const Color(0xFFB45309);
+        borderColor = const Color(0xFFFBBF24);
+        break;
+      case CelestialColonyType.titan:
+        turfColor = const Color(0xFF047857);
+        borderColor = const Color(0xFF10B981);
+        break;
+      case CelestialColonyType.pluto:
+        turfColor = const Color(0xFFA855F7);
+        borderColor = const Color(0xFFC084FC);
+        break;
+      case CelestialColonyType.neptune:
+        turfColor = const Color(0xFF2563EB);
+        borderColor = const Color(0xFF60A5FA);
+        break;
+      case CelestialColonyType.earth:
+        turfColor = const Color(0xFF15803D);
+        borderColor = const Color(0xFF4ADE80);
+        break;
+    }
+
     final turfRRect = RRect.fromRectAndRadius(
       Rect.fromCenter(center: Offset.zero, width: 28.0, height: 22.0),
       const Radius.circular(5.0),
     );
     final turfPaint = Paint()
-      ..color = const Color(0xFF15803D).withValues(alpha: 0.28)
+      ..color = turfColor.withValues(alpha: 0.32)
       ..style = PaintingStyle.fill;
     canvas.drawRRect(turfRRect, turfPaint);
 
     final borderPaint = Paint()
-      ..color = const Color(0xFF4ADE80).withValues(alpha: 0.45)
+      ..color = borderColor.withValues(alpha: 0.50)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.8;
+      ..strokeWidth = 0.85;
     canvas.drawRRect(turfRRect, borderPaint);
 
     // 2. Small stone path leading into center
@@ -2865,7 +3550,7 @@ class IslandAerialPainter extends CustomPainter {
             const Offset(-45, -75), const Offset(45, -75),
           ]
         : [
-            // Lush palm groves along pathways, beach perimeters, and between villas
+            // Groves along pathways, shoreline perimeters, and between plots
             const Offset(-155, -55), const Offset(-145, -15), const Offset(-150, 25), const Offset(-140, 65),
             const Offset(-125, -95), const Offset(-115, -60), const Offset(-110, 50), const Offset(-105, 95),
             const Offset(-85, -125), const Offset(-75, -80), const Offset(-80, 75), const Offset(-70, 125),
@@ -2882,38 +3567,62 @@ class IslandAerialPainter extends CustomPainter {
       final pos = trees[idx];
       final treeSize = 8.5 + (idx % 3) * 1.5;
 
-      // 1. Soft tree drop shadow (angled southeast)
+      // 1. Soft drop shadow (angled southeast)
       canvas.drawCircle(
         pos.translate(2.5, 3.2),
         treeSize,
         Paint()..color = Colors.black.withValues(alpha: 0.28),
       );
 
-      // 2. Base deep jungle green canopy
-      canvas.drawCircle(pos, treeSize, Paint()..color = const Color(0xFF14532D));
-
-      // 3. 6 Radiating Palm Star Fronds / Leaves (like tropical palm trees)
-      final leafPaint = Paint()..color = const Color(0xFF16A34A)..strokeWidth = 2.2..strokeCap = StrokeCap.round;
-      for (int f = 0; f < 6; f++) {
-        final fa = (f * math.pi / 3) + (idx * 0.4);
-        final lx = pos.dx + (treeSize * 1.1) * math.cos(fa);
-        final ly = pos.dy + (treeSize * 1.1) * math.sin(fa);
-        canvas.drawLine(pos, Offset(lx, ly), leafPaint);
+      if (isEarth) {
+        // 🌴 Earth Tropical Palm Canopies
+        canvas.drawCircle(pos, treeSize, Paint()..color = const Color(0xFF14532D));
+        final leafPaint = Paint()..color = const Color(0xFF16A34A)..strokeWidth = 2.2..strokeCap = StrokeCap.round;
+        for (int f = 0; f < 6; f++) {
+          final fa = (f * math.pi / 3) + (idx * 0.4);
+          final lx = pos.dx + (treeSize * 1.1) * math.cos(fa);
+          final ly = pos.dy + (treeSize * 1.1) * math.sin(fa);
+          canvas.drawLine(pos, Offset(lx, ly), leafPaint);
+        }
+        canvas.drawCircle(pos.translate(-0.8, -1.0), treeSize * 0.72, Paint()..color = const Color(0xFF22C55E));
+        canvas.drawCircle(pos.translate(-1.4, -1.6), treeSize * 0.38, Paint()..color = const Color(0xFF86EFAC));
+      } else if (isTitan) {
+        // 🌿 Titan Bioluminescent Alien Ferns
+        canvas.drawCircle(pos, treeSize, Paint()..color = const Color(0xFF064E3B));
+        canvas.drawCircle(pos.translate(-0.8, -1.0), treeSize * 0.70, Paint()..color = const Color(0xFF059669));
+        canvas.drawCircle(pos.translate(-1.4, -1.6), treeSize * 0.35, Paint()..color = const Color(0xFF34D399));
+      } else if (isMoon) {
+        // 📡 Lunar Solar Arrays & Comms Dishes
+        final panelRect = Rect.fromCenter(center: pos, width: treeSize * 1.6, height: treeSize * 0.9);
+        canvas.drawRect(panelRect, Paint()..color = const Color(0xFF1E293B));
+        canvas.drawRect(panelRect, Paint()..color = const Color(0xFF38BDF8)..style = PaintingStyle.stroke..strokeWidth = 0.8);
+        canvas.drawCircle(pos.translate(1, -1), 1.4, Paint()..color = Colors.white);
+      } else if (isMars) {
+        // 🔴 Mars Pressurized Bio-Domes
+        canvas.drawCircle(pos, treeSize * 0.9, Paint()..color = const Color(0xFF7C2D12));
+        canvas.drawCircle(pos.translate(-0.6, -0.8), treeSize * 0.65, Paint()..color = const Color(0xFFEA580C));
+        canvas.drawCircle(pos.translate(-1.2, -1.4), treeSize * 0.30, Paint()..color = const Color(0xFFFDBA74));
+      } else if (isEuropa) {
+        // 🧊 Europa Cryo-Crystal Spires
+        canvas.drawCircle(pos, treeSize * 0.85, Paint()..color = const Color(0xFF0284C7));
+        canvas.drawCircle(pos.translate(-0.8, -0.8), treeSize * 0.60, Paint()..color = const Color(0xFF7DD3FC));
+        canvas.drawCircle(pos.translate(-1.4, -1.4), treeSize * 0.30, Paint()..color = Colors.white);
+      } else if (isPluto) {
+        // ❄️ Pluto Cryogenic Nitrogen Crystal Pinnacles (Lavender/Violet)
+        canvas.drawCircle(pos, treeSize * 0.85, Paint()..color = const Color(0xFF581C87));
+        canvas.drawCircle(pos.translate(-0.8, -0.8), treeSize * 0.60, Paint()..color = const Color(0xFFA855F7));
+        canvas.drawCircle(pos.translate(-1.4, -1.4), treeSize * 0.30, Paint()..color = const Color(0xFFF3E8FF));
+      } else {
+        // 🪐 Gas Giant / Volcanic Beacon Stations (Jupiter, Saturn, Venus, Neptune)
+        final pylonColor = isJupiter
+            ? const Color(0xFFF59E0B)
+            : (isSaturn
+                ? const Color(0xFFCA8A04)
+                : (isVenus ? const Color(0xFFF59E0B) : const Color(0xFF38BDF8)));
+        canvas.drawCircle(pos, treeSize * 0.80, Paint()..color = const Color(0xFF0F172A));
+        canvas.drawCircle(pos.translate(-0.6, -0.8), treeSize * 0.55, Paint()..color = pylonColor);
+        canvas.drawCircle(pos.translate(-1.2, -1.2), treeSize * 0.25, Paint()..color = Colors.white);
       }
-
-      // 4. Sunlit vibrant emerald center leaf layer
-      canvas.drawCircle(
-        pos.translate(-0.8, -1.0),
-        treeSize * 0.72,
-        Paint()..color = const Color(0xFF22C55E),
-      );
-
-      // 5. Bright highlight crown
-      canvas.drawCircle(
-        pos.translate(-1.4, -1.6),
-        treeSize * 0.38,
-        Paint()..color = const Color(0xFF86EFAC),
-      );
     }
   }
 

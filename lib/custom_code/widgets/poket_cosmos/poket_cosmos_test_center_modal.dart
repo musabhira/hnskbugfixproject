@@ -6,6 +6,7 @@ import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_b
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_referral_gateway_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_navigator_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/profile_setup_onboarding_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_island_inspector_modal.dart';
 
 /// 🪐 Poket Cosmos Testing & Demo Center Modal
 /// Allows pairs/testers/admins to:
@@ -122,6 +123,18 @@ class _PoketCosmosTestCenterModalState extends State<PoketCosmosTestCenterModal>
             // SECTION 1: Born Address Ceremony Tests
             _buildSectionHeader('🎬 1. BORN ADDRESS CEREMONY (ജനന ചടങ്ങ്)', 'ടെസ്റ്റ് സിനാരിയോ തിരഞ്ഞെടുക്കുക'),
             const SizedBox(height: 10),
+
+            _buildActionCard(
+              icon: '🏝️',
+              title: 'Inspect All 10 Celestial Islands & Oceans 🪐',
+              subtitle: 'Earth, Jupiter, Pluto, Moon, Mars, Europa, Titan, Saturn, Venus, Neptune with custom gradient oceans & 18 plots!',
+              color: const Color(0xFF38BDF8),
+              onTap: () {
+                Navigator.pop(context);
+                PoketCosmosIslandInspectorModal.show(context);
+              },
+            ),
+            const SizedBox(height: 8),
 
             _buildActionCard(
               icon: '🚪',

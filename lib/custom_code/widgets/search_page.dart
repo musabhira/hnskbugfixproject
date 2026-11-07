@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_born_address_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_referral_gateway_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_island_inspector_modal.dart';
 
 import '/backend/supabase/supabase.dart';
 import 'index.dart'; // Imports other custom widgets
@@ -312,6 +313,31 @@ class _SearchPageState extends State<SearchPage> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
+          // 🏝️ Button 0: All Islands Inspector (10-Planet Carousel)
+          FloatingActionButton.extended(
+            heroTag: 'fab_search_cosmos_all_islands_inspector',
+            backgroundColor: const Color(0xFF1E1B4B),
+            foregroundColor: const Color(0xFF38BDF8),
+            elevation: 8,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: Color(0xFF38BDF8), width: 1.8),
+            ),
+            icon: const Text('🏝️', style: TextStyle(fontSize: 18)),
+            label: const Text(
+              'INSPECT ALL ISLANDS 🪐',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  letterSpacing: 0.5),
+            ),
+            onPressed: () {
+              HapticFeedback.mediumImpact();
+              PoketCosmosIslandInspectorModal.show(context);
+            },
+          ),
+          const SizedBox(height: 10),
+
           // 🪐 Button 1: Cosmos Test Lab & Born Ceremony (Positioned directly on top of Cosmos Map button!)
           FloatingActionButton.extended(
             heroTag: 'fab_search_cosmos_test_lab',
