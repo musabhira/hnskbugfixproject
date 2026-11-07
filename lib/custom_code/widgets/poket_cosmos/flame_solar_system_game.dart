@@ -10,7 +10,8 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
   final PoketPlanet? selectedPlanet;
   final ValueChanged<PoketPlanet> onPlanetSelected;
   final double tiltAngle; // 3D bend / side perspective
-  final bool followSelectedPlanet; // Center camera on selected planet (e.g. Jupiter)
+  final bool
+      followSelectedPlanet; // Center camera on selected planet (e.g. Jupiter)
 
   FlameSolarSystemGame({
     required this.planets,
@@ -76,8 +77,7 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
           (_orbitElapsedSeconds * 0.35 * selectedPlanet!.orbitSpeed) %
               (2 * math.pi);
       targetX = selectedPlanet!.orbitDistance * math.cos(selAngle);
-      targetY =
-          selectedPlanet!.orbitDistance * math.sin(selAngle) * yCompress;
+      targetY = selectedPlanet!.orbitDistance * math.sin(selAngle) * yCompress;
     }
 
     canvas.save();
@@ -109,7 +109,8 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
     // 5. Draw Orbiting Planets with Scientific Moons (Sorted by Y for true 3D depth)
     final List<_RenderablePlanet> renderList = [];
     for (final planet in planets) {
-      final angle = (_orbitElapsedSeconds * 0.35 * planet.orbitSpeed) % (2 * math.pi);
+      final angle =
+          (_orbitElapsedSeconds * 0.35 * planet.orbitSpeed) % (2 * math.pi);
       final double px = planet.orbitDistance * math.cos(angle);
       final double py = planet.orbitDistance * math.sin(angle) * yCompress;
 
@@ -201,12 +202,14 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
             const Color(0xFFFDE68A).withValues(alpha: 0.9),
             const Color(0xFF78350F).withValues(alpha: 0.4),
           ],
-        ).createShader(Rect.fromCenter(center: Offset.zero, width: radius * 3.6, height: radius * 1.1))
+        ).createShader(Rect.fromCenter(
+            center: Offset.zero, width: radius * 3.6, height: radius * 1.1))
         ..style = PaintingStyle.stroke
         ..strokeWidth = radius * 0.4;
 
       canvas.drawOval(
-        Rect.fromCenter(center: Offset.zero, width: radius * 3.6, height: radius * 1.1),
+        Rect.fromCenter(
+            center: Offset.zero, width: radius * 3.6, height: radius * 1.1),
         ringPaint,
       );
       canvas.restore();
@@ -239,7 +242,9 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
 
     // 🌕 Scientific Satellites / Moons Orbiting around Parent Planet (Earth's Moon, Jupiter's Moons, etc.)
     for (final sat in p.satellites) {
-      final satAngle = _orbitElapsedSeconds * (0.8 + sat.orbitSpeed.abs() * 0.4) * (sat.orbitSpeed < 0 ? -1 : 1);
+      final satAngle = _orbitElapsedSeconds *
+          (0.8 + sat.orbitSpeed.abs() * 0.4) *
+          (sat.orbitSpeed < 0 ? -1 : 1);
       final satDist = sat.orbitDistance;
       final sx = pos.dx + satDist * math.cos(satAngle);
       final sy = pos.dy + satDist * math.sin(satAngle) * yCompress;
@@ -251,7 +256,8 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 0.65;
       canvas.drawOval(
-        Rect.fromCenter(center: pos, width: satDist * 2, height: satDist * 2 * yCompress),
+        Rect.fromCenter(
+            center: pos, width: satDist * 2, height: satDist * 2 * yCompress),
         satOrbitPaint,
       );
 
@@ -280,13 +286,16 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
         ),
         textDirection: TextDirection.ltr,
       )..layout();
-      satLabel.paint(canvas, Offset(satPos.dx - satLabel.width / 2, satPos.dy + sat.radius + 2));
+      satLabel.paint(canvas,
+          Offset(satPos.dx - satLabel.width / 2, satPos.dy + sat.radius + 2));
     }
 
     // Planet Label
     final namePainter = TextPainter(
       text: TextSpan(
-        text: p.isExoplanet ? '🌌 ${p.name}' : (p.isDwarfPlanet ? '❄️ ${p.name}' : p.name),
+        text: p.isExoplanet
+            ? '🌌 ${p.name}'
+            : (p.isDwarfPlanet ? '❄️ ${p.name}' : p.name),
         style: TextStyle(
           color: isSel ? const Color(0xFFFFD700) : Colors.white70,
           fontSize: isSel ? 10.5 : 9.0,
@@ -298,7 +307,8 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    namePainter.paint(canvas, Offset(pos.dx - namePainter.width / 2, pos.dy + radius + 4));
+    namePainter.paint(
+        canvas, Offset(pos.dx - namePainter.width / 2, pos.dy + radius + 4));
   }
 
   @override
@@ -311,24 +321,28 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
           (_orbitElapsedSeconds * 0.35 * selectedPlanet!.orbitSpeed) %
               (2 * math.pi);
       targetX = selectedPlanet!.orbitDistance * math.cos(selAngle);
-      targetY =
-          selectedPlanet!.orbitDistance * math.sin(selAngle) * yCompress;
+      targetY = selectedPlanet!.orbitDistance * math.sin(selAngle) * yCompress;
     }
     final localTap =
         event.localPosition - size / 2 + Vector2(targetX, targetY);
 
     for (final planet in planets) {
-      final angle = (_orbitElapsedSeconds * 0.35 * planet.orbitSpeed) % (2 * math.pi);
+      final angle =
+          (_orbitElapsedSeconds * 0.35 * planet.orbitSpeed) % (2 * math.pi);
       final px = planet.orbitDistance * math.cos(angle);
       final py = planet.orbitDistance * math.sin(angle) * yCompress;
       final planetPos = Offset(px, py);
 
       // 1. Check if user tapped directly on one of this planet's natural satellites (Moons)
       for (final sat in planet.satellites) {
-        final satAngle = _orbitElapsedSeconds * (0.8 + sat.orbitSpeed.abs() * 0.4) * (sat.orbitSpeed < 0 ? -1 : 1);
+        final satAngle = _orbitElapsedSeconds *
+            (0.8 + sat.orbitSpeed.abs() * 0.4) *
+            (sat.orbitSpeed < 0 ? -1 : 1);
         final sx = planetPos.dx + sat.orbitDistance * math.cos(satAngle);
-        final sy = planetPos.dy + sat.orbitDistance * math.sin(satAngle) * yCompress;
-        final satDist = (Offset(sx, sy) - Offset(localTap.x, localTap.y)).distance;
+        final sy =
+            planetPos.dy + sat.orbitDistance * math.sin(satAngle) * yCompress;
+        final satDist =
+            (Offset(sx, sy) - Offset(localTap.x, localTap.y)).distance;
 
         if (satDist <= sat.radius + 14) {
           onPlanetSelected(sat.toPlanet());
