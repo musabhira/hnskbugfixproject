@@ -219,7 +219,7 @@ class PoketCosmosAllocationService {
     return colonies.first; // Earth Prime fallback
   }
 
-  /// 🌐 Computes the unique global sequential plot number (1 to 200 in Wave 1, 201 to 400 in Wave 2, etc.)
+  /// 🌐 Computes the unique global sequential plot number (1 to 250 in Wave 1, 251 to 500 in Wave 2, etc.)
   static int calculateGlobalPlotNumber({
     int wave = 1,
     required String planetCode,
@@ -867,7 +867,7 @@ class PoketCosmosAllocationService {
           .from('profile')
           .select('id, user_id, name, display_name, profile_image_url, current_day, user_day, learning_day, pocket_score, bio, country')
           .order('created_at', ascending: true)
-          .limit(200);
+          .limit(500);
 
       final List<dynamic> profiles = res as List<dynamic>;
 

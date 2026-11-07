@@ -830,30 +830,62 @@ class _SearchPageState extends State<SearchPage> {
                 style: GoogleFonts.inter(color: const Color(0xFFCBD5E1), fontSize: 13, height: 1.4),
               ),
               const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => PoketCosmosResidentIslandView(
-                          userId: SupaFlow.client.auth.currentUser?.id,
-                        ),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        final flightManifest = PoketCosmosDistanceService.instance
+                            .calculateFlightManifest(originCode: 'EP', destinationCode: code);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PoketCosmicFlightPage(
+                              manifest: flightManifest,
+                              targetUserId: '',
+                              targetName: '$planetName Plot #$localNum',
+                            ),
+                          ),
+                        );
+                      },
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Color(0xFF38BDF8)),
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFFFC00),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      child: Text(
+                        'FLY TO PLOT 🚀',
+                        style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontSize: 12.5, fontWeight: FontWeight.bold),
+                      ),
+                    ),
                   ),
-                  child: Text(
-                    'VIEW ON ISLAND MAP ➔',
-                    style: GoogleFonts.outfit(color: Colors.black, fontSize: 13.5, fontWeight: FontWeight.bold),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PoketCosmosResidentIslandView(
+                              userId: SupaFlow.client.auth.currentUser?.id,
+                            ),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFFFC00),
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text(
+                        'ISLAND MAP 🏝️',
+                        style: GoogleFonts.outfit(color: Colors.black, fontSize: 12.5, fontWeight: FontWeight.bold),
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
             ],
           ),
