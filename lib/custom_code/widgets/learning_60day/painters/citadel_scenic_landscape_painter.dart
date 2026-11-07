@@ -15,6 +15,7 @@ class CitadelScenicLandscapePainter extends CustomPainter {
   final bool isDay90;
   final double ambientProg;
   final bool isPresident;
+  final String? planetCode; // 'EP', 'MAR', 'JUP', 'SAT', 'LUN', 'EUR', 'VEN', 'TTN', 'PLT', 'NEP'
 
   CitadelScenicLandscapePainter({
     this.isDamaged = false,
@@ -23,6 +24,7 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     this.isDay90 = false,
     this.ambientProg = 0.0,
     this.isPresident = false,
+    this.planetCode,
   });
 
   @override
@@ -34,19 +36,87 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     final gy = groundBaseY > 0 ? groundBaseY : 920.0;
 
     // 1. Sky & Cosmic Atmosphere (Covers full world canvas down to ground)
-    final skyShader = isNight
-        ? const LinearGradient(
-            colors: [
-              Color(0xFF030712), // Deep Space Obsidian
-              Color(0xFF090D1A),
-              Color(0xFF0F172A),
-              Color(0xFF1E293B), // Horizon Twilight
-            ],
-            stops: [0.0, 0.35, 0.70, 1.0],
+    final Shader skyShader;
+    if (isNight) {
+      skyShader = const LinearGradient(
+        colors: [
+          Color(0xFF030712), // Deep Space Obsidian
+          Color(0xFF090D1A),
+          Color(0xFF0F172A),
+          Color(0xFF1E293B), // Horizon Twilight
+        ],
+        stops: [0.0, 0.35, 0.70, 1.0],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(0, 0, w, h));
+    } else {
+      switch (planetCode) {
+        case 'MAR':
+          skyShader = const LinearGradient(
+            colors: [Color(0xFF7F1D1D), Color(0xFFC2410C), Color(0xFFFDBA74)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-          ).createShader(Rect.fromLTWH(0, 0, w, h))
-        : const LinearGradient(
+          ).createShader(Rect.fromLTWH(0, 0, w, h));
+          break;
+        case 'JUP':
+          skyShader = const LinearGradient(
+            colors: [Color(0xFF0F172A), Color(0xFF1E3A8A), Color(0xFF0284C7), Color(0xFF78350F)],
+            stops: [0.0, 0.40, 0.80, 1.0],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, 0, w, h));
+          break;
+        case 'LUN':
+          skyShader = const LinearGradient(
+            colors: [Color(0xFF020617), Color(0xFF0B0F19), Color(0xFF1E293B)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, 0, w, h));
+          break;
+        case 'PLT':
+          skyShader = const LinearGradient(
+            colors: [Color(0xFF1E1B4B), Color(0xFF3B0764), Color(0xFF581C87)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, 0, w, h));
+          break;
+        case 'EUR':
+          skyShader = const LinearGradient(
+            colors: [Color(0xFF0C4A6E), Color(0xFF0284C7), Color(0xFF38BDF8), Color(0xFFE0F2FE)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, 0, w, h));
+          break;
+        case 'SAT':
+          skyShader = const LinearGradient(
+            colors: [Color(0xFF451A03), Color(0xFF78350F), Color(0xFFD97706), Color(0xFFFDE68A)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, 0, w, h));
+          break;
+        case 'VEN':
+          skyShader = const LinearGradient(
+            colors: [Color(0xFF78350F), Color(0xFFB45309), Color(0xFFF59E0B)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, 0, w, h));
+          break;
+        case 'TTN':
+          skyShader = const LinearGradient(
+            colors: [Color(0xFF064E3B), Color(0xFF065F46), Color(0xFF10B981), Color(0xFFA7F3D0)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, 0, w, h));
+          break;
+        case 'NEP':
+          skyShader = const LinearGradient(
+            colors: [Color(0xFF172554), Color(0xFF1E3A8A), Color(0xFF2563EB), Color(0xFF93C5FD)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, 0, w, h));
+          break;
+        default: // 'EP' or null: 100% untouched Earth Prime
+          skyShader = const LinearGradient(
             colors: [
               Color(0xFF0284C7), // Deep Azure
               Color(0xFF38BDF8), // Vibrant Cyan
@@ -55,8 +125,32 @@ class CitadelScenicLandscapePainter extends CustomPainter {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ).createShader(Rect.fromLTWH(0, 0, w, h));
+      }
+    }
 
     canvas.drawRect(Rect.fromLTWH(0, 0, w, h), Paint()..shader = skyShader);
+
+    // Celestial Starlight / Atmosphere Accents on Alien Worlds
+    if (!isNight) {
+      if (planetCode == 'LUN' || planetCode == 'PLT') {
+        // Twinkling stars in daytime void of Moon and Pluto
+        final starPaint = Paint()..color = Colors.white.withValues(alpha: 0.65);
+        for (int s = 0; s < 35; s++) {
+          final sx = ((s * 97.0) % w);
+          final sy = ((s * 43.0) % (gy * 0.55));
+          final sz = 0.8 + ((s % 3) * 0.5);
+          canvas.drawCircle(Offset(sx, sy), sz, starPaint);
+        }
+      } else if (planetCode == 'JUP') {
+        // Swirling Jovian storm auroral ribbons
+        final jovianPaint = Paint()
+          ..color = const Color(0xFFF59E0B).withValues(alpha: 0.08)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 14.0;
+        canvas.drawLine(Offset(0, gy * 0.22), Offset(w, gy * 0.25), jovianPaint);
+        canvas.drawLine(Offset(0, gy * 0.40), Offset(w, gy * 0.38), jovianPaint);
+      }
+    }
 
     if (isNight) {
       // 🌌 Faint Celestial Nebula Dust Band Across Upper Sky
@@ -246,10 +340,43 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     mountainPath.lineTo(0, h);
     mountainPath.close();
 
-    final mountainPaint = Paint()
-      ..color = isNight
-          ? const Color(0xFF1E1B4B).withValues(alpha: 0.65)
-          : const Color(0xFF0D9488).withValues(alpha: 0.40);
+    final Color mountainColor;
+    if (isNight) {
+      mountainColor = const Color(0xFF1E1B4B).withValues(alpha: 0.65);
+    } else {
+      switch (planetCode) {
+        case 'MAR':
+          mountainColor = const Color(0xFF7C2D12).withValues(alpha: 0.65);
+          break;
+        case 'JUP':
+          mountainColor = const Color(0xFF1E3A8A).withValues(alpha: 0.55);
+          break;
+        case 'LUN':
+          mountainColor = const Color(0xFF475569).withValues(alpha: 0.60);
+          break;
+        case 'PLT':
+          mountainColor = const Color(0xFF581C87).withValues(alpha: 0.60);
+          break;
+        case 'EUR':
+          mountainColor = const Color(0xFF0284C7).withValues(alpha: 0.50);
+          break;
+        case 'SAT':
+          mountainColor = const Color(0xFF78350F).withValues(alpha: 0.55);
+          break;
+        case 'VEN':
+          mountainColor = const Color(0xFF92400E).withValues(alpha: 0.60);
+          break;
+        case 'TTN':
+          mountainColor = const Color(0xFF064E3B).withValues(alpha: 0.55);
+          break;
+        case 'NEP':
+          mountainColor = const Color(0xFF1E3A8A).withValues(alpha: 0.60);
+          break;
+        default:
+          mountainColor = const Color(0xFF0D9488).withValues(alpha: 0.40);
+      }
+    }
+    final mountainPaint = Paint()..color = mountainColor;
     canvas.drawPath(mountainPath, mountainPaint);
 
     // Mountain Peak highlights
@@ -283,10 +410,43 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     foothillPath.lineTo(0, h);
     foothillPath.close();
 
-    final foothillPaint = Paint()
-      ..color = isNight
-          ? const Color(0xFF064E3B).withValues(alpha: 0.70)
-          : const Color(0xFF15803D).withValues(alpha: 0.65);
+    final Color foothillColor;
+    if (isNight) {
+      foothillColor = const Color(0xFF064E3B).withValues(alpha: 0.70);
+    } else {
+      switch (planetCode) {
+        case 'MAR':
+          foothillColor = const Color(0xFF9A3412).withValues(alpha: 0.75);
+          break;
+        case 'JUP':
+          foothillColor = const Color(0xFF047857).withValues(alpha: 0.70);
+          break;
+        case 'LUN':
+          foothillColor = const Color(0xFF334155).withValues(alpha: 0.70);
+          break;
+        case 'PLT':
+          foothillColor = const Color(0xFF3B0764).withValues(alpha: 0.75);
+          break;
+        case 'EUR':
+          foothillColor = const Color(0xFF0369A1).withValues(alpha: 0.65);
+          break;
+        case 'SAT':
+          foothillColor = const Color(0xFFB45309).withValues(alpha: 0.70);
+          break;
+        case 'VEN':
+          foothillColor = const Color(0xFFB45309).withValues(alpha: 0.70);
+          break;
+        case 'TTN':
+          foothillColor = const Color(0xFF065F46).withValues(alpha: 0.70);
+          break;
+        case 'NEP':
+          foothillColor = const Color(0xFF1D4ED8).withValues(alpha: 0.70);
+          break;
+        default:
+          foothillColor = const Color(0xFF15803D).withValues(alpha: 0.65);
+      }
+    }
+    final foothillPaint = Paint()..color = foothillColor;
     canvas.drawPath(foothillPath, foothillPaint);
 
     // 💨 4. Traditional Dutch Windmill with Rotating Sails on Hilltop
@@ -316,19 +476,109 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       hillPath.close();
     }
 
-    final hillColors = isNight
-        ? [
+    final List<Color> hillColors;
+    final Color ridgeBorderColor;
+    if (isNight) {
+      hillColors = [
+        const Color(0xFF064E3B),
+        const Color(0xFF065F46),
+        const Color(0xFF022C22),
+        const Color(0xFF022C22)
+      ];
+      ridgeBorderColor = const Color(0xFF059669).withValues(alpha: 0.6);
+    } else {
+      switch (planetCode) {
+        case 'MAR':
+          hillColors = [
+            const Color(0xFFEA580C),
+            const Color(0xFFC2410C),
+            const Color(0xFF9A3412),
+            const Color(0xFF7C2D12),
+          ];
+          ridgeBorderColor = const Color(0xFFFDBA74);
+          break;
+        case 'JUP':
+          hillColors = [
+            const Color(0xFF10B981),
+            const Color(0xFF059669),
+            const Color(0xFF047857),
             const Color(0xFF064E3B),
-            const Color(0xFF065F46),
-            const Color(0xFF022C22),
-            const Color(0xFF022C22)
-          ]
-        : [
+          ];
+          ridgeBorderColor = const Color(0xFF6EE7B7);
+          break;
+        case 'LUN':
+          hillColors = [
+            const Color(0xFF64748B),
+            const Color(0xFF475569),
+            const Color(0xFF334155),
+            const Color(0xFF1E293B),
+          ];
+          ridgeBorderColor = const Color(0xFF94A3B8);
+          break;
+        case 'PLT':
+          hillColors = [
+            const Color(0xFFA855F7),
+            const Color(0xFF9333EA),
+            const Color(0xFF7E22CE),
+            const Color(0xFF581C87),
+          ];
+          ridgeBorderColor = const Color(0xFFD8B4FE);
+          break;
+        case 'EUR':
+          hillColors = [
+            const Color(0xFF38BDF8),
+            const Color(0xFF0EA5E9),
+            const Color(0xFF0284C7),
+            const Color(0xFF0369A1),
+          ];
+          ridgeBorderColor = const Color(0xFFBAE6FD);
+          break;
+        case 'SAT':
+          hillColors = [
+            const Color(0xFFD97706),
+            const Color(0xFFB45309),
+            const Color(0xFF92400E),
+            const Color(0xFF78350F),
+          ];
+          ridgeBorderColor = const Color(0xFFFDE68A);
+          break;
+        case 'VEN':
+          hillColors = [
+            const Color(0xFFF59E0B),
+            const Color(0xFFD97706),
+            const Color(0xFFB45309),
+            const Color(0xFF78350F),
+          ];
+          ridgeBorderColor = const Color(0xFFFEF08A);
+          break;
+        case 'TTN':
+          hillColors = [
+            const Color(0xFF10B981),
+            const Color(0xFF059669),
+            const Color(0xFF047857),
+            const Color(0xFF064E3B),
+          ];
+          ridgeBorderColor = const Color(0xFFA7F3D0);
+          break;
+        case 'NEP':
+          hillColors = [
+            const Color(0xFF2563EB),
+            const Color(0xFF1D4ED8),
+            const Color(0xFF1E3A8A),
+            const Color(0xFF172554),
+          ];
+          ridgeBorderColor = const Color(0xFF93C5FD);
+          break;
+        default:
+          hillColors = [
             const Color(0xFF22C55E),
             const Color(0xFF16A34A),
             const Color(0xFF15803D),
             const Color(0xFF14532D)
           ];
+          ridgeBorderColor = const Color(0xFF86EFAC);
+      }
+    }
 
     final hillPaint = Paint()
       ..shader = LinearGradient(
@@ -340,9 +590,7 @@ class CitadelScenicLandscapePainter extends CustomPainter {
 
     // Vibrant Grass Ridge Edge
     final ridgePaint = Paint()
-      ..color = isNight
-          ? const Color(0xFF059669).withValues(alpha: 0.6)
-          : const Color(0xFF86EFAC)
+      ..color = ridgeBorderColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4.5;
     canvas.drawPath(hillPath, ridgePaint);
@@ -371,17 +619,86 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       riverPath.cubicTo(w * 0.55, ry + 155, w * 0.25, ry + 65, 0, ry + 115);
       riverPath.close();
 
-      final riverColors = isNight
-          ? [
-              const Color(0xFF0C4A6E),
-              const Color(0xFF075985),
-              const Color(0xFF0369A1)
-            ]
-          : [
+      final List<Color> riverColors;
+      if (isNight) {
+        riverColors = [
+          const Color(0xFF0C4A6E),
+          const Color(0xFF075985),
+          const Color(0xFF0369A1)
+        ];
+      } else {
+        switch (planetCode) {
+          case 'MAR':
+            riverColors = [
+              const Color(0xFFB45309),
+              const Color(0xFFD97706),
+              const Color(0xFFF59E0B),
+            ];
+            break;
+          case 'JUP':
+            riverColors = [
+              const Color(0xFF1E40AF),
+              const Color(0xFF2563EB),
+              const Color(0xFF38BDF8),
+            ];
+            break;
+          case 'LUN':
+            riverColors = [
+              const Color(0xFF38BDF8),
+              const Color(0xFF94A3B8),
+              const Color(0xFFE2E8F0),
+            ];
+            break;
+          case 'PLT':
+            riverColors = [
+              const Color(0xFF7E22CE),
+              const Color(0xFFA855F7),
+              const Color(0xFFC084FC),
+            ];
+            break;
+          case 'EUR':
+            riverColors = [
+              const Color(0xFF0284C7),
+              const Color(0xFF38BDF8),
+              const Color(0xFFE0F2FE),
+            ];
+            break;
+          case 'SAT':
+            riverColors = [
+              const Color(0xFFB45309),
+              const Color(0xFFD97706),
+              const Color(0xFFFBBF24),
+            ];
+            break;
+          case 'VEN':
+            riverColors = [
+              const Color(0xFFEA580C),
+              const Color(0xFFF59E0B),
+              const Color(0xFFFEF08A),
+            ];
+            break;
+          case 'TTN':
+            riverColors = [
+              const Color(0xFF047857),
+              const Color(0xFF10B981),
+              const Color(0xFF34D399),
+            ];
+            break;
+          case 'NEP':
+            riverColors = [
+              const Color(0xFF1D4ED8),
+              const Color(0xFF2563EB),
+              const Color(0xFF60A5FA),
+            ];
+            break;
+          default:
+            riverColors = [
               const Color(0xFF0284C7),
               const Color(0xFF38BDF8),
               const Color(0xFF0EA5E9)
             ];
+        }
+      }
       final riverPaint = Paint()
         ..shader = LinearGradient(
           colors: riverColors,

@@ -1,8 +1,8 @@
 // Automatic FlutterFlow imports
 import 'package:flutter/material.dart';
-import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_born_address_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_referral_gateway_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_island_inspector_modal.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_home_inspector_modal.dart';
 
 import '/backend/supabase/supabase.dart';
 import 'index.dart'; // Imports other custom widgets
@@ -22,9 +22,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_president_service.d
 import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_street_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_navigator_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_test_center_modal.dart';
 import 'package:flutter/services.dart';
 
 class SearchPage extends StatefulWidget {
@@ -313,6 +311,31 @@ class _SearchPageState extends State<SearchPage> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
+          // 🏡 Button -1: All Homes Inspector (10-Planet "This is Your Home" Atmospheric Test Modal)
+          FloatingActionButton.extended(
+            heroTag: 'fab_search_cosmos_all_homes_inspector',
+            backgroundColor: const Color(0xFF0F2B48),
+            foregroundColor: const Color(0xFF34D399),
+            elevation: 8,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: Color(0xFF34D399), width: 1.8),
+            ),
+            icon: const Text('🏡', style: TextStyle(fontSize: 18)),
+            label: const Text(
+              'INSPECT ALL HOMES 🏡',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  letterSpacing: 0.5),
+            ),
+            onPressed: () {
+              HapticFeedback.mediumImpact();
+              PoketCosmosHomeInspectorModal.show(context);
+            },
+          ),
+          const SizedBox(height: 10),
+
           // 🏝️ Button 0: All Islands Inspector (10-Planet Carousel)
           FloatingActionButton.extended(
             heroTag: 'fab_search_cosmos_all_islands_inspector',

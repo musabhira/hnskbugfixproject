@@ -775,6 +775,9 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
                         child: AnimatedBuilder(
                           animation: _landscapeAmbientController,
                           builder: (context, _) {
+                            final colonyCode = PoketCosmosAllocationService.instance
+                                .getColonyByPlanetName(_assignedPlot.planetName)
+                                .code;
                             return CustomPaint(
                               painter: CitadelScenicLandscapePainter(
                                 isDamaged: false,
@@ -783,6 +786,7 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
                                 isDay90: false,
                                 ambientProg: _landscapeAmbientController.value,
                                 isPresident: false,
+                                planetCode: colonyCode,
                               ),
                             );
                           },
