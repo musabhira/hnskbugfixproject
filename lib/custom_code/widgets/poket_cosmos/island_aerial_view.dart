@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'poket_cosmos_models.dart';
 
 /// 🏝️ Aerial Top-Down Island View Widget with:
@@ -20,6 +21,8 @@ class IslandAerialViewWidget extends StatefulWidget {
   final List<CitizenPlot> plots;
   final ValueChanged<CitizenPlot>? onPlotTapped;
   final int? selectedPlotNumber;
+  final String? planetName;
+  final Map<int, NeighborReservationPass>? initialReservations;
 
   const IslandAerialViewWidget({
     super.key,
@@ -29,6 +32,8 @@ class IslandAerialViewWidget extends StatefulWidget {
     this.plots = const [],
     this.onPlotTapped,
     this.selectedPlotNumber,
+    this.planetName,
+    this.initialReservations,
   });
 
   @override
@@ -38,6 +43,7 @@ class IslandAerialViewWidget extends StatefulWidget {
 class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
+  Map<int, NeighborReservationPass> _activeReservations = {};
 
   @override
   void initState() {
@@ -46,6 +52,21 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
       vsync: this,
       duration: const Duration(seconds: 40),
     )..repeat();
+
+    if (widget.initialReservations != null) {
+      _activeReservations = Map.from(widget.initialReservations!);
+    }
+    _loadReservations();
+  }
+
+  Future<void> _loadReservations() async {
+    final map = await PoketCosmosAllocationService.instance
+        .getActiveReservationsMap(widget.island.id);
+    if (mounted) {
+      setState(() {
+        _activeReservations = map;
+      });
+    }
   }
 
   @override
@@ -70,6 +91,7 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
               isInteractive: widget.isInteractive,
               zoomScale: widget.zoomScale,
               plots: widget.plots,
+              reservations: _activeReservations,
               selectedPlotNumber: widget.selectedPlotNumber,
               animation: _animController,
             ),
@@ -80,8 +102,6 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
   }
 
   void _handleTap(TapUpDetails details, Size size) {
-    if (widget.onPlotTapped == null || widget.plots.isEmpty) return;
-
     final cx = size.width / 2;
     final cy = size.height / 2;
     final scale = widget.isInteractive
@@ -92,8 +112,9 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
     final islandY = (details.localPosition.dy - cy) / scale;
     final tapPoint = Offset(islandX, islandY);
 
+    // 1. Check if occupied citizen plot tapped
     CitizenPlot? hitPlot;
-    double minDistance = 30.0 * scale; // Responsive touch hit radius for generous 34x28 parcels
+    double minDistance = 30.0 * scale;
 
     for (final plot in widget.plots) {
       final d = (plot.coordinates - tapPoint).distance;
@@ -104,31 +125,43 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
     }
 
     if (hitPlot != null) {
-      widget.onPlotTapped!(hitPlot);
+      if (widget.onPlotTapped != null) {
+        widget.onPlotTapped!(hitPlot);
+      } else {
+        HapticFeedback.mediumImpact();
+        PocketCitadelAttackPage.openForUser(
+          context,
+          userId: hitPlot.userId,
+          targetName: hitPlot.userName,
+        );
+      }
       return;
     }
 
-    // 🤝 Check if a vacant neighbor parcel was tapped (to invite a friend!)
+    // 2. Check if a pre-booked or vacant parcel was tapped (1..18 plots)
     final allCoords = IslandAerialPainter.get35PlotCoordinates(widget.island.shapeStyle);
-    int? hitVacantPlotNum;
-    for (int i = 0; i < allCoords.length; i++) {
+    final maxPlots = math.min(PoketCosmosAllocationService.maxPlotsPerIsland, allCoords.length);
+
+    for (int i = 0; i < maxPlots; i++) {
       final plotNum = i + 1;
       final isOccupied = widget.plots.any((p) => p.plotNumber == plotNum);
-      if (!isOccupied) {
-        final d = (allCoords[i] - tapPoint).distance;
-        if (d < 30.0) {
-          hitVacantPlotNum = plotNum;
-          break;
-        }
-      }
-    }
+      if (isOccupied) continue;
 
-    if (hitVacantPlotNum != null) {
-      _showNeighborInviteSheet(context, hitVacantPlotNum);
+      final d = (allCoords[i] - tapPoint).distance;
+      if (d < 30.0) {
+        if (_activeReservations.containsKey(plotNum)) {
+          // Pre-booked parcel tapped
+          _showPreBookedStatusSheet(context, _activeReservations[plotNum]!);
+        } else {
+          // Vacant parcel tapped with [+] sign
+          _showNeighborInviteSheet(context, plotNum);
+        }
+        return;
+      }
     }
   }
 
-  void _showNeighborInviteSheet(BuildContext context, int plotNumber) {
+  void _showPreBookedStatusSheet(BuildContext context, NeighborReservationPass pass) {
     HapticFeedback.mediumImpact();
     showModalBottomSheet(
       context: context,
@@ -137,6 +170,309 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
         padding: const EdgeInsets.all(24),
         decoration: const BoxDecoration(
           color: Color(0xFF0F172A),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          border: Border(top: BorderSide(color: Color(0xFFFFD700), width: 1.8)),
+          boxShadow: [
+            BoxShadow(color: Color(0x66F59E0B), blurRadius: 24, offset: Offset(0, -6)),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFB45309).withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+                  ),
+                  child: const Text('⏳', style: TextStyle(fontSize: 26)),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Plot #${pass.plotNumber} is Pre-Booked!',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Reserved for a friend',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.timer_outlined, color: Color(0xFF38BDF8), size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Time Remaining: ${pass.minutesRemaining} minutes (${pass.minutesRemaining ~/ 60}h ${pass.minutesRemaining % 60}m)',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0284C7).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.key_rounded, color: Color(0xFF38BDF8), size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Born PIN: ${pass.cosmosPin}',
+                      style: GoogleFonts.jetBrainsMono(
+                        color: const Color(0xFFBAE6FD),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      Navigator.pop(ctx);
+                      try {
+                        await Share.share(pass.shareMessage);
+                      } catch (_) {
+                        Clipboard.setData(ClipboardData(text: pass.shareMessage));
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF16A34A),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.share_rounded, size: 18),
+                        const SizedBox(width: 6),
+                        Text('Share WhatsApp', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13)),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  flex: 2,
+                  child: OutlinedButton(
+                    onPressed: () async {
+                      Navigator.pop(ctx);
+                      await PoketCosmosAllocationService.instance.cancelReservation(pass.code);
+                      await _loadReservations();
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFF87171),
+                      side: const BorderSide(color: Color(0xFFF87171)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    child: Text('Cancel Lock', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showNeighborInviteSheet(BuildContext context, int plotNumber) {
+    HapticFeedback.mediumImpact();
+    final colony = PoketCosmosAllocationService.instance.getColonyByPlanetName(widget.planetName ?? widget.island.name);
+    const currentWave = 1;
+    final waveStr = currentWave.toString().padLeft(2, '0');
+    final plotStr = plotNumber.toString().padLeft(2, '0');
+    final generatedPin = 'PKT-W$waveStr-${colony.code}-I$waveStr-P$plotStr';
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Color(0xFF0F172A),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          border: Border(top: BorderSide(color: Color(0xFF10B981), width: 1.8)),
+          boxShadow: [
+            BoxShadow(color: Color(0x6610B981), blurRadius: 24, offset: Offset(0, -6)),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF059669).withValues(alpha: 0.25),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFF10B981), width: 1.2),
+                  ),
+                  child: const Text('➕', style: TextStyle(fontSize: 24)),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Pre-Book Neighbor Plot #$plotNumber',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        '${widget.island.name} • ${colony.planetName}',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: const Color(0xFF34D399),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Text(
+              'Lock this plot for 5 hours exclusively for your friend. No other user can claim it during this time!',
+              style: GoogleFonts.plusJakartaSans(
+                color: Colors.white70,
+                fontSize: 13,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: Row(
+                children: [
+                  const Text('🔑', style: TextStyle(fontSize: 16)),
+                  const SizedBox(width: 8),
+                  Text('Born PIN: ', style: GoogleFonts.plusJakartaSans(color: Colors.white60, fontSize: 12)),
+                  Expanded(
+                    child: Text(
+                      generatedPin,
+                      style: GoogleFonts.jetBrainsMono(
+                        color: const Color(0xFF86EFAC),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                final pass = await PoketCosmosAllocationService.instance.createNeighborInvitePass(
+                  islandId: widget.island.id,
+                  islandName: widget.island.name,
+                  planetName: colony.planetName,
+                  streetName: colony.streetName,
+                  plotNumber: plotNumber,
+                  hostUserName: 'Neighbor',
+                );
+
+                await _loadReservations();
+
+                try {
+                  await Share.share(pass.shareMessage);
+                } catch (_) {
+                  Clipboard.setData(ClipboardData(text: pass.shareMessage));
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Reservation PIN ${pass.code} copied to clipboard!'),
+                        backgroundColor: const Color(0xFF16A34A),
+                      ),
+                    );
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF10B981),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                minimumSize: const Size(double.infinity, 48),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.lock_clock_rounded, size: 18),
+                  const SizedBox(width: 8),
+                  Text(
+                    'PRE-BOOK FOR 5 HOURS & INVITE',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 0.5),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
           border: Border(top: BorderSide(color: Color(0xFF38BDF8), width: 1.6)),
         ),
@@ -274,6 +610,7 @@ class IslandAerialPainter extends CustomPainter {
   final bool isInteractive;
   final double zoomScale;
   final List<CitizenPlot> plots;
+  final Map<int, NeighborReservationPass> reservations;
   final int? selectedPlotNumber;
   final Animation<double>? animation;
 
@@ -282,6 +619,7 @@ class IslandAerialPainter extends CustomPainter {
     this.isInteractive = false,
     this.zoomScale = 1.0,
     this.plots = const [],
+    this.reservations = const {},
     this.selectedPlotNumber,
     this.animation,
   }) : super(repaint: animation);
@@ -1472,79 +1810,68 @@ class IslandAerialPainter extends CustomPainter {
   }
 
   // =========================================================================
-  // 11. 35 ARCHITECTURAL HABIT HOMESTEADS (PETITE, SCATTERED & CONTINUOUS ZOOM)
-  // Scaled down to dainty petite proportions (~40%) so houses sit gracefully with plenty
-  // of lush green rolling lawn and trees around them. Scattered organically across each territory.
+  // 11. 18 ARCHITECTURAL CITIZEN PLOTS (OCCUPIED, PRE-BOOKED & VACANT '+')
   // =========================================================================
   void _drawCitizenPlots(Canvas canvas) {
     final List<Offset> positions = get35PlotCoordinates(island.shapeStyle);
-    final int count = math.min(35, positions.length);
+    final int count = math.min(PoketCosmosAllocationService.maxPlotsPerIsland, positions.length);
 
     for (int i = 0; i < count; i++) {
       final pos = positions[i];
       final plotNumber = i + 1;
       final isSel = selectedPlotNumber == plotNumber;
 
-      final CitizenPlot plot = i < plots.length
-          ? plots[i]
-          : CitizenPlot(
-              plotNumber: plotNumber,
-              userId: 'user_$plotNumber',
-              userName: fallbackCitizenNames[i % fallbackCitizenNames.length],
-              userAvatar: '',
-              day: (plotNumber * 2) % 90 + 1,
-              pocketScore: 500,
-              streetName: 'Reefway Avenue',
-              postOffice: island.name,
-              countryName: island.name,
-              planetName: 'Earth Prime',
-              coordinates: pos + getHousePlacementOffset(plotNumber),
-            );
+      // 1. Check if occupied by a citizen
+      CitizenPlot? citizenPlot;
+      for (final p in plots) {
+        if (p.plotNumber == plotNumber) {
+          citizenPlot = p;
+          break;
+        }
+      }
+
+      // 2. Check if pre-booked for 5 hours
+      final reservation = reservations[plotNumber];
+      final isPreBooked = reservation != null && !reservation.isExpired;
 
       final plotRot = getPlotFacingAngle(island.shapeStyle, i);
-      final day = plot.day;
       final houseOffset = getHousePlacementOffset(plotNumber);
       final housePos = pos + houseOffset;
       final parcelRect = Rect.fromCenter(center: housePos, width: 34.0, height: 28.0);
 
-      // 🏡 Scale the house compound down cleanly (~28% petite architectural scale matching reference images)
-      // and rotate towards its distinct facing orientation! (പല പല ഡിഫറെന്റ് സൈഡുകളിലേക്ക്)
-      canvas.save();
-      canvas.translate(housePos.dx, housePos.dy);
-      canvas.rotate(plotRot);
-      canvas.scale(0.28);
-      canvas.translate(-housePos.dx, -housePos.dy);
+      if (citizenPlot != null) {
+        // 🏡 Render full architectural compound
+        final day = citizenPlot.day;
+        canvas.save();
+        canvas.translate(housePos.dx, housePos.dy);
+        canvas.rotate(plotRot);
+        canvas.scale(0.28);
+        canvas.translate(-housePos.dx, -housePos.dy);
 
-      // 1. Lush Organic Tree Clusters & Hedgerow on Yard Corners (Images 1 & 3)
-      _drawYardTreeClusters(canvas, parcelRect, plotNumber);
+        _drawYardTreeClusters(canvas, parcelRect, plotNumber);
+        if (day >= 20) {
+          _drawDrivewayAndCar(canvas, parcelRect, day, plotNumber);
+        }
+        if (day >= 50) {
+          _drawSwimmingPoolAndDeck(canvas, parcelRect, day, plotNumber);
+        } else if (day >= 12) {
+          _drawGardenGazebo(canvas, parcelRect, day);
+        }
+        _drawWalkwayPaths(canvas, parcelRect, housePos, day);
+        _drawArchitecturalRoof(canvas, housePos, day, isSel, plotNumber);
+        _drawPrivateYardAnimalsAndItems(canvas, parcelRect, day, plotNumber);
+        _drawEstateNameBoard(canvas, parcelRect, citizenPlot, isSel);
 
-      // 2. Driveway & Parked Vehicle (കാർപോർച്ചും വാഹനങ്ങളും - വ്യത്യസ്ത കാറുകൾ, Image 2 & 3)
-      if (day >= 20) {
-        _drawDrivewayAndCar(canvas, parcelRect, day, plotNumber);
+        canvas.restore();
+      } else if (isPreBooked) {
+        // ⏳ Render 5-Hour Animated Rotating Countdown Timer Ring
+        _drawPreBookedParcel(canvas, housePos, parcelRect, plotRot, reservation, isSel);
+      } else {
+        // ➕ Render Vacant Plot with center pulsing Plus (+) icon
+        _drawVacantParcelWithPlus(canvas, housePos, parcelRect, plotRot, plotNumber, isSel);
       }
 
-      // 3. Swimming Pool with Sun Deck & Beach Umbrella or Garden Gazebo (Images 1 & 2)
-      if (day >= 50) {
-        _drawSwimmingPoolAndDeck(canvas, parcelRect, day, plotNumber);
-      } else if (day >= 12) {
-        _drawGardenGazebo(canvas, parcelRect, day);
-      }
-
-      // 4. Connecting Sandstone Walkway Paths (Images 1 & 2)
-      _drawWalkwayPaths(canvas, parcelRect, housePos, day);
-
-      // 5. 90-Day Progression Architectural Faceted Hip Roof (Images 1, 2, 3)
-      _drawArchitecturalRoof(canvas, housePos, day, isSel, plotNumber);
-
-      // 6. Private Yard Animals & Items (Sheep, pony, pets, garden benches)
-      _drawPrivateYardAnimalsAndItems(canvas, parcelRect, day, plotNumber);
-
-      // 7. Estate Entrance Nameplate Signboard on the side (No "#Plot 7", genuine names)
-      _drawEstateNameBoard(canvas, parcelRect, plot, isSel);
-
-      canvas.restore();
-
-      // 7. Golden Selection Beacon Aura
+      // Golden Selection Beacon Aura
       if (isSel) {
         canvas.drawCircle(
           housePos,
@@ -1563,6 +1890,180 @@ class IslandAerialPainter extends CustomPainter {
         );
       }
     }
+  }
+
+  // ➕ Vacant Parcel with Pulsing Center PLUS Button
+  void _drawVacantParcelWithPlus(Canvas canvas, Offset housePos, Rect parcelRect, double plotRot, int plotNumber, bool isSel) {
+    canvas.save();
+    canvas.translate(housePos.dx, housePos.dy);
+    canvas.rotate(plotRot);
+
+    // 1. Soft lawn turf base with subtle border
+    final turfRRect = RRect.fromRectAndRadius(
+      Rect.fromCenter(center: Offset.zero, width: 28.0, height: 22.0),
+      const Radius.circular(5.0),
+    );
+    final turfPaint = Paint()
+      ..color = const Color(0xFF15803D).withValues(alpha: 0.28)
+      ..style = PaintingStyle.fill;
+    canvas.drawRRect(turfRRect, turfPaint);
+
+    final borderPaint = Paint()
+      ..color = const Color(0xFF4ADE80).withValues(alpha: 0.45)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8;
+    canvas.drawRRect(turfRRect, borderPaint);
+
+    // 2. Small stone path leading into center
+    final pathPaint = Paint()
+      ..color = const Color(0xFFCBD5E1).withValues(alpha: 0.35)
+      ..strokeWidth = 1.6;
+    canvas.drawLine(const Offset(0, 11), const Offset(0, 3.5), pathPaint);
+
+    // 3. Center Glowing PLUS Button (Circle with +)
+    final pulse = math.sin(timeSeconds * 3.5 + plotNumber) * 0.12 + 1.0;
+    final btnRadius = 4.8 * pulse;
+
+    // Glowing aura
+    canvas.drawCircle(
+      Offset.zero,
+      btnRadius + 2.0,
+      Paint()..color = const Color(0xFF10B981).withValues(alpha: 0.22),
+    );
+
+    // Center button background
+    canvas.drawCircle(
+      Offset.zero,
+      btnRadius,
+      Paint()..color = const Color(0xFF059669),
+    );
+
+    canvas.drawCircle(
+      Offset.zero,
+      btnRadius,
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.85)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.7,
+    );
+
+    // Crisp white Plus (+) icon lines
+    final plusPaint = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 1.3
+      ..strokeCap = StrokeCap.round;
+    const plusSize = 2.4;
+    canvas.drawLine(const Offset(-plusSize, 0), const Offset(plusSize, 0), plusPaint);
+    canvas.drawLine(const Offset(0, -plusSize), const Offset(0, plusSize), plusPaint);
+
+    // 4. Subtle "PLOT #{plotNumber}" label
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: 'PLOT #$plotNumber',
+        style: const TextStyle(
+          color: Color(0xFF86EFAC),
+          fontSize: 3.2,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.3,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    textPainter.paint(canvas, Offset(-textPainter.width / 2, -8.5));
+
+    canvas.restore();
+  }
+
+  // ⏳ Pre-Booked Parcel with Animated Rotating Countdown Timer Ring
+  void _drawPreBookedParcel(Canvas canvas, Offset housePos, Rect parcelRect, double plotRot, NeighborReservationPass pass, bool isSel) {
+    canvas.save();
+    canvas.translate(housePos.dx, housePos.dy);
+    canvas.rotate(plotRot);
+
+    // 1. Gold/Amber reserved parcel base
+    final turfRRect = RRect.fromRectAndRadius(
+      Rect.fromCenter(center: Offset.zero, width: 28.0, height: 22.0),
+      const Radius.circular(5.0),
+    );
+    final turfPaint = Paint()
+      ..color = const Color(0xFFB45309).withValues(alpha: 0.25)
+      ..style = PaintingStyle.fill;
+    canvas.drawRRect(turfRRect, turfPaint);
+
+    final borderPaint = Paint()
+      ..color = const Color(0xFFF59E0B).withValues(alpha: 0.60)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.9;
+    canvas.drawRRect(turfRRect, borderPaint);
+
+    // 2. Animated Rotating Countdown Timer Ring
+    final ringRadius = 5.8;
+    canvas.save();
+    canvas.rotate(timeSeconds * 1.8);
+    final ringPaint = Paint()
+      ..color = const Color(0xFFFFD700)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawArc(
+      Rect.fromCircle(center: Offset.zero, radius: ringRadius),
+      0,
+      math.pi * 1.25,
+      false,
+      ringPaint,
+    );
+    canvas.drawArc(
+      Rect.fromCircle(center: Offset.zero, radius: ringRadius),
+      math.pi * 1.45,
+      math.pi * 0.35,
+      false,
+      ringPaint..color = const Color(0xFF38BDF8),
+    );
+    canvas.restore();
+
+    // 3. Center Badge with ⏳ icon and remaining time
+    canvas.drawCircle(
+      Offset.zero,
+      4.2,
+      Paint()..color = const Color(0xFF0F172A),
+    );
+    canvas.drawCircle(
+      Offset.zero,
+      4.2,
+      Paint()
+        ..color = const Color(0xFFF59E0B)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.7,
+    );
+
+    final iconPainter = TextPainter(
+      text: const TextSpan(
+        text: '⏳',
+        style: TextStyle(fontSize: 4.2),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    iconPainter.paint(canvas, Offset(-iconPainter.width / 2, -iconPainter.height / 2));
+
+    // Remaining time label (e.g. "4h 32m")
+    final int mins = pass.minutesRemaining;
+    final String timeStr = mins >= 60 ? '${mins ~/ 60}h ${mins % 60}m' : '${mins}m';
+    final timePainter = TextPainter(
+      text: TextSpan(
+        text: timeStr,
+        style: const TextStyle(
+          color: Color(0xFFFFE082),
+          fontSize: 2.9,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 0.2,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    timePainter.paint(canvas, Offset(-timePainter.width / 2, 7.5));
+
+    canvas.restore();
   }
 
   // 5. Private Yard Animals & Outdoor Items (Sheep, horses, pets & garden benches)

@@ -27,6 +27,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_defen
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_street_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_resident_island_view.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_challenge_generator.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
@@ -79,6 +80,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   final _supabase = SupaFlow.client;
   late material.TabController _profileTabController;
   final ScrollController _scrollController = ScrollController();
+  final PageController _profileHorizontalPageController = PageController(initialPage: 0);
+  int _profileHorizontalPageIndex = 0;
 
   // Data State
   bool _isLoading = true;
@@ -508,6 +511,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   @override
   void dispose() {
+    _profileHorizontalPageController.dispose();
     _profileTabController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -1848,9 +1852,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       btnTextColor = const Color(0xFFFFFFFF);
     }
 
-    return material.Scaffold(
-      backgroundColor: bgColor,
-      body: Container(
+    final profileBody = Container(
         decoration: bgGradient != null
             ? BoxDecoration(
                 gradient: LinearGradient(
@@ -1898,6 +1900,41 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 centerTitle: false,
                 actions: [
                   if (isMe) ...[
+                    material.InkWell(
+                      onTap: () {
+                        HapticFeedback.mediumImpact();
+                        _profileHorizontalPageController.animateToPage(
+                          1,
+                          duration: const Duration(milliseconds: 350),
+                          curve: Curves.easeInOutCubic,
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0284C7).withValues(alpha: 0.25),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFF38BDF8), width: 1.0),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('🏝️', style: TextStyle(fontSize: 13)),
+                            const SizedBox(width: 4),
+                            Text(
+                              'My Island',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFF38BDF8),
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                     material.IconButton(
                       icon: const Icon(material.Icons.gps_fixed_rounded, size: 21),
                       color: const Color(0xFFFFD700),
@@ -2067,9 +2104,27 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       ),
     ],
   ),
-),
-    floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: isMe ? _buildProfileCenterAddButton() : null,
+);
+
+    return material.Scaffold(
+      backgroundColor: bgColor,
+      body: PageView(
+        controller: _profileHorizontalPageController,
+        physics: const ClampingScrollPhysics(),
+        onPageChanged: (idx) {
+          if (mounted) setState(() => _profileHorizontalPageIndex = idx);
+        },
+        children: [
+          profileBody,
+          PoketCosmosResidentIslandView(
+            userId: userId,
+            userName: _profileData?['name']?.toString(),
+            userAvatar: _profileData?['avatar_url']?.toString(),
+          ),
+        ],
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: (_profileHorizontalPageIndex == 0 && isMe) ? _buildProfileCenterAddButton() : null,
     );
   }
 

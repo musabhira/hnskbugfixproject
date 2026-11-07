@@ -289,10 +289,30 @@ class PoketCosmosAllocationService {
       pickedColony = leastOccupiedColonies[seed % leastOccupiedColonies.length];
 
       final occupiedInPicked = colonyOccupancy[pickedColony] ?? [];
+      final activeReservations = await getActiveReservationsForIsland(pickedColony.planetId * 100 + currentWave);
+      final reservedPlots = activeReservations.map((r) => r.plotNumber).toSet();
+
       for (int p = 1; p <= maxPlotsPerIsland; p++) {
-        if (!occupiedInPicked.contains(p)) {
+        if (!occupiedInPicked.contains(p) && !reservedPlots.contains(p)) {
           pickedPlotNum = p;
           break;
+        }
+      }
+
+      // If all plots on pickedColony are occupied or reserved, check other available colonies
+      if (occupiedInPicked.contains(pickedPlotNum) || reservedPlots.contains(pickedPlotNum)) {
+        for (final col in availableColonies) {
+          final occ = colonyOccupancy[col] ?? [];
+          final res = await getActiveReservationsForIsland(col.planetId * 100 + currentWave);
+          final resSet = res.map((r) => r.plotNumber).toSet();
+          for (int p = 1; p <= maxPlotsPerIsland; p++) {
+            if (!occ.contains(p) && !resSet.contains(p)) {
+              pickedColony = col;
+              pickedPlotNum = p;
+              break;
+            }
+          }
+          if (!occ.contains(pickedPlotNum) && !resSet.contains(pickedPlotNum)) break;
         }
       }
     }
@@ -506,7 +526,7 @@ class PoketCosmosAllocationService {
   // 🤝 5-HOUR NEIGHBOR PRE-BOOKING & INVITATION SYSTEM
   // =========================================================================
 
-  /// 🎟️ Generates a 5-hour Neighbor Pre-Booking Pass
+  /// 🎟️ Generates a 5-hour Neighbor Pre-Booking Pass with unique PIN
   Future<NeighborReservationPass> createNeighborInvitePass({
     required int islandId,
     required String islandName,
@@ -516,14 +536,15 @@ class PoketCosmosAllocationService {
     required String hostUserName,
   }) async {
     final prefs = await SharedPreferences.getInstance();
+    final colony = getColonyByPlanetName(planetName);
+    final currentWave = await getActiveWaveIndex();
 
-    final chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    final rand = math.Random();
-    final randomSuffix = List.generate(4, (_) => chars[rand.nextInt(chars.length)]).join();
-    final code = 'PKT-$randomSuffix';
+    final waveStr = currentWave.toString().padLeft(2, '0');
+    final plotStr = plotNumber.toString().padLeft(2, '0');
+    final cosmosPin = 'PKT-W$waveStr-${colony.code}-I$waveStr-P$plotStr';
+    final code = cosmosPin;
 
     final expiresAt = DateTime.now().add(const Duration(hours: 5));
-    final cosmosPin = 'PKT-W01-EP-I01-P${plotNumber.toString().padLeft(2, '0')}';
 
     final pass = NeighborReservationPass(
       code: code,
@@ -544,6 +565,62 @@ class PoketCosmosAllocationService {
     await prefs.setString(_kReservationsKey, jsonEncode(store));
 
     return pass;
+  }
+
+  /// 📋 Gets all active (unexpired) reservations for a specific island
+  Future<List<NeighborReservationPass>> getActiveReservationsForIsland(int islandId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final rawJson = prefs.getString(_kReservationsKey);
+    if (rawJson == null) return [];
+
+    try {
+      final Map<String, dynamic> store = jsonDecode(rawJson);
+      final List<NeighborReservationPass> active = [];
+      final Map<String, dynamic> cleanedStore = {};
+      bool storeModified = false;
+
+      final now = DateTime.now();
+      for (final entry in store.entries) {
+        try {
+          final pass = NeighborReservationPass.fromJson(entry.value as Map<String, dynamic>);
+          if (!now.isAfter(pass.expiresAt)) {
+            cleanedStore[entry.key] = entry.value;
+            if (pass.islandId == islandId) {
+              active.add(pass);
+            }
+          } else {
+            storeModified = true; // Expired, auto-cleansed
+          }
+        } catch (_) {}
+      }
+
+      if (storeModified) {
+        await prefs.setString(_kReservationsKey, jsonEncode(cleanedStore));
+      }
+
+      return active;
+    } catch (_) {
+      return [];
+    }
+  }
+
+  /// 🗺️ Gets map of plotNumber -> NeighborReservationPass for O(1) map painter lookups
+  Future<Map<int, NeighborReservationPass>> getActiveReservationsMap(int islandId) async {
+    final list = await getActiveReservationsForIsland(islandId);
+    return {for (final pass in list) pass.plotNumber: pass};
+  }
+
+  /// ❌ Cancels an active reservation
+  Future<void> cancelReservation(String code) async {
+    final prefs = await SharedPreferences.getInstance();
+    final rawJson = prefs.getString(_kReservationsKey);
+    if (rawJson == null) return;
+    try {
+      final Map<String, dynamic> store = jsonDecode(rawJson);
+      if (store.remove(code) != null) {
+        await prefs.setString(_kReservationsKey, jsonEncode(store));
+      }
+    } catch (_) {}
   }
 
   /// 🎟️ Generates a quick test neighbor reservation pass (PKT-TEST)
@@ -719,10 +796,17 @@ class NeighborReservationPass {
   int get minutesRemaining => expiresAt.difference(DateTime.now()).inMinutes.clamp(0, 300);
 
   String get shareMessage =>
-      "🏡 Hey! I reserved Plot #$plotNumber for you right next to my house on $streetName, $islandName in Pocket Cosmos!\n\n"
-      "Use my exclusive Born Code: *$code* when signing up to become my neighbor:\n"
-      "👉 https://pocketmates.app/join?bornCode=$code\n\n"
-      "⏳ Pass is reserved for you for the next 5 hours!";
+      "🏡 POCKET WORLD (പോക്കറ്റ് വേൾഡ്)\n"
+      "----------------------------------------\n"
+      "Hey! I reserved Plot #$plotNumber for you right next to my house in Pocket Cosmos!\n\n"
+      "📍 Location: $streetName, $islandName\n"
+      "🪐 Celestial Body: $planetName\n"
+      "🔑 Born PIN / Referral Code: $code\n\n"
+      "Join as my neighbor using my exclusive Born Code before the 5-hour pass expires!\n\n"
+      "📲 Download Pocket Mates App:\n"
+      "🤖 Android (Play Store): https://play.google.com/store/apps/details?id=com.pocketmates.app\n"
+      "🍎 iOS (App Store): https://apps.apple.com/app/pocket-mates/id6470000000\n"
+      "🌐 Direct Join: https://pocketmates.app/join?bornCode=$code";
 
   Map<String, dynamic> toJson() => {
         'code': code,
