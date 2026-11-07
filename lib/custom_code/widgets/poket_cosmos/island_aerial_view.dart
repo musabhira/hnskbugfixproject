@@ -824,6 +824,19 @@ class IslandAerialPainter extends CustomPainter {
     final oceanPaint = Paint()..shader = oceanGradient.createShader(fullRect);
     canvas.drawRect(fullRect, oceanPaint);
 
+    // 1b. Soft Shoreline Wave Filtration & Atmospheric Mellowing ("കടലിന്റെ ഒരു മയം")
+    final filterShader = RadialGradient(
+      center: Alignment.center,
+      radius: 0.65,
+      colors: [
+        oceanColors.first.withValues(alpha: 0.28),
+        oceanColors[1].withValues(alpha: 0.14),
+        Colors.transparent,
+      ],
+      stops: const [0.0, 0.65, 1.0],
+    ).createShader(fullRect);
+    canvas.drawRect(fullRect, Paint()..shader = filterShader);
+
     // 2. Swirling Jovian Storm Currents for Jupiter
     if (hasJovianStormSea) {
       final stormPaint = Paint()
@@ -919,15 +932,15 @@ class IslandAerialPainter extends CustomPainter {
     }
   }
 
-  // 1. Broad Continental Oval with natural coastal coves
+  // 1. Broad Continental Oval with natural coastal coves (Expanded Height & Width)
   Path _buildNaturalOvalPath(int seed) {
     final path = Path();
     const count = 36;
     for (int i = 0; i <= count; i++) {
       final a = (i / count) * 2 * math.pi;
-      final delta = math.sin(a * 3.0 + seed * 1.5) * 6.5 + math.cos(a * 5.0 + seed * 0.8) * 4.0;
-      final rx = 195.0 + delta;
-      final ry = 155.0 + delta * 0.8;
+      final delta = math.sin(a * 3.0 + seed * 1.5) * 7.5 + math.cos(a * 5.0 + seed * 0.8) * 4.5;
+      final rx = 225.0 + delta;
+      final ry = 192.0 + delta * 0.8;
       final x = rx * math.cos(a);
       final y = ry * math.sin(a);
       if (i == 0) {
@@ -940,16 +953,16 @@ class IslandAerialPainter extends CustomPainter {
     return path;
   }
 
-  // 2. Wide Northern Mainland tapering to expansive Southern Cape
+  // 2. Wide Northern Mainland tapering to expansive Southern Cape (Expanded Height & Width)
   Path _buildCapePeninsulaPath(int seed) {
     final path = Path();
     const count = 36;
     for (int i = 0; i <= count; i++) {
       final a = (i / count) * 2 * math.pi;
       final taper = (math.sin(a) + 1.0) * 0.5; // 0 north, 1 south
-      final baseRx = 188.0 - taper * 52.0; // 188 down to 136px
-      final baseRy = 162.0;
-      final delta = math.sin(a * 4.0 + seed * 1.2) * 5.5 + math.cos(a * 2.0 + seed * 0.9) * 4.0;
+      final baseRx = 215.0 - taper * 60.0; // 215 down to 155px
+      final baseRy = 194.0;
+      final delta = math.sin(a * 4.0 + seed * 1.2) * 6.5 + math.cos(a * 2.0 + seed * 0.9) * 4.5;
       final x = (baseRx + delta) * math.cos(a);
       final y = (baseRy + delta * 0.7) * math.sin(a);
       if (i == 0) {
@@ -962,15 +975,15 @@ class IslandAerialPainter extends CustomPainter {
     return path;
   }
 
-  // 3. Lagoon Atoll: Broad solid rounded island with natural coastal contours
+  // 3. Lagoon Atoll: Broad solid rounded island with natural coastal contours (Expanded Height & Width)
   Path _buildHorseshoeBayPath(int seed) {
     final path = Path();
     const count = 36;
     for (int i = 0; i <= count; i++) {
       final a = (i / count) * 2 * math.pi;
-      final delta = math.sin(a * 4.0 + seed * 1.3) * 6.0 + math.cos(a * 2.0 + seed * 0.7) * 4.5;
-      final rx = 192.0 + delta;
-      final ry = 162.0 + delta * 0.75;
+      final delta = math.sin(a * 4.0 + seed * 1.3) * 7.0 + math.cos(a * 2.0 + seed * 0.7) * 5.0;
+      final rx = 220.0 + delta;
+      final ry = 192.0 + delta * 0.75;
       final x = rx * math.cos(a);
       final y = ry * math.sin(a);
       if (i == 0) {
@@ -983,16 +996,16 @@ class IslandAerialPainter extends CustomPainter {
     return path;
   }
 
-  // 4. Emerald Arch Haven: Expansive rounded continental island
+  // 4. Emerald Arch Haven: Expansive rounded continental island (Expanded Height & Width)
   Path _buildTwinSanctuaryPath(int seed) {
     final path = Path();
     const count = 36;
     for (int i = 0; i <= count; i++) {
       final a = (i / count) * 2 * math.pi;
       // Gentle natural coves on 4 corners
-      final delta = math.sin(a * 4.0 + seed * 1.1) * 7.0 + math.cos(a * 6.0 + seed * 0.5) * 3.5;
-      final rx = 190.0 + delta;
-      final ry = 160.0 + delta * 0.8;
+      final delta = math.sin(a * 4.0 + seed * 1.1) * 8.0 + math.cos(a * 6.0 + seed * 0.5) * 4.0;
+      final rx = 220.0 + delta;
+      final ry = 192.0 + delta * 0.8;
       final x = rx * math.cos(a);
       final y = ry * math.sin(a);
       if (i == 0) {
@@ -1005,11 +1018,11 @@ class IslandAerialPainter extends CustomPainter {
     return path;
   }
 
-  // 5. Royal Hexagonal Bastion Citadel
+  // 5. Royal Hexagonal Bastion Citadel (Expanded Height & Width)
   Path _buildCitadelPlateauPath(int seed) {
     final path = Path();
     const count = 8;
-    const r = 168.0;
+    const r = 198.0;
     for (int i = 0; i < count; i++) {
       final a = (i * math.pi / 4) - math.pi / 8;
       final x = r * math.cos(a);
@@ -2420,17 +2433,17 @@ class IslandAerialPainter extends CustomPainter {
       return _cachedDistrictCells[key]!;
     }
 
-    // Generate exactly 25 territorial district cells (or maxPlotsPerIsland)
+    // Generate exactly 20 territorial district cells (or maxPlotsPerIsland)
     final coords = get35PlotCoordinates(style).take(PoketCosmosAllocationService.maxPlotsPerIsland).toList();
     final count = coords.length;
     final List<Path> paths = [];
 
-    // Bounding box covering the island world
+    // Bounding box covering the expanded island world
     final box = [
-      const Offset(-260, -260),
-      const Offset(260, -260),
-      const Offset(260, 260),
-      const Offset(-260, 260),
+      const Offset(-320, -320),
+      const Offset(320, -320),
+      const Offset(320, 320),
+      const Offset(-320, 320),
     ];
 
     for (int i = 0; i < count; i++) {
@@ -2523,28 +2536,10 @@ class IslandAerialPainter extends CustomPainter {
     return fallbackCitizenNames[idx];
   }
 
-  static Offset getHousePlacementOffset(int plotNumber) {
-    final int variation = (plotNumber * 7) % 8;
-    switch (variation) {
-      case 0:
-        return Offset.zero; // Natural center
-      case 1:
-        return const Offset(3.5, -3.0); // North-east nook
-      case 2:
-        return const Offset(-3.5, 2.5); // South-west nook
-      case 3:
-        return const Offset(3.5, 1.0); // East side
-      case 4:
-        return const Offset(-3.5, -1.2); // West side
-      case 5:
-        return const Offset(-2.5, -3.0); // North-west nook
-      case 6:
-        return const Offset(2.0, 3.0); // South-east nook
-      case 7:
-      default:
-        return const Offset(-1.5, 2.5); // South nook
-    }
-  }
+  /// 🏡 Geometric Centroid House Placement:
+  /// The estate, villa roof, driveway, garden, and pool are strictly placed
+  /// at the exact geometric center of each partitioned territorial parcel cell!
+  static Offset getHousePlacementOffset(int plotNumber) => Offset.zero;
 
   // =========================================================================
   // 11. 18 ARCHITECTURAL CITIZEN PLOTS (OCCUPIED, PRE-BOOKED & VACANT '+')
@@ -3799,10 +3794,7 @@ class IslandAerialPainter extends CustomPainter {
   }
 
   // =========================================================================
-  // 📍 50 CITIZEN PLOT COORDINATES (100% Strictly Inland on Solid Green Landmass)
-  // Houses NEVER touch the ocean or water lagoon! Guaranteed dry inland plots!
-  // =========================================================================
-  // 📍 25 CITIZEN PLOT COORDINATES (5 Rock-Solid Archetypes, 100% Solid Land)
+  // 📍 20 CITIZEN PLOT COORDINATES (5 Rock-Solid Archetypes, 100% Solid Land)
   // Evenly, gracefully distributed from north shore to south coast with zero empty deadzones!
   // =========================================================================
   static List<Offset> get35PlotCoordinates(IslandShapeStyle style) {
@@ -3811,11 +3803,11 @@ class IslandAerialPainter extends CustomPainter {
 
     switch (archetype) {
       case IslandArchetype.naturalOval:
-        // 5 balanced rows (4 + 5 + 7 + 5 + 4 = 25 plots) covering full top to bottom!
-        const rowCounts = [4, 5, 7, 5, 4];
-        const yPositions = [-105.0, -52.0, 0.0, 52.0, 105.0];
-        const rowSpans = [160.0, 220.0, 260.0, 220.0, 160.0];
-        for (int r = 0; r < 5; r++) {
+        // 4 balanced rows (4 + 6 + 6 + 4 = 20 plots) spanning across the expanded island!
+        const rowCounts = [4, 6, 6, 4];
+        const yPositions = [-125.0, -42.0, 42.0, 125.0];
+        const rowSpans = [180.0, 260.0, 260.0, 180.0];
+        for (int r = 0; r < 4; r++) {
           final count = rowCounts[r];
           final span = rowSpans[r];
           final step = count > 1 ? span / (count - 1) : 0.0;
@@ -3826,10 +3818,10 @@ class IslandAerialPainter extends CustomPainter {
         break;
 
       case IslandArchetype.capePeninsula:
-        // 5 rows of 5 plots = 25 plots (Tapering gracefully towards southern cape)
-        const yPositions = [-110.0, -55.0, 0.0, 55.0, 110.0];
-        const rowSpans = [220.0, 200.0, 180.0, 150.0, 120.0];
-        for (int r = 0; r < 5; r++) {
+        // 4 rows of 5 plots = 20 plots (Tapering gracefully towards southern cape)
+        const yPositions = [-130.0, -45.0, 40.0, 125.0];
+        const rowSpans = [250.0, 220.0, 180.0, 130.0];
+        for (int r = 0; r < 4; r++) {
           final span = rowSpans[r];
           final step = span / 4.0;
           for (int c = 0; c < 5; c++) {
@@ -3839,23 +3831,23 @@ class IslandAerialPainter extends CustomPainter {
         break;
 
       case IslandArchetype.horseshoeBay:
-        // Lagoon Atoll: 2 concentric circular rings (10 inner + 15 outer = 25 plots)
-        for (int i = 0; i < 10; i++) {
-          final a = (i * 2 * math.pi / 10) - math.pi / 2;
-          coords.add(Offset(78.0 * math.cos(a), 62.0 * math.sin(a)));
+        // Lagoon Atoll: 2 concentric circular rings (8 inner + 12 outer = 20 plots)
+        for (int i = 0; i < 8; i++) {
+          final a = (i * 2 * math.pi / 8) - math.pi / 2;
+          coords.add(Offset(85.0 * math.cos(a), 70.0 * math.sin(a)));
         }
-        for (int i = 0; i < 15; i++) {
-          final a = (i * 2 * math.pi / 15) - math.pi / 2;
-          coords.add(Offset(138.0 * math.cos(a), 110.0 * math.sin(a)));
+        for (int i = 0; i < 12; i++) {
+          final a = (i * 2 * math.pi / 12) - math.pi / 2;
+          coords.add(Offset(150.0 * math.cos(a), 125.0 * math.sin(a)));
         }
         break;
 
       case IslandArchetype.twinSanctuary:
-        // Emerald Arch Haven: 5 balanced rows (4 + 5 + 7 + 5 + 4 = 25 plots)
-        const rowCounts = [4, 5, 7, 5, 4];
-        const yPositions = [-105.0, -52.0, 0.0, 52.0, 105.0];
-        const rowSpans = [170.0, 230.0, 260.0, 230.0, 170.0];
-        for (int r = 0; r < 5; r++) {
+        // Emerald Arch Haven: 4 balanced rows (4 + 6 + 6 + 4 = 20 plots)
+        const rowCounts = [4, 6, 6, 4];
+        const yPositions = [-125.0, -42.0, 42.0, 125.0];
+        const rowSpans = [190.0, 270.0, 270.0, 190.0];
+        for (int r = 0; r < 4; r++) {
           final count = rowCounts[r];
           final span = rowSpans[r];
           final step = count > 1 ? span / (count - 1) : 0.0;
@@ -3866,10 +3858,10 @@ class IslandAerialPainter extends CustomPainter {
         break;
 
       case IslandArchetype.citadelPlateau:
-        // 5 rows of 5 = 25 plots
-        const yPositions = [-96.0, -48.0, 0.0, 48.0, 96.0];
-        const xPositions = [-96.0, -48.0, 0.0, 48.0, 96.0];
-        for (int r = 0; r < 5; r++) {
+        // 4 rows of 5 = 20 plots
+        const yPositions = [-120.0, -40.0, 40.0, 120.0];
+        const xPositions = [-110.0, -55.0, 0.0, 55.0, 110.0];
+        for (int r = 0; r < 4; r++) {
           for (int c = 0; c < 5; c++) {
             coords.add(Offset(xPositions[c], yPositions[r]));
           }
@@ -3885,7 +3877,7 @@ class IslandAerialPainter extends CustomPainter {
     final archetype = getIslandArchetype(style);
     switch (archetype) {
       case IslandArchetype.naturalOval:
-        final row = index < 4 ? 0 : (index < 9 ? 1 : (index < 16 ? 2 : (index < 21 ? 3 : 4)));
+        final row = index < 4 ? 0 : (index < 10 ? 1 : (index < 16 ? 2 : 3));
         return row.isEven ? 0.0 : math.pi;
 
       case IslandArchetype.capePeninsula:
@@ -3893,21 +3885,21 @@ class IslandAerialPainter extends CustomPainter {
         return row.isEven ? math.pi : 0.0;
 
       case IslandArchetype.horseshoeBay:
-        if (index < 10) {
-          return (index * 2 * math.pi / 10) - math.pi / 2;
+        if (index < 8) {
+          return (index * 2 * math.pi / 8) - math.pi / 2;
         } else {
-          return ((index - 10) * 2 * math.pi / 15) - math.pi / 2 + math.pi;
+          return ((index - 8) * 2 * math.pi / 12) - math.pi / 2 + math.pi;
         }
 
       case IslandArchetype.twinSanctuary:
-        final row = index < 4 ? 0 : (index < 9 ? 1 : (index < 16 ? 2 : (index < 21 ? 3 : 4)));
+        final row = index < 4 ? 0 : (index < 10 ? 1 : (index < 16 ? 2 : 3));
         return row.isEven ? math.pi : 0.0;
 
       case IslandArchetype.citadelPlateau:
         final row = index ~/ 5;
         final col = index % 5;
         if (row == 0) return math.pi;
-        if (row == 4) return 0.0;
+        if (row == 3) return 0.0;
         if (col < 2) return math.pi / 2;
         return -math.pi / 2;
     }

@@ -314,6 +314,9 @@ class _PoketCosmosIslandInspectorModalState
 
   Widget _buildTopHeaderAndCarousel(BuildContext context, CelestialColonyInfo colony) {
     final topPadding = MediaQuery.of(context).padding.top;
+    final userPlot = PoketCosmosAllocationService.instance.currentBirthPlot;
+    final isUserHomeIsland = userPlot != null &&
+        colony.planetName.toLowerCase().contains(userPlot.planetName.toLowerCase().split(' ').first);
 
     return Container(
       padding: EdgeInsets.only(top: topPadding + 6, bottom: 12),
@@ -355,22 +358,35 @@ class _PoketCosmosIslandInspectorModalState
                     children: [
                       Row(
                         children: [
-                          Text(
-                            'PLANETARY ISLANDS',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFF38BDF8),
-                              fontSize: 13,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 1.4,
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: isUserHomeIsland
+                                  ? const Color(0xFF10B981).withValues(alpha: 0.3)
+                                  : const Color(0xFF0284C7).withValues(alpha: 0.25),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: isUserHomeIsland ? const Color(0xFF34D399) : const Color(0xFF38BDF8),
+                                width: 0.9,
+                              ),
+                            ),
+                            child: Text(
+                              isUserHomeIsland ? '🏡 THIS IS YOUR ISLAND' : 'PLANETARY ISLAND',
+                              style: GoogleFonts.outfit(
+                                color: isUserHomeIsland ? const Color(0xFF6EE7B7) : const Color(0xFF38BDF8),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1.2,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 6),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF0284C7).withValues(alpha: 0.25),
+                              color: Colors.white10,
                               borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: const Color(0xFF38BDF8), width: 0.8),
+                              border: Border.all(color: Colors.white24, width: 0.8),
                             ),
                             child: Text(
                               '${_currentIndex + 1}/10',
@@ -383,6 +399,7 @@ class _PoketCosmosIslandInspectorModalState
                           ),
                         ],
                       ),
+                      const SizedBox(height: 2),
                       Text(
                         '${colony.planetName} • ${colony.islandName}',
                         maxLines: 1,
@@ -391,6 +408,16 @@ class _PoketCosmosIslandInspectorModalState
                           color: Colors.white,
                           fontSize: 16.5,
                           fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'This is ${colony.planetName.split(" ").first} Island • 20 Exclusive Territorial Plots',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.plusJakartaSans(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],

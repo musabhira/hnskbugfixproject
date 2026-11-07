@@ -59,10 +59,28 @@ class PoketCosmosAllocationService {
   static const _kWaveOccupancyCountPrefix = 'poket_cosmos_wave_occ_count_';
   static const _kPlanetOccupiedPlotsPrefix = 'poket_cosmos_planet_occ_plots_';
 
-  // Scaling Constants (25 plots per island, 250 citizens per wave)
-  static const int maxPlotsPerIsland = 25;
+  // Scaling Constants (20 plots per island, 200 citizens per wave across 10 planets)
+  static const int maxPlotsPerIsland = 20;
   static const int totalPlanetsCount = 10;
-  static const int waveCapacity = 250; // 10 planets * 25 plots
+  static const int waveCapacity = 200; // 10 planets * 20 plots
+
+  /// 🏷️ Algorithmic Infinite Island Naming Loop Engine
+  /// Generates endless unique celestial island titles across infinite waves
+  static String generateInfiniteIslandName(String planetCode, int wave, int islandNum) {
+    const prefixes = [
+      'Solaria', 'Ares', 'Aethel', 'Kronos', 'Cygnus', 'Elysium', 'Hyperion',
+      'Boreas', 'Zenith', 'Meridian', 'Lumina', 'Astraea', 'Vesper', 'Orion',
+      'Novalis', 'Helios', 'Celestia', 'Vanguard', 'Aurora', 'Atlas',
+    ];
+    const suffixes = [
+      'Crest Atoll', 'Crater Haven', 'Sanctuary Bay', 'Ridge Peninsula',
+      'Archipelago', 'Plateau Outpost', 'Reef Shore', 'Lagoon Sound',
+      'Haven Isle', 'Apex Citadel', 'Deep Reach', 'Tranquil Cove',
+    ];
+    final pIdx = ((wave - 1) * 7 + (islandNum - 1) * 3 + planetCode.hashCode.abs()) % prefixes.length;
+    final sIdx = ((wave - 1) * 11 + (islandNum - 1) * 5 + (planetCode.hashCode.abs() ~/ 7)) % suffixes.length;
+    return '${prefixes[pIdx]} ${suffixes[sIdx]}';
+  }
 
   // 🪐 10 Permanent Celestial Colonies Catalog
   static const List<CelestialColonyInfo> colonies = [
