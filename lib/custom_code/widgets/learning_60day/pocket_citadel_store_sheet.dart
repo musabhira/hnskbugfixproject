@@ -58,9 +58,38 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
     }
   }
 
+  Future<void> _watchRewardedAd() async {
+    await PocketAdMobService.instance.showRewardedAd(
+      context: context,
+      onUserEarnedReward: (reward) async {
+        final prefs = await SharedPreferences.getInstance();
+        final newScore = _currentPS + 50;
+        await prefs.setInt('pocket_score', newScore);
+        if (mounted) {
+          setState(() => _currentPS = newScore);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Row(
+                children: [
+                  Text('🎉', style: TextStyle(fontSize: 18)),
+                  SizedBox(width: 8),
+                  Text('+50 Pocket Score granted! 🛡️',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                ],
+              ),
+              backgroundColor: Color(0xFF10B981),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      },
+    );
+  }
+
   Future<void> _buyItem(CitadelDefenseItem item) async {
     if (_currentPS < item.pricePS) {
       HapticFeedback.heavyImpact();
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -69,6 +98,11 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
           ),
           backgroundColor: const Color(0xFFEF4444),
           behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            label: '📺 +50 PS',
+            textColor: const Color(0xFFFFD700),
+            onPressed: _watchRewardedAd,
+          ),
         ),
       );
       return;
@@ -174,25 +208,7 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                   children: [
                     // 📺 Free PS via Ad
                     GestureDetector(
-                      onTap: () async {
-                        await PocketAdMobService.instance.showRewardedAd(
-                          context: context,
-                          onUserEarnedReward: (reward) async {
-                            final prefs = await SharedPreferences.getInstance();
-                            final newScore = _currentPS + 50;
-                            await prefs.setInt('pocket_score', newScore);
-                            if (mounted) {
-                              setState(() => _currentPS = newScore);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('🎉 +50 Pocket Score granted!'),
-                                  backgroundColor: Color(0xFF10B981),
-                                ),
-                              );
-                            }
-                          },
-                        );
-                      },
+                      onTap: _watchRewardedAd,
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                         decoration: BoxDecoration(
