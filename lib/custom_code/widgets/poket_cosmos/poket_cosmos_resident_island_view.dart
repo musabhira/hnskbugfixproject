@@ -580,8 +580,8 @@ class _PoketCosmosResidentIslandViewState
 
               return InteractiveViewer(
                 transformationController: _transformController,
-                minScale: 1.0,
-                maxScale: 6.5,
+                minScale: 0.55,
+                maxScale: 12.0,
                 boundaryMargin: EdgeInsets.zero,
                 constrained: false,
                 child: SizedBox(

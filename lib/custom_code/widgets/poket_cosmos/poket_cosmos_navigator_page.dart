@@ -18,7 +18,14 @@ import '../../services/pocket_game_audio_service.dart';
 /// - Screen 2: Fullscreen Infinite Ocean Island Map (Edge-to-edge seamless ocean without square box breaks,
 ///   deep 6.5x zoom, 50 top-down 90-day habit house plots, and tap-to-inspect citizen profile sheet).
 class PoketCosmosNavigatorPage extends StatefulWidget {
-  const PoketCosmosNavigatorPage({super.key});
+  final String? initialPlanetCode;
+  final int initialScreen;
+
+  const PoketCosmosNavigatorPage({
+    super.key,
+    this.initialPlanetCode,
+    this.initialScreen = 0,
+  });
 
   /// Static accessor to all scientific cosmos planets
   static List<PoketPlanet> buildCosmosPlanets() =>
@@ -67,7 +74,46 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
     )..repeat();
     _islandPageController = PageController(viewportFraction: 0.84);
     _planets = _buildCosmosPlanets();
-    _loadIslandPlots(_planets.first.countryMaps.first);
+    if (widget.initialPlanetCode != null && widget.initialPlanetCode!.isNotEmpty) {
+      final code = widget.initialPlanetCode!.toUpperCase();
+      PoketPlanet? matched;
+      for (final p in _planets) {
+        if (p.name.toUpperCase().contains(code)) {
+          matched = p;
+          break;
+        }
+        if (code == 'EP' && p.id == 3) { matched = p; break; }
+        if (code == 'MAR' && p.id == 4) { matched = p; break; }
+        if (code == 'JUP' && p.id == 5) { matched = p; break; }
+        if (code == 'SAT' && p.id == 6) { matched = p; break; }
+        if (code == 'LUN' && p.id == 30) { matched = p; break; }
+        if (code == 'EUR' && p.id == 51) { matched = p; break; }
+        if (code == 'VEN' && p.id == 2) { matched = p; break; }
+        if (code == 'TTN' && p.id == 61) { matched = p; break; }
+        if (code == 'PLT' && p.id == 9) { matched = p; break; }
+        if (code == 'NEP' && p.id == 8) { matched = p; break; }
+        for (final sat in p.satellites) {
+          if (sat.name.toUpperCase().contains(code) ||
+              (code == 'LUN' && sat.id == 30) ||
+              (code == 'EUR' && sat.id == 51) ||
+              (code == 'TTN' && sat.id == 61)) {
+            matched = p;
+            break;
+          }
+        }
+        if (matched != null) break;
+      }
+      if (matched != null) {
+        _selectedPlanet = matched;
+        _activeScreen = widget.initialScreen;
+        _currentIslandIndex = 0;
+        _loadIslandPlots(matched.countryMaps.first);
+      } else {
+        _loadIslandPlots(_planets.first.countryMaps.first);
+      }
+    } else {
+      _loadIslandPlots(_planets.first.countryMaps.first);
+    }
     _aerialMapZoomController.addListener(_onAerialZoomChanged);
   }
 
@@ -1663,7 +1709,11 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
               child: Row(
                 children: [
                   _buildIosBackButton(onTap: () {
-                    setState(() => _activeScreen = 0);
+                    if (widget.initialPlanetCode != null && Navigator.canPop(context)) {
+                      Navigator.pop(context);
+                    } else {
+                      setState(() => _activeScreen = 0);
+                    }
                   }),
                   const SizedBox(width: 10),
                   Expanded(

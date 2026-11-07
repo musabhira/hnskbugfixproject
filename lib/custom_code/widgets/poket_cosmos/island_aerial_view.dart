@@ -2820,15 +2820,15 @@ class IslandAerialPainter extends CustomPainter {
       final plotRot = getPlotFacingAngle(island.shapeStyle, i);
       final houseOffset = getHousePlacementOffset(plotNumber);
       final housePos = pos + houseOffset;
-      final parcelRect = Rect.fromCenter(center: housePos, width: 34.0, height: 28.0);
+      final parcelRect = Rect.fromCenter(center: housePos, width: 42.0, height: 34.0);
 
       if (citizenPlot != null) {
-        // 🏡 Render full architectural compound
+        // 🏡 Render full architectural compound (scaled up 57% so homes are clearly visible!)
         final day = citizenPlot.day;
         canvas.save();
         canvas.translate(housePos.dx, housePos.dy);
         canvas.rotate(plotRot);
-        canvas.scale(0.28);
+        canvas.scale(0.44);
         canvas.translate(-housePos.dx, -housePos.dy);
 
         _drawYardTreeClusters(canvas, parcelRect, plotNumber);
@@ -2846,6 +2846,37 @@ class IslandAerialPainter extends CustomPainter {
         _drawEstateNameBoard(canvas, parcelRect, citizenPlot, isSel);
 
         canvas.restore();
+
+        // 🌟 Minimal Green Tick (Checkmark) Badge indicating plot is claimed/bought!
+        final tickCenter = housePos + const Offset(8.0, -8.0);
+        const tickR = 4.2;
+        // Soft drop shadow
+        canvas.drawCircle(tickCenter.translate(0.3, 0.4), tickR, Paint()..color = Colors.black45);
+        // Emerald background
+        canvas.drawCircle(tickCenter, tickR, Paint()..color = const Color(0xFF10B981));
+        // Subtle white border
+        canvas.drawCircle(
+          tickCenter,
+          tickR,
+          Paint()
+            ..color = Colors.white
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 0.65,
+        );
+        // White checkmark tick (✓)
+        final tickP = Path()
+          ..moveTo(tickCenter.dx - 1.8, tickCenter.dy)
+          ..lineTo(tickCenter.dx - 0.5, tickCenter.dy + 1.4)
+          ..lineTo(tickCenter.dx + 1.8, tickCenter.dy - 1.4);
+        canvas.drawPath(
+          tickP,
+          Paint()
+            ..color = Colors.white
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.0
+            ..strokeCap = StrokeCap.round
+            ..strokeJoin = StrokeJoin.round,
+        );
       } else if (isPreBooked) {
         // ⏳ Render 5-Hour Animated Rotating Countdown Timer Ring
         _drawPreBookedParcel(canvas, housePos, parcelRect, plotRot, reservation, isSel);
@@ -2929,8 +2960,8 @@ class IslandAerialPainter extends CustomPainter {
     }
 
     final turfRRect = RRect.fromRectAndRadius(
-      Rect.fromCenter(center: Offset.zero, width: 28.0, height: 22.0),
-      const Radius.circular(5.0),
+      Rect.fromCenter(center: Offset.zero, width: 34.0, height: 26.0),
+      const Radius.circular(6.0),
     );
     final turfPaint = Paint()
       ..color = turfColor.withValues(alpha: 0.32)
@@ -3011,8 +3042,8 @@ class IslandAerialPainter extends CustomPainter {
 
     // 1. Gold/Amber reserved parcel base
     final turfRRect = RRect.fromRectAndRadius(
-      Rect.fromCenter(center: Offset.zero, width: 28.0, height: 22.0),
-      const Radius.circular(5.0),
+      Rect.fromCenter(center: Offset.zero, width: 34.0, height: 26.0),
+      const Radius.circular(6.0),
     );
     final turfPaint = Paint()
       ..color = const Color(0xFFB45309).withValues(alpha: 0.25)

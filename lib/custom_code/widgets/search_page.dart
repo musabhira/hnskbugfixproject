@@ -56,6 +56,8 @@ class _SearchPageState extends State<SearchPage> {
   final Map<String, int> _searchAnalytics = {};
   int _displayedPlotsLimit = 40;
   final ScrollController _plotsScrollController = ScrollController();
+  String _plotStatusFilter = 'all'; // 'all', 'booked', 'available'
+  String _plotPlanetFilter = 'all'; // 'all', 'EP', 'MAR', 'JUP', 'SAT', 'LUN', 'EUR', 'VEN', 'TTN', 'PLT', 'NEP'
 
   @override
   void initState() {
@@ -377,8 +379,9 @@ class _SearchPageState extends State<SearchPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => PoketCosmosResidentIslandView(
-                            targetPlanetCode: code,
+                          builder: (_) => PoketCosmosNavigatorPage(
+                            initialPlanetCode: code,
+                            initialScreen: 1,
                           ),
                         ),
                       );
@@ -520,8 +523,9 @@ class _SearchPageState extends State<SearchPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => PoketCosmosResidentIslandView(
-                                targetPlanetCode: satCode,
+                              builder: (_) => PoketCosmosNavigatorPage(
+                                initialPlanetCode: satCode,
+                                initialScreen: 1,
                               ),
                             ),
                           );
@@ -676,24 +680,117 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
+  Widget _buildPlotStatusFilterChip(String filterKey, String label, {Color activeColor = const Color(0xFFFFD700)}) {
+    final bool isSelected = _plotStatusFilter == filterKey;
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        setState(() {
+          _plotStatusFilter = filterKey;
+          _displayedPlotsLimit = 40;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: isSelected ? activeColor.withValues(alpha: 0.18) : const Color(0xFF1E293B).withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected ? activeColor : Colors.white12,
+            width: isSelected ? 1.2 : 0.6,
+          ),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.outfit(
+            color: isSelected ? activeColor : const Color(0xFF94A3B8),
+            fontSize: 10.5,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlotPlanetChip(String planetCode, String label) {
+    final bool isSelected = _plotPlanetFilter == planetCode;
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        setState(() {
+          _plotPlanetFilter = planetCode;
+          _displayedPlotsLimit = 40;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF38BDF8).withValues(alpha: 0.20) : const Color(0xFF0F172A).withValues(alpha: 0.7),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF38BDF8) : Colors.white12,
+            width: isSelected ? 1.2 : 0.6,
+          ),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.outfit(
+            color: isSelected ? const Color(0xFF38BDF8) : const Color(0xFF94A3B8),
+            fontSize: 10.5,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+
   /// 🏡 Dedicated Plots Tab: Reverse Infinite Grid (Plot #1 at bottom, highest at top, lazy loaded)
   Widget _buildPlotsTab() {
     final query = _currentSearchQuery.trim().toLowerCase();
     // Wave catalog supports infinite loops (Wave 1: 1..250, Wave 2: 251..500, etc.)
     final allPlots = PoketCosmosAllocationService.getWavePlotsCatalog(maxWaves: 2);
 
+    // Dashboard metrics
+    final int totalPlotsCount = allPlots.length;
+    int bookedCount = 0;
+    for (final p in allPlots) {
+      final owner = (p['ownerName']?.toString() ?? 'Available').trim();
+      final bool isOcc = p['isOccupied'] == true || (owner.isNotEmpty && owner.toLowerCase() != 'available');
+      if (isOcc) bookedCount++;
+    }
+    final int availableCount = totalPlotsCount - bookedCount;
+
     final filteredPlots = allPlots.where((item) {
-      if (query.isEmpty) return true;
-      final gNum = item['globalPlotNumber']?.toString() ?? '';
-      final localNum = item['localPlotNumber']?.toString() ?? '';
-      final planet = item['planetName']?.toString().toLowerCase() ?? '';
-      final code = item['planetCode']?.toString().toLowerCase() ?? '';
-      final owner = item['ownerName']?.toString().toLowerCase() ?? '';
-      return gNum.contains(query) ||
-          localNum.contains(query) ||
-          planet.contains(query) ||
-          code.contains(query) ||
-          owner.contains(query);
+      final owner = (item['ownerName']?.toString() ?? 'Available').trim();
+      final bool isOccupied = item['isOccupied'] == true ||
+          (owner.isNotEmpty && owner.toLowerCase() != 'available');
+
+      // Status filter
+      if (_plotStatusFilter == 'booked' && !isOccupied) return false;
+      if (_plotStatusFilter == 'available' && isOccupied) return false;
+
+      // Planet filter
+      if (_plotPlanetFilter != 'all') {
+        final code = item['planetCode']?.toString().toUpperCase() ?? '';
+        if (code != _plotPlanetFilter) return false;
+      }
+
+      // Search query
+      if (query.isNotEmpty) {
+        final gNum = item['globalPlotNumber']?.toString() ?? '';
+        final localNum = item['localPlotNumber']?.toString() ?? '';
+        final planet = item['planetName']?.toString().toLowerCase() ?? '';
+        final code = item['planetCode']?.toString().toLowerCase() ?? '';
+        final ownerLower = owner.toLowerCase();
+        return gNum.contains(query) ||
+            localNum.contains(query) ||
+            planet.contains(query) ||
+            code.contains(query) ||
+            ownerLower.contains(query);
+      }
+      return true;
     }).toList();
 
     // 🌟 User Requirement: Reverse order! Highest plot at top, Plot #1 at the very bottom!
@@ -701,9 +798,201 @@ class _SearchPageState extends State<SearchPage> {
 
     final int countToDisplay = math.min(filteredPlots.length, _displayedPlotsLimit);
 
-    return Padding(
-      padding: const EdgeInsets.only(top: 6),
-      child: GridView.builder(
+    return Column(
+      children: [
+        // 📊 Minimal Sleek Plots Dashboard
+        Padding(
+          padding: const EdgeInsets.fromLTRB(14, 6, 14, 8),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF1E293B).withValues(alpha: 0.95),
+                  const Color(0xFF0F172A).withValues(alpha: 0.95),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.12), width: 0.8),
+            ),
+            child: Row(
+              children: [
+                // Total Plots
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.grid_view_rounded, size: 12, color: Color(0xFFFFD700)),
+                          const SizedBox(width: 4),
+                          Text(
+                            'TOTAL',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF94A3B8),
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '$totalPlotsCount',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(width: 1, height: 26, color: Colors.white12),
+                // Booked / Claimed Plots
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.check_circle_rounded, size: 12, color: Color(0xFF10B981)),
+                            const SizedBox(width: 4),
+                            Text(
+                              'CLAIMED',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFF10B981),
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '$bookedCount',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF34D399),
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Container(width: 1, height: 26, color: Colors.white12),
+                // Available / Free Plots
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.add_location_alt_rounded, size: 12, color: Color(0xFF38BDF8)),
+                            const SizedBox(width: 4),
+                            Text(
+                              'AVAILABLE',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFF38BDF8),
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '$availableCount',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF38BDF8),
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // 🏷️ Interactive Filter Selector: Status (All, Booked, Available)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          child: Row(
+            children: [
+              _buildPlotStatusFilterChip('all', 'All ($totalPlotsCount)'),
+              const SizedBox(width: 6),
+              _buildPlotStatusFilterChip('booked', 'Claimed ($bookedCount)', activeColor: const Color(0xFF10B981)),
+              const SizedBox(width: 6),
+              _buildPlotStatusFilterChip('available', 'Free ($availableCount)', activeColor: const Color(0xFF0284C7)),
+            ],
+          ),
+        ),
+        const SizedBox(height: 6),
+
+        // 🪐 Planet Filter Chips Horizontal Scroll
+        SizedBox(
+          height: 30,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            children: [
+              _buildPlotPlanetChip('all', 'All Worlds 🌌'),
+              const SizedBox(width: 6),
+              _buildPlotPlanetChip('EP', 'Earth 🌍'),
+              const SizedBox(width: 6),
+              _buildPlotPlanetChip('MAR', 'Mars 🔴'),
+              const SizedBox(width: 6),
+              _buildPlotPlanetChip('JUP', 'Jupiter 🪐'),
+              const SizedBox(width: 6),
+              _buildPlotPlanetChip('SAT', 'Saturn 🪐'),
+              const SizedBox(width: 6),
+              _buildPlotPlanetChip('LUN', 'Moon 🌕'),
+              const SizedBox(width: 6),
+              _buildPlotPlanetChip('EUR', 'Europa 🧊'),
+              const SizedBox(width: 6),
+              _buildPlotPlanetChip('VEN', 'Venus ☀️'),
+              const SizedBox(width: 6),
+              _buildPlotPlanetChip('TTN', 'Titan 🪐'),
+              const SizedBox(width: 6),
+              _buildPlotPlanetChip('PLT', 'Pluto ❄️'),
+              const SizedBox(width: 6),
+              _buildPlotPlanetChip('NEP', 'Neptune 🔵'),
+            ],
+          ),
+        ),
+        const SizedBox(height: 6),
+
+        // 🏡 Reverse GridView
+        Expanded(
+          child: filteredPlots.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.filter_list_off_rounded, color: Colors.white38, size: 40),
+                      const SizedBox(height: 8),
+                      Text(
+                        'No plots match the selected filter',
+                        style: GoogleFonts.outfit(color: Colors.white60, fontSize: 13),
+                      ),
+                    ],
+                  ),
+                )
+              : GridView.builder(
         controller: _plotsScrollController,
         padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
         gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
@@ -881,8 +1170,10 @@ class _SearchPageState extends State<SearchPage> {
           );
         },
       ),
-    );
-  }
+    ),
+    ],
+  );
+}
 
   /// 🏝️ Dedicated Islands Tab: Container Tile List of Celestial Living Islands
   Widget _buildIslandsTab() {
