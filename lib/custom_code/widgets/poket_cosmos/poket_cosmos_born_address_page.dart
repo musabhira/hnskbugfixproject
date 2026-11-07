@@ -19,14 +19,14 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_pure_kids_home_
 /// 🌌 Sleek, Minimal, Interactive 4-Stage Pocket Cosmos Born Ceremony
 ///
 /// Features:
-/// 1. Strict Viewport Clamping: `fit: StackFit.expand`, `Positioned.fill` on all stages,
-///    `boundaryMargin: EdgeInsets.zero`, and `minScale = math.max(w / worldW, h / worldH)`.
-///    Guarantees top, bottom, left, and right strictly fill the screen with zero broken bottom and zero black void!
-/// 2. Stage 0: THIS IS YOUR PLANET (Flame Solar System zoomed in on Jupiter, minimal green circular Focus FAB)
-/// 3. Stage 1: THIS IS YOUR ISLAND (Edge-to-edge island aerial view, calm slow boat speeds, locked top & bottom)
-/// 4. Stage 2: THIS IS YOUR PLOT (Smooth 1.8s animated flight zoom into plot coordinates, clean plot without floating badge, CLAIM PLOT button)
+/// 1. Guaranteed zero broken bottom / zero black void: All viewports strictly lock minimum scale to
+///    `(screenHeight / worldHeight) * 1.15` so that even at maximum zoomless, the content height is
+///    115% of screen height! Top and bottom NEVER leave the screen!
+/// 2. Stage 0: THIS IS YOUR PLANET (Deep close-up zoom 3.4x on Jupiter, minimal green circular Focus FAB)
+/// 3. Stage 1: THIS IS YOUR ISLAND (Edge-to-edge ocean and island, gentle boat speeds, 100% filled top & bottom)
+/// 4. Stage 2: THIS IS YOUR PLOT (Smooth 1.8s animated flight zoom into plot coordinates, clean plot, CLAIM PLOT button)
 /// 5. Stage 3: FULLSCREEN ATTACKING LIVING SCENERY (8s ambient controller for moving clouds & spinning windmill,
-///    house focused & zoomed in, minimal compact Born Address badge, gamified green START JOURNEY button)
+///    house focused & zoomed in, ultra-compact Born Address pill, green gamified START JOURNEY button)
 /// 6. Audio BGM Speaker Toggle on top right on all screens
 class PoketCosmosBornAddressPage extends StatefulWidget {
   final String userName;
@@ -239,7 +239,7 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
   void _animateFlightToPlot(Size screenSize) {
     final sW = screenSize.width;
     final sH = screenSize.height;
-    final worldHeight = math.max(sH * 1.5, 1200.0);
+    final worldHeight = math.max(sH * 1.6, 1400.0);
     final worldWidth = math.max(sW * 2.8, worldHeight * 1.8);
     const targetScale = 14.0;
 
@@ -273,10 +273,11 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
   void _animateFlightToOverview(Size screenSize) {
     final sW = screenSize.width;
     final sH = screenSize.height;
-    final worldHeight = math.max(sH * 1.5, 1200.0);
+    final worldHeight = math.max(sH * 1.6, 1400.0);
     final worldWidth = math.max(sW * 2.8, worldHeight * 1.8);
-    final minScale = math.max(sW / worldWidth, sH / worldHeight);
-    final focusScale = (minScale * 1.12).clamp(minScale, 3.0);
+    final baseMinScale = (sH / worldHeight);
+    final minScale = baseMinScale * 1.15; // Strictly locked above screen height: zero broken bottom!
+    final focusScale = minScale;
     final minTx = sW - (worldWidth * focusScale);
     final minTy = sH - (worldHeight * focusScale);
     final focusX = ((sW - worldWidth * focusScale) / 2).clamp(minTx, 0.0);
@@ -294,16 +295,16 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
     _flightAnimController.forward(from: 0.0);
   }
 
-  // Focus and Zoom in closely on the Planet in Stage 0
+  // Focus and Zoom closely (3.4x) on the Planet in Stage 0
   void _focusPlanet() {
     HapticFeedback.mediumImpact();
     final size = MediaQuery.of(context).size;
     final sW = size.width;
     final sH = size.height;
-    final solarWorldH = math.max(sH * 1.5, 1200.0);
+    final solarWorldH = math.max(sH * 1.6, 1400.0);
     final solarWorldW = math.max(sW * 2.8, solarWorldH * 1.8);
-    final minScale = math.max(sW / solarWorldW, sH / solarWorldH);
-    final targetScale = (minScale * 2.2).clamp(minScale, 5.0);
+    final baseMinScale = sH / solarWorldH;
+    final targetScale = (baseMinScale * 3.4).clamp(baseMinScale, 6.0);
 
     final minTx = sW - (solarWorldW * targetScale);
     final minTy = sH - (solarWorldH * targetScale);
@@ -376,7 +377,7 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
       child: Scaffold(
         backgroundColor: const Color(0xFF050B14),
         body: Stack(
-          fit: StackFit.expand, // Strictly expands all layers to full screen height & width!
+          fit: StackFit.expand, // Strictly forces all layers to full screen height & width!
           children: [
             // 🪐 STAGE 0: Moving Solar System with Jupiter centered & zoomed in
             if (_currentStage == 0) Positioned.fill(child: _buildPlanetStageView()),
@@ -406,17 +407,18 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
   }
 
   // =========================================================================
-  // 🪐 STAGE 0: THIS IS YOUR PLANET (Solar System with Jupiter centered & zoomed)
+  // 🪐 STAGE 0: THIS IS YOUR PLANET (Solar System with Jupiter close-up zoom)
   // =========================================================================
   Widget _buildPlanetStageView() {
     return LayoutBuilder(
       builder: (context, constraints) {
         final sW = constraints.maxWidth;
         final sH = constraints.maxHeight;
-        final solarWorldH = math.max(sH * 1.5, 1200.0);
+        final solarWorldH = math.max(sH * 1.6, 1400.0);
         final solarWorldW = math.max(sW * 2.8, solarWorldH * 1.8);
-        final minScale = math.max(sW / solarWorldW, sH / solarWorldH);
-        final initialScale = (minScale * 2.2).clamp(minScale, 5.0);
+        final baseMinScale = sH / solarWorldH;
+        final minScale = baseMinScale * 1.15; // Strictly locked above screen height: zero broken bottom!
+        final initialScale = (baseMinScale * 3.4).clamp(minScale, 6.0); // Close-up impressive zoom!
 
         if (!_planetTransformInitialized && _flameSolarSystemGame != null) {
           _planetTransformInitialized = true;
@@ -448,7 +450,7 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
                 constrained: false,
                 boundaryMargin: EdgeInsets.zero, // Zero boundary margin: Never reveals black void! Locks cleanly at edges!
                 minScale: minScale, // Strictly locked so top, bottom, left & right fill screen!
-                maxScale: 5.0,
+                maxScale: 6.0,
                 clipBehavior: Clip.hardEdge,
                 child: SizedBox(
                   width: solarWorldW,
@@ -493,7 +495,7 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
               ),
             ),
 
-            // 3. Minimal Circular Gaming Focus FAB on Right Side
+            // 3. Minimal Circular Gaming Focus FAB on Right Side (Re-focuses and zooms in to 3.4x)
             Positioned(
               bottom: MediaQuery.of(context).padding.bottom + 82,
               right: 20,
@@ -535,17 +537,20 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
   }
 
   // =========================================================================
-  // 🏝️ STAGE 1 & 2: Island Aerial Map (Strictly locked bounds, zero broken bottom)
+  // 🏝️ STAGE 1 & 2: Island Aerial Map (Strictly locked bounds, 100% filled bottom)
   // =========================================================================
   Widget _buildAerialViewport() {
     return LayoutBuilder(
       builder: (context, constraints) {
         final screenWidth = constraints.maxWidth;
         final screenHeight = constraints.maxHeight;
-        final worldHeight = math.max(screenHeight * 1.5, 1200.0);
+        final worldHeight = math.max(screenHeight * 1.6, 1400.0);
         final worldWidth = math.max(screenWidth * 2.8, worldHeight * 1.8);
-        final minScale = math.max(screenWidth / worldWidth, screenHeight / worldHeight);
-        final focusScale = (minScale * 1.12).clamp(minScale, 3.0);
+        final baseMinScale = screenHeight / worldHeight;
+        // Strictly set minScale to 1.15 * baseMinScale so that even at maximum zoomless,
+        // height is 115% of screenHeight: top and bottom NEVER separate from the screen edges!
+        final minScale = baseMinScale * 1.15;
+        final focusScale = minScale;
         final minTx = screenWidth - (worldWidth * focusScale);
         final minTy = screenHeight - (worldHeight * focusScale);
         final focusX = ((screenWidth - worldWidth * focusScale) / 2).clamp(minTx, 0.0);
@@ -576,7 +581,7 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
                 transformationController: _islandTransformController,
                 constrained: false,
                 boundaryMargin: EdgeInsets.zero, // Zero boundary margin: Locks edges cleanly, no black void!
-                minScale: minScale, // Strictly locked to screen bounds! Zero letterbox bars!
+                minScale: minScale, // Strictly locked above screen height: zero broken bottom!
                 maxScale: 22.0,
                 clipBehavior: Clip.hardEdge,
                 child: SizedBox(
@@ -659,16 +664,19 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
   }
 
   // =========================================================================
-  // 🏡 STAGE 3: Fullscreen Adult Attacking Living Landscape (Locked bounds, zero void)
+  // 🏡 STAGE 3: Fullscreen Adult Attacking Living Landscape (House focused & zoomed, 100% filled bottom)
   // =========================================================================
   Widget _buildAdultAttackingEstateView() {
     return LayoutBuilder(
       builder: (context, constraints) {
         final sW = constraints.maxWidth;
         final sH = constraints.maxHeight;
-        final minScale = math.max(sW / _worldW, sH / _worldH);
+        final baseMinScale = sH / _worldH;
+        // Strictly set minScale to 1.15 * baseMinScale so that even at maximum zoomless,
+        // height is 115% of sH: top and bottom NEVER separate from the screen edges!
+        final minScale = baseMinScale * 1.15;
         const maxScale = 3.5;
-        // Zoomed in nicely on the house like attacking profile
+        // House focused and zoomed in nicely like adult attacking profile
         final houseZoomScale = (sW / (_houseW * 1.05));
         final defaultScale = math.max(minScale, houseZoomScale);
 
@@ -701,8 +709,8 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
         const houseTop = _groundY - 14.0 - _houseH;
 
         final plotPinCode = 'PKT-${_assignedPlot.plotNumber.toString().padLeft(3, '0')}';
-        final bornAddressLine =
-            '${widget.userName} • Plot #${_assignedPlot.plotNumber}, ${_assignedPlot.streetName} • PIN: $plotPinCode • ${_assignedPlot.countryName}, ${_assignedPlot.planetName}';
+        final compactAddress =
+            '${widget.userName} • Plot #${_assignedPlot.plotNumber}, ${_assignedPlot.streetName} • PIN $plotPinCode • ${_assignedPlot.countryName}, ${_assignedPlot.planetName}';
 
         return Stack(
           fit: StackFit.expand,
@@ -717,11 +725,11 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
               ),
             ),
 
-            // 🌄 Fullscreen Interactive Estate with Living Scenery (8s ambient controller for moving clouds & windmill)
+            // 🌄 Fullscreen Interactive Estate with Living Scenery (boundaryMargin: EdgeInsets.zero locks edges!)
             Positioned.fill(
               child: InteractiveViewer(
                 transformationController: _estateTransformController,
-                minScale: minScale, // Strictly locked so top, bottom, left & right fill screen completely!
+                minScale: minScale, // Strictly locked so top, bottom, left & right fill screen completely! Zero broken bottom!
                 maxScale: maxScale,
                 boundaryMargin: EdgeInsets.zero, // Zero boundary margin: Never reveals black void! Locks cleanly at edges!
                 constrained: false,
@@ -804,73 +812,72 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
               ),
             ),
 
-            // Compact Minimal Gamified Born Address Badge (No bloated cards!)
+            // Compact Minimal Gamified Born Address Pill (Non-intrusive 36px pill)
             Positioned(
               left: 20,
               right: 20,
-              bottom: MediaQuery.of(context).padding.bottom + 84,
+              bottom: MediaQuery.of(context).padding.bottom + 80,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                 decoration: BoxDecoration(
                   color: const Color(0xFF0F172A).withValues(alpha: 0.90),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                      color: const Color(0xFF10B981).withValues(alpha: 0.5),
+                      color: const Color(0xFF10B981).withValues(alpha: 0.6),
                       width: 1.0),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.40),
-                      blurRadius: 12,
+                      color: Colors.black.withValues(alpha: 0.45),
+                      blurRadius: 10,
                     ),
                   ],
                 ),
                 child: Row(
                   children: [
-                    const Text('📍', style: TextStyle(fontSize: 14)),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'BORN ADDRESS',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFF34D399),
-                              fontSize: 10,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 1.0,
-                            ),
-                          ),
-                          const SizedBox(height: 1),
-                          Text(
-                            bornAddressLine,
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF065F46),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'BORN ADDRESS',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFF86EFAC),
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.8,
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        compactAddress,
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
                     GestureDetector(
                       onTap: () {
-                        Clipboard.setData(ClipboardData(text: bornAddressLine));
+                        Clipboard.setData(ClipboardData(text: compactAddress));
                         HapticFeedback.lightImpact();
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('📋 Born Address copied!'),
-                            duration: Duration(milliseconds: 1200),
+                            duration: Duration(milliseconds: 1000),
                             behavior: SnackBarBehavior.floating,
                           ),
                         );
                       },
                       child: const Icon(Icons.copy_rounded,
-                          color: Color(0xFF34D399), size: 16),
+                          color: Color(0xFF34D399), size: 14),
                     ),
                   ],
                 ),
