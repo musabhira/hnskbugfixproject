@@ -7,11 +7,15 @@ import 'poket_cosmos_models.dart';
 /// 🌌 Scientific 3D Flame Solar System Simulation with Moons & Deep Space
 class FlameSolarSystemGame extends FlameGame with TapCallbacks {
   final List<PoketPlanet> planets;
-  final PoketPlanet? selectedPlanet;
+  PoketPlanet? selectedPlanet;
   final ValueChanged<PoketPlanet> onPlanetSelected;
   final double tiltAngle; // 3D bend / side perspective
   final bool
-      followSelectedPlanet; // Center camera on selected planet (e.g. Jupiter)
+      followSelectedPlanet; // Center camera on selected planet
+
+  void focusOnPlanet(PoketPlanet planet) {
+    selectedPlanet = planet;
+  }
 
   FlameSolarSystemGame({
     required this.planets,

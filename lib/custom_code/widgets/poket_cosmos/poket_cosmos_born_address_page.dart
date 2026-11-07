@@ -33,6 +33,7 @@ class PoketCosmosBornAddressPage extends StatefulWidget {
   final String userAvatar;
   final int? userAge;
   final String? initialInviteCode;
+  final String? targetPlanetName;
 
   const PoketCosmosBornAddressPage({
     super.key,
@@ -40,6 +41,7 @@ class PoketCosmosBornAddressPage extends StatefulWidget {
     this.userAvatar = '🦁',
     this.userAge,
     this.initialInviteCode,
+    this.targetPlanetName,
   });
 
   static Future<void> launch(
@@ -49,6 +51,7 @@ class PoketCosmosBornAddressPage extends StatefulWidget {
     int? userAge,
     String? initialInviteCode,
     String? inviteCode,
+    String? targetPlanetName,
   }) {
     return Navigator.of(context).push(
       MaterialPageRoute(
@@ -57,6 +60,7 @@ class PoketCosmosBornAddressPage extends StatefulWidget {
           userAvatar: userAvatar,
           userAge: userAge,
           initialInviteCode: initialInviteCode ?? inviteCode,
+          targetPlanetName: targetPlanetName,
         ),
       ),
     );
@@ -170,6 +174,7 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
       inviteCode: widget.initialInviteCode,
       userName: widget.userName,
       avatar: widget.userAvatar,
+      targetPlanetName: widget.targetPlanetName,
     );
 
     final colony = PoketCosmosAllocationService.instance.getColonyByPlanetName(plot.planetName);
@@ -196,40 +201,37 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
 
     // Setup Solar System Game with Camera centered on assigned planet (or parent of satellite)
     final allPlanets = PoketCosmosNavigatorPage.buildCosmosPlanets();
-    PoketPlanet? matchingPlanet;
-    final plotPlanetLower = updatedPlot.planetName.toLowerCase();
-    for (final p in allPlanets) {
-      final nameLower = p.name.toLowerCase();
-      if (nameLower.contains(plotPlanetLower) ||
-          plotPlanetLower.contains(nameLower.split(' ').first)) {
-        matchingPlanet = p;
-        break;
-      }
-    }
-    if (matchingPlanet == null) {
-      for (final p in allPlanets) {
-        for (final sat in p.satellites) {
-          if (sat.name.toLowerCase().contains(plotPlanetLower) ||
-              plotPlanetLower.contains(sat.name.toLowerCase().split(' ').first)) {
-            matchingPlanet = p;
-            break;
-          }
-        }
-        if (matchingPlanet != null) break;
-      }
-    }
-    matchingPlanet ??= allPlanets.firstWhere((p) => p.id == 5, orElse: () => allPlanets.first);
+    final PoketPlanet matchingPlanet = allPlanets.firstWhere(
+      (p) {
+        if (colony.planetId == 30) return p.id == 3; // The Moon -> Earth Prime (id: 3)
+        if (colony.planetId == 51) return p.id == 5; // Europa -> Jupiter (id: 5)
+        if (colony.planetId == 61) return p.id == 6; // Titan -> Saturn (id: 6)
+        return p.id == colony.planetId;
+      },
+      orElse: () {
+        return allPlanets.firstWhere(
+          (p) {
+            final pName = p.name.toLowerCase();
+            final cName = colony.planetName.toLowerCase();
+            return cName.contains(pName.split(' ').first) ||
+                pName.contains(colony.code.toLowerCase());
+          },
+          orElse: () => allPlanets[2], // Earth Prime default
+        );
+      },
+    );
     _selectedCosmosPlanet = matchingPlanet;
 
     _flameSolarSystemGame = FlameSolarSystemGame(
       planets: allPlanets,
       selectedPlanet: matchingPlanet,
       tiltAngle: 0.42,
-      followSelectedPlanet: true, // Focus camera on Jupiter as it orbits!
+      followSelectedPlanet: true, // Focus camera on the user's allocated celestial body!
       onPlanetSelected: (p) {
         setState(() {
           _selectedCosmosPlanet = p;
         });
+        _flameSolarSystemGame?.focusOnPlanet(p);
       },
     );
 
@@ -309,6 +311,9 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
   // Focus and Zoom closely (3.4x) on the Planet in Stage 0
   void _focusPlanet() {
     HapticFeedback.mediumImpact();
+    if (_selectedCosmosPlanet != null && _flameSolarSystemGame != null) {
+      _flameSolarSystemGame!.focusOnPlanet(_selectedCosmosPlanet!);
+    }
     final size = MediaQuery.of(context).size;
     final sW = size.width;
     final sH = size.height;

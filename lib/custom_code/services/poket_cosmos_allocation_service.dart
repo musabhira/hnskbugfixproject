@@ -213,24 +213,88 @@ class PoketCosmosAllocationService {
   CitizenPlot? _cachedBirthPlot;
   CitizenPlot? get currentBirthPlot => _cachedBirthPlot;
 
+  // User-scoped in-memory cache
+  final Map<String, CitizenPlot> _userBirthPlots = {};
+
+  String _userKey(String? uid, String key) =>
+      (uid != null && uid.isNotEmpty) ? '${uid}_$key' : key;
+
   /// 📬 Allocates the user's permanent birthplace in Pocket Cosmos
   Future<CitizenPlot> allocateUserBirthplace({
     String? inviteCode,
     required String userName,
     required String avatar,
+    String? targetPlanetName,
   }) async {
     final prefs = await SharedPreferences.getInstance();
+    final uid = SupaFlow.client.auth.currentUser?.id;
 
-    // 1. Check if user already has an allocated birthplace
-    if (prefs.getBool(_kDeedClaimed) == true) {
-      final existing = _readSavedPlotFromPrefs(prefs, userName, avatar);
+    // 0. Check in-memory user cache
+    if (uid != null && _userBirthPlots.containsKey(uid)) {
+      return _userBirthPlots[uid]!;
+    }
+
+    // 1. Check if authenticated user already has an allocated plot in Supabase profile
+    if (uid != null) {
+      try {
+        final profileRes = await SupaFlow.client
+            .from('profile')
+            .select('country, city, bio, name, profile_image_url')
+            .eq('id', uid)
+            .maybeSingle();
+
+        if (profileRes != null) {
+          final bio = profileRes['bio']?.toString() ?? '';
+          final pinRegex = RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)');
+          final match = pinRegex.firstMatch(bio);
+          if (match != null) {
+            final wave = int.tryParse(match.group(1) ?? '1') ?? 1;
+            final planetCode = match.group(2) ?? 'EP';
+            final plotNum = int.tryParse(match.group(4) ?? '1') ?? 1;
+            final colony = getColonyByCode(planetCode);
+
+            final plot = CitizenPlot(
+              plotNumber: plotNum,
+              userId: uid,
+              userName: userName.isNotEmpty
+                  ? userName
+                  : (profileRes['name']?.toString() ?? 'Citizen'),
+              userAvatar: avatar.isNotEmpty ? avatar : '🦁',
+              day: 1,
+              pocketScore: 500,
+              streetName: colony.streetName,
+              postOffice: colony.islandName,
+              countryName: colony.islandName,
+              planetName: colony.planetName,
+              coordinates: Offset.zero,
+              postalPinCode: match.group(0)!,
+              tier: (plotNum == 1)
+                  ? PlotDeedTier.presidential
+                  : (plotNum <= 6
+                      ? PlotDeedTier.beachfront
+                      : PlotDeedTier.standard),
+              status: PlotStatus.occupied,
+            );
+            _userBirthPlots[uid] = plot;
+            return plot;
+          }
+        }
+      } catch (e) {
+        debugPrint('Supabase profile check non-fatal: $e');
+      }
+    }
+
+    // 2. Check user-scoped local SharedPreferences
+    final userDeedKey = _userKey(uid, _kDeedClaimed);
+    if (prefs.getBool(userDeedKey) == true) {
+      final existing = _readSavedPlotFromPrefs(prefs, userName, avatar, uid: uid);
       if (existing != null) {
-        _cachedBirthPlot = existing;
+        if (uid != null) _userBirthPlots[uid] = existing;
         return existing;
       }
     }
 
-    // 2. Case B: User has a Friend's Neighbor Reservation Code
+    // 3. Case B: Friend's Neighbor Reservation / Invite Code
     if (inviteCode != null && inviteCode.trim().isNotEmpty) {
       final reservation = await validateNeighborInviteCode(inviteCode.trim());
       if (reservation != null) {
@@ -242,7 +306,7 @@ class PoketCosmosAllocationService {
 
         final plot = CitizenPlot(
           plotNumber: reservation.plotNumber,
-          userId: SupaFlow.client.auth.currentUser?.id ?? 'user_${DateTime.now().millisecondsSinceEpoch}',
+          userId: uid ?? 'user_${DateTime.now().millisecondsSinceEpoch}',
           userName: userName.isNotEmpty ? userName : 'Adventurer',
           userAvatar: avatar.isNotEmpty ? avatar : '🦁',
           day: 1,
@@ -259,35 +323,45 @@ class PoketCosmosAllocationService {
           status: PlotStatus.occupied,
         );
         await saveBirthplace(plot);
-        _cachedBirthPlot = plot;
+        if (uid != null) _userBirthPlots[uid] = plot;
         return plot;
       }
     }
 
-    // 3. Case A: Universal "Destiny" Allocation via 100-Crore Wave Engine
+    // 4. Case A: Universal "Destiny" Allocation across ALL 10 Celestial Colonies!
     int currentWave = await getActiveWaveIndex();
 
-    // Find the colony in the current wave with the least occupancy
-    CelestialColonyInfo pickedColony = colonies.first;
-    int pickedPlotNum = 1;
-
-    // Check all 10 colonies
+    // Check all 10 colonies occupancy
     final colonyOccupancy = <CelestialColonyInfo, List<int>>{};
     for (final col in colonies) {
       final occ = await _getOccupiedPlotsForPlanet(currentWave, col.code);
       colonyOccupancy[col] = occ;
     }
 
-    // Filter colonies that still have space (< 18)
-    final availableColonies = colonies.where((c) => (colonyOccupancy[c]?.length ?? 0) < maxPlotsPerIsland).toList();
+    // Filter colonies that still have space (< 20 plots)
+    final availableColonies = colonies
+        .where((c) => (colonyOccupancy[c]?.length ?? 0) < maxPlotsPerIsland)
+        .toList();
 
-    if (availableColonies.isEmpty) {
-      // 🎉 ALL 180 PLOTS FULL! "HOUSE FULL" EVENT! Auto-advance to Wave W_(k+1)!
+    CelestialColonyInfo pickedColony;
+    int pickedPlotNum = 1;
+
+    if (targetPlanetName != null && targetPlanetName.isNotEmpty) {
+      pickedColony = getColonyByPlanetName(targetPlanetName);
+      final occ = colonyOccupancy[pickedColony] ?? [];
+      final activeReservations = await getActiveReservationsForIsland(
+          pickedColony.planetId * 100 + currentWave);
+      final reservedPlots = activeReservations.map((r) => r.plotNumber).toSet();
+      for (int p = 1; p <= maxPlotsPerIsland; p++) {
+        if (!occ.contains(p) && !reservedPlots.contains(p)) {
+          pickedPlotNum = p;
+          break;
+        }
+      }
+    } else if (availableColonies.isEmpty) {
+      // 🎉 ALL 200 PLOTS FULL! Advance to Next Wave!
       currentWave++;
       await prefs.setInt(_kActiveWaveIndexKey, currentWave);
-      debugPrint('🎉 HOUSE FULL! All 180 plots occupied. Advancing to Wave W$currentWave!');
-
-      // On the fresh wave, pick colony evenly
       final randIdx = math.Random().nextInt(colonies.length);
       pickedColony = colonies[randIdx];
       pickedPlotNum = 1;
@@ -303,12 +377,13 @@ class PoketCosmosAllocationService {
           .where((c) => (colonyOccupancy[c]?.length ?? 0) == minCount)
           .toList();
 
-      // Deterministic yet balanced pick based on user name seed
-      final seed = (userName.hashCode ^ DateTime.now().microsecondsSinceEpoch).abs();
-      pickedColony = leastOccupiedColonies[seed % leastOccupiedColonies.length];
+      // Truly randomize / distribute among least occupied colonies
+      final randIdx = math.Random().nextInt(leastOccupiedColonies.length);
+      pickedColony = leastOccupiedColonies[randIdx];
 
       final occupiedInPicked = colonyOccupancy[pickedColony] ?? [];
-      final activeReservations = await getActiveReservationsForIsland(pickedColony.planetId * 100 + currentWave);
+      final activeReservations = await getActiveReservationsForIsland(
+          pickedColony.planetId * 100 + currentWave);
       final reservedPlots = activeReservations.map((r) => r.plotNumber).toSet();
 
       for (int p = 1; p <= maxPlotsPerIsland; p++) {
@@ -346,7 +421,7 @@ class PoketCosmosAllocationService {
 
     final plot = CitizenPlot(
       plotNumber: pickedPlotNum,
-      userId: SupaFlow.client.auth.currentUser?.id ?? 'user_${DateTime.now().millisecondsSinceEpoch}',
+      userId: uid ?? 'user_${DateTime.now().millisecondsSinceEpoch}',
       userName: userName.isNotEmpty ? userName : 'Adventurer',
       userAvatar: avatar.isNotEmpty ? avatar : '🦁',
       day: 1,
@@ -364,13 +439,25 @@ class PoketCosmosAllocationService {
     );
 
     await saveBirthplace(plot);
-    _cachedBirthPlot = plot;
+    if (uid != null) _userBirthPlots[uid] = plot;
     return plot;
   }
 
   /// 💾 Permanently saves the citizen birthplace to local storage and Supabase
   Future<void> saveBirthplace(CitizenPlot plot) async {
     final prefs = await SharedPreferences.getInstance();
+    final uid = SupaFlow.client.auth.currentUser?.id;
+
+    // 1. User-scoped storage
+    final userDeedKey = _userKey(uid, _kDeedClaimed);
+    await prefs.setBool(userDeedKey, true);
+    await prefs.setString(_userKey(uid, _kPlanetName), plot.planetName);
+    await prefs.setInt(_userKey(uid, _kPlotNumber), plot.plotNumber);
+    await prefs.setString(_userKey(uid, _kIslandName), plot.countryName);
+    await prefs.setString(_userKey(uid, _kStreetName), plot.streetName);
+    await prefs.setString(_userKey(uid, _kCosmosPin), plot.postalPinCode);
+
+    // 2. Global fallback keys
     await prefs.setString(_kPlanetName, plot.planetName);
     await prefs.setInt(_kPlotNumber, plot.plotNumber);
     await prefs.setString(_kIslandName, plot.countryName);
@@ -379,7 +466,7 @@ class PoketCosmosAllocationService {
     await prefs.setString(_kCosmosPin, plot.postalPinCode);
     await prefs.setBool(_kDeedClaimed, true);
 
-    // Save to Supabase profile table if user is authenticated
+    // 3. Save to Supabase profile table if user is authenticated
     try {
       final user = SupaFlow.client.auth.currentUser;
       if (user != null) {
@@ -395,17 +482,24 @@ class PoketCosmosAllocationService {
   }
 
   /// 📖 Reads saved plot from SharedPreferences
-  CitizenPlot? _readSavedPlotFromPrefs(SharedPreferences prefs, String userName, String avatar) {
-    final planet = prefs.getString(_kPlanetName);
-    final island = prefs.getString(_kIslandName);
-    final plotNum = prefs.getInt(_kPlotNumber);
-    final street = prefs.getString(_kStreetName);
-    final pin = prefs.getString(_kCosmosPin);
+  CitizenPlot? _readSavedPlotFromPrefs(
+      SharedPreferences prefs, String userName, String avatar,
+      {String? uid}) {
+    final planet = prefs.getString(_userKey(uid, _kPlanetName)) ??
+        prefs.getString(_kPlanetName);
+    final island = prefs.getString(_userKey(uid, _kIslandName)) ??
+        prefs.getString(_kIslandName);
+    final plotNum = prefs.getInt(_userKey(uid, _kPlotNumber)) ??
+        prefs.getInt(_kPlotNumber);
+    final street = prefs.getString(_userKey(uid, _kStreetName)) ??
+        prefs.getString(_kStreetName);
+    final pin = prefs.getString(_userKey(uid, _kCosmosPin)) ??
+        prefs.getString(_kCosmosPin);
 
     if (planet != null && island != null && plotNum != null) {
       return CitizenPlot(
         plotNumber: plotNum,
-        userId: SupaFlow.client.auth.currentUser?.id ?? 'user_local',
+        userId: uid ?? SupaFlow.client.auth.currentUser?.id ?? 'user_local',
         userName: userName.isNotEmpty ? userName : 'Adventurer',
         userAvatar: avatar.isNotEmpty ? avatar : '🦁',
         day: 1,
@@ -415,7 +509,8 @@ class PoketCosmosAllocationService {
         countryName: island,
         planetName: planet,
         coordinates: Offset.zero,
-        postalPinCode: pin ?? 'PKT-W01-EP-I01-P${plotNum.toString().padLeft(2, '0')}',
+        postalPinCode: pin ??
+            'PKT-W01-EP-I01-P${plotNum.toString().padLeft(2, '0')}',
       );
     }
     return null;
@@ -769,6 +864,9 @@ class PoketCosmosAllocationService {
   /// 🧹 Resets local birthplace preferences to allow fresh re-testing of the Born Ceremony
   Future<void> resetLocalBirthplace() async {
     final prefs = await SharedPreferences.getInstance();
+    final uid = SupaFlow.client.auth.currentUser?.id;
+
+    // Clear global keys
     await prefs.remove(_kPlanetName);
     await prefs.remove(_kIslandId);
     await prefs.remove(_kIslandName);
@@ -776,6 +874,19 @@ class PoketCosmosAllocationService {
     await prefs.remove(_kStreetName);
     await prefs.remove(_kCosmosPin);
     await prefs.remove(_kDeedClaimed);
+
+    // Clear user-scoped keys
+    if (uid != null) {
+      await prefs.remove(_userKey(uid, _kPlanetName));
+      await prefs.remove(_userKey(uid, _kIslandId));
+      await prefs.remove(_userKey(uid, _kIslandName));
+      await prefs.remove(_userKey(uid, _kPlotNumber));
+      await prefs.remove(_userKey(uid, _kStreetName));
+      await prefs.remove(_userKey(uid, _kCosmosPin));
+      await prefs.remove(_userKey(uid, _kDeedClaimed));
+      _userBirthPlots.remove(uid);
+    }
+    _userBirthPlots.clear();
     _cachedBirthPlot = null;
   }
 

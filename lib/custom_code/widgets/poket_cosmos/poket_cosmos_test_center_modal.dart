@@ -125,9 +125,38 @@ class _PoketCosmosTestCenterModalState extends State<PoketCosmosTestCenterModal>
             const SizedBox(height: 10),
 
             _buildActionCard(
+              icon: '🎯',
+              title: 'Test Specific Celestial Body (All 10 Planets)',
+              subtitle: 'Earth, Mars, Moon, Jupiter, Saturn, Venus, Europa, Titan, Neptune, Pluto - test custom atmosphere & camera focus!',
+              color: const Color(0xFFE11D48),
+              onTap: () => _showPlanetPickerSheet(context),
+            ),
+            const SizedBox(height: 8),
+
+            _buildActionCard(
+              icon: '🎲',
+              title: 'Direct 4-Step Born Ceremony (Random Newborn)',
+              subtitle: 'Balanced distribution across all 10 planets (Earth, Mars, Moon, Saturn, etc.) with dedicated camera focus!',
+              color: const Color(0xFF38BDF8),
+              onTap: () async {
+                Navigator.pop(context);
+                await PoketCosmosAllocationService.instance.resetLocalBirthplace();
+                if (context.mounted) {
+                  await PoketCosmosBornAddressPage.launch(
+                    context,
+                    userName: 'Newborn Learner',
+                    userAvatar: '🌟',
+                    userAge: 10,
+                  );
+                }
+              },
+            ),
+            const SizedBox(height: 8),
+
+            _buildActionCard(
               icon: '🏝️',
               title: 'Inspect All 10 Celestial Islands & Oceans 🪐',
-              subtitle: 'Earth, Jupiter, Pluto, Moon, Mars, Europa, Titan, Saturn, Venus, Neptune with custom gradient oceans & 18 plots!',
+              subtitle: 'Earth, Jupiter, Pluto, Moon, Mars, Europa, Titan, Saturn, Venus, Neptune with custom gradient oceans & 20 plots!',
               color: const Color(0xFF38BDF8),
               onTap: () {
                 Navigator.pop(context);
@@ -146,26 +175,6 @@ class _PoketCosmosTestCenterModalState extends State<PoketCosmosTestCenterModal>
                 await PoketCosmosAllocationService.instance.resetLocalBirthplace();
                 if (context.mounted) {
                   await PoketCosmosReferralGatewayPage.launch(
-                    context,
-                    userName: 'Learner',
-                    userAvatar: '🦁',
-                    userAge: 10,
-                  );
-                }
-              },
-            ),
-            const SizedBox(height: 8),
-
-            _buildActionCard(
-              icon: '🪐',
-              title: 'Direct 4-Step Born Ceremony (Newborn)',
-              subtitle: 'Step 1: Planet -> Step 2: Island -> Step 3: Plot Zoom & Green Tap -> Step 4: Home & Address',
-              color: const Color(0xFF38BDF8),
-              onTap: () async {
-                Navigator.pop(context);
-                await PoketCosmosAllocationService.instance.resetLocalBirthplace();
-                if (context.mounted) {
-                  await PoketCosmosBornAddressPage.launch(
                     context,
                     userName: 'Learner',
                     userAvatar: '🦁',
@@ -510,6 +519,158 @@ class _PoketCosmosTestCenterModalState extends State<PoketCosmosTestCenterModal>
           ],
         ),
       ),
+    );
+  }
+
+  void _showPlanetPickerSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) {
+        final colonies = PoketCosmosAllocationService.colonies;
+        return Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(sheetCtx).size.height * 0.75,
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          decoration: const BoxDecoration(
+            color: Color(0xFF0F172A),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            border: Border(
+              top: BorderSide(color: Color(0xFFE11D48), width: 2.0),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'Select Celestial Body to Test',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                'ഏത് പ്ലാനറ്റിലെ ചടങ്ങാണ് ടെസ്റ്റ് ചെയ്യേണ്ടത് എന്ന് തിരഞ്ഞെടുക്കുക',
+                style: GoogleFonts.plusJakartaSans(
+                  color: const Color(0xFFFDA4AF),
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Flexible(
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: colonies.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                  itemBuilder: (ctx, i) {
+                    final c = colonies[i];
+                    return InkWell(
+                      onTap: () async {
+                        Navigator.pop(sheetCtx); // Close sheet
+                        Navigator.pop(context); // Close test center
+                        await PoketCosmosAllocationService.instance.resetLocalBirthplace();
+                        if (context.mounted) {
+                          await PoketCosmosBornAddressPage.launch(
+                            context,
+                            userName: 'Explorer',
+                            userAvatar: '🚀',
+                            userAge: 12,
+                            targetPlanetName: c.planetName,
+                          );
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(14),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E293B),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: c.landColor.withValues(alpha: 0.5)),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                color: c.waterColor.withValues(alpha: 0.35),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  c.planetName.contains(' ')
+                                      ? c.planetName.split(' ').last
+                                      : '🪐',
+                                  style: const TextStyle(fontSize: 18),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    c.planetName,
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${c.islandName} • ${c.climate}',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: Colors.white60,
+                                      fontSize: 11,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: c.landColor.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                c.code,
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
