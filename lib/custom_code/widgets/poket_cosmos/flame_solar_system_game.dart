@@ -10,12 +10,14 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
   final PoketPlanet? selectedPlanet;
   final ValueChanged<PoketPlanet> onPlanetSelected;
   final double tiltAngle; // 3D bend / side perspective
+  final bool followSelectedPlanet; // Center camera on selected planet (e.g. Jupiter)
 
   FlameSolarSystemGame({
     required this.planets,
     required this.selectedPlanet,
     required this.onPlanetSelected,
     this.tiltAngle = 0.45,
+    this.followSelectedPlanet = false,
   });
 
   double _orbitElapsedSeconds = 0.0;
@@ -52,19 +54,34 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
     super.render(canvas);
 
     final center = size / 2;
+    final double yCompress = math.cos(tiltAngle).clamp(0.35, 1.0);
+
+    // 1. Draw Starfield in deep space background
     canvas.save();
     canvas.translate(center.x, center.y);
-
-    // 1. Draw Starfield
     for (final star in _stars) {
       final blink = (math.sin(_orbitElapsedSeconds * star.blinkSpeed) + 1) / 2;
       final starPaint = Paint()
-        ..color = Colors.white.withValues(alpha: (star.alpha * (0.35 + blink * 0.65)).clamp(0.0, 1.0));
+        ..color = Colors.white.withValues(
+            alpha: (star.alpha * (0.35 + blink * 0.65)).clamp(0.0, 1.0));
       canvas.drawCircle(Offset(star.x, star.y), star.radius, starPaint);
     }
+    canvas.restore();
 
-    // 2. 3D Tilt perspective ratio
-    final double yCompress = math.cos(tiltAngle).clamp(0.35, 1.0);
+    // 2. Camera centering on selected planet (e.g. Jupiter)
+    double targetX = 0.0;
+    double targetY = 0.0;
+    if (followSelectedPlanet && selectedPlanet != null) {
+      final selAngle =
+          (_orbitElapsedSeconds * 0.35 * selectedPlanet!.orbitSpeed) %
+              (2 * math.pi);
+      targetX = selectedPlanet!.orbitDistance * math.cos(selAngle);
+      targetY =
+          selectedPlanet!.orbitDistance * math.sin(selAngle) * yCompress;
+    }
+
+    canvas.save();
+    canvas.translate(center.x - targetX, center.y - targetY);
 
     // 3. Draw Orbit Track Rings
     for (final planet in planets) {
@@ -286,8 +303,19 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
 
   @override
   void onTapDown(TapDownEvent event) {
-    final localTap = event.localPosition - size / 2;
     final double yCompress = math.cos(tiltAngle).clamp(0.35, 1.0);
+    double targetX = 0.0;
+    double targetY = 0.0;
+    if (followSelectedPlanet && selectedPlanet != null) {
+      final selAngle =
+          (_orbitElapsedSeconds * 0.35 * selectedPlanet!.orbitSpeed) %
+              (2 * math.pi);
+      targetX = selectedPlanet!.orbitDistance * math.cos(selAngle);
+      targetY =
+          selectedPlanet!.orbitDistance * math.sin(selAngle) * yCompress;
+    }
+    final localTap =
+        event.localPosition - size / 2 + Vector2(targetX, targetY);
 
     for (final planet in planets) {
       final angle = (_orbitElapsedSeconds * 0.35 * planet.orbitSpeed) % (2 * math.pi);

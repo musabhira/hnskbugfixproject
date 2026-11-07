@@ -918,8 +918,8 @@ class IslandAerialPainter extends CustomPainter {
   void _drawCruisingBoatsWithWakes(Canvas canvas) {
     if (island.isPresidential) return;
 
-    // 1. Moving Offshore Speedboat cruising in wide deep blue waters
-    final t1 = (timeSeconds * 0.12) % (2 * math.pi);
+    // 1. Moving Offshore Speedboat cruising in wide deep blue waters (gentle, relaxing glide)
+    final t1 = (timeSeconds * 0.02) % (2 * math.pi);
     final pos1 = Offset(330.0 * math.cos(t1), 275.0 * math.sin(t1));
     final angle1 = t1 + math.pi / 2;
     _drawBoatWithWake(
@@ -932,7 +932,7 @@ class IslandAerialPainter extends CustomPainter {
     );
 
     // 2. Luxury Cruising Yacht traveling along outer southern deep sea
-    final t2 = (-timeSeconds * 0.08) % (2 * math.pi);
+    final t2 = (-timeSeconds * 0.014) % (2 * math.pi);
     final pos2 = Offset(380.0 * math.cos(t2), 320.0 * math.sin(t2));
     final angle2 = t2 - math.pi / 2;
     _drawBoatWithWake(
@@ -945,7 +945,7 @@ class IslandAerialPainter extends CustomPainter {
     );
 
     // 3. Open Ocean Horizon Tender Boat
-    final t3 = (timeSeconds * 0.09) % (2 * math.pi);
+    final t3 = (timeSeconds * 0.016) % (2 * math.pi);
     final pos3 = Offset(-340.0 + math.cos(t3) * 40.0, 260.0 + math.sin(t3) * 30.0);
     _drawBoatWithWake(
       canvas,

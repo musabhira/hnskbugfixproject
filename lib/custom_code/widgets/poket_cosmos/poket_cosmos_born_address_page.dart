@@ -19,11 +19,11 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_pure_kids_home_
 /// 🌌 Sleek, Minimal, Interactive 4-Stage Pocket Cosmos Born Ceremony
 ///
 /// Features:
-/// 1. iOS-style back navigation on all screens (Icon-only chevron)
-/// 2. Stage 0: THIS IS YOUR PLANET (Flame Solar System in background moving in space with assigned planet focused & highlighted, pinch-to-zoom & pan, zero letterboxing)
-/// 3. Stage 1: THIS IS YOUR ISLAND (Full-screen rectangular aerial island view, top & bottom strictly locked to screen height so zoomless never breaks)
-/// 4. Stage 2: THIS IS YOUR PLOT (Deep camera zoom targeting plot coordinates at 14x with pulsing green indicator & bottom claim button)
-/// 5. Stage 3: FULLSCREEN ATTACKING PROFILE ATMOSPHERE (Living landscape with windmill, swans, pond, balloon + Day 1 starter house, zero bottom sheets, minimal address)
+/// 1. iOS back chevron on left, BGM speaker audio toggle on right
+/// 2. Stage 0: THIS IS YOUR PLANET (Flame Solar System centered on Jupiter as it orbits, locked top & bottom, zoomless never breaks)
+/// 3. Stage 1: THIS IS YOUR ISLAND (Edge-to-edge island aerial view, calm slow boat speeds, locked top & bottom)
+/// 4. Stage 2: THIS IS YOUR PLOT (Smooth 1.8s animated flight zoom into plot coordinates, clean plot without floating badge, CLAIM PLOT button)
+/// 5. Stage 3: FULLSCREEN ATTACKING LIVING LANDSCAPE (Locked top & bottom, Day 1 Starter House, official citizen born address, gamified START JOURNEY button)
 class PoketCosmosBornAddressPage extends StatefulWidget {
   final String userName;
   final String userAvatar;
@@ -70,13 +70,17 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
 
   late CitizenPlot _assignedPlot;
   late PoketCountryMap _assignedIsland;
-  String? _activeReferralCode;
 
   PoketPlanet? _selectedCosmosPlanet;
   FlameSolarSystemGame? _flameSolarSystemGame;
 
-  // Gentle, calm ambient breathe controller (8s relaxed period)
+  // Gentle, calm ambient wave controller (40s relaxed period)
   late AnimationController _ambientBreatheController;
+
+  // Camera flight interpolation controller from Island overview into Plot
+  late AnimationController _flightAnimController;
+  Matrix4? _flightStartMatrix;
+  Matrix4? _flightEndMatrix;
 
   // Transformation controllers for smooth InteractiveViewer control
   final TransformationController _islandTransformController =
@@ -85,8 +89,6 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
       TransformationController();
   final TransformationController _planetTransformController =
       TransformationController();
-
-  final TextEditingController _inviteCodeController = TextEditingController();
 
   bool _islandTransformInitialized = false;
   bool _estateTransformInitialized = false;
@@ -105,8 +107,21 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
 
     _ambientBreatheController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 8),
+      duration: const Duration(seconds: 40),
     )..repeat();
+
+    _flightAnimController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    );
+
+    _flightAnimController.addListener(() {
+      if (_flightStartMatrix != null && _flightEndMatrix != null) {
+        final t = Curves.easeInOutCubic.transform(_flightAnimController.value);
+        _islandTransformController.value =
+            _lerpMatrix(_flightStartMatrix!, _flightEndMatrix!, t);
+      }
+    });
 
     _initializeBirthplace();
   }
@@ -114,26 +129,31 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
   @override
   void dispose() {
     _ambientBreatheController.dispose();
+    _flightAnimController.dispose();
     _islandTransformController.dispose();
     _estateTransformController.dispose();
     _planetTransformController.dispose();
-    _inviteCodeController.dispose();
     super.dispose();
   }
 
-  Future<void> _initializeBirthplace({String? code}) async {
+  static Matrix4 _lerpMatrix(Matrix4 a, Matrix4 b, double t) {
+    final result = Matrix4.zero();
+    for (int i = 0; i < 16; i++) {
+      result.storage[i] = a.storage[i] + (b.storage[i] - a.storage[i]) * t;
+    }
+    return result;
+  }
+
+  Future<void> _initializeBirthplace() async {
     setState(() => _isLoading = true);
 
     try {
       PocketGameAudioService.instance.playAmbientAppTheme();
     } catch (_) {}
 
-    final inviteCode = code ?? widget.initialInviteCode;
-    _activeReferralCode = inviteCode;
-
     final plot =
         await PoketCosmosAllocationService.instance.allocateUserBirthplace(
-      inviteCode: inviteCode,
+      inviteCode: widget.initialInviteCode,
       userName: widget.userName,
       avatar: widget.userAvatar,
     );
@@ -162,10 +182,8 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
 
     final updatedPlot = plot.copyWith(coordinates: targetPos);
 
-    // Setup Solar System Game
+    // Setup Solar System Game with Camera centered on assigned planet (e.g. Jupiter)
     final allPlanets = PoketCosmosNavigatorPage.buildCosmosPlanets();
-
-    // Match assigned planet
     PoketPlanet? matchingPlanet;
     final plotPlanetLower = updatedPlot.planetName.toLowerCase();
     for (final p in allPlanets) {
@@ -183,6 +201,7 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
       planets: allPlanets,
       selectedPlanet: matchingPlanet,
       tiltAngle: 0.42,
+      followSelectedPlanet: true, // Focus camera on Jupiter as it orbits!
       onPlanetSelected: (p) {
         setState(() {
           _selectedCosmosPlanet = p;
@@ -203,8 +222,8 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
     }
   }
 
-  // Focus camera deep into designated plot in Stage 2
-  void _zoomDeepToPlot(Size screenSize) {
+  // Smooth cinematic flight into designated plot in Stage 2
+  void _animateFlightToPlot(Size screenSize) {
     final sW = screenSize.width;
     final sH = screenSize.height;
     final wH = sH * 1.45;
@@ -223,40 +242,39 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
     final dx = -(targetWorldX * targetScale - sW / 2);
     final dy = -(targetWorldY * targetScale - sH / 2);
 
+    final targetMatrix = Matrix4.translationValues(dx, dy, 0.0)
+      ..scaleByDouble(targetScale, targetScale, 1.0, 1.0);
+
     setState(() {
       _currentStage = 2;
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _islandTransformController.value =
-            Matrix4.translationValues(dx, dy, 0.0)
-              ..scaleByDouble(targetScale, targetScale, 1.0, 1.0);
-      }
-    });
+    _flightStartMatrix = _islandTransformController.value.clone();
+    _flightEndMatrix = targetMatrix;
+    _flightAnimController.forward(from: 0.0);
   }
 
-  // Reset island camera to full overview in Stage 1
-  void _resetIslandToOverview(Size screenSize) {
+  // Smooth cinematic flight back to full Island overview in Stage 1
+  void _animateFlightToOverview(Size screenSize) {
     final sW = screenSize.width;
     final sH = screenSize.height;
     final wH = sH * 1.45;
     final wW = math.max(sW * 2.8, sH * 2.2);
-    const focusScale = 1.15;
+    final minScale = sH / wH;
+    final focusScale = (minScale * 1.15).clamp(minScale, 3.0);
     final focusX = -(wW * focusScale - sW) / 2;
     final focusY = -(wH * focusScale - sH) / 2;
+
+    final targetMatrix = Matrix4.translationValues(focusX, focusY, 0.0)
+      ..scaleByDouble(focusScale, focusScale, 1.0, 1.0);
 
     setState(() {
       _currentStage = 1;
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _islandTransformController.value =
-            Matrix4.translationValues(focusX, focusY, 0.0)
-              ..scaleByDouble(focusScale, focusScale, 1.0, 1.0);
-      }
-    });
+    _flightStartMatrix = _islandTransformController.value.clone();
+    _flightEndMatrix = targetMatrix;
+    _flightAnimController.forward(from: 0.0);
   }
 
   void _revealGroundAtmosphere() {
@@ -288,124 +306,14 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
   void _handleBackNavigation() {
     HapticFeedback.lightImpact();
     if (_currentStage == 3) {
-      _zoomDeepToPlot(MediaQuery.of(context).size);
+      _animateFlightToPlot(MediaQuery.of(context).size);
     } else if (_currentStage == 2) {
-      _resetIslandToOverview(MediaQuery.of(context).size);
+      _animateFlightToOverview(MediaQuery.of(context).size);
     } else if (_currentStage == 1) {
       setState(() => _currentStage = 0);
     } else {
       Navigator.of(context).pop();
     }
-  }
-
-  void _showInviteCodeDialog() {
-    _inviteCodeController.text = _activeReferralCode ?? '';
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF0F172A),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: Color(0xFF38BDF8), width: 1.2),
-        ),
-        title: Row(
-          children: [
-            const Text('🎟️', style: TextStyle(fontSize: 20)),
-            const SizedBox(width: 8),
-            Text(
-              'Island Referral Code',
-              style: GoogleFonts.outfit(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 17,
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'കൂട്ടുകാരന്റെ ഐലൻഡ് കോഡ് ഉണ്ടെങ്കിൽ ഇവിടെ നൽകുക:',
-              style: GoogleFonts.plusJakartaSans(
-                  color: Colors.white70, fontSize: 13),
-            ),
-            const SizedBox(height: 14),
-            TextField(
-              controller: _inviteCodeController,
-              textCapitalization: TextCapitalization.characters,
-              style: GoogleFonts.outfit(
-                color: const Color(0xFFFDE047),
-                fontWeight: FontWeight.bold,
-                fontSize: 17,
-                letterSpacing: 1.5,
-              ),
-              decoration: InputDecoration(
-                hintText: 'e.g. PKT-JUPITER',
-                hintStyle: GoogleFonts.outfit(color: Colors.white24),
-                filled: true,
-                fillColor: const Color(0xFF1E293B),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Colors.white24),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide:
-                      const BorderSide(color: Color(0xFF38BDF8), width: 1.5),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              children: [
-                ActionChip(
-                  label: const Text('PKT-JUPITER 🪐',
-                      style: TextStyle(fontSize: 11, color: Color(0xFFFDE047))),
-                  backgroundColor: const Color(0xFF1E293B),
-                  side: const BorderSide(color: Color(0xFFF59E0B)),
-                  onPressed: () => _inviteCodeController.text = 'PKT-JUPITER',
-                ),
-                ActionChip(
-                  label: const Text('PKT-TEST 🌍',
-                      style: TextStyle(fontSize: 11, color: Color(0xFF38BDF8))),
-                  backgroundColor: const Color(0xFF1E293B),
-                  side: const BorderSide(color: Color(0xFF38BDF8)),
-                  onPressed: () => _inviteCodeController.text = 'PKT-TEST',
-                ),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel',
-                style: GoogleFonts.outfit(color: Colors.white60)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final code = _inviteCodeController.text.trim();
-              Navigator.pop(ctx);
-              if (code.isNotEmpty) {
-                _initializeBirthplace(code: code);
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0284C7),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-            ),
-            child: const Text('Apply'),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -432,16 +340,16 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
         backgroundColor: const Color(0xFF050B14),
         body: Stack(
           children: [
-            // 🪐 STAGE 0: Moving Solar System with assigned planet focused (Pinch-to-zoom & Pan, zero letterboxing)
+            // 🪐 STAGE 0: Moving Solar System with Jupiter centered (Locked top & bottom, zoomless never breaks)
             if (_currentStage == 0) _buildPlanetStageView(),
 
-            // 🏝️ STAGE 1 & 2: Interactive Island Aerial Map (Overview or Deep Plot Zoom, edge-to-edge)
+            // 🏝️ STAGE 1 & 2: Island Aerial Map with smooth flight zoom into plot (Edge-to-edge, locked top & bottom)
             if (_currentStage == 1 || _currentStage == 2) _buildAerialViewport(),
 
-            // 🏡 STAGE 3: Fullscreen Adult Attacking Profile Atmosphere (Living Scenery + Starter House, No Bottom Sheet)
+            // 🏡 STAGE 3: Fullscreen Adult Attacking Living Scenery (Locked top & bottom, Day 1 Starter House, No Bottom Sheet)
             if (_currentStage == 3) _buildAdultAttackingEstateView(),
 
-            // 🏷️ Top Minimal Navigation Bar with Clean iOS Chevron Back Button
+            // 🏷️ Top Minimal Navigation Bar with Clean iOS Chevron & Audio Speaker Button
             _buildTopNavigationBar(),
 
             // 🔘 Minimal Floating Bottom Action Bar
@@ -458,93 +366,92 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
   }
 
   // =========================================================================
-  // 🪐 STAGE 0: THIS IS YOUR PLANET (Flame Solar System in background with focus on planet)
+  // 🪐 STAGE 0: THIS IS YOUR PLANET (Solar System with Jupiter centered)
   // =========================================================================
   Widget _buildPlanetStageView() {
-    const solarWorldSize = 1400.0;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final sW = constraints.maxWidth;
+        final sH = constraints.maxHeight;
+        final solarWorldH = sH * 1.35;
+        final solarWorldW = math.max(sW * 2.8, sH * 2.0);
+        final minScale = sH / solarWorldH;
 
-    return Stack(
-      children: [
-        // 1. Full-bleed Interactive Solar System Canvas
-        Positioned.fill(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final sW = constraints.maxWidth;
-              final sH = constraints.maxHeight;
-              final minScale = math.max(sW / solarWorldSize, sH / solarWorldSize);
+        if (!_planetTransformInitialized && _flameSolarSystemGame != null) {
+          _planetTransformInitialized = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              final initialScale = minScale * 1.15;
+              final dx = (sW - solarWorldW * initialScale) / 2;
+              final dy = (sH - solarWorldH * initialScale) / 2;
+              _planetTransformController.value =
+                  Matrix4.translationValues(dx, dy, 0.0)
+                    ..scaleByDouble(initialScale, initialScale, 1.0, 1.0);
+            }
+          });
+        }
 
-              if (!_planetTransformInitialized && _flameSolarSystemGame != null) {
-                _planetTransformInitialized = true;
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (mounted) {
-                    const initialScale = 0.95;
-                    final dx = (sW - solarWorldSize * initialScale) / 2;
-                    final dy = (sH - solarWorldSize * initialScale) / 2;
-                    _planetTransformController.value =
-                        Matrix4.translationValues(dx, dy, 0.0)
-                          ..scaleByDouble(
-                              initialScale, initialScale, 1.0, 1.0);
-                  }
-                });
-              }
-
-              return InteractiveViewer(
+        return Stack(
+          children: [
+            // 1. Full-bleed Interactive Solar System Canvas (Strictly locked to top & bottom!)
+            Positioned.fill(
+              child: InteractiveViewer(
                 transformationController: _planetTransformController,
                 constrained: false,
-                boundaryMargin: const EdgeInsets.all(400),
-                minScale: minScale * 0.45,
+                boundaryMargin: EdgeInsets.symmetric(horizontal: sW * 1.5, vertical: 0),
+                minScale: minScale, // Locked strictly to screen height! Cannot zoom out further!
                 maxScale: 5.0,
-                clipBehavior: Clip.none,
+                clipBehavior: Clip.hardEdge,
                 child: SizedBox(
-                  width: solarWorldSize,
-                  height: solarWorldSize,
+                  width: solarWorldW,
+                  height: solarWorldH,
                   child: _flameSolarSystemGame != null
                       ? GameWidget(game: _flameSolarSystemGame!)
                       : const SizedBox.shrink(),
                 ),
-              );
-            },
-          ),
-        ),
+              ),
+            ),
 
-        // 2. Stage 0 Minimal Title Header
-        Positioned(
-          top: MediaQuery.of(context).padding.top + 60,
-          left: 20,
-          right: 20,
-          child: Column(
-            children: [
-              Text(
-                'THIS IS YOUR PLANET',
-                style: GoogleFonts.outfit(
-                  color: Colors.white60,
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 2.2,
-                ),
+            // 2. Stage 0 Minimal Title Header
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 60,
+              left: 20,
+              right: 20,
+              child: Column(
+                children: [
+                  Text(
+                    'THIS IS YOUR PLANET',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white60,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 2.2,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    (_selectedCosmosPlanet != null
+                            ? _selectedCosmosPlanet!.name.split(' ').first
+                            : _assignedPlot.planetName)
+                        .toUpperCase(),
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 3),
-              Text(
-                (_selectedCosmosPlanet != null
-                        ? _selectedCosmosPlanet!.name.split(' ').first
-                        : _assignedPlot.planetName)
-                    .toUpperCase(),
-                style: GoogleFonts.outfit(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 1.5,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+            ),
+          ],
+        );
+      },
     );
   }
 
   // =========================================================================
-  // 🏝️ STAGE 1 & 2: Island Aerial Map (Edge-to-Edge locked to screen height)
+  // 🏝️ STAGE 1 & 2: Island Aerial Map (Strictly locked to screen height)
   // =========================================================================
   Widget _buildAerialViewport() {
     return LayoutBuilder(
@@ -554,7 +461,7 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
         final worldHeight = screenHeight * 1.45;
         final worldWidth = math.max(screenWidth * 2.8, screenHeight * 2.2);
         final minScale = screenHeight / worldHeight;
-        const focusScale = 1.15;
+        final focusScale = (minScale * 1.15).clamp(minScale, 3.0);
         final focusX = -(worldWidth * focusScale - screenWidth) / 2;
         final focusY = -(worldHeight * focusScale - screenHeight) / 2;
 
@@ -569,105 +476,28 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
           });
         }
 
-        final coords = IslandAerialPainter.get35PlotCoordinates(_assignedIsland.shapeStyle);
-        final targetPlotCoord = (_assignedPlot.plotNumber >= 1 && _assignedPlot.plotNumber <= coords.length)
-            ? coords[_assignedPlot.plotNumber - 1]
-            : Offset.zero;
-        final painterScale = ((worldHeight / 850.0) * 1.15).clamp(0.95, 1.50);
-        final targetWorldX = worldWidth / 2 + targetPlotCoord.dx * painterScale;
-        final targetWorldY = worldHeight / 2 + targetPlotCoord.dy * painterScale;
-
         return Stack(
           children: [
-            // Interactive Full-bleed Island Canvas
+            // Interactive Full-bleed Island Canvas (Top and bottom locked, zero black bars)
             Positioned.fill(
               child: InteractiveViewer(
                 transformationController: _islandTransformController,
                 constrained: false,
-                boundaryMargin: EdgeInsets.zero,
+                boundaryMargin: EdgeInsets.symmetric(horizontal: screenWidth * 1.5, vertical: 0),
                 minScale: minScale, // Strictly locked to screen height! Zero letterbox bars!
                 maxScale: 20.0,
-                clipBehavior: Clip.none,
+                clipBehavior: Clip.hardEdge,
                 child: SizedBox(
                   width: worldWidth,
                   height: worldHeight,
-                  child: Stack(
-                    children: [
-                      // Full Island Painter
-                      Positioned.fill(
-                        child: CustomPaint(
-                          painter: IslandAerialPainter(
-                            island: _assignedIsland,
-                            isInteractive: true,
-                            selectedPlotNumber: _assignedPlot.plotNumber,
-                            plots: [_assignedPlot],
-                            animation: _ambientBreatheController,
-                          ),
-                        ),
-                      ),
-
-                      // In Stage 2 (Deep Zoom): Glowing green target directly over the plot
-                      if (_currentStage == 2)
-                        Positioned(
-                          left: targetWorldX - 60,
-                          top: targetWorldY - 50,
-                          child: GestureDetector(
-                            onTap: _revealGroundAtmosphere,
-                            child: AnimatedBuilder(
-                              animation: _ambientBreatheController,
-                              builder: (context, _) {
-                                final pulse = math.sin(_ambientBreatheController.value * math.pi * 4).abs();
-                                return Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF052E16).withValues(alpha: 0.95),
-                                        borderRadius: BorderRadius.circular(14),
-                                        border: Border.all(
-                                          color: const Color(0xFF22C55E),
-                                          width: 1.5,
-                                        ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: const Color(0xFF22C55E)
-                                                .withValues(alpha: 0.45 * pulse + 0.35),
-                                            blurRadius: 16,
-                                            spreadRadius: 2,
-                                          ),
-                                        ],
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const Text('🟢', style: TextStyle(fontSize: 10)),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            'TAP TO CLAIM',
-                                            style: GoogleFonts.outfit(
-                                              color: const Color(0xFF86EFAC),
-                                              fontWeight: FontWeight.w900,
-                                              fontSize: 9.5,
-                                              letterSpacing: 0.8,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(height: 3),
-                                    Icon(
-                                      Icons.touch_app_rounded,
-                                      color: const Color(0xFF22C55E),
-                                      size: 22 + 4 * pulse,
-                                    ),
-                                  ],
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                    ],
+                  child: CustomPaint(
+                    painter: IslandAerialPainter(
+                      island: _assignedIsland,
+                      isInteractive: true,
+                      selectedPlotNumber: _assignedPlot.plotNumber,
+                      plots: [_assignedPlot],
+                      animation: _ambientBreatheController,
+                    ),
                   ),
                 ),
               ),
@@ -703,6 +533,17 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
                       letterSpacing: 1.2,
                     ),
                   ),
+                  if (_currentStage == 2) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      _assignedPlot.streetName,
+                      style: GoogleFonts.plusJakartaSans(
+                        color: const Color(0xFF38BDF8),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -713,7 +554,7 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
                 right: 18,
                 top: MediaQuery.of(context).padding.top + 56,
                 child: IconButton(
-                  onPressed: () => _zoomDeepToPlot(Size(screenWidth, screenHeight)),
+                  onPressed: () => _animateFlightToPlot(Size(screenWidth, screenHeight)),
                   icon: const Icon(Icons.my_location_rounded,
                       color: Color(0xFF22C55E), size: 22),
                   tooltip: 'Re-center plot',
@@ -726,14 +567,14 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
   }
 
   // =========================================================================
-  // 🏡 STAGE 3: Fullscreen Adult Attacking Profile Atmosphere (House & Scenery)
+  // 🏡 STAGE 3: Fullscreen Adult Attacking Living Landscape (House & Official Address)
   // =========================================================================
   Widget _buildAdultAttackingEstateView() {
     return LayoutBuilder(
       builder: (context, constraints) {
         final sW = constraints.maxWidth;
         final sH = constraints.maxHeight;
-        final minScale = math.max(sW / _worldW, sH / _worldH);
+        final minScale = sH / _worldH;
         const maxScale = 3.2;
         final defaultScale = (sW / 460.0).clamp(minScale, 1.35);
 
@@ -744,7 +585,9 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
               final houseCenterX = _worldW / 2;
               final houseCenterY = (_groundY - 14.0 - _houseH) + (_houseH * 0.52);
               final tx = (sW / 2) - (houseCenterX * defaultScale);
-              final ty = (sH * 0.44) - (houseCenterY * defaultScale);
+              final maxTy = 0.0;
+              final minTy = sH - (_worldH * defaultScale);
+              final ty = ((sH * 0.44) - (houseCenterY * defaultScale)).clamp(minTy, maxTy);
 
               final matrix = Matrix4.identity();
               matrix.setEntry(0, 0, defaultScale);
@@ -759,15 +602,18 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
         const houseLeft = (_worldW - _houseW) / 2;
         const houseTop = _groundY - 14.0 - _houseH;
 
+        final officialAddress =
+            '${widget.userName}, Plot #${_assignedPlot.plotNumber}, ${_assignedPlot.streetName}, ${_assignedPlot.countryName}, ${_assignedPlot.planetName}';
+
         return Stack(
           children: [
-            // 🌄 Fullscreen Interactive Estate with Pinch-to-Zoom & Pan (from Attacking Profile)
+            // 🌄 Fullscreen Interactive Estate with Living Scenery (Locked top & bottom!)
             Positioned.fill(
               child: InteractiveViewer(
                 transformationController: _estateTransformController,
-                minScale: minScale,
+                minScale: minScale, // Strictly locked to screen height! Zero gap at bottom!
                 maxScale: maxScale,
-                boundaryMargin: EdgeInsets.zero,
+                boundaryMargin: EdgeInsets.symmetric(horizontal: sW * 1.5, vertical: 0),
                 constrained: false,
                 clipBehavior: Clip.hardEdge,
                 child: SizedBox(
@@ -848,52 +694,69 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
               ),
             ),
 
-            // Sleek Minimal Address Card floating above the bottom action bar (No bottom sheet!)
+            // Official Citizen Born Address Card (No bottom sheet!)
             Positioned(
               left: 20,
               right: 20,
-              bottom: MediaQuery.of(context).padding.bottom + 85,
+              bottom: MediaQuery.of(context).padding.bottom + 92,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0F172A).withValues(alpha: 0.88),
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.92),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white24, width: 1.0),
+                  border: Border.all(
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.4),
+                      width: 1.0),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.4),
+                      color: Colors.black.withValues(alpha: 0.45),
                       blurRadius: 16,
                     ),
                   ],
                 ),
-                child: Row(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('🏡', style: TextStyle(fontSize: 22)),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Plot #${_assignedPlot.plotNumber}, ${_assignedPlot.streetName}',
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                    Row(
+                      children: [
+                        const Text('📍', style: TextStyle(fontSize: 13)),
+                        const SizedBox(width: 6),
+                        Text(
+                          'OFFICIAL CITIZEN BORN ADDRESS',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF38BDF8),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.2,
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '${_assignedPlot.countryName} • ${_assignedPlot.planetName}',
-                            style: GoogleFonts.plusJakartaSans(
-                              color: Colors.white60,
-                              fontSize: 11.5,
-                            ),
-                          ),
-                        ],
+                        ),
+                        const Spacer(),
+                        GestureDetector(
+                          onTap: () {
+                            Clipboard.setData(ClipboardData(text: officialAddress));
+                            HapticFeedback.lightImpact();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('📋 Address copied to clipboard!'),
+                                duration: Duration(milliseconds: 1400),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          },
+                          child: const Icon(Icons.copy_rounded,
+                              color: Colors.white60, size: 16),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      officialAddress,
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                        height: 1.3,
                       ),
                     ),
                   ],
@@ -907,7 +770,7 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
   }
 
   // =========================================================================
-  // 🏷️ Top Navigation Bar (Minimal iOS Icon-Only Back Chevron & Referral Trigger)
+  // 🏷️ Top Navigation Bar (Clean iOS Back Chevron & Audio Speaker Button)
   // =========================================================================
   Widget _buildTopNavigationBar() {
     return Positioned(
@@ -945,33 +808,43 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
 
           const Spacer(),
 
-          // Minimal Referral Code Trigger (Only in Stage 0)
-          if (_currentStage == 0)
-            GestureDetector(
-              onTap: _showInviteCodeDialog,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0F172A).withValues(alpha: 0.85),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: _activeReferralCode != null
-                        ? const Color(0xFF10B981)
-                        : Colors.white24,
+          // 🔊 Audio BGM Speaker Toggle Button (Top Right)
+          ValueListenableBuilder<bool>(
+            valueListenable: PocketGameAudioService.instance.isMutedNotifier,
+            builder: (context, isMuted, _) {
+              return GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  PocketGameAudioService.instance.toggleMute();
+                },
+                child: Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A).withValues(alpha: 0.8),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: !isMuted ? const Color(0xFF38BDF8) : Colors.white24,
+                      width: 1.0,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.35),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Icon(
+                      !isMuted ? Icons.volume_up_rounded : Icons.volume_off_rounded,
+                      color: !isMuted ? const Color(0xFF38BDF8) : Colors.white60,
+                      size: 18,
+                    ),
                   ),
                 ),
-                child: Text(
-                  _activeReferralCode != null ? '🤝 Applied' : '🎟️ Referral Code?',
-                  style: GoogleFonts.outfit(
-                    color: _activeReferralCode != null
-                        ? const Color(0xFFA7F3D0)
-                        : Colors.white70,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -981,45 +854,126 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
   // 🔘 Minimal Floating Bottom Action Bar
   // =========================================================================
   Widget _buildBottomActionBar() {
-    String buttonText = 'NEXT ➔';
-    VoidCallback? onTap;
-
     if (_currentStage == 0) {
-      buttonText = 'NEXT ➔';
-      onTap = () => _resetIslandToOverview(MediaQuery.of(context).size);
+      return SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: () => _animateFlightToOverview(MediaQuery.of(context).size),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF0284C7),
+            foregroundColor: Colors.white,
+            elevation: 4,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+          ),
+          child: Text(
+            'NEXT ➔',
+            style: GoogleFonts.outfit(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+            ),
+          ),
+        ),
+      );
     } else if (_currentStage == 1) {
-      buttonText = 'NEXT ➔';
-      onTap = () => _zoomDeepToPlot(MediaQuery.of(context).size);
+      return SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: () => _animateFlightToPlot(MediaQuery.of(context).size),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF0284C7),
+            foregroundColor: Colors.white,
+            elevation: 4,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+          ),
+          child: Text(
+            'NEXT ➔',
+            style: GoogleFonts.outfit(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+            ),
+          ),
+        ),
+      );
     } else if (_currentStage == 2) {
-      buttonText = 'CLAIM PLOT ➔';
-      onTap = _revealGroundAtmosphere;
-    } else if (_currentStage == 3) {
-      buttonText = 'START JOURNEY 🚀';
-      onTap = _settleAndBeginJourney;
+      // Stage 2: Clean CLAIM PLOT button
+      return SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: _revealGroundAtmosphere,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF059669),
+            foregroundColor: Colors.white,
+            elevation: 6,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+          ),
+          child: Text(
+            'CLAIM PLOT ➔',
+            style: GoogleFonts.outfit(
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.2,
+            ),
+          ),
+        ),
+      );
+    } else {
+      // Stage 3: Premium Gamified START JOURNEY button
+      return Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: const LinearGradient(
+            colors: [Color(0xFF0284C7), Color(0xFF2563EB)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          border: Border.all(color: const Color(0xFF38BDF8), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF0284C7).withValues(alpha: 0.5),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: ElevatedButton(
+          onPressed: _settleAndBeginJourney,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            shadowColor: Colors.transparent,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 15),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'START JOURNEY',
+                style: GoogleFonts.outfit(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.5,
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text('🚀', style: TextStyle(fontSize: 18)),
+            ],
+          ),
+        ),
+      );
     }
-
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: onTap,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF0284C7),
-          foregroundColor: Colors.white,
-          elevation: 4,
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-        ),
-        child: Text(
-          buttonText,
-          style: GoogleFonts.outfit(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.2,
-          ),
-        ),
-      ),
-    );
   }
 }
