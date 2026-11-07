@@ -72,15 +72,25 @@ class PoketCosmosAllocationService {
       'Solaria', 'Ares', 'Aethel', 'Kronos', 'Cygnus', 'Elysium', 'Hyperion',
       'Boreas', 'Zenith', 'Meridian', 'Lumina', 'Astraea', 'Vesper', 'Orion',
       'Novalis', 'Helios', 'Celestia', 'Vanguard', 'Aurora', 'Atlas',
+      'Serenity', 'Radiance', 'Horizon', 'Pinnacle', 'Cascade', 'Odyssey',
+      'Endeavour', 'Valour', 'Equinox', 'Solstice', 'Nebula', 'Genesis',
+      'Infinity', 'Beacon', 'Chronicle', 'Resonance', 'Citadel', 'Oasis',
+      'Summit', 'Voyage', 'Frontier', 'Echo', 'Triumph', 'Harmony',
+      'Ascent', 'Mirage', 'Starlight', 'Eclipse', 'Labyrinth', 'Vortex',
     ];
     const suffixes = [
       'Crest Atoll', 'Crater Haven', 'Sanctuary Bay', 'Ridge Peninsula',
       'Archipelago', 'Plateau Outpost', 'Reef Shore', 'Lagoon Sound',
       'Haven Isle', 'Apex Citadel', 'Deep Reach', 'Tranquil Cove',
+      'Emerald Sound', 'Breeze Harbor', 'Oasis Bluff', 'Coral Cay',
+      'Whispering Cape', 'Crystalline Strand', 'Mist Valley', 'Radiant Shoal',
+      'Cosmic Overlook', 'Azure Terrace', 'Solitude Reach', 'Verdant Isle',
+      'Highland Sanctuary',
     ];
     final pIdx = ((wave - 1) * 7 + (islandNum - 1) * 3 + planetCode.hashCode.abs()) % prefixes.length;
     final sIdx = ((wave - 1) * 11 + (islandNum - 1) * 5 + (planetCode.hashCode.abs() ~/ 7)) % suffixes.length;
-    return '${prefixes[pIdx]} ${suffixes[sIdx]}';
+    final baseName = '${prefixes[pIdx]} ${suffixes[sIdx]}';
+    return (wave > 50) ? '$baseName W$wave' : baseName;
   }
 
   // 🪐 10 Permanent Celestial Colonies Catalog

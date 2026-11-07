@@ -349,9 +349,6 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
   void _showNeighborInviteSheet(BuildContext context, int plotNumber) {
     HapticFeedback.mediumImpact();
     final colony = PoketCosmosAllocationService.instance.getColonyByPlanetName(widget.planetName ?? widget.island.name);
-    const currentWave = 1;
-    final waveStr = currentWave.toString().padLeft(2, '0');
-    final plotStr = plotNumber.toString().padLeft(2, '0');
     final minimalPin = 'PKT-${colony.code}-$plotNumber';
 
     showModalBottomSheet(
@@ -4058,11 +4055,11 @@ class IslandAerialPainter extends CustomPainter {
 
     switch (archetype) {
       case IslandArchetype.naturalOval:
-        // 4 balanced rows (4 + 6 + 6 + 4 = 20 plots) spanning across the expanded island!
-        const rowCounts = [4, 6, 6, 4];
-        const yPositions = [-125.0, -42.0, 42.0, 125.0];
-        const rowSpans = [180.0, 260.0, 260.0, 180.0];
-        for (int r = 0; r < 4; r++) {
+        // 5 balanced rows (5 + 5 + 5 + 5 + 5 = 25 plots) spanning across the expanded island!
+        const rowCounts = [5, 5, 5, 5, 5];
+        const yPositions = [-130.0, -65.0, 0.0, 65.0, 130.0];
+        const rowSpans = [190.0, 250.0, 270.0, 250.0, 190.0];
+        for (int r = 0; r < 5; r++) {
           final count = rowCounts[r];
           final span = rowSpans[r];
           final step = count > 1 ? span / (count - 1) : 0.0;
@@ -4073,10 +4070,10 @@ class IslandAerialPainter extends CustomPainter {
         break;
 
       case IslandArchetype.capePeninsula:
-        // 4 rows of 5 plots = 20 plots (Tapering gracefully towards southern cape)
-        const yPositions = [-130.0, -45.0, 40.0, 125.0];
-        const rowSpans = [250.0, 220.0, 180.0, 130.0];
-        for (int r = 0; r < 4; r++) {
+        // 5 rows of 5 plots = 25 plots (Tapering gracefully towards southern cape)
+        const yPositions = [-130.0, -65.0, 0.0, 65.0, 130.0];
+        const rowSpans = [250.0, 220.0, 185.0, 150.0, 120.0];
+        for (int r = 0; r < 5; r++) {
           final span = rowSpans[r];
           final step = span / 4.0;
           for (int c = 0; c < 5; c++) {
@@ -4086,23 +4083,23 @@ class IslandAerialPainter extends CustomPainter {
         break;
 
       case IslandArchetype.horseshoeBay:
-        // Lagoon Atoll: 2 concentric circular rings (8 inner + 12 outer = 20 plots)
-        for (int i = 0; i < 8; i++) {
-          final a = (i * 2 * math.pi / 8) - math.pi / 2;
+        // Lagoon Atoll: 2 concentric circular rings (10 inner + 15 outer = 25 plots)
+        for (int i = 0; i < 10; i++) {
+          final a = (i * 2 * math.pi / 10) - math.pi / 2;
           coords.add(Offset(85.0 * math.cos(a), 70.0 * math.sin(a)));
         }
-        for (int i = 0; i < 12; i++) {
-          final a = (i * 2 * math.pi / 12) - math.pi / 2;
+        for (int i = 0; i < 15; i++) {
+          final a = (i * 2 * math.pi / 15) - math.pi / 2;
           coords.add(Offset(150.0 * math.cos(a), 125.0 * math.sin(a)));
         }
         break;
 
       case IslandArchetype.twinSanctuary:
-        // Emerald Arch Haven: 4 balanced rows (4 + 6 + 6 + 4 = 20 plots)
-        const rowCounts = [4, 6, 6, 4];
-        const yPositions = [-125.0, -42.0, 42.0, 125.0];
-        const rowSpans = [190.0, 270.0, 270.0, 190.0];
-        for (int r = 0; r < 4; r++) {
+        // Emerald Arch Haven: 5 balanced rows (5 + 5 + 5 + 5 + 5 = 25 plots)
+        const rowCounts = [5, 5, 5, 5, 5];
+        const yPositions = [-130.0, -65.0, 0.0, 65.0, 130.0];
+        const rowSpans = [190.0, 250.0, 270.0, 250.0, 190.0];
+        for (int r = 0; r < 5; r++) {
           final count = rowCounts[r];
           final span = rowSpans[r];
           final step = count > 1 ? span / (count - 1) : 0.0;
@@ -4113,10 +4110,10 @@ class IslandAerialPainter extends CustomPainter {
         break;
 
       case IslandArchetype.citadelPlateau:
-        // 4 rows of 5 = 20 plots
-        const yPositions = [-120.0, -40.0, 40.0, 120.0];
-        const xPositions = [-110.0, -55.0, 0.0, 55.0, 110.0];
-        for (int r = 0; r < 4; r++) {
+        // 5 rows of 5 = 25 plots
+        const yPositions = [-125.0, -62.0, 0.0, 62.0, 125.0];
+        const xPositions = [-120.0, -60.0, 0.0, 60.0, 120.0];
+        for (int r = 0; r < 5; r++) {
           for (int c = 0; c < 5; c++) {
             coords.add(Offset(xPositions[c], yPositions[r]));
           }
@@ -4132,7 +4129,7 @@ class IslandAerialPainter extends CustomPainter {
     final archetype = getIslandArchetype(style);
     switch (archetype) {
       case IslandArchetype.naturalOval:
-        final row = index < 4 ? 0 : (index < 10 ? 1 : (index < 16 ? 2 : 3));
+        final row = index ~/ 5;
         return row.isEven ? 0.0 : math.pi;
 
       case IslandArchetype.capePeninsula:
@@ -4140,21 +4137,21 @@ class IslandAerialPainter extends CustomPainter {
         return row.isEven ? math.pi : 0.0;
 
       case IslandArchetype.horseshoeBay:
-        if (index < 8) {
-          return (index * 2 * math.pi / 8) - math.pi / 2;
+        if (index < 10) {
+          return (index * 2 * math.pi / 10) - math.pi / 2;
         } else {
-          return ((index - 8) * 2 * math.pi / 12) - math.pi / 2 + math.pi;
+          return ((index - 10) * 2 * math.pi / 15) - math.pi / 2 + math.pi;
         }
 
       case IslandArchetype.twinSanctuary:
-        final row = index < 4 ? 0 : (index < 10 ? 1 : (index < 16 ? 2 : 3));
+        final row = index ~/ 5;
         return row.isEven ? math.pi : 0.0;
 
       case IslandArchetype.citadelPlateau:
         final row = index ~/ 5;
         final col = index % 5;
         if (row == 0) return math.pi;
-        if (row == 3) return 0.0;
+        if (row == 4) return 0.0;
         if (col < 2) return math.pi / 2;
         return -math.pi / 2;
     }
