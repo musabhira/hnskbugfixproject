@@ -222,6 +222,10 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       }
     }
 
+    // 🌌 Northern Lights & Celestial Aurora Curtains (Borealis / Australis)
+    _drawAuroraCurtains(canvas, w, gy, ambientProg,
+        isNight: isNight, planetCode: planetCode ?? 'EP');
+
     if (isNight) {
       // 🌌 Faint Celestial Nebula Dust Band Across Upper Sky
       final nebulaPaint = Paint()
@@ -237,34 +241,6 @@ class CitadelScenicLandscapePainter extends CustomPainter {
         ).createShader(Rect.fromLTWH(0, 0, w, gy * 0.7))
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 28);
       canvas.drawRect(Rect.fromLTWH(0, 0, w, gy * 0.7), nebulaPaint);
-
-      // 🌌 Shimmering Aurora Borealis (Northern Lights Ribbon)
-      final auroraPath = Path();
-      final auroraWave = math.sin(ambientProg * 2 * math.pi) * 18.0;
-      auroraPath.moveTo(0, gy * 0.35 + auroraWave);
-      auroraPath.cubicTo(w * 0.28, gy * 0.22 - auroraWave, w * 0.62,
-          gy * 0.44 + auroraWave, w, gy * 0.28);
-      auroraPath.lineTo(w, gy * 0.46);
-      auroraPath.cubicTo(w * 0.62, gy * 0.60 + auroraWave, w * 0.28,
-          gy * 0.38 - auroraWave, 0, gy * 0.52);
-      auroraPath.close();
-
-      final auroraShader = LinearGradient(
-        colors: [
-          Colors.transparent,
-          const Color(0xFF10B981).withValues(alpha: 0.18),
-          const Color(0xFF38BDF8).withValues(alpha: 0.16),
-          const Color(0xFFC084FC).withValues(alpha: 0.14),
-          Colors.transparent,
-        ],
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-      ).createShader(Rect.fromLTWH(0, gy * 0.20, w, gy * 0.40));
-      canvas.drawPath(
-          auroraPath,
-          Paint()
-            ..shader = auroraShader
-            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 22));
 
       // 🌙 Glowing Crescent Moon
       final moonCenter = Offset(w * 0.82, gy * 0.22);
@@ -1056,6 +1032,10 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       _drawFlowerbed(canvas, w * 0.34, gy + 2);
       _drawFlowerbed(canvas, w * 0.64, gy + 4);
 
+      // 🪧 Authentic 2-Legged Territorial Signpost ("കബോർഡ്" / Colony Plaque Board)
+      _drawTerritorialSignpost(canvas, w * 0.38, gy + 32,
+          planetCode: planetCode ?? 'EP', isNight: isNight);
+
       // 🦋 12. Fluttering Butterflies in Day / ✨ Glowing Fireflies at Night
       if (!isNight) {
         _drawButterfly(canvas, w * 0.33, gy - 8,
@@ -1322,16 +1302,380 @@ class CitadelScenicLandscapePainter extends CustomPainter {
   }
 
   void _drawLunarSurfaceDetails(Canvas canvas, double w, double gy) {
+    // 🌑 1. High-Detail Lunar Regolith Craters with Sunlit Rims & Inky Shadows
+    _drawLunarCrater(canvas, w * 0.14, gy + 8, radiusX: 24, radiusY: 10);
+    _drawLunarCrater(canvas, w * 0.32, gy + 42, radiusX: 18, radiusY: 7);
+    _drawLunarCrater(canvas, w * 0.68, gy + 36, radiusX: 28, radiusY: 11);
+    _drawLunarCrater(canvas, w * 0.86, gy + 14, radiusX: 20, radiusY: 8);
+
+    // 🪨 2. Shaded Basalt Rocks scattered across the powdery regolith
+    _drawShadedRock(canvas, w * 0.18, gy + 16, width: 26, height: 16);
+    _drawShadedRock(canvas, w * 0.38, gy + 60, width: 32, height: 20);
+    _drawShadedRock(canvas, w * 0.76, gy + 48, width: 28, height: 18);
+    _drawShadedRock(canvas, w * 0.90, gy + 22, width: 22, height: 14);
+
+    // ✨ 3. Powdery Silver & White Regolith Soil Texture Specks
+    final dustPaint = Paint()..color = const Color(0xFFE2E8F0).withValues(alpha: 0.45);
+    for (int i = 0; i < 35; i++) {
+      final dx = (w * 0.05) + ((i * 37.0) % (w * 0.90));
+      final dy = gy + 5 + ((i * 19.0) % 95.0);
+      canvas.drawCircle(Offset(dx, dy), 0.9 + ((i % 3) * 0.4), dustPaint);
+    }
+
+    // 📡 4. Lunar High-Gain Communication Dish Station
+    final dishX = w * 0.28;
+    final dishY = gy - 8;
+    // Tripod mount
+    final tripodPaint = Paint()
+      ..color = const Color(0xFF94A3B8)
+      ..strokeWidth = 1.6;
+    canvas.drawLine(Offset(dishX - 6, dishY + 12), Offset(dishX, dishY), tripodPaint);
+    canvas.drawLine(Offset(dishX + 6, dishY + 12), Offset(dishX, dishY), tripodPaint);
+    canvas.drawLine(Offset(dishX, dishY + 12), Offset(dishX, dishY), tripodPaint);
+    // Parabolic dish
+    final dishRect = Rect.fromCenter(center: Offset(dishX + 2, dishY - 6), width: 18, height: 14);
+    canvas.drawArc(dishRect, -math.pi * 0.75, math.pi * 0.95, false,
+        Paint()..color = const Color(0xFFE2E8F0)..style = PaintingStyle.stroke..strokeWidth = 2.4);
+    // Feed horn
+    canvas.drawLine(Offset(dishX + 2, dishY - 6), Offset(dishX + 8, dishY - 12),
+        Paint()..color = const Color(0xFFCBD5E1)..strokeWidth = 1.4);
+    canvas.drawCircle(Offset(dishX + 8, dishY - 12), 1.8, Paint()..color = const Color(0xFF38BDF8));
+
+    // 🚩 5. Lunar Surface Mission Flag
     final flagX = w * 0.22;
     final flagY = gy - 10;
-    canvas.drawLine(Offset(flagX, flagY), Offset(flagX, flagY - 26), Paint()..color = const Color(0xFFE2E8F0)..strokeWidth = 2);
+    canvas.drawLine(Offset(flagX, flagY), Offset(flagX, flagY - 26),
+        Paint()..color = const Color(0xFFE2E8F0)..strokeWidth = 2);
     final flagPath = Path();
     flagPath.moveTo(flagX, flagY - 26);
     flagPath.lineTo(flagX + 16, flagY - 21);
     flagPath.lineTo(flagX, flagY - 16);
     flagPath.close();
     canvas.drawPath(flagPath, Paint()..color = const Color(0xFF38BDF8));
-    canvas.drawCircle(Offset(flagX + 6, flagY - 21), 2.0, Paint()..color = const Color(0xFFFFD700));
+    canvas.drawCircle(
+        Offset(flagX + 6, flagY - 21), 2.0, Paint()..color = const Color(0xFFFFD700));
+  }
+
+  /// 🌑 Realistic Lunar Crater with sunlit silver rim & deep shadow interior
+  void _drawLunarCrater(Canvas canvas, double cx, double cy,
+      {required double radiusX, required double radiusY}) {
+    // Crater Floor (Dark shadow interior)
+    final floorRect = Rect.fromCenter(center: Offset(cx, cy), width: radiusX * 2, height: radiusY * 2);
+    canvas.drawOval(
+      floorRect,
+      Paint()..color = const Color(0xFF0F172A).withValues(alpha: 0.85),
+    );
+
+    // Sunlit Brilliant White/Silver Rim (Upper/Left crest)
+    final rimPaint = Paint()
+      ..color = const Color(0xFFF1F5F9).withValues(alpha: 0.75)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.8;
+    canvas.drawArc(floorRect.inflate(0.8), math.pi * 0.9, math.pi * 1.1, false, rimPaint);
+
+    // Subtle dark outer ejecta ring
+    canvas.drawOval(
+      floorRect.inflate(2.4),
+      Paint()
+        ..color = const Color(0xFF475569).withValues(alpha: 0.35)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.0,
+    );
+  }
+
+  /// 🪧 Authentic 2-Legged Territorial Signpost ("കബോർഡ്" / Colony Plaque Board)
+  /// Visible clearly when zooming or viewing the colony scenery
+  void _drawTerritorialSignpost(Canvas canvas, double x, double y,
+      {required String planetCode, bool isNight = false}) {
+    canvas.save();
+    canvas.translate(x, y);
+
+    final String title;
+    final String subtitle;
+    final Color boardColor;
+    final Color boardBorderColor;
+    final Color textColor;
+    final Color legColor;
+
+    switch (planetCode) {
+      case 'MAR':
+        title = 'MARS COLONY';
+        subtitle = 'SEC-01 • VALLES PRIME';
+        boardColor = const Color(0xFF7C2D12);
+        boardBorderColor = const Color(0xFFF97316);
+        textColor = const Color(0xFFFFEDD5);
+        legColor = const Color(0xFF431407);
+        break;
+      case 'LUN':
+        title = 'MOON BASE';
+        subtitle = 'SEC-01 • TRANQUILITY';
+        boardColor = const Color(0xFF334155);
+        boardBorderColor = const Color(0xFF94A3B8);
+        textColor = const Color(0xFFF8FAFC);
+        legColor = const Color(0xFF1E293B);
+        break;
+      case 'JUP':
+        title = 'JUPITER HOMESTEAD';
+        subtitle = 'SEC-01 • JOVIAN BASE';
+        boardColor = const Color(0xFF78350F);
+        boardBorderColor = const Color(0xFFF59E0B);
+        textColor = const Color(0xFFFEF3C7);
+        legColor = const Color(0xFF451A03);
+        break;
+      case 'EUR':
+        title = 'EUROPA CITADEL';
+        subtitle = 'SEC-01 • CRYO HAVEN';
+        boardColor = const Color(0xFF0C4A6E);
+        boardBorderColor = const Color(0xFF38BDF8);
+        textColor = const Color(0xFFF0F9FF);
+        legColor = const Color(0xFF082F49);
+        break;
+      case 'SAT':
+        title = 'SATURN OUTPOST';
+        subtitle = 'SEC-01 • CASSINI REACH';
+        boardColor = const Color(0xFF713F12);
+        boardBorderColor = const Color(0xFFEAB308);
+        textColor = const Color(0xFFFEF9C3);
+        legColor = const Color(0xFF422006);
+        break;
+      case 'VEN':
+        title = 'VENUS AEROSTAT';
+        subtitle = 'SEC-01 • ISHTAR REACH';
+        boardColor = const Color(0xFF78350F);
+        boardBorderColor = const Color(0xFFFB923C);
+        textColor = const Color(0xFFFFEDD5);
+        legColor = const Color(0xFF431407);
+        break;
+      case 'TTN':
+        title = 'TITAN HABITAT';
+        subtitle = 'SEC-01 • KRAKEN MARE';
+        boardColor = const Color(0xFF064E3B);
+        boardBorderColor = const Color(0xFF34D399);
+        textColor = const Color(0xFFECFDF5);
+        legColor = const Color(0xFF022C22);
+        break;
+      case 'NEP':
+        title = 'NEPTUNE VOYAGER';
+        subtitle = 'SEC-01 • AZURE ABYSS';
+        boardColor = const Color(0xFF1E3A8A);
+        boardBorderColor = const Color(0xFF60A5FA);
+        textColor = const Color(0xFFEFF6FF);
+        legColor = const Color(0xFF172554);
+        break;
+      case 'PLT':
+        title = 'PLUTO REACH';
+        subtitle = 'SEC-01 • TOMBAUGH';
+        boardColor = const Color(0xFF581C87);
+        boardBorderColor = const Color(0xFFC084FC);
+        textColor = const Color(0xFFFAF5FF);
+        legColor = const Color(0xFF3B0764);
+        break;
+      default:
+        title = 'EARTH PRIME';
+        subtitle = 'SEC-01 • CITADEL SECTOR';
+        boardColor = const Color(0xFF78350F);
+        boardBorderColor = const Color(0xFFB45309);
+        textColor = const Color(0xFFFEF3C7);
+        legColor = const Color(0xFF451A03);
+    }
+
+    const double boardW = 68.0;
+    const double boardH = 26.0;
+    const double legH = 24.0;
+    const double legW = 3.5;
+    const double legSpacing = 42.0;
+
+    // 1. Ground Shadows cast by legs & board
+    final shadowPaint = Paint()..color = Colors.black.withValues(alpha: 0.35);
+    canvas.drawOval(
+      Rect.fromCenter(
+          center: const Offset(0, legH + 2), width: boardW + 12, height: 7),
+      shadowPaint,
+    );
+
+    // 2. Two Vertical Sturdy Legs (Posts) planted into ground
+    final legPaint = Paint()..color = legColor;
+    final legHighlightPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.18)
+      ..strokeWidth = 1.0;
+
+    // Left leg
+    final leftLegRect = Rect.fromLTWH(-legSpacing / 2 - legW / 2, 4, legW, legH);
+    canvas.drawRRect(
+        RRect.fromRectAndRadius(leftLegRect, const Radius.circular(1.0)),
+        legPaint);
+    canvas.drawLine(
+        Offset(-legSpacing / 2 - legW / 2 + 0.8, 4),
+        Offset(-legSpacing / 2 - legW / 2 + 0.8, 4 + legH),
+        legHighlightPaint);
+
+    // Right leg
+    final rightLegRect = Rect.fromLTWH(legSpacing / 2 - legW / 2, 4, legW, legH);
+    canvas.drawRRect(
+        RRect.fromRectAndRadius(rightLegRect, const Radius.circular(1.0)),
+        legPaint);
+    canvas.drawLine(
+        Offset(legSpacing / 2 - legW / 2 + 0.8, 4),
+        Offset(legSpacing / 2 - legW / 2 + 0.8, 4 + legH),
+        legHighlightPaint);
+
+    // 3. Ground soil mounds hugging base of posts
+    final moundPaint = Paint()
+      ..color = isNight ? const Color(0xFF0F172A) : const Color(0xFF334155);
+    canvas.drawOval(
+        Rect.fromCenter(center: Offset(-legSpacing / 2, legH + 1), width: 7, height: 3),
+        moundPaint);
+    canvas.drawOval(
+        Rect.fromCenter(center: Offset(legSpacing / 2, legH + 1), width: 7, height: 3),
+        moundPaint);
+
+    // 4. Horizontal Plaque Board
+    final boardRect =
+        Rect.fromCenter(center: Offset.zero, width: boardW, height: boardH);
+    final boardRRect =
+        RRect.fromRectAndRadius(boardRect, const Radius.circular(3.5));
+
+    // Outer board shadow
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+          boardRect.shift(const Offset(1.2, 1.8)), const Radius.circular(3.5)),
+      Paint()..color = Colors.black.withValues(alpha: 0.40),
+    );
+
+    // Board Body Fill
+    canvas.drawRRect(boardRRect, Paint()..color = boardColor);
+
+    // Board Bevel Border
+    canvas.drawRRect(
+      boardRRect,
+      Paint()
+        ..color = boardBorderColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2,
+    );
+
+    // Inner subtle inset border
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+          boardRect.deflate(2.2), const Radius.circular(2.0)),
+      Paint()
+        ..color = boardBorderColor.withValues(alpha: 0.45)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.6,
+    );
+
+    // 4 Corner Brass / Metallic Rivet Bolts
+    final boltPaint = Paint()..color = const Color(0xFFFFD700);
+    canvas.drawCircle(
+        Offset(-boardW / 2 + 4.5, -boardH / 2 + 4.5), 1.2, boltPaint);
+    canvas.drawCircle(
+        Offset(boardW / 2 - 4.5, -boardH / 2 + 4.5), 1.2, boltPaint);
+    canvas.drawCircle(
+        Offset(-boardW / 2 + 4.5, boardH / 2 - 4.5), 1.2, boltPaint);
+    canvas.drawCircle(
+        Offset(boardW / 2 - 4.5, boardH / 2 - 4.5), 1.2, boltPaint);
+
+    // 5. Inscribed Title & Subtitle via TextPainter
+    final tpTitle = TextPainter(
+      text: TextSpan(
+        text: title,
+        style: TextStyle(
+          color: textColor,
+          fontSize: 6.8,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.6,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tpTitle.paint(canvas, Offset(-tpTitle.width / 2, -boardH / 2 + 4.2));
+
+    final tpSub = TextPainter(
+      text: TextSpan(
+        text: subtitle,
+        style: TextStyle(
+          color: textColor.withValues(alpha: 0.82),
+          fontSize: 4.0,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.4,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tpSub.paint(canvas, Offset(-tpSub.width / 2, 2.5));
+
+    canvas.restore();
+  }
+
+  /// 🌌 Northern Lights & Celestial Aurora Curtains (Borealis / Australis)
+  void _drawAuroraCurtains(
+      Canvas canvas, double w, double gy, double ambientProg,
+      {required bool isNight, required String planetCode}) {
+    // Only display at night OR in alien / thin atmosphere celestial worlds
+    final bool hasAurora = isNight ||
+        planetCode == 'EUR' ||
+        planetCode == 'NEP' ||
+        planetCode == 'PLT' ||
+        planetCode == 'LUN' ||
+        planetCode == 'MAR';
+    if (!hasAurora) return;
+
+    final auroraWave1 = math.sin(ambientProg * 2 * math.pi) * 18.0;
+    final auroraWave2 = math.cos(ambientProg * 2 * math.pi + 0.8) * 14.0;
+
+    // 1. Primary Emerald & Cyan Aurora Curtain
+    final auroraPath1 = Path();
+    auroraPath1.moveTo(0, gy * 0.32 + auroraWave1);
+    auroraPath1.cubicTo(w * 0.28, gy * 0.18 - auroraWave1, w * 0.62,
+        gy * 0.42 + auroraWave1, w, gy * 0.24);
+    auroraPath1.lineTo(w, gy * 0.46);
+    auroraPath1.cubicTo(w * 0.62, gy * 0.62 + auroraWave1, w * 0.28,
+        gy * 0.36 - auroraWave1, 0, gy * 0.50);
+    auroraPath1.close();
+
+    final auroraShader1 = LinearGradient(
+      colors: [
+        Colors.transparent,
+        const Color(0xFF10B981).withValues(alpha: isNight ? 0.22 : 0.15),
+        const Color(0xFF38BDF8).withValues(alpha: isNight ? 0.20 : 0.14),
+        Colors.transparent,
+      ],
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+    ).createShader(Rect.fromLTWH(0, gy * 0.18, w, gy * 0.45));
+
+    canvas.drawPath(
+        auroraPath1,
+        Paint()
+          ..shader = auroraShader1
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 22));
+
+    // 2. Secondary Shimmering Violet & Magenta Ribbon
+    final auroraPath2 = Path();
+    auroraPath2.moveTo(0, gy * 0.24 + auroraWave2);
+    auroraPath2.cubicTo(w * 0.34, gy * 0.38 + auroraWave2, w * 0.70,
+        gy * 0.16 - auroraWave2, w, gy * 0.35);
+    auroraPath2.lineTo(w, gy * 0.48);
+    auroraPath2.cubicTo(w * 0.70, gy * 0.32 - auroraWave2, w * 0.34,
+        gy * 0.52 + auroraWave2, 0, gy * 0.38);
+    auroraPath2.close();
+
+    final auroraShader2 = LinearGradient(
+      colors: [
+        Colors.transparent,
+        const Color(0xFFA855F7).withValues(alpha: isNight ? 0.18 : 0.12),
+        const Color(0xFFF43F5E).withValues(alpha: isNight ? 0.14 : 0.10),
+        Colors.transparent,
+      ],
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+    ).createShader(Rect.fromLTWH(0, gy * 0.15, w, gy * 0.40));
+
+    canvas.drawPath(
+        auroraPath2,
+        Paint()
+          ..shader = auroraShader2
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 24));
   }
 
   void _drawLunarSatellite(Canvas canvas, double x, double y, double ambientProg) {

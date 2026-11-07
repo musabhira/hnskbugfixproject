@@ -44,6 +44,8 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   Map<int, NeighborReservationPass> _activeReservations = {};
+  Offset? _tapDownPos;
+  DateTime? _tapDownTime;
 
   @override
   void initState() {
@@ -83,7 +85,28 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
 
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTapUp: widget.isInteractive ? (details) => _handleTap(details, size) : null,
+          onTapDown: widget.isInteractive
+              ? (details) {
+                  _tapDownPos = details.localPosition;
+                  _tapDownTime = DateTime.now();
+                }
+              : null,
+          onTapUp: widget.isInteractive
+              ? (details) {
+                  if (_tapDownPos != null) {
+                    final moved = (details.localPosition - _tapDownPos!).distance;
+                    final dur = DateTime.now().difference(_tapDownTime ?? DateTime.now());
+                    if (moved > 10.0 || dur.inMilliseconds > 450) {
+                      // Drag, pan, or pinch-zoom in progress - ignore plot tap!
+                      return;
+                    }
+                  }
+                  _handleTap(details, size);
+                }
+              : null,
+          onTapCancel: () {
+            _tapDownPos = null;
+          },
           child: CustomPaint(
             size: size,
             painter: IslandAerialPainter(
@@ -648,6 +671,9 @@ class IslandAerialPainter extends CustomPainter {
     // 5. Expansive Authentic Planetary Island Terrain (Generous landmass & authentic planetary ground)
     _drawIslandTerrainBody(canvas);
 
+    // 5a. Topographical Mountain Ridge Relief (Shaded elevation contours & sunlit crests)
+    _drawTopDownMountainRelief(canvas);
+
     // 5b. 35 Territorial Districts (State/District Map Partition with Border Lines!)
     // Like US / Indian states on a map, entire island is partitioned into 35 contiguous districts!
     if (!island.isPresidential) {
@@ -657,8 +683,14 @@ class IslandAerialPainter extends CustomPainter {
     // 6. Central Lagoon / Resort Swimming Lake
     _drawInteriorWaterBody(canvas);
 
+    // 6b. Meandering Freshwater Stream / River with Stone Footbridges
+    _drawMeanderingStream(canvas);
+
     // 7. Winding Paved Trails & Roadways Connecting the Island
     _drawRoadways(canvas);
+
+    // 7b. Traditional Dutch Windmill with Rotating Lattice Sails
+    _drawTopDownWindmill(canvas);
 
     // 8. Mini Sports Pitch (Football Turf Lawn with White Markings on Earth & Titan)
     if (!island.isPresidential && (isEarth || isTitan)) {
@@ -1640,6 +1672,229 @@ class IslandAerialPainter extends CustomPainter {
       canvas.drawPath(lagoonPath, lagoonPaint);
       canvas.drawPath(lagoonPath, lagoonFoam);
     }
+  }
+
+  // =========================================================================
+  // 🏔️ TOPOGRAPHICAL MOUNTAIN RELIEF (Top-down shaded ridges and crests)
+  // =========================================================================
+  void _drawTopDownMountainRelief(Canvas canvas) {
+    if (island.isPresidential) return;
+
+    final sunlitPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.16)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.4
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.8);
+
+    final shadowPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.18)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.0
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.2);
+
+    // Ridge 1 (North-west highland)
+    final ridge1 = Path();
+    ridge1.moveTo(-160.0, -120.0);
+    ridge1.quadraticBezierTo(-110.0, -145.0, -60.0, -115.0);
+    canvas.drawPath(ridge1.shift(const Offset(-1.5, -1.5)), sunlitPaint);
+    canvas.drawPath(ridge1.shift(const Offset(2.0, 2.5)), shadowPaint);
+
+    // Ridge 2 (Eastern hills)
+    final ridge2 = Path();
+    ridge2.moveTo(70.0, -130.0);
+    ridge2.quadraticBezierTo(135.0, -100.0, 165.0, -50.0);
+    canvas.drawPath(ridge2.shift(const Offset(-1.5, -1.5)), sunlitPaint);
+    canvas.drawPath(ridge2.shift(const Offset(2.0, 2.5)), shadowPaint);
+
+    // Ridge 3 (Southern plateau crest)
+    final ridge3 = Path();
+    ridge3.moveTo(-80.0, 95.0);
+    ridge3.quadraticBezierTo(0.0, 125.0, 85.0, 90.0);
+    canvas.drawPath(ridge3.shift(const Offset(-1.5, -1.5)), sunlitPaint);
+    canvas.drawPath(ridge3.shift(const Offset(2.0, 2.5)), shadowPaint);
+  }
+
+  // =========================================================================
+  // 🏞️ MEANDERING STREAM / RIVER (With stone bridges and water ripples)
+  // =========================================================================
+  void _drawMeanderingStream(Canvas canvas) {
+    if (island.isPresidential) return;
+
+    Color streamBedColor;
+    Color streamWaterColor;
+    Color rippleColor;
+
+    switch (colonyType) {
+      case CelestialColonyType.mars:
+        streamBedColor = const Color(0xFF7C2D12);
+        streamWaterColor = const Color(0xFF991B1B);
+        rippleColor = const Color(0xFFFCA5A5);
+        break;
+      case CelestialColonyType.moon:
+        streamBedColor = const Color(0xFF1E293B);
+        streamWaterColor = const Color(0xFF334155);
+        rippleColor = const Color(0xFFE2E8F0);
+        break;
+      case CelestialColonyType.titan:
+        streamBedColor = const Color(0xFF064E3B);
+        streamWaterColor = const Color(0xFF059669);
+        rippleColor = const Color(0xFFA7F3D0);
+        break;
+      case CelestialColonyType.europa:
+        streamBedColor = const Color(0xFF0369A1);
+        streamWaterColor = const Color(0xFF38BDF8);
+        rippleColor = const Color(0xFFE0F2FE);
+        break;
+      default:
+        streamBedColor = const Color(0xFF0284C7);
+        streamWaterColor = const Color(0xFF38BDF8);
+        rippleColor = Colors.white;
+    }
+
+    final streamPath = Path();
+    streamPath.moveTo(110.0, -150.0);
+    streamPath.cubicTo(60.0, -90.0, 80.0, -30.0, 25.0, 15.0);
+    streamPath.cubicTo(-20.0, 50.0, -65.0, 70.0, -115.0, 145.0);
+
+    // 1. Bed / Bank
+    final bedPaint = Paint()
+      ..color = streamBedColor.withValues(alpha: 0.55)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 7.5
+      ..strokeCap = StrokeCap.round;
+    canvas.drawPath(streamPath, bedPaint);
+
+    // 2. Stream Water
+    final waterPaint = Paint()
+      ..color = streamWaterColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4.5
+      ..strokeCap = StrokeCap.round;
+    canvas.drawPath(streamPath, waterPaint);
+
+    // 3. Gentle sparkling ripples
+    final rippleOffset = math.sin(timeSeconds * 3.0) * 4.0;
+    final rPaint = Paint()
+      ..color = rippleColor.withValues(alpha: 0.55)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawLine(Offset(68.0 + rippleOffset, -70.0), Offset(78.0 + rippleOffset, -62.0), rPaint);
+    canvas.drawLine(Offset(32.0 - rippleOffset, -8.0), Offset(40.0 - rippleOffset, 2.0), rPaint);
+    canvas.drawLine(Offset(-42.0 + rippleOffset, 55.0), Offset(-32.0 + rippleOffset, 63.0), rPaint);
+
+    // 4. Miniature Stone Arched Footbridge
+    const bridgeCenter = Offset(25.0, 15.0);
+    canvas.save();
+    canvas.translate(bridgeCenter.dx, bridgeCenter.dy);
+    canvas.rotate(-math.pi / 4);
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(const Rect.fromLTWH(-6, 3, 14, 12), const Radius.circular(2.5)),
+      Paint()..color = Colors.black.withValues(alpha: 0.35),
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(const Rect.fromLTWH(-7, -1, 14, 12), const Radius.circular(2.5)),
+      Paint()..color = const Color(0xFFE2E8F0),
+    );
+    final railPaint = Paint()..color = const Color(0xFF64748B)..strokeWidth = 1.2;
+    canvas.drawLine(const Offset(-7, -1), const Offset(-7, 11), railPaint);
+    canvas.drawLine(const Offset(7, -1), const Offset(7, 11), railPaint);
+
+    canvas.restore();
+  }
+
+  // =========================================================================
+  // 💨 TOP-DOWN DUTCH WINDMILL (With rotating 4-blade lattice sails)
+  // =========================================================================
+  void _drawTopDownWindmill(Canvas canvas) {
+    if (island.isPresidential) return;
+    const millCenter = Offset(-145.0, -95.0);
+    final rotAngle = ((animation?.value ?? ((timeSeconds / 40.0) % 1.0)) *
+            2 *
+            math.pi *
+            2.5) %
+        (2 * math.pi);
+
+    canvas.save();
+    canvas.translate(millCenter.dx, millCenter.dy);
+
+    // Drop shadow
+    final shadowPaint = Paint()..color = Colors.black.withValues(alpha: 0.28);
+    canvas.drawOval(
+      Rect.fromCenter(center: const Offset(4.0, 5.0), width: 26, height: 26),
+      shadowPaint,
+    );
+
+    // Stone foundation
+    final foundationPaint = Paint()
+      ..color = const Color(0xFF64748B)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(Offset.zero, 11.5, foundationPaint);
+
+    final stoneTrimPaint = Paint()
+      ..color = const Color(0xFF334155)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4;
+    canvas.drawCircle(Offset.zero, 11.5, stoneTrimPaint);
+
+    // Conical roof
+    final roofPaint = Paint()
+      ..shader = const RadialGradient(
+        colors: [Color(0xFFEA580C), Color(0xFF9A3412)],
+      ).createShader(Rect.fromCircle(center: Offset.zero, radius: 9.0));
+    canvas.drawCircle(Offset.zero, 8.5, roofPaint);
+
+    // Center pivot cap
+    canvas.drawCircle(Offset.zero, 3.2, Paint()..color = const Color(0xFF1E293B));
+    canvas.drawCircle(Offset.zero, 1.4, Paint()..color = const Color(0xFFF1F5F9));
+
+    // Rotating 4 Lattice Sails
+    canvas.save();
+    canvas.rotate(rotAngle);
+
+    final armWoodPaint = Paint()
+      ..color = const Color(0xFF78350F)
+      ..strokeWidth = 1.2
+      ..strokeCap = StrokeCap.round;
+
+    final sailClothPaint = Paint()
+      ..color = const Color(0xFFFFFBEB).withValues(alpha: 0.92)
+      ..style = PaintingStyle.fill;
+
+    final sailBorderPaint = Paint()
+      ..color = const Color(0xFFD97706)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.5;
+
+    for (int b = 0; b < 4; b++) {
+      canvas.save();
+      canvas.rotate(b * math.pi / 2);
+
+      canvas.drawLine(Offset.zero, const Offset(24.0, 0), armWoodPaint);
+
+      final sailPath = Path();
+      sailPath.moveTo(6.0, 0);
+      sailPath.lineTo(23.0, 0);
+      sailPath.lineTo(21.5, -5.5);
+      sailPath.lineTo(6.5, -4.2);
+      sailPath.close();
+
+      canvas.drawPath(sailPath, sailClothPaint);
+      canvas.drawPath(sailPath, sailBorderPaint);
+
+      for (double rx = 8.0; rx <= 20.0; rx += 4.0) {
+        canvas.drawLine(Offset(rx, 0), Offset(rx, -4.5), armWoodPaint);
+      }
+
+      canvas.restore();
+    }
+
+    canvas.restore();
+    canvas.restore();
   }
 
   void _drawRoadways(Canvas canvas) {

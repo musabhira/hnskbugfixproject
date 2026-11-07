@@ -2120,6 +2120,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             userId: userId,
             userName: _profileData?['name']?.toString(),
             userAvatar: _profileData?['avatar_url']?.toString(),
+            onBack: () {
+              _profileHorizontalPageController.animateToPage(
+                0,
+                duration: const Duration(milliseconds: 320),
+                curve: Curves.easeInOut,
+              );
+            },
           ),
         ],
       ),
