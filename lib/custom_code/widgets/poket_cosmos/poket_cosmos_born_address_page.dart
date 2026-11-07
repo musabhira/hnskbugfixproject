@@ -675,8 +675,10 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
         const double houseTop = groundY - 14.0 - houseH;
 
         final double houseZoomScale = (w / (houseW * 1.05));
-        final double baseMinScale = math.max(w / worldW, h / worldH);
-        final minScale = (w <= 0) ? 0.30 : baseMinScale;
+        // Strictly lock minScale to 1.02 * (h / worldH) so that at maximum zoom-out,
+        // the bottom end of the meadow art touches the bottom edge of the screen with zero gap!
+        final double heightMinScale = (h / worldH) * 1.02;
+        final double minScale = (w <= 0) ? 0.30 : heightMinScale;
         const maxScale = 3.5;
         final defaultScale = (w <= 0)
             ? 1.0
@@ -726,6 +728,15 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
                   ambientProg: _landscapeAmbientController.value,
                 ),
               ),
+            ),
+
+            // Continuous meadow green base behind the bottom edge
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: 150,
+              child: Container(color: const Color(0xFF15803D)),
             ),
 
             // 🌄 Fullscreen Interactive Estate with Living Scenery (boundaryMargin: EdgeInsets.zero locks edges!)
