@@ -48,7 +48,83 @@ class _PoketCosmosHomeInspectorModalState
 
   int _currentIndex = 0;
   bool _transformInitialized = false;
+  bool _isImmersiveMode = false;
   final List<CelestialColonyInfo> _colonies = PoketCosmosAllocationService.colonies;
+
+  Map<String, String> _getColonyTelemetry(String code) {
+    switch (code) {
+      case 'MAR':
+        return {
+          'temp': '-63°C',
+          'gravity': '0.38g',
+          'habitat': 'Terraform Dome',
+          'orbit': '4th Orbit',
+        };
+      case 'JUP':
+        return {
+          'temp': '-145°C',
+          'gravity': '2.53g',
+          'habitat': 'Jovian Sanctuary',
+          'orbit': '5th Orbit',
+        };
+      case 'LUN':
+        return {
+          'temp': '-130°C',
+          'gravity': '0.17g',
+          'habitat': 'Lunar Outpost',
+          'orbit': 'Earth Moon',
+        };
+      case 'PLT':
+        return {
+          'temp': '-223°C',
+          'gravity': '0.06g',
+          'habitat': 'Kuiper Cryo Vault',
+          'orbit': 'Outer Frontier',
+        };
+      case 'EUR':
+        return {
+          'temp': '-160°C',
+          'gravity': '0.13g',
+          'habitat': 'Sub-Ice Station',
+          'orbit': 'Jupiter Moon',
+        };
+      case 'SAT':
+        return {
+          'temp': '-140°C',
+          'gravity': '1.07g',
+          'habitat': 'Ringview Estate',
+          'orbit': '6th Orbit',
+        };
+      case 'VEN':
+        return {
+          'temp': '+465°C',
+          'gravity': '0.90g',
+          'habitat': 'Cloud Haven',
+          'orbit': '2nd Orbit',
+        };
+      case 'TTN':
+        return {
+          'temp': '-179°C',
+          'gravity': '0.14g',
+          'habitat': 'Hydrocarbon Port',
+          'orbit': 'Saturn Moon',
+        };
+      case 'NEP':
+        return {
+          'temp': '-214°C',
+          'gravity': '1.14g',
+          'habitat': 'Abyssal Haven',
+          'orbit': '8th Orbit',
+        };
+      default:
+        return {
+          'temp': '+15°C',
+          'gravity': '1.00g',
+          'habitat': 'Garden Homestead',
+          'orbit': 'Goldilocks Zone',
+        };
+    }
+  }
 
   @override
   void initState() {
@@ -215,72 +291,143 @@ class _PoketCosmosHomeInspectorModalState
           ),
 
           // 2. Left Chevron Button: Previous Planet
-          Positioned(
-            left: 12,
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 280),
+            left: _isImmersiveMode ? -60 : 12,
             top: MediaQuery.of(context).size.height / 2 - 26,
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: _goToPrevPlanet,
-                borderRadius: BorderRadius.circular(26),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A).withValues(alpha: 0.85),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white24, width: 1.2),
-                    boxShadow: const [
-                      BoxShadow(color: Colors.black45, blurRadius: 10, offset: Offset(0, 2)),
-                    ],
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 250),
+              opacity: _isImmersiveMode ? 0.0 : 1.0,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: _goToPrevPlanet,
+                  borderRadius: BorderRadius.circular(26),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A).withValues(alpha: 0.85),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white24, width: 1.2),
+                      boxShadow: const [
+                        BoxShadow(color: Colors.black45, blurRadius: 10, offset: Offset(0, 2)),
+                      ],
+                    ),
+                    child: const Icon(Icons.chevron_left_rounded, color: Colors.white, size: 28),
                   ),
-                  child: const Icon(Icons.chevron_left_rounded, color: Colors.white, size: 28),
                 ),
               ),
             ),
           ),
 
           // 3. Right Chevron Button: Next Planet
-          Positioned(
-            right: 12,
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 280),
+            right: _isImmersiveMode ? -60 : 12,
             top: MediaQuery.of(context).size.height / 2 - 26,
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: _goToNextPlanet,
-                borderRadius: BorderRadius.circular(26),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A).withValues(alpha: 0.85),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white24, width: 1.2),
-                    boxShadow: const [
-                      BoxShadow(color: Colors.black45, blurRadius: 10, offset: Offset(0, 2)),
-                    ],
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 250),
+              opacity: _isImmersiveMode ? 0.0 : 1.0,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: _goToNextPlanet,
+                  borderRadius: BorderRadius.circular(26),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A).withValues(alpha: 0.85),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white24, width: 1.2),
+                      boxShadow: const [
+                        BoxShadow(color: Colors.black45, blurRadius: 10, offset: Offset(0, 2)),
+                      ],
+                    ),
+                    child: const Icon(Icons.chevron_right_rounded, color: Colors.white, size: 28),
                   ),
-                  child: const Icon(Icons.chevron_right_rounded, color: Colors.white, size: 28),
                 ),
               ),
             ),
           ),
 
           // 4. Top Header & Planet Carousel Bar
-          Positioned(
-            top: 0,
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 320),
+            curve: Curves.easeInOutCubic,
+            top: _isImmersiveMode ? -200 : 0,
             left: 0,
             right: 0,
-            child: _buildTopHeaderAndCarousel(context, colony, isUserHomePlanet),
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 250),
+              opacity: _isImmersiveMode ? 0.0 : 1.0,
+              child: IgnorePointer(
+                ignoring: _isImmersiveMode,
+                child: _buildTopHeaderAndCarousel(context, colony, isUserHomePlanet),
+              ),
+            ),
           ),
 
           // 5. Bottom Planetary Atmosphere Description Card
-          Positioned(
-            bottom: 24,
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 320),
+            curve: Curves.easeInOutCubic,
+            bottom: _isImmersiveMode ? -240 : 24,
             left: 16,
             right: 16,
-            child: _buildBottomAtmosphereCard(context, colony),
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 250),
+              opacity: _isImmersiveMode ? 0.0 : 1.0,
+              child: IgnorePointer(
+                ignoring: _isImmersiveMode,
+                child: _buildBottomAtmosphereCard(context, colony),
+              ),
+            ),
           ),
+
+          // 6. Floating Exit Immersive View Capsule
+          if (_isImmersiveMode)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 14,
+              left: 20,
+              right: 20,
+              child: Center(
+                child: GestureDetector(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    setState(() => _isImmersiveMode = false);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A).withValues(alpha: 0.90),
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(color: const Color(0xFF38BDF8), width: 1.4),
+                      boxShadow: const [
+                        BoxShadow(color: Colors.black54, blurRadius: 12, offset: Offset(0, 4)),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.fullscreen_exit_rounded, color: Color(0xFF38BDF8), size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          'IMMERSIVE SCENERY • TAP TO SHOW CONTROLS',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.1,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -400,6 +547,19 @@ class _PoketCosmosHomeInspectorModalState
                 IconButton(
                   onPressed: () {
                     HapticFeedback.lightImpact();
+                    setState(() => _isImmersiveMode = true);
+                  },
+                  icon: const Icon(Icons.remove_red_eye_rounded, color: Color(0xFF38BDF8), size: 20),
+                  tooltip: 'Immersive Scenery View',
+                  style: IconButton.styleFrom(
+                    backgroundColor: const Color(0xFF0284C7).withValues(alpha: 0.22),
+                    padding: const EdgeInsets.all(8),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                IconButton(
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
                     Navigator.pop(context);
                   },
                   icon: const Icon(Icons.close_rounded, color: Colors.white70, size: 22),
@@ -475,6 +635,8 @@ class _PoketCosmosHomeInspectorModalState
   }
 
   Widget _buildBottomAtmosphereCard(BuildContext context, CelestialColonyInfo colony) {
+    final telemetry = _getColonyTelemetry(colony.code);
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -548,7 +710,41 @@ class _PoketCosmosHomeInspectorModalState
               ),
             ],
           ),
+
+          const SizedBox(height: 10),
+
+          // Planetary Telemetry Indicators Row
+          Row(
+            children: [
+              _buildTelemetryChip('🌡️ ${telemetry['temp']}', const Color(0xFFEF4444)),
+              const SizedBox(width: 6),
+              _buildTelemetryChip('🪐 ${telemetry['gravity']}', const Color(0xFF38BDF8)),
+              const SizedBox(width: 6),
+              _buildTelemetryChip('🛰️ ${telemetry['orbit']}', const Color(0xFFF59E0B)),
+              const Spacer(),
+              _buildTelemetryChip('🏡 ${telemetry['habitat']}', const Color(0xFF10B981)),
+            ],
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTelemetryChip(String label, Color accentColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: accentColor.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: accentColor.withValues(alpha: 0.45), width: 0.8),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.outfit(
+          color: Colors.white,
+          fontSize: 10.5,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

@@ -282,47 +282,52 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       // 🚀 Cosmic Space Rocket with pulsating plasma flame
       _drawCosmicRocket(canvas, w * 0.24, gy * 0.20, ambientProg: ambientProg);
     } else {
-      // ☀️ Radiant Golden Sun with glowing aura rings
-      final sunCenter = Offset(w * 0.82, gy * 0.26);
-      canvas.drawCircle(
-        sunCenter,
-        64,
-        Paint()
-          ..color = const Color(0xFFFDE047).withValues(alpha: 0.18)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 24),
-      );
-      canvas.drawCircle(
-        sunCenter,
-        42,
-        Paint()
-          ..color = const Color(0xFFFDE047).withValues(alpha: 0.38)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
-      );
-      canvas.drawCircle(
-          sunCenter, 26, Paint()..color = const Color(0xFFFDE047));
+      if (planetCode == null || planetCode == 'EP') {
+        // ☀️ Earth Prime Original Baseline (100% untouched gold standard)
+        final sunCenter = Offset(w * 0.82, gy * 0.26);
+        canvas.drawCircle(
+          sunCenter,
+          64,
+          Paint()
+            ..color = const Color(0xFFFDE047).withValues(alpha: 0.18)
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 24),
+        );
+        canvas.drawCircle(
+          sunCenter,
+          42,
+          Paint()
+            ..color = const Color(0xFFFDE047).withValues(alpha: 0.38)
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+        );
+        canvas.drawCircle(
+            sunCenter, 26, Paint()..color = const Color(0xFFFDE047));
 
-      // 🎈 Floating Striped Hot Air Balloon
-      final balloonX = w * 0.38 + math.sin(ambientProg * 2 * math.pi) * 28.0;
-      final balloonY = gy * 0.16 + math.cos(ambientProg * 2 * math.pi) * 8.0;
-      _drawHotAirBalloon(canvas, balloonX, balloonY);
+        // 🎈 Floating Striped Hot Air Balloon
+        final balloonX = w * 0.38 + math.sin(ambientProg * 2 * math.pi) * 28.0;
+        final balloonY = gy * 0.16 + math.cos(ambientProg * 2 * math.pi) * 8.0;
+        _drawHotAirBalloon(canvas, balloonX, balloonY);
 
-      // ☁️ Drifting Fluffy Clouds
-      final cloudFloat = math.sin(ambientProg * 2 * math.pi) * 14.0;
-      _drawFluffyCloud(canvas, w * 0.12 + cloudFloat, gy * 0.18, 22);
-      _drawFluffyCloud(canvas, w * 0.44 - cloudFloat, gy * 0.28, 18);
-      _drawFluffyCloud(canvas, w * 0.62 + cloudFloat, gy * 0.22, 20);
-      _drawFluffyCloud(canvas, w * 0.88 - cloudFloat, gy * 0.38, 16);
+        // ☁️ Drifting Fluffy Clouds
+        final cloudFloat = math.sin(ambientProg * 2 * math.pi) * 14.0;
+        _drawFluffyCloud(canvas, w * 0.12 + cloudFloat, gy * 0.18, 22);
+        _drawFluffyCloud(canvas, w * 0.44 - cloudFloat, gy * 0.28, 18);
+        _drawFluffyCloud(canvas, w * 0.62 + cloudFloat, gy * 0.22, 20);
+        _drawFluffyCloud(canvas, w * 0.88 - cloudFloat, gy * 0.38, 16);
 
-      // 🕊️ Flying Birds Soaring Across the Sky with Flapping Wings & Migrating Flock
-      _drawFlyingBird(canvas, w * 0.24, gy * 0.16, 15,
-          ambientProg: ambientProg, phase: 0.0);
-      _drawFlyingBird(canvas, w * 0.30, gy * 0.12, 11,
-          ambientProg: ambientProg, phase: 0.25);
-      _drawFlyingBird(canvas, w * 0.54, gy * 0.14, 13,
-          ambientProg: ambientProg, phase: 0.5);
-      _drawFlyingBird(canvas, w * 0.70, gy * 0.10, 10,
-          ambientProg: ambientProg, phase: 0.75);
-      _drawFlyingBirdsFlock(canvas, w, gy, ambientProg);
+        // 🕊️ Flying Birds Soaring Across the Sky with Flapping Wings & Migrating Flock
+        _drawFlyingBird(canvas, w * 0.24, gy * 0.16, 15,
+            ambientProg: ambientProg, phase: 0.0);
+        _drawFlyingBird(canvas, w * 0.30, gy * 0.12, 11,
+            ambientProg: ambientProg, phase: 0.25);
+        _drawFlyingBird(canvas, w * 0.54, gy * 0.14, 13,
+            ambientProg: ambientProg, phase: 0.5);
+        _drawFlyingBird(canvas, w * 0.70, gy * 0.10, 10,
+            ambientProg: ambientProg, phase: 0.75);
+        _drawFlyingBirdsFlock(canvas, w, gy, ambientProg);
+      } else {
+        // 🪐 Celestial Planetary Atmosphere Accents
+        _drawPlanetaryCelestialFeatures(canvas, w, gy, ambientProg, planetCode!);
+      }
     }
 
     // 🏔️ 2. Distant Majestic Mountain Ranges
@@ -882,6 +887,9 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       _drawTree(canvas, w * 0.84, ry + 240, scale: 1.05);
     }
 
+    // 💨 Cozy Chimney Smoke Drifting Gently from Starter House
+    _drawChimneySmoke(canvas, w * 0.425, gy - 335, ambientProg: ambientProg);
+
     // 👑 Day 90 Sovereign Citadel Special: Majestic Celestial Grandeur & Floating Crown
     if (isDay90) {
       _drawDay90CelestialGrandeur(canvas, w, gy, ambientProg);
@@ -912,6 +920,520 @@ class CitadelScenicLandscapePainter extends CustomPainter {
           Paint()..color = const Color(0xFF10B981));
     }
     canvas.restore();
+  }
+
+  /// 🪐 Planetary Celestial Atmospheric Rendering for Alien Worlds
+  void _drawPlanetaryCelestialFeatures(
+      Canvas canvas, double w, double gy, double ambientProg, String code) {
+    switch (code) {
+      case 'LUN': // Moon: Earthrise & Starfield & Artemis Orbiter
+        _drawMoonEarthriseAtmosphere(canvas, w, gy, ambientProg);
+        break;
+      case 'EUR': // Europa: Giant Jupiter looming over ice mountains
+        _drawEuropaJupiterAtmosphere(canvas, w, gy, ambientProg);
+        break;
+      case 'SAT': // Saturn: Vast tilted golden rings in the sky
+        _drawSaturnRingedAtmosphere(canvas, w, gy, ambientProg);
+        break;
+      case 'MAR': // Mars: Phobos & Deimos twin moons & dust corona
+        _drawMarsCelestialAtmosphere(canvas, w, gy, ambientProg);
+        break;
+      case 'JUP': // Jupiter: Jovian storm auroras, Io & Europa crescent moons
+        _drawJupiterCelestialAtmosphere(canvas, w, gy, ambientProg);
+        break;
+      case 'PLT': // Pluto: Charon companion moon & deep purple nebula starfield
+        _drawPlutoCharonAtmosphere(canvas, w, gy, ambientProg);
+        break;
+      case 'VEN': // Venus: Golden sunbeams through sulfuric clouds & aerostat
+        _drawVenusCelestialAtmosphere(canvas, w, gy, ambientProg);
+        break;
+      case 'TTN': // Titan: Emerald haze, ringed Saturn silhouette, bioluminescent spores
+        _drawTitanSaturnAtmosphere(canvas, w, gy, ambientProg);
+        break;
+      case 'NEP': // Neptune: Deep cosmic cobalt, Triton cryo-geysers, ring arcs
+        _drawNeptuneCelestialAtmosphere(canvas, w, gy, ambientProg);
+        break;
+      default:
+        break;
+    }
+  }
+
+  /// 🌍 Moon: The Majestic Earthrise hanging in the dark lunar cosmos
+  void _drawMoonEarthriseAtmosphere(
+      Canvas canvas, double w, double gy, double ambientProg) {
+    // 🌌 Starfield in lunar void
+    final starPaint = Paint()..color = Colors.white.withValues(alpha: 0.85);
+    for (int i = 0; i < 40; i++) {
+      final sx = ((i * 89.0) % w);
+      final sy = ((i * 47.0) % (gy * 0.65));
+      final sz = 0.8 + ((i % 3) * 0.5);
+      canvas.drawCircle(Offset(sx, sy), sz, starPaint);
+    }
+
+    // 🌍 Earthrise Sphere
+    final ecx = w * 0.78;
+    final ecy = gy * 0.22;
+    const eradius = 52.0;
+
+    // Atmospheric cyan halo
+    canvas.drawCircle(
+      Offset(ecx, ecy),
+      eradius + 16,
+      Paint()
+        ..color = const Color(0xFF38BDF8).withValues(alpha: 0.25)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18),
+    );
+
+    // Earth Base Sphere (Deep Ocean Gradient)
+    canvas.save();
+    final earthPath = Path()
+      ..addOval(Rect.fromCircle(center: Offset(ecx, ecy), radius: eradius));
+    canvas.clipPath(earthPath);
+
+    final oceanPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFF1E3A8A), Color(0xFF0284C7), Color(0xFF0369A1)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ).createShader(Rect.fromCircle(center: Offset(ecx, ecy), radius: eradius));
+    canvas.drawCircle(Offset(ecx, ecy), eradius, oceanPaint);
+
+    // Continents
+    final continentPaint = Paint()..color = const Color(0xFF10B981).withValues(alpha: 0.85);
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(ecx - 12, ecy - 8), width: 32, height: 22),
+      continentPaint,
+    );
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(ecx + 14, ecy + 12), width: 26, height: 34),
+      continentPaint,
+    );
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(ecx - 18, ecy + 22), width: 18, height: 16),
+      continentPaint,
+    );
+
+    // Swirling White Cloud Belts
+    final cloudPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.75)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 6.0
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.0);
+
+    final cloudPath1 = Path()
+      ..moveTo(ecx - eradius, ecy - 12)
+      ..cubicTo(ecx - 15, ecy - 24, ecx + 15, ecy - 6, ecx + eradius, ecy - 18);
+    canvas.drawPath(cloudPath1, cloudPaint);
+
+    final cloudPath2 = Path()
+      ..moveTo(ecx - eradius + 6, ecy + 18)
+      ..cubicTo(ecx - 8, ecy + 8, ecx + 20, ecy + 26, ecx + eradius, ecy + 12);
+    canvas.drawPath(cloudPath2, cloudPaint);
+
+    // Spherical 3D shading
+    final shadowPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [Colors.transparent, Colors.black.withValues(alpha: 0.65)],
+        stops: const [0.65, 1.0],
+      ).createShader(Rect.fromCircle(center: Offset(ecx, ecy), radius: eradius));
+    canvas.drawCircle(Offset(ecx, ecy), eradius, shadowPaint);
+    canvas.restore();
+
+    // 🛰️ Apollo / Artemis Lunar Orbiter Satellite
+    final satX = w * 0.28 + math.sin(ambientProg * 2 * math.pi) * 20.0;
+    final satY = gy * 0.16;
+    _drawLunarSatellite(canvas, satX, satY, ambientProg);
+  }
+
+  void _drawLunarSatellite(Canvas canvas, double x, double y, double ambientProg) {
+    // Solar wings
+    final wingPaint = Paint()..color = const Color(0xFF38BDF8);
+    canvas.drawRect(Rect.fromLTWH(x - 24, y - 4, 14, 8), wingPaint);
+    canvas.drawRect(Rect.fromLTWH(x + 10, y - 4, 14, 8), wingPaint);
+
+    // Gold foil satellite body
+    final bodyPaint = Paint()..color = const Color(0xFFFFD700);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromCenter(center: Offset(x, y), width: 12, height: 12), const Radius.circular(3)),
+      bodyPaint,
+    );
+
+    // Blinking green beacon
+    final blink = (math.sin(ambientProg * 8 * math.pi) > 0);
+    if (blink) {
+      canvas.drawCircle(Offset(x, y - 8), 2.5, Paint()..color = const Color(0xFF4ADE80));
+    }
+  }
+
+  /// 🪐 Europa: Colossal Jupiter looming above the glacial ice mountains
+  void _drawEuropaJupiterAtmosphere(
+      Canvas canvas, double w, double gy, double ambientProg) {
+    final jcx = w * 0.74;
+    final jcy = gy * 0.32;
+    const jradius = 82.0;
+
+    // Atmospheric warm haze
+    canvas.drawCircle(
+      Offset(jcx, jcy),
+      jradius + 22,
+      Paint()
+        ..color = const Color(0xFFF59E0B).withValues(alpha: 0.22)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 22),
+    );
+
+    canvas.save();
+    final jupClip = Path()
+      ..addOval(Rect.fromCircle(center: Offset(jcx, jcy), radius: jradius));
+    canvas.clipPath(jupClip);
+
+    // Jovian striped atmosphere base
+    final jupBase = Paint()..color = const Color(0xFFFEF3C7);
+    canvas.drawRect(Rect.fromCircle(center: Offset(jcx, jcy), radius: jradius), jupBase);
+
+    final List<Map<String, dynamic>> bands = [
+      {'y': -60.0, 'h': 16.0, 'c': const Color(0xFFB45309)},
+      {'y': -36.0, 'h': 12.0, 'c': const Color(0xFFD97706)},
+      {'y': -14.0, 'h': 24.0, 'c': const Color(0xFF78350F)},
+      {'y': 18.0, 'h': 18.0, 'c': const Color(0xFF92400E)},
+      {'y': 44.0, 'h': 22.0, 'c': const Color(0xFFB45309)},
+    ];
+
+    for (final b in bands) {
+      final bp = Paint()
+        ..color = (b['c'] as Color).withValues(alpha: 0.88)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+      canvas.drawRect(
+        Rect.fromLTWH(jcx - jradius, jcy + (b['y'] as double), jradius * 2, b['h'] as double),
+        bp,
+      );
+    }
+
+    // Great Red Spot Oval
+    final grsPaint = Paint()..color = const Color(0xFFDC2626);
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(jcx + 26, jcy + 24), width: 28, height: 16),
+      grsPaint,
+    );
+    canvas.drawCircle(Offset(jcx + 26, jcy + 24), 4.5, Paint()..color = const Color(0xFFFDBA74));
+
+    // Spherical 3D shading
+    final jupShade = Paint()
+      ..shader = RadialGradient(
+        colors: [Colors.transparent, Colors.black.withValues(alpha: 0.65)],
+        stops: const [0.70, 1.0],
+      ).createShader(Rect.fromCircle(center: Offset(jcx, jcy), radius: jradius));
+    canvas.drawCircle(Offset(jcx, jcy), jradius, jupShade);
+    canvas.restore();
+
+    // ❄️ Shimmering Ice Crystal Sparkles drifting above glacial mountains
+    _drawDriftingIceSparkles(canvas, w, gy, ambientProg);
+  }
+
+  void _drawDriftingIceSparkles(Canvas canvas, double w, double gy, double ambientProg) {
+    final sparklePaint = Paint()..color = const Color(0xFFE0F2FE);
+    for (int i = 0; i < 24; i++) {
+      final t = ((ambientProg + (i * 0.12)) % 1.0);
+      final sx = ((i * 53.0) + (math.sin(t * 2 * math.pi) * 12.0)) % w;
+      final sy = (gy * 0.15) + (t * (gy * 0.50));
+      final size = 1.2 + ((i % 3) * 0.8);
+      canvas.drawCircle(Offset(sx, sy), size, sparklePaint);
+    }
+  }
+
+  /// 🪐 Saturn: Vast tilted golden planetary rings arcing across the sky
+  void _drawSaturnRingedAtmosphere(
+      Canvas canvas, double w, double gy, double ambientProg) {
+    final scx = w * 0.72;
+    final scy = gy * 0.22;
+    const sradius = 46.0;
+
+    // Atmospheric warm halo
+    canvas.drawCircle(
+      Offset(scx, scy),
+      sradius + 18,
+      Paint()
+        ..color = const Color(0xFFFDE68A).withValues(alpha: 0.20)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18),
+    );
+
+    // Back half of rings (behind planet)
+    canvas.save();
+    canvas.translate(scx, scy);
+    canvas.rotate(-0.38); // Tilted -22 degrees
+
+    final ringPaintOuter = Paint()
+      ..color = const Color(0xFFD97706).withValues(alpha: 0.40)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 24.0;
+    canvas.drawOval(Rect.fromCenter(center: Offset.zero, width: 230, height: 55), ringPaintOuter);
+
+    final ringPaintInner = Paint()
+      ..color = const Color(0xFFFEF3C7).withValues(alpha: 0.75)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 14.0;
+    canvas.drawOval(Rect.fromCenter(center: Offset.zero, width: 175, height: 42), ringPaintInner);
+    canvas.restore();
+
+    // Saturn Globe
+    final saturnPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFFEF3C7), Color(0xFFFBBF24), Color(0xFFB45309)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ).createShader(Rect.fromCircle(center: Offset(scx, scy), radius: sradius));
+    canvas.drawCircle(Offset(scx, scy), sradius, saturnPaint);
+
+    // Front half of rings (in front of planet)
+    canvas.save();
+    canvas.translate(scx, scy);
+    canvas.rotate(-0.38);
+
+    // Clip to bottom half so rings cross cleanly in front of planet
+    canvas.clipRect(const Rect.fromLTWH(-150, 0, 300, 100));
+    canvas.drawOval(Rect.fromCenter(center: Offset.zero, width: 230, height: 55), ringPaintOuter);
+    canvas.drawOval(Rect.fromCenter(center: Offset.zero, width: 175, height: 42), ringPaintInner);
+    canvas.restore();
+
+    // Crescent moon Enceladus
+    canvas.drawCircle(Offset(w * 0.32, gy * 0.16), 5.5, Paint()..color = const Color(0xFFF8FAFC));
+  }
+
+  /// 🔴 Mars: Pale sun, Phobos & Deimos twin moons and red dust haze
+  void _drawMarsCelestialAtmosphere(
+      Canvas canvas, double w, double gy, double ambientProg) {
+    final sunCenter = Offset(w * 0.80, gy * 0.22);
+    canvas.drawCircle(
+      sunCenter,
+      50,
+      Paint()
+        ..color = const Color(0xFFFDBA74).withValues(alpha: 0.22)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20),
+    );
+    canvas.drawCircle(sunCenter, 22, Paint()..color = const Color(0xFFFED7AA));
+
+    // Phobos (larger, cratered potato moon)
+    final phobosX = w * 0.32 + math.sin(ambientProg * 2 * math.pi) * 12.0;
+    final phobosY = gy * 0.18;
+    final phobosPaint = Paint()..color = const Color(0xFFCBD5E1);
+    canvas.drawOval(Rect.fromCenter(center: Offset(phobosX, phobosY), width: 18, height: 13), phobosPaint);
+    canvas.drawCircle(Offset(phobosX - 3, phobosY - 2), 2.2, Paint()..color = const Color(0xFF64748B));
+    canvas.drawCircle(Offset(phobosX + 3, phobosY + 2), 1.8, Paint()..color = const Color(0xFF64748B));
+
+    // Deimos (smaller distant moon)
+    final deimosX = w * 0.60 - math.sin(ambientProg * 2 * math.pi) * 8.0;
+    final deimosY = gy * 0.12;
+    canvas.drawCircle(Offset(deimosX, deimosY), 4.5, Paint()..color = const Color(0xFFE2E8F0));
+
+    // Drifting red dust wisps
+    final dustPaint = Paint()
+      ..color = const Color(0xFFEA580C).withValues(alpha: 0.12)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
+    final dustOffset = math.sin(ambientProg * 2 * math.pi) * 20.0;
+    canvas.drawRect(Rect.fromLTWH(0, gy * 0.30 + dustOffset, w, 35), dustPaint);
+  }
+
+  /// 🌀 Jupiter: Jovian storm auroras, Io & Europa crescent moons
+  void _drawJupiterCelestialAtmosphere(
+      Canvas canvas, double w, double gy, double ambientProg) {
+    final wave = math.sin(ambientProg * 2 * math.pi) * 16.0;
+    final aurPaint = Paint()
+      ..color = const Color(0xFFF59E0B).withValues(alpha: 0.14)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18);
+    canvas.drawRect(Rect.fromLTWH(0, gy * 0.18 + wave, w, 40), aurPaint);
+    canvas.drawRect(Rect.fromLTWH(0, gy * 0.34 - wave, w, 32), aurPaint);
+
+    final eurX = w * 0.34;
+    final eurY = gy * 0.14;
+    canvas.drawCircle(Offset(eurX, eurY), 8.0, Paint()..color = const Color(0xFFE0F2FE));
+    canvas.drawCircle(Offset(eurX + 2, eurY - 1), 7.0, Paint()..color = const Color(0xFF0F172A));
+
+    final ioX = w * 0.72;
+    final ioY = gy * 0.20;
+    canvas.drawCircle(Offset(ioX, ioY), 9.0, Paint()..color = const Color(0xFFFDE047));
+    canvas.drawCircle(Offset(ioX + 3, ioY - 1), 8.0, Paint()..color = const Color(0xFF0F172A));
+  }
+
+  /// 🌑 Pluto: Charon companion moon & deep purple nebula starfield
+  void _drawPlutoCharonAtmosphere(
+      Canvas canvas, double w, double gy, double ambientProg) {
+    final starPaint = Paint()..color = Colors.white.withValues(alpha: 0.85);
+    for (int i = 0; i < 45; i++) {
+      final sx = ((i * 91.0) % w);
+      final sy = ((i * 51.0) % (gy * 0.65));
+      final sz = 0.8 + ((i % 3) * 0.5);
+      canvas.drawCircle(Offset(sx, sy), sz, starPaint);
+    }
+
+    final ccx = w * 0.75;
+    final ccy = gy * 0.22;
+    const cradius = 44.0;
+
+    canvas.drawCircle(
+      Offset(ccx, ccy),
+      cradius + 12,
+      Paint()
+        ..color = const Color(0xFFA855F7).withValues(alpha: 0.20)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 14),
+    );
+
+    final charonPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFE2E8F0), Color(0xFF94A3B8), Color(0xFF475569)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ).createShader(Rect.fromCircle(center: Offset(ccx, ccy), radius: cradius));
+    canvas.drawCircle(Offset(ccx, ccy), cradius, charonPaint);
+
+    final craterPaint = Paint()..color = const Color(0xFF334155).withValues(alpha: 0.65);
+    canvas.drawCircle(Offset(ccx - 12, ccy - 8), 7.0, craterPaint);
+    canvas.drawCircle(Offset(ccx + 10, ccy + 12), 9.0, craterPaint);
+    canvas.drawCircle(Offset(ccx - 6, ccy + 18), 5.5, craterPaint);
+
+    final nebPaint = Paint()
+      ..color = const Color(0xFFC084FC).withValues(alpha: 0.12)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20);
+    canvas.drawRect(Rect.fromLTWH(0, gy * 0.32, w, 40), nebPaint);
+  }
+
+  /// 🟡 Venus: Golden sunbeams through sulfuric clouds & atmospheric aerostat
+  void _drawVenusCelestialAtmosphere(
+      Canvas canvas, double w, double gy, double ambientProg) {
+    final vSun = Offset(w * 0.76, gy * 0.20);
+    canvas.drawCircle(
+      vSun,
+      65,
+      Paint()
+        ..color = const Color(0xFFF59E0B).withValues(alpha: 0.28)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 24),
+    );
+    canvas.drawCircle(vSun, 30, Paint()..color = const Color(0xFFFEF08A));
+
+    final rayPaint = Paint()
+      ..shader = LinearGradient(
+        colors: [
+          const Color(0xFFFEF08A).withValues(alpha: 0.20),
+          Colors.transparent,
+        ],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(0, gy * 0.15, w, gy * 0.45));
+
+    final rayPath = Path();
+    rayPath.moveTo(vSun.dx - 20, vSun.dy);
+    rayPath.lineTo(vSun.dx - 180, gy - 10);
+    rayPath.lineTo(vSun.dx - 110, gy - 10);
+    rayPath.close();
+    canvas.drawPath(rayPath, rayPaint);
+
+    final rayPath2 = Path();
+    rayPath2.moveTo(vSun.dx, vSun.dy);
+    rayPath2.lineTo(vSun.dx - 40, gy - 10);
+    rayPath2.lineTo(vSun.dx + 40, gy - 10);
+    rayPath2.close();
+    canvas.drawPath(rayPath2, rayPaint);
+
+    final aeroX = w * 0.32 + math.sin(ambientProg * 2 * math.pi) * 16.0;
+    final aeroY = gy * 0.16;
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(aeroX, aeroY), width: 34, height: 16),
+      Paint()..color = const Color(0xFFFFFBEB),
+    );
+    canvas.drawRect(
+      Rect.fromLTWH(aeroX - 8, aeroY + 8, 16, 4),
+      Paint()..color = const Color(0xFFB45309),
+    );
+  }
+
+  /// 🟢 Titan: Emerald haze, veiled Saturn silhouette, bioluminescent spores
+  void _drawTitanSaturnAtmosphere(
+      Canvas canvas, double w, double gy, double ambientProg) {
+    final tcx = w * 0.70;
+    final tcy = gy * 0.24;
+    const tradius = 58.0;
+
+    canvas.drawCircle(
+      Offset(tcx, tcy),
+      tradius + 20,
+      Paint()
+        ..color = const Color(0xFF10B981).withValues(alpha: 0.18)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20),
+    );
+
+    canvas.drawCircle(
+      Offset(tcx, tcy),
+      tradius,
+      Paint()..color = const Color(0xFFD97706).withValues(alpha: 0.55),
+    );
+
+    final ringPaint = Paint()
+      ..color = const Color(0xFFFDE68A).withValues(alpha: 0.40)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 14.0
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+    canvas.save();
+    canvas.translate(tcx, tcy);
+    canvas.rotate(-0.35);
+    canvas.drawOval(Rect.fromCenter(center: Offset.zero, width: 220, height: 48), ringPaint);
+    canvas.restore();
+
+    final sporePaint = Paint()..color = const Color(0xFF34D399);
+    for (int i = 0; i < 20; i++) {
+      final t = ((ambientProg + (i * 0.14)) % 1.0);
+      final sx = ((i * 61.0) + math.sin(t * 2 * math.pi) * 16.0) % w;
+      final sy = (gy * 0.12) + (t * (gy * 0.55));
+      final sz = 1.2 + ((i % 3) * 0.7);
+      canvas.drawCircle(Offset(sx, sy), sz, sporePaint);
+    }
+  }
+
+  /// 🔵 Neptune: Deep cosmic cobalt, Triton cryo-geysers, ring arcs
+  void _drawNeptuneCelestialAtmosphere(
+      Canvas canvas, double w, double gy, double ambientProg) {
+    final wave = math.sin(ambientProg * 2 * math.pi) * 14.0;
+    final aurPaint = Paint()
+      ..color = const Color(0xFF38BDF8).withValues(alpha: 0.16)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 16);
+    canvas.drawRect(Rect.fromLTWH(0, gy * 0.16 + wave, w, 32), aurPaint);
+
+    final ringPaint = Paint()
+      ..color = const Color(0xFF93C5FD).withValues(alpha: 0.30)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.5;
+    canvas.drawArc(
+      Rect.fromCenter(center: Offset(w * 0.5, gy * 0.8), width: w * 1.2, height: gy * 1.1),
+      -math.pi * 0.85,
+      math.pi * 0.70,
+      false,
+      ringPaint,
+    );
+
+    final tcx = w * 0.76;
+    final tcy = gy * 0.22;
+    canvas.drawCircle(Offset(tcx, tcy), 14.0, Paint()..color = const Color(0xFFE0F2FE));
+    final plumePaint = Paint()
+      ..color = const Color(0xFF67E8F9).withValues(alpha: 0.70)
+      ..strokeWidth = 3.0
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(Offset(tcx - 5, tcy - 12), Offset(tcx - 14, tcy - 28), plumePaint);
+    canvas.drawLine(Offset(tcx + 4, tcy - 12), Offset(tcx + 12, tcy - 26), plumePaint);
+  }
+
+  /// 💨 Cozy Chimney Smoke Drifting Gently into the Sky
+  void _drawChimneySmoke(Canvas canvas, double cx, double cy,
+      {double ambientProg = 0.0}) {
+    final smokePaint = Paint()
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
+
+    for (int i = 0; i < 6; i++) {
+      final t = ((ambientProg + (i * 0.18)) % 1.0);
+      final sx = cx + (math.sin(t * 2 * math.pi) * 14.0) + (t * 22.0);
+      final sy = cy - (t * 85.0);
+      final radius = 5.0 + (t * 14.0);
+      final alpha = (1.0 - t) * 0.32;
+      smokePaint.color = Colors.white.withValues(alpha: alpha);
+      canvas.drawCircle(Offset(sx, sy), radius, smokePaint);
+    }
   }
 
   /// 💨 Traditional Dutch Windmill with Rotating Timber Sails
