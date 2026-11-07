@@ -480,9 +480,10 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
                     const initialScale = 0.95;
                     final dx = (sW - solarWorldSize * initialScale) / 2;
                     final dy = (sH - solarWorldSize * initialScale) / 2;
-                    _planetTransformController.value = Matrix4.identity()
-                      ..translateByDouble(dx, dy)
-                      ..scaleByDouble(initialScale, initialScale, 1.0, 1.0);
+                    _planetTransformController.value =
+                        Matrix4.translationValues(dx, dy, 0.0)
+                          ..scaleByDouble(
+                              initialScale, initialScale, 1.0, 1.0);
                   }
                 });
               }
