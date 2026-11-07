@@ -669,12 +669,19 @@ class IslandAerialPainter extends CustomPainter {
     _drawWoodenPierAndBoats(canvas);
     _drawCruisingBoatsWithWakes(canvas);
 
-    // 10. Living Wildlife & Grazing Animals (Peaceful sheep & horses on Earth)
-    if (isEarth) {
-      _drawGrazingAnimals(canvas);
+    // 10. Luxury Helipad & Parked Executive Helicopter
+    if (!island.isPresidential) {
+      _drawHelipadsAndHelicopter(canvas);
     }
 
-    // 11. Habit Houses / Plots (Strictly inside the island terrain with safe buffer)
+    // 11. Living Wildlife & Grazing Animals (Sheep/horses on Earth/Titan) OR Autonomous Rovers on Alien Worlds
+    if (isEarth || isTitan) {
+      _drawGrazingAnimals(canvas);
+    } else {
+      _drawPlanetaryRoversAndDrones(canvas);
+    }
+
+    // 12. Habit Houses / Plots (Strictly inside the island terrain with safe buffer)
     if (island.isPresidential) {
       _drawPresidentialCitadel(canvas);
     } else {
@@ -2079,6 +2086,194 @@ class IslandAerialPainter extends CustomPainter {
       // Horse neck and head
       canvas.drawCircle(pos.translate(2.3, -0.9), 1.2, Paint()..color = horseColor);
     }
+  }
+
+  // =========================================================================
+  // 🚁 LUXURY HELIPAD & PARKED EXECUTIVE HELICOPTER (BILLIONAIRE RESORT VIBES)
+  // =========================================================================
+  void _drawHelipadsAndHelicopter(Canvas canvas) {
+    // Helipad positioned at scenic inland coast / northern terrace
+    const padCenter = Offset(-115.0, -78.0);
+
+    // 1. Concrete landing pad foundation shadow
+    canvas.drawCircle(
+      padCenter.translate(1.0, 1.5),
+      14.0,
+      Paint()..color = Colors.black26,
+    );
+
+    // 2. Concrete slab platform
+    canvas.drawCircle(
+      padCenter,
+      13.5,
+      Paint()..color = const Color(0xFF334155),
+    );
+
+    // 3. Yellow aviation safety ring
+    canvas.drawCircle(
+      padCenter,
+      11.8,
+      Paint()
+        ..color = const Color(0xFFF59E0B)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.4,
+    );
+
+    // 4. White bold 'H' symbol
+    final hPainter = TextPainter(
+      text: TextSpan(
+        text: 'H',
+        style: GoogleFonts.outfit(
+          fontSize: 12.0,
+          fontWeight: FontWeight.w900,
+          color: Colors.white.withValues(alpha: 0.92),
+          letterSpacing: 0.5,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    hPainter.paint(
+      canvas,
+      padCenter.translate(-hPainter.width / 2, -hPainter.height / 2),
+    );
+
+    // 5. Flashing perimeter aviation strobes (Red / Green)
+    final strobePhase = (timeSeconds * 4.0).toInt() % 2 == 0;
+    final strobePaint = Paint()
+      ..color = strobePhase ? const Color(0xFFEF4444) : const Color(0xFF10B981);
+    for (int i = 0; i < 4; i++) {
+      final a = (i * math.pi / 2) + math.pi / 4;
+      final strobePos = padCenter.translate(12.5 * math.cos(a), 12.5 * math.sin(a));
+      canvas.drawCircle(strobePos, 1.2, strobePaint);
+    }
+
+    // 6. Parked Executive Helicopter
+    final heliCenter = padCenter.translate(0, -0.5);
+
+    // Shadow
+    canvas.drawOval(
+      Rect.fromCenter(center: heliCenter.translate(0.8, 1.4), width: 9.0, height: 16.0),
+      Paint()..color = Colors.black38,
+    );
+
+    // Fuselage (Streamlined luxury dark slate / navy blue)
+    final heliPaint = Paint()..color = const Color(0xFF0F172A);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(center: heliCenter, width: 6.4, height: 13.0),
+        const Radius.circular(3.2),
+      ),
+      heliPaint,
+    );
+
+    // Cockpit windshield (Glass cyan reflection)
+    canvas.drawOval(
+      Rect.fromCenter(center: heliCenter.translate(0, -3.2), width: 4.8, height: 4.2),
+      Paint()..color = const Color(0xFF38BDF8),
+    );
+
+    // Tail boom extending back
+    final tailPaint = Paint()
+      ..color = const Color(0xFF1E293B)
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(heliCenter.translate(0, 5.0), heliCenter.translate(0, 11.5), tailPaint);
+
+    // Tail rotor
+    canvas.drawLine(heliCenter.translate(-1.8, 11.5), heliCenter.translate(1.8, 11.5), Paint()..color = Colors.white70..strokeWidth = 1.0);
+
+    // Rotor hub
+    canvas.drawCircle(heliCenter, 1.4, Paint()..color = const Color(0xFFF59E0B));
+
+    // Spinning Main Rotor Blades (4 sleek carbon blades)
+    final rotorAngle = (timeSeconds * 3.5) % (2 * math.pi);
+    final bladePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.85)
+      ..strokeWidth = 1.1;
+    for (int b = 0; b < 4; b++) {
+      final a = rotorAngle + (b * math.pi / 2);
+      canvas.drawLine(
+        heliCenter,
+        heliCenter.translate(10.5 * math.cos(a), 10.5 * math.sin(a)),
+        bladePaint,
+      );
+    }
+  }
+
+  // =========================================================================
+  // 🤖 AUTONOMOUS PLANETARY EXPLORATION ROVERS & HOVERING DRONES
+  // =========================================================================
+  void _drawPlanetaryRoversAndDrones(Canvas canvas) {
+    if (island.isPresidential) return;
+
+    // 1. Autonomous 6-Wheeled Exploration Rover cruising between research plots
+    final roverBase = const Offset(-45.0, 35.0);
+    final roverDrift = math.sin(timeSeconds * 0.35) * 6.0;
+    final roverPos = roverBase.translate(roverDrift, math.cos(timeSeconds * 0.35) * 2.0);
+
+    // Rover ground shadow
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(center: roverPos.translate(0.6, 0.8), width: 8.5, height: 6.0),
+        const Radius.circular(1.5),
+      ),
+      Paint()..color = Colors.black26,
+    );
+
+    // Rover chassis body (Titanium Gold / White)
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(center: roverPos, width: 7.2, height: 5.0),
+        const Radius.circular(1.2),
+      ),
+      Paint()..color = const Color(0xFFF1F5F9),
+    );
+
+    // Solar panel array on top
+    canvas.drawRect(
+      Rect.fromCenter(center: roverPos.translate(0, -0.4), width: 5.6, height: 3.0),
+      Paint()..color = const Color(0xFF1E3A8A),
+    );
+
+    // 6 Rugged All-Terrain Wheels
+    final wheelPaint = Paint()..color = const Color(0xFF0F172A);
+    for (double wx in [-3.0, 0.0, 3.0]) {
+      canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromCenter(center: roverPos.translate(wx, -2.8), width: 1.8, height: 1.0), const Radius.circular(0.4)), wheelPaint);
+      canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromCenter(center: roverPos.translate(wx, 2.8), width: 1.8, height: 1.0), const Radius.circular(0.4)), wheelPaint);
+    }
+
+    // Articulated sensor mast camera
+    canvas.drawCircle(roverPos.translate(2.5, -0.2), 0.9, Paint()..color = const Color(0xFF0284C7));
+
+    // 2. High-Tech Atmospheric Hovering Survey Drone (Like Martian Ingenuity)
+    final droneBase = const Offset(48.0, -32.0);
+    final droneHover = math.cos(timeSeconds * 0.8) * 3.5;
+    final dronePos = droneBase.translate(droneHover, math.sin(timeSeconds * 0.6) * 2.5);
+
+    // Drone soft ground shadow
+    canvas.drawOval(
+      Rect.fromCenter(center: droneBase.translate(0.8, 1.2), width: 4.5, height: 2.8),
+      Paint()..color = Colors.black12,
+    );
+
+    // Drone central avionics cube
+    canvas.drawCircle(dronePos, 1.4, Paint()..color = const Color(0xFFE2E8F0));
+
+    // Spinning dual counter-rotating carbon blades
+    final droneAngle = (timeSeconds * 12.0) % (2 * math.pi);
+    final droneBlade = Paint()
+      ..color = Colors.white.withValues(alpha: 0.75)
+      ..strokeWidth = 0.9;
+    canvas.drawLine(
+      dronePos.translate(-4.5 * math.cos(droneAngle), -4.5 * math.sin(droneAngle)),
+      dronePos.translate(4.5 * math.cos(droneAngle), 4.5 * math.sin(droneAngle)),
+      droneBlade,
+    );
+    canvas.drawLine(
+      dronePos.translate(-4.5 * math.sin(droneAngle), 4.5 * math.cos(droneAngle)),
+      dronePos.translate(4.5 * math.sin(droneAngle), -4.5 * math.cos(droneAngle)),
+      droneBlade,
+    );
   }
 
   // =========================================================================
@@ -3607,8 +3802,8 @@ class IslandAerialPainter extends CustomPainter {
   // 📍 50 CITIZEN PLOT COORDINATES (100% Strictly Inland on Solid Green Landmass)
   // Houses NEVER touch the ocean or water lagoon! Guaranteed dry inland plots!
   // =========================================================================
-  // 📍 35 CITIZEN PLOT COORDINATES (5 Rock-Solid Archetypes, 100% Solid Land)
-  // Houses NEVER touch the ocean or beach! Guaranteed dry inland plots!
+  // 📍 25 CITIZEN PLOT COORDINATES (5 Rock-Solid Archetypes, 100% Solid Land)
+  // Evenly, gracefully distributed from north shore to south coast with zero empty deadzones!
   // =========================================================================
   static List<Offset> get35PlotCoordinates(IslandShapeStyle style) {
     final archetype = getIslandArchetype(style);
@@ -3616,10 +3811,10 @@ class IslandAerialPainter extends CustomPainter {
 
     switch (archetype) {
       case IslandArchetype.naturalOval:
-        // 5 balanced rows (5 + 7 + 8 + 8 + 7 = 35 plots) for equal, spacious parcel partitioning
-        const rowCounts = [5, 7, 8, 8, 7];
+        // 5 balanced rows (4 + 5 + 7 + 5 + 4 = 25 plots) covering full top to bottom!
+        const rowCounts = [4, 5, 7, 5, 4];
         const yPositions = [-105.0, -52.0, 0.0, 52.0, 105.0];
-        const rowSpans = [160.0, 220.0, 260.0, 250.0, 190.0];
+        const rowSpans = [160.0, 220.0, 260.0, 220.0, 160.0];
         for (int r = 0; r < 5; r++) {
           final count = rowCounts[r];
           final span = rowSpans[r];
@@ -3631,33 +3826,35 @@ class IslandAerialPainter extends CustomPainter {
         break;
 
       case IslandArchetype.capePeninsula:
-        // 7 rows of 5 plots = 35 plots (Cadastral suburban grid matching Images 1 & 3)
-        const yPositions = [-120.0, -80.0, -40.0, 0.0, 40.0, 80.0, 120.0];
-        for (int r = 0; r < 7; r++) {
+        // 5 rows of 5 plots = 25 plots (Tapering gracefully towards southern cape)
+        const yPositions = [-110.0, -55.0, 0.0, 55.0, 110.0];
+        const rowSpans = [220.0, 200.0, 180.0, 150.0, 120.0];
+        for (int r = 0; r < 5; r++) {
+          final span = rowSpans[r];
+          final step = span / 4.0;
           for (int c = 0; c < 5; c++) {
-            final x = -100.0 + c * 50.0;
-            coords.add(Offset(x, yPositions[r]));
+            coords.add(Offset(-span / 2 + c * step, yPositions[r]));
           }
         }
         break;
 
       case IslandArchetype.horseshoeBay:
-        // Lagoon Atoll: 2 concentric circular rings (15 inner + 20 outer = 35 plots)
+        // Lagoon Atoll: 2 concentric circular rings (10 inner + 15 outer = 25 plots)
+        for (int i = 0; i < 10; i++) {
+          final a = (i * 2 * math.pi / 10) - math.pi / 2;
+          coords.add(Offset(78.0 * math.cos(a), 62.0 * math.sin(a)));
+        }
         for (int i = 0; i < 15; i++) {
           final a = (i * 2 * math.pi / 15) - math.pi / 2;
-          coords.add(Offset(85.0 * math.cos(a), 68.0 * math.sin(a)));
-        }
-        for (int i = 0; i < 20; i++) {
-          final a = (i * 2 * math.pi / 20) - math.pi / 2;
           coords.add(Offset(138.0 * math.cos(a), 110.0 * math.sin(a)));
         }
         break;
 
       case IslandArchetype.twinSanctuary:
-        // Emerald Arch Haven: 5 balanced rows (6 + 7 + 8 + 7 + 7 = 35 plots)
-        const rowCounts = [6, 7, 8, 7, 7];
+        // Emerald Arch Haven: 5 balanced rows (4 + 5 + 7 + 5 + 4 = 25 plots)
+        const rowCounts = [4, 5, 7, 5, 4];
         const yPositions = [-105.0, -52.0, 0.0, 52.0, 105.0];
-        const rowSpans = [180.0, 230.0, 260.0, 230.0, 180.0];
+        const rowSpans = [170.0, 230.0, 260.0, 230.0, 170.0];
         for (int r = 0; r < 5; r++) {
           final count = rowCounts[r];
           final span = rowSpans[r];
@@ -3669,11 +3866,13 @@ class IslandAerialPainter extends CustomPainter {
         break;
 
       case IslandArchetype.citadelPlateau:
-        // 5 rows of 7 = 35 plots
-        for (int i = 0; i < 35; i++) {
-          final row = i ~/ 7;
-          final col = i % 7;
-          coords.add(Offset((col - 3) * 32.0, (row - 2) * 34.0));
+        // 5 rows of 5 = 25 plots
+        const yPositions = [-96.0, -48.0, 0.0, 48.0, 96.0];
+        const xPositions = [-96.0, -48.0, 0.0, 48.0, 96.0];
+        for (int r = 0; r < 5; r++) {
+          for (int c = 0; c < 5; c++) {
+            coords.add(Offset(xPositions[c], yPositions[r]));
+          }
         }
         break;
     }
@@ -3686,32 +3885,30 @@ class IslandAerialPainter extends CustomPainter {
     final archetype = getIslandArchetype(style);
     switch (archetype) {
       case IslandArchetype.naturalOval:
-        // Varied natural facing angles across rows
-        final row = (index * 5) ~/ 35;
+        final row = index < 4 ? 0 : (index < 9 ? 1 : (index < 16 ? 2 : (index < 21 ? 3 : 4)));
         return row.isEven ? 0.0 : math.pi;
 
       case IslandArchetype.capePeninsula:
-        // Alternating north and south facing rows
         final row = index ~/ 5;
         return row.isEven ? math.pi : 0.0;
 
       case IslandArchetype.horseshoeBay:
-        if (index < 15) {
-          return (index * 2 * math.pi / 15) - math.pi / 2;
+        if (index < 10) {
+          return (index * 2 * math.pi / 10) - math.pi / 2;
         } else {
-          return ((index - 15) * 2 * math.pi / 20) - math.pi / 2 + math.pi;
+          return ((index - 10) * 2 * math.pi / 15) - math.pi / 2 + math.pi;
         }
 
       case IslandArchetype.twinSanctuary:
-        final row = (index * 5) ~/ 35;
+        final row = index < 4 ? 0 : (index < 9 ? 1 : (index < 16 ? 2 : (index < 21 ? 3 : 4)));
         return row.isEven ? math.pi : 0.0;
 
       case IslandArchetype.citadelPlateau:
-        final row = index ~/ 7;
-        final col = index % 7;
+        final row = index ~/ 5;
+        final col = index % 5;
         if (row == 0) return math.pi;
         if (row == 4) return 0.0;
-        if (col < 3) return math.pi / 2;
+        if (col < 2) return math.pi / 2;
         return -math.pi / 2;
     }
   }

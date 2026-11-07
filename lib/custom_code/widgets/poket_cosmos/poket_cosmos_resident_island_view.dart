@@ -99,13 +99,23 @@ class _PoketCosmosResidentIslandViewState
     final reservationsMap = await PoketCosmosAllocationService.instance
         .getActiveReservationsMap(island.id);
 
-    // 6. Island occupied plots (current citizen + any neighbors)
-    final List<CitizenPlot> plotsList = [updatedPlot];
+    // 6. Island occupied plots (current citizen + real database neighbors & pioneers)
+    final colonyOccupied = await PoketCosmosAllocationService.instance
+        .getOccupiedPlotsForColony(colony);
+    final Map<int, CitizenPlot> plotsMap = {
+      for (final p in colonyOccupied) p.plotNumber: p,
+    };
+    plotsMap[updatedPlot.plotNumber] = updatedPlot;
+
+    final plotsList = plotsMap.values.toList()
+      ..sort((a, b) => a.plotNumber.compareTo(b.plotNumber));
+
+    final updatedIsland = island.copyWith(filledSlots: plotsList.length);
 
     if (mounted) {
       setState(() {
         _myPlot = updatedPlot;
-        _island = island;
+        _island = updatedIsland;
         _colony = colony;
         _islandPlots = plotsList;
         _reservations = reservationsMap;

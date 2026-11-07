@@ -93,35 +93,12 @@ class _PoketCosmosIslandInspectorModalState
       landColor: colony.landColor,
       waterColor: colony.waterColor,
       totalSlots: PoketCosmosAllocationService.maxPlotsPerIsland,
-      filledSlots: 1,
+      filledSlots: 5,
       climate: colony.climate,
       climateIcon: Icons.travel_explore_rounded,
       shapeSeed: 42 + index * 19,
       shapeStyle: colony.shapeStyle,
     );
-
-    // Get 35 coordinates and take 25 plots
-    final coords = IslandAerialPainter.get35PlotCoordinates(_currentIsland.shapeStyle);
-
-    // Plot #1: Presidential / Citizen Citadel with "Explorer" (occupied)
-    final plot1 = CitizenPlot(
-      plotNumber: 1,
-      userId: 'inspector_host_${colony.code}',
-      userName: 'Cosmic Pioneer',
-      userAvatar: '👑',
-      day: 75,
-      pocketScore: 920,
-      streetName: colony.streetName,
-      postOffice: colony.islandName,
-      countryName: colony.islandName,
-      planetName: colony.planetName,
-      coordinates: coords.isNotEmpty ? coords[0] : Offset.zero,
-      postalPinCode: 'PKT-W01-${colony.code}-I01-P01',
-      tier: PlotDeedTier.presidential,
-      status: PlotStatus.occupied,
-    );
-
-    _currentPlots = [plot1];
 
     // Plot #2: Pre-booked Neighbor Reservation with active 5-hour countdown timer
     const reservationPlotNum = 2;
@@ -140,6 +117,19 @@ class _PoketCosmosIslandInspectorModalState
 
     _currentReservations = {reservationPlotNum: pass};
     _transformInitialized = false; // Reset view centering for new planet
+
+    // Load real database users & permanent colony pioneers
+    PoketCosmosAllocationService.instance
+        .getOccupiedPlotsForColony(colony)
+        .then((occupiedPlots) {
+      if (!mounted || _currentIndex != index) return;
+      setState(() {
+        _currentPlots = occupiedPlots;
+        _currentIsland = _currentIsland.copyWith(
+          filledSlots: occupiedPlots.length,
+        );
+      });
+    });
   }
 
   void _scrollToChip(int index) {

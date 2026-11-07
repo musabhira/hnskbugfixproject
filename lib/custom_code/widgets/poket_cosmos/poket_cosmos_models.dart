@@ -149,6 +149,42 @@ class PoketCountryMap {
   int get availableSlots => (totalSlots - filledSlots).clamp(0, totalSlots);
   double get occupancyRatio =>
       totalSlots > 0 ? (filledSlots / totalSlots).clamp(0.0, 1.0) : 0.0;
+
+  PoketCountryMap copyWith({
+    int? id,
+    String? name,
+    String? tag,
+    Color? landColor,
+    Color? waterColor,
+    int? totalSlots,
+    int? filledSlots,
+    String? climate,
+    IconData? climateIcon,
+    String? description,
+    String? islandEmoji,
+    List<IslandLandmark>? landmarks,
+    bool? isPresidential,
+    int? shapeSeed,
+    IslandShapeStyle? shapeStyle,
+  }) {
+    return PoketCountryMap(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      tag: tag ?? this.tag,
+      landColor: landColor ?? this.landColor,
+      waterColor: waterColor ?? this.waterColor,
+      totalSlots: totalSlots ?? this.totalSlots,
+      filledSlots: filledSlots ?? this.filledSlots,
+      climate: climate ?? this.climate,
+      climateIcon: climateIcon ?? this.climateIcon,
+      description: description ?? this.description,
+      islandEmoji: islandEmoji ?? this.islandEmoji,
+      landmarks: landmarks ?? this.landmarks,
+      isPresidential: isPresidential ?? this.isPresidential,
+      shapeSeed: shapeSeed ?? this.shapeSeed,
+      shapeStyle: shapeStyle ?? this.shapeStyle,
+    );
+  }
 }
 
 /// 🏷️ Plot Deed Tier: Defines Prestige & Real Estate Value
