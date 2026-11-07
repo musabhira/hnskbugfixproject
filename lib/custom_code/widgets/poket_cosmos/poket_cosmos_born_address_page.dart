@@ -656,47 +656,56 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
   }
 
   // =========================================================================
-  // 🏡 STAGE 3: Fullscreen Adult Attacking Living Landscape (House focused & zoomed, 100% filled bottom)
+  // 🏡 STAGE 3: Fullscreen Adult Attacking Living Landscape (Exact Citadel Replica)
+  // Replicates 100% of pocket_citadel_attack_page.dart world dimensions, camera framing & scaling!
   // =========================================================================
   Widget _buildAdultAttackingEstateView() {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final sW = constraints.maxWidth;
-        final sH = constraints.maxHeight;
-        final worldH = sH;
-        final worldW = math.max(sW * 2.4, sH * 1.4);
-        final groundY = sH * 0.62;
-        final houseH = math.min(300.0, sH * 0.35);
-        final houseW = houseH * 1.12;
-        final houseLeft = (worldW - houseW) / 2;
-        final houseTop = groundY - 10.0 - houseH;
+        final w = constraints.maxWidth;
+        final h = constraints.maxHeight;
 
-        const minScale = 1.0;
+        // Exact virtual world dimensions matching pocket_citadel_attack_page.dart:1432-1467
+        const double worldW = 1200.0;
+        const double houseW = 420.0;
+        const double houseH = 380.0;
+        const double worldH = 1600.0;
+        const double groundY = 920.0;
+        const double houseLeft = (worldW - houseW) / 2;
+        const double houseTop = groundY - 14.0 - houseH;
+
+        final double houseZoomScale = (w / (houseW * 1.05));
+        final double baseMinScale = math.max(w / worldW, h / worldH);
+        final minScale = (w <= 0) ? 0.30 : baseMinScale;
         const maxScale = 3.5;
-        final houseZoomScale = (sW / (houseW * 1.05)).clamp(1.0, 2.2);
-        final defaultScale = math.max(1.0, houseZoomScale);
+        final defaultScale = (w <= 0)
+            ? 1.0
+            : math.min(maxScale, math.max(minScale, houseZoomScale));
 
-        if (!_estateTransformInitialized) {
+        if (!_estateTransformInitialized && w > 0 && h > 0) {
           _estateTransformInitialized = true;
+          final houseCenterX = worldW / 2;
+          final houseCenterY = houseTop + (houseH * 0.52);
+
+          final maxTx = 0.0;
+          final minTx = -((worldW * defaultScale) - w);
+          final safeMinTx = minTx < maxTx ? minTx : maxTx;
+          final tx = ((w / 2) - (houseCenterX * defaultScale)).clamp(safeMinTx, maxTx);
+
+          final maxTy = 0.0;
+          final minTy = -((worldH * defaultScale) - h);
+          final safeMinTy = minTy < maxTy ? minTy : maxTy;
+          final targetTy = ((h * 0.42) - (houseCenterY * defaultScale));
+          final ty = targetTy.clamp(safeMinTy, maxTy);
+
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {
-              final houseCenterX = worldW / 2;
-              final houseCenterY = houseTop + (houseH * 0.52);
-              final maxTx = 0.0;
-              final minTx = sW - (worldW * defaultScale);
-              final tx = ((sW / 2) - (houseCenterX * defaultScale)).clamp(minTx, maxTx);
-
-              final maxTy = 0.0;
-              final minTy = sH - (worldH * defaultScale);
-              final targetTy = (sH * 0.44) - (houseCenterY * defaultScale);
-              final ty = targetTy.clamp(minTy, maxTy);
-
-              final matrix = Matrix4.identity();
-              matrix.setEntry(0, 0, defaultScale);
-              matrix.setEntry(1, 1, defaultScale);
-              matrix.setEntry(0, 3, tx);
-              matrix.setEntry(1, 3, ty);
-              _estateTransformController.value = matrix;
+              final initialMatrix = Matrix4.identity();
+              initialMatrix.setEntry(0, 0, defaultScale);
+              initialMatrix.setEntry(1, 1, defaultScale);
+              initialMatrix.setEntry(0, 3, tx);
+              initialMatrix.setEntry(1, 3, ty);
+              _estateTransformController.value = initialMatrix;
             }
           });
         }
@@ -723,7 +732,7 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
             Positioned.fill(
               child: InteractiveViewer(
                 transformationController: _estateTransformController,
-                minScale: minScale, // 1.0: Strictly locks height to screen height! Zero broken bottom!
+                minScale: minScale,
                 maxScale: maxScale,
                 boundaryMargin: EdgeInsets.zero, // Zero boundary margin: Never reveals black void! Locks cleanly at edges!
                 constrained: false,
