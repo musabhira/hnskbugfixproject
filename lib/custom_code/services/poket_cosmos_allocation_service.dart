@@ -218,6 +218,38 @@ class PoketCosmosAllocationService {
     return colonies.first; // Earth Prime fallback
   }
 
+  /// 🌐 Computes the unique global sequential plot number (1 to 200 in Wave 1, 201 to 400 in Wave 2, etc.)
+  static int calculateGlobalPlotNumber({
+    int wave = 1,
+    required String planetCode,
+    required int localPlotNumber,
+  }) {
+    final cleanCode = planetCode.trim().toUpperCase();
+    int planetIndex = colonies.indexWhere((c) => c.code.toUpperCase() == cleanCode);
+    if (planetIndex == -1) planetIndex = 0; // Default to Earth
+    final clampedLocal = localPlotNumber.clamp(1, maxPlotsPerIsland);
+    final clampedWave = math.max(1, wave);
+    return ((clampedWave - 1) * waveCapacity) + (planetIndex * maxPlotsPerIsland) + clampedLocal;
+  }
+
+  /// 🌐 Parses a global sequential plot number back into wave, planet colony, and local plot number
+  static Map<String, dynamic> parseGlobalPlotNumber(int globalPlotNumber) {
+    final gNum = math.max(1, globalPlotNumber);
+    final wave = ((gNum - 1) ~/ waveCapacity) + 1;
+    final withinWave = (gNum - 1) % waveCapacity;
+    final planetIndex = (withinWave ~/ maxPlotsPerIsland).clamp(0, colonies.length - 1);
+    final localPlot = (withinWave % maxPlotsPerIsland) + 1;
+    final colony = colonies[planetIndex];
+    return {
+      'wave': wave,
+      'colony': colony,
+      'planetCode': colony.code,
+      'planetName': colony.planetName,
+      'localPlotNumber': localPlot,
+      'globalPlotNumber': gNum,
+    };
+  }
+
   /// 🌟 Cached Result of a Birthplace Allocation
   CitizenPlot? _cachedBirthPlot;
   CitizenPlot? get currentBirthPlot => _cachedBirthPlot;
@@ -248,6 +280,114 @@ class PoketCosmosAllocationService {
       userName: name.isNotEmpty ? name : 'Citizen',
       avatar: avatar,
     );
+  }
+
+  /// 🎯 Loads or resolves the exact permanent CitizenPlot for ANY specific userId (Human or Robot)
+  /// Guaranteed 100% consistent across Profile, Citadel Attack Page, and Island Aerial View!
+  Future<CitizenPlot> getUserPlot({
+    required String userId,
+    String? fallbackName,
+    String? fallbackAvatar,
+  }) async {
+    // 1. In-memory cache
+    if (_userBirthPlots.containsKey(userId)) {
+      return _userBirthPlots[userId]!;
+    }
+
+    // 2. Robot user check
+    if (PocketRobotService.isRobotId(userId)) {
+      final meta = PocketRobotService.getCosmosAddressForRobotId(userId);
+      final colony = getColonyByCode(meta['planetCode'] ?? 'EP');
+      final plot = CitizenPlot(
+        plotNumber: meta['plotNumber'] as int? ?? 1,
+        userId: userId,
+        userName: meta['robotName'] ?? fallbackName ?? 'Pocket Robot',
+        userAvatar: '🤖',
+        day: 7,
+        pocketScore: 500,
+        streetName: meta['streetName'] ?? colony.streetName,
+        postOffice: meta['islandName'] ?? colony.islandName,
+        countryName: meta['islandName'] ?? colony.islandName,
+        planetName: meta['planetName'] ?? colony.planetName,
+        postalPinCode: meta['cosmosPin'] ?? 'PKT-W01-${colony.code}-I01-P01',
+        coordinates: Offset.zero,
+        isVip: false,
+        isPresident: false,
+        tier: PlotDeedTier.standard,
+        status: PlotStatus.occupied,
+      );
+      _userBirthPlots[userId] = plot;
+      return plot;
+    }
+
+    // 3. Supabase profile query
+    try {
+      final res = await SupaFlow.client
+          .from('profile')
+          .select('id, user_id, bio, country, city, name, profile_image_url')
+          .or('id.eq.$userId,user_id.eq.$userId')
+          .maybeSingle();
+
+      if (res != null) {
+        final bio = res['bio']?.toString() ?? '';
+        final pinMatch = RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(bio);
+        if (pinMatch != null) {
+          final planetCode = pinMatch.group(2) ?? 'EP';
+          final plotNum = int.tryParse(pinMatch.group(4) ?? '1') ?? 1;
+          final colony = getColonyByCode(planetCode);
+          final plot = CitizenPlot(
+            plotNumber: plotNum,
+            userId: userId,
+            userName: res['name']?.toString() ?? fallbackName ?? 'Citizen',
+            userAvatar: res['profile_image_url']?.toString() ?? fallbackAvatar ?? '🦁',
+            day: 1,
+            pocketScore: 100,
+            streetName: colony.streetName,
+            postOffice: colony.islandName,
+            countryName: colony.islandName,
+            planetName: colony.planetName,
+            postalPinCode: pinMatch.group(0) ?? 'PKT-W01-$planetCode-I01-P${plotNum.toString().padLeft(2, '0')}',
+            coordinates: Offset.zero,
+            isVip: false,
+            isPresident: false,
+            tier: (plotNum == 1) ? PlotDeedTier.sovereignCrown : (plotNum <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+            status: PlotStatus.occupied,
+          );
+          _userBirthPlots[userId] = plot;
+          return plot;
+        }
+      }
+    } catch (e) {
+      debugPrint('⚠️ getUserPlot Supabase non-fatal: $e');
+    }
+
+    // 4. Stable deterministic plot calculation based on userId
+    final colIndex = userId.hashCode.abs() % colonies.length;
+    final targetColony = colonies[colIndex];
+    final plotNumber = ((userId.hashCode.abs() ~/ 10) % maxPlotsPerIsland) + 1;
+    final pinStr = 'PKT-W01-${targetColony.code}-I01-P${plotNumber.toString().padLeft(2, '0')}';
+
+    final plot = CitizenPlot(
+      plotNumber: plotNumber,
+      userId: userId,
+      userName: fallbackName ?? 'Citizen',
+      userAvatar: fallbackAvatar ?? '🦁',
+      day: 1,
+      pocketScore: 100,
+      streetName: targetColony.streetName,
+      postOffice: targetColony.islandName,
+      countryName: targetColony.islandName,
+      planetName: targetColony.planetName,
+      postalPinCode: pinStr,
+      coordinates: Offset.zero,
+      isVip: false,
+      isPresident: false,
+      tier: (plotNumber == 1) ? PlotDeedTier.sovereignCrown : (plotNumber <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+      status: PlotStatus.occupied,
+    );
+
+    _userBirthPlots[userId] = plot;
+    return plot;
   }
 
   /// 📬 Allocates the user's permanent birthplace in Pocket Cosmos

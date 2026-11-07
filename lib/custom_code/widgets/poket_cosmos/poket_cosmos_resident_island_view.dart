@@ -63,11 +63,15 @@ class _PoketCosmosResidentIslandViewState
   Future<void> _loadResidentIsland() async {
     setState(() => _isLoading = true);
 
-    // 1. Load or allocate user birthplace
-    final plot =
-        await PoketCosmosAllocationService.instance.allocateUserBirthplace(
-      userName: widget.userName ?? 'Citizen',
-      avatar: widget.userAvatar ?? '🦁',
+    // 1. Load exact permanent plot for this specific userId (Human or Robot)
+    final effectiveUid = (widget.userId != null && widget.userId!.isNotEmpty)
+        ? widget.userId!
+        : (SupaFlow.client.auth.currentUser?.id ?? 'guest_user');
+
+    final plot = await PoketCosmosAllocationService.instance.getUserPlot(
+      userId: effectiveUid,
+      fallbackName: widget.userName ?? 'Citizen',
+      fallbackAvatar: widget.userAvatar ?? '🦁',
     );
 
     // 2. Identify celestial colony
@@ -541,7 +545,9 @@ class _PoketCosmosResidentIslandViewState
                     isInteractive: true,
                     zoomScale: 2.4,
                     plots: _islandPlots,
-                    selectedPlotNumber: _myPlot.plotNumber,
+                    selectedPlotNumber: (_colony.planetName == _myPlot.planetName)
+                        ? _myPlot.plotNumber
+                        : null,
                     planetName: _colony.planetName,
                     initialReservations: _reservations,
                     onPlotTapped: (tappedPlot) {
@@ -709,31 +715,49 @@ class _PoketCosmosResidentIslandViewState
               children: [
                 Expanded(
                   flex: 3,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      HapticFeedback.mediumImpact();
-                      _centerOnUserPlot(MediaQuery.of(context).size);
+                  child: Builder(
+                    builder: (context) {
+                      final isHomeColony = (_colony.planetName == _myPlot.planetName);
+                      return ElevatedButton.icon(
+                        onPressed: () {
+                          HapticFeedback.mediumImpact();
+                          if (isHomeColony) {
+                            _centerOnUserPlot(MediaQuery.of(context).size);
+                          } else {
+                            _switchToColony(
+                              PoketCosmosAllocationService.instance
+                                  .getColonyByPlanetName(_myPlot.planetName),
+                            );
+                          }
+                        },
+                        icon: Text(isHomeColony ? '🏡' : '🚀', style: const TextStyle(fontSize: 16)),
+                        label: Text(
+                          isHomeColony
+                              ? 'FOCUS TO MY PLOT (#${_myPlot.plotNumber})'
+                              : 'FLY TO MY PLOT (${_myPlot.planetName.split(" ").first}) 🚀',
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            letterSpacing: 0.4,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isHomeColony ? const Color(0xFF16A34A) : const Color(0xFF2563EB),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            side: BorderSide(
+                              color: isHomeColony ? const Color(0xFF4ADE80) : const Color(0xFF60A5FA),
+                              width: 1.2,
+                            ),
+                          ),
+                          elevation: 6,
+                        ),
+                      );
                     },
-                    icon: const Text('🏡', style: TextStyle(fontSize: 16)),
-                    label: Text(
-                      'FOCUS MY PLOT (#${_myPlot.plotNumber})',
-                      style: GoogleFonts.outfit(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12.5,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF16A34A),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        side: const BorderSide(
-                            color: Color(0xFF4ADE80), width: 1.2),
-                      ),
-                      elevation: 6,
-                    ),
                   ),
                 ),
                 const SizedBox(width: 10),

@@ -2109,30 +2109,141 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
     return material.Scaffold(
       backgroundColor: bgColor,
-      body: PageView(
-        controller: _profileHorizontalPageController,
-        physics: const ClampingScrollPhysics(),
-        onPageChanged: (idx) {
-          if (mounted) setState(() => _profileHorizontalPageIndex = idx);
-        },
+      body: material.Stack(
         children: [
-          profileBody,
-          PoketCosmosResidentIslandView(
-            userId: userId,
-            userName: _profileData?['name']?.toString(),
-            userAvatar: _profileData?['avatar_url']?.toString(),
-            onBack: () {
-              _profileHorizontalPageController.animateToPage(
-                0,
-                duration: const Duration(milliseconds: 320),
-                curve: Curves.easeInOut,
-              );
+          PageView(
+            controller: _profileHorizontalPageController,
+            physics: const ClampingScrollPhysics(),
+            onPageChanged: (idx) {
+              if (mounted) setState(() => _profileHorizontalPageIndex = idx);
             },
+            children: [
+              profileBody,
+              PoketCosmosResidentIslandView(
+                userId: userId,
+                userName: _profileData?['name']?.toString(),
+                userAvatar: _profileData?['avatar_url']?.toString(),
+                onBack: () {
+                  _profileHorizontalPageController.animateToPage(
+                    0,
+                    duration: const Duration(milliseconds: 320),
+                    curve: Curves.easeInOut,
+                  );
+                },
+              ),
+            ],
+          ),
+
+          // 🎚️ Floating Top Segmented Switcher (Audio Directive: easy swipe/switch between Profile & Island Map)
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 6,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.88),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: Colors.white24, width: 0.8),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black45,
+                      blurRadius: 10,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        _profileHorizontalPageController.animateToPage(
+                          0,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOutCubic,
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 5.5),
+                        decoration: BoxDecoration(
+                          color: _profileHorizontalPageIndex == 0
+                              ? const Color(0xFF2563EB)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.person_rounded,
+                                color: Colors.white, size: 14),
+                            const SizedBox(width: 5),
+                            Text(
+                              'Profile',
+                              style: GoogleFonts.outfit(
+                                color: _profileHorizontalPageIndex == 0
+                                    ? Colors.white
+                                    : Colors.white70,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        _profileHorizontalPageController.animateToPage(
+                          1,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOutCubic,
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 5.5),
+                        decoration: BoxDecoration(
+                          color: _profileHorizontalPageIndex == 1
+                              ? const Color(0xFF10B981)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.explore_rounded,
+                                color: Colors.white, size: 14),
+                            const SizedBox(width: 5),
+                            Text(
+                              'Island Map',
+                              style: GoogleFonts.outfit(
+                                color: _profileHorizontalPageIndex == 1
+                                    ? Colors.white
+                                    : Colors.white70,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: (_profileHorizontalPageIndex == 0 && isMe) ? _buildProfileCenterAddButton() : null,
+      floatingActionButton: (_profileHorizontalPageIndex == 0 && isMe)
+          ? _buildProfileCenterAddButton()
+          : null,
     );
   }
 
@@ -5995,7 +6106,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             ),
           ],
 
-          // 🪐 Poket Cosmos Citizen Address Badge (Tapping slides right to Island Map!)
+          // 🪐 Poket Cosmos Citizen Address Badge (Minimal & Direct)
           GestureDetector(
             onTap: () {
               HapticFeedback.mediumImpact();
@@ -6006,8 +6117,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               );
             },
             child: Container(
-              margin: const EdgeInsets.only(top: 10),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              margin: const EdgeInsets.only(top: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6.5),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
@@ -6015,7 +6126,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     const Color(0xFF0F172A).withValues(alpha: 0.70),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: const Color(0xFF38BDF8).withValues(alpha: 0.4),
                   width: 1.0,
@@ -6024,33 +6135,18 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('🪐', style: TextStyle(fontSize: 14)),
-                  const SizedBox(width: 8),
+                  const Text('🪐', style: TextStyle(fontSize: 13)),
+                  const SizedBox(width: 7),
                   Flexible(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Cosmos Citizen Address',
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFF38BDF8),
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 1),
-                        Text(
-                          _getResolvedCosmosAddressText(bio),
-                          style: GoogleFonts.plusJakartaSans(
-                            color: Colors.white,
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
+                    child: Text(
+                      _getResolvedCosmosAddressText(bio),
+                      style: GoogleFonts.plusJakartaSans(
+                        color: Colors.white,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   const SizedBox(width: 6),

@@ -352,19 +352,19 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
     const currentWave = 1;
     final waveStr = currentWave.toString().padLeft(2, '0');
     final plotStr = plotNumber.toString().padLeft(2, '0');
-    final generatedPin = 'PKT-W$waveStr-${colony.code}-I$waveStr-P$plotStr';
+    final minimalPin = 'PKT-${colony.code}-$plotNumber';
 
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
         decoration: const BoxDecoration(
           color: Color(0xFF0F172A),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-          border: Border(top: BorderSide(color: Color(0xFF10B981), width: 1.8)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border(top: BorderSide(color: Color(0xFF10B981), width: 1.5)),
           boxShadow: [
-            BoxShadow(color: Color(0x6610B981), blurRadius: 24, offset: Offset(0, -6)),
+            BoxShadow(color: Color(0x6610B981), blurRadius: 20, offset: Offset(0, -4)),
           ],
         ),
         child: Column(
@@ -374,24 +374,24 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: const Color(0xFF059669).withValues(alpha: 0.25),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFF10B981), width: 1.2),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFF10B981), width: 1.0),
                   ),
-                  child: const Text('➕', style: TextStyle(fontSize: 24)),
+                  child: const Text('🎟️', style: TextStyle(fontSize: 20)),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Pre-Book Neighbor Plot #$plotNumber',
+                        'Reserve Neighbor Plot #$plotNumber',
                         style: GoogleFonts.outfit(
                           color: Colors.white,
-                          fontSize: 18,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -399,55 +399,47 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
                         '${widget.island.name} • ${colony.planetName}',
                         style: GoogleFonts.plusJakartaSans(
                           color: const Color(0xFF34D399),
-                          fontSize: 12,
+                          fontSize: 11.5,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            Text(
-              'Lock this plot for 5 hours exclusively for your friend. No other user can claim it during this time!',
-              style: GoogleFonts.plusJakartaSans(
-                color: Colors.white70,
-                fontSize: 13,
-                height: 1.4,
-              ),
-            ),
-            const SizedBox(height: 14),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E293B),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white12),
-              ),
-              child: Row(
-                children: [
-                  const Text('🔑', style: TextStyle(fontSize: 16)),
-                  const SizedBox(width: 8),
-                  Text('Born PIN: ', style: GoogleFonts.plusJakartaSans(color: Colors.white60, fontSize: 12)),
-                  Expanded(
-                    child: Text(
-                      generatedPin,
-                      style: GoogleFonts.jetBrainsMono(
-                        color: const Color(0xFF86EFAC),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
+                // Minimal PIN Pill
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                  ),
+                  child: Text(
+                    minimalPin,
+                    style: GoogleFonts.jetBrainsMono(
+                      color: const Color(0xFF86EFAC),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12.5,
                     ),
                   ),
-                ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Locks this plot for 5 hours exclusively for your friend.',
+              style: GoogleFonts.plusJakartaSans(
+                color: Colors.white70,
+                fontSize: 12,
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () async {
                 Navigator.pop(ctx);
-                final pass = await PoketCosmosAllocationService.instance.createNeighborInvitePass(
+                final pass = await PoketCosmosAllocationService.instance
+                    .createNeighborInvitePass(
                   islandId: widget.island.id,
                   islandName: widget.island.name,
                   planetName: colony.planetName,
@@ -458,14 +450,16 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
 
                 await _loadReservations();
 
+                final shareText =
+                    '🏡 Become my neighbor in Pocket Mates!\nI reserved Plot #$plotNumber on ${colony.planetName} (${widget.island.name}) for you.\nEnter invite code: ${pass.code}';
                 try {
-                  await Share.share(pass.shareMessage);
+                  await Share.share(shareText);
                 } catch (_) {
-                  Clipboard.setData(ClipboardData(text: pass.shareMessage));
+                  Clipboard.setData(ClipboardData(text: pass.code));
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Reservation PIN ${pass.code} copied to clipboard!'),
+                        content: Text('Reservation Code ${pass.code} copied!'),
                         backgroundColor: const Color(0xFF16A34A),
                       ),
                     );
@@ -475,18 +469,23 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF10B981),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                minimumSize: const Size(double.infinity, 48),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                padding: const EdgeInsets.symmetric(vertical: 13),
+                minimumSize: const Size(double.infinity, 46),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.lock_clock_rounded, size: 18),
+                  const Icon(Icons.share_rounded, size: 18),
                   const SizedBox(width: 8),
                   Text(
-                    'PRE-BOOK FOR 5 HOURS & INVITE',
-                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 0.5),
+                    'SHARE PASS WITH FRIEND',
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      letterSpacing: 0.5,
+                    ),
                   ),
                 ],
               ),
@@ -3449,7 +3448,7 @@ class IslandAerialPainter extends CustomPainter {
   void _drawEstateNameBoard(Canvas canvas, Rect parcelRect, CitizenPlot plot, bool isSel) {
     // Placed neatly on the side of the property entrance
     final boardCenter = Offset(parcelRect.left + 6.0, parcelRect.bottom + 1.2);
-    final boardRect = Rect.fromCenter(center: boardCenter, width: 22.0, height: 5.6);
+    final boardRect = Rect.fromCenter(center: boardCenter, width: 25.0, height: 5.8);
 
     // Signpost wooden/slate legs
     final postPaint = Paint()..color = const Color(0xFF334155)..strokeWidth = 0.8;
@@ -3474,15 +3473,16 @@ class IslandAerialPainter extends CustomPainter {
         ..strokeWidth = isSel ? 0.9 : 0.55,
     );
 
-    // Real Citizen Name Text on Estate Board (No "#Plot 7", genuine names on signboards)
+    // Identifiable Plot Number & Citizen Name Text on Estate Board (#1 Musab)
     final displayName = getCitizenDisplayName(plot);
-    final label = displayName.length > 12 ? '${displayName.substring(0, 12)}..' : displayName;
+    final shortName = displayName.length > 8 ? '${displayName.substring(0, 8)}..' : displayName;
+    final label = '#${plot.plotNumber} · $shortName';
     final tp = TextPainter(
       text: TextSpan(
         text: label,
         style: TextStyle(
           color: isSel ? const Color(0xFFFFD700) : Colors.white,
-          fontSize: 3.0,
+          fontSize: 2.9,
           fontWeight: FontWeight.bold,
           letterSpacing: 0.2,
         ),

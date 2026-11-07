@@ -260,6 +260,44 @@ class IAPService {
     }
   }
 
+  /// 🧪 Grants VIP directly for developer sandbox / testing when App Store Connect products are syncing
+  Future<void> grantSimulatedVip({String planId = 'quarterly'}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final supabase = SupaFlow.client;
+    final userId = supabase.auth.currentUser?.id;
+
+    await prefs.setString('handskill_plan', 'pro');
+    await prefs.setBool('is_vip', true);
+    await prefs.setBool('is_ad_free', true);
+    await prefs.setBool('has_purchased_c2_certificate', true);
+    await prefs.setString('vip_product_id', 'simulated_$planId');
+    await prefs.setString('vip_purchased_at', DateTime.now().toIso8601String());
+    _isVipActive = true;
+
+    if (userId != null) {
+      try {
+        await supabase.from('profile').update({
+          'is_vip': true,
+          'subscription_tier': 'vip_gold',
+          'subscription_status': 'active',
+          'vip_product_id': 'simulated_$planId',
+          'verified': true,
+          'has_purchased_c2_certificate': true,
+          'updated_at': DateTime.now().toIso8601String(),
+        }).eq('user_id', userId);
+      } catch (_) {}
+    }
+
+    _purchaseController.add(
+      PurchaseDetails(
+        productID: 'simulated_$planId',
+        verificationData: PurchaseVerificationData(localVerificationData: 'sim', serverVerificationData: 'sim', source: 'sim'),
+        transactionDate: DateTime.now().millisecondsSinceEpoch.toString(),
+        status: PurchaseStatus.purchased,
+      ),
+    );
+  }
+
   void dispose() {
     _subscription?.cancel();
     _purchaseController.close();

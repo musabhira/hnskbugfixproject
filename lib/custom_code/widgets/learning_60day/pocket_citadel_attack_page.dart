@@ -314,9 +314,19 @@ class PocketCitadelAttackPage extends StatefulWidget {
         userIslandName = colony.islandName;
         userStreetName = colony.streetName;
       }
-    } else if (p['country'] != null && p['country'].toString().isNotEmpty) {
-      userIslandName = p['country'].toString();
-      userStreetName = p['city']?.toString();
+    } else {
+      // 🌌 Deterministic & Database-backed Cosmos Born Address Synchronization
+      final resolvedPlot = await PoketCosmosAllocationService.instance.getUserPlot(
+        userId: userId,
+        fallbackName: p['first_name'] ?? p['name'] ?? targetName,
+      );
+      userPin = resolvedPlot.postalPinCode;
+      final parts = resolvedPlot.postalPinCode.split('-');
+      userPlanetCode = parts.length > 2 ? parts[2] : 'EP';
+      userPlotNum = resolvedPlot.plotNumber;
+      userPlanetName = resolvedPlot.planetName;
+      userIslandName = resolvedPlot.countryName;
+      userStreetName = resolvedPlot.streetName;
     }
 
     final userNeighbor = PocketNeighbor(

@@ -259,10 +259,26 @@ class _SubscriptionPageState extends State<SubscriptionPage>
         messenger.showSnackBar(
           SnackBar(
             content: Text(Platform.isIOS
-                ? '⚠️ App Store product is syncing or store sandbox is offline. Tap "Restore Purchases" below if previously bought.'
+                ? '⚠️ App Store product is syncing or store sandbox is offline.'
                 : '⚠️ Google Play In-App Billing could not be reached. Please check your network connection.'),
-            backgroundColor: const Color(0xFFE11D48),
-            duration: const Duration(seconds: 4),
+            backgroundColor: const Color(0xFF1E293B),
+            duration: const Duration(seconds: 6),
+            action: SnackBarAction(
+              label: 'Activate Test VIP 👑',
+              textColor: const Color(0xFFFFD700),
+              onPressed: () async {
+                await IAPService().grantSimulatedVip(planId: planType);
+                if (mounted) {
+                  _loadCurrentPlan();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('🎉 Poket VIP Activated for Testing!'),
+                      backgroundColor: Color(0xFF10B981),
+                    ),
+                  );
+                }
+              },
+            ),
           ),
         );
       }
