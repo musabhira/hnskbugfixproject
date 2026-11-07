@@ -70,6 +70,7 @@ class FlameCosmicRocketFlightGame extends FlameGame {
   bool _isHoldingThrust = false;
   bool _hasArrived = false;
   double _gameTime = 0.0;
+  bool isPaused = false;
 
   // Particle Pools
   final List<CosmicStarParticle> _stars = [];
@@ -77,8 +78,8 @@ class FlameCosmicRocketFlightGame extends FlameGame {
   final math.Random _rng = math.Random(42);
 
   // Slingshot Planet State
-  int _currentSlingshotIndex = 0;
   bool _isSlingshotLooping = false;
+  String? _activeSlingshotCode;
   double _slingshotAngle = 0.0;
 
   @override
@@ -143,6 +144,7 @@ class FlameCosmicRocketFlightGame extends FlameGame {
   @override
   void update(double dt) {
     super.update(dt);
+    if (isPaused) return;
     _gameTime += dt;
 
     if (_hasArrived) return;
@@ -164,16 +166,37 @@ class FlameCosmicRocketFlightGame extends FlameGame {
     final double baseSpeed = manifest.isSamePlanet ? 0.16 : 0.085;
     final double step = baseSpeed * _currentSpeedMultiplier * dt;
 
-    // Slingshot loop logic around intermediate planet (e.g. Moon or Mars)
-    final intermediateCount = manifest.intermediatePlanetCodes.length;
-    if (intermediateCount > 0 && _flightProgress >= 0.40 && _flightProgress <= 0.62) {
-      if (!_isSlingshotLooping) {
-        _isSlingshotLooping = true;
+    // Slingshot loop logic around intermediate celestial bodies (staged e.g. Moon then Mars)
+    final intermediateCodes = manifest.intermediatePlanetCodes;
+    bool inSlingshot = false;
+    String? currentTargetCode;
+
+    if (intermediateCodes.isNotEmpty) {
+      if (intermediateCodes.length == 1) {
+        if (_flightProgress >= 0.35 && _flightProgress <= 0.65) {
+          inSlingshot = true;
+          currentTargetCode = intermediateCodes[0];
+        }
+      } else {
+        // Multi-stop staging: Moon loop at 0.25..0.44, Mars/Jupiter assist loop at 0.50..0.68
+        if (_flightProgress >= 0.25 && _flightProgress <= 0.44) {
+          inSlingshot = true;
+          currentTargetCode = intermediateCodes[0];
+        } else if (_flightProgress >= 0.50 && _flightProgress <= 0.68) {
+          inSlingshot = true;
+          currentTargetCode = intermediateCodes[1];
+        }
       }
+    }
+
+    if (inSlingshot) {
+      _isSlingshotLooping = true;
+      _activeSlingshotCode = currentTargetCode;
       _slingshotAngle += dt * 3.8 * _currentSpeedMultiplier;
-      _flightProgress += step * 0.5; // Slower forward progress while in gravity assist loop
+      _flightProgress += step * 0.55; // Slower forward progress while in gravity assist loop
     } else {
       _isSlingshotLooping = false;
+      _activeSlingshotCode = null;
       _flightProgress += step;
     }
 
@@ -249,30 +272,26 @@ class FlameCosmicRocketFlightGame extends FlameGame {
       _drawOriginAtmosphereAndSurface(canvas, w, h, originAlpha);
     }
 
-    // 4. Render Intermediate Planet & Gravitational Slingshot Loop (0.3 to 0.7)
-    final intermediateCodes = manifest.intermediatePlanetCodes;
-    if (intermediateCodes.isNotEmpty) {
-      final slingshotCode = intermediateCodes.first;
-      final slingshotProgress = (_flightProgress - 0.25) / 0.50; // 0.0 to 1.0 in mid-transit
-      if (slingshotProgress >= 0.0 && slingshotProgress <= 1.0) {
-        final double planetCenterY = h * 0.45;
-        final double planetRadius = 55.0;
+    // 4. Render Intermediate Planet & Gravitational Slingshot Loop
+    final activeCode = _activeSlingshotCode;
+    if (activeCode != null) {
+      final double planetCenterY = h * 0.45;
+      final double planetRadius = 55.0;
 
-        // Draw gravitational orbit guide ring
-        final orbitRingPaint = Paint()
-          ..color = const Color(0xFF38BDF8).withValues(alpha: 0.25)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.2;
-        canvas.drawCircle(Offset(cx, planetCenterY), planetRadius * 1.7, orbitRingPaint);
+      // Draw gravitational orbit guide ring
+      final orbitRingPaint = Paint()
+        ..color = const Color(0xFF38BDF8).withValues(alpha: 0.3)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2;
+      canvas.drawCircle(Offset(cx, planetCenterY), 95.0, orbitRingPaint);
 
-        // Draw intermediate planet
-        _drawPlanetSphere(canvas, cx, planetCenterY, planetRadius, slingshotCode, alpha: 1.0);
+      // Draw intermediate planet
+      _drawPlanetSphere(canvas, cx, planetCenterY, planetRadius, activeCode, alpha: 1.0);
 
-        // Draw label
-        final name = PoketCosmosDistanceService.instance.getCleanPlanetName(slingshotCode);
-        _drawText(canvas, '$name Gravity Assist', cx, planetCenterY + planetRadius + 14,
-            color: const Color(0xFFFFD700));
-      }
+      // Draw label
+      final name = PoketCosmosDistanceService.instance.getCleanPlanetName(activeCode);
+      _drawText(canvas, '$name Gravity Assist', cx, planetCenterY + planetRadius + 14,
+          color: const Color(0xFFFFD700));
     }
 
     // 5. Render Destination Celestial Sphere (Approaching from top: 0.65 to 1.0)
@@ -467,64 +486,122 @@ class FlameCosmicRocketFlightGame extends FlameGame {
   }
 
   /// 🌍 Realistic Origin Atmosphere & Ground Launch Surface with House
+  /// Atmospheric colors match CitadelScenicLandscapePainter celestial horizons
   void _drawOriginAtmosphereAndSurface(Canvas canvas, double w, double h, double alpha) {
     final cx = w / 2;
     final code = manifest.originCode.toUpperCase();
 
-    // 1. Atmosphere Gradient (Sky layer transitioning into space)
-    final Color skyTop;
-    final Color skyBottom;
+    // 1. Atmosphere Gradient (Sky layer transitioning into space from horizon)
+    final List<Color> skyColors;
     final Color landColor;
 
     switch (code) {
       case 'MAR':
-        skyBottom = const Color(0xFFDC2626);
-        skyTop = const Color(0xFF7C2D12);
+        // Mars: Deep rose-wine to sunset pink & coral into warm amber & peach
+        skyColors = const [
+          Color(0xFFFED7AA), // Peach Horizon Haze
+          Color(0xFFF97316), // Warm Amber Glow
+          Color(0xFFE11D48), // Vivid Coral Pink
+          Color(0xFF9F1239), // Sunset Magenta-Pink
+          Color(0xFF4C0519), // Deep Rose-Wine
+        ];
         landColor = const Color(0xFF991B1B);
         break;
       case 'JUP':
-        skyBottom = const Color(0xFF059669);
-        skyTop = const Color(0xFF0369A1);
+        // Jupiter: Jovian cobalt & indigo into auroral gold
+        skyColors = const [
+          Color(0xFFF59E0B), // Auroral Gold Horizon
+          Color(0xFF0284C7), // Azure Ribbon
+          Color(0xFF1D4ED8), // Electric Jovian Cobalt
+          Color(0xFF1E1B4B), // Royal Indigo
+          Color(0xFF020617), // Deep Space Abyss
+        ];
         landColor = const Color(0xFF065F46);
         break;
       case 'SAT':
-        skyBottom = const Color(0xFFD97706);
-        skyTop = const Color(0xFF78350F);
+        // Saturn: Ring gold & amber into cosmic purple
+        skyColors = const [
+          Color(0xFFFEF08A), // Radiant Gold Horizon
+          Color(0xFFD97706), // Golden Amber
+          Color(0xFFDB2777), // Sunset Pink Glow
+          Color(0xFF9D174D), // Twilight Rose-Pink
+          Color(0xFF3B0764), // Cosmic Purple Void
+        ];
         landColor = const Color(0xFF92400E);
         break;
       case 'LUN':
-        skyBottom = const Color(0xFF64748B);
-        skyTop = const Color(0xFF1E293B);
-        landColor = const Color(0xFF475569);
+        // Moon: Lunar ash into slate & pure obsidian void
+        skyColors = const [
+          Color(0xFF1E293B), // Horizon Lunar Ash
+          Color(0xFF0F172A), // Slate Space Dusk
+          Color(0xFF020617), // Deep Obsidian
+          Color(0xFF000000), // Pure Black Void
+        ];
+        landColor = const Color(0xFF334155);
         break;
       case 'EUR':
-        skyBottom = const Color(0xFF38BDF8);
-        skyTop = const Color(0xFF0369A1);
+        // Europa: Glacial ice into cyan aurora & cosmic indigo
+        skyColors = const [
+          Color(0xFFE0F2FE), // Glacial White Horizon
+          Color(0xFF0284C7), // Shimmering Cyan Ice
+          Color(0xFFC026D3), // Rose-Violet Twilight
+          Color(0xFF701A75), // Deep Magenta Glow
+          Color(0xFF1E1B4B), // Cosmic Indigo Void
+        ];
         landColor = const Color(0xFF0284C7);
         break;
       case 'VEN':
-        skyBottom = const Color(0xFFF59E0B);
-        skyTop = const Color(0xFF78350F);
+        // Venus: Sulfuric golden dawn into apricot & plum twilight
+        skyColors = const [
+          Color(0xFFFEF08A), // Radiant Warm Corona
+          Color(0xFFF59E0B), // Sulfuric Golden Dawn
+          Color(0xFFC2410C), // Deep Terracotta
+          Color(0xFF831843), // Sunset Wine
+          Color(0xFF4A044E), // Deep Plum Twilight
+        ];
         landColor = const Color(0xFFB45309);
         break;
       case 'TTN':
-        skyBottom = const Color(0xFF10B981);
-        skyTop = const Color(0xFF064E3B);
+        // Titan: Golden methane into methane cyan & petrol teal
+        skyColors = const [
+          Color(0xFFFBBF24), // Golden Methane Horizon
+          Color(0xFFB45309), // Amber Smog Layer
+          Color(0xFF0F766E), // Methane Cyan Glow
+          Color(0xFF065F46), // Emerald Twilight
+          Color(0xFF042F2E), // Deep Petrol Teal
+        ];
         landColor = const Color(0xFF047857);
         break;
       case 'NEP':
-        skyBottom = const Color(0xFF2563EB);
-        skyTop = const Color(0xFF1E3A8A);
+        // Neptune: Pale icy silver into cyan & electric violet
+        skyColors = const [
+          Color(0xFFE0E7FF), // Pale Icy Silver Horizon
+          Color(0xFF0284C7), // Shimmering Cyan Aurora
+          Color(0xFF4338CA), // Electric Violet Ribbon
+          Color(0xFF1E1B4B), // Midnight Indigo
+          Color(0xFF020617), // Deep Space Abyss
+        ];
         landColor = const Color(0xFF1D4ED8);
         break;
       case 'PLT':
-        skyBottom = const Color(0xFFA855F7);
-        skyTop = const Color(0xFF3B0764);
-        landColor = const Color(0xFF7E22CE);
+        // Pluto: Distant frozen rose into neon purple & royal amethyst
+        skyColors = const [
+          Color(0xFFF5D0FE), // Distant Frozen Rose Horizon
+          Color(0xFFA855F7), // Neon Purple Aurora
+          Color(0xFF6B21A8), // Vibrant Violet Nebula
+          Color(0xFF2E1065), // Cosmic Amethyst Twilight
+          Color(0xFF030712), // Deep Space Obsidian
+        ];
+        landColor = const Color(0xFF581C87);
         break;
-      default: // Earth
-        skyBottom = const Color(0xFF0284C7);
-        skyTop = const Color(0xFF0F172A);
+      default: // Earth Prime
+        skyColors = const [
+          Color(0xFFBAE6FD), // Horizon Mist
+          Color(0xFF38BDF8), // Vibrant Cyan
+          Color(0xFF0284C7), // Deep Azure
+          Color(0xFF0C4A6E), // Deep Sea
+          Color(0xFF020617), // Space Void
+        ];
         landColor = const Color(0xFF16A34A);
     }
 
@@ -533,11 +610,9 @@ class FlameCosmicRocketFlightGame extends FlameGame {
         begin: Alignment.bottomCenter,
         end: Alignment.topCenter,
         colors: [
-          skyBottom.withValues(alpha: 0.85 * alpha),
-          skyTop.withValues(alpha: 0.35 * alpha),
+          for (final c in skyColors) c.withValues(alpha: alpha * 0.9),
           Colors.transparent,
         ],
-        stops: const [0.0, 0.45, 1.0],
       ).createShader(Rect.fromLTWH(0, 0, w, h));
     canvas.drawRect(Rect.fromLTWH(0, 0, w, h), skyPaint);
 

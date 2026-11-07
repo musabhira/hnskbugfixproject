@@ -7,6 +7,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_street_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/flame_cosmic_rocket_flight_game.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_resident_island_view.dart';
 
 /// 🚀 Full-Screen Cosmic Rocket Flight Simulation Page
 /// Provides interactive space travel from viewer's planet to searched user's planet.
@@ -18,6 +19,9 @@ class PoketCosmicFlightPage extends StatefulWidget {
   final PocketNeighbor? neighbor;
   final bool isRobot;
   final Map<String, dynamic>? robotData;
+  final String? destinationPlanetCode;
+  final int? destinationPlotNumber;
+  final int? destinationWave;
 
   const PoketCosmicFlightPage({
     super.key,
@@ -28,6 +32,9 @@ class PoketCosmicFlightPage extends StatefulWidget {
     this.neighbor,
     this.isRobot = false,
     this.robotData,
+    this.destinationPlanetCode,
+    this.destinationPlotNumber,
+    this.destinationWave,
   });
 
   @override
@@ -41,8 +48,17 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
   double _flightProgress = 0.0;
   bool _hasArrived = false;
   bool _isBoosting = false;
+  bool _isPaused = false;
 
   late AnimationController _pulseController;
+
+  void _togglePause() {
+    HapticFeedback.lightImpact();
+    setState(() {
+      _isPaused = !_isPaused;
+      _game.isPaused = _isPaused;
+    });
+  }
 
   @override
   void initState() {
@@ -120,6 +136,21 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
 
   void _proceedToCitadel() {
     Navigator.of(context).pop(); // Dismiss flight simulation
+
+    // If targeted a specific cosmos plot, route directly to that resident island & highlight plot
+    if (widget.destinationPlotNumber != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PoketCosmosResidentIslandView(
+            targetPlanetCode: widget.destinationPlanetCode ?? widget.manifest.destinationCode,
+            targetPlotNumber: widget.destinationPlotNumber,
+            targetWave: widget.destinationWave,
+          ),
+        ),
+      );
+      return;
+    }
 
     if (widget.neighbor != null) {
       Navigator.push(
@@ -245,6 +276,40 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+
+                    // Pause / Resume Toggle Button
+                    GestureDetector(
+                      onTap: _togglePause,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+                        decoration: BoxDecoration(
+                          color: _isPaused ? const Color(0xFFF59E0B).withValues(alpha: 0.35) : Colors.black.withValues(alpha: 0.6),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: _isPaused ? const Color(0xFFF59E0B) : Colors.white24, width: 0.8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              _isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+                              color: _isPaused ? const Color(0xFFFFD700) : Colors.white70,
+                              size: 14,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              _isPaused ? 'RESUME' : 'PAUSE',
+                              style: GoogleFonts.outfit(
+                                color: _isPaused ? const Color(0xFFFFD700) : Colors.white70,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.6,
                               ),
                             ),
                           ],
@@ -556,10 +621,18 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.fort_rounded, color: Colors.black, size: 18),
+                              Icon(
+                                widget.destinationPlotNumber != null
+                                    ? Icons.location_on_rounded
+                                    : Icons.fort_rounded,
+                                color: Colors.black,
+                                size: 18,
+                              ),
                               const SizedBox(width: 8),
                               Text(
-                                'VISIT HOUSE / CITADEL ➔',
+                                widget.destinationPlotNumber != null
+                                    ? 'LAND AT PLOT #${widget.destinationPlotNumber} ➔'
+                                    : 'VISIT HOUSE / CITADEL ➔',
                                 style: GoogleFonts.outfit(
                                   color: Colors.black,
                                   fontSize: 13.5,

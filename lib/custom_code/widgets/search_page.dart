@@ -54,11 +54,33 @@ class _SearchPageState extends State<SearchPage> {
   bool _hasSearched = false;
   List<String> _searchHistory = [];
   final Map<String, int> _searchAnalytics = {};
+  int _displayedPlotsLimit = 40;
+  final ScrollController _plotsScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _selectedTab = 'people';
+    _plotsScrollController.addListener(_onPlotsScroll);
+  }
+
+  void _onPlotsScroll() {
+    if (_plotsScrollController.hasClients &&
+        _plotsScrollController.position.pixels >=
+            _plotsScrollController.position.maxScrollExtent - 240) {
+      if (_displayedPlotsLimit < 1000) {
+        setState(() {
+          _displayedPlotsLimit += 40;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _plotsScrollController.removeListener(_onPlotsScroll);
+    _plotsScrollController.dispose();
+    super.dispose();
   }
 
   String get _effectiveSearchQuery {
@@ -403,6 +425,34 @@ class _SearchPageState extends State<SearchPage> {
                         ),
                       ),
                     ),
+                    const SizedBox(width: 6),
+                    // Quick Fly Button
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PoketCosmicFlightPage(
+                              manifest: manifest,
+                              targetUserId: '',
+                              targetName: colony.planetName,
+                              destinationPlanetCode: colony.code,
+                              destinationPlotNumber: 1,
+                            ),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
+                        ),
+                        child: const Text('🚀', style: TextStyle(fontSize: 11)),
+                      ),
+                    ),
                   ],
                 ),
 
@@ -423,7 +473,7 @@ class _SearchPageState extends State<SearchPage> {
                             context,
                             MaterialPageRoute(
                               builder: (_) => PoketCosmosResidentIslandView(
-                                userId: SupaFlow.client.auth.currentUser?.id,
+                                targetPlanetCode: colony.code,
                               ),
                             ),
                           );
@@ -510,10 +560,88 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  /// 🏡 Dedicated Plots Tab: Responsive Grid of 250 Plots across 10 Planets with Direct Number Search
+  /// 🎨 Celestial Theme Color Palette for Planet Plot Cards
+  Map<String, Color> _getPlanetPlotColors(String code) {
+    switch (code.toUpperCase()) {
+      case 'MAR':
+        return {
+          'primary': const Color(0xFFDC2626),
+          'accent': const Color(0xFFF97316),
+          'surface': const Color(0xFF2A0D11),
+          'border': const Color(0xFFE11D48),
+        };
+      case 'JUP':
+        return {
+          'primary': const Color(0xFF1D4ED8),
+          'accent': const Color(0xFFF59E0B),
+          'surface': const Color(0xFF141A3D),
+          'border': const Color(0xFF3B82F6),
+        };
+      case 'SAT':
+        return {
+          'primary': const Color(0xFFD97706),
+          'accent': const Color(0xFFFEF08A),
+          'surface': const Color(0xFF2A1B0A),
+          'border': const Color(0xFFF59E0B),
+        };
+      case 'LUN':
+        return {
+          'primary': const Color(0xFF64748B),
+          'accent': const Color(0xFFCBD5E1),
+          'surface': const Color(0xFF151C26),
+          'border': const Color(0xFF94A3B8),
+        };
+      case 'EUR':
+        return {
+          'primary': const Color(0xFF0284C7),
+          'accent': const Color(0xFF38BDF8),
+          'surface': const Color(0xFF0B2136),
+          'border': const Color(0xFF38BDF8),
+        };
+      case 'VEN':
+        return {
+          'primary': const Color(0xFFF59E0B),
+          'accent': const Color(0xFFFEF08A),
+          'surface': const Color(0xFF2E1905),
+          'border': const Color(0xFFF59E0B),
+        };
+      case 'TTN':
+        return {
+          'primary': const Color(0xFF10B981),
+          'accent': const Color(0xFF6EE7B7),
+          'surface': const Color(0xFF09241C),
+          'border': const Color(0xFF10B981),
+        };
+      case 'NEP':
+        return {
+          'primary': const Color(0xFF2563EB),
+          'accent': const Color(0xFF93C5FD),
+          'surface': const Color(0xFF0B1938),
+          'border': const Color(0xFF3B82F6),
+        };
+      case 'PLT':
+        return {
+          'primary': const Color(0xFFA855F7),
+          'accent': const Color(0xFFE9D5FF),
+          'surface': const Color(0xFF200C33),
+          'border': const Color(0xFFA855F7),
+        };
+      case 'EP':
+      default:
+        return {
+          'primary': const Color(0xFF0284C7),
+          'accent': const Color(0xFF38BDF8),
+          'surface': const Color(0xFF0C243B),
+          'border': const Color(0xFF0284C7),
+        };
+    }
+  }
+
+  /// 🏡 Dedicated Plots Tab: Reverse Infinite Grid (Plot #1 at bottom, highest at top, lazy loaded)
   Widget _buildPlotsTab() {
     final query = _currentSearchQuery.trim().toLowerCase();
-    final allPlots = PoketCosmosAllocationService.getWavePlotsCatalog(wave: 1);
+    // Wave catalog supports infinite loops (Wave 1: 1..250, Wave 2: 251..500, etc.)
+    final allPlots = PoketCosmosAllocationService.getWavePlotsCatalog(maxWaves: 2);
 
     final filteredPlots = allPlots.where((item) {
       if (query.isEmpty) return true;
@@ -521,145 +649,207 @@ class _SearchPageState extends State<SearchPage> {
       final localNum = item['localPlotNumber']?.toString() ?? '';
       final planet = item['planetName']?.toString().toLowerCase() ?? '';
       final code = item['planetCode']?.toString().toLowerCase() ?? '';
+      final owner = item['ownerName']?.toString().toLowerCase() ?? '';
       return gNum.contains(query) ||
           localNum.contains(query) ||
           planet.contains(query) ||
-          code.contains(query);
+          code.contains(query) ||
+          owner.contains(query);
     }).toList();
 
-    return Column(
-      children: [
-        // Plot Search & Stats Bar
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'WAVE 1 • 250 PLOTS (10 PLANETS)',
-                style: GoogleFonts.outfit(
-                  color: const Color(0xFF94A3B8),
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.0,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
-                ),
-                child: Text(
-                  '${filteredPlots.length} Plots Found',
-                  style: GoogleFonts.orbitron(
-                    color: const Color(0xFF10B981),
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
+    // 🌟 User Requirement: Reverse order! Highest plot at top, Plot #1 at the very bottom!
+    filteredPlots.sort((a, b) => (b['globalPlotNumber'] as int).compareTo(a['globalPlotNumber'] as int));
+
+    final int countToDisplay = math.min(filteredPlots.length, _displayedPlotsLimit);
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: GridView.builder(
+        controller: _plotsScrollController,
+        padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
+        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: 105,
+          childAspectRatio: 0.78,
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
         ),
+        itemCount: countToDisplay,
+        itemBuilder: (context, idx) {
+          final plot = filteredPlots[idx];
+          final int gNum = plot['globalPlotNumber'] as int;
+          final int lNum = plot['localPlotNumber'] as int;
+          final int wave = plot['wave'] as int? ?? 1;
+          final String code = plot['planetCode'] as String;
+          final String planetName = plot['planetName'] as String;
+          final String ownerName = (plot['ownerName']?.toString() ?? 'Available').trim();
+          final bool isOccupied = plot['isOccupied'] == true ||
+              (ownerName.isNotEmpty && ownerName.toLowerCase() != 'available');
 
-        // Responsive Grid
-        Expanded(
-          child: GridView.builder(
-            padding: const EdgeInsets.fromLTRB(14, 4, 14, 20),
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 95,
-              childAspectRatio: 0.88,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
-            ),
-            itemCount: filteredPlots.length,
-            itemBuilder: (context, idx) {
-              final plot = filteredPlots[idx];
-              final int gNum = plot['globalPlotNumber'] as int;
-              final int lNum = plot['localPlotNumber'] as int;
-              final String code = plot['planetCode'] as String;
-              final String planetName = plot['planetName'] as String;
-              final isCrown = (lNum == 1);
-              final isBeachfront = (lNum <= 6);
+          final colors = _getPlanetPlotColors(code);
+          final primaryColor = colors['primary']!;
+          final accentColor = colors['accent']!;
+          final surfaceColor = colors['surface']!;
+          final borderColor = colors['border']!;
 
-              return GestureDetector(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  _showPlotDetailSheet(context, gNum, lNum, code, planetName);
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A).withValues(alpha: 0.88),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isCrown
-                          ? const Color(0xFFFFD700)
-                          : (isBeachfront
-                              ? const Color(0xFF38BDF8).withValues(alpha: 0.6)
-                              : Colors.white12),
-                      width: isCrown ? 1.4 : 0.8,
-                    ),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            PoketCosmosDistanceService.instance.getPlanetEmoji(code),
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                          Text(
-                            '#$gNum',
-                            style: GoogleFonts.orbitron(
-                              color: isCrown ? const Color(0xFFFFD700) : Colors.white,
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Text(
-                        isCrown ? '👑 Crown' : (isBeachfront ? '🏖️ Beach' : '🏡 Plot $lNum'),
-                        style: GoogleFonts.inter(
-                          color: isCrown
-                              ? const Color(0xFFFFD700)
-                              : (isBeachfront ? const Color(0xFF38BDF8) : Colors.white70),
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Container(
-                        width: double.infinity,
-                        alignment: Alignment.center,
-                        padding: const EdgeInsets.symmetric(vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.06),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          code,
-                          style: GoogleFonts.outfit(
-                            color: Colors.white54,
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
+          final isCrown = (lNum == 1);
+          final isBeachfront = (lNum <= 6);
+
+          return GestureDetector(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              // Direct flight to exact wave and plot upon tap
+              final flightManifest = PoketCosmosDistanceService.instance.calculateFlightManifest(
+                originCode: 'EP',
+                destinationCode: code,
+              );
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PoketCosmicFlightPage(
+                    manifest: flightManifest,
+                    targetUserId: '',
+                    targetName: '$planetName Plot #$lNum (${isOccupied ? ownerName : 'Free'})',
+                    destinationPlanetCode: code,
+                    destinationPlotNumber: lNum,
+                    destinationWave: wave,
                   ),
                 ),
               );
             },
-          ),
-        ),
-      ],
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    surfaceColor.withValues(alpha: 0.95),
+                    const Color(0xFF0F172A).withValues(alpha: 0.90),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isCrown
+                      ? const Color(0xFFFFD700)
+                      : (isOccupied
+                          ? borderColor.withValues(alpha: 0.85)
+                          : primaryColor.withValues(alpha: 0.45)),
+                  width: isCrown ? 1.4 : 0.9,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: primaryColor.withValues(alpha: 0.18),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Top: Planet Emoji + Global Plot #
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        PoketCosmosDistanceService.instance.getPlanetEmoji(code),
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      Text(
+                        '#$gNum',
+                        style: GoogleFonts.orbitron(
+                          color: isCrown ? const Color(0xFFFFD700) : accentColor,
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  // Plot Tier Subtitle
+                  Text(
+                    isCrown ? '👑 Crown' : (isBeachfront ? '🏖️ Beach' : '🏡 Plot $lNum'),
+                    style: GoogleFonts.inter(
+                      color: isCrown
+                          ? const Color(0xFFFFD700)
+                          : (isBeachfront ? const Color(0xFF38BDF8) : Colors.white70),
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  // Owner Badge: Green Checkmark if Occupied, FREE tag if Available
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (isOccupied) ...[
+                        Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF10B981),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.check, size: 8, color: Colors.black),
+                        ),
+                        const SizedBox(width: 3.5),
+                        Flexible(
+                          child: Text(
+                            ownerName,
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF10B981),
+                              fontSize: 8.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ] else ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: accentColor.withValues(alpha: 0.35), width: 0.6),
+                          ),
+                          child: Text(
+                            'FREE',
+                            style: GoogleFonts.orbitron(
+                              color: accentColor,
+                              fontSize: 7.5,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.6,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  // Bottom: Planet Code Badge
+                  Container(
+                    width: double.infinity,
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    decoration: BoxDecoration(
+                      color: primaryColor.withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: primaryColor.withValues(alpha: 0.32), width: 0.5),
+                    ),
+                    child: Text(
+                      (wave > 1) ? '$code • W$wave' : code,
+                      style: GoogleFonts.outfit(
+                        color: accentColor,
+                        fontSize: 8.5,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -756,7 +946,7 @@ class _SearchPageState extends State<SearchPage> {
                     context,
                     MaterialPageRoute(
                       builder: (_) => PoketCosmosResidentIslandView(
-                        userId: SupaFlow.client.auth.currentUser?.id,
+                        targetPlanetCode: colony.code,
                       ),
                     ),
                   );
@@ -869,7 +1059,8 @@ class _SearchPageState extends State<SearchPage> {
                           context,
                           MaterialPageRoute(
                             builder: (_) => PoketCosmosResidentIslandView(
-                              userId: SupaFlow.client.auth.currentUser?.id,
+                              targetPlanetCode: code,
+                              targetPlotNumber: localNum,
                             ),
                           ),
                         );

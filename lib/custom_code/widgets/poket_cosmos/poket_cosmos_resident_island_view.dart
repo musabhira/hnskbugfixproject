@@ -20,6 +20,9 @@ class PoketCosmosResidentIslandView extends StatefulWidget {
   final String? userId;
   final String? userName;
   final String? userAvatar;
+  final String? targetPlanetCode; // 'EP', 'MAR', 'JUP', 'SAT', 'LUN', etc.
+  final int? targetPlotNumber; // 1 to 25
+  final int? targetWave; // 1, 2, ... infinite loop
   final VoidCallback? onBack;
 
   const PoketCosmosResidentIslandView({
@@ -27,6 +30,9 @@ class PoketCosmosResidentIslandView extends StatefulWidget {
     this.userId,
     this.userName,
     this.userAvatar,
+    this.targetPlanetCode,
+    this.targetPlotNumber,
+    this.targetWave,
     this.onBack,
   });
 
@@ -64,33 +70,73 @@ class _PoketCosmosResidentIslandViewState
   Future<void> _loadResidentIsland() async {
     setState(() => _isLoading = true);
 
-    // 1. Load exact permanent plot for this specific userId (Human or Robot)
-    final effectiveUid = (widget.userId != null && widget.userId!.isNotEmpty)
-        ? widget.userId!
-        : (SupaFlow.client.auth.currentUser?.id ?? 'guest_user');
+    final CelestialColonyInfo colony;
+    final CitizenPlot plot;
+    final int wave = math.max(1, widget.targetWave ?? 1);
 
-    final plot = await PoketCosmosAllocationService.instance.getUserPlot(
-      userId: effectiveUid,
-      fallbackName: widget.userName ?? 'Citizen',
-      fallbackAvatar: widget.userAvatar ?? '🦁',
-    );
+    // Direct planet colony & plot routing (fixes bug where all plots showed the same default island)
+    if (widget.targetPlanetCode != null && widget.targetPlanetCode!.isNotEmpty) {
+      colony = PoketCosmosAllocationService.instance.getColonyByCode(widget.targetPlanetCode!);
+      final int pNum = (widget.targetPlotNumber ?? 1).clamp(1, PoketCosmosAllocationService.maxPlotsPerIsland);
+      final String effectiveIslandName = (wave == 1)
+          ? colony.islandName
+          : PoketCosmosAllocationService.generateInfiniteIslandName(colony.code, wave, wave);
+      final String effectiveStreetName = (wave == 1)
+          ? colony.streetName
+          : 'Wave $wave ${colony.streetName}';
 
-    // 2. Identify celestial colony
-    final colony = PoketCosmosAllocationService.instance
-        .getColonyByPlanetName(plot.planetName);
+      plot = CitizenPlot(
+        plotNumber: pNum,
+        userId: widget.userId ?? 'plot_citizen_$pNum',
+        userName: widget.userName ?? 'Citizen #$pNum',
+        userAvatar: widget.userAvatar ?? ((pNum == 1) ? '👑' : '🏡'),
+        day: 1,
+        pocketScore: 100,
+        streetName: effectiveStreetName,
+        postOffice: effectiveIslandName,
+        countryName: effectiveIslandName,
+        planetName: colony.planetName,
+        postalPinCode: 'PKT-W${wave.toString().padLeft(2, '0')}-${colony.code}-I${wave.toString().padLeft(2, '0')}-P${pNum.toString().padLeft(2, '0')}',
+        coordinates: Offset.zero,
+        isVip: false,
+        isPresident: false,
+        tier: (pNum == 1)
+            ? PlotDeedTier.royalCitadel
+            : (pNum <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+        status: PlotStatus.occupied,
+      );
+    } else {
+      // Load user-specific permanent plot
+      final effectiveUid = (widget.userId != null && widget.userId!.isNotEmpty)
+          ? widget.userId!
+          : (SupaFlow.client.auth.currentUser?.id ?? 'guest_user');
 
-    // 3. Build Island Model
+      plot = await PoketCosmosAllocationService.instance.getUserPlot(
+        userId: effectiveUid,
+        fallbackName: widget.userName ?? 'Citizen',
+        fallbackAvatar: widget.userAvatar ?? '🦁',
+      );
+
+      colony = PoketCosmosAllocationService.instance
+          .getColonyByPlanetName(plot.planetName);
+    }
+
+    // 3. Build Island Model with subtle procedural variation per wave
+    final effectiveIslandTitle = (wave == 1)
+        ? plot.countryName
+        : PoketCosmosAllocationService.generateInfiniteIslandName(colony.code, wave, wave);
+
     final island = PoketCountryMap(
-      id: colony.planetId * 100 + 1,
-      name: plot.countryName,
-      tag: '${colony.planetName} Living Colony',
+      id: colony.planetId * 100 + wave,
+      name: effectiveIslandTitle,
+      tag: '${colony.planetName} Living Colony (Wave $wave)',
       landColor: colony.landColor,
       waterColor: colony.waterColor,
       totalSlots: PoketCosmosAllocationService.maxPlotsPerIsland,
       filledSlots: 1,
       climate: colony.climate,
       climateIcon: Icons.water_drop_rounded,
-      shapeSeed: plot.plotNumber * 13,
+      shapeSeed: (wave * 137) + plot.plotNumber * 13,
       shapeStyle: colony.shapeStyle,
     );
 

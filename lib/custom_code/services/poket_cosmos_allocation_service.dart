@@ -276,13 +276,92 @@ class PoketCosmosAllocationService {
     return list;
   }
 
-  /// 🌐 Returns 250 sequential plots for the Search Page Plots Grid
-  static List<Map<String, dynamic>> getWavePlotsCatalog({int wave = 1}) {
+  /// 🌐 Returns all plots across waves for Search Page Plots Grid with real owner info
+  static List<Map<String, dynamic>> getWavePlotsCatalog({int maxWaves = 2}) {
     final List<Map<String, dynamic>> list = [];
-    final startPlot = ((wave - 1) * waveCapacity) + 1;
-    final endPlot = wave * waveCapacity;
-    for (int gNum = startPlot; gNum <= endPlot; gNum++) {
+    final int endPlot = math.max(1, maxWaves) * waveCapacity;
+
+    // Iconic community pioneers directory
+    final Map<String, String> pioneerMap = {
+      'EP_1': 'Captain Gaia',
+      'EP_3': 'Arjun Varma',
+      'EP_5': 'Sophia Chen',
+      'EP_8': 'Marcus Brody',
+      'EP_12': 'Ananya Nair',
+      'MAR_1': 'Commander Ares',
+      'MAR_3': 'Dr. Ryan Stone',
+      'MAR_6': 'Elena Rostova',
+      'MAR_9': 'Kenji Sato',
+      'MAR_14': 'Maya Al-Mansoor',
+      'JUP_1': 'Solaria Prime',
+      'JUP_4': 'Zephyr Vance',
+      'JUP_7': 'Lyra Thorne',
+      'JUP_11': 'Orion Reed',
+      'SAT_1': 'Kronos Sovereign',
+      'SAT_4': 'Cassini Drake',
+      'SAT_8': 'Amber Vale',
+      'LUN_1': 'Selene Apex',
+      'LUN_3': 'Neil Armstrong Jr.',
+      'LUN_6': 'Luna Starlight',
+      'EUR_1': 'Frost Voyager',
+      'EUR_4': 'Glacia North',
+      'EUR_8': 'Boreas Vance',
+      'VEN_1': 'Cytherean Queen',
+      'VEN_4': 'Solaris Pyre',
+      'VEN_7': 'Ignis Drake',
+      'TTN_1': 'Titan Overseer',
+      'TTN_4': 'Methane Ranger',
+      'TTN_7': 'Aero Swift',
+      'PLT_1': 'Hades Sovereign',
+      'PLT_4': 'Nyx Shadow',
+      'PLT_8': 'Charon Pilot',
+      'NEP_1': 'Triton Vanguard',
+      'NEP_4': 'Azure Siren',
+      'NEP_7': 'Abyss Diver',
+    };
+
+    final allRobots = PocketRobotService.getAllRobots();
+
+    for (int gNum = 1; gNum <= endPlot; gNum++) {
       final parsed = parseGlobalPlotNumber(gNum);
+      final colony = parsed['colony'] as CelestialColonyInfo;
+      final int lNum = parsed['localPlotNumber'] as int;
+      final int wave = parsed['wave'] as int;
+      final key = '${colony.code}_$lNum';
+
+      String ownerName = 'Available';
+      String avatar = '🟢';
+      bool isOccupied = false;
+
+      if (wave == 1) {
+        // 1. Check pioneer in wave 1
+        if (pioneerMap.containsKey(key)) {
+          ownerName = pioneerMap[key]!;
+          avatar = (lNum == 1) ? '👑' : '🏡';
+          isOccupied = true;
+        }
+        // 2. Check robot citizens on specific plots (10, 15, 18, 22)
+        else if ((lNum == 10 || lNum == 15 || lNum == 18 || lNum == 22) && allRobots.isNotEmpty) {
+          final robot = allRobots[(gNum * 7) % allRobots.length];
+          ownerName = robot.name;
+          avatar = '🤖';
+          isOccupied = true;
+        }
+      }
+
+      // 3. Check registered user in-memory cache
+      for (final plot in instance._userBirthPlots.values) {
+        if (plot.planetName == colony.planetName && plot.plotNumber == lNum) {
+          ownerName = plot.userName;
+          avatar = plot.userAvatar;
+          isOccupied = true;
+          break;
+        }
+      }
+
+      parsed['ownerName'] = ownerName;
+      parsed['ownerAvatar'] = avatar;
+      parsed['isOccupied'] = isOccupied;
       list.add(parsed);
     }
     return list;
