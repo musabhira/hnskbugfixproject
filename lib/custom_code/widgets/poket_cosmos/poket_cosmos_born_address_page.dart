@@ -1,8 +1,8 @@
 import 'dart:math' as math;
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flame/game.dart' hide Matrix4;
 
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
@@ -10,7 +10,8 @@ import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.
 import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_models.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/island_aerial_view.dart';
-import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/planet_sphere_icon_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/flame_solar_system_game.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_navigator_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/painters/citadel_scenic_landscape_painter.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/flame_english_house_game.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_pure_kids_home_page.dart';
@@ -18,11 +19,11 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_pure_kids_home_
 /// 🌌 Sleek, Minimal, Interactive 4-Stage Pocket Cosmos Born Ceremony
 ///
 /// Features:
-/// 1. iOS-style back navigation on all screens
-/// 2. Stage 0: THIS IS YOUR PLANET (Steady 3D rotating planet, pinch-to-zoom & spin, minimal text, referral code prompt)
-/// 3. Stage 1: THIS IS YOUR ISLAND (Pinch-to-zoom & pan across the full 35-plot island map, steady relaxed speed)
-/// 4. Stage 2: THIS IS YOUR PLOT (Deep zoom into the exact plot space with interactive zoom & pulsing green tap badge)
-/// 5. Stage 3: FULLSCREEN ATTACKING PROFILE ATMOSPHERE (Open world landscape, Day 1 house, interactive zoom & pan, minimal address)
+/// 1. iOS-style back navigation on all screens (Icon-only chevron)
+/// 2. Stage 0: THIS IS YOUR PLANET (Flame Solar System in background moving in space with assigned planet focused & highlighted, pinch-to-zoom & pan, zero letterboxing)
+/// 3. Stage 1: THIS IS YOUR ISLAND (Full-screen rectangular aerial island view, top & bottom strictly locked to screen height so zoomless never breaks)
+/// 4. Stage 2: THIS IS YOUR PLOT (Deep camera zoom targeting plot coordinates at 14x with pulsing green indicator & bottom claim button)
+/// 5. Stage 3: FULLSCREEN ATTACKING PROFILE ATMOSPHERE (Living landscape with windmill, swans, pond, balloon + Day 1 starter house, zero bottom sheets, minimal address)
 class PoketCosmosBornAddressPage extends StatefulWidget {
   final String userName;
   final String userAvatar;
@@ -71,6 +72,9 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
   late PoketCountryMap _assignedIsland;
   String? _activeReferralCode;
 
+  PoketPlanet? _selectedCosmosPlanet;
+  FlameSolarSystemGame? _flameSolarSystemGame;
+
   // Gentle, calm ambient breathe controller (8s relaxed period)
   late AnimationController _ambientBreatheController;
 
@@ -83,6 +87,10 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
       TransformationController();
 
   final TextEditingController _inviteCodeController = TextEditingController();
+
+  bool _islandTransformInitialized = false;
+  bool _estateTransformInitialized = false;
+  bool _planetTransformInitialized = false;
 
   // World dimensions for Adult Attacking Profile Atmosphere
   static const double _worldW = 1200.0;
@@ -154,6 +162,38 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
 
     final updatedPlot = plot.copyWith(coordinates: targetPos);
 
+    // Setup Solar System Game
+    final allPlanets = PoketCosmosNavigatorPage.buildCosmosPlanets();
+
+    // Match assigned planet
+    PoketPlanet? matchingPlanet;
+    final plotPlanetLower = updatedPlot.planetName.toLowerCase();
+    for (final p in allPlanets) {
+      final nameLower = p.name.toLowerCase();
+      if (nameLower.contains(plotPlanetLower) ||
+          plotPlanetLower.contains(nameLower.split(' ').first)) {
+        matchingPlanet = p;
+        break;
+      }
+    }
+    matchingPlanet ??= allPlanets.firstWhere((p) => p.id == 5, orElse: () => allPlanets.first);
+    _selectedCosmosPlanet = matchingPlanet;
+
+    _flameSolarSystemGame = FlameSolarSystemGame(
+      planets: allPlanets,
+      selectedPlanet: matchingPlanet,
+      tiltAngle: 0.42,
+      onPlanetSelected: (p) {
+        setState(() {
+          _selectedCosmosPlanet = p;
+        });
+      },
+    );
+
+    _islandTransformInitialized = false;
+    _estateTransformInitialized = false;
+    _planetTransformInitialized = false;
+
     if (mounted) {
       setState(() {
         _assignedPlot = updatedPlot;
@@ -163,14 +203,25 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
     }
   }
 
-  // Focus camera deep into the designated plot in Stage 2
-  void _zoomDeepToPlot() {
-    final target = _assignedPlot.coordinates;
-    const scale = 3.6;
+  // Focus camera deep into designated plot in Stage 2
+  void _zoomDeepToPlot(Size screenSize) {
+    final sW = screenSize.width;
+    final sH = screenSize.height;
+    final wH = sH * 1.45;
+    final wW = math.max(sW * 2.8, sH * 2.2);
+    const targetScale = 14.0;
 
-    final matrix = Matrix4.identity();
-    matrix.translate(-target.dx * scale + 180, -target.dy * scale + 340);
-    matrix.scale(scale, scale);
+    final coords = IslandAerialPainter.get35PlotCoordinates(_assignedIsland.shapeStyle);
+    final targetPlotCoord = (_assignedPlot.plotNumber >= 1 && _assignedPlot.plotNumber <= coords.length)
+        ? coords[_assignedPlot.plotNumber - 1]
+        : Offset.zero;
+
+    final painterScale = ((wH / 850.0) * 1.15).clamp(0.95, 1.50);
+    final targetWorldX = wW / 2 + targetPlotCoord.dx * painterScale;
+    final targetWorldY = wH / 2 + targetPlotCoord.dy * painterScale;
+
+    final dx = -(targetWorldX * targetScale - sW / 2);
+    final dy = -(targetWorldY * targetScale - sH / 2);
 
     setState(() {
       _currentStage = 2;
@@ -178,19 +229,32 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        _islandTransformController.value = matrix;
+        _islandTransformController.value =
+            Matrix4.translationValues(dx, dy, 0.0)
+              ..scaleByDouble(targetScale, targetScale, 1.0, 1.0);
       }
     });
   }
 
   // Reset island camera to full overview in Stage 1
-  void _resetIslandToOverview() {
+  void _resetIslandToOverview(Size screenSize) {
+    final sW = screenSize.width;
+    final sH = screenSize.height;
+    final wH = sH * 1.45;
+    final wW = math.max(sW * 2.8, sH * 2.2);
+    const focusScale = 1.15;
+    final focusX = -(wW * focusScale - sW) / 2;
+    final focusY = -(wH * focusScale - sH) / 2;
+
     setState(() {
       _currentStage = 1;
     });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        _islandTransformController.value = Matrix4.identity();
+        _islandTransformController.value =
+            Matrix4.translationValues(focusX, focusY, 0.0)
+              ..scaleByDouble(focusScale, focusScale, 1.0, 1.0);
       }
     });
   }
@@ -201,28 +265,9 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
       PocketGameAudioService.instance.playVictorySfx();
     } catch (_) {}
 
-    setState(() => _currentStage = 3);
-
-    // Smoothly initialize camera centered on the Day 1 house in the scenic landscape
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        final houseCenterX = _worldW / 2;
-        final houseCenterY = (_groundY - 14.0 - _houseH) + (_houseH * 0.52);
-
-        final w = MediaQuery.of(context).size.width;
-        final h = MediaQuery.of(context).size.height;
-        const defaultScale = 1.05;
-
-        final tx = ((w / 2) - (houseCenterX * defaultScale));
-        final ty = ((h * 0.44) - (houseCenterY * defaultScale));
-
-        final matrix = Matrix4.identity();
-        matrix.setEntry(0, 0, defaultScale);
-        matrix.setEntry(1, 1, defaultScale);
-        matrix.setEntry(0, 3, tx);
-        matrix.setEntry(1, 3, ty);
-        _estateTransformController.value = matrix;
-      }
+    setState(() {
+      _currentStage = 3;
+      _estateTransformInitialized = false;
     });
   }
 
@@ -237,6 +282,19 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
       PocketPureKidsHomePage.launch(context);
     } else {
       context.goNamedAuth(HomePageWidget.routeName, context.mounted);
+    }
+  }
+
+  void _handleBackNavigation() {
+    HapticFeedback.lightImpact();
+    if (_currentStage == 3) {
+      _zoomDeepToPlot(MediaQuery.of(context).size);
+    } else if (_currentStage == 2) {
+      _resetIslandToOverview(MediaQuery.of(context).size);
+    } else if (_currentStage == 1) {
+      setState(() => _currentStage = 0);
+    } else {
+      Navigator.of(context).pop();
     }
   }
 
@@ -350,22 +408,6 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
     );
   }
 
-  Color _getPlanetPrimaryColor(String planetName) {
-    final p = planetName.toLowerCase();
-    if (p.contains('jup')) return const Color(0xFFD97706);
-    if (p.contains('sat')) return const Color(0xFFEAB308);
-    if (p.contains('mars')) return const Color(0xFFDC2626);
-    return const Color(0xFF0284C7);
-  }
-
-  Color _getPlanetGlowColor(String planetName) {
-    final p = planetName.toLowerCase();
-    if (p.contains('jup')) return const Color(0xFFFDE047);
-    if (p.contains('sat')) return const Color(0xFFFEF08A);
-    if (p.contains('mars')) return const Color(0xFFFCA5A5);
-    return const Color(0xFF38BDF8);
-  }
-
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -380,100 +422,35 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
       );
     }
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF050B14),
-      body: Stack(
-        children: [
-          // 🪐 STAGE 0: Steady, Round 3D Rotating Planet (Pinch-to-zoom & Drag-to-spin)
-          if (_currentStage == 0) _buildPlanetStageView(),
-
-          // 🏝️ STAGE 1 & 2: Interactive Island Aerial Map (Overview or Deep Plot Zoom)
-          if (_currentStage == 1 || _currentStage == 2) _buildAerialViewport(),
-
-          // 🏡 STAGE 3: Fullscreen Adult Attacking Profile Atmosphere (Living Scenery + House)
-          if (_currentStage == 3) _buildAdultAttackingEstateView(),
-
-          // 🏷️ Top Minimal Navigation Bar with iOS Back Button
-          _buildTopNavigationBar(),
-
-          // 🔘 Minimal Floating Bottom Action Bar
-          Positioned(
-            left: 20,
-            right: 20,
-            bottom: MediaQuery.of(context).padding.bottom + 16,
-            child: _buildBottomActionBar(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // =========================================================================
-  // 🪐 STAGE 0: THIS IS YOUR PLANET (Clean, Minimal, Steady 3D Rotation)
-  // =========================================================================
-  Widget _buildPlanetStageView() {
-    final planetName = _assignedPlot.planetName;
-    final primaryColor = _getPlanetPrimaryColor(planetName);
-    final glowColor = _getPlanetGlowColor(planetName);
-
-    return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF050B14),
-      ),
-      child: SafeArea(
-        child: Column(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _handleBackNavigation();
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF050B14),
+        body: Stack(
           children: [
-            const SizedBox(height: 70),
+            // 🪐 STAGE 0: Moving Solar System with assigned planet focused (Pinch-to-zoom & Pan, zero letterboxing)
+            if (_currentStage == 0) _buildPlanetStageView(),
 
-            // Minimal Title
-            Text(
-              'THIS IS YOUR PLANET',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.outfit(
-                color: Colors.white60,
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 2.5,
-              ),
+            // 🏝️ STAGE 1 & 2: Interactive Island Aerial Map (Overview or Deep Plot Zoom, edge-to-edge)
+            if (_currentStage == 1 || _currentStage == 2) _buildAerialViewport(),
+
+            // 🏡 STAGE 3: Fullscreen Adult Attacking Profile Atmosphere (Living Scenery + Starter House, No Bottom Sheet)
+            if (_currentStage == 3) _buildAdultAttackingEstateView(),
+
+            // 🏷️ Top Minimal Navigation Bar with Clean iOS Chevron Back Button
+            _buildTopNavigationBar(),
+
+            // 🔘 Minimal Floating Bottom Action Bar
+            Positioned(
+              left: 20,
+              right: 20,
+              bottom: MediaQuery.of(context).padding.bottom + 16,
+              child: _buildBottomActionBar(),
             ),
-            const SizedBox(height: 4),
-            Text(
-              planetName.toUpperCase(),
-              textAlign: TextAlign.center,
-              style: GoogleFonts.outfit(
-                color: Colors.white,
-                fontSize: 26,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.5,
-              ),
-            ),
-
-            const Spacer(),
-
-            // Interactive 3D Planet: Steady (No wobbling!), Pinch-to-zoom & Touch-to-spin
-            Expanded(
-              flex: 5,
-              child: Center(
-                child: InteractiveViewer(
-                  transformationController: _planetTransformController,
-                  minScale: 0.8,
-                  maxScale: 2.6,
-                  boundaryMargin: const EdgeInsets.all(40),
-                  child: Center(
-                    child: PlanetSphereIconWidget(
-                      name: planetName.toLowerCase(),
-                      primaryColor: primaryColor,
-                      glowColor: glowColor,
-                      size: 280.0,
-                      enableInteractiveSpin: true,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            const Spacer(),
-            const SizedBox(height: 90),
           ],
         ),
       ),
@@ -481,108 +458,55 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
   }
 
   // =========================================================================
-  // 🏝️ STAGE 1 & 2: Island Aerial Map (Interactive Pan & Pinch-to-Zoom)
+  // 🪐 STAGE 0: THIS IS YOUR PLANET (Flame Solar System in background with focus on planet)
   // =========================================================================
-  Widget _buildAerialViewport() {
-    final targetPos = _assignedPlot.coordinates;
+  Widget _buildPlanetStageView() {
+    const solarWorldSize = 1400.0;
 
     return Stack(
       children: [
-        // Interactive Island Canvas with Pinch-to-Zoom & Pan
+        // 1. Full-bleed Interactive Solar System Canvas
         Positioned.fill(
-          child: InteractiveViewer(
-            transformationController: _islandTransformController,
-            minScale: 0.7,
-            maxScale: 4.8,
-            boundaryMargin: const EdgeInsets.all(200),
-            clipBehavior: Clip.none,
-            child: SizedBox(
-              width: 1000,
-              height: 1000,
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: CustomPaint(
-                      painter: IslandAerialPainter(
-                        island: _assignedIsland,
-                        isInteractive: true,
-                        selectedPlotNumber: _assignedPlot.plotNumber,
-                        plots: [_assignedPlot],
-                        animation: _ambientBreatheController,
-                      ),
-                    ),
-                  ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final sW = constraints.maxWidth;
+              final sH = constraints.maxHeight;
+              final minScale = math.max(sW / solarWorldSize, sH / solarWorldSize);
 
-                  // In Stage 2 (Deep Zoom): Glowing green target directly over the house
-                  if (_currentStage == 2)
-                    Positioned(
-                      left: targetPos.dx - 45,
-                      top: targetPos.dy - 45,
-                      child: GestureDetector(
-                        onTap: _revealGroundAtmosphere,
-                        child: AnimatedBuilder(
-                          animation: _ambientBreatheController,
-                          builder: (context, _) {
-                            final pulse = math.sin(_ambientBreatheController.value * math.pi * 4).abs();
-                            return Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 14, vertical: 7),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF052E16)
-                                        .withValues(alpha: 0.95),
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                        color: const Color(0xFF22C55E),
-                                        width: 1.8),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: const Color(0xFF22C55E)
-                                            .withValues(alpha: 0.45 * pulse + 0.25),
-                                        blurRadius: 18,
-                                        spreadRadius: 2,
-                                      ),
-                                    ],
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Text('🟢',
-                                          style: TextStyle(fontSize: 13)),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        'TAP HERE 🎯',
-                                        style: GoogleFonts.outfit(
-                                          color: const Color(0xFF86EFAC),
-                                          fontWeight: FontWeight.w900,
-                                          fontSize: 12,
-                                          letterSpacing: 1.0,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Icon(
-                                  Icons.touch_app_rounded,
-                                  color: const Color(0xFF22C55E),
-                                  size: 28 + 4 * pulse,
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
+              if (!_planetTransformInitialized && _flameSolarSystemGame != null) {
+                _planetTransformInitialized = true;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) {
+                    const initialScale = 0.95;
+                    final dx = (sW - solarWorldSize * initialScale) / 2;
+                    final dy = (sH - solarWorldSize * initialScale) / 2;
+                    _planetTransformController.value = Matrix4.identity()
+                      ..translateByDouble(dx, dy)
+                      ..scaleByDouble(initialScale, initialScale, 1.0, 1.0);
+                  }
+                });
+              }
+
+              return InteractiveViewer(
+                transformationController: _planetTransformController,
+                constrained: false,
+                boundaryMargin: const EdgeInsets.all(400),
+                minScale: minScale * 0.45,
+                maxScale: 5.0,
+                clipBehavior: Clip.none,
+                child: SizedBox(
+                  width: solarWorldSize,
+                  height: solarWorldSize,
+                  child: _flameSolarSystemGame != null
+                      ? GameWidget(game: _flameSolarSystemGame!)
+                      : const SizedBox.shrink(),
+                ),
+              );
+            },
           ),
         ),
 
-        // Stage 1 & 2 Minimal Title Header
+        // 2. Stage 0 Minimal Title Header
         Positioned(
           top: MediaQuery.of(context).padding.top + 60,
           left: 20,
@@ -590,45 +514,213 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
           child: Column(
             children: [
               Text(
-                _currentStage == 1
-                    ? 'THIS IS YOUR ISLAND'
-                    : 'THIS IS YOUR PLOT',
+                'THIS IS YOUR PLANET',
                 style: GoogleFonts.outfit(
                   color: Colors.white60,
-                  fontSize: 12,
+                  fontSize: 12.5,
                   fontWeight: FontWeight.w700,
-                  letterSpacing: 2.0,
+                  letterSpacing: 2.2,
                 ),
               ),
               const SizedBox(height: 3),
               Text(
-                _currentStage == 1
-                    ? _assignedIsland.name.toUpperCase()
-                    : 'PLOT #${_assignedPlot.plotNumber}',
+                (_selectedCosmosPlanet != null
+                        ? _selectedCosmosPlanet!.name.split(' ').first
+                        : _assignedPlot.planetName)
+                    .toUpperCase(),
                 style: GoogleFonts.outfit(
                   color: Colors.white,
-                  fontSize: 20,
+                  fontSize: 24,
                   fontWeight: FontWeight.w900,
-                  letterSpacing: 1.2,
+                  letterSpacing: 1.5,
                 ),
               ),
             ],
           ),
         ),
-
-        // Focus plot button in Stage 2
-        if (_currentStage == 2)
-          Positioned(
-            right: 18,
-            top: MediaQuery.of(context).padding.top + 56,
-            child: IconButton(
-              onPressed: _zoomDeepToPlot,
-              icon: const Icon(Icons.my_location_rounded,
-                  color: Color(0xFF22C55E), size: 22),
-              tooltip: 'Re-center plot',
-            ),
-          ),
       ],
+    );
+  }
+
+  // =========================================================================
+  // 🏝️ STAGE 1 & 2: Island Aerial Map (Edge-to-Edge locked to screen height)
+  // =========================================================================
+  Widget _buildAerialViewport() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final screenWidth = constraints.maxWidth;
+        final screenHeight = constraints.maxHeight;
+        final worldHeight = screenHeight * 1.45;
+        final worldWidth = math.max(screenWidth * 2.8, screenHeight * 2.2);
+        final minScale = screenHeight / worldHeight;
+        const focusScale = 1.15;
+        final focusX = -(worldWidth * focusScale - screenWidth) / 2;
+        final focusY = -(worldHeight * focusScale - screenHeight) / 2;
+
+        if (!_islandTransformInitialized) {
+          _islandTransformInitialized = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && _islandTransformController.value == Matrix4.identity()) {
+              _islandTransformController.value =
+                  Matrix4.translationValues(focusX, focusY, 0.0)
+                    ..scaleByDouble(focusScale, focusScale, 1.0, 1.0);
+            }
+          });
+        }
+
+        final coords = IslandAerialPainter.get35PlotCoordinates(_assignedIsland.shapeStyle);
+        final targetPlotCoord = (_assignedPlot.plotNumber >= 1 && _assignedPlot.plotNumber <= coords.length)
+            ? coords[_assignedPlot.plotNumber - 1]
+            : Offset.zero;
+        final painterScale = ((worldHeight / 850.0) * 1.15).clamp(0.95, 1.50);
+        final targetWorldX = worldWidth / 2 + targetPlotCoord.dx * painterScale;
+        final targetWorldY = worldHeight / 2 + targetPlotCoord.dy * painterScale;
+
+        return Stack(
+          children: [
+            // Interactive Full-bleed Island Canvas
+            Positioned.fill(
+              child: InteractiveViewer(
+                transformationController: _islandTransformController,
+                constrained: false,
+                boundaryMargin: EdgeInsets.zero,
+                minScale: minScale, // Strictly locked to screen height! Zero letterbox bars!
+                maxScale: 20.0,
+                clipBehavior: Clip.none,
+                child: SizedBox(
+                  width: worldWidth,
+                  height: worldHeight,
+                  child: Stack(
+                    children: [
+                      // Full Island Painter
+                      Positioned.fill(
+                        child: CustomPaint(
+                          painter: IslandAerialPainter(
+                            island: _assignedIsland,
+                            isInteractive: true,
+                            selectedPlotNumber: _assignedPlot.plotNumber,
+                            plots: [_assignedPlot],
+                            animation: _ambientBreatheController,
+                          ),
+                        ),
+                      ),
+
+                      // In Stage 2 (Deep Zoom): Glowing green target directly over the plot
+                      if (_currentStage == 2)
+                        Positioned(
+                          left: targetWorldX - 60,
+                          top: targetWorldY - 50,
+                          child: GestureDetector(
+                            onTap: _revealGroundAtmosphere,
+                            child: AnimatedBuilder(
+                              animation: _ambientBreatheController,
+                              builder: (context, _) {
+                                final pulse = math.sin(_ambientBreatheController.value * math.pi * 4).abs();
+                                return Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF052E16).withValues(alpha: 0.95),
+                                        borderRadius: BorderRadius.circular(14),
+                                        border: Border.all(
+                                          color: const Color(0xFF22C55E),
+                                          width: 1.5,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: const Color(0xFF22C55E)
+                                                .withValues(alpha: 0.45 * pulse + 0.35),
+                                            blurRadius: 16,
+                                            spreadRadius: 2,
+                                          ),
+                                        ],
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Text('🟢', style: TextStyle(fontSize: 10)),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'TAP TO CLAIM',
+                                            style: GoogleFonts.outfit(
+                                              color: const Color(0xFF86EFAC),
+                                              fontWeight: FontWeight.w900,
+                                              fontSize: 9.5,
+                                              letterSpacing: 0.8,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Icon(
+                                      Icons.touch_app_rounded,
+                                      color: const Color(0xFF22C55E),
+                                      size: 22 + 4 * pulse,
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Top Header: Title
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 60,
+              left: 20,
+              right: 20,
+              child: Column(
+                children: [
+                  Text(
+                    _currentStage == 1
+                        ? 'THIS IS YOUR ISLAND'
+                        : 'THIS IS YOUR PLOT',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white60,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 2.0,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    _currentStage == 1
+                        ? _assignedIsland.name.toUpperCase()
+                        : 'PLOT #${_assignedPlot.plotNumber}',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Re-center Plot Button in Stage 2
+            if (_currentStage == 2)
+              Positioned(
+                right: 18,
+                top: MediaQuery.of(context).padding.top + 56,
+                child: IconButton(
+                  onPressed: () => _zoomDeepToPlot(Size(screenWidth, screenHeight)),
+                  icon: const Icon(Icons.my_location_rounded,
+                      color: Color(0xFF22C55E), size: 22),
+                  tooltip: 'Re-center plot',
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 
@@ -636,155 +728,185 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
   // 🏡 STAGE 3: Fullscreen Adult Attacking Profile Atmosphere (House & Scenery)
   // =========================================================================
   Widget _buildAdultAttackingEstateView() {
-    const houseLeft = (_worldW - _houseW) / 2;
-    const houseTop = _groundY - 14.0 - _houseH;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final sW = constraints.maxWidth;
+        final sH = constraints.maxHeight;
+        final minScale = math.max(sW / _worldW, sH / _worldH);
+        const maxScale = 3.2;
+        final defaultScale = (sW / 460.0).clamp(minScale, 1.35);
 
-    return Stack(
-      children: [
-        // 🌄 Fullscreen Interactive Estate with Pinch-to-Zoom & Pan (from Attacking Profile)
-        Positioned.fill(
-          child: InteractiveViewer(
-            transformationController: _estateTransformController,
-            minScale: 0.45,
-            maxScale: 3.2,
-            boundaryMargin: const EdgeInsets.all(200),
-            clipBehavior: Clip.none,
-            child: SizedBox(
-              width: _worldW,
-              height: _worldH,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  // 1. Living Scenery Landscape Painter (Lush hills, clouds, balloon, swans, windmill)
-                  Positioned.fill(
-                    child: AnimatedBuilder(
-                      animation: _ambientBreatheController,
-                      builder: (context, _) {
-                        return CustomPaint(
-                          painter: CitadelScenicLandscapePainter(
-                            isDamaged: false,
-                            groundBaseY: _groundY,
-                            isNight: false,
-                            isDay90: false,
-                            ambientProg: _ambientBreatheController.value,
-                            isPresident: false,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
+        if (!_estateTransformInitialized) {
+          _estateTransformInitialized = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              final houseCenterX = _worldW / 2;
+              final houseCenterY = (_groundY - 14.0 - _houseH) + (_houseH * 0.52);
+              final tx = (sW / 2) - (houseCenterX * defaultScale);
+              final ty = (sH * 0.44) - (houseCenterY * defaultScale);
 
-                  // 2. Day 1 Starter House in the Center
-                  Positioned(
-                    left: houseLeft,
-                    top: houseTop,
-                    width: _houseW,
-                    height: _houseH,
-                    child: IgnorePointer(
-                      child: RepaintBoundary(
-                        child: FlameEnglishHouseWidget(
-                          currentDay: 1,
-                          streak: 1,
-                          isDamaged: false,
-                          houseId: 'starter_home',
-                          showTestingControls: false,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
+              final matrix = Matrix4.identity();
+              matrix.setEntry(0, 0, defaultScale);
+              matrix.setEntry(1, 1, defaultScale);
+              matrix.setEntry(0, 3, tx);
+              matrix.setEntry(1, 3, ty);
+              _estateTransformController.value = matrix;
+            }
+          });
+        }
 
-        // Top Minimal Title
-        Positioned(
-          top: MediaQuery.of(context).padding.top + 60,
-          left: 20,
-          right: 20,
-          child: Column(
-            children: [
-              Text(
-                'THIS IS YOUR HOME',
-                style: GoogleFonts.outfit(
-                  color: Colors.white70,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 2.0,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                'Day 1 Starter Homestead',
-                style: GoogleFonts.outfit(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ),
+        const houseLeft = (_worldW - _houseW) / 2;
+        const houseTop = _groundY - 14.0 - _houseH;
 
-        // Sleek Minimal Address Card floating above the bottom action bar
-        Positioned(
-          left: 20,
-          right: 20,
-          bottom: MediaQuery.of(context).padding.bottom + 85,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0F172A).withValues(alpha: 0.88),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white24, width: 1.0),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.4),
-                  blurRadius: 16,
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                const Text('🏡', style: TextStyle(fontSize: 22)),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
+        return Stack(
+          children: [
+            // 🌄 Fullscreen Interactive Estate with Pinch-to-Zoom & Pan (from Attacking Profile)
+            Positioned.fill(
+              child: InteractiveViewer(
+                transformationController: _estateTransformController,
+                minScale: minScale,
+                maxScale: maxScale,
+                boundaryMargin: EdgeInsets.zero,
+                constrained: false,
+                clipBehavior: Clip.hardEdge,
+                child: SizedBox(
+                  width: _worldW,
+                  height: _worldH,
+                  child: Stack(
+                    clipBehavior: Clip.none,
                     children: [
-                      Text(
-                        'Plot #${_assignedPlot.plotNumber}, ${_assignedPlot.streetName}',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
+                      // 1. Living Scenery Landscape Painter (Lush hills, clouds, balloon, swans, windmill)
+                      Positioned.fill(
+                        child: AnimatedBuilder(
+                          animation: _ambientBreatheController,
+                          builder: (context, _) {
+                            return CustomPaint(
+                              painter: CitadelScenicLandscapePainter(
+                                isDamaged: false,
+                                groundBaseY: _groundY,
+                                isNight: false,
+                                isDay90: false,
+                                ambientProg: _ambientBreatheController.value,
+                                isPresident: false,
+                              ),
+                            );
+                          },
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${_assignedPlot.countryName} • ${_assignedPlot.planetName}',
-                        style: GoogleFonts.plusJakartaSans(
-                          color: Colors.white60,
-                          fontSize: 11.5,
+
+                      // 2. Day 1 Starter House in the Center
+                      Positioned(
+                        left: houseLeft,
+                        top: houseTop,
+                        width: _houseW,
+                        height: _houseH,
+                        child: IgnorePointer(
+                          child: RepaintBoundary(
+                            child: FlameEnglishHouseWidget(
+                              currentDay: 1,
+                              streak: 1,
+                              isDamaged: false,
+                              houseId: 'starter_home',
+                              showTestingControls: false,
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
-      ],
+
+            // Top Minimal Title
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 60,
+              left: 20,
+              right: 20,
+              child: Column(
+                children: [
+                  Text(
+                    'THIS IS YOUR HOME',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white70,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 2.0,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Day 1 Starter Homestead',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Sleek Minimal Address Card floating above the bottom action bar (No bottom sheet!)
+            Positioned(
+              left: 20,
+              right: 20,
+              bottom: MediaQuery.of(context).padding.bottom + 85,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.88),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white24, width: 1.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.4),
+                      blurRadius: 16,
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    const Text('🏡', style: TextStyle(fontSize: 22)),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Plot #${_assignedPlot.plotNumber}, ${_assignedPlot.streetName}',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '${_assignedPlot.countryName} • ${_assignedPlot.planetName}',
+                            style: GoogleFonts.plusJakartaSans(
+                              color: Colors.white60,
+                              fontSize: 11.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
   // =========================================================================
-  // 🏷️ Top Navigation Bar (iOS-Style Back Button & Minimal Referral Trigger)
+  // 🏷️ Top Navigation Bar (Minimal iOS Icon-Only Back Chevron & Referral Trigger)
   // =========================================================================
   Widget _buildTopNavigationBar() {
     return Positioned(
@@ -793,37 +915,29 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
       right: 16,
       child: Row(
         children: [
-          // iOS-style Back Button
+          // iOS-style Back Chevron Button (Clean icon only)
           GestureDetector(
-            onTap: () {
-              HapticFeedback.lightImpact();
-              if (_currentStage == 2) {
-                _resetIslandToOverview();
-              } else if (_currentStage > 0) {
-                setState(() => _currentStage--);
-              } else {
-                Navigator.pop(context);
-              }
-            },
+            onTap: _handleBackNavigation,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              width: 38,
+              height: 38,
               decoration: BoxDecoration(
                 color: const Color(0xFF0F172A).withValues(alpha: 0.8),
-                borderRadius: BorderRadius.circular(12),
+                shape: BoxShape.circle,
                 border: Border.all(color: Colors.white24, width: 1.0),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: const [
-                  Icon(Icons.arrow_back_ios_new_rounded,
-                      color: Colors.white, size: 14),
-                  SizedBox(width: 4),
-                  Text('Back',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w600)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.35),
+                    blurRadius: 8,
+                  ),
                 ],
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white,
+                  size: 16,
+                ),
               ),
             ),
           ),
@@ -835,11 +949,10 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
             GestureDetector(
               onTap: _showInviteCodeDialog,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: const Color(0xFF0F172A).withValues(alpha: 0.85),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: _activeReferralCode != null
                         ? const Color(0xFF10B981)
@@ -872,13 +985,13 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
 
     if (_currentStage == 0) {
       buttonText = 'NEXT ➔';
-      onTap = _resetIslandToOverview;
+      onTap = () => _resetIslandToOverview(MediaQuery.of(context).size);
     } else if (_currentStage == 1) {
       buttonText = 'NEXT ➔';
-      onTap = _zoomDeepToPlot;
+      onTap = () => _zoomDeepToPlot(MediaQuery.of(context).size);
     } else if (_currentStage == 2) {
-      // In Stage 2, user taps on the glowing green indicator directly over the plot
-      return const SizedBox.shrink();
+      buttonText = 'CLAIM PLOT ➔';
+      onTap = _revealGroundAtmosphere;
     } else if (_currentStage == 3) {
       buttonText = 'START JOURNEY 🚀';
       onTap = _settleAndBeginJourney;

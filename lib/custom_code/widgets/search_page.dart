@@ -1,5 +1,6 @@
 // Automatic FlutterFlow imports
 import 'package:flutter/material.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_born_address_page.dart';
 
 import '/backend/supabase/supabase.dart';
 import 'index.dart'; // Imports other custom widgets
@@ -152,13 +153,17 @@ class _SearchPageState extends State<SearchPage> {
                       Icon(
                         Icons.people_alt_rounded,
                         size: 15,
-                        color: _selectedTab == 'people' ? Colors.black : Colors.white60,
+                        color: _selectedTab == 'people'
+                            ? Colors.black
+                            : Colors.white60,
                       ),
                       const SizedBox(width: 6),
                       Text(
                         'People',
                         style: GoogleFonts.outfit(
-                          color: _selectedTab == 'people' ? Colors.black : Colors.white70,
+                          color: _selectedTab == 'people'
+                              ? Colors.black
+                              : Colors.white70,
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                         ),
@@ -193,13 +198,17 @@ class _SearchPageState extends State<SearchPage> {
                       Icon(
                         Icons.storefront_rounded,
                         size: 17,
-                        color: _selectedTab == 'market' ? Colors.black : Colors.white60,
+                        color: _selectedTab == 'market'
+                            ? Colors.black
+                            : Colors.white60,
                       ),
                       const SizedBox(width: 6),
                       Text(
                         'Market',
                         style: GoogleFonts.outfit(
-                          color: _selectedTab == 'market' ? Colors.black : Colors.white70,
+                          color: _selectedTab == 'market'
+                              ? Colors.black
+                              : Colors.white70,
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                         ),
@@ -315,7 +324,10 @@ class _SearchPageState extends State<SearchPage> {
             icon: const Text('🪐', style: TextStyle(fontSize: 18)),
             label: const Text(
               'COSMOS TEST LAB 🧪',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 0.5),
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  letterSpacing: 0.5),
             ),
             onPressed: () {
               HapticFeedback.mediumImpact();
@@ -356,8 +368,7 @@ class _SearchPageState extends State<SearchPage> {
           children: [
             // Minimal Header
             Padding(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 children: [
                   InkWell(
@@ -424,8 +435,8 @@ class _SearchPageState extends State<SearchPage> {
               // Results Counter / Status
               if (_hasSearched)
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 18.0, vertical: 2.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 18.0, vertical: 2.0),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
@@ -572,7 +583,9 @@ class _CustomSearchWidgetState extends State<CustomSearchWidget> {
       child: Container(
         height: 40,
         decoration: BoxDecoration(
-          color: FlutterFlowTheme.of(context).secondaryBackground.withValues(alpha: 0.7),
+          color: FlutterFlowTheme.of(context)
+              .secondaryBackground
+              .withValues(alpha: 0.7),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
         ),
@@ -691,7 +704,8 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
     try {
       final response = await _supabase
           .from('profile')
-          .select('profile_image_url, shop_name, verified, user_id, name, learning_day, daily_streak, avatar_config')
+          .select(
+              'profile_image_url, shop_name, verified, user_id, name, learning_day, daily_streak, avatar_config')
           .order('name', ascending: true)
           .range(_currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
 
@@ -701,20 +715,23 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
         PocketRobotService.getRobotByLevel(45),
         PocketRobotService.getRobotByLevel(90),
       ];
-      final List<Map<String, dynamic>> robotMaps = spotlightRobots.map((r) => {
-        'user_id': r.id,
-        'name': r.name,
-        'shop_name': 'Lvl ${r.level} • ${r.archetype.label} ${r.archetype.icon}',
-        'profile_image_url': r.avatarUrl,
-        'verified': false,
-        'is_robot': true,
-        'robot_level': r.level,
-        'robot_archetype': r.archetype.label,
-        'robot_archetype_icon': r.archetype.icon,
-        'robot_bio': r.bio,
-        'robot_cefr': r.cefrRank,
-        'robot_opening': r.openingMessage,
-      }).toList();
+      final List<Map<String, dynamic>> robotMaps = spotlightRobots
+          .map((r) => {
+                'user_id': r.id,
+                'name': r.name,
+                'shop_name':
+                    'Lvl ${r.level} • ${r.archetype.label} ${r.archetype.icon}',
+                'profile_image_url': r.avatarUrl,
+                'verified': false,
+                'is_robot': true,
+                'robot_level': r.level,
+                'robot_archetype': r.archetype.label,
+                'robot_archetype_icon': r.archetype.icon,
+                'robot_bio': r.bio,
+                'robot_cefr': r.cefrRank,
+                'robot_opening': r.openingMessage,
+              })
+          .toList();
 
       // 🏛️ The President of Pocket World & Sovereign Citadel
       final presMap = {
@@ -769,7 +786,8 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
 
     final cleanQ = query.trim().toLowerCase();
     final isHumanOnly = cleanQ == 'human' || cleanQ == 'humans';
-    final isRobotOnly = cleanQ == 'robot' || cleanQ == 'robots' || cleanQ == 'all robots';
+    final isRobotOnly =
+        cleanQ == 'robot' || cleanQ == 'robots' || cleanQ == 'all robots';
 
     try {
       List<dynamic> response = [];
@@ -778,18 +796,20 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
       if (!isRobotOnly) {
         final queryBuilder = _supabase
             .from('profile')
-            .select('profile_image_url, shop_name, verified, user_id, name, learning_day, daily_streak, avatar_config')
+            .select(
+                'profile_image_url, shop_name, verified, user_id, name, learning_day, daily_streak, avatar_config')
             .neq('is_private', true);
 
         if (isHumanOnly) {
-          response = await queryBuilder
-              .order('name', ascending: true)
-              .range(_currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
+          response = await queryBuilder.order('name', ascending: true).range(
+              _currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
         } else {
           response = await queryBuilder
-              .or('name.ilike.%$query%,shop_name.ilike.%$query%,slug.ilike.%$query%')
+              .or(
+                  'name.ilike.%$query%,shop_name.ilike.%$query%,slug.ilike.%$query%')
               .order('name', ascending: true)
-              .range(_currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
+              .range(
+                  _currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
         }
       }
 
@@ -801,20 +821,23 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
             : PocketRobotService.searchRobots(query);
       }
 
-      final List<Map<String, dynamic>> robotMaps = matchingRobots.map((r) => {
-        'user_id': r.id,
-        'name': r.name,
-        'shop_name': 'Lvl ${r.level} • ${r.archetype.label} ${r.archetype.icon}',
-        'profile_image_url': r.avatarUrl,
-        'verified': false,
-        'is_robot': true,
-        'robot_level': r.level,
-        'robot_archetype': r.archetype.label,
-        'robot_archetype_icon': r.archetype.icon,
-        'robot_bio': r.bio,
-        'robot_cefr': r.cefrRank,
-        'robot_opening': r.openingMessage,
-      }).toList();
+      final List<Map<String, dynamic>> robotMaps = matchingRobots
+          .map((r) => {
+                'user_id': r.id,
+                'name': r.name,
+                'shop_name':
+                    'Lvl ${r.level} • ${r.archetype.label} ${r.archetype.icon}',
+                'profile_image_url': r.avatarUrl,
+                'verified': false,
+                'is_robot': true,
+                'robot_level': r.level,
+                'robot_archetype': r.archetype.label,
+                'robot_archetype_icon': r.archetype.icon,
+                'robot_bio': r.bio,
+                'robot_cefr': r.cefrRank,
+                'robot_opening': r.openingMessage,
+              })
+          .toList();
 
       // 🏛️ Check if query matches President
       final isPresMatch = cleanQ.contains('pres') ||
@@ -873,7 +896,8 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
       if (_currentQuery.isEmpty) {
         response = await _supabase
             .from('profile')
-            .select('profile_image_url, shop_name, verified, user_id, name, learning_day, daily_streak, avatar_config')
+            .select(
+                'profile_image_url, shop_name, verified, user_id, name, learning_day, daily_streak, avatar_config')
             .neq('is_private', true)
             .order('name', ascending: true)
             .range(
@@ -881,7 +905,8 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
       } else {
         response = await _supabase
             .from('profile')
-            .select('profile_image_url, shop_name, verified, user_id, name, learning_day, daily_streak, avatar_config')
+            .select(
+                'profile_image_url, shop_name, verified, user_id, name, learning_day, daily_streak, avatar_config')
             .neq('is_private', true)
             .or(
                 'name.ilike.%$_currentQuery%,shop_name.ilike.%$_currentQuery%,slug.ilike.%$_currentQuery%')
@@ -929,7 +954,8 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.search_off_rounded, color: Colors.white24, size: 36),
+            const Icon(Icons.search_off_rounded,
+                color: Colors.white24, size: 36),
             const SizedBox(height: 8),
             Text(
               'No results found',
@@ -954,21 +980,28 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
           if (_currentPlan == 'free') {
             return GestureDetector(
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const SubscriptionPage())).then((_) {
+                Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const SubscriptionPage()))
+                    .then((_) {
                   _loadCurrentPlan();
                   _performSearch(_currentQuery);
                 });
               },
               child: Container(
                 margin: const EdgeInsets.only(top: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)]),
+                  gradient: const LinearGradient(
+                      colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)]),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.workspace_premium_rounded, color: Colors.white, size: 22),
+                    const Icon(Icons.workspace_premium_rounded,
+                        color: Colors.white, size: 22),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(
@@ -985,7 +1018,8 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                         ],
                       ),
                     ),
-                    const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white54, size: 14),
+                    const Icon(Icons.arrow_forward_ios_rounded,
+                        color: Colors.white54, size: 14),
                   ],
                 ),
               ),
@@ -1009,7 +1043,8 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
         final profile = _searchResults[index];
         final isPresident = profile['is_president'] == true ||
             PocketPresidentService.isPresidentId(profile['user_id'] ?? '');
-        final name = isPresident ? 'The President' : (profile['name'] ?? 'Partner');
+        final name =
+            isPresident ? 'The President' : (profile['name'] ?? 'Partner');
         final shopName = profile['shop_name'];
         final targetName = name.toLowerCase();
         final isVerified = isPresident ||
@@ -1055,13 +1090,17 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
               color: isPresident
                   ? const Color(0xFF0F172A)
                   : (isRobot
-                      ? FlutterFlowTheme.of(context).secondaryBackground.withValues(alpha: 0.7)
+                      ? FlutterFlowTheme.of(context)
+                          .secondaryBackground
+                          .withValues(alpha: 0.7)
                       : (userStage != null
                           ? Color.alphaBlend(
                               userStage.bgColor.withValues(alpha: 0.22),
                               FlutterFlowTheme.of(context).secondaryBackground,
                             )
-                          : FlutterFlowTheme.of(context).secondaryBackground.withValues(alpha: 0.7))),
+                          : FlutterFlowTheme.of(context)
+                              .secondaryBackground
+                              .withValues(alpha: 0.7))),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: isPresident
@@ -1092,20 +1131,30 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                                 colors: [Color(0xFF06B6D4), Color(0xFF3B82F6)])
                             : (userStage != null
                                 ? LinearGradient(
-                                    colors: [userStage.buttonColor, userStage.tickColor],
+                                    colors: [
+                                      userStage.buttonColor,
+                                      userStage.tickColor
+                                    ],
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
                                   )
                                 : (isVerified
-                                    ? const LinearGradient(
-                                        colors: [Color(0xFFFFFC00), Colors.orangeAccent])
+                                    ? const LinearGradient(colors: [
+                                        Color(0xFFFFFC00),
+                                        Colors.orangeAccent
+                                      ])
                                     : LinearGradient(
                                         colors: [
-                                          const Color(0xFFFFFC00).withValues(alpha: 0.8),
-                                          const Color(0xFF10B981).withValues(alpha: 0.8),
+                                          const Color(0xFFFFFC00)
+                                              .withValues(alpha: 0.8),
+                                          const Color(0xFF10B981)
+                                              .withValues(alpha: 0.8),
                                         ],
                                       )))),
-                    border: (!isVerified && !isRobot && userStage == null && !isPresident)
+                    border: (!isVerified &&
+                            !isRobot &&
+                            userStage == null &&
+                            !isPresident)
                         ? Border.all(color: Colors.white12, width: 0.8)
                         : null,
                   ),
@@ -1113,13 +1162,21 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                       ? const PresidentAvatarWidget(size: 38, showGlow: false)
                       : ClipOval(
                           child: Container(
-                            color: FlutterFlowTheme.of(context).primaryBackground,
+                            color:
+                                FlutterFlowTheme.of(context).primaryBackground,
                             child: VectorAvatarWidget(
                               config: isRobot
-                                  ? VectorAvatarConfig.getEvolutionAvatarForStage((profile['robot_level'] as num?)?.toInt() ?? 1)
+                                  ? VectorAvatarConfig
+                                      .getEvolutionAvatarForStage(
+                                          (profile['robot_level'] as num?)
+                                                  ?.toInt() ??
+                                              1)
                                   : ((profile['avatar_config'] != null)
-                                      ? VectorAvatarConfig.fromMap(Map<String, dynamic>.from(profile['avatar_config']))
-                                      : VectorAvatarConfig.getEvolutionAvatarForStage(userDay)),
+                                      ? VectorAvatarConfig.fromMap(
+                                          Map<String, dynamic>.from(
+                                              profile['avatar_config']))
+                                      : VectorAvatarConfig
+                                          .getEvolutionAvatarForStage(userDay)),
                               size: 38,
                             ),
                           ),
@@ -1147,20 +1204,27 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                           ),
                           const SizedBox(width: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 5.5, vertical: 1.5),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 5.5, vertical: 1.5),
                             decoration: BoxDecoration(
                               color: isRobot
-                                  ? const Color(0xFF06B6D4).withValues(alpha: 0.18)
+                                  ? const Color(0xFF06B6D4)
+                                      .withValues(alpha: 0.18)
                                   : (userStage != null
-                                      ? userStage.buttonColor.withValues(alpha: 0.18)
-                                      : const Color(0xFFFFFC00).withValues(alpha: 0.15)),
+                                      ? userStage.buttonColor
+                                          .withValues(alpha: 0.18)
+                                      : const Color(0xFFFFFC00)
+                                          .withValues(alpha: 0.15)),
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
                                 color: isRobot
-                                    ? const Color(0xFF06B6D4).withValues(alpha: 0.5)
+                                    ? const Color(0xFF06B6D4)
+                                        .withValues(alpha: 0.5)
                                     : (userStage != null
-                                        ? userStage.buttonColor.withValues(alpha: 0.6)
-                                        : const Color(0xFFFFFC00).withValues(alpha: 0.5)),
+                                        ? userStage.buttonColor
+                                            .withValues(alpha: 0.6)
+                                        : const Color(0xFFFFFC00)
+                                            .withValues(alpha: 0.5)),
                                 width: 0.6,
                               ),
                             ),
@@ -1175,7 +1239,8 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                                     ? const Color(0xFFFFD700)
                                     : (isRobot
                                         ? const Color(0xFF06B6D4)
-                                        : (userStage?.buttonColor ?? const Color(0xFFFFFC00))),
+                                        : (userStage?.buttonColor ??
+                                            const Color(0xFFFFFC00))),
                                 fontSize: 10,
                                 fontWeight: FontWeight.w800,
                               ),
@@ -1209,12 +1274,15 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                         children: [
                           if (isRobot) ...[
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 5.5, vertical: 1.5),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 5.5, vertical: 1.5),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF06B6D4).withValues(alpha: 0.12),
+                                color: const Color(0xFF06B6D4)
+                                    .withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(4),
                                 border: Border.all(
-                                  color: const Color(0xFF06B6D4).withValues(alpha: 0.35),
+                                  color: const Color(0xFF06B6D4)
+                                      .withValues(alpha: 0.35),
                                   width: 0.6,
                                 ),
                               ),
@@ -1229,21 +1297,26 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                             ),
                           ] else if (userStage != null) ...[
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 5.5, vertical: 1.5),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 5.5, vertical: 1.5),
                               decoration: BoxDecoration(
-                                color: userStage.buttonColor.withValues(alpha: 0.12),
+                                color: userStage.buttonColor
+                                    .withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(4),
                                 border: Border.all(
-                                  color: userStage.buttonColor.withValues(alpha: 0.35),
+                                  color: userStage.buttonColor
+                                      .withValues(alpha: 0.35),
                                   width: 0.6,
                                 ),
                               ),
                               child: Text(
                                 '${userStage.emoji} ${userStage.stageName}',
                                 style: GoogleFonts.outfit(
-                                  color: userStage.buttonColor.computeLuminance() > 0.8
-                                      ? const Color(0xFFCBD5E1)
-                                      : userStage.buttonColor,
+                                  color:
+                                      userStage.buttonColor.computeLuminance() >
+                                              0.8
+                                          ? const Color(0xFFCBD5E1)
+                                          : userStage.buttonColor,
                                   fontWeight: FontWeight.w600,
                                   fontSize: 11,
                                 ),
@@ -1252,14 +1325,16 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                               ),
                             ),
                           ],
-                          if (shopName != null && shopName.toString().isNotEmpty) ...[
+                          if (shopName != null &&
+                              shopName.toString().isNotEmpty) ...[
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
                                 shopName.toString(),
                                 style: GoogleFonts.inter(
                                   color: isRobot
-                                      ? const Color(0xFFFFFC00).withValues(alpha: 0.85)
+                                      ? const Color(0xFFFFFC00)
+                                          .withValues(alpha: 0.85)
                                       : Colors.white54,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w400,
@@ -1277,7 +1352,9 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                 // Action Arrow
                 Icon(
                   Icons.chevron_right_rounded,
-                  color: isRobot ? const Color(0xFF06B6D4).withValues(alpha: 0.6) : Colors.white24,
+                  color: isRobot
+                      ? const Color(0xFF06B6D4).withValues(alpha: 0.6)
+                      : Colors.white24,
                   size: 20,
                 ),
               ],
@@ -1288,7 +1365,8 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
     );
   }
 
-  void _showPocketRobotProfileSheet(BuildContext context, Map<String, dynamic> robotData) {
+  void _showPocketRobotProfileSheet(
+      BuildContext context, Map<String, dynamic> robotData) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -1298,7 +1376,8 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
           decoration: const BoxDecoration(
             color: Color(0xFF0F111A),
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-            border: Border(top: BorderSide(color: Color(0xFF06B6D4), width: 1.5)),
+            border:
+                Border(top: BorderSide(color: Color(0xFF06B6D4), width: 1.5)),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Column(
@@ -1316,7 +1395,8 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
               CircleAvatar(
                 radius: 40,
                 backgroundColor: const Color(0xFF1E293B),
-                backgroundImage: CachedNetworkImageProvider(robotData['profile_image_url'] ?? ''),
+                backgroundImage: CachedNetworkImageProvider(
+                    robotData['profile_image_url'] ?? ''),
               ),
               const SizedBox(height: 12),
               Row(
@@ -1332,7 +1412,8 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                   ),
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: const Color(0xFF06B6D4).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(6),
@@ -1394,21 +1475,25 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('✨ Added ${robotData['name']} to your Poket Mates!'),
+                              content: Text(
+                                  '✨ Added ${robotData['name']} to your Poket Mates!'),
                               backgroundColor: const Color(0xFF10B981),
                             ),
                           );
                         }
                       },
-                      icon: const Icon(Icons.person_add_rounded, color: Colors.black, size: 18),
+                      icon: const Icon(Icons.person_add_rounded,
+                          color: Colors.black, size: 18),
                       label: Text(
                         'Add Mate',
-                        style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold),
+                        style: GoogleFonts.outfit(
+                            color: Colors.black, fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFFFFC00),
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                       ),
                     ),
                   ),
@@ -1428,15 +1513,18 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                           ),
                         );
                       },
-                      icon: const Icon(Icons.chat_bubble_rounded, color: Colors.white, size: 18),
+                      icon: const Icon(Icons.chat_bubble_rounded,
+                          color: Colors.white, size: 18),
                       label: Text(
                         'Chat',
-                        style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                        style: GoogleFonts.outfit(
+                            color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF2563EB),
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                       ),
                     ),
                   ),
@@ -1449,7 +1537,8 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                 child: ElevatedButton.icon(
                   onPressed: () {
                     Navigator.pop(ctx);
-                    final robotLvl = (robotData['robot_level'] as num?)?.toInt() ?? 1;
+                    final robotLvl =
+                        (robotData['robot_level'] as num?)?.toInt() ?? 1;
                     final robotNeighbor = PocketNeighbor(
                       id: robotData['user_id'] ?? 'robot_1',
                       name: robotData['name'] ?? 'Pocket Robot',
@@ -1473,15 +1562,18 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                       ),
                     );
                   },
-                  icon: const Icon(Icons.person_outline_rounded, color: Colors.white, size: 18),
+                  icon: const Icon(Icons.person_outline_rounded,
+                      color: Colors.white, size: 18),
                   label: Text(
                     'View Profile',
-                    style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                    style: GoogleFonts.outfit(
+                        color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF7C3AED),
                     padding: const EdgeInsets.symmetric(vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
               ),
@@ -1592,7 +1684,11 @@ class _FollowButtonState extends State<FollowButton> {
 
         try {
           if (_isRequested) {
-            final myProfile = await _supabase.from('profile').select('name').eq('user_id', currentUserId).maybeSingle();
+            final myProfile = await _supabase
+                .from('profile')
+                .select('name')
+                .eq('user_id', currentUserId)
+                .maybeSingle();
             final myName = myProfile?['name'] ?? 'Someone';
             await _supabase.from('notifications').insert({
               'user_id': widget.userId,
@@ -1733,7 +1829,7 @@ class _FollowButtonState extends State<FollowButton> {
     if (widget.buttonColor != null) {
       return widget.buttonColor!;
     }
-    
+
     // Debug print to check if button_color_code exists
     debugPrint('Profile data: $_profileData');
     debugPrint('Button color code: ${_profileData?['button_color_code']}');
@@ -1753,12 +1849,12 @@ class _FollowButtonState extends State<FollowButton> {
     }
     return Theme.of(context).primaryColor;
   }
-  
+
   Color _getButtonTextColor() {
     if (widget.buttonTextColor != null) {
       return widget.buttonTextColor!;
     }
-    
+
     if (_profileData != null && _profileData!['button_text_color'] != null) {
       try {
         String colorCode = _profileData!['button_text_color'].toString();
@@ -1775,17 +1871,19 @@ class _FollowButtonState extends State<FollowButton> {
 
   @override
   Widget build(BuildContext context) {
-    final labelText = _isFollowing
-        ? 'Following'
-        : (_isRequested ? 'Requested' : 'Follow');
+    final labelText =
+        _isFollowing ? 'Following' : (_isRequested ? 'Requested' : 'Follow');
     final labelIcon = _isFollowing
         ? Icons.person_remove
         : (_isRequested ? Icons.hourglass_empty : Icons.person_add);
 
     return OutlinedButton.icon(
       onPressed: _isLoading ? null : _toggleFollow,
-      icon: Icon(labelIcon, color: _isFollowing ? _getButtonColor() : _getButtonTextColor()),
-      label: Text(labelText, style: TextStyle(color: _isFollowing ? _getButtonColor() : _getButtonTextColor())),
+      icon: Icon(labelIcon,
+          color: _isFollowing ? _getButtonColor() : _getButtonTextColor()),
+      label: Text(labelText,
+          style: TextStyle(
+              color: _isFollowing ? _getButtonColor() : _getButtonTextColor())),
       style: OutlinedButton.styleFrom(
         foregroundColor: _isFollowing
             ? _getButtonColor().withValues(alpha: 0.5)
@@ -2033,9 +2131,15 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
         double r = color.r;
         double g = color.g;
         double b = color.b;
-        r = r <= 0.03928 ? r / 12.92 : math.pow((r + 0.055) / 1.055, 2.4).toDouble();
-        g = g <= 0.03928 ? g / 12.92 : math.pow((g + 0.055) / 1.055, 2.4).toDouble();
-        b = b <= 0.03928 ? b / 12.92 : math.pow((b + 0.055) / 1.055, 2.4).toDouble();
+        r = r <= 0.03928
+            ? r / 12.92
+            : math.pow((r + 0.055) / 1.055, 2.4).toDouble();
+        g = g <= 0.03928
+            ? g / 12.92
+            : math.pow((g + 0.055) / 1.055, 2.4).toDouble();
+        b = b <= 0.03928
+            ? b / 12.92
+            : math.pow((b + 0.055) / 1.055, 2.4).toDouble();
         return 0.2126 * r + 0.7152 * g + 0.0722 * b;
       }
 
@@ -2074,14 +2178,16 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
                 'FF${_profileData!['button_text_color'].substring(1)}',
                 radix: 16))
             : Colors.white;
-    Color buttonTextColor = ensureContrast(rawButtonTextColor, buttonColor, isButton: false);
+    Color buttonTextColor =
+        ensureContrast(rawButtonTextColor, buttonColor, isButton: false);
 
     Color rawBgTextColor = _profileData != null &&
             _profileData!['bg_text_color'] != null
         ? Color(int.parse('FF${_profileData!['bg_text_color'].substring(1)}',
             radix: 16))
         : Colors.black;
-    Color bgTextColor = ensureContrast(rawBgTextColor, bgColor, isButton: false);
+    Color bgTextColor =
+        ensureContrast(rawBgTextColor, bgColor, isButton: false);
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -2207,7 +2313,10 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
                                 ),
 
                               // Contact Button
-                              if (!(_isPrivate && !_isFollowing && widget.userId != _supabase.auth.currentUser?.id))
+                              if (!(_isPrivate &&
+                                  !_isFollowing &&
+                                  widget.userId !=
+                                      _supabase.auth.currentUser?.id))
                                 Padding(
                                   padding: const EdgeInsets.only(top: 16.0),
                                   child: ElevatedButton(
@@ -2257,7 +2366,9 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
                         ),
 
                         // Tab Bar
-                        if (!(_isPrivate && !_isFollowing && widget.userId != _supabase.auth.currentUser?.id))
+                        if (!(_isPrivate &&
+                            !_isFollowing &&
+                            widget.userId != _supabase.auth.currentUser?.id))
                           TabBar(
                             controller: _tabController,
                             labelColor: bgTextColor,
@@ -2270,7 +2381,10 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
 
                         // Tab Content
                         Expanded(
-                          child: (_isPrivate && !_isFollowing && widget.userId != _supabase.auth.currentUser?.id)
+                          child: (_isPrivate &&
+                                  !_isFollowing &&
+                                  widget.userId !=
+                                      _supabase.auth.currentUser?.id)
                               ? Center(
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
@@ -2278,7 +2392,8 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
                                       Container(
                                         padding: const EdgeInsets.all(24),
                                         decoration: BoxDecoration(
-                                          color: buttonColor.withValues(alpha: 0.1),
+                                          color: buttonColor.withValues(
+                                              alpha: 0.1),
                                           shape: BoxShape.circle,
                                         ),
                                         child: Icon(
@@ -2301,7 +2416,8 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
                                         'Follow this user to see their photos and services.',
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
-                                          color: bgTextColor.withValues(alpha: 0.6),
+                                          color: bgTextColor.withValues(
+                                              alpha: 0.6),
                                           fontSize: 14,
                                         ),
                                       ),
@@ -2311,162 +2427,183 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
                               : TabBarView(
                                   controller: _tabController,
                                   children: [
-                              _galleryItems.isEmpty
-                                  ? Center(
-                                      child: Text('No gallery items',
-                                          style: TextStyle(color: bgTextColor)))
-                                  : LayoutBuilder(builder: (context, constraints) {
-                                      int getCrossAxisCount(double width) {
-                                        if (width > 1200) return 6;
-                                        if (width > 900) return 5;
-                                        if (width > 600) return 4;
-                                        return 3;
-                                      }
-                                      final crossAxisCount = getCrossAxisCount(constraints.maxWidth);
-                                      return GridView.builder(
-                                        padding: const EdgeInsets.all(8),
-                                        gridDelegate:
-                                            SliverGridDelegateWithFixedCrossAxisCount(
-                                          crossAxisCount: crossAxisCount,
-                                          crossAxisSpacing: 4,
-                                          mainAxisSpacing: 4,
-                                        ),
-                                        itemCount: _galleryItems.length,
-                                        itemBuilder: (context, index) {
-                                          final item = _galleryItems[index];
-                                          return GestureDetector(
-                                            onTap: () {
-                                              // Show gallery item details
-                                              // _showGalleryItemDetails(item);
-                                            },
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                                image: DecorationImage(
-                                                  image:
-                                                      CachedNetworkImageProvider(
-                                                    item['gallery_image_url'] ??
-                                                        '',
-                                                  ),
-                                                  fit: BoxFit.cover,
-                                                ),
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      );
-                                    }),
+                                    _galleryItems.isEmpty
+                                        ? Center(
+                                            child: Text('No gallery items',
+                                                style: TextStyle(
+                                                    color: bgTextColor)))
+                                        : LayoutBuilder(
+                                            builder: (context, constraints) {
+                                            int getCrossAxisCount(
+                                                double width) {
+                                              if (width > 1200) return 6;
+                                              if (width > 900) return 5;
+                                              if (width > 600) return 4;
+                                              return 3;
+                                            }
 
-                              // Services Tab
-                              _serviceItems.isEmpty
-                                  ? Center(
-                                      child: Text('No services',
-                                          style: TextStyle(color: bgTextColor)))
-                                  : ListView.builder(
-                                      padding: const EdgeInsets.all(8),
-                                      itemCount: _serviceItems.length,
-                                      itemBuilder: (context, index) {
-                                        final service = _serviceItems[index];
-                                        return Card(
-                                          margin:
-                                              const EdgeInsets.only(bottom: 8),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                          ),
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(16.0),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    Text(
-                                                      service['service_title'] ??
-                                                          'No Title',
-                                                      style: const TextStyle(
-                                                        fontSize: 18,
-                                                        fontWeight:
-                                                            FontWeight.bold,
+                                            final crossAxisCount =
+                                                getCrossAxisCount(
+                                                    constraints.maxWidth);
+                                            return GridView.builder(
+                                              padding: const EdgeInsets.all(8),
+                                              gridDelegate:
+                                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                                crossAxisCount: crossAxisCount,
+                                                crossAxisSpacing: 4,
+                                                mainAxisSpacing: 4,
+                                              ),
+                                              itemCount: _galleryItems.length,
+                                              itemBuilder: (context, index) {
+                                                final item =
+                                                    _galleryItems[index];
+                                                return GestureDetector(
+                                                  onTap: () {
+                                                    // Show gallery item details
+                                                    // _showGalleryItemDetails(item);
+                                                  },
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              8),
+                                                      image: DecorationImage(
+                                                        image:
+                                                            CachedNetworkImageProvider(
+                                                          item['gallery_image_url'] ??
+                                                              '',
+                                                        ),
+                                                        fit: BoxFit.cover,
                                                       ),
                                                     ),
-                                                    Chip(
-                                                      label: Text(
-                                                        '\$${service['service_price'] ?? 0}',
-                                                        style: const TextStyle(
-                                                          color: Colors.white,
-                                                          fontWeight:
-                                                              FontWeight.bold,
+                                                  ),
+                                                );
+                                              },
+                                            );
+                                          }),
+
+                                    // Services Tab
+                                    _serviceItems.isEmpty
+                                        ? Center(
+                                            child: Text('No services',
+                                                style: TextStyle(
+                                                    color: bgTextColor)))
+                                        : ListView.builder(
+                                            padding: const EdgeInsets.all(8),
+                                            itemCount: _serviceItems.length,
+                                            itemBuilder: (context, index) {
+                                              final service =
+                                                  _serviceItems[index];
+                                              return Card(
+                                                margin: const EdgeInsets.only(
+                                                    bottom: 8),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                ),
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(
+                                                      16.0),
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Text(
+                                                            service['service_title'] ??
+                                                                'No Title',
+                                                            style:
+                                                                const TextStyle(
+                                                              fontSize: 18,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            ),
+                                                          ),
+                                                          Chip(
+                                                            label: Text(
+                                                              '\$${service['service_price'] ?? 0}',
+                                                              style:
+                                                                  const TextStyle(
+                                                                color: Colors
+                                                                    .white,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              ),
+                                                            ),
+                                                            backgroundColor:
+                                                                buttonColor,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      if (service[
+                                                              'service_category'] !=
+                                                          null)
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .only(
+                                                                  top: 4.0),
+                                                          child: Text(
+                                                            service[
+                                                                'service_category'],
+                                                            style: TextStyle(
+                                                              color: Colors
+                                                                  .grey[600],
+                                                              fontSize: 14,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      if (service[
+                                                              'service_description'] !=
+                                                          null)
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .only(
+                                                                  top: 8.0),
+                                                          child: Text(service[
+                                                              'service_description']),
+                                                        ),
+                                                      const SizedBox(
+                                                          height: 16),
+                                                      Center(
+                                                        child: ElevatedButton(
+                                                          onPressed: () {
+                                                            // Handle service booking
+                                                            ScaffoldMessenger
+                                                                    .of(context)
+                                                                .showSnackBar(
+                                                              const SnackBar(
+                                                                  content: Text(
+                                                                      'Booking functionality to be implemented')),
+                                                            );
+                                                          },
+                                                          style: ElevatedButton
+                                                              .styleFrom(
+                                                            backgroundColor:
+                                                                buttonColor,
+                                                            foregroundColor:
+                                                                buttonTextColor,
+                                                          ),
+                                                          child: const Text(
+                                                              'Book Now'),
                                                         ),
                                                       ),
-                                                      backgroundColor:
-                                                          buttonColor,
-                                                    ),
-                                                  ],
-                                                ),
-                                                if (service[
-                                                        'service_category'] !=
-                                                    null)
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            top: 4.0),
-                                                    child: Text(
-                                                      service[
-                                                          'service_category'],
-                                                      style: TextStyle(
-                                                        color: Colors.grey[600],
-                                                        fontSize: 14,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                if (service[
-                                                        'service_description'] !=
-                                                    null)
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            top: 8.0),
-                                                    child: Text(service[
-                                                        'service_description']),
-                                                  ),
-                                                const SizedBox(height: 16),
-                                                Center(
-                                                  child: ElevatedButton(
-                                                    onPressed: () {
-                                                      // Handle service booking
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                        const SnackBar(
-                                                            content: Text(
-                                                                'Booking functionality to be implemented')),
-                                                      );
-                                                    },
-                                                    style: ElevatedButton
-                                                        .styleFrom(
-                                                      backgroundColor:
-                                                          buttonColor,
-                                                      foregroundColor:
-                                                          buttonTextColor,
-                                                    ),
-                                                    child:
-                                                        const Text('Book Now'),
+                                                    ],
                                                   ),
                                                 ),
-                                              ],
-                                            ),
+                                              );
+                                            },
                                           ),
-                                        );
-                                      },
-                                    ),
-                            ],
-                          ),
+                                  ],
+                                ),
                         ),
                       ],
                     ),
@@ -2529,7 +2666,8 @@ class MarketSearchResultsWidget extends StatefulWidget {
   });
 
   @override
-  State<MarketSearchResultsWidget> createState() => _MarketSearchResultsWidgetState();
+  State<MarketSearchResultsWidget> createState() =>
+      _MarketSearchResultsWidgetState();
 }
 
 class _MarketSearchResultsWidgetState extends State<MarketSearchResultsWidget> {
@@ -2585,20 +2723,21 @@ class _MarketSearchResultsWidgetState extends State<MarketSearchResultsWidget> {
 
     final trimmed = query.trim();
     try {
-      var queryBuilder = _supabase
-          .from('gallery')
-          .select('*, profile(name, verified, profile_image_url, learning_day, avatar_config)');
+      var queryBuilder = _supabase.from('gallery').select(
+          '*, profile(name, verified, profile_image_url, learning_day, avatar_config)');
 
       List<dynamic> response;
       if (trimmed.isEmpty) {
         response = await queryBuilder
             .order('created_at', ascending: false)
-            .range(_currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
+            .range(
+                _currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
       } else {
         response = await queryBuilder
             .ilike('title', '%$trimmed%')
             .order('created_at', ascending: false)
-            .range(_currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
+            .range(
+                _currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
       }
 
       if (mounted) {
@@ -2628,20 +2767,21 @@ class _MarketSearchResultsWidgetState extends State<MarketSearchResultsWidget> {
 
     final trimmed = _currentQuery.trim();
     try {
-      var queryBuilder = _supabase
-          .from('gallery')
-          .select('*, profile(name, verified, profile_image_url, learning_day, avatar_config)');
+      var queryBuilder = _supabase.from('gallery').select(
+          '*, profile(name, verified, profile_image_url, learning_day, avatar_config)');
 
       List<dynamic> response;
       if (trimmed.isEmpty) {
         response = await queryBuilder
             .order('created_at', ascending: false)
-            .range(_currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
+            .range(
+                _currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
       } else {
         response = await queryBuilder
             .ilike('title', '%$trimmed%')
             .order('created_at', ascending: false)
-            .range(_currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
+            .range(
+                _currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
       }
 
       if (mounted) {
@@ -2697,7 +2837,8 @@ class _MarketSearchResultsWidgetState extends State<MarketSearchResultsWidget> {
         color: const Color(0xFFFFFC00),
         backgroundColor: const Color(0xFF161822),
         child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+          physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics()),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 80, horizontal: 24),
             child: Center(
@@ -2711,7 +2852,8 @@ class _MarketSearchResultsWidgetState extends State<MarketSearchResultsWidget> {
                       color: Colors.white.withValues(alpha: 0.04),
                       border: Border.all(color: Colors.white12, width: 0.8),
                     ),
-                    child: const Icon(Icons.storefront_outlined, color: Colors.white38, size: 36),
+                    child: const Icon(Icons.storefront_outlined,
+                        color: Colors.white38, size: 36),
                   ),
                   const SizedBox(height: 14),
                   Text(
@@ -2741,7 +2883,8 @@ class _MarketSearchResultsWidgetState extends State<MarketSearchResultsWidget> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
-        final int cols = width >= 1200 ? 6 : (width >= 900 ? 5 : (width >= 600 ? 4 : 3));
+        final int cols =
+            width >= 1200 ? 6 : (width >= 900 ? 5 : (width >= 600 ? 4 : 3));
 
         return RefreshIndicator(
           onRefresh: () => _performMarketSearch(_currentQuery),
@@ -2750,7 +2893,8 @@ class _MarketSearchResultsWidgetState extends State<MarketSearchResultsWidget> {
           child: GridView.builder(
             controller: _scrollController,
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+            physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics()),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: cols,
               crossAxisSpacing: 8,
@@ -2766,24 +2910,30 @@ class _MarketSearchResultsWidgetState extends State<MarketSearchResultsWidget> {
                     child: SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(color: Color(0xFFFFFC00), strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                          color: Color(0xFFFFFC00), strokeWidth: 2),
                     ),
                   ),
                 );
               }
 
               final item = _marketResults[index];
-              final accentColor = _cardAccentPalette[index % _cardAccentPalette.length];
+              final accentColor =
+                  _cardAccentPalette[index % _cardAccentPalette.length];
               final imageUrl = item['gallery_image_url'] ?? item['image_url'];
               final title = item['gallery_title'] ?? item['title'] ?? 'Product';
               final price = item['gallery_price'] ?? item['price'];
               final profile = item['profile'] as Map<String, dynamic>?;
               final sellerName = profile?['name'] ?? item['name'] ?? 'Creator';
-              final sellerDay = (profile?['learning_day'] as num?)?.toInt() ?? 1;
+              final sellerDay =
+                  (profile?['learning_day'] as num?)?.toInt() ?? 1;
 
-              final VectorAvatarConfig sellerAvatar = (profile?['avatar_config'] != null)
-                  ? VectorAvatarConfig.fromMap(Map<String, dynamic>.from(profile!['avatar_config']))
-                  : VectorAvatarConfig.getEvolutionAvatarForStage(sellerDay);
+              final VectorAvatarConfig sellerAvatar =
+                  (profile?['avatar_config'] != null)
+                      ? VectorAvatarConfig.fromMap(
+                          Map<String, dynamic>.from(profile!['avatar_config']))
+                      : VectorAvatarConfig.getEvolutionAvatarForStage(
+                          sellerDay);
 
               return GestureDetector(
                 onTap: () {
@@ -2816,7 +2966,8 @@ class _MarketSearchResultsWidgetState extends State<MarketSearchResultsWidget> {
                         child: Stack(
                           fit: StackFit.expand,
                           children: [
-                            if (imageUrl != null && imageUrl.toString().isNotEmpty)
+                            if (imageUrl != null &&
+                                imageUrl.toString().isNotEmpty)
                               CachedNetworkImage(
                                 imageUrl: imageUrl.toString(),
                                 fit: BoxFit.cover,
@@ -2826,7 +2977,8 @@ class _MarketSearchResultsWidgetState extends State<MarketSearchResultsWidget> {
                                     child: Icon(
                                       Icons.image_outlined,
                                       size: 20,
-                                      color: accentColor.withValues(alpha: 0.35),
+                                      color:
+                                          accentColor.withValues(alpha: 0.35),
                                     ),
                                   ),
                                 ),
@@ -2857,12 +3009,14 @@ class _MarketSearchResultsWidgetState extends State<MarketSearchResultsWidget> {
                                 top: 5,
                                 right: 5,
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 5, vertical: 2),
                                   decoration: BoxDecoration(
                                     color: Colors.black.withValues(alpha: 0.82),
                                     borderRadius: BorderRadius.circular(6),
                                     border: Border.all(
-                                      color: accentColor.withValues(alpha: 0.55),
+                                      color:
+                                          accentColor.withValues(alpha: 0.55),
                                       width: 0.6,
                                     ),
                                   ),
@@ -2934,4 +3088,3 @@ class _MarketSearchResultsWidgetState extends State<MarketSearchResultsWidget> {
     );
   }
 }
-

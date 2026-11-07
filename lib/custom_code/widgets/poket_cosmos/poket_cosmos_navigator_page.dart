@@ -20,6 +20,10 @@ import '../../services/pocket_game_audio_service.dart';
 class PoketCosmosNavigatorPage extends StatefulWidget {
   const PoketCosmosNavigatorPage({super.key});
 
+  /// Static accessor to all scientific cosmos planets
+  static List<PoketPlanet> buildCosmosPlanets() =>
+      _PoketCosmosNavigatorPageState._buildCosmosPlanets();
+
   @override
   State<PoketCosmosNavigatorPage> createState() =>
       _PoketCosmosNavigatorPageState();
