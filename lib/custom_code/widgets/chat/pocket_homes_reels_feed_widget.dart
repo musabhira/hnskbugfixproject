@@ -2083,48 +2083,11 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color:
-                              const Color(0xFFFFD700).withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                              color: const Color(0xFFFFD700)
-                                  .withValues(alpha: 0.4)),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text('SPONSORED',
-                                style: TextStyle(
-                                    color: Color(0xFFFFD700),
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 1.1)),
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 4, vertical: 1),
-                              decoration: BoxDecoration(
-                                  color: Colors.white24,
-                                  borderRadius: BorderRadius.circular(3)),
-                              child: const Text('Ad',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.bold)),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
                       const PocketNativeAdCard(
                         placement: PocketAdPlacement.reels,
                         margin: EdgeInsets.symmetric(horizontal: 16),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 16),
                       TextButton.icon(
                         onPressed: _scrollToNextReel,
                         icon: const Icon(Icons.arrow_downward_rounded,
