@@ -914,60 +914,86 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             onPressed: () => _showHubsQuickLauncher(context),
           ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: const Color(0xFFFFFC00),
-          unselectedLabelColor: Colors.grey,
-          isScrollable: true,
-          indicatorColor: const Color(0xFFFFFC00),
-          indicatorWeight: 3,
-          tabs: const [
-            Tab(
-                icon: Icon(Icons.account_balance_rounded),
-                text: 'President Desk 🏛️'),
-            Tab(
-                icon: Icon(Icons.pets_rounded),
-                text: 'Kids Panel (Lion Desk 🦁)'),
-            Tab(icon: Icon(Icons.dashboard_outlined), text: 'Insight'),
-            Tab(icon: Icon(Icons.people_outline), text: 'Users'),
-            Tab(icon: Icon(Icons.school_outlined), text: 'Requests'),
-            Tab(icon: Icon(Icons.report_problem_outlined), text: 'Reports'),
-            Tab(icon: Icon(Icons.security_outlined), text: 'Auth'),
-            Tab(icon: Icon(Icons.system_update_outlined), text: 'Update'),
-            Tab(icon: Icon(Icons.build_circle_outlined), text: 'Tools'),
-            Tab(
-                icon: Icon(Icons.collections_bookmark_outlined),
-                text: 'E-Learning'),
-            Tab(icon: Icon(Icons.forum_outlined), text: 'English Hub'),
-            Tab(
-                icon: Icon(Icons.ondemand_video_rounded),
-                text: 'Media Tasks'),
-            Tab(icon: Icon(Icons.smart_toy_outlined), text: 'Robots'),
-            Tab(
-                icon: Icon(Icons.monetization_on_outlined),
-                text: 'Monetization'),
-            Tab(
-                icon: Icon(Icons.track_changes_rounded),
-                text: '🎯 Targets & Curricula'),
-            Tab(
-                icon: Icon(Icons.sports_esports_rounded),
-                text: '🎮 Games Hub'),
-            Tab(
-                icon: Icon(Icons.published_with_changes_rounded),
-                text: '🛡️ Store Review & Mode Guard'),
-            Tab(
-                icon: Icon(Icons.workspace_premium_rounded),
-                text: '📜 Certificates'),
-            Tab(
-                icon: Icon(Icons.stars_rounded),
-                text: '👑 Premium Users'),
-            Tab(
-                icon: Icon(Icons.ads_click_rounded),
-                text: 'Ads 📺'),
-            Tab(
-                icon: Icon(Icons.public_rounded),
-                text: 'Cosmos 🌌'),
-          ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(98),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 1. Quick Category High-Level Filter Bar (Desks, Citizens, Cosmos, Learning, Ads/Controls)
+              Container(
+                height: 42,
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: const BoxDecoration(
+                  color: Color(0xFF0F172A),
+                  border: Border(bottom: BorderSide(color: Colors.white12, width: 0.6)),
+                ),
+                child: AnimatedBuilder(
+                  animation: _tabController,
+                  builder: (context, _) {
+                    final activeCat = _getCategoryForTabIndex(_tabController.index);
+                    return SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      child: Row(
+                        children: [
+                          _buildCategoryPill('🏛️ Desks', 1, activeCat, () => _tabController.animateTo(0)),
+                          _buildCategoryPill('👥 Citizens', 2, activeCat, () => _tabController.animateTo(3)),
+                          _buildCategoryPill('🌌 Cosmos', 3, activeCat, () => _tabController.animateTo(20)),
+                          _buildCategoryPill('📚 Learning', 4, activeCat, () => _tabController.animateTo(9)),
+                          _buildCategoryPill('⚙️ Ads & Controls', 5, activeCat, () => _tabController.animateTo(19)),
+                          _buildCategoryPill('⭐ All Tools (21)', 0, activeCat, () => _showHubsQuickLauncher(context)),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+              // 2. Modern Segmented TabBar
+              Container(
+                color: const Color(0xFF0A0F1D),
+                child: TabBar(
+                  controller: _tabController,
+                  labelColor: Colors.black,
+                  unselectedLabelColor: Colors.white70,
+                  isScrollable: true,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  indicator: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: const Color(0xFFFFD700),
+                  ),
+                  indicatorPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                  dividerColor: Colors.transparent,
+                  labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
+                  unselectedLabelStyle: GoogleFonts.outfit(fontWeight: FontWeight.w500, fontSize: 11.5),
+                  tabs: const [
+                    Tab(icon: Icon(Icons.account_balance_rounded, size: 16), text: 'President Desk 🏛️'),
+                    Tab(icon: Icon(Icons.pets_rounded, size: 16), text: 'Lion Desk 🦁'),
+                    Tab(icon: Icon(Icons.dashboard_outlined, size: 16), text: 'Insight 📊'),
+                    Tab(icon: Icon(Icons.people_outline, size: 16), text: 'Users 👥'),
+                    Tab(icon: Icon(Icons.school_outlined, size: 16), text: 'Requests 📬'),
+                    Tab(icon: Icon(Icons.report_problem_outlined, size: 16), text: 'Reports 🚨'),
+                    Tab(icon: Icon(Icons.security_outlined, size: 16), text: 'Auth 🛡️'),
+                    Tab(icon: Icon(Icons.system_update_outlined, size: 16), text: 'Update 🚀'),
+                    Tab(icon: Icon(Icons.build_circle_outlined, size: 16), text: 'Tools 🛠️'),
+                    Tab(icon: Icon(Icons.collections_bookmark_outlined, size: 16), text: 'E-Learning 📖'),
+                    Tab(icon: Icon(Icons.forum_outlined, size: 16), text: 'English Hub 💬'),
+                    Tab(icon: Icon(Icons.ondemand_video_rounded, size: 16), text: 'Media Tasks 📺'),
+                    Tab(icon: Icon(Icons.smart_toy_outlined, size: 16), text: 'Robots 🤖'),
+                    Tab(icon: Icon(Icons.monetization_on_outlined, size: 16), text: 'Monetization 💰'),
+                    Tab(icon: Icon(Icons.track_changes_rounded, size: 16), text: 'Targets 🎯'),
+                    Tab(icon: Icon(Icons.sports_esports_rounded, size: 16), text: 'Games Hub 🎮'),
+                    Tab(icon: Icon(Icons.published_with_changes_rounded, size: 16), text: 'Store Review 🛡️'),
+                    Tab(icon: Icon(Icons.workspace_premium_rounded, size: 16), text: 'Certificates 📜'),
+                    Tab(icon: Icon(Icons.stars_rounded, size: 16), text: 'VIP Users 👑'),
+                    Tab(icon: Icon(Icons.ads_click_rounded, size: 16), text: 'AdMob & Ads 📺'),
+                    Tab(icon: Icon(Icons.public_rounded, size: 16), text: 'Cosmos 🌌'),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       body: TabBarView(
@@ -997,6 +1023,43 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         ],
       ),
     );
+  }
+
+  Widget _buildCategoryPill(String label, int catId, int activeCat, VoidCallback onTap) {
+    final isSelected = activeCat == catId;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFFFD700) : const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? const Color(0xFFFFD700) : Colors.white12,
+            width: 1,
+          ),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: GoogleFonts.outfit(
+              color: isSelected ? Colors.black : Colors.white70,
+              fontSize: 11.5,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  int _getCategoryForTabIndex(int index) {
+    if (index == 0 || index == 1) return 1; // Desks
+    if (index == 3 || index == 4 || index == 5 || index == 6 || index == 18) return 2; // Citizens
+    if (index == 20) return 3; // Cosmos
+    if (index == 9 || index == 10 || index == 11 || index == 14 || index == 15 || index == 17) return 4; // Learning
+    return 5; // Ads & Controls (2, 7, 8, 12, 13, 16, 19)
   }
 
   /// 🧭 Quick Hubs Launcher Modal: Solves tab clutter and confusion with a clean 6-Hub category menu
@@ -10929,35 +10992,51 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                     final inq = filtered[index];
                     final isPending = inq['status'] == 'pending';
                     final type = inq['report_type'] ?? 'inquiry';
-                    final citizenName = (inq['user_name'] != null && inq['user_name'].toString().isNotEmpty && inq['user_name'] != 'Citizen') ? inq['user_name'] : ContactsNameService().getDisplayName(userId: inq['user_id']?.toString() ?? '', fallbackName: 'Learner');
+                    final citizenName = (inq['user_name'] != null && inq['user_name'].toString().isNotEmpty && inq['user_name'] != 'Citizen')
+                        ? inq['user_name']
+                        : ContactsNameService().getDisplayName(userId: inq['user_id']?.toString() ?? '', fallbackName: 'Learner');
                     final avatarUrl = inq['user_avatar'];
                     final day = inq['learning_day'] ?? 1;
                     final level = inq['english_level'];
+                    final email = (inq['user_email'] ?? '').toString().trim();
+                    final phone = (inq['user_phone'] ?? '').toString().trim();
+                    final planet = (inq['planet'] ?? 'Earth').toString().trim();
+                    final plot = (inq['plot'] ?? '').toString().trim();
+                    final uid = (inq['user_id'] ?? '').toString();
+                    final createdAt = inq['created_at'] != null ? inq['created_at'].toString().split('T').first : '';
 
                     return InkWell(
                       onTap: () => _openPresidentChatModal(inq),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(16),
                       child: Container(
-                        margin: const EdgeInsets.only(bottom: 10),
+                        margin: const EdgeInsets.only(bottom: 12),
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: const Color(0xFF131B26),
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: isPending
-                                ? const Color(0xFFFF9100).withValues(alpha: 0.45)
-                                : Colors.white.withValues(alpha: 0.08),
-                            width: 1,
+                                ? const Color(0xFFFF9100).withValues(alpha: 0.5)
+                                : Colors.white.withValues(alpha: 0.1),
+                            width: 1.2,
                           ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.3),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // 1. Citizen Profile & Identification Header
                             Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 GestureDetector(
                                   onTap: () {
-                                    final uid = (inq['user_id'] ?? '').toString();
                                     if (uid.isNotEmpty) {
                                       Navigator.push(
                                         context,
@@ -10971,7 +11050,7 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                     alignment: Alignment.bottomRight,
                                     children: [
                                       CircleAvatar(
-                                        radius: 20,
+                                        radius: 22,
                                         backgroundColor: const Color(0xFF1E293B),
                                         backgroundImage: (avatarUrl != null &&
                                                 avatarUrl.toString().isNotEmpty)
@@ -11007,28 +11086,46 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Row(
+                                      // Citizen Name & Planet Badge
+                                      Wrap(
+                                        spacing: 6,
+                                        runSpacing: 4,
+                                        crossAxisAlignment: WrapCrossAlignment.center,
                                         children: [
-                                          Flexible(
-                                            child: Text(
-                                              citizenName,
-                                              style: GoogleFonts.outfit(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14.5,
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
+                                          Text(
+                                            citizenName,
+                                            style: GoogleFonts.outfit(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 15,
                                             ),
                                           ),
-                                          const SizedBox(width: 6),
+                                          // Planet Badge
                                           Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 6, vertical: 1.5),
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFFFFD700)
-                                                  .withValues(alpha: 0.15),
-                                              borderRadius:
-                                                  BorderRadius.circular(6),
+                                              color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                                              borderRadius: BorderRadius.circular(6),
+                                              border: Border.all(
+                                                color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
+                                                width: 0.8,
+                                              ),
+                                            ),
+                                            child: Text(
+                                              '🪐 $planet${plot.isNotEmpty ? ' • $plot' : ''}',
+                                              style: const TextStyle(
+                                                color: Color(0xFF38BDF8),
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          // Learning Day
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                                              borderRadius: BorderRadius.circular(6),
                                             ),
                                             child: Text(
                                               'Day $day',
@@ -11039,18 +11136,12 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                               ),
                                             ),
                                           ),
-                                          if (level != null) ...[
-                                            const SizedBox(width: 4),
+                                          if (level != null)
                                             Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 5,
-                                                      vertical: 1.5),
+                                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                                               decoration: BoxDecoration(
-                                                color: const Color(0xFF3B82F6)
-                                                    .withValues(alpha: 0.15),
-                                                borderRadius:
-                                                    BorderRadius.circular(6),
+                                                color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                                                borderRadius: BorderRadius.circular(6),
                                               ),
                                               child: Text(
                                                 '$level',
@@ -11061,56 +11152,116 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                                 ),
                                               ),
                                             ),
-                                          ],
                                         ],
                                       ),
-                                      Text(
-                                        'ID: ${inq['user_id']}',
-                                        style: GoogleFonts.inter(
-                                          color: Colors.white38,
-                                          fontSize: 10,
+                                      const SizedBox(height: 3),
+
+                                      // Email & Phone info
+                                      if (email.isNotEmpty)
+                                        Row(
+                                          children: [
+                                            const Icon(Icons.email_outlined, color: Colors.white54, size: 11),
+                                            const SizedBox(width: 4),
+                                            Flexible(
+                                              child: Text(
+                                                email,
+                                                style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                        overflow: TextOverflow.ellipsis,
+                                      if (phone.isNotEmpty)
+                                        Row(
+                                          children: [
+                                            const Icon(Icons.phone_outlined, color: Colors.white54, size: 11),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              phone,
+                                              style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                                            ),
+                                          ],
+                                        ),
+
+                                      // ID with Copy Button
+                                      Row(
+                                        children: [
+                                          Text(
+                                            'ID: ${uid.length > 10 ? '${uid.substring(0, 10)}...' : uid}',
+                                            style: GoogleFonts.inter(
+                                              color: Colors.white38,
+                                              fontSize: 10,
+                                            ),
+                                          ),
+                                          InkWell(
+                                            onTap: () {
+                                              Clipboard.setData(ClipboardData(text: uid));
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text('Citizen ID copied! 📋'),
+                                                  duration: Duration(milliseconds: 1000),
+                                                ),
+                                              );
+                                            },
+                                            child: const Padding(
+                                              padding: EdgeInsets.symmetric(horizontal: 5),
+                                              child: Icon(Icons.copy_rounded, color: Colors.white38, size: 11),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
                                 ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 7, vertical: 2.5),
-                                  decoration: BoxDecoration(
-                                    color: isPending
-                                        ? const Color(0xFFFF9100)
-                                            .withValues(alpha: 0.15)
-                                        : const Color(0xFF10B981)
-                                            .withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(
-                                      color: isPending
-                                          ? const Color(0xFFFF9100)
-                                          : const Color(0xFF10B981),
-                                      width: 0.8,
+                                // Status & Date
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: isPending
+                                            ? const Color(0xFFFF9100).withValues(alpha: 0.15)
+                                            : const Color(0xFF10B981).withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(
+                                          color: isPending
+                                              ? const Color(0xFFFF9100)
+                                              : const Color(0xFF10B981),
+                                          width: 0.8,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        isPending ? 'Pending ⏳' : 'Replied ✅',
+                                        style: TextStyle(
+                                          color: isPending
+                                              ? const Color(0xFFFF9100)
+                                              : const Color(0xFF10B981),
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                  child: Text(
-                                    isPending ? 'Pending ⏳' : 'Replied ✅',
-                                    style: TextStyle(
-                                      color: isPending
-                                          ? const Color(0xFFFF9100)
-                                          : const Color(0xFF10B981),
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                                    if (createdAt.isNotEmpty) ...[
+                                      const SizedBox(height: 3),
+                                      Text(
+                                        createdAt,
+                                        style: GoogleFonts.inter(color: Colors.white38, fontSize: 9.5),
+                                      ),
+                                    ],
+                                  ],
                                 ),
                               ],
                             ),
                             const SizedBox(height: 10),
+
+                            // 2. Message Content Bubble
                             Container(
-                              padding: const EdgeInsets.all(10),
+                              padding: const EdgeInsets.all(11),
                               decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.35),
-                                borderRadius: BorderRadius.circular(8),
+                                color: Colors.black.withValues(alpha: 0.4),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: Colors.white10, width: 0.6),
                               ),
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -11120,8 +11271,9 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                     child: Text(
                                       inq['last_message'] ?? '',
                                       style: GoogleFonts.inter(
-                                        color: Colors.white.withValues(alpha: 0.88),
+                                        color: Colors.white.withValues(alpha: 0.92),
                                         fontSize: 12.5,
+                                        height: 1.35,
                                       ),
                                     ),
                                   ),
@@ -11129,16 +11281,16 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                               ),
                             ),
                             const SizedBox(height: 10),
+
+                            // 3. Action Buttons Row
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 6, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFFFD700)
-                                        .withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(4),
+                                    color: const Color(0xFFFFD700).withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
                                     type.toString().toUpperCase(),
@@ -11149,24 +11301,44 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                     ),
                                   ),
                                 ),
-                                ElevatedButton.icon(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFFFFD700),
-                                    foregroundColor: Colors.black,
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 6),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
+                                Row(
+                                  children: [
+                                    OutlinedButton.icon(
+                                      style: OutlinedButton.styleFrom(
+                                        side: const BorderSide(color: Colors.white24, width: 1),
+                                        foregroundColor: Colors.white70,
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      ),
+                                      icon: const Icon(Icons.person_search_rounded, size: 13),
+                                      label: const Text('Profile 👤', style: TextStyle(fontSize: 10.5)),
+                                      onPressed: () {
+                                        if (uid.isNotEmpty) {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => VerfiedSwitchPage(userId: uid),
+                                            ),
+                                          );
+                                        }
+                                      },
                                     ),
-                                  ),
-                                  icon: const Icon(Icons.forum_rounded, size: 14),
-                                  label: const Text(
-                                    'Chat as President 👑',
-                                    style: TextStyle(
-                                        fontSize: 11, fontWeight: FontWeight.bold),
-                                  ),
-                                  onPressed: () =>
-                                      _openPresidentChatModal(inq),
+                                    const SizedBox(width: 8),
+                                    ElevatedButton.icon(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFFFFD700),
+                                        foregroundColor: Colors.black,
+                                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      ),
+                                      icon: const Icon(Icons.forum_rounded, size: 14),
+                                      label: const Text(
+                                        'Chat as President 👑',
+                                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                      ),
+                                      onPressed: () => _openPresidentChatModal(inq),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -11208,10 +11380,18 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
   /// Live Two-Way Chat Sheet with Citizen
   void _openPresidentChatModal(Map<String, dynamic> inquiry) {
     final targetId = inquiry['user_id']?.toString() ?? '';
-    final name = inquiry['user_name'] != null && inquiry['user_name'].toString().isNotEmpty && inquiry['user_name'] != 'Citizen' ? inquiry['user_name'] : (ContactsNameService().getDisplayName(userId: targetId, fallbackName: 'Learner').isNotEmpty ? ContactsNameService().getDisplayName(userId: targetId, fallbackName: 'Learner') : 'Learner');
+    final name = inquiry['user_name'] != null && inquiry['user_name'].toString().isNotEmpty && inquiry['user_name'] != 'Citizen'
+        ? inquiry['user_name']
+        : (ContactsNameService().getDisplayName(userId: targetId, fallbackName: 'Learner').isNotEmpty
+            ? ContactsNameService().getDisplayName(userId: targetId, fallbackName: 'Learner')
+            : 'Learner');
     final avatar = inquiry['user_avatar'];
     final day = inquiry['learning_day'] ?? 1;
     final level = inquiry['english_level'];
+    final email = (inquiry['user_email'] ?? '').toString().trim();
+    final phone = (inquiry['user_phone'] ?? '').toString().trim();
+    final planet = (inquiry['planet'] ?? 'Earth').toString().trim();
+    final plot = (inquiry['plot'] ?? '').toString().trim();
     final replyController = TextEditingController();
     final scrollController = ScrollController();
 
@@ -11402,13 +11582,37 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                 ],
                               ],
                             ),
-                            Text(
-                              'ID: $targetId',
-                              style: GoogleFonts.inter(
-                                color: Colors.white38,
-                                fontSize: 10.5,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+                            const SizedBox(height: 2),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 2,
+                              children: [
+                                Text(
+                                  '🪐 $planet${plot.isNotEmpty ? ' • $plot' : ''}',
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFF38BDF8),
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                if (email.isNotEmpty)
+                                  Text(
+                                    '📧 $email',
+                                    style: GoogleFonts.inter(color: Colors.white70, fontSize: 10.5),
+                                  ),
+                                if (phone.isNotEmpty)
+                                  Text(
+                                    '📞 $phone',
+                                    style: GoogleFonts.inter(color: Colors.white70, fontSize: 10.5),
+                                  ),
+                                Text(
+                                  'ID: ${targetId.length > 8 ? '${targetId.substring(0, 8)}...' : targetId}',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white38,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),

@@ -822,7 +822,7 @@ class PocketPresidentService {
           .order('created_at', ascending: false)
           .limit(100);
 
-      // Collect all reporter IDs to batch fetch real citizen profiles
+      // Collect all reporter IDs to batch fetch real citizen profiles & credentials
       final List<String> reporterIds = [];
       for (var row in res) {
         final rId = (row['reporter_id'] ?? row['user_id'] ?? '').toString();
@@ -830,18 +830,40 @@ class PocketPresidentService {
       }
 
       Map<String, Map<String, dynamic>> profileMap = {};
+      Map<String, Map<String, dynamic>> userAuthMap = {};
       if (reporterIds.isNotEmpty) {
+        final uniqueIds = reporterIds.toSet().toList();
         try {
-          final profs = await supabase
+          final profs1 = await supabase
               .from('profile')
-              .select('id, user_id, name, first_name, username, profile_image_url, learning_day, english_level')
-              .inFilter('user_id', reporterIds.toSet().toList());
-          for (var p in profs) {
+              .select('id, user_id, name, display_name, first_name, username, profile_image_url, learning_day, day, english_level, country, city, bio, phone_no')
+              .inFilter('user_id', uniqueIds);
+          for (var p in profs1) {
+            if (p['user_id'] != null) profileMap[p['user_id'].toString()] = p;
+            if (p['id'] != null) profileMap[p['id'].toString()] = p;
+          }
+          final profs2 = await supabase
+              .from('profile')
+              .select('id, user_id, name, display_name, first_name, username, profile_image_url, learning_day, day, english_level, country, city, bio, phone_no')
+              .inFilter('id', uniqueIds);
+          for (var p in profs2) {
             if (p['user_id'] != null) profileMap[p['user_id'].toString()] = p;
             if (p['id'] != null) profileMap[p['id'].toString()] = p;
           }
         } catch (e) {
           debugPrint('Error batch-fetching citizen profiles: $e');
+        }
+
+        try {
+          final usersRes = await supabase
+              .from('users')
+              .select('id, email, phone_no, role')
+              .inFilter('id', uniqueIds);
+          for (var u in usersRes) {
+            if (u['id'] != null) userAuthMap[u['id'].toString()] = u;
+          }
+        } catch (e) {
+          debugPrint('Error batch-fetching users auth credentials: $e');
         }
       }
 
@@ -857,27 +879,43 @@ class PocketPresidentService {
         final desc = row['description'] ?? row['reason'] ?? '';
         final reporterId = (row['reporter_id'] ?? row['user_id'] ?? '').toString();
         final prof = profileMap[reporterId];
+        final userAuth = userAuthMap[reporterId];
 
         String realName = '';
         if (prof != null) {
-          final n = (prof['name'] ?? prof['username'] ?? prof['first_name'] ?? '').toString().trim();
-          if (n.isNotEmpty && n != 'Citizen') realName = n;
+          final n = (prof['display_name'] ?? prof['name'] ?? prof['username'] ?? prof['first_name'] ?? '').toString().trim();
+          if (n.isNotEmpty && n != 'Citizen' && n != 'User') realName = n;
         }
         if (realName.isEmpty) {
           final en = (extra['user_name'] ?? '').toString().trim();
-          if (en.isNotEmpty && en != 'Citizen') realName = en;
+          if (en.isNotEmpty && en != 'Citizen' && en != 'User') realName = en;
+        }
+        if (realName.isEmpty && userAuth?['email'] != null) {
+          final em = userAuth!['email'].toString();
+          realName = em.contains('@') ? em.split('@').first : em;
         }
         if (realName.isEmpty || realName == 'Citizen' || realName.startsWith('Citizen (')) {
           final contactName = ContactsNameService().getDisplayName(userId: reporterId, fallbackName: 'Learner');
           if (contactName.isNotEmpty && contactName != 'User' && contactName != 'Citizen') {
             realName = contactName;
           } else {
-            realName = reporterId.length > 5 ? 'Learner ${reporterId.substring(0, 5)}' : 'Learner';
+            realName = reporterId.length > 5 ? 'Citizen ${reporterId.substring(0, 5)}' : 'Citizen';
           }
         }
 
+        final email = (userAuth?['email'] ?? extra['email'] ?? '').toString().trim();
+        final phone = (prof?['phone_no'] ?? userAuth?['phone_no'] ?? extra['phone'] ?? '').toString().trim();
+        final planet = (prof?['country'] ?? extra['planet'] ?? 'Earth').toString().trim();
+        final city = (prof?['city'] ?? extra['city'] ?? '').toString().trim();
+        final bio = (prof?['bio'] ?? '').toString();
+        String plot = '';
+        if (bio.isNotEmpty) {
+          final plotMatch = RegExp(r'Plot\s*[:#]?\s*(\d+)', caseSensitive: false).firstMatch(bio);
+          if (plotMatch != null) plot = 'Plot #${plotMatch.group(1)}';
+        }
+
         final avatarUrl = prof?['profile_image_url'] ?? extra['user_avatar'];
-        final day = prof?['learning_day'] ?? extra['learning_day'] ?? 1;
+        final day = prof?['learning_day'] ?? prof?['day'] ?? extra['learning_day'] ?? 1;
         final messages = (extra['messages'] is List)
             ? List<Map<String, dynamic>>.from(extra['messages'].map((m) => Map<String, dynamic>.from(m)))
             : <Map<String, dynamic>>[];
@@ -886,6 +924,11 @@ class PocketPresidentService {
           'id': row['id']?.toString(),
           'user_id': reporterId,
           'user_name': realName,
+          'user_email': email,
+          'user_phone': phone,
+          'planet': planet.isNotEmpty ? planet : 'Earth',
+          'city': city,
+          'plot': plot,
           'user_avatar': avatarUrl,
           'learning_day': day,
           'english_level': prof?['english_level'],
@@ -923,36 +966,88 @@ class PocketPresidentService {
       if (latestDirectMsgBySender.isNotEmpty) {
         final missingUserIds = latestDirectMsgBySender.keys.toList();
         Map<String, Map<String, dynamic>> directProfMap = {};
+        Map<String, Map<String, dynamic>> directUserMap = {};
         try {
-          final profs = await supabase
+          final profs1 = await supabase
               .from('profile')
-              .select('id, user_id, name, first_name, username, profile_image_url, learning_day, english_level')
+              .select('id, user_id, name, display_name, first_name, username, profile_image_url, learning_day, day, english_level, country, city, bio, phone_no')
               .inFilter('user_id', missingUserIds);
-          for (var p in profs) {
+          for (var p in profs1) {
             if (p['user_id'] != null) directProfMap[p['user_id'].toString()] = p;
             if (p['id'] != null) directProfMap[p['id'].toString()] = p;
+          }
+          final profs2 = await supabase
+              .from('profile')
+              .select('id, user_id, name, display_name, first_name, username, profile_image_url, learning_day, day, english_level, country, city, bio, phone_no')
+              .inFilter('id', missingUserIds);
+          for (var p in profs2) {
+            if (p['user_id'] != null) directProfMap[p['user_id'].toString()] = p;
+            if (p['id'] != null) directProfMap[p['id'].toString()] = p;
+          }
+        } catch (_) {}
+
+        try {
+          final uRows = await supabase
+              .from('users')
+              .select('id, email, phone_no, role')
+              .inFilter('id', missingUserIds);
+          for (var u in uRows) {
+            if (u['id'] != null) directUserMap[u['id'].toString()] = u;
           }
         } catch (_) {}
 
         latestDirectMsgBySender.forEach((sId, msgRow) {
           final existingIdx = inquiries.indexWhere((q) => q['user_id'] == sId);
           final prof = directProfMap[sId];
-          final sName = (prof?['name'] ?? prof?['username'] ?? prof?['first_name'] ?? '').toString().trim();
-          final displayName = sName.isNotEmpty && sName != 'Citizen' && sName != 'User'
-              ? sName
-              : ContactsNameService().getDisplayName(userId: sId, fallbackName: 'Learner');
+          final userAuth = directUserMap[sId];
+
+          String displayName = '';
+          if (prof != null) {
+            final n = (prof['display_name'] ?? prof['name'] ?? prof['username'] ?? prof['first_name'] ?? '').toString().trim();
+            if (n.isNotEmpty && n != 'Citizen' && n != 'User') displayName = n;
+          }
+          if (displayName.isEmpty && userAuth?['email'] != null) {
+            final em = userAuth!['email'].toString();
+            displayName = em.contains('@') ? em.split('@').first : em;
+          }
+          if (displayName.isEmpty) {
+            final cName = ContactsNameService().getDisplayName(userId: sId, fallbackName: 'Learner');
+            displayName = (cName.isNotEmpty && cName != 'User' && cName != 'Citizen') ? cName : (sId.length > 5 ? 'Citizen ${sId.substring(0, 5)}' : 'Citizen');
+          }
+
+          final email = (userAuth?['email'] ?? '').toString().trim();
+          final phone = (prof?['phone_no'] ?? userAuth?['phone_no'] ?? '').toString().trim();
+          final planet = (prof?['country'] ?? 'Earth').toString().trim();
+          final city = (prof?['city'] ?? '').toString().trim();
+          final bio = (prof?['bio'] ?? '').toString();
+          String plot = '';
+          if (bio.isNotEmpty) {
+            final plotMatch = RegExp(r'Plot\s*[:#]?\s*(\d+)', caseSensitive: false).firstMatch(bio);
+            if (plotMatch != null) plot = 'Plot #${plotMatch.group(1)}';
+          }
+
           final avatarUrl = prof?['profile_image_url'];
-          final day = prof?['learning_day'] ?? 1;
+          final day = prof?['learning_day'] ?? prof?['day'] ?? 1;
           final text = msgRow['message_text']?.toString() ?? '';
 
           if (existingIdx != -1) {
             inquiries[existingIdx]['last_message'] = text;
             inquiries[existingIdx]['created_at'] = msgRow['created_at'];
+            if (email.isNotEmpty) inquiries[existingIdx]['user_email'] = email;
+            if (phone.isNotEmpty) inquiries[existingIdx]['user_phone'] = phone;
+            if (planet.isNotEmpty) inquiries[existingIdx]['planet'] = planet;
+            if (city.isNotEmpty) inquiries[existingIdx]['city'] = city;
+            if (plot.isNotEmpty) inquiries[existingIdx]['plot'] = plot;
           } else {
             inquiries.add({
               'id': msgRow['id']?.toString(),
               'user_id': sId,
               'user_name': displayName,
+              'user_email': email,
+              'user_phone': phone,
+              'planet': planet.isNotEmpty ? planet : 'Earth',
+              'city': city,
+              'plot': plot,
               'user_avatar': avatarUrl,
               'learning_day': day,
               'english_level': prof?['english_level'],
