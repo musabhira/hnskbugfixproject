@@ -54,6 +54,9 @@ import 'pocket_chat_reply_builder_page.dart';
 import 'pocket_negative_sentence_builder_page.dart';
 import 'pocket_mini_speech_practice_page.dart';
 import 'pocket_day1_review_card_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_ad_preload_manager.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocket_native_ad_card.dart';
 
 /// 🎮 Dedicated Day 1 Interactive Learning & Game Flow Page
 /// 
@@ -181,6 +184,9 @@ class _PocketDay1InteractiveFlowPageState
   @override
   void initState() {
     super.initState();
+    // 🚀 Upfront Preload Step Review Native Ad
+    PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.review);
+
     _currentTrack = widget.initialTrack ?? Day1Track.middle;
     _activeStep = widget.initialStep.clamp(1, 12);
 
@@ -463,9 +469,17 @@ class _PocketDay1InteractiveFlowPageState
                   ),
                 ],
               ),
-              content: Text(
-                'Great job! +$xp XP earned. Return to map to see your vehicle drive to Step ${stepIndex + 1}! 🚗',
-                style: GoogleFonts.inter(color: Colors.white70, fontSize: 13.5),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Great job! +$xp XP earned. Return to map to see your vehicle drive to Step ${stepIndex + 1}! 🚗',
+                    style: GoogleFonts.inter(color: Colors.white70, fontSize: 13.5),
+                  ),
+                  const SizedBox(height: 12),
+                  // 🚀 Zero-lag Preloaded Native Ad inside Step Completion Modal
+                  const PocketNativeAdCard(placement: PocketAdPlacement.review),
+                ],
               ),
               actions: [
                 ElevatedButton(
@@ -475,6 +489,7 @@ class _PocketDay1InteractiveFlowPageState
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: () {
+                    PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.review);
                     Navigator.pop(ctx);
                     Navigator.pop(context);
                   },

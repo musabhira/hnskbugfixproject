@@ -10,6 +10,9 @@ import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_ad_preload_manager.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocket_native_ad_card.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocket_banner_ad_widget.dart';
 
 import 'curriculum_data/pocket_90day_chat_reply_data.dart';
 
@@ -97,6 +100,9 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
   @override
   void initState() {
     super.initState();
+    // 🚀 Upfront Preloading of Step Native Ad for instant zero-lag display
+    PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.review);
+
     _scenarios = Pocket90DayChatReplyData.getScenariosForDay(widget.day);
     _initTts();
 
@@ -305,10 +311,8 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
                 ),
               ),
               const SizedBox(height: 12),
-              // 📢 Step Completion Modal AdMob placement per Master Monetization Plan
-              const PocketBannerAdWidget(
-                margin: EdgeInsets.symmetric(vertical: 6),
-              ),
+              // 🚀 Upfront Preloaded Native Ad inside Step Completion Alert Modal
+              const PocketNativeAdCard(placement: PocketAdPlacement.review),
               const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,

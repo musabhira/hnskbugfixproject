@@ -12,6 +12,9 @@ import 'pocket_fortress_defense_service.dart';
 import 'curriculum_data/pocket_90day_negative_sentence_data.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_ad_preload_manager.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocket_native_ad_card.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocket_banner_ad_widget.dart';
 
 /// 🔄 Model for Negative Sentence Transformation Challenge
 class NegativeSentenceRound {
@@ -100,6 +103,9 @@ class _PocketNegativeSentenceBuilderPageState
   @override
   void initState() {
     super.initState();
+    // 🚀 Upfront Preloading of Step Native Ad for instant zero-lag display
+    PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.review);
+
     _rounds = Pocket90DayNegativeSentenceData.getRoundsForDay(widget.day);
     _initTts();
 
@@ -281,10 +287,8 @@ class _PocketNegativeSentenceBuilderPageState
                 ),
               ),
               const SizedBox(height: 12),
-              // 📢 Step Completion Modal AdMob placement per Master Monetization Plan
-              const PocketBannerAdWidget(
-                margin: EdgeInsets.symmetric(vertical: 6),
-              ),
+              // 🚀 Upfront Preloaded Native Ad inside Step Completion Alert Modal
+              const PocketNativeAdCard(placement: PocketAdPlacement.review),
               const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,
