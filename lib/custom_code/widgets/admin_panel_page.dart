@@ -13419,10 +13419,22 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                     final senderId = item['sender_id']?.toString() ?? 'Student';
                     final isRead = item['is_read'] == true;
 
+                    final studentProf = allProfiles.firstWhere(
+                      (p) => p['id']?.toString() == senderId || p['user_id']?.toString() == senderId,
+                      orElse: () => <String, dynamic>{},
+                    );
+                    final studentName = (studentProf['display_name'] ??
+                            studentProf['name'] ??
+                            studentProf['username'] ??
+                            ContactsNameService().getDisplayName(userId: senderId, fallbackName: 'Young Learner'))
+                        .toString();
+                    final studentDay = studentProf['learning_day'] ?? studentProf['day'] ?? 1;
+                    final studentPlanet = (studentProf['country'] ?? 'Earth').toString();
+
                     return Card(
                       color: const Color(0xFF1E293B),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(16),
                         side: BorderSide(
                           color: isRead
                               ? Colors.white12
@@ -13430,62 +13442,100 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                           width: isRead ? 0.8 : 1.5,
                         ),
                       ),
-                      margin: const EdgeInsets.only(bottom: 10),
+                      margin: const EdgeInsets.only(bottom: 12),
                       child: Padding(
                         padding: const EdgeInsets.all(14),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.all(6),
+                                  padding: const EdgeInsets.all(8),
                                   decoration: const BoxDecoration(
                                     color: Color(0xFF334155),
                                     shape: BoxShape.circle,
                                   ),
-                                  child: const Text('🎒',
-                                      style: TextStyle(fontSize: 16)),
+                                  child: const Text('🎒', style: TextStyle(fontSize: 18)),
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        'Student: $senderId',
-                                        style: GoogleFonts.outfit(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 13,
-                                        ),
+                                      Wrap(
+                                        spacing: 6,
+                                        runSpacing: 4,
+                                        crossAxisAlignment: WrapCrossAlignment.center,
+                                        children: [
+                                          Text(
+                                            studentName,
+                                            style: GoogleFonts.outfit(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14.5,
+                                            ),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                                              borderRadius: BorderRadius.circular(6),
+                                              border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3), width: 0.8),
+                                            ),
+                                            child: Text(
+                                              '🪐 $studentPlanet • Day $studentDay',
+                                              style: const TextStyle(
+                                                color: Color(0xFF38BDF8),
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      Text(
-                                        item['created_at'] != null
-                                            ? item['created_at']
-                                                .toString()
-                                                .split('T')
-                                                .first
-                                            : '',
-                                        style: GoogleFonts.inter(
-                                          color: Colors.white38,
-                                          fontSize: 11,
-                                        ),
+                                      const SizedBox(height: 3),
+                                      Row(
+                                        children: [
+                                          Text(
+                                            'ID: ${senderId.length > 10 ? '${senderId.substring(0, 10)}...' : senderId}',
+                                            style: GoogleFonts.inter(
+                                              color: Colors.white38,
+                                              fontSize: 10,
+                                            ),
+                                          ),
+                                          InkWell(
+                                            onTap: () {
+                                              Clipboard.setData(ClipboardData(text: senderId));
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(content: Text('Student ID copied! 📋'), duration: Duration(milliseconds: 900)),
+                                              );
+                                            },
+                                            child: const Padding(
+                                              padding: EdgeInsets.symmetric(horizontal: 4),
+                                              child: Icon(Icons.copy_rounded, color: Colors.white38, size: 11),
+                                            ),
+                                          ),
+                                          if (item['created_at'] != null) ...[
+                                            const Text(' • ', style: TextStyle(color: Colors.white24, fontSize: 10)),
+                                            Text(
+                                              item['created_at'].toString().split('T').first,
+                                              style: GoogleFonts.inter(color: Colors.white38, fontSize: 10),
+                                            ),
+                                          ],
+                                        ],
                                       ),
                                     ],
                                   ),
                                 ),
                                 if (!isRead)
                                   Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 3),
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFFFD700)
-                                          .withValues(alpha: 0.2),
+                                      color: const Color(0xFFFFD700).withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                          color: const Color(0xFFFFD700)),
+                                      border: Border.all(color: const Color(0xFFFFD700)),
                                     ),
                                     child: Text(
                                       'NEW',
@@ -13501,37 +13551,53 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                             const SizedBox(height: 10),
                             Container(
                               width: double.infinity,
-                              padding: const EdgeInsets.all(10),
+                              padding: const EdgeInsets.all(11),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF0F172A),
                                 borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: Colors.white10, width: 0.6),
                               ),
                               child: Text(
                                 msg,
-                                style: GoogleFonts.inter(
-                                    color: Colors.white, fontSize: 13),
+                                style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
                               ),
                             ),
                             const SizedBox(height: 10),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
+                                OutlinedButton.icon(
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(color: Colors.white24, width: 1),
+                                    foregroundColor: Colors.white70,
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  ),
+                                  icon: const Icon(Icons.person_search_rounded, size: 13),
+                                  label: const Text('Profile 👤', style: TextStyle(fontSize: 10.5)),
+                                  onPressed: () {
+                                    if (senderId.isNotEmpty && senderId != 'Student') {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => VerfiedSwitchPage(userId: senderId),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),
+                                const SizedBox(width: 8),
                                 ElevatedButton.icon(
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFFFFD700),
                                     foregroundColor: Colors.black,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 14, vertical: 8),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                   ),
                                   icon: const Icon(Icons.reply_rounded, size: 16),
                                   label: Text(
                                     'Reply as King Lion 🦁',
-                                    style: GoogleFonts.outfit(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12),
+                                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
                                   ),
                                   onPressed: () => _showLionReplyModal(item),
                                 ),
