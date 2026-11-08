@@ -6220,7 +6220,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         ? colony.islandName
         : PoketCosmosAllocationService.generateInfiniteIslandName(colony.code, wave, wave);
     final plotStr = plotNum.toString().padLeft(2, '0');
-    return '$cleanPlanet • $islandName • Plot #$plotStr';
+    return 'Plot #$plotStr • $islandName • $cleanPlanet';
   }
 
   Widget _buildVerifiedGoldenTick({double size = 18}) {
