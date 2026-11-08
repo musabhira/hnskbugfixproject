@@ -488,7 +488,7 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
     final cx = size.width / 2;
     final cy = size.height / 2;
     final scale = widget.isInteractive
-        ? 1.15
+        ? (size.height / IslandAerialPainter.kIslandArtHeight)
         : (math.min(size.width, size.height) / 540.0);
 
     final islandX = (details.localPosition.dx - cx) / scale;
@@ -789,6 +789,12 @@ enum CelestialColonyType {
 
 /// 🎨 Island Aerial CustomPainter with Expansive Green Terrains & Safe In-Land Habit Plots
 class IslandAerialPainter extends CustomPainter {
+  /// Canonical design bounding dimensions for the rendered island art
+  /// Terrain ry=198 + reef=18 + southern islet=222 -> total height fits seamlessly inside 440px.
+  /// Main landmass rx=237 + reef=18 + marina pier=245 -> total width fits seamlessly inside 600px.
+  static const double kIslandArtHeight = 440.0;
+  static const double kIslandArtWidth = 600.0;
+
   final PoketCountryMap island;
   final bool isInteractive;
   final double zoomScale;
@@ -889,9 +895,10 @@ class IslandAerialPainter extends CustomPainter {
 
     final cx = size.width / 2;
     final cy = size.height / 2;
-    // Responsive island scale: 1.15 in interactive mode leaves vast ocean buffers on all sides!
-    final double scale =
-        isInteractive ? 1.15 : (math.min(size.width, size.height) / 540.0);
+    // Responsive island scale: in interactive mode, art touches the screen top and bottom exactly!
+    final double scale = isInteractive
+        ? (size.height / kIslandArtHeight)
+        : (math.min(size.width, size.height) / 540.0);
 
     canvas.save();
     canvas.translate(cx, cy);
@@ -2308,7 +2315,7 @@ class IslandAerialPainter extends CustomPainter {
 
     // 1. Moving Offshore Speedboat cruising in wide deep blue waters (gentle, relaxing glide)
     final t1 = (timeSeconds * 0.02) % (2 * math.pi);
-    final pos1 = Offset(330.0 * math.cos(t1), 275.0 * math.sin(t1));
+    final pos1 = Offset(270.0 * math.cos(t1), 195.0 * math.sin(t1));
     final angle1 = t1 + math.pi / 2;
     _drawBoatWithWake(
       canvas,
@@ -2321,7 +2328,7 @@ class IslandAerialPainter extends CustomPainter {
 
     // 2. Luxury Cruising Yacht traveling along outer southern deep sea
     final t2 = (-timeSeconds * 0.014) % (2 * math.pi);
-    final pos2 = Offset(380.0 * math.cos(t2), 320.0 * math.sin(t2));
+    final pos2 = Offset(280.0 * math.cos(t2), 205.0 * math.sin(t2));
     final angle2 = t2 - math.pi / 2;
     _drawBoatWithWake(
       canvas,
@@ -2335,7 +2342,7 @@ class IslandAerialPainter extends CustomPainter {
     // 3. Open Ocean Horizon Tender Boat
     final t3 = (timeSeconds * 0.016) % (2 * math.pi);
     final pos3 =
-        Offset(-340.0 + math.cos(t3) * 40.0, 260.0 + math.sin(t3) * 30.0);
+        Offset(-260.0 + math.cos(t3) * 20.0, 185.0 + math.sin(t3) * 15.0);
     _drawBoatWithWake(
       canvas,
       pos: pos3,

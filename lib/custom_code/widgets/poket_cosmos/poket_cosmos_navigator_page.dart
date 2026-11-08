@@ -29,7 +29,8 @@ class PoketCosmosNavigatorPage extends StatefulWidget {
 
   /// Static accessor to all scientific cosmos planets
   static List<PoketPlanet> buildCosmosPlanets({int activeWaves = 1}) =>
-      _PoketCosmosNavigatorPageState._buildCosmosPlanets(activeWaves: activeWaves);
+      _PoketCosmosNavigatorPageState._buildCosmosPlanets(
+          activeWaves: activeWaves);
 
   @override
   State<PoketCosmosNavigatorPage> createState() =>
@@ -74,7 +75,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
     _islandPageController = PageController(viewportFraction: 0.84);
     _planets = _buildCosmosPlanets();
     _refreshCosmosWaves();
-    if (widget.initialPlanetCode != null && widget.initialPlanetCode!.isNotEmpty) {
+    if (widget.initialPlanetCode != null &&
+        widget.initialPlanetCode!.isNotEmpty) {
       final code = widget.initialPlanetCode!.toUpperCase();
       PoketPlanet? matched;
       for (final p in _planets) {
@@ -82,16 +84,46 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
           matched = p;
           break;
         }
-        if (code == 'EP' && p.id == 3) { matched = p; break; }
-        if (code == 'MAR' && p.id == 4) { matched = p; break; }
-        if (code == 'JUP' && p.id == 5) { matched = p; break; }
-        if (code == 'SAT' && p.id == 6) { matched = p; break; }
-        if (code == 'LUN' && p.id == 30) { matched = p; break; }
-        if (code == 'EUR' && p.id == 51) { matched = p; break; }
-        if (code == 'VEN' && p.id == 2) { matched = p; break; }
-        if (code == 'TTN' && p.id == 61) { matched = p; break; }
-        if (code == 'PLT' && p.id == 9) { matched = p; break; }
-        if (code == 'NEP' && p.id == 8) { matched = p; break; }
+        if (code == 'EP' && p.id == 3) {
+          matched = p;
+          break;
+        }
+        if (code == 'MAR' && p.id == 4) {
+          matched = p;
+          break;
+        }
+        if (code == 'JUP' && p.id == 5) {
+          matched = p;
+          break;
+        }
+        if (code == 'SAT' && p.id == 6) {
+          matched = p;
+          break;
+        }
+        if (code == 'LUN' && p.id == 30) {
+          matched = p;
+          break;
+        }
+        if (code == 'EUR' && p.id == 51) {
+          matched = p;
+          break;
+        }
+        if (code == 'VEN' && p.id == 2) {
+          matched = p;
+          break;
+        }
+        if (code == 'TTN' && p.id == 61) {
+          matched = p;
+          break;
+        }
+        if (code == 'PLT' && p.id == 9) {
+          matched = p;
+          break;
+        }
+        if (code == 'NEP' && p.id == 8) {
+          matched = p;
+          break;
+        }
         for (final sat in p.satellites) {
           if (sat.name.toUpperCase().contains(code) ||
               (code == 'LUN' && sat.id == 30) ||
@@ -139,7 +171,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
   }
 
   Future<void> _refreshCosmosWaves() async {
-    final waves = await PoketCosmosAllocationService.instance.getActiveWaveIndex();
+    final waves =
+        await PoketCosmosAllocationService.instance.getActiveWaveIndex();
     if (mounted) {
       setState(() {
         _planets = _buildCosmosPlanets(activeWaves: waves);
@@ -228,7 +261,9 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
 
     // Waves 2..activeWaves expansions
     for (int w = 2; w <= activeWaves; w++) {
-      final islandName = PoketCosmosAllocationService.generateInfiniteIslandName(planetCode, w, w);
+      final islandName =
+          PoketCosmosAllocationService.generateInfiniteIslandName(
+              planetCode, w, w);
       list.add(PoketCountryMap(
         id: planetId * 100 + w,
         name: islandName,
@@ -683,7 +718,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
   }
 
   /// 🏝️ Earth Prime Sovereign & Citizen Colony Islands
-  static List<PoketCountryMap> _buildEarth30EnglishIslands({int activeWaves = 1}) {
+  static List<PoketCountryMap> _buildEarth30EnglishIslands(
+      {int activeWaves = 1}) {
     final list = <PoketCountryMap>[
       // 👑 Island #0: Presidential Citadel (President Mus'ab's Exclusive Sovereign Sanctuary)
       const PoketCountryMap(
@@ -736,7 +772,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         filledSlots: w == 2 ? 15 : 0,
         climate: 'Ocean Horizon 🍃',
         climateIcon: Icons.air_rounded,
-        description: 'Wave $w expansion island expanding the frontier of Earth Prime.',
+        description:
+            'Wave $w expansion island expanding the frontier of Earth Prime.',
         islandEmoji: '🌴',
         shapeStyle: IslandShapeStyle.sCurveArchipelago,
       ));
@@ -1246,7 +1283,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
               child: Row(
                 children: [
                   _buildIosBackButton(onTap: () {
-                    if (widget.initialPlanetCode != null && Navigator.canPop(context)) {
+                    if (widget.initialPlanetCode != null &&
+                        Navigator.canPop(context)) {
                       Navigator.pop(context);
                     } else {
                       setState(() => _activeScreen = 0);
@@ -1566,22 +1604,24 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
               builder: (context, constraints) {
                 final screenWidth = constraints.maxWidth;
                 final screenHeight = constraints.maxHeight;
-                final worldHeight = screenHeight * 1.45;
-                final worldWidth =
-                    math.max(screenWidth * 2.8, screenHeight * 2.2);
-                final minScale = screenHeight / worldHeight;
-                const focusScale = 1.15;
-                final focusX = -(worldWidth * focusScale - screenWidth) / 2;
-                final focusY = -(worldHeight * focusScale - screenHeight) / 2;
+                final worldHeight = screenHeight;
+                final worldWidth = math.max(
+                    screenWidth,
+                    screenHeight *
+                        (IslandAerialPainter.kIslandArtWidth /
+                            IslandAerialPainter.kIslandArtHeight));
+                const minScale = 1.0;
+                final focusX = (screenWidth - worldWidth) / 2;
+                const focusY = 0.0;
 
-                // Auto-center island on entry at focused scale (never starts uninitialized or void)
+                // Auto-center island on entry (never starts uninitialized or void)
                 if (_aerialMapZoomController.value == Matrix4.identity()) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     if (mounted &&
                         _aerialMapZoomController.value == Matrix4.identity()) {
                       _aerialMapZoomController.value =
                           Matrix4.translationValues(focusX, focusY, 0.0)
-                            ..scaleByDouble(focusScale, focusScale, 1.0, 1.0);
+                            ..scaleByDouble(1.0, 1.0, 1.0, 1.0);
                     }
                   });
                 }

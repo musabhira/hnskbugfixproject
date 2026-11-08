@@ -614,6 +614,17 @@ class _PocketSentenceBuilderGamePageState
                   ),
                 )
               : null,
+      bottomNavigationBar: (!widget.isKidsMode && !PocketKidsService.isKidsWorld)
+          ? Container(
+              color: const Color(0xFF16031B),
+              child: const SafeArea(
+                top: false,
+                child: PocketBannerAdWidget(
+                  margin: EdgeInsets.symmetric(vertical: 4),
+                ),
+              ),
+            )
+          : null,
       body: Stack(
         children: [
           // 1. Deep magenta / plum background gradient matching Screenshots 3 & 4

@@ -217,13 +217,16 @@ class _PoketCosmosResidentIslandViewState
     }
   }
 
-  void _centerOnUserPlot(Size screenSize) {
+  void _centerOnUserPlot(Size screenSize, {bool zoomIn = false}) {
     final sW = screenSize.width;
     final sH = screenSize.height;
-    final worldHeight = math.max(sH * 1.8, 1400.0);
-    final worldWidth = math.max(sW * 3.0, 2200.0);
-    const targetScale = 1.65;
-    const painterScale = 1.15;
+    final worldHeight = sH;
+    final worldWidth = math.max(
+        sW,
+        sH *
+            (IslandAerialPainter.kIslandArtWidth /
+                IslandAerialPainter.kIslandArtHeight));
+    final painterScale = worldHeight / IslandAerialPainter.kIslandArtHeight;
 
     final targetWorldX = (_myPlot.coordinates != Offset.zero)
         ? (worldWidth / 2 + _myPlot.coordinates.dx * painterScale)
@@ -231,6 +234,8 @@ class _PoketCosmosResidentIslandViewState
     final targetWorldY = (_myPlot.coordinates != Offset.zero)
         ? (worldHeight / 2 + _myPlot.coordinates.dy * painterScale)
         : (worldHeight / 2);
+
+    final targetScale = zoomIn ? 2.2 : 1.0;
 
     final minTx = sW - (worldWidth * targetScale);
     final minTy = sH - (worldHeight * targetScale);
@@ -630,8 +635,12 @@ class _PoketCosmosResidentIslandViewState
             builder: (context, constraints) {
               final sW = constraints.maxWidth;
               final sH = constraints.maxHeight;
-              final worldHeight = math.max(sH * 1.8, 1400.0);
-              final worldWidth = math.max(sW * 3.0, 2200.0);
+              final worldHeight = sH;
+              final worldWidth = math.max(
+                  sW,
+                  sH *
+                      (IslandAerialPainter.kIslandArtWidth /
+                          IslandAerialPainter.kIslandArtHeight));
 
               if (!_transformInitialized) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -644,10 +653,9 @@ class _PoketCosmosResidentIslandViewState
 
               return InteractiveViewer(
                 transformationController: _transformController,
-                minScale: 0.35,
+                minScale: 1.0,
                 maxScale: 6.0,
-                boundaryMargin:
-                    const EdgeInsets.symmetric(horizontal: 240, vertical: 280),
+                boundaryMargin: EdgeInsets.zero,
                 constrained: false,
                 child: SizedBox(
                   width: worldWidth,
@@ -849,7 +857,8 @@ class _PoketCosmosResidentIslandViewState
                               onPlotPurchased: () => _loadResidentIsland(),
                             );
                           } else if (isHomeColony) {
-                            _centerOnUserPlot(MediaQuery.of(context).size);
+                            _centerOnUserPlot(MediaQuery.of(context).size,
+                                zoomIn: true);
                           } else {
                             _switchToColony(
                               PoketCosmosAllocationService.instance
