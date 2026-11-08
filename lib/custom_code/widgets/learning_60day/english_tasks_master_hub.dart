@@ -477,7 +477,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     }
 
     final progRaw = await Learning60DayService().fetchProgress(uid);
-    final score = await PocketFortressDefenseService.getUnifiedScore(uid);
+    final score = await PocketFortressDefenseService.getUnifiedScore(uid, true);
     final trophies = await PocketTrophyService.getTrophyCount(uid);
 
     final prefs = await SharedPreferences.getInstance();
@@ -3184,66 +3184,62 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
           // 2. Sticky Glassmorphism Top HUD (Without Back button on tab navigation!)
           _buildTopHUD(prog),
 
-          // 3. ⚔️ & 🌐 & ⏳ Minimal Floating Actions Dock + Mission Button (Only on Roadmap)
+          // 3. ⚔️ & 🌐 & 🛒 Floating Actions Dock + Battery Reward & Mission Button (Symmetrical Dual Columns)
           if (_activeTargetTab == 0)
             Positioned(
               left: 12,
               right: 12,
               bottom: 16,
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  // Left actions: Battle, Open World, Time Machine
-                  Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      physics: const BouncingScrollPhysics(),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _buildMinimalFloatingPill(
-                            icon: '🌐',
-                            label: 'Open World',
-                            onTap: () {
-                              HapticFeedback.mediumImpact();
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => PocketOpenWorldGamePage(
-                                    currentDay: prog.currentDay,
-                                    streak: prog.streakDays,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          const SizedBox(width: 8),
-                          _buildMinimalFloatingPill(
-                            icon: '🛒',
-                            label: 'Store',
-                            onTap: () {
-                              HapticFeedback.mediumImpact();
-                              PocketCitadelStoreSheet.show(
-                                context,
-                                onPurchased: () {
-                                  _loadData();
-                                },
-                              );
-                            },
-                          ),
-                        ],
+                  // Left Column: 🌐 Open World (Top) + 🛒 Store (Under Open World)
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildMinimalFloatingPill(
+                        icon: '🌐',
+                        label: 'Open World',
+                        onTap: () {
+                          HapticFeedback.mediumImpact();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => PocketOpenWorldGamePage(
+                                currentDay: prog.currentDay,
+                                streak: prog.streakDays,
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                    ),
+                      const SizedBox(height: 6),
+                      _buildMinimalFloatingPill(
+                        icon: '🛒',
+                        label: 'Store',
+                        onTap: () {
+                          HapticFeedback.mediumImpact();
+                          PocketCitadelStoreSheet.show(
+                            context,
+                            onPurchased: () {
+                              _loadData();
+                            },
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 8),
 
-                  // Right: 🔋 Daily Battery + 🎯 Minimal Today Mission Button
+                  // Right Column: 🔋 Watch Reward (+50 PS) (Top) + 🎯 Today Mission Button (Under Reward)
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       PocketDailyBatteryRewardWidget(
-                        onRewardClaimed: () {
-                          _loadData();
+                        onRewardClaimed: () async {
+                          await _loadData();
                         },
                       ),
                       const SizedBox(height: 6),

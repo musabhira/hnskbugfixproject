@@ -439,24 +439,48 @@ class PocketAdMobService {
   /// 🎁 Atomically grants +50 Pocket Score to the user across SharedPreferences and Supabase
   Future<int> grantRewardedPocketScore() async {
     final prefs = await SharedPreferences.getInstance();
-    final currentScore = prefs.getInt('user_pocket_score') ??
-        prefs.getInt('pocket_score') ??
-        150;
+    final uid = SupaFlow.client.auth.currentUser?.id;
+
+    int currentScore = 0;
+    if (uid != null && uid.isNotEmpty) {
+      currentScore = prefs.getInt('user_pocket_score_$uid') ??
+          prefs.getInt('user_pocket_score') ??
+          prefs.getInt('pocket_score') ??
+          150;
+    } else {
+      currentScore = prefs.getInt('user_pocket_score') ??
+          prefs.getInt('pocket_score') ??
+          150;
+    }
+
     final newScore = currentScore + 50;
+
+    // 1. Persist to universal and user-scoped keys so UI updates instantly everywhere
     await prefs.setInt('user_pocket_score', newScore);
     await prefs.setInt('pocket_score', newScore);
 
-    final uid = SupaFlow.client.auth.currentUser?.id;
     if (uid != null && uid.isNotEmpty) {
+      await prefs.setInt('user_pocket_score_$uid', newScore);
+      await prefs.setInt('learning_points_$uid', newScore);
+
+      // 2. Persist to Supabase users, profile, and homes tables
       try {
         await SupaFlow.client
             .from('users')
             .update({'pocket_score': newScore}).eq('id', uid);
       } catch (_) {}
       try {
-        await SupaFlow.client
-            .from('profile')
-            .update({'pocket_score': newScore}).eq('user_id', uid);
+        await SupaFlow.client.from('profile').update({
+          'pocket_score': newScore,
+          'learning_points': newScore,
+          'xp': newScore,
+        }).eq('user_id', uid);
+      } catch (_) {}
+      try {
+        await SupaFlow.client.from('pocket_homes').update({
+          'points': newScore,
+          'updated_at': DateTime.now().toIso8601String(),
+        }).eq('user_id', uid);
       } catch (_) {}
     }
     return newScore;

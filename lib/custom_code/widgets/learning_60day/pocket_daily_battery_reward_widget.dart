@@ -187,7 +187,7 @@ class _PocketDailyBatteryRewardWidgetState
   Widget build(BuildContext context) {
     if (_isVip) {
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
           color: const Color(0xFF0F172A),
           borderRadius: BorderRadius.circular(12),
@@ -206,57 +206,71 @@ class _PocketDailyBatteryRewardWidgetState
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('👑', style: TextStyle(fontSize: 13)),
-            const SizedBox(width: 5),
-            Text(
-              '100% VIP',
-              style: GoogleFonts.outfit(
-                color: const Color(0xFFFFD700),
-                fontSize: 11.5,
-                fontWeight: FontWeight.w800,
-              ),
+            const Text('👑', style: TextStyle(fontSize: 14)),
+            const SizedBox(width: 6),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'VIP Gold',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFD700),
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                Text(
+                  '100% Full',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white70,
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
       );
     }
 
-    // Determine colors and label
+    // Determine colors and 2-line minimal texts
     Color batteryColor;
-    String statusLabel;
+    String topTitle;
+    String bottomSub;
+    Color subColor;
     bool shouldPulse = false;
 
     if (_cooldownSeconds > 0) {
       batteryColor = const Color(0xFF38BDF8); // Cyan cooldown
-      statusLabel = '⏳ ${_cooldownSeconds}s';
-    } else if (_dailyCount == 0) {
-      batteryColor = const Color(0xFFEF4444); // Red: Low
-      statusLabel = 'Battery Low';
-      shouldPulse = true;
-    } else if (_dailyCount == 1) {
-      batteryColor = const Color(0xFFEF4444); // Red: 1/5
-      statusLabel = '1/5 Low';
-      shouldPulse = true;
-    } else if (_dailyCount == 2) {
-      batteryColor = const Color(0xFFF59E0B); // Amber/Yellow
-      statusLabel = '2/5';
-      shouldPulse = false;
-    } else if (_dailyCount == 3) {
-      batteryColor = const Color(0xFF10B981); // Emerald Green
-      statusLabel = '3/5';
-      shouldPulse = false;
-    } else if (_dailyCount == 4) {
-      batteryColor = const Color(0xFF10B981); // Emerald Green
-      statusLabel = '4/5';
-      shouldPulse = false;
+      topTitle = 'Cooling ⏳';
+      bottomSub = 'Wait ${_cooldownSeconds}s';
+      subColor = const Color(0xFF38BDF8);
+    } else if (_dailyCount >= 5) {
+      batteryColor = const Color(0xFF22C55E); // Green Full
+      topTitle = 'Daily Full 🔋';
+      bottomSub = '5/5 • Reset ☀️';
+      subColor = const Color(0xFF4ADE80);
     } else {
-      batteryColor = const Color(0xFF22C55E); // Bright Green Full
-      statusLabel = '100% Full';
-      shouldPulse = false;
+      // ⚡ Available to watch rewarded video for +50 PS!
+      shouldPulse = true;
+      if (_dailyCount == 0) {
+        batteryColor = const Color(0xFFFFD700); // Golden Amber
+      } else if (_dailyCount == 1) {
+        batteryColor = const Color(0xFFF59E0B);
+      } else if (_dailyCount == 2) {
+        batteryColor = const Color(0xFFFBBF24);
+      } else {
+        batteryColor = const Color(0xFF10B981);
+      }
+      topTitle = 'Watch Reward';
+      bottomSub = '+50 PS (${_dailyCount}/5)';
+      subColor = const Color(0xFFFFD700); // Yellow/Golden score callout
     }
 
     Widget pillContent = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: const Color(0xFF0F172A),
         borderRadius: BorderRadius.circular(12),
@@ -280,25 +294,26 @@ class _PocketDailyBatteryRewardWidgetState
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // 🔋 iPhone-style 5-block battery icon
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 25,
-                height: 13,
-                padding: const EdgeInsets.all(1.4),
+                width: 23,
+                height: 12,
+                padding: const EdgeInsets.all(1.2),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(3),
-                  border: Border.all(color: batteryColor, width: 1.2),
+                  border: Border.all(color: batteryColor, width: 1.1),
                 ),
                 child: Row(
                   children: List.generate(5, (index) {
                     final isFilled = index < _dailyCount;
                     return Expanded(
                       child: Container(
-                        margin: EdgeInsets.only(right: index < 4 ? 1.0 : 0),
+                        margin: EdgeInsets.only(right: index < 4 ? 0.8 : 0),
                         decoration: BoxDecoration(
                           color: isFilled ? batteryColor : Colors.white12,
                           borderRadius: BorderRadius.circular(0.8),
@@ -310,30 +325,45 @@ class _PocketDailyBatteryRewardWidgetState
               ),
               // Battery Terminal Tip
               Container(
-                width: 2.2,
-                height: 5.5,
-                margin: const EdgeInsets.only(left: 1.2),
+                width: 2.0,
+                height: 5.0,
+                margin: const EdgeInsets.only(left: 1.0),
                 decoration: BoxDecoration(
                   color: batteryColor,
                   borderRadius: const BorderRadius.only(
-                    topRight: Radius.circular(1.2),
-                    bottomRight: Radius.circular(1.2),
+                    topRight: Radius.circular(1.0),
+                    bottomRight: Radius.circular(1.0),
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 7),
 
-          // Minimal clean status text
-          Text(
-            statusLabel,
-            style: GoogleFonts.outfit(
-              color: batteryColor,
-              fontSize: 11.5,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.2,
-            ),
+          // 2-Line Minimal Clean Text (Watch Reward / +50 PS)
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                topTitle,
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.1,
+                ),
+              ),
+              Text(
+                bottomSub,
+                style: GoogleFonts.outfit(
+                  color: subColor,
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
           ),
         ],
       ),
