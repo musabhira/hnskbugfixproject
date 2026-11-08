@@ -517,7 +517,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       // 1. Fetch profiles with created_at, day, pocket_score
       final res = await supabase
           .from('profile')
-          .select('id, user_id, name, shop_name, phone_no, profile_image_url, verified, is_vip, is_premium, is_subscribed, subscription_tier, created_at, bio, country, day, learning_day, pocket_score')
+          .select('*')
           .order('created_at', ascending: false);
 
       // 2. Fetch users email mappings to cross-reference
@@ -666,11 +666,14 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
 
       // Fetch profiles (names)
       final profilesRes =
-          await supabase.from('profile').select('user_id, name');
+          await supabase.from('profile').select('id, user_id, name');
 
-      final profileMap = {
-        for (var p in profilesRes) p['user_id'].toString(): p['name']
-      };
+      final profileMap = <String, String>{};
+      for (var p in profilesRes) {
+        final name = (p['name'] ?? '').toString();
+        if (p['user_id'] != null) profileMap[p['user_id'].toString()] = name;
+        if (p['id'] != null) profileMap[p['id'].toString()] = name;
+      }
 
       if (mounted) {
         setState(() {
@@ -2214,18 +2217,21 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                     final req = pendingAccessList[index];
                     final profile = req['profile'] ?? {};
                     final course = req['courses'] ?? {};
-                    final date = DateTime.parse(req['created_at']);
+                    final date = DateTime.tryParse(req['created_at']?.toString() ?? '') ?? DateTime.now();
+                    final targetUid = (profile['id'] ?? profile['user_id'] ?? req['user_id'] ?? '').toString();
+                    final citizenPlanet = (profile['country'] ?? 'Earth').toString();
+                    final citizenDay = profile['day'] ?? profile['learning_day'] ?? 1;
 
                     return Container(
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
-                        color: Colors.grey[900],
+                        color: const Color(0xFF1E293B),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.05)),
+                            color: Colors.white.withValues(alpha: 0.08)),
                         boxShadow: [
                           BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
+                              color: Colors.black.withValues(alpha: 0.2),
                               blurRadius: 10,
                               offset: const Offset(0, 4))
                         ],
@@ -2240,7 +2246,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
                                       color:
-                                          Colors.orange.withValues(alpha: 0.1),
+                                          Colors.orange.withValues(alpha: 0.15),
                                       borderRadius: BorderRadius.circular(12)),
                                   child: const Icon(Icons.school,
                                       color: Colors.orange, size: 24),
@@ -2256,11 +2262,32 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                               fontWeight: FontWeight.bold,
                                               fontSize: 16,
                                               color: Colors.white)),
-                                      Text(
-                                          'Request by: ${profile['name'] ?? "User"}',
-                                          style: TextStyle(
-                                              color: Colors.grey[400],
-                                              fontSize: 13)),
+                                      const SizedBox(height: 3),
+                                      Row(
+                                        children: [
+                                          Text(
+                                              'Request by: ${profile['name'] ?? "User"}',
+                                              style: TextStyle(
+                                                  color: Colors.grey[300],
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w600)),
+                                          const SizedBox(width: 6),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                                              borderRadius: BorderRadius.circular(6),
+                                            ),
+                                            child: Text(
+                                              '🪐 $citizenPlanet • Day $citizenDay',
+                                              style: const TextStyle(
+                                                  color: Color(0xFF38BDF8),
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -2283,7 +2310,31 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                 const SizedBox(width: 4),
                                 Text(profile['phone_no'] ?? "No Phone",
                                     style: TextStyle(
-                                        color: Colors.grey[500], fontSize: 12)),
+                                        color: Colors.grey[400], fontSize: 12)),
+                                if (targetUid.isNotEmpty) ...[
+                                  const SizedBox(width: 8),
+                                  ElevatedButton.icon(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => VerfiedSwitchPage(userId: targetUid),
+                                        ),
+                                      );
+                                    },
+                                    icon: const Icon(Icons.person_search_rounded, size: 13, color: Colors.black),
+                                    label: const Text(
+                                      'Inspect',
+                                      style: TextStyle(color: Colors.black, fontSize: 10.5, fontWeight: FontWeight.bold),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFFFFD700),
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      minimumSize: Size.zero,
+                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                  ),
+                                ],
                                 const Spacer(),
                                 ElevatedButton(
                                   style: ElevatedButton.styleFrom(
@@ -2292,7 +2343,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                     shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(8)),
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 20),
+                                        horizontal: 18, vertical: 8),
                                   ),
                                   onPressed: () =>
                                       _approveCourseAccess(req['id']),
@@ -2392,10 +2443,21 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.check_circle_outline,
-                          size: 64, color: Colors.grey[300]),
+                          size: 64, color: Colors.grey[600]),
                       const SizedBox(height: 16),
-                      const Text('No reports to review!',
-                          style: TextStyle(color: Colors.grey)),
+                      Text(
+                        'No Citizen Reports Found',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Citadel and content reports will appear here.',
+                        style: TextStyle(color: Colors.white54, fontSize: 12),
+                      ),
                     ],
                   ),
                 )
@@ -2404,76 +2466,310 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                   itemCount: reportsList.length,
                   itemBuilder: (context, index) {
                     final report = reportsList[index];
-                    final status = report['status'] ?? 'pending';
+                    final status = (report['status'] ?? 'pending').toString().toLowerCase();
                     final type = report['report_type'] ?? 'other';
+                    final contentType = report['content_type'] ?? 'content';
+                    final contentId = report['content_id']?.toString() ?? '';
                     final date = DateTime.tryParse(report['created_at']?.toString() ?? '') ?? DateTime.now();
+                    final reporterId = report['reporter_id']?.toString() ?? '';
+
+                    final reporterProf = allProfiles.firstWhere(
+                      (p) => p['id']?.toString() == reporterId || p['user_id']?.toString() == reporterId,
+                      orElse: () => <String, dynamic>{},
+                    );
+                    final rawName = reporterProf['name'] ?? reporterProf['display_name'] ?? reporterProf['username'];
+                    final reporterName = (rawName != null && rawName.toString().trim().isNotEmpty)
+                        ? rawName.toString().trim()
+                        : (reporterId.isNotEmpty
+                            ? ContactsNameService().getDisplayName(
+                                userId: reporterId,
+                                fallbackName: 'Citizen ${reporterId.length > 6 ? reporterId.substring(0, 6) : reporterId}',
+                              )
+                            : 'Anonymous Citizen');
+                    final reporterPlanet = (reporterProf['country'] ?? 'Earth').toString();
+                    final reporterDay = reporterProf['day'] ?? reporterProf['learning_day'] ?? 1;
+                    final reporterBio = reporterProf['bio']?.toString() ?? '';
+                    final reporterPlot = reporterBio.contains('Plot') ? reporterBio : '';
+                    final reporterAvatar = reporterProf['profile_pic'] ?? reporterProf['image'] ?? reporterProf['profile_image_url'];
+
+                    final isPending = status == 'pending';
+                    final isResolved = status == 'resolved';
 
                     return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
+                      margin: const EdgeInsets.only(bottom: 14),
                       decoration: BoxDecoration(
-                        color: Colors.grey[900],
+                        color: const Color(0xFF1E293B),
                         borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isPending
+                              ? const Color(0xFFFF9100).withValues(alpha: 0.6)
+                              : isResolved
+                                  ? Colors.green.withValues(alpha: 0.4)
+                                  : Colors.white12,
+                          width: isPending ? 1.5 : 1,
+                        ),
                         boxShadow: [
                           BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
-                              blurRadius: 4)
+                            color: Colors.black.withValues(alpha: 0.25),
+                            blurRadius: 6,
+                            offset: const Offset(0, 3),
+                          ),
                         ],
                       ),
                       child: ExpansionTile(
-                        leading: Icon(
-                          status == 'resolved'
-                              ? Icons.check_circle
-                              : Icons.warning_amber_rounded,
-                          color: status == 'resolved'
-                              ? Colors.green
-                              : Colors.orange,
+                        tilePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        leading: CircleAvatar(
+                          radius: 20,
+                          backgroundColor: const Color(0xFF334155),
+                          backgroundImage: (reporterAvatar != null && reporterAvatar.toString().startsWith('http'))
+                              ? CachedNetworkImageProvider(reporterAvatar.toString())
+                              : null,
+                          child: (reporterAvatar == null || !reporterAvatar.toString().startsWith('http'))
+                              ? Text(
+                                  reporterName.isNotEmpty ? reporterName[0].toUpperCase() : '?',
+                                  style: const TextStyle(color: Color(0xFFFFD700), fontWeight: FontWeight.bold),
+                                )
+                              : null,
                         ),
-                        title: Text(
-                            '${type.toString().toUpperCase()} - ${report['content_type']}',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                                color: Colors.white)),
-                        subtitle: Text(
-                            'Status: $status • ${date.day}/${date.month}',
-                            style: TextStyle(
-                                color: Colors.grey[400], fontSize: 12)),
+                        title: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                reporterName,
+                                style: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14.5,
+                                  color: Colors.white,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: isResolved
+                                    ? Colors.green.withValues(alpha: 0.2)
+                                    : isPending
+                                        ? Colors.orange.withValues(alpha: 0.2)
+                                        : Colors.grey.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: isResolved
+                                      ? Colors.green
+                                      : isPending
+                                          ? Colors.orange
+                                          : Colors.grey,
+                                  width: 0.8,
+                                ),
+                              ),
+                              child: Text(
+                                status.toUpperCase(),
+                                style: TextStyle(
+                                  color: isResolved
+                                      ? Colors.green
+                                      : isPending
+                                          ? Colors.orange
+                                          : Colors.grey,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Wrap(
+                            spacing: 6,
+                            runSpacing: 4,
+                            children: [
+                              Text(
+                                '🪐 $reporterPlanet',
+                                style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 11, fontWeight: FontWeight.w600),
+                              ),
+                              Text(
+                                '• Day $reporterDay',
+                                style: const TextStyle(color: Colors.white60, fontSize: 11),
+                              ),
+                              if (reporterPlot.isNotEmpty)
+                                Text(
+                                  '• $reporterPlot',
+                                  style: const TextStyle(color: Color(0xFFFFD700), fontSize: 11),
+                                ),
+                              Text(
+                                '• ${date.day}/${date.month} ${date.hour}:${date.minute.toString().padLeft(2, '0')}',
+                                style: const TextStyle(color: Colors.white38, fontSize: 11),
+                              ),
+                            ],
+                          ),
+                        ),
                         children: [
                           Padding(
-                            padding: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('Description:',
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white)),
-                                Text(
-                                    report['description'] ??
-                                        'No description provided.',
-                                    style:
-                                        const TextStyle(color: Colors.white70)),
+                                const Divider(color: Colors.white12, height: 16),
+
+                                // Reporter Identification Strip
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF0F172A),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(color: Colors.white10),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.badge_rounded, size: 14, color: Color(0xFFFFD700)),
+                                          const SizedBox(width: 6),
+                                          const Text(
+                                            'Citizen Details:',
+                                            style: TextStyle(color: Color(0xFFFFD700), fontSize: 11, fontWeight: FontWeight.bold),
+                                          ),
+                                          const Spacer(),
+                                          if (reporterId.isNotEmpty)
+                                            ElevatedButton.icon(
+                                              onPressed: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (_) => VerfiedSwitchPage(userId: reporterId),
+                                                  ),
+                                                );
+                                              },
+                                              icon: const Icon(Icons.person_search_rounded, size: 13, color: Colors.black),
+                                              label: const Text(
+                                                'Inspect Profile',
+                                                style: TextStyle(color: Colors.black, fontSize: 10.5, fontWeight: FontWeight.bold),
+                                              ),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: const Color(0xFFFFD700),
+                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                minimumSize: Size.zero,
+                                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Row(
+                                        children: [
+                                          Text(
+                                            'Citizen ID: ${reporterId.length > 14 ? "${reporterId.substring(0, 14)}..." : reporterId}',
+                                            style: const TextStyle(color: Colors.white54, fontSize: 11),
+                                          ),
+                                          if (reporterId.isNotEmpty)
+                                            InkWell(
+                                              onTap: () {
+                                                Clipboard.setData(ClipboardData(text: reporterId));
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(content: Text('Citizen ID copied! 📋'), duration: Duration(milliseconds: 900)),
+                                                );
+                                              },
+                                              child: const Padding(
+                                                padding: EdgeInsets.symmetric(horizontal: 4),
+                                                child: Icon(Icons.copy_rounded, color: Colors.white38, size: 12),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+
+                                // Target Item Strip
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF0F172A),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(color: Colors.white10),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.report_problem_rounded, size: 14, color: Color(0xFFEF4444)),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            'Reported ${contentType.toString().toUpperCase()} • Type: ${type.toString().toUpperCase()}',
+                                            style: const TextStyle(color: Color(0xFFF87171), fontSize: 11, fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      ),
+                                      if (contentId.isNotEmpty) ...[
+                                        const SizedBox(height: 4),
+                                        Row(
+                                          children: [
+                                            Text(
+                                              'Content ID: ${contentId.length > 14 ? "${contentId.substring(0, 14)}..." : contentId}',
+                                              style: const TextStyle(color: Colors.white54, fontSize: 11),
+                                            ),
+                                            InkWell(
+                                              onTap: () {
+                                                Clipboard.setData(ClipboardData(text: contentId));
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(content: Text('Content ID copied! 📋'), duration: Duration(milliseconds: 900)),
+                                                );
+                                              },
+                                              child: const Padding(
+                                                padding: EdgeInsets.symmetric(horizontal: 4),
+                                                child: Icon(Icons.copy_rounded, color: Colors.white38, size: 12),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+
+                                // Description
+                                const Text(
+                                  'Description / Evidence:',
+                                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 12),
+                                ),
+                                const SizedBox(height: 4),
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black38,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    report['description'] ?? 'No description provided.',
+                                    style: const TextStyle(color: Colors.white70, fontSize: 12.5),
+                                  ),
+                                ),
+
                                 const SizedBox(height: 12),
                                 if (status == 'pending' || status == 'reviewed')
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
-                                      TextButton(
-                                        onPressed: () => _updateReportStatus(
-                                            report['id'], 'dismissed'),
-                                        child: const Text('Dismiss',
-                                            style:
-                                                TextStyle(color: Colors.grey)),
+                                      TextButton.icon(
+                                        onPressed: () => _updateReportStatus(report['id'], 'dismissed'),
+                                        icon: const Icon(Icons.close_rounded, size: 14, color: Colors.grey),
+                                        label: const Text('Dismiss', style: TextStyle(color: Colors.grey, fontSize: 12)),
                                       ),
                                       const SizedBox(width: 8),
-                                      ElevatedButton(
-                                        onPressed: () => _updateReportStatus(
-                                            report['id'], 'resolved'),
+                                      ElevatedButton.icon(
+                                        onPressed: () => _updateReportStatus(report['id'], 'resolved'),
+                                        icon: const Icon(Icons.check_circle_rounded, size: 14, color: Colors.white),
+                                        label: const Text('Mark Resolved', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                                         style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.blue),
-                                        child: const Text('Mark Resolved',
-                                            style:
-                                                TextStyle(color: Colors.white)),
+                                          backgroundColor: Colors.blueAccent,
+                                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                        ),
                                       ),
                                     ],
                                   ),

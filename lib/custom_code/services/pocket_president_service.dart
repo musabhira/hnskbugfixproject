@@ -237,26 +237,57 @@ class PocketPresidentService {
     final updatedHistory = [message, ...history];
     await prefs.setString(key, jsonEncode(updatedHistory));
 
-    // 2. Fetch sender profile details to enrich report metadata
-    String userName = ContactsNameService().getDisplayName(userId: userId, fallbackName: 'Learner');
-    if (userName.isEmpty || userName == 'User' || userName == 'Citizen') userName = 'Learner';
+    // 2. Fetch sender profile details & auth credentials to enrich report metadata
+    String userName = ContactsNameService().getDisplayName(userId: userId, fallbackName: '');
     String? userAvatar;
     int learningDay = 1;
+    String userEmail = '';
+    String userPhone = '';
+    String planet = 'Earth';
+    String plot = '';
+
     try {
       final prof = await SupaFlow.client
           .from('profile')
-          .select('id, user_id, name, first_name, username, profile_image_url, learning_day')
+          .select('*')
           .or('user_id.eq.$userId,id.eq.$userId')
           .maybeSingle();
       if (prof != null) {
-        final n = (prof['name'] ?? prof['username'] ?? prof['first_name'] ?? '').toString().trim();
+        final n = (prof['name'] ?? prof['shop_name'] ?? '').toString().trim();
         if (n.isNotEmpty) userName = n;
         userAvatar = prof['profile_image_url']?.toString();
-        if (prof['learning_day'] != null) {
-          learningDay = (prof['learning_day'] as num).toInt();
+        if (prof['day'] != null) {
+          learningDay = (prof['day'] as num).toInt();
         }
+        final c = (prof['country'] ?? '').toString().trim();
+        if (c.isNotEmpty) planet = c;
+        final pNo = (prof['phone_no'] ?? '').toString().trim();
+        if (pNo.isNotEmpty) userPhone = pNo;
+        final b = (prof['bio'] ?? '').toString().trim();
+        if (b.contains('Plot')) plot = b;
       }
     } catch (_) {}
+
+    try {
+      final userRow = await SupaFlow.client
+          .from('users')
+          .select('id, email')
+          .eq('id', userId)
+          .maybeSingle();
+      if (userRow != null && userRow['email'] != null) {
+        userEmail = userRow['email'].toString().trim();
+      }
+    } catch (_) {}
+
+    if (userName.isEmpty || userName == 'User' || userName == 'Citizen') {
+      if (userEmail.isNotEmpty) {
+        userName = userEmail.contains('@') ? userEmail.split('@').first : userEmail;
+      } else if (userId.length > 6) {
+        userName = 'Learner ${userId.substring(0, 6)}';
+      } else {
+        userName = 'Learner';
+      }
+    }
 
     // 3. Register inquiry in Master Inquiries List for Admin Panel
     await _recordMasterInquiry(
@@ -305,6 +336,10 @@ class PocketPresidentService {
       final additionalData = {
         'user_id': userId,
         'user_name': userName,
+        'user_email': userEmail,
+        'user_phone': userPhone,
+        'planet': planet,
+        'plot': plot,
         'user_avatar': userAvatar,
         'learning_day': learningDay,
         'message_id': messageId,
@@ -559,6 +594,7 @@ class PocketPresidentService {
 
     await _recordMasterInquiry(
       userId: reporterId,
+      userName: reporterName,
       lastMessage: reportSummary,
       timestamp: now,
     );
@@ -836,7 +872,7 @@ class PocketPresidentService {
         try {
           final profs1 = await supabase
               .from('profile')
-              .select('id, user_id, name, display_name, first_name, username, profile_image_url, learning_day, day, english_level, country, city, bio, phone_no')
+              .select('*')
               .inFilter('user_id', uniqueIds);
           for (var p in profs1) {
             if (p['user_id'] != null) profileMap[p['user_id'].toString()] = p;
@@ -844,7 +880,7 @@ class PocketPresidentService {
           }
           final profs2 = await supabase
               .from('profile')
-              .select('id, user_id, name, display_name, first_name, username, profile_image_url, learning_day, day, english_level, country, city, bio, phone_no')
+              .select('*')
               .inFilter('id', uniqueIds);
           for (var p in profs2) {
             if (p['user_id'] != null) profileMap[p['user_id'].toString()] = p;
@@ -857,7 +893,7 @@ class PocketPresidentService {
         try {
           final usersRes = await supabase
               .from('users')
-              .select('id, email, phone_no, role')
+              .select('id, email')
               .inFilter('id', uniqueIds);
           for (var u in usersRes) {
             if (u['id'] != null) userAuthMap[u['id'].toString()] = u;
