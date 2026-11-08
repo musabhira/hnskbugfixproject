@@ -12,7 +12,8 @@ import 'poket_cosmos_vocab_dictionary.dart';
 class CelestialColonyInfo {
   final int planetId;
   final String planetName;
-  final String code; // 'EP', 'MAR', 'JUP', 'SAT', 'LUN', 'EUR', 'VEN', 'TTN', 'PLT', 'NEP'
+  final String
+      code; // 'EP', 'MAR', 'JUP', 'SAT', 'LUN', 'EUR', 'VEN', 'TTN', 'PLT', 'NEP'
   final String islandName;
   final String streetName;
   final Color landColor;
@@ -44,7 +45,8 @@ class CelestialColonyInfo {
 /// - 4-Hour Neighbor Pre-booking Pass & Direct Referral Gateway routing
 class PoketCosmosAllocationService {
   PoketCosmosAllocationService._();
-  static final PoketCosmosAllocationService instance = PoketCosmosAllocationService._();
+  static final PoketCosmosAllocationService instance =
+      PoketCosmosAllocationService._();
 
   // Storage Keys
   static const _kPlanetName = 'poket_birth_planet_name';
@@ -70,22 +72,37 @@ class PoketCosmosAllocationService {
   /// Generates endless unique celestial island titles across infinite waves.
   /// First 2,000 islands receive unique English vocabulary root words.
   /// Island 2001+ increments cycle count (e.g. 'Serenity 1 Atoll', 'Horizon 1 Bay').
-  static String generateInfiniteIslandName(String planetCode, int wave, int islandNum) {
+  static String generateInfiniteIslandName(
+      String planetCode, int wave, int islandNum) {
     final colonyIndex = colonies.indexWhere((c) => c.code == planetCode);
     final int safeColonyIdx = colonyIndex >= 0 ? colonyIndex : 0;
     // Sequential island index in the universe (1-based)
-    final int globalIslandIndex = ((wave - 1) * totalPlanetsCount) + safeColonyIdx + 1;
+    final int globalIslandIndex =
+        ((wave - 1) * totalPlanetsCount) + safeColonyIdx + 1;
 
     final int vocabIndex = (globalIslandIndex - 1) % kCosmosVocab2000.length;
     final int cycle = (globalIslandIndex - 1) ~/ kCosmosVocab2000.length;
     final String rootWord = kCosmosVocab2000[vocabIndex];
 
     const landforms = [
-      'Atoll', 'Haven', 'Bay', 'Sound', 'Peninsula',
-      'Archipelago', 'Plateau', 'Shores', 'Lagoon', 'Citadel',
-      'Cove', 'Crest', 'Oasis', 'Terrace', 'Sanctuary',
+      'Atoll',
+      'Haven',
+      'Bay',
+      'Sound',
+      'Peninsula',
+      'Archipelago',
+      'Plateau',
+      'Shores',
+      'Lagoon',
+      'Citadel',
+      'Cove',
+      'Crest',
+      'Oasis',
+      'Terrace',
+      'Sanctuary',
     ];
-    final String landform = landforms[(globalIslandIndex * 3 + safeColonyIdx) % landforms.length];
+    final String landform =
+        landforms[(globalIslandIndex * 3 + safeColonyIdx) % landforms.length];
 
     if (cycle == 0) {
       return '$rootWord $landform';
@@ -238,11 +255,13 @@ class PoketCosmosAllocationService {
     required int localPlotNumber,
   }) {
     final cleanCode = planetCode.trim().toUpperCase();
-    int planetIndex = colonies.indexWhere((c) => c.code.toUpperCase() == cleanCode);
+    int planetIndex =
+        colonies.indexWhere((c) => c.code.toUpperCase() == cleanCode);
     if (planetIndex == -1) planetIndex = 0; // Default to Earth
     final clampedLocal = localPlotNumber.clamp(1, maxPlotsPerIsland);
     final clampedWave = math.max(1, wave);
-    final offsetWithinWave = ((clampedLocal - 1) * colonies.length) + planetIndex;
+    final offsetWithinWave =
+        ((clampedLocal - 1) * colonies.length) + planetIndex;
     return ((clampedWave - 1) * waveCapacity) + offsetWithinWave + 1;
   }
 
@@ -283,7 +302,8 @@ class PoketCosmosAllocationService {
           'climate': colony.climate,
           'shapeStyle': colony.shapeStyle,
           'totalPlots': maxPlotsPerIsland,
-          'occupiedCount': math.min(maxPlotsPerIsland, 8 + (w * 3) + (colony.planetId % 9)),
+          'occupiedCount':
+              math.min(maxPlotsPerIsland, 8 + (w * 3) + (colony.planetId % 9)),
         });
       }
     }
@@ -295,14 +315,16 @@ class PoketCosmosAllocationService {
   bool _profilesLoaded = false;
 
   /// Loads all real registered users from Supabase profile table
-  Future<List<Map<String, dynamic>>> loadAllRegisteredProfiles({bool forceRefresh = false}) async {
+  Future<List<Map<String, dynamic>>> loadAllRegisteredProfiles(
+      {bool forceRefresh = false}) async {
     if (_profilesLoaded && !forceRefresh && _allRegisteredProfiles.isNotEmpty) {
       return _allRegisteredProfiles;
     }
     try {
       final res = await SupaFlow.client
           .from('profile')
-          .select('id, user_id, name, bio, profile_image_url, pocket_score, created_at')
+          .select(
+              'id, user_id, name, bio, profile_image_url, pocket_score, created_at')
           .order('created_at', ascending: true);
       _allRegisteredProfiles = List<Map<String, dynamic>>.from(res);
       _profilesLoaded = true;
@@ -314,7 +336,9 @@ class PoketCosmosAllocationService {
 
   /// Synchronous count of registered profiles
   static int get totalRegisteredUsersCount =>
-      instance._allRegisteredProfiles.isNotEmpty ? instance._allRegisteredProfiles.length : 277;
+      instance._allRegisteredProfiles.isNotEmpty
+          ? instance._allRegisteredProfiles.length
+          : 277;
 
   /// 📈 Dynamic Real Estate Valuation Algorithm
   /// Calculates the current Pocket Score price for any plot based on wave occupancy, planet prestige, and parcel tier
@@ -325,7 +349,9 @@ class PoketCosmosAllocationService {
     int? totalOccupiedInWave,
   }) {
     final int occupied = totalOccupiedInWave ??
-        (wave == 1 ? 250 : math.max(0, instance._allRegisteredProfiles.length - 250));
+        (wave == 1
+            ? 250
+            : math.max(0, instance._allRegisteredProfiles.length - 250));
     final double occupancyRatio = (occupied / waveCapacity).clamp(0.0, 1.0);
 
     // Dynamic market curve:
@@ -348,7 +374,9 @@ class PoketCosmosAllocationService {
     double planetMultiplier = 1.0;
     if (planetCode == 'EP') {
       planetMultiplier = 1.30; // Earth Prime capital world
-    } else if (planetCode == 'MAR' || planetCode == 'JUP' || planetCode == 'SAT') {
+    } else if (planetCode == 'MAR' ||
+        planetCode == 'JUP' ||
+        planetCode == 'SAT') {
       planetMultiplier = 1.10;
     } else if (planetCode == 'LUN' || planetCode == 'EUR') {
       planetMultiplier = 1.05;
@@ -377,7 +405,9 @@ class PoketCosmosAllocationService {
     final uid = SupaFlow.client.auth.currentUser?.id;
     if (uid == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please log in to purchase a plot in Pocket Cosmos!')),
+        const SnackBar(
+            content:
+                Text('Please log in to purchase a plot in Pocket Cosmos!')),
       );
       return false;
     }
@@ -415,7 +445,8 @@ class PoketCosmosAllocationService {
       if (!context.mounted) return false;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Insufficient Pocket Score! Needs $price PS (You have $userScore PS). Complete daily English tasks to earn more!'),
+          content: Text(
+              'Insufficient Pocket Score! Needs $price PS (You have $userScore PS). Complete daily English tasks to earn more!'),
           backgroundColor: const Color(0xFFDC2626),
         ),
       );
@@ -438,7 +469,8 @@ class PoketCosmosAllocationService {
     try {
       // Clean previous pin from bio and append new pin, keeping user's personal bio
       final cleanBio = existingBio
-          .replaceAll(RegExp(r'\s*(\n\n)?🏡\s*PKT-W\d+-[A-Z]+-I\d+-P\d+.*$'), '')
+          .replaceAll(
+              RegExp(r'\s*(\n\n)?🏡\s*PKT-W\d+-[A-Z]+-I\d+-P\d+.*$'), '')
           .trim();
       final newBio = cleanBio.isEmpty
           ? '🏡 Citizen of $effectiveIslandName, ${colony.planetName} ($newPin)'
@@ -454,11 +486,17 @@ class PoketCosmosAllocationService {
 
       if (profileDocId != null && profileDocId.isNotEmpty) {
         try {
-          await SupaFlow.client.from('profile').update(updatePayload).eq('id', profileDocId);
+          await SupaFlow.client
+              .from('profile')
+              .update(updatePayload)
+              .eq('id', profileDocId);
         } catch (_) {}
       }
       try {
-        await SupaFlow.client.from('profile').update(updatePayload).eq('user_id', uid);
+        await SupaFlow.client
+            .from('profile')
+            .update(updatePayload)
+            .eq('user_id', uid);
       } catch (_) {}
 
       // Update in-memory user plot
@@ -475,7 +513,9 @@ class PoketCosmosAllocationService {
         planetName: colony.planetName,
         postalPinCode: newPin,
         coordinates: Offset.zero,
-        tier: (targetPlotNumber <= 6) ? PlotDeedTier.beachfront : PlotDeedTier.standard,
+        tier: (targetPlotNumber <= 6)
+            ? PlotDeedTier.beachfront
+            : PlotDeedTier.standard,
         status: PlotStatus.occupied,
       );
       _userBirthPlots[uid] = newPlot;
@@ -491,7 +531,8 @@ class PoketCosmosAllocationService {
       if (!context.mounted) return true;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('🎉 Congratulations! You successfully acquired Plot #$targetPlotNumber on ${colony.planetName} for $price PS!'),
+          content: Text(
+              '🎉 Congratulations! You successfully acquired Plot #$targetPlotNumber on ${colony.planetName} for $price PS!'),
           backgroundColor: const Color(0xFF10B981),
         ),
       );
@@ -499,7 +540,9 @@ class PoketCosmosAllocationService {
     } catch (e) {
       if (!context.mounted) return false;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to complete purchase: $e'), backgroundColor: Colors.red),
+        SnackBar(
+            content: Text('Failed to complete purchase: $e'),
+            backgroundColor: Colors.red),
       );
       return false;
     }
@@ -518,12 +561,14 @@ class PoketCosmosAllocationService {
     for (int i = 0; i < profiles.length; i++) {
       final prof = profiles[i];
       final bio = prof['bio']?.toString() ?? '';
-      final match = RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(bio);
+      final match =
+          RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(bio);
       if (match != null) {
         final w = int.tryParse(match.group(1) ?? '1') ?? 1;
         final pCode = match.group(2) ?? 'EP';
         final lPlot = int.tryParse(match.group(4) ?? '1') ?? 1;
-        final g = calculateGlobalPlotNumber(wave: w, planetCode: pCode, localPlotNumber: lPlot);
+        final g = calculateGlobalPlotNumber(
+            wave: w, planetCode: pCode, localPlotNumber: lPlot);
         plotToProfile[g] = prof;
         relocatedUserIndices.add(i);
       }
@@ -552,7 +597,9 @@ class PoketCosmosAllocationService {
       if (plotToProfile.containsKey(gNum)) {
         final prof = plotToProfile[gNum]!;
         final rawName = prof['name']?.toString().trim();
-        ownerName = (rawName != null && rawName.isNotEmpty) ? rawName : 'Citizen #$gNum';
+        ownerName = (rawName != null && rawName.isNotEmpty)
+            ? rawName
+            : 'Citizen #$gNum';
         final rawAvatar = prof['profile_image_url']?.toString().trim();
         avatar = (rawAvatar != null && rawAvatar.isNotEmpty) ? rawAvatar : '🦁';
         userId = prof['id']?.toString() ?? prof['user_id']?.toString() ?? '';
@@ -587,17 +634,20 @@ class PoketCosmosAllocationService {
   /// 🪐 Returns the exact, verified planet code of the currently viewing user
   String getCurrentViewerPlanetCode() {
     if (_cachedBirthPlot != null) {
-      return PoketCosmosDistanceService.instance.resolvePlanetCode(_cachedBirthPlot!.planetName);
+      return PoketCosmosDistanceService.instance
+          .resolvePlanetCode(_cachedBirthPlot!.planetName);
     }
     final uid = SupaFlow.client.auth.currentUser?.id;
     if (uid != null) {
       if (_userBirthPlots.containsKey(uid)) {
-        return PoketCosmosDistanceService.instance.resolvePlanetCode(_userBirthPlots[uid]!.planetName);
+        return PoketCosmosDistanceService.instance
+            .resolvePlanetCode(_userBirthPlots[uid]!.planetName);
       }
       final plot = getCachedUserPlot(uid);
       if (plot != null) {
         _cachedBirthPlot = plot;
-        return PoketCosmosDistanceService.instance.resolvePlanetCode(plot.planetName);
+        return PoketCosmosDistanceService.instance
+            .resolvePlanetCode(plot.planetName);
       }
     }
     return 'EP';
@@ -616,14 +666,19 @@ class PoketCosmosAllocationService {
       (uid != null && uid.isNotEmpty) ? '${uid}_$key' : key;
 
   /// 🌍 Ensures the current user (new or existing) has a permanent Cosmos Born Address allocated
-  Future<CitizenPlot> ensureUserHasAllocatedPlot({String? defaultName, String? defaultAvatar}) async {
+  Future<CitizenPlot> ensureUserHasAllocatedPlot(
+      {String? defaultName, String? defaultAvatar}) async {
     final uid = SupaFlow.client.auth.currentUser?.id;
     String name = defaultName ?? '';
     String avatar = defaultAvatar ?? '🦁';
 
     if (uid != null && name.isEmpty) {
       try {
-        final res = await SupaFlow.client.from('profile').select('name, profile_image_url').eq('id', uid).maybeSingle();
+        final res = await SupaFlow.client
+            .from('profile')
+            .select('name, profile_image_url')
+            .eq('id', uid)
+            .maybeSingle();
         if (res != null) {
           name = res['name']?.toString() ?? 'Citizen';
           avatar = res['profile_image_url']?.toString() ?? '🦁';
@@ -679,7 +734,8 @@ class PoketCosmosAllocationService {
         final colony = parsed['colony'] as CelestialColonyInfo;
         final localPlot = parsed['localPlotNumber'] as int;
         final wave = parsed['wave'] as int;
-        final pinStr = 'PKT-W${wave.toString().padLeft(2, '0')}-${colony.code}-I${wave.toString().padLeft(2, '0')}-P${localPlot.toString().padLeft(2, '0')}';
+        final pinStr =
+            'PKT-W${wave.toString().padLeft(2, '0')}-${colony.code}-I${wave.toString().padLeft(2, '0')}-P${localPlot.toString().padLeft(2, '0')}';
         final plot = CitizenPlot(
           plotNumber: localPlot,
           userId: userId,
@@ -687,15 +743,23 @@ class PoketCosmosAllocationService {
           userAvatar: prof['profile_image_url']?.toString() ?? '🦁',
           day: 1,
           pocketScore: prof['pocket_score'] as int? ?? 100,
-          streetName: (wave == 1) ? colony.streetName : 'Wave $wave ${colony.streetName}',
-          postOffice: (wave == 1) ? colony.islandName : generateInfiniteIslandName(colony.code, wave, wave),
-          countryName: (wave == 1) ? colony.islandName : generateInfiniteIslandName(colony.code, wave, wave),
+          streetName: (wave == 1)
+              ? colony.streetName
+              : 'Wave $wave ${colony.streetName}',
+          postOffice: (wave == 1)
+              ? colony.islandName
+              : generateInfiniteIslandName(colony.code, wave, wave),
+          countryName: (wave == 1)
+              ? colony.islandName
+              : generateInfiniteIslandName(colony.code, wave, wave),
           planetName: colony.planetName,
           postalPinCode: pinStr,
           coordinates: Offset.zero,
           isVip: false,
           isPresident: false,
-          tier: (localPlot <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+          tier: (localPlot <= 6
+              ? PlotDeedTier.beachfront
+              : PlotDeedTier.standard),
           status: PlotStatus.occupied,
         );
         _userBirthPlots[userId] = plot;
@@ -757,7 +821,8 @@ class PoketCosmosAllocationService {
     if (profIdx != -1) {
       final prof = _allRegisteredProfiles[profIdx];
       final bio = prof['bio']?.toString() ?? '';
-      final pinMatch = RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(bio);
+      final pinMatch =
+          RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(bio);
       if (pinMatch != null) {
         final planetCode = pinMatch.group(2) ?? 'EP';
         final plotNum = int.tryParse(pinMatch.group(4) ?? '1') ?? 1;
@@ -766,18 +831,21 @@ class PoketCosmosAllocationService {
           plotNumber: plotNum,
           userId: userId,
           userName: prof['name']?.toString() ?? fallbackName ?? 'Citizen',
-          userAvatar: prof['profile_image_url']?.toString() ?? fallbackAvatar ?? '🦁',
+          userAvatar:
+              prof['profile_image_url']?.toString() ?? fallbackAvatar ?? '🦁',
           day: 1,
           pocketScore: 100,
           streetName: colony.streetName,
           postOffice: colony.islandName,
           countryName: colony.islandName,
           planetName: colony.planetName,
-          postalPinCode: pinMatch.group(0) ?? 'PKT-W01-$planetCode-I01-P${plotNum.toString().padLeft(2, '0')}',
+          postalPinCode: pinMatch.group(0) ??
+              'PKT-W01-$planetCode-I01-P${plotNum.toString().padLeft(2, '0')}',
           coordinates: Offset.zero,
           isVip: false,
           isPresident: false,
-          tier: (plotNum <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+          tier:
+              (plotNum <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
           status: PlotStatus.occupied,
         );
         _userBirthPlots[userId] = plot;
@@ -789,23 +857,34 @@ class PoketCosmosAllocationService {
       final colony = parsed['colony'] as CelestialColonyInfo;
       final localPlot = parsed['localPlotNumber'] as int;
       final wave = parsed['wave'] as int;
-      final pinStr = 'PKT-W${wave.toString().padLeft(2, '0')}-${colony.code}-I${wave.toString().padLeft(2, '0')}-P${localPlot.toString().padLeft(2, '0')}';
+      final pinStr =
+          'PKT-W${wave.toString().padLeft(2, '0')}-${colony.code}-I${wave.toString().padLeft(2, '0')}-P${localPlot.toString().padLeft(2, '0')}';
       final plot = CitizenPlot(
         plotNumber: localPlot,
         userId: userId,
         userName: prof['name']?.toString() ?? fallbackName ?? 'Citizen #$gNum',
-        userAvatar: prof['profile_image_url']?.toString() ?? fallbackAvatar ?? '🦁',
+        userAvatar:
+            prof['profile_image_url']?.toString() ?? fallbackAvatar ?? '🦁',
         day: 1,
         pocketScore: prof['pocket_score'] as int? ?? 100,
-        streetName: (wave == 1) ? colony.streetName : 'Wave $wave ${colony.streetName}',
-        postOffice: (wave == 1) ? colony.islandName : generateInfiniteIslandName(colony.code, wave, wave),
-        countryName: (wave == 1) ? colony.islandName : generateInfiniteIslandName(colony.code, wave, wave),
+        streetName:
+            (wave == 1) ? colony.streetName : 'Wave $wave ${colony.streetName}',
+        postOffice: (wave == 1)
+            ? colony.islandName
+            : generateInfiniteIslandName(colony.code, wave, wave),
+        countryName: (wave == 1)
+            ? colony.islandName
+            : generateInfiniteIslandName(colony.code, wave, wave),
         planetName: colony.planetName,
         postalPinCode: pinStr,
         coordinates: Offset.zero,
         isVip: false,
         isPresident: false,
-        tier: (localPlot == 1) ? PlotDeedTier.royalCitadel : (localPlot <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+        tier: (localPlot == 1)
+            ? PlotDeedTier.royalCitadel
+            : (localPlot <= 6
+                ? PlotDeedTier.beachfront
+                : PlotDeedTier.standard),
         status: PlotStatus.occupied,
       );
       _userBirthPlots[userId] = plot;
@@ -822,7 +901,8 @@ class PoketCosmosAllocationService {
 
       if (res != null) {
         final bio = res['bio']?.toString() ?? '';
-        final pinMatch = RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(bio);
+        final pinMatch =
+            RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(bio);
         if (pinMatch != null) {
           final planetCode = pinMatch.group(2) ?? 'EP';
           final plotNum = int.tryParse(pinMatch.group(4) ?? '1') ?? 1;
@@ -831,18 +911,22 @@ class PoketCosmosAllocationService {
             plotNumber: plotNum,
             userId: userId,
             userName: res['name']?.toString() ?? fallbackName ?? 'Citizen',
-            userAvatar: res['profile_image_url']?.toString() ?? fallbackAvatar ?? '🦁',
+            userAvatar:
+                res['profile_image_url']?.toString() ?? fallbackAvatar ?? '🦁',
             day: 1,
             pocketScore: 100,
             streetName: colony.streetName,
             postOffice: colony.islandName,
             countryName: colony.islandName,
             planetName: colony.planetName,
-            postalPinCode: pinMatch.group(0) ?? 'PKT-W01-$planetCode-I01-P${plotNum.toString().padLeft(2, '0')}',
+            postalPinCode: pinMatch.group(0) ??
+                'PKT-W01-$planetCode-I01-P${plotNum.toString().padLeft(2, '0')}',
             coordinates: Offset.zero,
             isVip: false,
             isPresident: false,
-            tier: (plotNum <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+            tier: (plotNum <= 6
+                ? PlotDeedTier.beachfront
+                : PlotDeedTier.standard),
             status: PlotStatus.occupied,
           );
           _userBirthPlots[userId] = plot;
@@ -857,7 +941,8 @@ class PoketCosmosAllocationService {
     final colIndex = userId.hashCode.abs() % colonies.length;
     final targetColony = colonies[colIndex];
     final plotNumber = ((userId.hashCode.abs() ~/ 10) % maxPlotsPerIsland) + 1;
-    final pinStr = 'PKT-W01-${targetColony.code}-I01-P${plotNumber.toString().padLeft(2, '0')}';
+    final pinStr =
+        'PKT-W01-${targetColony.code}-I01-P${plotNumber.toString().padLeft(2, '0')}';
 
     final plot = CitizenPlot(
       plotNumber: plotNumber,
@@ -936,7 +1021,9 @@ class PoketCosmosAllocationService {
               planetName: colony.planetName,
               coordinates: Offset.zero,
               postalPinCode: match.group(0)!,
-              tier: (plotNum <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+              tier: (plotNum <= 6
+                  ? PlotDeedTier.beachfront
+                  : PlotDeedTier.standard),
               status: PlotStatus.occupied,
             );
             _userBirthPlots[uid] = plot;
@@ -953,7 +1040,8 @@ class PoketCosmosAllocationService {
     if (!forceReallocate) {
       final userDeedKey = _userKey(uid, _kDeedClaimed);
       if (prefs.getBool(userDeedKey) == true) {
-        final existing = _readSavedPlotFromPrefs(prefs, userName, avatar, uid: uid);
+        final existing =
+            _readSavedPlotFromPrefs(prefs, userName, avatar, uid: uid);
         if (existing != null) {
           if (uid != null) _userBirthPlots[uid] = existing;
           _cachedBirthPlot = existing;
@@ -970,7 +1058,8 @@ class PoketCosmosAllocationService {
         final activeWave = await getActiveWaveIndex();
 
         // Mark the reserved plot occupied in this wave & colony
-        await _markPlotOccupied(activeWave, colony.code, reservation.plotNumber);
+        await _markPlotOccupied(
+            activeWave, colony.code, reservation.plotNumber);
 
         final plot = CitizenPlot(
           plotNumber: reservation.plotNumber,
@@ -985,7 +1074,9 @@ class PoketCosmosAllocationService {
           planetName: reservation.planetName,
           coordinates: Offset.zero,
           postalPinCode: reservation.cosmosPin,
-          tier: (reservation.plotNumber <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+          tier: (reservation.plotNumber <= 6
+              ? PlotDeedTier.beachfront
+              : PlotDeedTier.standard),
           status: PlotStatus.occupied,
         );
         await saveBirthplace(plot);
@@ -996,7 +1087,8 @@ class PoketCosmosAllocationService {
 
     // 4. Case A: Universal "Destiny" Allocation across ALL 10 Celestial Colonies!
     // Fetch live registered profiles from Supabase to count real cloud occupants
-    final registeredProfiles = await loadAllRegisteredProfiles(forceRefresh: true);
+    final registeredProfiles =
+        await loadAllRegisteredProfiles(forceRefresh: true);
     int currentWave = await getActiveWaveIndex();
 
     // Map real occupied plots for each planet in currentWave
@@ -1006,13 +1098,15 @@ class PoketCosmosAllocationService {
     }
 
     for (final prof in registeredProfiles) {
-      final profUid = prof['id']?.toString() ?? prof['user_id']?.toString() ?? '';
+      final profUid =
+          prof['id']?.toString() ?? prof['user_id']?.toString() ?? '';
       if (forceReallocate && uid != null && profUid == uid) {
         continue; // Exclude previous plot of the user being reallocated
       }
 
       final bio = prof['bio']?.toString() ?? '';
-      final match = RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(bio);
+      final match =
+          RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(bio);
       if (match != null) {
         final w = int.tryParse(match.group(1) ?? '1') ?? 1;
         final pCode = match.group(2) ?? 'EP';
@@ -1025,7 +1119,8 @@ class PoketCosmosAllocationService {
 
     // Filter colonies that still have space (< maxPlotsPerIsland = 25 plots)
     final availableColonies = colonies
-        .where((c) => (colonyOccupancy[c.code]?.length ?? 0) < maxPlotsPerIsland)
+        .where(
+            (c) => (colonyOccupancy[c.code]?.length ?? 0) < maxPlotsPerIsland)
         .toList();
 
     CelestialColonyInfo pickedColony;
@@ -1062,7 +1157,8 @@ class PoketCosmosAllocationService {
           .toList();
 
       // Interleaved round-robin selection based on registered profiles count
-      final roundRobinIndex = registeredProfiles.length % leastOccupiedColonies.length;
+      final roundRobinIndex =
+          registeredProfiles.length % leastOccupiedColonies.length;
       pickedColony = leastOccupiedColonies[roundRobinIndex];
 
       final occupiedInPicked = colonyOccupancy[pickedColony.code] ?? {};
@@ -1078,10 +1174,12 @@ class PoketCosmosAllocationService {
       }
 
       // If all plots on pickedColony are occupied or reserved, check other available colonies
-      if (occupiedInPicked.contains(pickedPlotNum) || reservedPlots.contains(pickedPlotNum)) {
+      if (occupiedInPicked.contains(pickedPlotNum) ||
+          reservedPlots.contains(pickedPlotNum)) {
         for (final col in availableColonies) {
           final occ = colonyOccupancy[col.code] ?? {};
-          final res = await getActiveReservationsForIsland(col.planetId * 100 + currentWave);
+          final res = await getActiveReservationsForIsland(
+              col.planetId * 100 + currentWave);
           final resSet = res.map((r) => r.plotNumber).toSet();
           for (int p = 1; p <= maxPlotsPerIsland; p++) {
             if (!occ.contains(p) && !resSet.contains(p)) {
@@ -1090,7 +1188,8 @@ class PoketCosmosAllocationService {
               break;
             }
           }
-          if (!occ.contains(pickedPlotNum) && !resSet.contains(pickedPlotNum)) break;
+          if (!occ.contains(pickedPlotNum) && !resSet.contains(pickedPlotNum))
+            break;
         }
       }
     }
@@ -1098,7 +1197,8 @@ class PoketCosmosAllocationService {
     // Effective Island & Street Name
     final effectiveIslandName = (currentWave == 1)
         ? pickedColony.islandName
-        : generateInfiniteIslandName(pickedColony.code, currentWave, currentWave);
+        : generateInfiniteIslandName(
+            pickedColony.code, currentWave, currentWave);
     final effectiveStreetName = (currentWave == 1)
         ? pickedColony.streetName
         : 'Wave $currentWave ${pickedColony.streetName}';
@@ -1124,14 +1224,11 @@ class PoketCosmosAllocationService {
       planetName: pickedColony.planetName,
       coordinates: Offset.zero,
       postalPinCode: cosmosPin,
-      tier: (pickedPlotNum <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+      tier: (pickedPlotNum <= 6
+          ? PlotDeedTier.beachfront
+          : PlotDeedTier.standard),
       status: PlotStatus.occupied,
     );
-
-    await saveBirthplace(plot);
-    if (uid != null) _userBirthPlots[uid] = plot;
-    return plot;
-  }
 
     await saveBirthplace(plot);
     if (uid != null) _userBirthPlots[uid] = plot;
@@ -1180,7 +1277,8 @@ class PoketCosmosAllocationService {
         } catch (_) {}
 
         final cleanBio = existingBio
-            .replaceAll(RegExp(r'\s*(\n\n)?🏡\s*PKT-W\d+-[A-Z]+-I\d+-P\d+.*$'), '')
+            .replaceAll(
+                RegExp(r'\s*(\n\n)?🏡\s*PKT-W\d+-[A-Z]+-I\d+-P\d+.*$'), '')
             .trim();
         final newBio = cleanBio.isEmpty
             ? '🏡 Citizen of ${plot.countryName}, ${plot.planetName} (${plot.postalPinCode})'
@@ -1195,11 +1293,17 @@ class PoketCosmosAllocationService {
 
         if (profileDocId != null && profileDocId.isNotEmpty) {
           try {
-            await SupaFlow.client.from('profile').update(payload).eq('id', profileDocId);
+            await SupaFlow.client
+                .from('profile')
+                .update(payload)
+                .eq('id', profileDocId);
           } catch (_) {}
         }
         try {
-          await SupaFlow.client.from('profile').update(payload).eq('user_id', user.id);
+          await SupaFlow.client
+              .from('profile')
+              .update(payload)
+              .eq('user_id', user.id);
         } catch (_) {}
       }
     } catch (e) {
@@ -1215,8 +1319,8 @@ class PoketCosmosAllocationService {
         prefs.getString(_kPlanetName);
     final island = prefs.getString(_userKey(uid, _kIslandName)) ??
         prefs.getString(_kIslandName);
-    final plotNum = prefs.getInt(_userKey(uid, _kPlotNumber)) ??
-        prefs.getInt(_kPlotNumber);
+    final plotNum =
+        prefs.getInt(_userKey(uid, _kPlotNumber)) ?? prefs.getInt(_kPlotNumber);
     final street = prefs.getString(_userKey(uid, _kStreetName)) ??
         prefs.getString(_kStreetName);
     final pin = prefs.getString(_userKey(uid, _kCosmosPin)) ??
@@ -1235,8 +1339,8 @@ class PoketCosmosAllocationService {
         countryName: island,
         planetName: planet,
         coordinates: Offset.zero,
-        postalPinCode: pin ??
-            'PKT-W01-EP-I01-P${plotNum.toString().padLeft(2, '0')}',
+        postalPinCode:
+            pin ?? 'PKT-W01-EP-I01-P${plotNum.toString().padLeft(2, '0')}',
       );
     }
     return null;
@@ -1272,7 +1376,8 @@ class PoketCosmosAllocationService {
     final prefs = await SharedPreferences.getInstance();
     final localWave = prefs.getInt(_kActiveWaveIndexKey) ?? 1;
 
-    final effectiveWave = math.max(1, math.max(userBasedWave, math.max(remoteWave, localWave)));
+    final effectiveWave =
+        math.max(1, math.max(userBasedWave, math.max(remoteWave, localWave)));
     return effectiveWave;
   }
 
@@ -1302,7 +1407,8 @@ class PoketCosmosAllocationService {
         await SupaFlow.client.from('app_codes').insert({
           'class_name': 'cosmos_waves',
           'class_code': nextWave.toString(),
-          'description': 'Global Active Waves in Poket Cosmos (10 islands per wave, 250 plots)',
+          'description':
+              'Global Active Waves in Poket Cosmos (10 islands per wave, 250 plots)',
           'is_active': true,
         });
       }
@@ -1322,7 +1428,8 @@ class PoketCosmosAllocationService {
   }
 
   /// Gets occupied plot numbers (1..18) for a planet in a given wave
-  Future<List<int>> _getOccupiedPlotsForPlanet(int wave, String planetCode) async {
+  Future<List<int>> _getOccupiedPlotsForPlanet(
+      int wave, String planetCode) async {
     final prefs = await SharedPreferences.getInstance();
     final key = '$_kPlanetOccupiedPlotsPrefix' 'W${wave}_$planetCode';
     final raw = prefs.getString(key);
@@ -1336,7 +1443,8 @@ class PoketCosmosAllocationService {
   }
 
   /// Marks a plot occupied and checks for "HOUSE FULL!" wave completion
-  Future<void> _markPlotOccupied(int wave, String planetCode, int plotNumber) async {
+  Future<void> _markPlotOccupied(
+      int wave, String planetCode, int plotNumber) async {
     final prefs = await SharedPreferences.getInstance();
     final key = '$_kPlanetOccupiedPlotsPrefix' 'W${wave}_$planetCode';
     final currentPlots = await _getOccupiedPlotsForPlanet(wave, planetCode);
@@ -1354,7 +1462,8 @@ class PoketCosmosAllocationService {
       if (currentWaveTotal >= waveCapacity) {
         final nextWave = wave + 1;
         await prefs.setInt(_kActiveWaveIndexKey, nextWave);
-        debugPrint('🎉 HOUSE FULL REACHED! Wave W$wave is 100% full. Wave W$nextWave unlocked!');
+        debugPrint(
+            '🎉 HOUSE FULL REACHED! Wave W$wave is 100% full. Wave W$nextWave unlocked!');
       }
     }
   }
@@ -1382,7 +1491,8 @@ class PoketCosmosAllocationService {
         final String? existingBio = item['bio'] as String?;
 
         // If user already has an allocated bio/PIN, count as already allocated
-        if (existingBio != null && (existingBio.contains('PKT-EP') || existingBio.contains('PKT-W'))) {
+        if (existingBio != null &&
+            (existingBio.contains('PKT-EP') || existingBio.contains('PKT-W'))) {
           alreadyAllocated++;
           continue;
         }
@@ -1396,7 +1506,8 @@ class PoketCosmosAllocationService {
 
         final waveStr = waveIdx.toString().padLeft(2, '0');
         final plotStr = plotNum.toString().padLeft(2, '0');
-        final cosmosPin = 'PKT-W$waveStr-${targetColony.code}-I$waveStr-P$plotStr';
+        final cosmosPin =
+            'PKT-W$waveStr-${targetColony.code}-I$waveStr-P$plotStr';
 
         final effectiveIslandName = (waveIdx == 1)
             ? targetColony.islandName
@@ -1406,7 +1517,8 @@ class PoketCosmosAllocationService {
             : 'Wave $waveIdx ${targetColony.streetName}';
 
         final cleanBio = (existingBio ?? '')
-            .replaceAll(RegExp(r'\s*(\n\n)?🏡\s*PKT-W\d+-[A-Z]+-I\d+-P\d+.*$'), '')
+            .replaceAll(
+                RegExp(r'\s*(\n\n)?🏡\s*PKT-W\d+-[A-Z]+-I\d+-P\d+.*$'), '')
             .trim();
         final newBio = cleanBio.isEmpty
             ? '🏡 Citizen of $effectiveIslandName, ${targetColony.planetName} ($cosmosPin)'
@@ -1446,7 +1558,8 @@ class PoketCosmosAllocationService {
     int wave = 1,
   }) async {
     final cacheKey = '${colony.code}_$wave';
-    if (_colonyPlotsCache.containsKey(cacheKey) && _colonyPlotsCache[cacheKey]!.isNotEmpty) {
+    if (_colonyPlotsCache.containsKey(cacheKey) &&
+        _colonyPlotsCache[cacheKey]!.isNotEmpty) {
       return _colonyPlotsCache[cacheKey]!;
     }
 
@@ -1457,7 +1570,8 @@ class PoketCosmosAllocationService {
     try {
       final res = await SupaFlow.client
           .from('profile')
-          .select('id, user_id, name, display_name, profile_image_url, learning_day, day, pocket_score, bio, country, created_at')
+          .select(
+              'id, user_id, name, display_name, profile_image_url, learning_day, day, pocket_score, bio, country, created_at')
           .order('created_at', ascending: true)
           .limit(1000);
 
@@ -1468,11 +1582,15 @@ class PoketCosmosAllocationService {
         final String uid = (item['user_id'] ?? item['id'] ?? '').toString();
         if (uid.isEmpty) continue;
 
-        final String rawName = (item['display_name'] ?? item['name'] ?? 'Citizen ${i + 1}').toString();
+        final String rawName =
+            (item['display_name'] ?? item['name'] ?? 'Citizen ${i + 1}')
+                .toString();
         final String name = rawName.isNotEmpty ? rawName : 'Citizen ${i + 1}';
         final String? avatarUrl = item['profile_image_url'] as String?;
-        final int day = (item['learning_day'] ?? item['day'] ?? (25 + (i * 7) % 65)) as int;
-        final int score = (item['pocket_score'] as num?)?.toInt() ?? (600 + (i * 45) % 800);
+        final int day =
+            (item['learning_day'] ?? item['day'] ?? (25 + (i * 7) % 65)) as int;
+        final int score =
+            (item['pocket_score'] as num?)?.toInt() ?? (600 + (i * 45) % 800);
         final String? bio = item['bio'] as String?;
 
         // Determine if this user belongs to this colony
@@ -1506,8 +1624,12 @@ class PoketCosmosAllocationService {
           }
         }
 
-        if (matchesColony && targetPlot >= 1 && targetPlot <= maxPlotsPerIsland) {
-          final coord = (targetPlot - 1 < coords.length) ? coords[targetPlot - 1] : Offset.zero;
+        if (matchesColony &&
+            targetPlot >= 1 &&
+            targetPlot <= maxPlotsPerIsland) {
+          final coord = (targetPlot - 1 < coords.length)
+              ? coords[targetPlot - 1]
+              : Offset.zero;
           final waveStr = wave.toString().padLeft(2, '0');
           final plotStr = targetPlot.toString().padLeft(2, '0');
           final pin = 'PKT-W$waveStr-${colony.code}-I$waveStr-P$plotStr';
@@ -1516,7 +1638,8 @@ class PoketCosmosAllocationService {
             plotNumber: targetPlot,
             userId: uid,
             userName: name,
-            userAvatar: (avatarUrl != null && avatarUrl.isNotEmpty) ? avatarUrl : '🦁',
+            userAvatar:
+                (avatarUrl != null && avatarUrl.isNotEmpty) ? avatarUrl : '🦁',
             day: math.max(1, day),
             pocketScore: score,
             streetName: colony.streetName,
@@ -1525,7 +1648,9 @@ class PoketCosmosAllocationService {
             planetName: colony.planetName,
             coordinates: coord,
             postalPinCode: pin,
-            tier: (targetPlot <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+            tier: (targetPlot <= 6
+                ? PlotDeedTier.beachfront
+                : PlotDeedTier.standard),
             status: PlotStatus.occupied,
           );
         }
@@ -1554,80 +1679,124 @@ class PoketCosmosAllocationService {
     switch (colony.code) {
       case 'EP':
         return [
-          _createPioneer(colony, 1, 'Captain Gaia', '🌿', 90, 1250, PlotDeedTier.beachfront),
-          _createPioneer(colony, 3, 'Arjun Varma', '🏄', 68, 840, PlotDeedTier.beachfront),
-          _createPioneer(colony, 5, 'Sophia Chen', '🌸', 52, 710, PlotDeedTier.beachfront),
-          _createPioneer(colony, 8, 'Marcus Brody', '☕', 34, 490, PlotDeedTier.standard),
-          _createPioneer(colony, 12, 'Ananya Nair', '🎨', 82, 990, PlotDeedTier.standard),
+          _createPioneer(colony, 1, 'Captain Gaia', '🌿', 90, 1250,
+              PlotDeedTier.beachfront),
+          _createPioneer(
+              colony, 3, 'Arjun Varma', '🏄', 68, 840, PlotDeedTier.beachfront),
+          _createPioneer(
+              colony, 5, 'Sophia Chen', '🌸', 52, 710, PlotDeedTier.beachfront),
+          _createPioneer(
+              colony, 8, 'Marcus Brody', '☕', 34, 490, PlotDeedTier.standard),
+          _createPioneer(
+              colony, 12, 'Ananya Nair', '🎨', 82, 990, PlotDeedTier.standard),
         ];
       case 'MAR':
         return [
-          _createPioneer(colony, 1, 'Commander Ares', '🧑‍🚀', 88, 1180, PlotDeedTier.beachfront),
-          _createPioneer(colony, 3, 'Dr. Ryan Stone', '🚀', 64, 830, PlotDeedTier.beachfront),
-          _createPioneer(colony, 6, 'Elena Rostova', '👩‍🚀', 45, 650, PlotDeedTier.beachfront),
-          _createPioneer(colony, 9, 'Kenji Sato', '🛰️', 38, 540, PlotDeedTier.standard),
-          _createPioneer(colony, 14, 'Maya Al-Mansoor', '🔭', 74, 920, PlotDeedTier.standard),
+          _createPioneer(colony, 1, 'Commander Ares', '🧑‍🚀', 88, 1180,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 3, 'Dr. Ryan Stone', '🚀', 64, 830,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 6, 'Elena Rostova', '👩‍🚀', 45, 650,
+              PlotDeedTier.beachfront),
+          _createPioneer(
+              colony, 9, 'Kenji Sato', '🛰️', 38, 540, PlotDeedTier.standard),
+          _createPioneer(colony, 14, 'Maya Al-Mansoor', '🔭', 74, 920,
+              PlotDeedTier.standard),
         ];
       case 'JUP':
         return [
-          _createPioneer(colony, 1, 'Solaria Prime', '⚡', 92, 1310, PlotDeedTier.beachfront),
-          _createPioneer(colony, 4, 'Galileo Vance', '🪐', 70, 880, PlotDeedTier.beachfront),
-          _createPioneer(colony, 7, 'Lyra Thorne', '✨', 55, 730, PlotDeedTier.standard),
-          _createPioneer(colony, 10, 'Zephyr Cole', '🌌', 40, 580, PlotDeedTier.standard),
+          _createPioneer(colony, 1, 'Solaria Prime', '⚡', 92, 1310,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 4, 'Galileo Vance', '🪐', 70, 880,
+              PlotDeedTier.beachfront),
+          _createPioneer(
+              colony, 7, 'Lyra Thorne', '✨', 55, 730, PlotDeedTier.standard),
+          _createPioneer(
+              colony, 10, 'Zephyr Cole', '🌌', 40, 580, PlotDeedTier.standard),
         ];
       case 'LUN':
         return [
-          _createPioneer(colony, 1, 'Apollo Warden', '🌕', 85, 1150, PlotDeedTier.beachfront),
-          _createPioneer(colony, 3, 'Luna Armstrong', '👩‍🚀', 62, 810, PlotDeedTier.beachfront),
-          _createPioneer(colony, 5, 'Viktor Cross', '👨‍🚀', 48, 670, PlotDeedTier.beachfront),
-          _createPioneer(colony, 11, 'Selene Zhao', '✨', 76, 930, PlotDeedTier.standard),
+          _createPioneer(colony, 1, 'Apollo Warden', '🌕', 85, 1150,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 3, 'Luna Armstrong', '👩‍🚀', 62, 810,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 5, 'Viktor Cross', '👨‍🚀', 48, 670,
+              PlotDeedTier.beachfront),
+          _createPioneer(
+              colony, 11, 'Selene Zhao', '✨', 76, 930, PlotDeedTier.standard),
         ];
       case 'SAT':
         return [
-          _createPioneer(colony, 1, 'Titan Overseer', '🪐', 89, 1220, PlotDeedTier.beachfront),
-          _createPioneer(colony, 4, 'Cassini Drake', '🛰️', 66, 850, PlotDeedTier.beachfront),
-          _createPioneer(colony, 7, 'Rhea Sterling', '💍', 51, 690, PlotDeedTier.standard),
-          _createPioneer(colony, 13, 'Hyperion Reed', '✨', 36, 510, PlotDeedTier.standard),
+          _createPioneer(colony, 1, 'Titan Overseer', '🪐', 89, 1220,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 4, 'Cassini Drake', '🛰️', 66, 850,
+              PlotDeedTier.beachfront),
+          _createPioneer(
+              colony, 7, 'Rhea Sterling', '💍', 51, 690, PlotDeedTier.standard),
+          _createPioneer(
+              colony, 13, 'Hyperion Reed', '✨', 36, 510, PlotDeedTier.standard),
         ];
       case 'EUR':
         return [
-          _createPioneer(colony, 1, 'Cryo Explorer', '❄️', 84, 1140, PlotDeedTier.beachfront),
-          _createPioneer(colony, 3, 'Frost Voyager', '🧊', 58, 770, PlotDeedTier.beachfront),
-          _createPioneer(colony, 6, 'Glacia North', '🔬', 44, 620, PlotDeedTier.beachfront),
-          _createPioneer(colony, 10, 'Boreas Vance', '🔭', 72, 900, PlotDeedTier.standard),
+          _createPioneer(colony, 1, 'Cryo Explorer', '❄️', 84, 1140,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 3, 'Frost Voyager', '🧊', 58, 770,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 6, 'Glacia North', '🔬', 44, 620,
+              PlotDeedTier.beachfront),
+          _createPioneer(
+              colony, 10, 'Boreas Vance', '🔭', 72, 900, PlotDeedTier.standard),
         ];
       case 'VEN':
         return [
-          _createPioneer(colony, 1, 'Aphrodite Sentinel', '☀️', 87, 1190, PlotDeedTier.beachfront),
-          _createPioneer(colony, 4, 'Solar Flare', '🔥', 61, 800, PlotDeedTier.beachfront),
-          _createPioneer(colony, 8, 'Aurelia Blaze', '✨', 47, 660, PlotDeedTier.standard),
-          _createPioneer(colony, 12, 'Helios Thorne', '🌟', 78, 940, PlotDeedTier.standard),
+          _createPioneer(colony, 1, 'Aphrodite Sentinel', '☀️', 87, 1190,
+              PlotDeedTier.beachfront),
+          _createPioneer(
+              colony, 4, 'Solar Flare', '🔥', 61, 800, PlotDeedTier.beachfront),
+          _createPioneer(
+              colony, 8, 'Aurelia Blaze', '✨', 47, 660, PlotDeedTier.standard),
+          _createPioneer(colony, 12, 'Helios Thorne', '🌟', 78, 940,
+              PlotDeedTier.standard),
         ];
       case 'TTN':
         return [
-          _createPioneer(colony, 1, 'Kraken Voyager', '🛶', 86, 1170, PlotDeedTier.beachfront),
-          _createPioneer(colony, 3, 'Methane Drifter', '🌊', 59, 790, PlotDeedTier.beachfront),
-          _createPioneer(colony, 7, 'Dune Navigator', '🪐', 43, 610, PlotDeedTier.standard),
-          _createPioneer(colony, 11, 'Huygens Lee', '🔬', 75, 910, PlotDeedTier.standard),
+          _createPioneer(colony, 1, 'Kraken Voyager', '🛶', 86, 1170,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 3, 'Methane Drifter', '🌊', 59, 790,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 7, 'Dune Navigator', '🪐', 43, 610,
+              PlotDeedTier.standard),
+          _createPioneer(
+              colony, 11, 'Huygens Lee', '🔬', 75, 910, PlotDeedTier.standard),
         ];
       case 'PLT':
         return [
-          _createPioneer(colony, 1, 'Tombaugh Warden', '🌌', 91, 1280, PlotDeedTier.beachfront),
-          _createPioneer(colony, 4, 'Starlight Nomad', '✨', 65, 840, PlotDeedTier.beachfront),
-          _createPioneer(colony, 8, 'Charon Shade', '❄️', 50, 680, PlotDeedTier.standard),
-          _createPioneer(colony, 13, 'Nyx Celestial', '💫', 79, 950, PlotDeedTier.standard),
+          _createPioneer(colony, 1, 'Tombaugh Warden', '🌌', 91, 1280,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 4, 'Starlight Nomad', '✨', 65, 840,
+              PlotDeedTier.beachfront),
+          _createPioneer(
+              colony, 8, 'Charon Shade', '❄️', 50, 680, PlotDeedTier.standard),
+          _createPioneer(colony, 13, 'Nyx Celestial', '💫', 79, 950,
+              PlotDeedTier.standard),
         ];
       case 'NEP':
         return [
-          _createPioneer(colony, 1, 'Triton Vanguard', '🌊', 88, 1200, PlotDeedTier.beachfront),
-          _createPioneer(colony, 4, 'Azure Siren', '🐬', 63, 820, PlotDeedTier.beachfront),
-          _createPioneer(colony, 7, 'Abyss Diver', '🌀', 49, 670, PlotDeedTier.standard),
-          _createPioneer(colony, 12, 'Oceanic Prime', '✨', 77, 930, PlotDeedTier.standard),
+          _createPioneer(colony, 1, 'Triton Vanguard', '🌊', 88, 1200,
+              PlotDeedTier.beachfront),
+          _createPioneer(
+              colony, 4, 'Azure Siren', '🐬', 63, 820, PlotDeedTier.beachfront),
+          _createPioneer(
+              colony, 7, 'Abyss Diver', '🌀', 49, 670, PlotDeedTier.standard),
+          _createPioneer(
+              colony, 12, 'Oceanic Prime', '✨', 77, 930, PlotDeedTier.standard),
         ];
       default:
         return [
-          _createPioneer(colony, 1, 'Cosmic Pioneer', '🌟', 80, 1000, PlotDeedTier.beachfront),
-          _createPioneer(colony, 4, 'Starlight Explorer', '🚀', 50, 700, PlotDeedTier.standard),
+          _createPioneer(colony, 1, 'Cosmic Pioneer', '🌟', 80, 1000,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 4, 'Starlight Explorer', '🚀', 50, 700,
+              PlotDeedTier.standard),
         ];
     }
   }
@@ -1728,7 +1897,8 @@ class PoketCosmosAllocationService {
     );
 
     final rawJson = prefs.getString(_kReservationsKey);
-    final Map<String, dynamic> store = rawJson != null ? jsonDecode(rawJson) : {};
+    final Map<String, dynamic> store =
+        rawJson != null ? jsonDecode(rawJson) : {};
     store[code] = pass.toJson();
     store[cosmosPin] = pass.toJson();
     await prefs.setString(_kReservationsKey, jsonEncode(store));
@@ -1749,7 +1919,8 @@ class PoketCosmosAllocationService {
   }
 
   /// 📋 Gets all active (unexpired) reservations for a specific island
-  Future<List<NeighborReservationPass>> getActiveReservationsForIsland(int islandId) async {
+  Future<List<NeighborReservationPass>> getActiveReservationsForIsland(
+      int islandId) async {
     final prefs = await SharedPreferences.getInstance();
     final rawJson = prefs.getString(_kReservationsKey);
     final List<NeighborReservationPass> active = [];
@@ -1763,10 +1934,12 @@ class PoketCosmosAllocationService {
 
         for (final entry in store.entries) {
           try {
-            final pass = NeighborReservationPass.fromJson(entry.value as Map<String, dynamic>);
+            final pass = NeighborReservationPass.fromJson(
+                entry.value as Map<String, dynamic>);
             if (!now.isAfter(pass.expiresAt)) {
               cleanedStore[entry.key] = entry.value;
-              if (pass.islandId == islandId && !active.any((p) => p.plotNumber == pass.plotNumber)) {
+              if (pass.islandId == islandId &&
+                  !active.any((p) => p.plotNumber == pass.plotNumber)) {
                 active.add(pass);
               }
             } else {
@@ -1809,7 +1982,8 @@ class PoketCosmosAllocationService {
   }
 
   /// 🗺️ Gets map of plotNumber -> NeighborReservationPass for O(1) map painter lookups
-  Future<Map<int, NeighborReservationPass>> getActiveReservationsMap(int islandId) async {
+  Future<Map<int, NeighborReservationPass>> getActiveReservationsMap(
+      int islandId) async {
     final list = await getActiveReservationsForIsland(islandId);
     return {for (final pass in list) pass.plotNumber: pass};
   }
@@ -1836,7 +2010,8 @@ class PoketCosmosAllocationService {
   }
 
   /// 🎟️ Generates a quick test neighbor reservation pass (PKT-TEST)
-  Future<NeighborReservationPass> generateQuickTestFriendPass({int plotNumber = 12}) async {
+  Future<NeighborReservationPass> generateQuickTestFriendPass(
+      {int plotNumber = 12}) async {
     const testCode = 'PKT-TEST';
     final expiresAt = DateTime.now().add(const Duration(hours: 4));
     final pass = NeighborReservationPass(
@@ -1854,7 +2029,8 @@ class PoketCosmosAllocationService {
 
     final prefs = await SharedPreferences.getInstance();
     final rawJson = prefs.getString(_kReservationsKey);
-    final Map<String, dynamic> store = rawJson != null ? jsonDecode(rawJson) : {};
+    final Map<String, dynamic> store =
+        rawJson != null ? jsonDecode(rawJson) : {};
     store[testCode] = pass.toJson();
     await prefs.setString(_kReservationsKey, jsonEncode(store));
 
@@ -1862,7 +2038,8 @@ class PoketCosmosAllocationService {
   }
 
   /// 🔍 Validates a Neighbor Pre-Booking Code or Born Address
-  Future<NeighborReservationPass?> validateNeighborInviteCode(String code) async {
+  Future<NeighborReservationPass?> validateNeighborInviteCode(
+      String code) async {
     final cleanCode = code.trim().toUpperCase();
     if (cleanCode.isEmpty) return null;
 
@@ -1891,7 +2068,8 @@ class PoketCosmosAllocationService {
           .eq('is_active', true)
           .maybeSingle();
       if (res != null && res['description'] != null) {
-        final pass = NeighborReservationPass.fromJson(jsonDecode(res['description'].toString()));
+        final pass = NeighborReservationPass.fromJson(
+            jsonDecode(res['description'].toString()));
         if (!DateTime.now().isAfter(pass.expiresAt)) {
           return pass;
         }
@@ -1994,7 +2172,8 @@ class PoketCosmosAllocationService {
           .eq('is_active', true)
           .maybeSingle();
       if (res != null && res['description'] != null) {
-        final pass = NeighborReservationPass.fromJson(jsonDecode(res['description'].toString()));
+        final pass = NeighborReservationPass.fromJson(
+            jsonDecode(res['description'].toString()));
         if (!DateTime.now().isAfter(pass.expiresAt)) {
           return pass;
         }
@@ -2005,7 +2184,8 @@ class PoketCosmosAllocationService {
     if (cleanCode.length >= 3) {
       final hash = cleanCode.hashCode.abs();
       final colony = colonies[hash % colonies.length];
-      final plot = (hash % (maxPlotsPerIsland - 1)) + 2; // plot between 2 and 18
+      final plot =
+          (hash % (maxPlotsPerIsland - 1)) + 2; // plot between 2 and 18
 
       return NeighborReservationPass(
         code: cleanCode,
@@ -2015,7 +2195,8 @@ class PoketCosmosAllocationService {
         streetName: colony.streetName,
         plotNumber: plot,
         hostUserName: 'Cosmos Citizen (Host)',
-        cosmosPin: 'PKT-W01-${colony.code}-I01-P${plot.toString().padLeft(2, '0')}',
+        cosmosPin:
+            'PKT-W01-${colony.code}-I01-P${plot.toString().padLeft(2, '0')}',
         createdAt: DateTime.now(),
         expiresAt: DateTime.now().add(const Duration(hours: 4)),
       );
@@ -2052,10 +2233,10 @@ class NeighborReservationPass {
   });
 
   bool get isExpired => DateTime.now().isAfter(expiresAt);
-  int get minutesRemaining => expiresAt.difference(DateTime.now()).inMinutes.clamp(0, 240);
+  int get minutesRemaining =>
+      expiresAt.difference(DateTime.now()).inMinutes.clamp(0, 240);
 
-  String get shareMessage =>
-      "🏡 POCKET WORLD (പോക്കറ്റ് വേൾഡ്)\n"
+  String get shareMessage => "🏡 POCKET WORLD (പോക്കറ്റ് വേൾഡ്)\n"
       "----------------------------------------\n"
       "Hey! I reserved Plot #$plotNumber for you right next to my house in Pocket Cosmos!\n\n"
       "📍 Location: $streetName, $islandName\n"
