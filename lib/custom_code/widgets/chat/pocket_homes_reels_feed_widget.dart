@@ -285,6 +285,13 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     // ⚡ INSTANT IN-MEMORY SEED FEED (Zero Spinner / Zero Delay - User Audio Directive)
     _feedItems = _generateInstantSeedFeed();
 
+    // ⚡ Upfront Preload Homes Reel Ad immediately upon opening Homes!
+    PocketAdMobService.instance.isUserVip().then((vip) {
+      if (!vip && !PocketKidsService.isKidAccount) {
+        PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.reels);
+      }
+    });
+
     _initTtsAndSpeech();
     _initAll(); // Silent background enrich with live Supabase profiles
 
@@ -657,12 +664,28 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
 
       if (spokenGames.isNotEmpty) items.add(ReelFeedItem.game(spokenGames[gIdx++]));
 
+      // 📢 Seamless Native Ad insertion: right after 2 reels (index 2 / 3rd slide)
+      if (items.length >= 2 && !PocketKidsService.isKidAccount) {
+        items.add(const ReelFeedItem.ad());
+      }
+
+      int seedItemsSinceAd = 0;
       for (int i = 0; i < adultRobots.length; i++) {
         items.add(ReelFeedItem.home(adultRobots[i]));
+        seedItemsSinceAd++;
+        if (seedItemsSinceAd >= 3 && !PocketKidsService.isKidAccount) {
+          items.add(const ReelFeedItem.ad());
+          seedItemsSinceAd = 0;
+        }
 
         // Pair every home with a spoken communication comeback game
         if (gIdx < spokenGames.length) {
           items.add(ReelFeedItem.game(spokenGames[gIdx++]));
+          seedItemsSinceAd++;
+          if (seedItemsSinceAd >= 3 && !PocketKidsService.isKidAccount) {
+            items.add(const ReelFeedItem.ad());
+            seedItemsSinceAd = 0;
+          }
         }
 
         if (i % 3 == 0 && spkIdx < speakChalls.length) {
@@ -1144,13 +1167,16 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     }
 
     int itemsSinceLastAd = 0;
+    bool isFirstAdPlaced = false;
     void addAdultReelItem(ReelFeedItem item) {
       combinedFeed.add(item);
       itemsSinceLastAd++;
-      // 📢 Seamless Native Ad insertion every 3 to 4 content reels (Homes, Dialogue games, Challenges)
-      if (itemsSinceLastAd >= 3) {
+      // 📢 User Directive: First ad appears right after 2 reels (index 2 / 3rd slide); subsequent ads every 3-4 reels
+      final threshold = isFirstAdPlaced ? 3 : 2;
+      if (itemsSinceLastAd >= threshold) {
         combinedFeed.add(const ReelFeedItem.ad());
         itemsSinceLastAd = 0;
+        isFirstAdPlaced = true;
       }
     }
 
@@ -1873,12 +1899,17 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
 
   /// 📢 Native Ad Reel Slide styled like an aesthetic full-screen sponsor card
   Widget _buildNativeAdReelSlide(int index) {
+    if (PocketKidsService.isKidAccount) {
+      return const SizedBox.shrink();
+    }
     return FutureBuilder<bool>(
       future: PocketAdMobService.instance.isUserVip(),
       builder: (context, snapshot) {
         if (snapshot.data == true) {
           return const SizedBox.shrink(); // 100% ad-free for VIPs
         }
+        // ⚡ Preload next reel ad in background for upcoming reels
+        PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.reels);
         return Container(
           color: const Color(0xFF0F172A),
           child: Stack(

@@ -68,6 +68,12 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
     _loadCache();
     _fetchThreads(refresh: true);
     _fetchUserLikes();
+    // ⚡ Preload Native Ad for Thoughts Feed upfront
+    PocketAdMobService.instance.isUserVip().then((vip) {
+      if (!vip && widget.isKidMode != true && !PocketKidsService.isKidAccount) {
+        PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.home);
+      }
+    });
   }
 
   @override
@@ -588,6 +594,8 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
 
         // 📢 Interleave Native Sponsored Card every 4 thoughts for non-VIP players per Master Monetization Plan
         if (index > 0 && index % 4 == 0) {
+          // ⚡ Preload upcoming native ad 2 cards ahead of scroll
+          PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.home);
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [

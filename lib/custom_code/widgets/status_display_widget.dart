@@ -1267,97 +1267,10 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                     child: _buildStatusItem(statusGroup, actualMapIndex, true, listOverride: onlyGroups),
                   );
 
-                  // 📢 Insert Sponsor / Ad Vibe bubble during horizontal sideways scrolling every 3 avatars
-                  if (index > 0 && index % 3 == 0) {
-                    return Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        vibeWidget,
-                        _buildHorizontalSponsorVibe(),
-                      ],
-                    );
-                  }
-
                   return vibeWidget;
                 },
               ),
       ),
-    );
-  }
-
-  Widget _buildHorizontalSponsorVibe() {
-    return FutureBuilder<bool>(
-      future: PocketAdMobService.instance.isUserVip(),
-      builder: (context, snapshot) {
-        if (snapshot.data == true) return const SizedBox.shrink();
-        return GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => PocketVibesStoryAdWidget(
-                  onNext: () => Navigator.pop(context),
-                  onPrevious: () => Navigator.pop(context),
-                ),
-              ),
-            );
-          },
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 6),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 58,
-                  height: 58,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFFFD700), Color(0xFFF59E0B), Color(0xFFEA580C)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFFFD700).withValues(alpha: 0.35),
-                        blurRadius: 8,
-                      ),
-                    ],
-                  ),
-                  padding: const EdgeInsets.all(2.5),
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Color(0xFF0F172A),
-                    ),
-                    child: const Center(
-                      child: Icon(Icons.campaign_rounded, color: Color(0xFFFFD700), size: 24),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFD700).withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5), width: 0.6),
-                  ),
-                  child: const Text(
-                    'Ad',
-                    style: TextStyle(
-                      color: Color(0xFFFFD700),
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 
@@ -1575,6 +1488,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
         // 📢 Native Ad Card inserted every 3 vibes (matches Global Ranking standard)
         if (widget.isVertical && index > 0 && (index + 1) % 3 == 0) {
+          // ⚡ Preload upcoming native ad 2 cards ahead of scroll
+          PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.vibes);
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -2366,11 +2281,18 @@ class _StatusViewerWrapperState extends State<StatusViewerWrapper> {
     }
     _checkVipStatus();
     _preloadAdjacentGroups();
+    // ⚡ Preload story ad upfront immediately upon entering Vibes story viewer!
+    PocketAdMobService.instance.isUserVip().then((vip) {
+      if (!vip) {
+        PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.vibes);
+      }
+    });
   }
 
   Future<void> _checkVipStatus() async {
+    final vip = await PocketAdMobService.instance.isUserVip();
     final sub = await PocketAdService().isUserSubscribed();
-    if (mounted) setState(() => _isSubscribed = sub);
+    if (mounted) setState(() => _isSubscribed = vip || sub);
   }
 
   void _preloadAdjacentGroups() {
@@ -2409,12 +2331,14 @@ class _StatusViewerWrapperState extends State<StatusViewerWrapper> {
   void _goToNextGroup() {
     _groupsWatchedSinceAd++;
 
-    // Insert clean story ad after watching 3 status groups (bypassed if VIP)
-    if (!_isSubscribed && _groupsWatchedSinceAd >= 3 && !_showingAd) {
+    // Insert clean story ad after watching 2 status groups (bypassed if VIP)
+    if (!_isSubscribed && _groupsWatchedSinceAd >= 2 && !_showingAd) {
       setState(() {
         _showingAd = true;
         _groupsWatchedSinceAd = 0;
       });
+      // ⚡ Preload next story ad in background while this one renders
+      PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.vibes);
       return;
     }
 
@@ -2457,6 +2381,8 @@ class _StatusViewerWrapperState extends State<StatusViewerWrapper> {
     if (_showingAd) {
       return PocketVibesStoryAdWidget(
         onNext: () {
+          // Preload next story ad in background
+          PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.vibes);
           if (_currentGroupIndex < widget.allStatusGroups.length - 1) {
             setState(() {
               _showingAd = false;

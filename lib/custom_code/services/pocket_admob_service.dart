@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import '/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 
 /// Placement types for AdMob units across Pocket Mates
 enum PocketAdPlacement {
@@ -20,6 +21,7 @@ enum PocketAdPlacement {
   dayCompletion,
   attack,
   storeCoins,
+  banner, // 📱 Dedicated Standard 320x50 Sticky Banner Unit
 }
 
 /// 📊 Real-time AdMob Telemetry & Event Model
@@ -168,6 +170,12 @@ class PocketAdMobService {
   // Rewarded Ad Units (iOS)
   static String prodIosStoreCoinsRewardedId = 'ca-app-pub-8489571803367790/5688865317';
 
+  // 📱 Dedicated Standard 320x50 Banner Unit (Android)
+  static String prodStandardBannerAdUnitId = 'ca-app-pub-8489571803367790/5182940361';
+
+  // 📱 Dedicated Standard 320x50 Banner Unit (iOS)
+  static String prodIosStandardBannerAdUnitId = 'ca-app-pub-8489571803367790/8159115983';
+
   // Fallbacks / Legacy accessors
   static String get prodNativeAdUnitId => prodNativeHomeAdUnitId;
   static set prodNativeAdUnitId(String val) => prodNativeHomeAdUnitId = val;
@@ -175,8 +183,15 @@ class PocketAdMobService {
   static set prodRewardedAdUnitId(String val) => prodStoreCoinsRewardedId = val;
   static String get prodInterstitialAdUnitId => prodDayCompletionInterstitialId;
   static set prodInterstitialAdUnitId(String val) => prodDayCompletionInterstitialId = val;
-  static String get prodBannerAdUnitId => prodHomeAdUnitId;
-  static set prodBannerAdUnitId(String val) => prodHomeAdUnitId = val;
+  static String get prodBannerAdUnitId =>
+      Platform.isIOS ? prodIosStandardBannerAdUnitId : prodStandardBannerAdUnitId;
+  static set prodBannerAdUnitId(String val) {
+    if (Platform.isIOS) {
+      prodIosStandardBannerAdUnitId = val;
+    } else {
+      prodStandardBannerAdUnitId = val;
+    }
+  }
 
   // ⚙️ Dynamic Learning Journey Ad Configuration
   static int stepNativeAdFrequency = 4; // Show native ad card after every 4 steps
@@ -193,6 +208,7 @@ class PocketAdMobService {
         case PocketAdPlacement.vibes:
         case PocketAdPlacement.home:
         case PocketAdPlacement.review:
+        case PocketAdPlacement.banner:
           return _testBannerId;
         case PocketAdPlacement.learningStep:
         case PocketAdPlacement.dayCompletion:
@@ -215,6 +231,8 @@ class PocketAdMobService {
           return prodIosHomeAdUnitId;
         case PocketAdPlacement.review:
           return prodIosReviewAdUnitId;
+        case PocketAdPlacement.banner:
+          return prodIosStandardBannerAdUnitId;
         case PocketAdPlacement.learningStep:
           return prodIosLearningStepInterstitialId;
         case PocketAdPlacement.dayCompletion:
@@ -237,6 +255,8 @@ class PocketAdMobService {
         return prodHomeAdUnitId;
       case PocketAdPlacement.review:
         return prodReviewAdUnitId;
+      case PocketAdPlacement.banner:
+        return prodStandardBannerAdUnitId;
       case PocketAdPlacement.learningStep:
         return prodLearningStepInterstitialId;
       case PocketAdPlacement.dayCompletion:
@@ -284,7 +304,7 @@ class PocketAdMobService {
   String get nativeAdUnitId => getNativeAdUnitId(PocketAdPlacement.home);
   String get rewardedAdUnitId => getUnitIdForPlacement(PocketAdPlacement.storeCoins);
   String get interstitialAdUnitId => getUnitIdForPlacement(PocketAdPlacement.dayCompletion);
-  String get bannerAdUnitId => getUnitIdForPlacement(PocketAdPlacement.home);
+  String get bannerAdUnitId => getUnitIdForPlacement(PocketAdPlacement.banner);
 
   InterstitialAd? _interstitialAd;
   RewardedAd? _rewardedAd;
@@ -606,9 +626,14 @@ class PocketAdMobService {
     _adminAdPreviewOverride = value;
   }
 
-  /// 🛡️ Check if the current user is a VIP / Premium Member
-  /// VIP Rule: Never show any ads to VIPs!
+  /// 🛡️ Check if the current user is a VIP / Premium Member or in Kids Mode
+  /// VIP Rule: Never show any ads to VIPs or in Kids Mode!
   Future<bool> isUserVip() async {
+    // 🧸 Kids Rule: Never show any ads in Kids Mode
+    if (PocketKidsService.isKidAccount) {
+      return true;
+    }
+
     // If admin enabled live test previewing in Admin Panel, temporarily allow ads to show for verification
     if (_adminAdPreviewOverride) {
       return false;
@@ -632,13 +657,17 @@ class PocketAdMobService {
         try {
           final profile = await SupaFlow.client
               .from('profile')
-              .select('is_vip, is_premium, is_subscribed')
+              .select('is_vip, is_premium, is_subscribed, subscription_tier, role')
               .or('user_id.eq.$uid,id.eq.$uid')
               .maybeSingle();
           if (profile != null) {
+            final role = profile['role']?.toString().toLowerCase();
             final isVipDb = profile['is_vip'] == true ||
                 profile['is_premium'] == true ||
-                profile['is_subscribed'] == true;
+                profile['is_subscribed'] == true ||
+                profile['subscription_tier'] != null ||
+                role == 'admin' ||
+                role == 'vip';
             // Synchronize to local SharedPreferences
             await prefs.setBool('is_vip', isVipDb);
             await prefs.setBool('is_premium', isVipDb);
@@ -1120,10 +1149,14 @@ class PocketAdMobService {
         ),
       );
     } else {
-      // Banner Ad
+      // Banner Ad (Standard 320x50 or In-Feed Medium Rectangle 300x250)
+      final AdSize primarySize = (placement == PocketAdPlacement.banner)
+          ? AdSize.banner
+          : AdSize.mediumRectangle;
+
       BannerAd(
         adUnitId: targetUnitId,
-        size: AdSize.mediumRectangle,
+        size: primarySize,
         request: const AdRequest(),
         listener: BannerAdListener(
           onAdLoaded: (ad) {
@@ -1132,21 +1165,55 @@ class PocketAdMobService {
               completer.complete({
                 'success': true,
                 'unitId': targetUnitId,
-                'message': 'Banner Ad loaded successfully!',
+                'size': '${primarySize.width}x${primarySize.height}',
+                'message': '${primarySize == AdSize.banner ? "Standard Banner (320x50)" : "Medium Rectangle (300x250)"} Ad loaded successfully!',
               });
             }
           },
           onAdFailedToLoad: (ad, err) {
             ad.dispose();
-            if (!completer.isCompleted) {
-              completer.complete({
-                'success': false,
-                'unitId': targetUnitId,
-                'errorCode': err.code.toString(),
-                'errorMessage': err.message,
-                'domain': err.domain,
-              });
-            }
+            // Intelligent fallback: try the other banner size (320x50 <-> 300x250)
+            final AdSize secondarySize = (primarySize == AdSize.banner)
+                ? AdSize.mediumRectangle
+                : AdSize.banner;
+
+            BannerAd(
+              adUnitId: targetUnitId,
+              size: secondarySize,
+              request: const AdRequest(),
+              listener: BannerAdListener(
+                onAdLoaded: (ad2) {
+                  ad2.dispose();
+                  if (!completer.isCompleted) {
+                    completer.complete({
+                      'success': true,
+                      'unitId': targetUnitId,
+                      'size': '${secondarySize.width}x${secondarySize.height}',
+                      'message': 'Loaded successfully with alternate format: ${secondarySize == AdSize.banner ? "Standard Banner (320x50)" : "Medium Rectangle (300x250)"}!',
+                    });
+                  }
+                },
+                onAdFailedToLoad: (ad2, err2) {
+                  ad2.dispose();
+                  if (!completer.isCompleted) {
+                    String reason = 'Google AdMob Error: ${err.message}';
+                    if (err.code == 3) {
+                      reason = 'Code 3 (NO_FILL): Unit ID is valid and active on AdMob servers; inventory will fill in production with real traffic.';
+                    } else if (err.code == 1) {
+                      reason = 'Code 1 (INVALID_REQUEST): Verify ad format and App ID binding.';
+                    }
+                    completer.complete({
+                      'success': false,
+                      'unitId': targetUnitId,
+                      'errorCode': err.code.toString(),
+                      'errorMessage': err.message,
+                      'domain': err.domain,
+                      'reason': reason,
+                    });
+                  }
+                },
+              ),
+            ).load();
           },
         ),
       ).load();
@@ -1264,6 +1331,91 @@ class PocketAdMobService {
   }
 }
 
+/// ⚡ High Performance Ad Preload & In-Memory Cache Manager
+/// Preloads Banner / Native ads before the user scrolls, eliminating loading flickers & wait times!
+class PocketAdPreloadManager {
+  static final PocketAdPreloadManager instance = PocketAdPreloadManager._internal();
+  PocketAdPreloadManager._internal();
+
+  final Map<PocketAdPlacement, BannerAd> _preloadedBanners = {};
+  final Set<PocketAdPlacement> _loadingPlacements = {};
+
+  /// Preload an ad for a specific placement ahead of time
+  Future<void> preloadForPlacement(PocketAdPlacement placement) async {
+    final isVip = await PocketAdMobService.instance.isUserVip();
+    if (isVip) return;
+    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return;
+    if (_preloadedBanners.containsKey(placement) || _loadingPlacements.contains(placement)) {
+      return;
+    }
+
+    _loadingPlacements.add(placement);
+    final unitId = PocketAdMobService.instance.getUnitIdForPlacement(placement);
+    final AdSize size = (placement == PocketAdPlacement.banner)
+        ? AdSize.banner
+        : AdSize.mediumRectangle;
+
+    BannerAd? ad;
+    ad = BannerAd(
+      adUnitId: unitId,
+      size: size,
+      request: const AdRequest(),
+      listener: BannerAdListener(
+        onAdLoaded: (loadedAd) {
+          _preloadedBanners[placement] = loadedAd as BannerAd;
+          _loadingPlacements.remove(placement);
+          PocketAdMobService.instance._recordAdLoaded('preloaded_${placement.name}');
+        },
+        onAdFailedToLoad: (failedAd, err) {
+          failedAd.dispose();
+          _loadingPlacements.remove(placement);
+          PocketAdMobService.instance._recordAdFailed('preloaded_${placement.name}', err);
+          if (unitId != PocketAdMobService.prodRankingAdUnitId &&
+              !PocketAdMobService.instance._isTestMode) {
+            _preloadFallback(placement, PocketAdMobService.prodRankingAdUnitId, size);
+          }
+        },
+      ),
+    );
+    PocketAdMobService.instance._recordAdRequest('preloaded_${placement.name}');
+    ad.load();
+  }
+
+  void _preloadFallback(PocketAdPlacement placement, String fallbackUnitId, AdSize size) {
+    if (_preloadedBanners.containsKey(placement) || _loadingPlacements.contains(placement)) return;
+    _loadingPlacements.add(placement);
+    BannerAd(
+      adUnitId: fallbackUnitId,
+      size: size,
+      request: const AdRequest(),
+      listener: BannerAdListener(
+        onAdLoaded: (loadedAd) {
+          _preloadedBanners[placement] = loadedAd as BannerAd;
+          _loadingPlacements.remove(placement);
+        },
+        onAdFailedToLoad: (failedAd, _) {
+          failedAd.dispose();
+          _loadingPlacements.remove(placement);
+        },
+      ),
+    ).load();
+  }
+
+  /// Whether a preloaded ad is ready
+  bool hasPreloadedAd(PocketAdPlacement placement) {
+    return _preloadedBanners.containsKey(placement);
+  }
+
+  /// Retrieve and consume the preloaded ad for immediate presentation,
+  /// and automatically trigger background preloading for the next ad!
+  BannerAd? consumePreloadedAd(PocketAdPlacement placement) {
+    final ad = _preloadedBanners.remove(placement);
+    // Background refill for next ad
+    preloadForPlacement(placement);
+    return ad;
+  }
+}
+
 /// 🎨 Aesthetic Instagram-Style Native Ad Banner Widget
 /// Automatically checks VIP status and suppresses itself for VIPs!
 class PocketNativeAdCard extends StatefulWidget {
@@ -1291,7 +1443,14 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
   @override
   void initState() {
     super.initState();
-    _checkVipAndLoad();
+    // ⚡ Try immediate instant render from Preloaded Ad Cache
+    final preloaded = PocketAdPreloadManager.instance.consumePreloadedAd(widget.placement);
+    if (preloaded != null) {
+      _bannerAd = preloaded;
+      _isLoaded = true;
+    } else {
+      _checkVipAndLoad();
+    }
   }
 
   Future<void> _checkVipAndLoad() async {
@@ -1903,11 +2062,19 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
   BannerAd? _bannerAd;
   bool _isLoaded = false;
   bool _isVip = false;
+  bool _hasRetriedWithFallback = false;
 
   @override
   void initState() {
     super.initState();
-    _initBanner();
+    // ⚡ Try immediate instant render from Preloaded Ad Cache
+    final preloaded = PocketAdPreloadManager.instance.consumePreloadedAd(PocketAdPlacement.banner);
+    if (preloaded != null) {
+      _bannerAd = preloaded;
+      _isLoaded = true;
+    } else {
+      _initBanner();
+    }
   }
 
   Future<void> _initBanner() async {
@@ -1922,10 +2089,15 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
       return;
     }
 
+    _loadBanner(PocketAdMobService.instance.bannerAdUnitId);
+  }
+
+  void _loadBanner(String unitId) {
     PocketAdMobService.instance._recordAdRequest('standard_banner');
 
+    _bannerAd?.dispose();
     _bannerAd = BannerAd(
-      adUnitId: PocketAdMobService.instance.bannerAdUnitId,
+      adUnitId: unitId,
       size: widget.adSize,
       request: const AdRequest(),
       listener: BannerAdListener(
@@ -1937,6 +2109,15 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
           PocketAdMobService.instance._recordAdFailed('standard_banner', err);
           ad.dispose();
           _bannerAd = null;
+          // Auto-fallback: if prod banner unit has no fill, retry with ranking banner
+          if (!_hasRetriedWithFallback &&
+              unitId != PocketAdMobService.prodRankingAdUnitId &&
+              !PocketAdMobService.instance._isTestMode) {
+            _hasRetriedWithFallback = true;
+            _loadBanner(PocketAdMobService.prodRankingAdUnitId);
+            return;
+          }
+          if (mounted) setState(() => _isLoaded = false);
         },
         onAdImpression: (_) {
           PocketAdMobService.instance._recordAdImpression('standard_banner');

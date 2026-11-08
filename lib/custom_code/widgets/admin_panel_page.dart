@@ -9409,6 +9409,12 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
           const SizedBox(height: 8),
 
           _buildPlacementRow(
+            title: 'Standard Sticky Banner Ad',
+            type: 'Banner (320x50 Standard / Adaptive)',
+            unitId: PocketAdMobService.prodStandardBannerAdUnitId,
+            metric: telemetry.placementMetrics['banner'],
+          ),
+          _buildPlacementRow(
             title: 'Global Ranking In-Feed Ad',
             type: 'Banner (300x250 Medium Rectangle)',
             unitId: PocketAdMobService.prodRankingAdUnitId,

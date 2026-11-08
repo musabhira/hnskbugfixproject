@@ -274,6 +274,11 @@ class _PocketSentenceBuilderGamePageState
         ? PocketKidsCurriculumAdapter.getKidsSentencesForDay(widget.day)
         : Pocket90DaySentenceBuilderData.getSentencesForDay(widget.day);
     _loadRound(_currentRoundIdx);
+
+    // ⚡ Preload Standard Banner Ad for Sentence Builder (Adult non-Kids only)
+    if (!widget.isKidsMode) {
+      PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.banner);
+    }
   }
 
   Future<void> _initTts() async {
@@ -646,6 +651,15 @@ class _PocketSentenceBuilderGamePageState
 
                 // Bottom Completed Sentence Bar / Next Button
                 if (_isRoundCompleted) _buildCompletionFooter(currentRound),
+
+                // 📱 Sticky Standard Banner Ad at the bottom of Sentence Builder (Adult Non-Kids only)
+                if (!widget.isKidsMode)
+                  const SafeArea(
+                    top: false,
+                    child: PocketBannerAdWidget(
+                      margin: EdgeInsets.symmetric(vertical: 4),
+                    ),
+                  ),
               ],
             ),
           ),

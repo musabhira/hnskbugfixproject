@@ -466,26 +466,21 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               ),
-              icon: const Text('📺', style: TextStyle(fontSize: 16)),
+              icon: const Text('⭐', style: TextStyle(fontSize: 16)),
               label: Text(
-                'Watch Ad for +50 Bonus Stars ⭐',
+                'Claim +50 Celebration Stars! 🦁',
                 style: GoogleFonts.outfit(color: const Color(0xFFFDE047), fontWeight: FontWeight.bold, fontSize: 13),
               ),
               onPressed: () async {
-                await PocketAdMobService.instance.showRewardedAd(
-                  context: context,
-                  onUserEarnedReward: (_) async {
-                    await PocketKidsService.addStars(50);
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('🌟 +50 BONUS STARS CLAIMED! 🦁✨'),
-                          backgroundColor: Color(0xFF10B981),
-                        ),
-                      );
-                    }
-                  },
-                );
+                await PocketKidsService.addStars(50);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('🌟 +50 CELEBRATION STARS CLAIMED! 🦁✨'),
+                      backgroundColor: Color(0xFF10B981),
+                    ),
+                  );
+                }
               },
             ),
             const SizedBox(height: 14),
@@ -496,11 +491,10 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
-              onPressed: () async {
+              onPressed: () {
                 Navigator.pop(ctx);
                 Navigator.pop(context);
                 widget.onCompleted?.call();
-                await PocketAdMobService.instance.showInterstitialAd(context: context);
               },
               child: Text(
                 'RETURN TO TRAIL MAP 🗺️',

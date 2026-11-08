@@ -40,6 +40,16 @@ class _AdminAdsManagementTabState extends State<AdminAdsManagementTab> {
     if (platform == 'android') {
       return [
         AdUnitMetadata(
+          key: 'android_standard_banner',
+          name: 'Standard Sticky Banner (320x50)',
+          format: 'Banner (320x50 Standard / Adaptive)',
+          platform: 'Android',
+          unitId: PocketAdMobService.prodStandardBannerAdUnitId,
+          screen: 'Footer Banners & Sentence Builder',
+          placement: PocketAdPlacement.banner,
+          isNative: false,
+        ),
+        AdUnitMetadata(
           key: 'android_ranking_banner',
           name: 'Ranking In-Feed Banner',
           format: 'Banner (300x250 Medium Rectangle)',
@@ -162,6 +172,16 @@ class _AdminAdsManagementTabState extends State<AdminAdsManagementTab> {
       ];
     } else {
       return [
+        AdUnitMetadata(
+          key: 'ios_standard_banner',
+          name: 'POKET_iOS_Standard_Banner (320x50)',
+          format: 'Banner (320x50 Standard / Adaptive)',
+          platform: 'iOS',
+          unitId: PocketAdMobService.prodIosStandardBannerAdUnitId,
+          screen: 'Footer Banners & Sentence Builder',
+          placement: PocketAdPlacement.banner,
+          isNative: false,
+        ),
         AdUnitMetadata(
           key: 'ios_ranking_banner',
           name: 'POKET_iOS_Ranking_BannerRect',
