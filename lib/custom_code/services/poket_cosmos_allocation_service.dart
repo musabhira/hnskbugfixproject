@@ -231,6 +231,7 @@ class PoketCosmosAllocationService {
   }
 
   /// 🌐 Computes the unique global sequential plot number (1 to 250 in Wave 1, 251 to 500 in Wave 2, etc.)
+  /// Uses Round-Robin / Interleaved planetary distribution so every planet has active citizens from the start!
   static int calculateGlobalPlotNumber({
     int wave = 1,
     required String planetCode,
@@ -241,16 +242,18 @@ class PoketCosmosAllocationService {
     if (planetIndex == -1) planetIndex = 0; // Default to Earth
     final clampedLocal = localPlotNumber.clamp(1, maxPlotsPerIsland);
     final clampedWave = math.max(1, wave);
-    return ((clampedWave - 1) * waveCapacity) + (planetIndex * maxPlotsPerIsland) + clampedLocal;
+    final offsetWithinWave = ((clampedLocal - 1) * colonies.length) + planetIndex;
+    return ((clampedWave - 1) * waveCapacity) + offsetWithinWave + 1;
   }
 
   /// 🌐 Parses a global sequential plot number back into wave, planet colony, and local plot number
+  /// Interleaved across all 10 planets: User 1->Earth, 2->Mars, 3->Jupiter, ..., 10->Neptune, 11->Earth P2...
   static Map<String, dynamic> parseGlobalPlotNumber(int globalPlotNumber) {
     final gNum = math.max(1, globalPlotNumber);
     final wave = ((gNum - 1) ~/ waveCapacity) + 1;
     final withinWave = (gNum - 1) % waveCapacity;
-    final planetIndex = (withinWave ~/ maxPlotsPerIsland).clamp(0, colonies.length - 1);
-    final localPlot = (withinWave % maxPlotsPerIsland) + 1;
+    final planetIndex = (withinWave % colonies.length);
+    final localPlot = (withinWave ~/ colonies.length) + 1;
     final colony = colonies[planetIndex];
     return {
       'wave': wave,
@@ -508,6 +511,34 @@ class PoketCosmosAllocationService {
     final int endPlot = math.max(1, maxWaves) * waveCapacity;
     final profiles = instance._allRegisteredProfiles;
 
+    // Map globalPlotNumber -> Real User Profile
+    final Map<int, Map<String, dynamic>> plotToProfile = {};
+    final Set<int> relocatedUserIndices = {};
+
+    for (int i = 0; i < profiles.length; i++) {
+      final prof = profiles[i];
+      final bio = prof['bio']?.toString() ?? '';
+      final match = RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(bio);
+      if (match != null) {
+        final w = int.tryParse(match.group(1) ?? '1') ?? 1;
+        final pCode = match.group(2) ?? 'EP';
+        final lPlot = int.tryParse(match.group(4) ?? '1') ?? 1;
+        final g = calculateGlobalPlotNumber(wave: w, planetCode: pCode, localPlotNumber: lPlot);
+        plotToProfile[g] = prof;
+        relocatedUserIndices.add(i);
+      }
+    }
+
+    // Allocate remaining users to their deterministic round-robin slot
+    for (int i = 0; i < profiles.length; i++) {
+      if (!relocatedUserIndices.contains(i)) {
+        final g = i + 1;
+        if (!plotToProfile.containsKey(g)) {
+          plotToProfile[g] = profiles[i];
+        }
+      }
+    }
+
     for (int gNum = 1; gNum <= endPlot; gNum++) {
       final parsed = parseGlobalPlotNumber(gNum);
       final colony = parsed['colony'] as CelestialColonyInfo;
@@ -518,9 +549,8 @@ class PoketCosmosAllocationService {
       bool isOccupied = false;
       String userId = '';
 
-      // 1. Real registered user mapped sequentially by registration order
-      if (gNum <= profiles.length) {
-        final prof = profiles[gNum - 1];
+      if (plotToProfile.containsKey(gNum)) {
+        final prof = plotToProfile[gNum]!;
         final rawName = prof['name']?.toString().trim();
         ownerName = (rawName != null && rawName.isNotEmpty) ? rawName : 'Citizen #$gNum';
         final rawAvatar = prof['profile_image_url']?.toString().trim();
@@ -1291,21 +1321,36 @@ class PoketCosmosAllocationService {
           continue;
         }
 
-        // Determine wave, colony and plot number (18 per island, 180 per wave)
-        final waveIdx = (i ~/ waveCapacity) + 1;
-        final colonyIdx = ((i % waveCapacity) ~/ maxPlotsPerIsland) % colonies.length;
-        final targetColony = colonies[colonyIdx];
-        final plotNum = (i % maxPlotsPerIsland) + 1;
+        // Determine wave, colony and plot number using round-robin distribution
+        final gNum = i + 1;
+        final parsed = parseGlobalPlotNumber(gNum);
+        final targetColony = parsed['colony'] as CelestialColonyInfo;
+        final waveIdx = parsed['wave'] as int;
+        final plotNum = parsed['localPlotNumber'] as int;
 
         final waveStr = waveIdx.toString().padLeft(2, '0');
         final plotStr = plotNum.toString().padLeft(2, '0');
         final cosmosPin = 'PKT-W$waveStr-${targetColony.code}-I$waveStr-P$plotStr';
 
+        final effectiveIslandName = (waveIdx == 1)
+            ? targetColony.islandName
+            : generateInfiniteIslandName(targetColony.code, waveIdx, waveIdx);
+        final effectiveStreetName = (waveIdx == 1)
+            ? targetColony.streetName
+            : 'Wave $waveIdx ${targetColony.streetName}';
+
+        final cleanBio = (existingBio ?? '')
+            .replaceAll(RegExp(r'\s*(\n\n)?🏡\s*PKT-W\d+-[A-Z]+-I\d+-P\d+.*$'), '')
+            .trim();
+        final newBio = cleanBio.isEmpty
+            ? '🏡 Citizen of $effectiveIslandName, ${targetColony.planetName} ($cosmosPin)'
+            : '$cleanBio\n\n🏡 $cosmosPin';
+
         // Update profile in Supabase
         await SupaFlow.client.from('profile').update({
-          'country': targetColony.islandName,
-          'city': targetColony.streetName,
-          'bio': '🏡 Citizen of ${targetColony.islandName}, ${targetColony.planetName} ($cosmosPin)',
+          'country': effectiveIslandName,
+          'city': effectiveStreetName,
+          'bio': newBio,
         }).eq('id', userId);
 
         newlyAllocated++;
@@ -1383,13 +1428,15 @@ class PoketCosmosAllocationService {
           }
         }
 
-        // If not matched by bio, use deterministic sequential wave & colony distribution
-        if (!matchesColony) {
-          final userWave = (i ~/ waveCapacity) + 1;
-          final colonyIdx = ((i % waveCapacity) ~/ maxPlotsPerIsland) % colonies.length;
-          if (userWave == wave && colonies[colonyIdx].code == colony.code) {
+        // If not matched by bio, use deterministic round-robin wave & colony distribution only if user hasn't relocated
+        if (!matchesColony && (bio == null || !bio.contains('PKT-W'))) {
+          final gNum = i + 1;
+          final parsed = parseGlobalPlotNumber(gNum);
+          final userWave = parsed['wave'] as int;
+          final userColony = parsed['colony'] as CelestialColonyInfo;
+          if (userWave == wave && userColony.code == colony.code) {
             matchesColony = true;
-            targetPlot = (i % maxPlotsPerIsland) + 1;
+            targetPlot = parsed['localPlotNumber'] as int;
           }
         }
 
@@ -1580,7 +1627,7 @@ class PoketCosmosAllocationService {
   // 🤝 4-HOUR NEIGHBOR PRE-BOOKING & INVITATION SYSTEM
   // =========================================================================
 
-  /// 🎟️ Generates a 4-hour Neighbor Pre-Booking Pass with unique PIN
+  /// 🎟️ Generates a 4-hour Neighbor Pre-Booking Pass with unique PIN and short invite code
   Future<NeighborReservationPass> createNeighborInvitePass({
     required int islandId,
     required String islandName,
@@ -1596,7 +1643,8 @@ class PoketCosmosAllocationService {
     final waveStr = currentWave.toString().padLeft(2, '0');
     final plotStr = plotNumber.toString().padLeft(2, '0');
     final cosmosPin = 'PKT-W$waveStr-${colony.code}-I$waveStr-P$plotStr';
-    final code = cosmosPin;
+    final shortCode = 'PKT-${colony.code}-$plotStr';
+    final code = shortCode;
 
     final expiresAt = DateTime.now().add(const Duration(hours: 4));
 
@@ -1616,7 +1664,20 @@ class PoketCosmosAllocationService {
     final rawJson = prefs.getString(_kReservationsKey);
     final Map<String, dynamic> store = rawJson != null ? jsonDecode(rawJson) : {};
     store[code] = pass.toJson();
+    store[cosmosPin] = pass.toJson();
     await prefs.setString(_kReservationsKey, jsonEncode(store));
+
+    // Cloud sync to Supabase app_codes table for seamless cross-device neighbor invite
+    try {
+      await SupaFlow.client.from('app_codes').insert({
+        'class_name': 'neighbor_pass',
+        'class_code': code,
+        'description': jsonEncode(pass.toJson()),
+        'is_active': true,
+        'created_at': DateTime.now().toIso8601String(),
+        'updated_at': expiresAt.toIso8601String(),
+      });
+    } catch (_) {}
 
     return pass;
   }
@@ -1625,37 +1686,60 @@ class PoketCosmosAllocationService {
   Future<List<NeighborReservationPass>> getActiveReservationsForIsland(int islandId) async {
     final prefs = await SharedPreferences.getInstance();
     final rawJson = prefs.getString(_kReservationsKey);
-    if (rawJson == null) return [];
+    final List<NeighborReservationPass> active = [];
+    final now = DateTime.now();
 
-    try {
-      final Map<String, dynamic> store = jsonDecode(rawJson);
-      final List<NeighborReservationPass> active = [];
-      final Map<String, dynamic> cleanedStore = {};
-      bool storeModified = false;
+    if (rawJson != null) {
+      try {
+        final Map<String, dynamic> store = jsonDecode(rawJson);
+        final Map<String, dynamic> cleanedStore = {};
+        bool storeModified = false;
 
-      final now = DateTime.now();
-      for (final entry in store.entries) {
-        try {
-          final pass = NeighborReservationPass.fromJson(entry.value as Map<String, dynamic>);
-          if (!now.isAfter(pass.expiresAt)) {
-            cleanedStore[entry.key] = entry.value;
-            if (pass.islandId == islandId) {
-              active.add(pass);
+        for (final entry in store.entries) {
+          try {
+            final pass = NeighborReservationPass.fromJson(entry.value as Map<String, dynamic>);
+            if (!now.isAfter(pass.expiresAt)) {
+              cleanedStore[entry.key] = entry.value;
+              if (pass.islandId == islandId && !active.any((p) => p.plotNumber == pass.plotNumber)) {
+                active.add(pass);
+              }
+            } else {
+              storeModified = true; // Expired, auto-cleansed
             }
-          } else {
-            storeModified = true; // Expired, auto-cleansed
-          }
-        } catch (_) {}
-      }
+          } catch (_) {}
+        }
 
-      if (storeModified) {
-        await prefs.setString(_kReservationsKey, jsonEncode(cleanedStore));
-      }
-
-      return active;
-    } catch (_) {
-      return [];
+        if (storeModified) {
+          await prefs.setString(_kReservationsKey, jsonEncode(cleanedStore));
+        }
+      } catch (_) {}
     }
+
+    // Also check cloud reservations from Supabase
+    try {
+      final res = await SupaFlow.client
+          .from('app_codes')
+          .select('description')
+          .eq('class_name', 'neighbor_pass')
+          .eq('is_active', true);
+      if (res is List) {
+        for (final row in res) {
+          final desc = row['description']?.toString();
+          if (desc != null && desc.isNotEmpty) {
+            try {
+              final pass = NeighborReservationPass.fromJson(jsonDecode(desc));
+              if (!now.isAfter(pass.expiresAt) && pass.islandId == islandId) {
+                if (!active.any((p) => p.plotNumber == pass.plotNumber)) {
+                  active.add(pass);
+                }
+              }
+            } catch (_) {}
+          }
+        }
+      }
+    } catch (_) {}
+
+    return active;
   }
 
   /// 🗺️ Gets map of plotNumber -> NeighborReservationPass for O(1) map painter lookups
@@ -1668,12 +1752,20 @@ class PoketCosmosAllocationService {
   Future<void> cancelReservation(String code) async {
     final prefs = await SharedPreferences.getInstance();
     final rawJson = prefs.getString(_kReservationsKey);
-    if (rawJson == null) return;
+    if (rawJson != null) {
+      try {
+        final Map<String, dynamic> store = jsonDecode(rawJson);
+        if (store.remove(code) != null) {
+          await prefs.setString(_kReservationsKey, jsonEncode(store));
+        }
+      } catch (_) {}
+    }
     try {
-      final Map<String, dynamic> store = jsonDecode(rawJson);
-      if (store.remove(code) != null) {
-        await prefs.setString(_kReservationsKey, jsonEncode(store));
-      }
+      await SupaFlow.client
+          .from('app_codes')
+          .delete()
+          .eq('class_name', 'neighbor_pass')
+          .eq('class_code', code);
     } catch (_) {}
   }
 
@@ -1796,7 +1888,24 @@ class PoketCosmosAllocationService {
       }
     }
 
-    // 6. Graceful deterministic fallback for valid custom referral codes
+    // 6. Check cloud Supabase app_codes for remote friend referral
+    try {
+      final res = await SupaFlow.client
+          .from('app_codes')
+          .select('description')
+          .eq('class_name', 'neighbor_pass')
+          .eq('class_code', cleanCode)
+          .eq('is_active', true)
+          .maybeSingle();
+      if (res != null && res['description'] != null) {
+        final pass = NeighborReservationPass.fromJson(jsonDecode(res['description'].toString()));
+        if (!DateTime.now().isAfter(pass.expiresAt)) {
+          return pass;
+        }
+      }
+    } catch (_) {}
+
+    // 7. Graceful deterministic fallback for valid custom referral codes
     if (cleanCode.length >= 3) {
       final hash = cleanCode.hashCode.abs();
       final colony = colonies[hash % colonies.length];

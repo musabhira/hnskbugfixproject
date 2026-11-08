@@ -110,6 +110,11 @@ class PocketNeighbor {
     // Check if statusMessage has PIN
     final match = RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(statusMessage);
     if (match != null) return match.group(2) ?? 'EP';
+    final cached = PoketCosmosAllocationService.instance.getCachedUserPlot(id);
+    if (cached != null) {
+      final colony = PoketCosmosAllocationService.instance.getColonyByPlanetName(cached.planetName);
+      return colony.code;
+    }
     final colonies = PoketCosmosAllocationService.colonies;
     final idx = id.hashCode.abs() % colonies.length;
     return colonies[idx].code;
@@ -162,7 +167,9 @@ class PocketNeighbor {
     if (match != null) {
       return int.tryParse(match.group(4) ?? '1') ?? 1;
     }
-    return (id.hashCode.abs() ~/ 10) % 20 + 1;
+    final cached = PoketCosmosAllocationService.instance.getCachedUserPlot(id);
+    if (cached != null) return cached.plotNumber;
+    return (id.hashCode.abs() ~/ 10) % PoketCosmosAllocationService.maxPlotsPerIsland + 1;
   }
 
   int get effectiveWave {
@@ -170,6 +177,11 @@ class PocketNeighbor {
     final match = RegExp(r'PKT-W(\d+)-').firstMatch(pin);
     if (match != null) {
       return int.tryParse(match.group(1) ?? '1') ?? 1;
+    }
+    final cached = PoketCosmosAllocationService.instance.getCachedUserPlot(id);
+    if (cached != null) {
+      final m = RegExp(r'PKT-W(\d+)-').firstMatch(cached.postalPinCode);
+      if (m != null) return int.tryParse(m.group(1) ?? '1') ?? 1;
     }
     return 1;
   }
@@ -183,6 +195,8 @@ class PocketNeighbor {
     }
     final match = RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(statusMessage);
     if (match != null) return match.group(0)!;
+    final cached = PoketCosmosAllocationService.instance.getCachedUserPlot(id);
+    if (cached != null) return cached.postalPinCode;
     final code = effectivePlanetCode;
     final pNum = effectivePlotNumber.toString().padLeft(2, '0');
     return 'PKT-W01-$code-I01-P$pNum';

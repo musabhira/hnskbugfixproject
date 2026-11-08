@@ -5277,21 +5277,24 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 const SizedBox(width: 5),
 
                 // 🗺️ Citizen Island Plot Map Button (Direct jump to their home island plot)
-                InkWell(
-                  onTap: _navigateToDefenderPlotOnIsland,
-                  borderRadius: BorderRadius.circular(20),
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.65),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                          color: const Color(0xFF38BDF8), width: 1.2),
-                    ),
-                    child: const Center(
-                      child: Icon(Icons.travel_explore_rounded,
-                          color: Color(0xFF38BDF8), size: 16),
+                Tooltip(
+                  message: "View Citizen's Island Plot 🗺️",
+                  child: InkWell(
+                    onTap: _navigateToDefenderPlotOnIsland,
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.65),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                            color: const Color(0xFF38BDF8), width: 1.2),
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.map_rounded,
+                            color: Color(0xFF38BDF8), size: 16),
+                      ),
                     ),
                   ),
                 ),
@@ -5351,7 +5354,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       value: 'view_plot',
                       child: Row(
                         children: [
-                          Icon(Icons.travel_explore_rounded,
+                          Icon(Icons.map_rounded,
                               color: Color(0xFF38BDF8), size: 18),
                           SizedBox(width: 8),
                           Text('View Island Plot 🏝️',

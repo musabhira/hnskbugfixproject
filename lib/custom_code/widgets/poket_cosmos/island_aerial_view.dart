@@ -3012,15 +3012,15 @@ class IslandAerialPainter extends CustomPainter {
       final plotRot = getPlotFacingAngle(island.shapeStyle, i);
       final houseOffset = getHousePlacementOffset(plotNumber);
       final housePos = pos + houseOffset;
-      final parcelRect = Rect.fromCenter(center: housePos, width: 54.0, height: 42.0);
+      final parcelRect = Rect.fromCenter(center: housePos, width: 60.0, height: 48.0);
 
       if (citizenPlot != null) {
-        // 🏡 Render full architectural compound (scaled up to 1.28 so homes, cars, pools are large, prominent & clearly visible!)
+        // 🏡 Render full architectural compound (scaled up to 1.42 so villas, cars, pools, gazebos are grand, prominent & clearly visible!)
         final day = citizenPlot.day;
         canvas.save();
         canvas.translate(housePos.dx, housePos.dy);
         canvas.rotate(plotRot);
-        canvas.scale(1.28);
+        canvas.scale(1.42);
         canvas.translate(-housePos.dx, -housePos.dy);
 
         _drawYardTreeClusters(canvas, parcelRect, plotNumber);

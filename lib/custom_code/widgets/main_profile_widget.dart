@@ -1966,7 +1966,20 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       tooltip: 'Settings',
                     ),
                   ],
-                  if (!isMe)
+                  if (!isMe) ...[
+                    material.IconButton(
+                      icon: const Icon(material.Icons.map_rounded, size: 22),
+                      color: const Color(0xFF38BDF8),
+                      tooltip: "View Citizen's Island Plot 🗺️",
+                      onPressed: () {
+                        HapticFeedback.mediumImpact();
+                        _profileHorizontalPageController.animateToPage(
+                          1,
+                          duration: const Duration(milliseconds: 350),
+                          curve: Curves.easeInOutCubic,
+                        );
+                      },
+                    ),
                     PopupMenuButton<String>(
                       icon: const Icon(material.Icons.more_vert),
                       color: const Color(0xFF1E293B),
@@ -1982,7 +1995,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         final authorHandle =
                             _profileData?['username']?.toString() ?? authorName;
                         final targetUid = userId;
-                        if (value == 'Report') {
+                        if (value == 'ViewIslandPlot') {
+                          HapticFeedback.mediumImpact();
+                          _profileHorizontalPageController.animateToPage(
+                            1,
+                            duration: const Duration(milliseconds: 350),
+                            curve: Curves.easeInOutCubic,
+                          );
+                        } else if (value == 'Report') {
                           ReportHelper.showReportDialog(
                             context: context,
                             contentType: 'user',
@@ -2023,6 +2043,18 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       },
                       itemBuilder: (context) => [
                         const PopupMenuItem(
+                          value: 'ViewIslandPlot',
+                          child: Row(
+                            children: [
+                              Icon(Icons.map_rounded,
+                                  color: Color(0xFF38BDF8), size: 18),
+                              SizedBox(width: 8),
+                              Text('View Island Plot 🏝️',
+                                  style: TextStyle(color: Colors.white)),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
                           value: 'Report',
                           child: Row(
                             children: [
@@ -2048,6 +2080,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         ),
                       ],
                     ),
+                  ],
                 ],
               ),
               material.SliverToBoxAdapter(
