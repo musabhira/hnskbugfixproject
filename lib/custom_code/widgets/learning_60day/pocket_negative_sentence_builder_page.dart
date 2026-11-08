@@ -338,6 +338,17 @@ class _PocketNegativeSentenceBuilderPageState
     return Scaffold(
       backgroundColor:
           isKid ? const Color(0xFF1E1035) : const Color(0xFF090D16),
+      bottomNavigationBar: (!isKid && !PocketKidsService.isKidsWorld)
+          ? Container(
+              color: const Color(0xFF0F172A),
+              child: const SafeArea(
+                top: false,
+                child: PocketBannerAdWidget(
+                  margin: EdgeInsets.symmetric(vertical: 4),
+                ),
+              ),
+            )
+          : null,
       appBar: AppBar(
         backgroundColor:
             isKid ? const Color(0xFF2E1065) : const Color(0xFF0F172A),

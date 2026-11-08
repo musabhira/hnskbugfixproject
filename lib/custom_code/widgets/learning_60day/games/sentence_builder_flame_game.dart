@@ -47,16 +47,24 @@ class SentenceChallengeRound {
     if (PocketLanguageService.isMalayalam) {
       return translationMl;
     }
-    if (PocketLanguageService.isHindi && translationHi != null && translationHi!.isNotEmpty) {
+    if (PocketLanguageService.isHindi &&
+        translationHi != null &&
+        translationHi!.isNotEmpty) {
       return translationHi!;
     }
-    if (PocketLanguageService.isTamil && translationTa != null && translationTa!.isNotEmpty) {
+    if (PocketLanguageService.isTamil &&
+        translationTa != null &&
+        translationTa!.isNotEmpty) {
       return translationTa!;
     }
-    if (PocketLanguageService.isTelugu && translationTe != null && translationTe!.isNotEmpty) {
+    if (PocketLanguageService.isTelugu &&
+        translationTe != null &&
+        translationTe!.isNotEmpty) {
       return translationTe!;
     }
-    if (PocketLanguageService.isKannada && translationKn != null && translationKn!.isNotEmpty) {
+    if (PocketLanguageService.isKannada &&
+        translationKn != null &&
+        translationKn!.isNotEmpty) {
       return translationKn!;
     }
     // Never fall back to Malayalam for non-Malayalam users!
@@ -67,8 +75,8 @@ class SentenceChallengeRound {
 /// 🎨 Tile color classifications matching screenshots 3 & 4
 enum SentenceTileColor {
   magenta, // Pink/red tiles like "Did", "put", "refrigerator", "asked"
-  green,   // Bright green tiles like "you"
-  cyan,    // Sky blue tiles like "in", "the", "?", "Who"
+  green, // Bright green tiles like "you"
+  cyan, // Sky blue tiles like "in", "the", "?", "Who"
 }
 
 class SentenceTileData {
@@ -177,7 +185,8 @@ class SentenceBuilderFlameGame extends FlameGame {
       final speed = 80.0 + _rng.nextDouble() * 160.0;
       final p = ParticleSparkle(
         position: pos.clone(),
-        velocity: Vector2(math.cos(angle) * speed, math.sin(angle) * speed - 50),
+        velocity:
+            Vector2(math.cos(angle) * speed, math.sin(angle) * speed - 50),
         color: i % 2 == 0 ? tileColor : const Color(0xFFFFD700),
         radius: 2.5 + _rng.nextDouble() * 3.5,
         decay: 1.4 + _rng.nextDouble() * 0.8,
@@ -234,8 +243,7 @@ class PocketSentenceBuilderGamePage extends StatefulWidget {
 typedef PocketDay1SentenceBuilderGamePage = PocketSentenceBuilderGamePage;
 
 class _PocketSentenceBuilderGamePageState
-    extends State<PocketSentenceBuilderGamePage>
-    with TickerProviderStateMixin {
+    extends State<PocketSentenceBuilderGamePage> with TickerProviderStateMixin {
   late final SentenceBuilderFlameGame _flameGame;
   final FlutterTts _flutterTts = FlutterTts();
 
@@ -277,7 +285,8 @@ class _PocketSentenceBuilderGamePageState
 
     // ⚡ Preload Standard Banner Ad for Sentence Builder (Adult non-Kids only)
     if (!widget.isKidsMode) {
-      PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.banner);
+      PocketAdPreloadManager.instance
+          .preloadForPlacement(PocketAdPlacement.banner);
     }
   }
 
@@ -286,7 +295,8 @@ class _PocketSentenceBuilderGamePageState
       await _flutterTts.setLanguage("en-IN");
       await _flutterTts.setSpeechRate(0.48);
       await _flutterTts.setPitch(1.05);
-      await PocketVoiceService.instance.configureOptimalFemaleVoice(_flutterTts);
+      await PocketVoiceService.instance
+          .configureOptimalFemaleVoice(_flutterTts);
     } catch (_) {}
   }
 
@@ -387,7 +397,8 @@ class _PocketSentenceBuilderGamePageState
         SnackBar(
           content: Text(
             '⚠️ Try another word to begin or continue the sentence!',
-            style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w600),
+            style: GoogleFonts.outfit(
+                color: Colors.white, fontWeight: FontWeight.w600),
           ),
           backgroundColor: const Color(0xFFE11D48),
           behavior: SnackBarBehavior.floating,
@@ -471,9 +482,11 @@ class _PocketSentenceBuilderGamePageState
     if (widget.isKidsMode) {
       await PocketKidsService.markDayStepCompleted(widget.day, 2);
     } else {
-      final uid = widget.userId ?? Supabase.instance.client.auth.currentUser?.id;
+      final uid =
+          widget.userId ?? Supabase.instance.client.auth.currentUser?.id;
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('pocket_day_${uid ?? "guest"}_${widget.day}_step_2_done', true);
+      await prefs.setBool(
+          'pocket_day_${uid ?? "guest"}_${widget.day}_step_2_done', true);
       await PocketFortressDefenseService.recordTrainingPoints(30, uid);
     }
 
@@ -527,7 +540,8 @@ class _PocketSentenceBuilderGamePageState
               ),
               child: Row(
                 children: [
-                  Text(widget.isKidsMode ? '⭐' : '🪙', style: const TextStyle(fontSize: 20)),
+                  Text(widget.isKidsMode ? '⭐' : '🪙',
+                      style: const TextStyle(fontSize: 20)),
                   const SizedBox(width: 8),
                   Text(
                     widget.isKidsMode
@@ -554,7 +568,8 @@ class _PocketSentenceBuilderGamePageState
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF00E5FF),
               foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14)),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
             onPressed: () {
@@ -562,8 +577,11 @@ class _PocketSentenceBuilderGamePageState
               Navigator.pop(context);
             },
             child: Text(
-              widget.isKidsMode ? 'AWESOME! CONTINUE ➔' : 'CONTINUE TO STEP 3 ➔',
-              style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14),
+              widget.isKidsMode
+                  ? 'AWESOME! CONTINUE ➔'
+                  : 'CONTINUE TO STEP 3 ➔',
+              style:
+                  GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14),
             ),
           ),
         ],
@@ -584,6 +602,18 @@ class _PocketSentenceBuilderGamePageState
 
     return Scaffold(
       backgroundColor: const Color(0xFF250529),
+      bottomNavigationBar:
+          (!widget.isKidsMode && !PocketKidsService.isKidsWorld)
+              ? Container(
+                  color: const Color(0xFF16031B),
+                  child: const SafeArea(
+                    top: false,
+                    child: PocketBannerAdWidget(
+                      margin: EdgeInsets.symmetric(vertical: 4),
+                    ),
+                  ),
+                )
+              : null,
       body: Stack(
         children: [
           // 1. Deep magenta / plum background gradient matching Screenshots 3 & 4
@@ -651,15 +681,6 @@ class _PocketSentenceBuilderGamePageState
 
                 // Bottom Completed Sentence Bar / Next Button
                 if (_isRoundCompleted) _buildCompletionFooter(currentRound),
-
-                // 📱 Sticky Standard Banner Ad at the bottom of Sentence Builder (Adult Non-Kids only)
-                if (!widget.isKidsMode)
-                  const SafeArea(
-                    top: false,
-                    child: PocketBannerAdWidget(
-                      margin: EdgeInsets.symmetric(vertical: 4),
-                    ),
-                  ),
               ],
             ),
           ),
@@ -681,7 +702,8 @@ class _PocketSentenceBuilderGamePageState
               PocketGameSfx.instance.playClick();
               Navigator.pop(context);
             },
-            icon: const Icon(Icons.close_rounded, color: Colors.white, size: 36),
+            icon:
+                const Icon(Icons.close_rounded, color: Colors.white, size: 36),
           ),
 
           // Difficulty title + progress indicator dots
@@ -728,9 +750,8 @@ class _PocketSentenceBuilderGamePageState
                         Container(
                           width: 8,
                           height: 2,
-                          color: isDone
-                              ? const Color(0xFF00E5FF)
-                              : Colors.white24,
+                          color:
+                              isDone ? const Color(0xFF00E5FF) : Colors.white24,
                         ),
                     ],
                   );
@@ -774,13 +795,16 @@ class _PocketSentenceBuilderGamePageState
               // User Audio Directive: "നേറ്റീവ് ലാംഗ്വേജിലാണ് ട്ടോ അർത്ഥം വരേണ്ടത്"
               Container(
                 margin: const EdgeInsets.only(bottom: 14),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFF38083E), Color(0xFF580C62)],
                   ),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.5), width: 1.2),
+                  border: Border.all(
+                      color: const Color(0xFF00E5FF).withValues(alpha: 0.5),
+                      width: 1.2),
                   boxShadow: [
                     BoxShadow(
                       color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
@@ -817,11 +841,14 @@ class _PocketSentenceBuilderGamePageState
                 children: _placedTiles.isEmpty
                     ? [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 12),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.white24, style: BorderStyle.solid),
+                            border: Border.all(
+                                color: Colors.white24,
+                                style: BorderStyle.solid),
                           ),
                           child: Text(
                             'Tap the word tiles below in order',
@@ -978,7 +1005,9 @@ class _PocketSentenceBuilderGamePageState
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: _isSpeaking ? const Color(0xFF00E5FF) : const Color(0xFF38083E),
+                color: _isSpeaking
+                    ? const Color(0xFF00E5FF)
+                    : const Color(0xFF38083E),
               ),
               child: Icon(
                 Icons.volume_up_rounded,

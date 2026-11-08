@@ -63,7 +63,6 @@ import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_grou
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_app_update_service.dart';
 
-
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
 typedef ChatConversation = groups_provider.ChatConversation;
 final conversationsProvider = groups_provider.conversationsProvider;
@@ -120,7 +119,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   Set<String> _pocketTalkPendingSentPeerIds = {};
   Set<String> _localMateIds = {};
   List<Map<String, dynamic>> _poketTalkLocalSent = [];
-  int _pocketTalkSubTabIndex = 0; // 0: Received (First/Main), 1: Sent, 2: Active / Accepted (4-Day Pacts)
+  int _pocketTalkSubTabIndex =
+      0; // 0: Received (First/Main), 1: Sent, 2: Active / Accepted (4-Day Pacts)
   bool _isCongestedSearch = false; // Toggle for Congested / Compact View
   int _searchPeopleOffset = 0;
   bool _hasMorePeopleSearch = true;
@@ -145,14 +145,18 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       List<Map<String, dynamic>> localSent = [];
       try {
         final prefs = await SharedPreferences.getInstance();
-        final rawSent = prefs.getStringList('poket_talk_sent_candidates_$uid') ?? [];
-        localSent = rawSent.map((s) {
-          try {
-            return Map<String, dynamic>.from(jsonDecode(s));
-          } catch (_) {
-            return <String, dynamic>{};
-          }
-        }).where((m) => m.isNotEmpty).toList();
+        final rawSent =
+            prefs.getStringList('poket_talk_sent_candidates_$uid') ?? [];
+        localSent = rawSent
+            .map((s) {
+              try {
+                return Map<String, dynamic>.from(jsonDecode(s));
+              } catch (_) {
+                return <String, dynamic>{};
+              }
+            })
+            .where((m) => m.isNotEmpty)
+            .toList();
         final localMates = prefs.getStringList('pocket_mates_$uid') ?? [];
         if (mounted) {
           safeSetState(() {
@@ -171,7 +175,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         });
       }
       // Guarantee each user has up to 3 active 4-day speaking pairs!
-      if (activeIds.length < PocketTrophyService.kMaxActivePacts && pendingIds.length < 5) {
+      if (activeIds.length < PocketTrophyService.kMaxActivePacts &&
+          pendingIds.length < 5) {
         await PocketTalkEngine.autoRefillPocketTalkPacts(uid);
         final updatedPending =
             await PocketTrophyService.getAllPendingPactUserIds(uid);
@@ -228,7 +233,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   List<CitadelFightChallenge> _pendingFightChallenges = [];
   List<Map<String, dynamic>> _pendingAttacks = [];
   List<Map<String, dynamic>> _sentAttacks = [];
-  int _requestsSubTab = 0; // 0: All, 1: Mates, 2: PocketTalk, 3: Fight, 4: Attack
+  int _requestsSubTab =
+      0; // 0: All, 1: Mates, 2: PocketTalk, 3: Fight, 4: Attack
   bool _isLoadingRequests = false;
   int _userPocketScore = 0;
   int _userPocketStage = 1;
@@ -262,9 +268,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       await PocketRobotService.runAutonomousHumanEngine(uid);
       final reqs = await PocketMateService.getPendingRequests(uid);
       final sentReqs = await PocketMateService.getSentRequests(uid);
-      final incomingPacts = await PocketTrophyService.getPendingIncomingPacts(uid);
-      final fightChallenges = await PocketCitadelFightService.getPendingChallenges(uid);
-      final pendingAttacks = await PocketActionChatService.getPendingAttacks(uid);
+      final incomingPacts =
+          await PocketTrophyService.getPendingIncomingPacts(uid);
+      final fightChallenges =
+          await PocketCitadelFightService.getPendingChallenges(uid);
+      final pendingAttacks =
+          await PocketActionChatService.getPendingAttacks(uid);
       final sentAttacks = await PocketActionChatService.getSentAttacks(uid);
       if (mounted) {
         setState(() {
@@ -289,8 +298,15 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     super.initState();
     PocketGameAudioService.instance.stop();
     _pageController = PageController(initialPage: _chatTabIndex);
+    PocketHomeNavigationController.switchToHomes = () {
+      if (mounted) setState(() => _currentIndex = 1);
+    };
+    PocketHomeNavigationController.switchToChat = () {
+      if (mounted) setState(() => _currentIndex = 0);
+    };
     ContactsNameService().initialize();
-    PocketKidsService.isKidAccountNotifier.addListener(_onKidAccountModeChanged);
+    PocketKidsService.isKidAccountNotifier
+        .addListener(_onKidAccountModeChanged);
     PocketKidsService.initialize().then((_) {
       if (mounted && PocketKidsService.isKidAccount) {
         safeSetState(() {});
@@ -317,7 +333,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       AppStoreReviewService.fetchRemoteReviewConfig();
     });
   }
-
 
   Future<void> _checkOnboarding() async {
     final user = supabase.auth.currentUser;
@@ -576,7 +591,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   @override
   void dispose() {
-    PocketKidsService.isKidAccountNotifier.removeListener(_onKidAccountModeChanged);
+    PocketHomeNavigationController.switchToHomes = null;
+    PocketHomeNavigationController.switchToChat = null;
+    PocketKidsService.isKidAccountNotifier
+        .removeListener(_onKidAccountModeChanged);
     VibesSeenService.seenEpochNotifier.removeListener(_onVibesSeenSync);
     _pageController.dispose();
     _searchController.dispose();
@@ -628,7 +646,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     );
   }
 
-
   Future<void> _loadCachedData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -642,17 +659,17 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           prefs.getInt('initial_home_tab_global');
       if (initialTab != null) {
         safeSetState(() {
-          // Map legacy tab indices to new 4-item bottom navigation:
-          // Old: 0=Homes, 1=Chat, 2=English Hub, 3=Target, 4=Profile
-          // New: 0=Chat, 1=English Hub, 2=Target, 3=Profile
+          // Map tab indices to 5-item bottom navigation:
+          // 0=Chat, 1=Homes, 2=English Hub, 3=Target, 4=Profile
+          // Default on open is Chat (0)
           if (initialTab == 1) {
-            _currentIndex = 0; // Chat
+            _currentIndex = 1; // Homes
           } else if (initialTab == 2) {
-            _currentIndex = 1; // English Hub
+            _currentIndex = 2; // English Hub
           } else if (initialTab == 3) {
-            _currentIndex = 2; // Target
+            _currentIndex = 3; // Target
           } else if (initialTab >= 4) {
-            _currentIndex = 3; // Profile
+            _currentIndex = 4; // Profile
           } else {
             _currentIndex = 0; // Default to Chat
           }
@@ -766,7 +783,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       }
 
       if (profileResponse != null) {
-        await PocketLanguageService.syncWithUserProfile(profileResponse, userId: userId);
+        await PocketLanguageService.syncWithUserProfile(profileResponse,
+            userId: userId);
       }
 
       safeSetState(() {
@@ -1223,26 +1241,33 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         ),
                       )
                     : _currentIndex == 1
-                        ? EnglishLearningGroupChatWidget(
-                            onCancel: () =>
+                        ? PocketHomesReelsFeedWidget(
+                            key:
+                                const ValueKey('adult_active_homes_reels_root'),
+                            onBackToChat: () =>
                                 setState(() => _currentIndex = 0),
                           )
                         : _currentIndex == 2
-                            ? EnglishTasksMasterHubPage(
-                                userId: _currentUserId ??
-                                    supabase.auth.currentUser?.id)
-                            : PocketSnapFlameRefresh(
-                                onRefresh: _handleRefresh,
-                                triggerDistance: 85.0,
-                                maxPullDistance: 210.0,
-                                restingHeight: 150.0,
-                                child: material.NestedScrollView(
-                                  physics: const BouncingScrollPhysics(
-                                      parent:
-                                          AlwaysScrollableScrollPhysics()),
-                                  headerSliverBuilder:
-                                      (context, innerBoxIsScrolled) {
-                                    return [
+                            ? EnglishLearningGroupChatWidget(
+                                onCancel: () =>
+                                    setState(() => _currentIndex = 0),
+                              )
+                            : _currentIndex == 3
+                                ? EnglishTasksMasterHubPage(
+                                    userId: _currentUserId ??
+                                        supabase.auth.currentUser?.id)
+                                : PocketSnapFlameRefresh(
+                                    onRefresh: _handleRefresh,
+                                    triggerDistance: 85.0,
+                                    maxPullDistance: 210.0,
+                                    restingHeight: 150.0,
+                                    child: material.NestedScrollView(
+                                      physics: const BouncingScrollPhysics(
+                                          parent:
+                                              AlwaysScrollableScrollPhysics()),
+                                      headerSliverBuilder:
+                                          (context, innerBoxIsScrolled) {
+                                        return [
                                           // Unified Coordinated Header
                                           SliverPersistentHeader(
                                             pinned: true,
@@ -1330,7 +1355,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                               ),
                                               _buildVibesSection(),
                                               ThoughtsFeedSection(
-                                                key: ValueKey('thoughts_feed_$_refreshKeyCount'),
+                                                key: ValueKey(
+                                                    'thoughts_feed_$_refreshKeyCount'),
                                                 currentUserId:
                                                     _currentUserId ?? '',
                                                 currentProfileId:
@@ -1582,7 +1608,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         SnackBar(
           content: Text(
             '🤝 Pocket Talk 4-Day Spoken English Pact Accepted! Day 1 is now active.',
-            style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white),
+            style: GoogleFonts.outfit(
+                fontWeight: FontWeight.bold, color: Colors.white),
           ),
           backgroundColor: const Color(0xFF1E293B),
           behavior: SnackBarBehavior.floating,
@@ -1595,7 +1622,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     HapticFeedback.lightImpact();
     final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? '';
     final peerId = pact.user1Id == uid ? pact.user2Id : pact.user1Id;
-    await PocketTrophyService.swapOrDeclinePartner(myId: uid, otherUserId: peerId);
+    await PocketTrophyService.swapOrDeclinePartner(
+        myId: uid, otherUserId: peerId);
     await _refreshPocketTalkPeers();
     await _loadPendingRequests();
     if (mounted) {
@@ -2190,7 +2218,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     return ValueListenableBuilder<VibeUploadTask?>(
       valueListenable: PocketVibesUploadManager.instance.activeTask,
       builder: (context, task, _) {
-        if (task == null) return const SliverToBoxAdapter(child: SizedBox.shrink());
+        if (task == null)
+          return const SliverToBoxAdapter(child: SizedBox.shrink());
 
         return SliverToBoxAdapter(
           child: Padding(
@@ -2198,7 +2227,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1E2129) : const Color(0xFFF3F4F6),
+                color:
+                    isDark ? const Color(0xFF1E2129) : const Color(0xFFF3F4F6),
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
                   color: task.isError
@@ -2225,7 +2255,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         width: 36,
                         height: 36,
                         child: CircularProgressIndicator(
-                          value: task.isCompleted ? 1.0 : (task.progress > 0 ? task.progress : null),
+                          value: task.isCompleted
+                              ? 1.0
+                              : (task.progress > 0 ? task.progress : null),
                           strokeWidth: 3,
                           valueColor: AlwaysStoppedAnimation<Color>(
                             task.isError
@@ -2234,10 +2266,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                     ? Colors.green
                                     : const Color(0xFFFFB300),
                           ),
-                          backgroundColor: isDark ? Colors.white12 : Colors.black12,
+                          backgroundColor:
+                              isDark ? Colors.white12 : Colors.black12,
                         ),
                       ),
-                      if (task.thumbnailFile != null && task.thumbnailFile!.existsSync())
+                      if (task.thumbnailFile != null &&
+                          task.thumbnailFile!.existsSync())
                         ClipRRect(
                           borderRadius: BorderRadius.circular(12),
                           child: Image.file(
@@ -2565,11 +2599,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? const Color(0xFFFFFC00)
-                      : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
+                      : (isDark
+                          ? const Color(0xFF1E293B)
+                          : const Color(0xFFF1F5F9)),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: isSelected
@@ -2594,7 +2631,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     if (count > 0) ...[
                       const SizedBox(width: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 1.5),
                         decoration: BoxDecoration(
                           color: isSelected
                               ? Colors.black
@@ -2624,7 +2662,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   }
 
   Widget _buildPendingRequestsBanner(bool isDark) {
-    if (_pendingRequests.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+    if (_pendingRequests.isEmpty)
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
 
     final topReq = _pendingRequests.first;
     final senderName = topReq['sender_name'] ?? 'Pocket Mate';
@@ -2705,9 +2744,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                           if (hasMultiple) ...[
                             const SizedBox(width: 5),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 1.5),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                                color: const Color(0xFF6366F1)
+                                    .withValues(alpha: 0.3),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
@@ -2742,7 +2783,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFFFC00),
                   foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   minimumSize: const Size(62, 32),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(9),
@@ -2838,7 +2880,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
                   decoration: BoxDecoration(
                     color: isCapReached
                         ? const Color(0xFF10B981).withValues(alpha: 0.2)
@@ -2880,7 +2923,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             Container(
               padding: const EdgeInsets.all(3),
               decoration: BoxDecoration(
-                color: isDark ? Colors.black.withValues(alpha: 0.4) : Colors.black.withValues(alpha: 0.06),
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.4)
+                    : Colors.black.withValues(alpha: 0.06),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -2968,19 +3013,25 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     if (_requestsSubTab == 0 || _requestsSubTab == 1) {
       for (final req in _pendingRequests) {
         final id = req['id']?.toString() ?? UniqueKey().toString();
-        final dt = DateTime.tryParse(req['created_at']?.toString() ?? '') ?? DateTime.now();
-        items.add(_UnifiedRequestItem(id: id, type: 'mate', createdAt: dt, data: req));
+        final dt = DateTime.tryParse(req['created_at']?.toString() ?? '') ??
+            DateTime.now();
+        items.add(_UnifiedRequestItem(
+            id: id, type: 'mate', createdAt: dt, data: req));
       }
       for (final sReq in _sentRequests) {
         final id = sReq['id']?.toString() ?? UniqueKey().toString();
-        final dt = DateTime.tryParse(sReq['created_at']?.toString() ?? '') ?? DateTime.now();
+        final dt = DateTime.tryParse(sReq['created_at']?.toString() ?? '') ??
+            DateTime.now();
         final map = Map<String, dynamic>.from(sReq);
         map['is_sent'] = true;
         map['sender_name'] = map['receiver_name'] ?? 'Poket Mate';
-        map['sender_profile_image'] = map['receiver_profile_image'] ?? map['receiver_avatar'];
-        map['avatar_url'] = map['receiver_profile_image'] ?? map['receiver_avatar'];
+        map['sender_profile_image'] =
+            map['receiver_profile_image'] ?? map['receiver_avatar'];
+        map['avatar_url'] =
+            map['receiver_profile_image'] ?? map['receiver_avatar'];
         map['message'] = 'Sent • Waiting for acceptance ⏳';
-        items.add(_UnifiedRequestItem(id: 'sent_$id', type: 'mate', createdAt: dt, data: map));
+        items.add(_UnifiedRequestItem(
+            id: 'sent_$id', type: 'mate', createdAt: dt, data: map));
       }
     }
 
@@ -2996,14 +3047,17 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       }
       // Sent PocketTalk pact requests (candidates)
       for (final sPt in _poketTalkLocalSent) {
-        final recId = sPt['user_id']?.toString() ?? sPt['receiver_id']?.toString() ?? '';
+        final recId =
+            sPt['user_id']?.toString() ?? sPt['receiver_id']?.toString() ?? '';
         if (recId.isNotEmpty) {
-          final dt = DateTime.tryParse(sPt['created_at']?.toString() ?? '') ?? DateTime.now();
+          final dt = DateTime.tryParse(sPt['created_at']?.toString() ?? '') ??
+              DateTime.now();
           final map = Map<String, dynamic>.from(sPt);
           map['is_sent'] = true;
           map['peer_id'] = recId;
           map['peer_name'] = map['receiver_name'] ?? _getPactPeerName(recId);
-          map['peer_avatar'] = map['receiver_avatar'] ?? _getPactPeerAvatar(recId);
+          map['peer_avatar'] =
+              map['receiver_avatar'] ?? _getPactPeerAvatar(recId);
           items.add(_UnifiedRequestItem(
             id: 'sent_pt_$recId',
             type: 'pact',
@@ -3029,16 +3083,19 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     // Citadel Attacks (show under All or Attack tab)
     if (_requestsSubTab == 0 || _requestsSubTab == 4) {
       for (final atk in _pendingAttacks) {
-        final dt = DateTime.tryParse(atk['created_at']?.toString() ?? '') ?? DateTime.now();
+        final dt = DateTime.tryParse(atk['created_at']?.toString() ?? '') ??
+            DateTime.now();
         items.add(_UnifiedRequestItem(
-          id: atk['id']?.toString() ?? 'atk_${DateTime.now().millisecondsSinceEpoch}',
+          id: atk['id']?.toString() ??
+              'atk_${DateTime.now().millisecondsSinceEpoch}',
           type: 'attack',
           createdAt: dt,
           data: atk,
         ));
       }
       for (final atk in _sentAttacks) {
-        final dt = DateTime.tryParse(atk['created_at']?.toString() ?? '') ?? DateTime.now();
+        final dt = DateTime.tryParse(atk['created_at']?.toString() ?? '') ??
+            DateTime.now();
         final map = Map<String, dynamic>.from(atk);
         map['is_sent'] = true;
         items.add(_UnifiedRequestItem(
@@ -3057,7 +3114,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   Widget _buildEmptyRequestsState(bool isDark) {
     String title = 'No Pending Requests';
-    String desc = 'Incoming Mate requests, PocketTalk pacts, Citadel Fight duels, and attacks will appear here.';
+    String desc =
+        'Incoming Mate requests, PocketTalk pacts, Citadel Fight duels, and attacks will appear here.';
     IconData icon = Icons.mark_email_read_rounded;
 
     if (_requestsSubTab == 1) {
@@ -3066,7 +3124,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       icon = Icons.person_search_rounded;
     } else if (_requestsSubTab == 2) {
       title = 'No PocketTalk Pacts';
-      desc = 'Invitations for 4-day spoken English agreements will appear here.';
+      desc =
+          'Invitations for 4-day spoken English agreements will appear here.';
       icon = Icons.mic_none_rounded;
     } else if (_requestsSubTab == 3) {
       title = 'No Fight Challenges';
@@ -3127,7 +3186,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         decoration: BoxDecoration(
           color: const Color(0xFF10B981).withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.35)),
+          border: Border.all(
+              color: const Color(0xFF10B981).withValues(alpha: 0.35)),
         ),
         child: Text(
           '🤝 MATE REQUEST',
@@ -3144,7 +3204,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         decoration: BoxDecoration(
           color: const Color(0xFFFFB300).withValues(alpha: 0.18),
           borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: const Color(0xFFFFB300).withValues(alpha: 0.45)),
+          border: Border.all(
+              color: const Color(0xFFFFB300).withValues(alpha: 0.45)),
         ),
         child: Text(
           '🎙️ POCKET TALK (4-DAY PACT)',
@@ -3161,7 +3222,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         decoration: BoxDecoration(
           color: const Color(0xFFEF4444).withValues(alpha: 0.18),
           borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.45)),
+          border: Border.all(
+              color: const Color(0xFFEF4444).withValues(alpha: 0.45)),
         ),
         child: Text(
           '⚔️ CITADEL ATTACK',
@@ -3179,7 +3241,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         decoration: BoxDecoration(
           color: const Color(0xFFEF4444).withValues(alpha: 0.18),
           borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.45)),
+          border: Border.all(
+              color: const Color(0xFFEF4444).withValues(alpha: 0.45)),
         ),
         child: Text(
           '🥊 CITADEL FIGHT (${fight.questionCount} Qs WAR MODE)',
@@ -3204,16 +3267,21 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   Widget _buildMateRequestRow(Map<String, dynamic> req, bool isDark) {
     final senderId = req['sender_id']?.toString() ?? '';
-    final isRobot = req['is_robot'] == true || PocketRobotService.isRobotId(senderId);
+    final isRobot =
+        req['is_robot'] == true || PocketRobotService.isRobotId(senderId);
     final imgUrl = req['sender_profile_image'] ?? req['avatar_url'];
     VectorAvatarConfig? avatarConfig;
     if (isRobot) {
       final robot = PocketRobotService.getRobotById(senderId);
       final lvl = robot?.level ?? req['learning_stage'] ?? req['level'] ?? 1;
-      avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(lvl is num ? lvl.toInt() : 1);
+      avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(
+          lvl is num ? lvl.toInt() : 1);
     } else if (req['avatar_config'] != null) {
       try {
-        avatarConfig = req['avatar_config'] is String ? VectorAvatarConfig.fromJson(req['avatar_config']) : VectorAvatarConfig.fromMap(Map<String, dynamic>.from(req['avatar_config']));
+        avatarConfig = req['avatar_config'] is String
+            ? VectorAvatarConfig.fromJson(req['avatar_config'])
+            : VectorAvatarConfig.fromMap(
+                Map<String, dynamic>.from(req['avatar_config']));
       } catch (_) {}
     }
 
@@ -3225,13 +3293,17 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(
-              color: isRobot ? const Color(0xFF06B6D4) : const Color(0xFFFFFC00),
+              color:
+                  isRobot ? const Color(0xFF06B6D4) : const Color(0xFFFFFC00),
               width: 1.5,
             ),
           ),
           child: ClipOval(
             child: isRobot
-                ? VectorAvatarWidget(config: avatarConfig ?? VectorAvatarConfig.getEvolutionAvatarForStage(1), size: 46)
+                ? VectorAvatarWidget(
+                    config: avatarConfig ??
+                        VectorAvatarConfig.getEvolutionAvatarForStage(1),
+                    size: 46)
                 : (imgUrl != null && imgUrl.toString().isNotEmpty)
                     ? Image.network(
                         imgUrl.toString(),
@@ -3239,22 +3311,30 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         errorBuilder: (_, __, ___) => avatarConfig != null
                             ? VectorAvatarWidget(config: avatarConfig, size: 46)
                             : Container(
-                                color: const Color(0xFFFFFC00).withValues(alpha: 0.2),
+                                color: const Color(0xFFFFFC00)
+                                    .withValues(alpha: 0.2),
                                 alignment: Alignment.center,
                                 child: Text(
                                   (req['sender_name'] ?? 'M')[0].toUpperCase(),
-                                  style: const TextStyle(color: Color(0xFFFFFC00), fontWeight: FontWeight.bold, fontSize: 16),
+                                  style: const TextStyle(
+                                      color: Color(0xFFFFFC00),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16),
                                 ),
                               ),
                       )
                     : (avatarConfig != null
                         ? VectorAvatarWidget(config: avatarConfig, size: 46)
                         : Container(
-                            color: const Color(0xFFFFFC00).withValues(alpha: 0.2),
+                            color:
+                                const Color(0xFFFFFC00).withValues(alpha: 0.2),
                             alignment: Alignment.center,
                             child: Text(
                               (req['sender_name'] ?? 'M')[0].toUpperCase(),
-                              style: const TextStyle(color: Color(0xFFFFFC00), fontWeight: FontWeight.bold, fontSize: 16),
+                              style: const TextStyle(
+                                  color: Color(0xFFFFFC00),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16),
                             ),
                           )),
           ),
@@ -3280,7 +3360,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   if (isRobot) ...[
                     const SizedBox(width: 6),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 5, vertical: 1.5),
                       decoration: BoxDecoration(
                         color: const Color(0xFF06B6D4).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(4),
@@ -3318,7 +3399,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             decoration: BoxDecoration(
               color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.35)),
+              border: Border.all(
+                  color: const Color(0xFFFFFC00).withValues(alpha: 0.35)),
             ),
             child: Text(
               'Sent ⏳',
@@ -3337,20 +3419,24 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFFFC00),
                   foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   minimumSize: const Size(60, 32),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
                   elevation: 0,
                 ),
                 onPressed: () => _acceptMateRequest(req),
                 child: Text(
                   'Accept',
-                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
+                  style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold, fontSize: 12),
                 ),
               ),
               const SizedBox(width: 6),
               IconButton(
-                icon: const Icon(Icons.close_rounded, size: 18, color: Colors.grey),
+                icon: const Icon(Icons.close_rounded,
+                    size: 18, color: Colors.grey),
                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                 padding: EdgeInsets.zero,
                 onPressed: () => _declineMateRequest(req),
@@ -3375,9 +3461,16 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       peerName = _getPactPeerName(peerId);
       peerAvatar = _getPactPeerAvatar(peerId);
     } else if (pactData is Map<String, dynamic>) {
-      peerId = pactData['peer_id']?.toString() ?? pactData['user_id']?.toString() ?? pactData['receiver_id']?.toString() ?? '';
-      peerName = pactData['peer_name']?.toString() ?? pactData['receiver_name']?.toString() ?? _getPactPeerName(peerId);
-      peerAvatar = pactData['peer_avatar']?.toString() ?? pactData['receiver_avatar']?.toString() ?? _getPactPeerAvatar(peerId);
+      peerId = pactData['peer_id']?.toString() ??
+          pactData['user_id']?.toString() ??
+          pactData['receiver_id']?.toString() ??
+          '';
+      peerName = pactData['peer_name']?.toString() ??
+          pactData['receiver_name']?.toString() ??
+          _getPactPeerName(peerId);
+      peerAvatar = pactData['peer_avatar']?.toString() ??
+          pactData['receiver_avatar']?.toString() ??
+          _getPactPeerAvatar(peerId);
       isSent = pactData['is_sent'] == true;
     }
 
@@ -3437,7 +3530,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             decoration: BoxDecoration(
               color: const Color(0xFFFFB300).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFFFB300).withValues(alpha: 0.45)),
+              border: Border.all(
+                  color: const Color(0xFFFFB300).withValues(alpha: 0.45)),
             ),
             child: Text(
               'Sent ⏳',
@@ -3456,9 +3550,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFFB300),
                   foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   minimumSize: const Size(64, 32),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
                   elevation: 0,
                 ),
                 onPressed: () {
@@ -3466,12 +3562,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 },
                 child: Text(
                   'Accept Pact 🤝',
-                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 11.5),
+                  style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold, fontSize: 11.5),
                 ),
               ),
               const SizedBox(width: 6),
               IconButton(
-                icon: const Icon(Icons.close_rounded, size: 18, color: Colors.grey),
+                icon: const Icon(Icons.close_rounded,
+                    size: 18, color: Colors.grey),
                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                 padding: EdgeInsets.zero,
                 onPressed: () {
@@ -3496,7 +3594,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               : null,
           child: (fight.challengerAvatar.isEmpty)
               ? Text(
-                  fight.challengerName.isNotEmpty ? fight.challengerName[0].toUpperCase() : 'C',
+                  fight.challengerName.isNotEmpty
+                      ? fight.challengerName[0].toUpperCase()
+                      : 'C',
                   style: const TextStyle(
                     color: Color(0xFFEF4444),
                     fontWeight: FontWeight.bold,
@@ -3524,7 +3624,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 '${fight.gameTitle} • ${fight.questionCount} Questions Duel • Winner gets 🏆 Gold Trophy',
                 style: GoogleFonts.inter(
                   fontSize: 11.5,
-                  color: isDark ? const Color(0xFFFCA5A5) : const Color(0xFFDC2626),
+                  color: isDark
+                      ? const Color(0xFFFCA5A5)
+                      : const Color(0xFFDC2626),
                   fontWeight: FontWeight.w600,
                 ),
                 maxLines: 2,
@@ -3541,9 +3643,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFEF4444),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 minimumSize: const Size(64, 32),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
                 elevation: 0,
               ),
               onPressed: () => _acceptAndStartFight(fight),
@@ -3554,14 +3658,16 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   const SizedBox(width: 4),
                   Text(
                     'Fight Now',
-                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
+                    style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.bold, fontSize: 12),
                   ),
                 ],
               ),
             ),
             const SizedBox(width: 6),
             IconButton(
-              icon: const Icon(Icons.close_rounded, size: 18, color: Colors.grey),
+              icon:
+                  const Icon(Icons.close_rounded, size: 18, color: Colors.grey),
               constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
               padding: EdgeInsets.zero,
               onPressed: () => _declineFightChallenge(fight),
@@ -3627,7 +3733,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     : 'Attacked your citadel! -$damage HP with $weapon',
                 style: GoogleFonts.inter(
                   fontSize: 11.5,
-                  color: isDark ? const Color(0xFFFCA5A5) : const Color(0xFFDC2626),
+                  color: isDark
+                      ? const Color(0xFFFCA5A5)
+                      : const Color(0xFFDC2626),
                   fontWeight: FontWeight.w600,
                 ),
                 maxLines: 2,
@@ -3643,7 +3751,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             decoration: BoxDecoration(
               color: const Color(0xFFEF4444).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.45)),
+              border: Border.all(
+                  color: const Color(0xFFEF4444).withValues(alpha: 0.45)),
             ),
             child: Text(
               'Sent ⚔️',
@@ -3661,7 +3770,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               minimumSize: const Size(64, 32),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
               elevation: 0,
             ),
             onPressed: () {
@@ -3680,7 +3790,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 const SizedBox(width: 4),
                 Text(
                   'Revenge',
-                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
+                  style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold, fontSize: 12),
                 ),
               ],
             ),
@@ -3711,86 +3822,114 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? '';
 
     // Convert unified items to standard ChatConversation models so they render using the exact same ConversationTile as the All category
-    final conversations = unified.map((item) {
-      String peerId = '';
-      String peerName = 'Poket Mate';
-      String? peerAvatar;
-      Map<String, dynamic>? avatarConfig;
-      String lastMsg = '';
-      DateTime lastTime = item.createdAt;
+    final conversations = unified
+        .map((item) {
+          String peerId = '';
+          String peerName = 'Poket Mate';
+          String? peerAvatar;
+          Map<String, dynamic>? avatarConfig;
+          String lastMsg = '';
+          DateTime lastTime = item.createdAt;
 
-      if (item.type == 'mate') {
-        final req = item.data as Map<String, dynamic>;
-        final isSent = req['is_sent'] == true;
-        if (isSent) {
-          peerId = req['receiver_id']?.toString() ?? req['target_id']?.toString() ?? req['user_id']?.toString() ?? '';
-          peerName = req['receiver_name']?.toString() ?? req['sender_name']?.toString() ?? 'Poket Mate';
-          peerAvatar = req['receiver_profile_image']?.toString() ?? req['receiver_avatar']?.toString() ?? req['avatar_url']?.toString();
-          lastMsg = req['message']?.toString() ?? 'Sent Mates Request • Waiting for acceptance ⏳';
-        } else {
-          peerId = req['sender_id']?.toString() ?? req['source_id']?.toString() ?? '';
-          peerName = req['sender_name']?.toString() ?? 'Poket Mate';
-          peerAvatar = req['sender_profile_image']?.toString() ?? req['sender_avatar']?.toString() ?? req['avatar_url']?.toString();
-          lastMsg = req['message']?.toString() ?? '$peerName sent you a Mates Request';
-        }
-        if (req['avatar_config'] != null) {
-          try {
-            avatarConfig = Map<String, dynamic>.from(req['avatar_config']);
-          } catch (_) {}
-        }
-      } else if (item.type == 'pact') {
-        if (item.data is PocketTalkPact) {
-          final pact = item.data as PocketTalkPact;
-          final isMe = pact.user1Id == uid;
-          peerId = isMe ? pact.user2Id : pact.user1Id;
-          peerName = _getPactPeerName(peerId);
-          peerAvatar = _getPactPeerAvatar(peerId);
-          lastMsg = isMe ? 'Sent PocketTalk Request (4-Day Pact) ⏳' : '$peerName sent you a PocketTalk Request (4-Day Pact)';
-        } else if (item.data is Map<String, dynamic>) {
-          final map = item.data as Map<String, dynamic>;
-          final isSent = map['is_sent'] == true;
-          peerId = map['peer_id']?.toString() ?? map['user_id']?.toString() ?? map['receiver_id']?.toString() ?? '';
-          peerName = map['peer_name']?.toString() ?? map['receiver_name']?.toString() ?? _getPactPeerName(peerId);
-          peerAvatar = map['peer_avatar']?.toString() ?? map['receiver_avatar']?.toString() ?? _getPactPeerAvatar(peerId);
-          lastMsg = isSent ? 'Sent PocketTalk Request (4-Day Pact) ⏳' : '$peerName sent you a PocketTalk Request (4-Day Pact)';
-        }
-      } else if (item.type == 'fight') {
-        final duel = item.data as CitadelFightChallenge;
-        peerId = duel.challengerId;
-        peerName = duel.challengerName;
-        peerAvatar = duel.challengerAvatar;
-        lastMsg = '🥊 Citadel Fight Challenge (${duel.questionCount} Questions)';
-      } else if (item.type == 'attack') {
-        final atk = item.data as Map<String, dynamic>;
-        final isSent = atk['is_sent'] == true;
-        peerId = isSent
-            ? (atk['defender_id']?.toString() ?? '')
-            : (atk['attacker_id']?.toString() ?? '');
-        peerName = isSent
-            ? (atk['defender_name']?.toString() ?? 'Opponent')
-            : (atk['attacker_name']?.toString() ?? 'Attacker');
-        peerAvatar = isSent
-            ? atk['defender_avatar']?.toString()
-            : atk['attacker_avatar']?.toString();
-        lastMsg = isSent
-            ? '⚔️ You attacked Citadel defenses (${atk['weapon_name'] ?? 'Weapon'})'
-            : '⚔️ $peerName attacked your Citadel (${atk['weapon_name'] ?? 'Weapon'})';
-      }
+          if (item.type == 'mate') {
+            final req = item.data as Map<String, dynamic>;
+            final isSent = req['is_sent'] == true;
+            if (isSent) {
+              peerId = req['receiver_id']?.toString() ??
+                  req['target_id']?.toString() ??
+                  req['user_id']?.toString() ??
+                  '';
+              peerName = req['receiver_name']?.toString() ??
+                  req['sender_name']?.toString() ??
+                  'Poket Mate';
+              peerAvatar = req['receiver_profile_image']?.toString() ??
+                  req['receiver_avatar']?.toString() ??
+                  req['avatar_url']?.toString();
+              lastMsg = req['message']?.toString() ??
+                  'Sent Mates Request • Waiting for acceptance ⏳';
+            } else {
+              peerId = req['sender_id']?.toString() ??
+                  req['source_id']?.toString() ??
+                  '';
+              peerName = req['sender_name']?.toString() ?? 'Poket Mate';
+              peerAvatar = req['sender_profile_image']?.toString() ??
+                  req['sender_avatar']?.toString() ??
+                  req['avatar_url']?.toString();
+              lastMsg = req['message']?.toString() ??
+                  '$peerName sent you a Mates Request';
+            }
+            if (req['avatar_config'] != null) {
+              try {
+                avatarConfig = Map<String, dynamic>.from(req['avatar_config']);
+              } catch (_) {}
+            }
+          } else if (item.type == 'pact') {
+            if (item.data is PocketTalkPact) {
+              final pact = item.data as PocketTalkPact;
+              final isMe = pact.user1Id == uid;
+              peerId = isMe ? pact.user2Id : pact.user1Id;
+              peerName = _getPactPeerName(peerId);
+              peerAvatar = _getPactPeerAvatar(peerId);
+              lastMsg = isMe
+                  ? 'Sent PocketTalk Request (4-Day Pact) ⏳'
+                  : '$peerName sent you a PocketTalk Request (4-Day Pact)';
+            } else if (item.data is Map<String, dynamic>) {
+              final map = item.data as Map<String, dynamic>;
+              final isSent = map['is_sent'] == true;
+              peerId = map['peer_id']?.toString() ??
+                  map['user_id']?.toString() ??
+                  map['receiver_id']?.toString() ??
+                  '';
+              peerName = map['peer_name']?.toString() ??
+                  map['receiver_name']?.toString() ??
+                  _getPactPeerName(peerId);
+              peerAvatar = map['peer_avatar']?.toString() ??
+                  map['receiver_avatar']?.toString() ??
+                  _getPactPeerAvatar(peerId);
+              lastMsg = isSent
+                  ? 'Sent PocketTalk Request (4-Day Pact) ⏳'
+                  : '$peerName sent you a PocketTalk Request (4-Day Pact)';
+            }
+          } else if (item.type == 'fight') {
+            final duel = item.data as CitadelFightChallenge;
+            peerId = duel.challengerId;
+            peerName = duel.challengerName;
+            peerAvatar = duel.challengerAvatar;
+            lastMsg =
+                '🥊 Citadel Fight Challenge (${duel.questionCount} Questions)';
+          } else if (item.type == 'attack') {
+            final atk = item.data as Map<String, dynamic>;
+            final isSent = atk['is_sent'] == true;
+            peerId = isSent
+                ? (atk['defender_id']?.toString() ?? '')
+                : (atk['attacker_id']?.toString() ?? '');
+            peerName = isSent
+                ? (atk['defender_name']?.toString() ?? 'Opponent')
+                : (atk['attacker_name']?.toString() ?? 'Attacker');
+            peerAvatar = isSent
+                ? atk['defender_avatar']?.toString()
+                : atk['attacker_avatar']?.toString();
+            lastMsg = isSent
+                ? '⚔️ You attacked Citadel defenses (${atk['weapon_name'] ?? 'Weapon'})'
+                : '⚔️ $peerName attacked your Citadel (${atk['weapon_name'] ?? 'Weapon'})';
+          }
 
-      return ChatConversation(
-        id: peerId,
-        name: peerName,
-        imageUrl: peerAvatar,
-        avatarConfig: avatarConfig,
-        lastMessage: lastMsg,
-        lastMessageTime: lastTime,
-        unreadCount: 1,
-        otherUnreadCount: 0,
-        isGroup: false,
-        lastSenderId: peerId,
-        isOnline: false,
-      );
-    }).where((c) => c.id.isNotEmpty).toList();
+          return ChatConversation(
+            id: peerId,
+            name: peerName,
+            imageUrl: peerAvatar,
+            avatarConfig: avatarConfig,
+            lastMessage: lastMsg,
+            lastMessageTime: lastTime,
+            unreadCount: 1,
+            otherUnreadCount: 0,
+            isGroup: false,
+            lastSenderId: peerId,
+            isOnline: false,
+          );
+        })
+        .where((c) => c.id.isNotEmpty)
+        .toList();
 
     return SliverList(
       delegate: SliverChildBuilderDelegate(
@@ -3810,13 +3949,16 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 if (_currentUserId == null || _currentUserId!.isEmpty) {
                   final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
                     context: context,
-                    customMessage: 'Please login to chat with ' + conversation.name,
+                    customMessage:
+                        'Please login to chat with ' + conversation.name,
                   );
                   if (!isAuth) return;
                 }
 
                 // Mark as read in provider
-                ref.read(conversationsProvider.notifier).markAsRead(conversation.id, false);
+                ref
+                    .read(conversationsProvider.notifier)
+                    .markAsRead(conversation.id, false);
 
                 // Open 1-on-1 personal chat screen
                 await Navigator.push(
@@ -4939,7 +5081,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       // - Pending sent or incoming PoketTalk pacts (they belong in Requests / Poket Talk tab!)
                       // - Expired/completed temporary PoketTalk chats where users are not mutual mates
                       final sentPendingIds = _sentRequests
-                          .map((r) => r['user_id']?.toString() ?? r['receiver_id']?.toString())
+                          .map((r) =>
+                              r['user_id']?.toString() ??
+                              r['receiver_id']?.toString())
                           .whereType<String>()
                           .toSet();
 
@@ -4955,7 +5099,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         // Exclude any pending sent requests
                         if (sentPendingIds.contains(c.id) ||
                             _pocketTalkPendingSentPeerIds.contains(c.id) ||
-                            _poketTalkLocalSent.any((r) => (r['user_id'] == c.id || r['receiver_id'] == c.id))) {
+                            _poketTalkLocalSent.any((r) =>
+                                (r['user_id'] == c.id ||
+                                    r['receiver_id'] == c.id))) {
                           return false;
                         }
 
@@ -4967,10 +5113,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
                         // Must be either verified Mates OR an active accepted PoketTalk pact
                         final isMate = _localMateIds.contains(c.id);
-                        final isActivePact = _pocketTalkActivePeerIds.contains(c.id);
+                        final isActivePact =
+                            _pocketTalkActivePeerIds.contains(c.id);
                         return isMate || isActivePact;
                       }).toList();
-
                     } else if (_chatCategoryFilterIndex == 1) {
                       activeFiltered = activeFiltered
                           .where((c) => PocketRobotService.isRobotId(c.id))
@@ -4998,7 +5144,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       }).toList();
                     } else if (_chatCategoryFilterIndex == 6) {
                       // 🌟 User Audio Directive: Pocket Talk sub-tabs (Received first/main, Sent, Active 4-Day Pacts)
-                      final myUid = _currentUserId ?? supabase.auth.currentUser?.id ?? '';
+                      final myUid =
+                          _currentUserId ?? supabase.auth.currentUser?.id ?? '';
                       activeFiltered = activeFiltered.where((c) {
                         if (c.isGroup) return false;
                         if (PocketRobotService.isRobotId(c.id) ||
@@ -5007,17 +5154,26 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         }
                         final isPT = _pocketTalkPeerIds.contains(c.id) ||
                             (c.lastMessage?.contains('PocketTalk') == true ||
-                                c.lastMessage?.contains('Pocket Talk') == true ||
-                                c.lastMessage?.contains('Spoken English Pact') == true);
+                                c.lastMessage?.contains('Pocket Talk') ==
+                                    true ||
+                                c.lastMessage
+                                        ?.contains('Spoken English Pact') ==
+                                    true);
                         if (!isPT) return false;
 
-                        final isActive = _pocketTalkActivePeerIds.contains(c.id);
+                        final isActive =
+                            _pocketTalkActivePeerIds.contains(c.id);
                         if (_pocketTalkSubTabIndex == 0) {
                           // 📥 Received (First / Priority): Incoming requests sent by others
-                          return !isActive && (c.lastSenderId != myUid && !_pocketTalkPendingSentPeerIds.contains(c.id));
+                          return !isActive &&
+                              (c.lastSenderId != myUid &&
+                                  !_pocketTalkPendingSentPeerIds
+                                      .contains(c.id));
                         } else if (_pocketTalkSubTabIndex == 1) {
                           // 📤 Sent: Outgoing requests initiated by current user
-                          return !isActive && (c.lastSenderId == myUid || _pocketTalkPendingSentPeerIds.contains(c.id));
+                          return !isActive &&
+                              (c.lastSenderId == myUid ||
+                                  _pocketTalkPendingSentPeerIds.contains(c.id));
                         } else {
                           // 🤝 Active / Accepted: Agreed 4-Day Spoken Pacts
                           return isActive;
@@ -5026,9 +5182,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
                       // If in Sent tab, ensure all sent Poketalk requests from _sentRequests and _poketTalkLocalSent are present
                       if (_pocketTalkSubTabIndex == 1) {
-                        final existingIds = activeFiltered.map((c) => c.id).toSet();
+                        final existingIds =
+                            activeFiltered.map((c) => c.id).toSet();
                         for (final req in _sentRequests) {
-                          final recId = req['user_id']?.toString() ?? req['receiver_id']?.toString() ?? '';
+                          final recId = req['user_id']?.toString() ??
+                              req['receiver_id']?.toString() ??
+                              '';
                           final ctxType = req['context_type']?.toString() ?? '';
                           final msg = req['message']?.toString() ?? '';
                           final isPtReq = ctxType == 'pocket_talk' ||
@@ -5037,17 +5196,25 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                               msg.contains('Spoken English Pact') ||
                               msg.contains('Pocket Talk') ||
                               msg.contains('Poketalk');
-                          if (recId.isNotEmpty && isPtReq && !existingIds.contains(recId)) {
+                          if (recId.isNotEmpty &&
+                              isPtReq &&
+                              !existingIds.contains(recId)) {
                             existingIds.add(recId);
                             final sentAt = req['created_at'] != null
-                                ? DateTime.tryParse(req['created_at'].toString()) ?? DateTime.now()
+                                ? DateTime.tryParse(
+                                        req['created_at'].toString()) ??
+                                    DateTime.now()
                                 : DateTime.now();
                             activeFiltered.add(
                               ChatConversation(
                                 id: recId,
-                                name: req['receiver_name']?.toString() ?? 'Poketalk Partner',
-                                imageUrl: req['receiver_profile_image']?.toString() ?? req['receiver_avatar']?.toString(),
-                                lastMessage: '⚡ Challenged to a 4-Day Spoken English Pact (Pending)',
+                                name: req['receiver_name']?.toString() ??
+                                    'Poketalk Partner',
+                                imageUrl:
+                                    req['receiver_profile_image']?.toString() ??
+                                        req['receiver_avatar']?.toString(),
+                                lastMessage:
+                                    '⚡ Challenged to a 4-Day Spoken English Pact (Pending)',
                                 lastMessageTime: sentAt,
                                 unreadCount: 0,
                                 otherUnreadCount: 0,
@@ -5061,18 +5228,26 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
                         // Also include any locally cached Poketalk pact requests
                         for (final localReq in _poketTalkLocalSent) {
-                          final recId = localReq['user_id']?.toString() ?? localReq['receiver_id']?.toString() ?? '';
-                          if (recId.isNotEmpty && !existingIds.contains(recId)) {
+                          final recId = localReq['user_id']?.toString() ??
+                              localReq['receiver_id']?.toString() ??
+                              '';
+                          if (recId.isNotEmpty &&
+                              !existingIds.contains(recId)) {
                             existingIds.add(recId);
                             final sentAt = localReq['created_at'] != null
-                                ? DateTime.tryParse(localReq['created_at'].toString()) ?? DateTime.now()
+                                ? DateTime.tryParse(
+                                        localReq['created_at'].toString()) ??
+                                    DateTime.now()
                                 : DateTime.now();
                             activeFiltered.add(
                               ChatConversation(
                                 id: recId,
-                                name: localReq['receiver_name']?.toString() ?? 'Poketalk Partner',
-                                imageUrl: localReq['receiver_avatar']?.toString(),
-                                lastMessage: '⚡ Challenged to a 4-Day Spoken English Pact (Pending)',
+                                name: localReq['receiver_name']?.toString() ??
+                                    'Poketalk Partner',
+                                imageUrl:
+                                    localReq['receiver_avatar']?.toString(),
+                                lastMessage:
+                                    '⚡ Challenged to a 4-Day Spoken English Pact (Pending)',
                                 lastMessageTime: sentAt,
                                 unreadCount: 0,
                                 otherUnreadCount: 0,
@@ -5148,11 +5323,17 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                     String targetGid = conversation.id;
                                     String targetGname = conversation.name;
 
-                                    if (EnglishHubLevelGroupService.isEnglishHub(conversation.id, groupName: conversation.name)) {
-                                      if (_currentUserId != null && _currentUserId!.isNotEmpty) {
-                                        final activeHub = await EnglishHubLevelGroupService.getOrAssignEnglishHubGroup(
+                                    if (EnglishHubLevelGroupService
+                                        .isEnglishHub(conversation.id,
+                                            groupName: conversation.name)) {
+                                      if (_currentUserId != null &&
+                                          _currentUserId!.isNotEmpty) {
+                                        final activeHub =
+                                            await EnglishHubLevelGroupService
+                                                .getOrAssignEnglishHubGroup(
                                           userId: _currentUserId!,
-                                          isStudentMode: PocketKidsService.isStudentWorld,
+                                          isStudentMode:
+                                              PocketKidsService.isStudentWorld,
                                         );
                                         targetGid = activeHub.groupId;
                                         targetGname = activeHub.groupName;
@@ -5345,7 +5526,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                               : (_chatCategoryFilterIndex == 6
                                                   ? (_pocketTalkSubTabIndex == 0
                                                       ? 'No incoming Pocket Talk requests right now 📥'
-                                                      : (_pocketTalkSubTabIndex == 1
+                                                      : (_pocketTalkSubTabIndex ==
+                                                              1
                                                           ? 'No pending requests sent. Tap Pocket Talk on cards above! 📤'
                                                           : 'No active 4-day agreements yet 🤝'))
                                                   : 'No conversations yet')))),
@@ -5367,6 +5549,15 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               SliverToBoxAdapter(
                 child: ContactsSyncWidget(currentUserId: _currentUserId!),
               ),
+            // 📢 Native Ad at the very bottom of the chat list (User Audio Directive)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.only(top: 14, bottom: 40),
+                child: PocketTrueNativeAdWidget(
+                  placement: PocketAdPlacement.home,
+                ),
+              ),
+            ),
           ],
         );
       },
@@ -5433,36 +5624,23 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   onTap: () => setState(() => _currentIndex = 0),
                 ),
 
-                // 2. English Hub
+                // 2. Homes (Reels vertical scroll feed)
                 _buildNavItem(
-                  icon: material.Icons.group_rounded,
+                  icon: material.Icons.cottage_rounded,
                   isSelected: _currentIndex == 1,
-                  onTap: () async {
-                    if (_currentUserId == null || _currentUserId!.isEmpty) {
-                      final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
-                        context: context,
-                        customMessage:
-                            "Please login to join Group Chats and English Hub",
-                      );
-                      if (isAuth && mounted) {
-                        setState(() => _currentIndex = 1);
-                      }
-                    } else {
-                      setState(() => _currentIndex = 1);
-                    }
-                  },
+                  onTap: () => setState(() => _currentIndex = 1),
                 ),
 
-                // 3. Target
+                // 3. English Hub
                 _buildNavItem(
-                  icon: material.Icons.track_changes_rounded,
+                  icon: material.Icons.group_rounded,
                   isSelected: _currentIndex == 2,
                   onTap: () async {
                     if (_currentUserId == null || _currentUserId!.isEmpty) {
                       final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
                         context: context,
                         customMessage:
-                            "Please login to access your Daily Missions and Progress",
+                            "Please login to join Group Chats and English Hub",
                       );
                       if (isAuth && mounted) {
                         setState(() => _currentIndex = 2);
@@ -5473,7 +5651,27 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   },
                 ),
 
-                // 4. Profile
+                // 4. Target
+                _buildNavItem(
+                  icon: material.Icons.track_changes_rounded,
+                  isSelected: _currentIndex == 3,
+                  onTap: () async {
+                    if (_currentUserId == null || _currentUserId!.isEmpty) {
+                      final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
+                        context: context,
+                        customMessage:
+                            "Please login to access your Daily Missions and Progress",
+                      );
+                      if (isAuth && mounted) {
+                        setState(() => _currentIndex = 3);
+                      }
+                    } else {
+                      setState(() => _currentIndex = 3);
+                    }
+                  },
+                ),
+
+                // 5. Profile
                 _buildProfileNavItem(),
               ],
             ),
@@ -5672,7 +5870,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   Widget _buildProfileNavItem() {
     final day = _getEffectiveNavDay();
-    final isSelected = _currentIndex == 3;
+    final isSelected = _currentIndex == 4;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () async {
@@ -5951,7 +6149,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                           final isAuthenticated =
                               await AuthAlertBox.checkAuthAndShowAlert(
                             context: context,
-                            customMessage: "Please login to create a PocketGang",
+                            customMessage:
+                                "Please login to create a PocketGang",
                           );
                           if (isAuthenticated && mounted) {
                             showDialog(
@@ -5984,7 +6183,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                 Text('Create\nPocketGang',
                                     textAlign: TextAlign.center,
                                     style: GoogleFonts.poppins(
-                                        color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600)),
                               ],
                             )),
                       ),
@@ -7187,16 +7388,22 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                             children: [
                               // 🌐 Switch World Mode Quick Action (Kids / Student / Adult) - Hidden when Review Mode is active
                               ValueListenableBuilder<bool>(
-                                valueListenable: AppStoreReviewService.worldSwitchVisibleNotifier,
+                                valueListenable: AppStoreReviewService
+                                    .worldSwitchVisibleNotifier,
                                 builder: (context, isVisible, _) {
-                                  if (!isVisible || !AppStoreReviewService.isWorldSwitchVisible) return const SizedBox.shrink();
+                                  if (!isVisible ||
+                                      !AppStoreReviewService
+                                          .isWorldSwitchVisible)
+                                    return const SizedBox.shrink();
                                   return Padding(
                                     padding: const EdgeInsets.only(right: 6),
                                     child: _buildHeaderIconButton(
                                       context,
                                       icon: material.Icons.public_rounded,
                                       iconColor: const Color(0xFFFFD700),
-                                      onTap: () => PocketWorldModeSelectionDialog.show(context),
+                                      onTap: () =>
+                                          PocketWorldModeSelectionDialog.show(
+                                              context),
                                     ),
                                   );
                                 },
@@ -7508,7 +7715,6 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
       ),
     );
   }
-
 
   @override
   bool shouldRebuild(covariant _HomeMainHeaderDelegate oldDelegate) {

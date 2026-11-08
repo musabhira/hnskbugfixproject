@@ -4,8 +4,6 @@ import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/custom_code/widgets/kids/pocket_pure_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/chat/pocket_homes_reels_feed_widget.dart';
-import 'package:pocket_mates_app/custom_code/services/pocket_home_navigation_controller.dart';
 import 'home_page_model.dart';
 export 'home_page_model.dart';
 
@@ -21,7 +19,6 @@ class HomePageWidget extends StatefulWidget {
 
 class _HomePageWidgetState extends State<HomePageWidget> {
   late HomePageModel _model;
-  final PageController _homeHorizontalPageController = PageController(initialPage: 1);
 
   void _onModeChanged() {
     if (mounted) {
@@ -35,7 +32,6 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     PocketGameAudioService.instance.stop();
     _model = createModel(context, () => HomePageModel());
 
-    PocketHomeNavigationController.horizontalPageController = _homeHorizontalPageController;
     PocketKidsService.isKidAccountNotifier.addListener(_onModeChanged);
     PocketKidsService.currentWorldModeNotifier.addListener(_onModeChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
@@ -43,10 +39,6 @@ class _HomePageWidgetState extends State<HomePageWidget> {
 
   @override
   void dispose() {
-    if (PocketHomeNavigationController.horizontalPageController == _homeHorizontalPageController) {
-      PocketHomeNavigationController.horizontalPageController = null;
-    }
-    _homeHorizontalPageController.dispose();
     PocketKidsService.isKidAccountNotifier.removeListener(_onModeChanged);
     PocketKidsService.currentWorldModeNotifier.removeListener(_onModeChanged);
     _model.dispose();
@@ -61,18 +53,8 @@ class _HomePageWidgetState extends State<HomePageWidget> {
         key: ValueKey('pocket_pure_kids_active_home_root'),
       );
     }
-    return PageView(
-      controller: _homeHorizontalPageController,
-      physics: const ClampingScrollPhysics(),
-      children: [
-        PocketHomesReelsFeedWidget(
-          key: const ValueKey('adult_active_homes_reels_root'),
-          onBackToChat: PocketHomeNavigationController.scrollToChat,
-        ),
-        const custom_widgets.HomePageWidgetTree(
-          key: ValueKey('adult_active_home_root'),
-        ),
-      ],
+    return const custom_widgets.HomePageWidgetTree(
+      key: ValueKey('adult_active_home_root'),
     );
   }
 }

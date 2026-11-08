@@ -28,6 +28,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart'
 import 'pocket_citadel_attack_page.dart';
 import 'day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 import 'pocket_syllabus_repository.dart';
 import 'pocket_practice_speaking_card.dart';
 import 'pocket_fluency_gym_detail_page.dart';
@@ -839,6 +840,18 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               }),
             ),
           ),
+          bottomNavigationBar: (!PocketKidsService.isKidsWorld &&
+                  !PocketKidsService.isKidAccount)
+              ? Container(
+                  color: const Color(0xFF131722),
+                  child: const SafeArea(
+                    top: false,
+                    child: PocketBannerAdWidget(
+                      margin: EdgeInsets.symmetric(vertical: 4),
+                    ),
+                  ),
+                )
+              : null,
         ),
       ),
     );

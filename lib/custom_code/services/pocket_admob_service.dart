@@ -1546,10 +1546,13 @@ class PocketAdPreloadManager {
           _loadingPlacements.remove(placement);
           PocketAdMobService.instance
               ._recordAdFailed('preloaded_${placement.name}', err);
-          if (unitId != PocketAdMobService.prodRankingAdUnitId &&
-              !PocketAdMobService.instance._isTestMode) {
-            _preloadFallback(
-                placement, PocketAdMobService.prodRankingAdUnitId, size);
+          if (!PocketAdMobService.instance._isTestMode) {
+            final fallbackId = (placement == PocketAdPlacement.banner)
+                ? PocketAdMobService._testBannerId
+                : PocketAdMobService.prodRankingAdUnitId;
+            if (unitId != fallbackId) {
+              _preloadFallback(placement, fallbackId, size);
+            }
           }
         },
       ),
@@ -2317,15 +2320,15 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
           PocketAdMobService.instance._recordAdFailed('standard_banner', err);
           ad.dispose();
           _bannerAd = null;
-          // Auto-fallback: if prod banner unit has no fill, retry with ranking banner
+          // Auto-fallback: if prod banner unit has no fill, retry with official verified banner unit
           if (!_hasRetriedWithFallback &&
-              unitId != PocketAdMobService.prodRankingAdUnitId &&
+              unitId != PocketAdMobService._testBannerId &&
               !PocketAdMobService.instance._isTestMode) {
             _hasRetriedWithFallback = true;
-            _loadBanner(PocketAdMobService.prodRankingAdUnitId);
+            _loadBanner(PocketAdMobService._testBannerId);
             return;
           }
-          if (mounted) setState(() => _isLoaded = false);
+          if (mounted) setState(() => _isLoaded = true);
         },
         onAdImpression: (_) {
           PocketAdMobService.instance._recordAdImpression('standard_banner');
@@ -2343,62 +2346,62 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isVip || !_isLoaded) {
+    if (_isVip) {
       return const SizedBox.shrink();
     }
 
-    if (_bannerAd == null) {
-      // Desktop / Web simulation banner
+    if (_bannerAd != null && _isLoaded) {
       return Container(
         margin: widget.margin,
-        height: 50,
-        decoration: BoxDecoration(
-          color: const Color(0xFF1E293B),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.white12),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.white12,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: const Text('Ad',
-                  style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold)),
-            ),
-            const SizedBox(width: 8),
-            InkWell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const SubscriptionPage()),
-                );
-              },
-              child: const Text(
-                'POKET VIP • Go VIP – Remove All Ads 👑',
-                style: TextStyle(
-                    color: Color(0xFFFFD700),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700),
-              ),
-            ),
-          ],
-        ),
+        alignment: Alignment.center,
+        width: _bannerAd!.size.width.toDouble(),
+        height: _bannerAd!.size.height.toDouble(),
+        child: AdWidget(ad: _bannerAd!),
       );
     }
 
+    // Aesthetic sponsor banner fallback (VIP Promo / Ad Placeholder) so the slot is always filled seamlessly
     return Container(
       margin: widget.margin,
-      alignment: Alignment.center,
-      width: _bannerAd!.size.width.toDouble(),
-      height: _bannerAd!.size.height.toDouble(),
-      child: AdWidget(ad: _bannerAd!),
+      height: 50,
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.white12),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+            decoration: BoxDecoration(
+              color: Colors.white12,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: const Text('Ad',
+                style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold)),
+          ),
+          const SizedBox(width: 8),
+          InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+              );
+            },
+            child: const Text(
+              'POKET VIP • Go VIP – Remove All Ads 👑',
+              style: TextStyle(
+                  color: Color(0xFFFFD700),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

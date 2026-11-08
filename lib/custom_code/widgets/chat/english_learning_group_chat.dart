@@ -10,7 +10,6 @@ import 'package:shimmer/shimmer.dart';
 
 import 'english_hub_level_group_service.dart';
 import 'audio_space/pocket_audio_spaces_lobby_page.dart';
-import 'pocket_homes_reels_feed_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:flutter/services.dart';
 
@@ -37,10 +36,7 @@ class _EnglishLearningGroupChatWidgetState
   EnglishHubLevelGroup? _levelGroup;
   String? _currentUserProfileId;
   String? _currentUserId;
-  int _selectedHubTab =
-      1; // 0 = Homes (Left), 1 = Chat (Center), 2 = Table (Right)
-  int _homesEpoch =
-      0; // Incremented when switching back to Homes tab to auto-refresh seen items
+  int _selectedHubTab = 0; // 0 = Chat (Left), 1 = Table (Right)
   late PageController _hubPageController;
 
   @override
@@ -48,7 +44,7 @@ class _EnglishLearningGroupChatWidgetState
     super.initState();
     _hubPageController = PageController(initialPage: _selectedHubTab);
     _currentUserId = _supabase.auth.currentUser?.id;
-    // Initial tab is Chat (tab 1) - ensure BGM is quiet during chat
+    // Ensure BGM is quiet during chat
     PocketGameAudioService.instance.pause();
     _initGroupAndMembership();
   }
@@ -249,7 +245,7 @@ class _EnglishLearningGroupChatWidgetState
           ),
           const SizedBox(width: 8),
 
-          // 3-tab pill switcher: Homes (Left) | Chat (Center) | Table (Right)
+          // 2-tab pill switcher: Chat (Left) | Table (Right)
           Expanded(
             child: Container(
               height: 38,
@@ -261,7 +257,7 @@ class _EnglishLearningGroupChatWidgetState
               ),
               child: Row(
                 children: [
-                  // Tab 0 (Left): 🏰 Homes
+                  // Tab 0 (Left): 💬 Chat
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
@@ -283,10 +279,10 @@ class _EnglishLearningGroupChatWidgetState
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Text('🏰', style: TextStyle(fontSize: 14)),
+                              const Text('💬', style: TextStyle(fontSize: 14)),
                               const SizedBox(width: 4),
                               Text(
-                                'Homes',
+                                'Chat',
                                 style: GoogleFonts.outfit(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
@@ -302,7 +298,7 @@ class _EnglishLearningGroupChatWidgetState
                     ),
                   ),
 
-                  // Tab 1 (Center): 💬 Chat
+                  // Tab 1 (Right): 🎙️ Table
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
@@ -324,10 +320,10 @@ class _EnglishLearningGroupChatWidgetState
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Text('💬', style: TextStyle(fontSize: 14)),
+                              const Text('🎙️', style: TextStyle(fontSize: 14)),
                               const SizedBox(width: 4),
                               Text(
-                                'Chat',
+                                'Table',
                                 style: GoogleFonts.outfit(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
@@ -336,48 +332,7 @@ class _EnglishLearningGroupChatWidgetState
                                       : Colors.white70,
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // Tab 2 (Right): 🎙️ Table
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        HapticFeedback.selectionClick();
-                        _hubPageController.animateToPage(
-                          2,
-                          duration: const Duration(milliseconds: 250),
-                          curve: Curves.easeOutCubic,
-                        );
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: _selectedHubTab == 2
-                              ? const Color(0xFFFFFC00)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Center(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text('🎙️', style: TextStyle(fontSize: 14)),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Table',
-                                style: GoogleFonts.outfit(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: _selectedHubTab == 2
-                                      ? Colors.black
-                                      : Colors.white70,
-                                ),
-                              ),
-                              if (_selectedHubTab != 2) ...[
+                              if (_selectedHubTab != 1) ...[
                                 const SizedBox(width: 4),
                                 Container(
                                   width: 5,
@@ -427,33 +382,13 @@ class _EnglishLearningGroupChatWidgetState
                 controller: _hubPageController,
                 onPageChanged: (idx) {
                   HapticFeedback.selectionClick();
-                  // Audio Directive: When on Chat (tab 1) or Table (tab 2), silence background music
-                  if (idx != 0) {
-                    PocketGameAudioService.instance.pause();
-                  }
+                  PocketGameAudioService.instance.pause();
                   setState(() {
-                    if (idx == 0 && _selectedHubTab != 0) {
-                      _homesEpoch++;
-                    }
                     _selectedHubTab = idx;
                   });
                 },
                 children: [
-                  // 0 (Left): Homes (Reels-style Homestead & Attack Feed)
-                  PocketHomesReelsFeedWidget(
-                    key: ValueKey('homes_reel_$_homesEpoch'),
-                    userLevel: _levelGroup?.minLevel ?? 1,
-                    isActive: _selectedHubTab == 0,
-                    onBackToChat: () {
-                      _hubPageController.animateToPage(
-                        1,
-                        duration: const Duration(milliseconds: 250),
-                        curve: Curves.easeOutCubic,
-                      );
-                    },
-                  ),
-
-                  // 1 (Center): Level Chat
+                  // 0 (Left): Level Chat
                   _isLoading
                       ? _buildShimmerLoading(context)
                       : (_isMember && _groupId != null
@@ -470,7 +405,7 @@ class _EnglishLearningGroupChatWidgetState
                             )
                           : _buildErrorState(context)),
 
-                  // 2 (Right): ChitChat Table (4-seat Voice & Text Table)
+                  // 1 (Right): ChitChat Table (4-seat Voice & Text Table)
                   const PocketAudioSpacesLobbyPage(
                     showHeader: false,
                     enableSafeArea: false,

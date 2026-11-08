@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 
 class SentencePuzzleItem {
   final String targetSentence;
@@ -53,7 +55,8 @@ class _PocketSentenceBuilderCardState extends State<PocketSentenceBuilderCard> {
     SentencePuzzleItem(
       targetSentence: 'I drank hot tea in the morning.',
       scrambledWords: ['tea', 'drank', 'I', 'in the morning.', 'hot'],
-      tip: '[Subject: I] ➔ [Action: drank] ➔ [Object: hot tea] ➔ [Time: in the morning]',
+      tip:
+          '[Subject: I] ➔ [Action: drank] ➔ [Object: hot tea] ➔ [Time: in the morning]',
       translation: 'ഞാൻ രാവിലെ ചൂടുചായ കുടിച്ചു.',
     ),
     SentencePuzzleItem(
@@ -64,19 +67,15 @@ class _PocketSentenceBuilderCardState extends State<PocketSentenceBuilderCard> {
     ),
     SentencePuzzleItem(
       targetSentence: 'Could you please share the project details?',
-      scrambledWords: [
-        'share',
-        'Could you',
-        'the project details?',
-        'please'
-      ],
+      scrambledWords: ['share', 'Could you', 'the project details?', 'please'],
       tip: '[Could you] ➔ [Polite: please] ➔ [Action: share] ➔ [Target]',
       translation: 'ദയവായി പ്രോജക്റ്റ് വിവരങ്ങൾ ഷെയർ ചെയ്യാമോ?',
     ),
     SentencePuzzleItem(
       targetSentence: 'We will launch the new feature tomorrow.',
       scrambledWords: ['the new feature', 'We will', 'tomorrow.', 'launch'],
-      tip: '[Subject: We will] ➔ [Action: launch] ➔ [Target] ➔ [Time: tomorrow]',
+      tip:
+          '[Subject: We will] ➔ [Action: launch] ➔ [Target] ➔ [Time: tomorrow]',
       translation: 'ഞങ്ങൾ നാളെ പുതിയ ഫീച്ചർ ലോഞ്ച് ചെയ്യും.',
     ),
     SentencePuzzleItem(
@@ -653,6 +652,13 @@ class _PocketSentenceBuilderCardState extends State<PocketSentenceBuilderCard> {
                     ),
                   ),
                 ),
+              if (!PocketKidsService.isKidsWorld &&
+                  !PocketKidsService.isKidAccount) ...[
+                const SizedBox(height: 12),
+                const PocketBannerAdWidget(
+                  margin: EdgeInsets.symmetric(vertical: 4),
+                ),
+              ],
             ],
           ),
         ],
