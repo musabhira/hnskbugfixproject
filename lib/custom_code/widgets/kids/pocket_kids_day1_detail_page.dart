@@ -77,10 +77,10 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
       'desc': 'Arrange wagons to spell your first word: C - A - T!',
     },
     {
-      'title': 'Rainbow Sentence Builder',
-      'icon': '🧩',
-      'color': Color(0xFF8B5CF6),
-      'desc': 'Snap the colored word blocks to build: "I see a cat"!',
+      'title': 'Choo-Choo Sentence Builder',
+      'icon': '🚂',
+      'color': Color(0xFF0284C7),
+      'desc': 'Hook the train wagons to build: "I see a cat"!',
     },
     {
       'title': 'Magic Voice Echo',
@@ -251,6 +251,7 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
   // --- Step 3: Sentence Builder Logic ---
   void _tapAvailableSentenceWord(String word) {
     if (_placedSentenceWords.length < _targetSentence.length) {
+      _speak(word);
       setState(() {
         _placedSentenceWords.add(word);
         _availableSentenceWords.remove(word);
@@ -264,13 +265,22 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
         });
       } else if (_placedSentenceWords.length == _targetSentence.length) {
         _speak("Let's snap them in the right order!");
-        Future.delayed(const Duration(milliseconds: 700), () {
+        Future.delayed(const Duration(milliseconds: 900), () {
           setState(() {
             _placedSentenceWords.clear();
             _availableSentenceWords = ['cat', 'I', 'a', 'see'];
           });
         });
       }
+    }
+  }
+
+  void _unhookSentenceWord(int index) {
+    if (index >= 0 && index < _placedSentenceWords.length) {
+      final w = _placedSentenceWords.removeAt(index);
+      _availableSentenceWords.add(w);
+      HapticFeedback.selectionClick();
+      setState(() {});
     }
   }
 
@@ -883,81 +893,295 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
     );
   }
 
-  // --- Step 3: Rainbow Sentence Builder UI ---
+  // --- Step 3: Choo-Choo Train Sentence Builder UI ---
   Widget _buildSentenceBuilderGame() {
+    final colors = [
+      const Color(0xFFFF2D55),
+      const Color(0xFFFF9500),
+      const Color(0xFF10B981),
+      const Color(0xFF007AFF),
+    ];
+    final emojis = ['👁️', '👀', '✨', '🐱'];
+
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
         children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('🚂', style: TextStyle(fontSize: 22)),
+              const SizedBox(width: 8),
+              Text(
+                'Choo-Choo Sentence Builder',
+                style: GoogleFonts.fredoka(
+                  color: Colors.white,
+                  fontSize: 19,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
           Text(
-            'Rainbow Sentence Builder 🧩',
+            'Hook the train wagons: "I see a cat"',
             style: GoogleFonts.outfit(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
+              color: const Color(0xFFFFD700),
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 6),
-          Text(
-            'Snap the blocks to make: "I see a cat"',
-            style: GoogleFonts.inter(color: Colors.white60, fontSize: 12),
-          ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 16),
 
-          // Target Sentence Construction Slot
+          // Train Track Container
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E1B4B),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFF8B5CF6), width: 2),
+              color: const Color(0xFF1E293B).withValues(alpha: 0.85),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(
+                color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
+                width: 1.5,
+              ),
             ),
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              alignment: WrapAlignment.center,
-              children: _placedSentenceWords.isEmpty
-                  ? [
-                      Text(
-                        'Tap the blocks below in order...',
-                        style: GoogleFonts.inter(color: Colors.white38, fontSize: 13),
-                      )
-                    ]
-                  : _placedSentenceWords.map((w) {
-                      return Chip(
-                        backgroundColor: const Color(0xFF7C3AED),
-                        label: Text(
-                          w,
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 15,
+            child: Column(
+              children: [
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      // Locomotive Engine
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('💨', style: TextStyle(fontSize: 16)),
+                          Container(
+                            width: 80,
+                            height: 72,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFFF2D55), Color(0xFFFF9500)],
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.white70, width: 2),
+                            ),
+                            alignment: Alignment.center,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text('🚂', style: TextStyle(fontSize: 22)),
+                                Text(
+                                  'EXPRESS',
+                                  style: GoogleFonts.fredoka(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      );
-                    }).toList(),
+                          const SizedBox(height: 4),
+                          const Row(
+                            children: [
+                              Text('⚙️', style: TextStyle(fontSize: 12)),
+                              SizedBox(width: 14),
+                              Text('⚙️', style: TextStyle(fontSize: 12)),
+                            ],
+                          ),
+                        ],
+                      ),
+
+                      // Wagons for each of the 4 words
+                      ...List.generate(_targetSentence.length, (i) {
+                        final hasWord = i < _placedSentenceWords.length;
+                        final word = hasWord ? _placedSentenceWords[i] : null;
+                        final c = colors[i % colors.length];
+                        final em = emojis[i % emojis.length];
+
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.only(bottom: 20),
+                              child: Text(
+                                '🔗',
+                                style: TextStyle(fontSize: 13, color: Colors.white54),
+                              ),
+                            ),
+                            const SizedBox(width: 3),
+                            GestureDetector(
+                              onTap: hasWord ? () => _unhookSentenceWord(i) : null,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    width: 78,
+                                    height: 72,
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: hasWord ? c : Colors.white.withValues(alpha: 0.08),
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: hasWord ? Colors.white : Colors.white24,
+                                        width: 1.8,
+                                      ),
+                                      boxShadow: hasWord
+                                          ? [
+                                              BoxShadow(
+                                                color: c.withValues(alpha: 0.4),
+                                                blurRadius: 8,
+                                                offset: const Offset(0, 2),
+                                              ),
+                                            ]
+                                          : [],
+                                    ),
+                                    child: hasWord
+                                        ? Column(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Text(em, style: const TextStyle(fontSize: 18)),
+                                              const SizedBox(height: 2),
+                                              FittedBox(
+                                                fit: BoxFit.scaleDown,
+                                                child: Text(
+                                                  word!,
+                                                  style: GoogleFonts.fredoka(
+                                                    color: Colors.white,
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                        : Column(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              const Icon(
+                                                Icons.add_rounded,
+                                                color: Colors.white38,
+                                                size: 20,
+                                              ),
+                                              Text(
+                                                'Slot ${i + 1}',
+                                                style: GoogleFonts.outfit(
+                                                  color: Colors.white38,
+                                                  fontSize: 10,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  const Row(
+                                    children: [
+                                      Text('⚙️', style: TextStyle(fontSize: 12)),
+                                      SizedBox(width: 14),
+                                      Text('⚙️', style: TextStyle(fontSize: 12)),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 3),
+                          ],
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 6),
+                // Steel Railway Track
+                Container(
+                  height: 6,
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF64748B), Color(0xFFCBD5E1), Color(0xFF64748B)],
+                    ),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // Malayalam Meaning Pill
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F172A),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white12),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('💡', style: TextStyle(fontSize: 15)),
+                const SizedBox(width: 6),
+                Text(
+                  'ഞാൻ ഒരു കൊച്ചു പൂച്ചയെ കാണുന്നു 🐱',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFD700),
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
           ),
 
           const Spacer(),
 
-          // Available blocks
+          // Available Word Blocks Tray
+          Text(
+            'TAP A WORD BLOCK TO HOOK TO TRAIN',
+            style: GoogleFonts.fredoka(
+              color: Colors.white54,
+              fontSize: 11,
+              letterSpacing: 1.1,
+            ),
+          ),
+          const SizedBox(height: 10),
           Wrap(
             spacing: 12,
             runSpacing: 12,
+            alignment: WrapAlignment.center,
             children: _availableSentenceWords.map((w) {
-              return ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6D28D9),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                ),
-                onPressed: () => _tapAvailableSentenceWord(w),
-                child: Text(
-                  w,
-                  style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold),
+              return GestureDetector(
+                onTap: () => _tapAvailableSentenceWord(w),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF0284C7), Color(0xFF0284C7)],
+                    ),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: Colors.white70, width: 1.8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF0284C7).withValues(alpha: 0.4),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    w,
+                    style: GoogleFonts.fredoka(
+                      color: Colors.white,
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               );
             }).toList(),

@@ -43,6 +43,7 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/games/flame/pocket_kid
 import 'package:pocket_mates_app/custom_code/widgets/kids/games/flame/pocket_kids_flame_game_3_listening_detective.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/games/flame/pocket_kids_flame_game_4_vocabulary_rocket_run.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/games/flame/pocket_kids_flame_game_5_grammar_garden.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_talking_vocab_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/games/flame/pocket_kids_flame_game_6_opposite_world_challenge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/games/flame/pocket_kids_flame_game_7_tense_time_travel.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/games/flame/pocket_kids_flame_game_8_pronunciation_echo.dart';
@@ -99,6 +100,14 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
   int _villageBiomeFilter = 0; // 0 = All (100), 1 = My Mates, 2 = Meadow (1-30), 3 = Valley (31-60), 4 = Summit (61-100)
   String _villageSearchQuery = '';
   final TextEditingController _villageSearchController = TextEditingController();
+
+  // 🗣️ 2,000 Kids Talking Vocabulary Tab State
+  int _homesViewMode = 0; // 0 = Buddy Village & Houses, 1 = 2000 Talking Words 🗣️
+  String _vocabCategoryFilter = 'All';
+  String _vocabSearchQuery = '';
+  final TextEditingController _vocabSearchController = TextEditingController();
+  String? _speakingWord;
+  Timer? _speakingWordTimer;
   int _cardFilterTab = 0; // 0 = All (90), 1 = Achieved, 2 = Locked
   bool _expandAllCards = false;
 
@@ -158,6 +167,8 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
     _pulseController.dispose();
     _trailScrollController.dispose();
     _villageSearchController.dispose();
+    _vocabSearchController.dispose();
+    _speakingWordTimer?.cancel();
     _tts.stop();
     super.dispose();
   }
@@ -240,48 +251,6 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
                 ),
                 _buildBottomKidNav(),
               ],
-            ),
-            // 🪐 Floating Cosmos Test Lab Pill
-            Positioned(
-              top: 6,
-              right: 12,
-              child: GestureDetector(
-                onTap: () {
-                  HapticFeedback.mediumImpact();
-                  PoketCosmosTestCenterModal.show(context);
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A).withValues(alpha: 0.94),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFFFFD700), width: 1.4),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFFFD700).withValues(alpha: 0.35),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('🪐', style: TextStyle(fontSize: 15)),
-                      const SizedBox(width: 5),
-                      Text(
-                        'TEST LAB',
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFFFFD700),
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.6,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
             ),
           ],
         ),
@@ -494,6 +463,105 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
       child: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         children: [
+          // 🔀 Homes Top Sub-Navigation (Houses vs. 2,000 Talking Words)
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFFC7EDE3), width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF0F3E34).withValues(alpha: 0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      setState(() => _homesViewMode = 0);
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
+                        color: _homesViewMode == 0
+                            ? const Color(0xFF10B981)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      alignment: Alignment.center,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('🏡', style: TextStyle(fontSize: 16)),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Houses',
+                            style: GoogleFonts.outfit(
+                              color: _homesViewMode == 0
+                                  ? Colors.white
+                                  : const Color(0xFF0F3E34),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      setState(() => _homesViewMode = 1);
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
+                        color: _homesViewMode == 1
+                            ? const Color(0xFF0284C7)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      alignment: Alignment.center,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('🗣️', style: TextStyle(fontSize: 16)),
+                          const SizedBox(width: 6),
+                          Text(
+                            '2000 Words 🔤',
+                            style: GoogleFonts.outfit(
+                              color: _homesViewMode == 1
+                                  ? Colors.white
+                                  : const Color(0xFF0F3E34),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // 🌟 Content: either Talking Vocabulary or Buddy Village Houses
+          if (_homesViewMode == 1) ...[
+            _buildTalkingVocabularyView(),
+          ] else ...[
           // 🏡 Top Open World & Village Banner (Kumi Pastel Rounded Card)
           Container(
             padding: const EdgeInsets.all(16),
@@ -685,10 +753,247 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
             )
           else
             ...buddies.map((buddy) => _buildBuddyHouseCard(buddy)),
+          ],
 
           const SizedBox(height: 24),
         ],
       ),
+    );
+  }
+
+  /// 🗣️ Dedicated 2,000 Foundational Talking Vocabulary View (1-Tap Speaking Audio)
+  Widget _buildTalkingVocabularyView() {
+    final allWords = PocketKidsTalkingVocabService.getAllWords();
+    List<KidTalkingWord> filtered = allWords;
+
+    if (_vocabCategoryFilter != 'All') {
+      filtered = filtered.where((w) => w.category == _vocabCategoryFilter).toList();
+    }
+
+    if (_vocabSearchQuery.trim().isNotEmpty) {
+      final q = _vocabSearchQuery.toLowerCase().trim();
+      filtered = filtered.where((w) => w.word.toLowerCase().contains(q)).toList();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // 🔍 Minimal Talking Vocab Search Bar
+        Container(
+          height: 48,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFFC7EDE3), width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF0F3E34).withValues(alpha: 0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: TextField(
+            controller: _vocabSearchController,
+            onChanged: (val) {
+              setState(() => _vocabSearchQuery = val);
+            },
+            style: GoogleFonts.outfit(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF0F3E34),
+            ),
+            decoration: InputDecoration(
+              hintText: '🔍 Search cat, boat, apple, sun, car...',
+              hintStyle: GoogleFonts.outfit(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF9EBEB6),
+              ),
+              prefixIcon: const Icon(
+                Icons.search_rounded,
+                color: Color(0xFF0284C7),
+                size: 22,
+              ),
+              suffixIcon: _vocabSearchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear_rounded, size: 18, color: Color(0xFF6B8B82)),
+                      onPressed: () {
+                        _vocabSearchController.clear();
+                        setState(() => _vocabSearchQuery = '');
+                      },
+                    )
+                  : null,
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 12),
+
+        // 🏷️ Category Filter Chips
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: PocketKidsTalkingVocabService.categories.map((cat) {
+              final isSel = _vocabCategoryFilter == cat;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    setState(() => _vocabCategoryFilter = cat);
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: isSel ? const Color(0xFF0284C7) : Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: isSel ? const Color(0xFF0284C7) : const Color(0xFFC7EDE3),
+                        width: 1.5,
+                      ),
+                      boxShadow: isSel
+                          ? [
+                              BoxShadow(
+                                color: const Color(0xFF0284C7).withValues(alpha: 0.35),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ]
+                          : [],
+                    ),
+                    child: Text(
+                      cat,
+                      style: GoogleFonts.outfit(
+                        color: isSel ? Colors.white : const Color(0xFF0F3E34),
+                        fontWeight: isSel ? FontWeight.w900 : FontWeight.w700,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+
+        const SizedBox(height: 14),
+
+        // 📊 Word Count Counter & Subtitle
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '${filtered.length} Talking Words 🗣️',
+              style: GoogleFonts.outfit(
+                color: const Color(0xFF0F3E34),
+                fontWeight: FontWeight.w900,
+                fontSize: 13,
+              ),
+            ),
+            Text(
+              '1-Tap to Speak',
+              style: GoogleFonts.outfit(
+                color: const Color(0xFF0284C7),
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 10),
+
+        // 🔤 Grid of Word Chips
+        if (filtered.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(32),
+            alignment: Alignment.center,
+            child: Text(
+              'No words found for "$_vocabSearchQuery" 🐾',
+              style: GoogleFonts.outfit(
+                color: const Color(0xFF6B8B82),
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+              ),
+            ),
+          )
+        else
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: filtered.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 2.3,
+            ),
+            itemBuilder: (context, index) {
+              final item = filtered[index];
+              final isSpeaking = _speakingWord == item.word;
+              return GestureDetector(
+                onTap: () {
+                  _speakingWordTimer?.cancel();
+                  setState(() => _speakingWord = item.word);
+                  PocketKidsTalkingVocabService.instance.speakWord(item.word);
+                  _speakingWordTimer = Timer(const Duration(milliseconds: 1400), () {
+                    if (mounted) setState(() => _speakingWord = null);
+                  });
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isSpeaking
+                        ? item.themeColor.withValues(alpha: 0.15)
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: isSpeaking ? item.themeColor : const Color(0xFFD1FAE5),
+                      width: isSpeaking ? 2.5 : 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: isSpeaking
+                            ? item.themeColor.withValues(alpha: 0.3)
+                            : const Color(0xFF0F3E34).withValues(alpha: 0.04),
+                        blurRadius: isSpeaking ? 10 : 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Text(item.emoji, style: const TextStyle(fontSize: 26)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          item.word,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.fredoka(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: isSpeaking ? item.themeColor : const Color(0xFF0F3E34),
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        isSpeaking ? Icons.volume_up_rounded : Icons.volume_mute_rounded,
+                        size: 18,
+                        color: isSpeaking ? item.themeColor : const Color(0xFF9EBEB6),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+      ],
     );
   }
 

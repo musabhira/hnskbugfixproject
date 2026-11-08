@@ -2310,13 +2310,18 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
             ? null
             : LearningMilestoneStage.getStageForDay(userDay);
 
-        // 🌌 Resolve Scientific Interplanetary Flight Manifest
+        // 🌌 Resolve Scientific Interplanetary Flight Manifest & Exact Plot Address
         final myPlanetCode = PoketCosmosDistanceService.instance.resolvePlanetCode(
           PoketCosmosAllocationService.instance.currentBirthPlot?.planetName,
         );
         String targetPlanetCode = 'EP';
+        String targetPlanetName = 'Earth';
+        int targetPlotNumber = 1;
+
         if (isPresident) {
           targetPlanetCode = 'EP';
+          targetPlanetName = 'Earth';
+          targetPlotNumber = 1;
         } else if (isRobot) {
           final robotLvl = (profile['robot_level'] as num?)?.toInt() ?? 1;
           final cosmosMeta = PocketRobotService.getCosmosAddressForRobotId(
@@ -2326,14 +2331,38 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
           targetPlanetCode = PoketCosmosDistanceService.instance.resolvePlanetCode(
             cosmosMeta['planetCode'] ?? cosmosMeta['planetName'],
           );
+          targetPlanetName = PoketCosmosDistanceService.instance.getCleanPlanetName(targetPlanetCode);
+          targetPlotNumber = cosmosMeta['plotNumber'] as int? ?? 1;
         } else {
-          targetPlanetCode = PoketCosmosDistanceService.instance.resolvePlanetCode(
-            profile['planet_name'] ??
-                profile['planet_code'] ??
-                profile['cosmos_pin'] ??
-                profile['bio'] ??
-                'EP',
-          );
+          final targetUserId = (profile['user_id'] ?? profile['id'] ?? '').toString();
+          final cachedPlot = PoketCosmosAllocationService.instance.getCachedUserPlot(targetUserId);
+          if (cachedPlot != null) {
+            targetPlanetCode = PoketCosmosDistanceService.instance.resolvePlanetCode(cachedPlot.planetName);
+            targetPlanetName = PoketCosmosDistanceService.instance.getCleanPlanetName(targetPlanetCode);
+            targetPlotNumber = cachedPlot.plotNumber;
+          } else {
+            // Bio check for standard Cosmos PIN
+            final bio = profile['bio']?.toString() ?? '';
+            final match = RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(bio);
+            if (match != null) {
+              targetPlanetCode = match.group(2) ?? 'EP';
+              targetPlanetName = PoketCosmosDistanceService.instance.getCleanPlanetName(targetPlanetCode);
+              targetPlotNumber = int.tryParse(match.group(4) ?? '1') ?? 1;
+            } else if (profile['planet_name'] != null || profile['planet_code'] != null) {
+              targetPlanetCode = PoketCosmosDistanceService.instance.resolvePlanetCode(
+                profile['planet_name'] ?? profile['planet_code'],
+              );
+              targetPlanetName = PoketCosmosDistanceService.instance.getCleanPlanetName(targetPlanetCode);
+              targetPlotNumber = (profile['plot_number'] as num?)?.toInt() ?? 1;
+            } else {
+              // Deterministic cosmic fallback based on target user ID
+              final colIndex = targetUserId.hashCode.abs() % PoketCosmosAllocationService.colonies.length;
+              final col = PoketCosmosAllocationService.colonies[colIndex];
+              targetPlanetCode = col.code;
+              targetPlanetName = PoketCosmosDistanceService.instance.getCleanPlanetName(col.code);
+              targetPlotNumber = ((targetUserId.hashCode.abs() ~/ 10) % PoketCosmosAllocationService.maxPlotsPerIsland) + 1;
+            }
+          }
         }
         final flightManifest =
             PoketCosmosDistanceService.instance.calculateFlightManifest(
@@ -2690,7 +2719,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                '${PoketCosmosDistanceService.instance.getPlanetEmoji(flightManifest.destinationCode)} ${flightManifest.destinationName}',
+                                '${PoketCosmosDistanceService.instance.getPlanetEmoji(targetPlanetCode)} $targetPlanetName',
                                 style: GoogleFonts.outfit(
                                   color: const Color(0xFFC7D2FE),
                                   fontSize: 10,
@@ -2707,9 +2736,26 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                               ),
                               const SizedBox(width: 4.5),
                               Text(
+                                'Plot #${targetPlotNumber.toString().padLeft(2, '0')}',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFFD700),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(width: 4.5),
+                              Text(
+                                '•',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.35),
+                                  fontSize: 9,
+                                ),
+                              ),
+                              const SizedBox(width: 4.5),
+                              Text(
                                 flightManifest.isSamePlanet
-                                    ? 'Local Orbit 🚀'
-                                    : '${flightManifest.formattedDistance} away 🚀',
+                                    ? '12,400 km'
+                                    : flightManifest.formattedDistance,
                                 style: GoogleFonts.orbitron(
                                   color: const Color(0xFF38BDF8),
                                   fontSize: 9.5,

@@ -55,9 +55,9 @@ class FlameGrowingTreeWorld extends FlameGame {
       ).createShader(Rect.fromLTWH(0, groundY, w, h - groundY));
     canvas.drawRect(Rect.fromLTWH(0, groundY, w, h - groundY), groundPaint);
 
-    // 3. Tree Rendering based strictly on completedDays (NO fake progress)
+    // 3. Dynamic Continuous Tree Growth (Scales noticeably with EVERY single completed day!)
     final centerX = w * 0.5;
-    final sway = math.sin(_tick * 1.5) * 4.0;
+    final sway = math.sin(_tick * 1.5) * (3.0 + (completedDays / 100.0).clamp(0.0, 1.0) * 3.0);
 
     if (completedDays == 0) {
       // Day 0: Small Pot & Tiny 2-Leaf Sprout 🌱
@@ -69,7 +69,6 @@ class FlameGrowingTreeWorld extends FlameGame {
       );
       canvas.drawRRect(potRect, potPaint);
 
-      // Tiny 2-leaf sprout
       final sproutPaint = Paint()
         ..color = const Color(0xFF4ADE80)
         ..strokeWidth = 3.5
@@ -77,104 +76,191 @@ class FlameGrowingTreeWorld extends FlameGame {
       canvas.drawLine(Offset(centerX, groundY - 5),
           Offset(centerX, groundY - 24), sproutPaint);
       final leafPaint = Paint()..color = const Color(0xFF22C55E);
-      canvas.drawCircle(Offset(centerX - 8, groundY - 26), 5, leafPaint);
-      canvas.drawCircle(Offset(centerX + 8, groundY - 26), 5, leafPaint);
-    } else if (completedDays <= 30) {
-      // Days 1–30: Small Seedling / Tender Green Stem 🌱
-      final stemPaint = Paint()
-        ..color = const Color(0xFF16A34A)
-        ..strokeWidth = 5
-        ..strokeCap = StrokeCap.round;
-      canvas.drawLine(Offset(centerX, groundY),
-          Offset(centerX + sway * 0.5, groundY - 60), stemPaint);
-      final leafPaint = Paint()..color = const Color(0xFF4ADE80);
-      canvas.drawCircle(Offset(centerX - 16, groundY - 45), 10, leafPaint);
-      canvas.drawCircle(Offset(centerX + 16, groundY - 52), 10, leafPaint);
-      canvas.drawCircle(Offset(centerX + sway, groundY - 65), 12, leafPaint);
-    } else if (completedDays <= 60) {
-      // Days 31–60: Leafy Bush with First Flowers 🌸
-      final trunkPaint = Paint()
-        ..color = const Color(0xFF78350F)
-        ..strokeWidth = 10
-        ..strokeCap = StrokeCap.round;
-      canvas.drawLine(Offset(centerX, groundY),
-          Offset(centerX + sway * 0.5, groundY - 90), trunkPaint);
-      final foliagePaint = Paint()..color = const Color(0xFF22C55E);
-      canvas.drawCircle(Offset(centerX, groundY - 110), 38, foliagePaint);
-      canvas.drawCircle(Offset(centerX - 24, groundY - 95), 26, foliagePaint);
-      canvas.drawCircle(Offset(centerX + 24, groundY - 95), 26, foliagePaint);
-
-      // Colorful flowers 🌸
-      final flowerPaint = Paint()..color = const Color(0xFFF43F5E);
-      canvas.drawCircle(Offset(centerX - 12, groundY - 115), 6, flowerPaint);
-      canvas.drawCircle(Offset(centerX + 14, groundY - 105), 6, flowerPaint);
-    } else if (completedDays <= 100) {
-      // Days 61–100: Sturdy Young Tree with Branches 🌳
-      final trunkPaint = Paint()
-        ..color = const Color(0xFF78350F)
-        ..strokeWidth = 18
-        ..strokeCap = StrokeCap.round;
-      canvas.drawLine(Offset(centerX, groundY),
-          Offset(centerX + sway * 0.3, groundY - 130), trunkPaint);
-      final canopyPaint = Paint()..color = const Color(0xFF15803D);
-      canvas.drawCircle(Offset(centerX, groundY - 160), 55, canopyPaint);
-      canvas.drawCircle(Offset(centerX - 35, groundY - 140), 36, canopyPaint);
-      canvas.drawCircle(Offset(centerX + 35, groundY - 140), 36, canopyPaint);
-    } else if (completedDays <= 180) {
-      // Days 101–180: Flourishing Tree with Apples 🍎
-      final trunkPaint = Paint()
-        ..color = const Color(0xFF5A2A06)
-        ..strokeWidth = 24
-        ..strokeCap = StrokeCap.round;
-      canvas.drawLine(Offset(centerX, groundY),
-          Offset(centerX + sway * 0.2, groundY - 160), trunkPaint);
-      final canopyPaint = Paint()..color = const Color(0xFF166534);
-      canvas.drawCircle(Offset(centerX, groundY - 195), 70, canopyPaint);
-      canvas.drawCircle(Offset(centerX - 45, groundY - 170), 45, canopyPaint);
-      canvas.drawCircle(Offset(centerX + 45, groundY - 170), 45, canopyPaint);
-
-      // Red Apples 🍎
-      final applePaint = Paint()..color = const Color(0xFFDC2626);
-      canvas.drawCircle(Offset(centerX - 20, groundY - 210), 7, applePaint);
-      canvas.drawCircle(Offset(centerX + 22, groundY - 190), 7, applePaint);
-      canvas.drawCircle(Offset(centerX, groundY - 175), 7, applePaint);
-      canvas.drawCircle(Offset(centerX - 35, groundY - 165), 7, applePaint);
-    } else if (completedDays <= 240) {
-      // Days 181–240: Majestic Tree Canopy with Firefly Aura ✨
-      final trunkPaint = Paint()
-        ..color = const Color(0xFF451A03)
-        ..strokeWidth = 30
-        ..strokeCap = StrokeCap.round;
-      canvas.drawLine(
-          Offset(centerX, groundY), Offset(centerX, groundY - 190), trunkPaint);
-      final canopyPaint = Paint()..color = const Color(0xFF14532D);
-      canvas.drawCircle(Offset(centerX, groundY - 230), 85, canopyPaint);
-      canvas.drawCircle(Offset(centerX - 60, groundY - 200), 55, canopyPaint);
-      canvas.drawCircle(Offset(centerX + 60, groundY - 200), 55, canopyPaint);
-
-      // Fireflies ✨
-      final fireflyPaint = Paint()..color = const Color(0xFFFDE047);
-      for (int i = 0; i < 6; i++) {
-        final fx = centerX + math.sin(_tick + i) * 70;
-        final fy = groundY - 220 + math.cos(_tick * 1.2 + i) * 50;
-        canvas.drawCircle(Offset(fx, fy), 4, fireflyPaint);
-      }
+      canvas.drawCircle(Offset(centerX - 8, groundY - 26), 6, leafPaint);
+      canvas.drawCircle(Offset(centerX + 8, groundY - 26), 6, leafPaint);
     } else {
-      // Days 241–300: Supreme Ancient Wisdom Tree with Royal Golden Crown 👑🌳
-      final trunkPaint = Paint()
-        ..color = const Color(0xFF381503)
-        ..strokeWidth = 36
-        ..strokeCap = StrokeCap.round;
-      canvas.drawLine(
-          Offset(centerX, groundY), Offset(centerX, groundY - 210), trunkPaint);
-      final canopyPaint = Paint()..color = const Color(0xFF0F766E);
-      canvas.drawCircle(Offset(centerX, groundY - 250), 98, canopyPaint);
-      canvas.drawCircle(Offset(centerX - 70, groundY - 220), 65, canopyPaint);
-      canvas.drawCircle(Offset(centerX + 70, groundY - 220), 65, canopyPaint);
+      // Day 1 to 300+: Continuous Dynamic Growth Engine 🌱 ➔ 🌿 ➔ 🌸 ➔ 🌳 ➔ 🍎 ➔ 👑
+      // Calculate dynamic trunk height based on exact day count
+      double trunkHeight;
+      double trunkThickness;
+      if (completedDays <= 10) {
+        trunkHeight = 32.0 + (completedDays * 4.2);
+        trunkThickness = 4.0 + (completedDays * 0.35);
+      } else if (completedDays <= 30) {
+        trunkHeight = 74.0 + ((completedDays - 10) * 2.4);
+        trunkThickness = 7.5 + ((completedDays - 10) * 0.3);
+      } else if (completedDays <= 60) {
+        trunkHeight = 122.0 + ((completedDays - 30) * 1.5);
+        trunkThickness = 13.5 + ((completedDays - 30) * 0.25);
+      } else if (completedDays <= 100) {
+        trunkHeight = 167.0 + ((completedDays - 60) * 1.15);
+        trunkThickness = 21.0 + ((completedDays - 60) * 0.2);
+      } else {
+        trunkHeight = 213.0 + math.min((completedDays - 100) * 0.3, 40.0);
+        trunkThickness = 29.0;
+      }
 
-      // Golden Crown above mature tree 👑
-      final crownPaint = Paint()..color = const Color(0xFFFFD700);
-      canvas.drawCircle(Offset(centerX, groundY - 365), 18, crownPaint);
+      final trunkTopX = centerX + sway * 0.3;
+      final trunkTopY = groundY - trunkHeight;
+
+      // Draw Wooden Trunk (Wood color deepens as tree ages)
+      final trunkColor = completedDays < 10
+          ? const Color(0xFF16A34A) // Tender green stem
+          : (completedDays < 30 ? const Color(0xFF78350F) : const Color(0xFF451A03));
+      final trunkPaint = Paint()
+        ..color = trunkColor
+        ..strokeWidth = trunkThickness
+        ..strokeCap = StrokeCap.round;
+      canvas.drawLine(Offset(centerX, groundY), Offset(trunkTopX, trunkTopY), trunkPaint);
+
+      // Draw Side Branches from Day 8 onwards
+      if (completedDays >= 8) {
+        final branchSpread = math.min(18.0 + (completedDays * 0.55), 75.0);
+        final branchPaint = Paint()
+          ..color = trunkColor
+          ..strokeWidth = trunkThickness * 0.55
+          ..strokeCap = StrokeCap.round;
+
+        // Left branch
+        canvas.drawLine(
+          Offset(centerX, groundY - trunkHeight * 0.6),
+          Offset(trunkTopX - branchSpread, trunkTopY + trunkHeight * 0.25),
+          branchPaint,
+        );
+        // Right branch
+        canvas.drawLine(
+          Offset(centerX, groundY - trunkHeight * 0.55),
+          Offset(trunkTopX + branchSpread, trunkTopY + trunkHeight * 0.3),
+          branchPaint,
+        );
+
+        if (completedDays >= 35) {
+          // Upper secondary branches
+          canvas.drawLine(
+            Offset(trunkTopX, trunkTopY + 20),
+            Offset(trunkTopX - branchSpread * 0.65, trunkTopY - 15),
+            branchPaint,
+          );
+          canvas.drawLine(
+            Offset(trunkTopX, trunkTopY + 20),
+            Offset(trunkTopX + branchSpread * 0.65, trunkTopY - 15),
+            branchPaint,
+          );
+        }
+      }
+
+      // Draw Foliage / Canopy Leaves
+      // Canopy radius grows smoothly with every day
+      final mainRadius = (completedDays <= 10)
+          ? 12.0 + (completedDays * 1.6)
+          : (completedDays <= 30
+              ? 28.0 + ((completedDays - 10) * 1.1)
+              : (completedDays <= 60
+                  ? 50.0 + ((completedDays - 30) * 0.75)
+                  : math.min(72.5 + ((completedDays - 60) * 0.45), 105.0)));
+
+      final canopyColor = completedDays < 20
+          ? const Color(0xFF4ADE80)
+          : (completedDays < 60 ? const Color(0xFF22C55E) : const Color(0xFF15803D));
+      final canopyPaint = Paint()..color = canopyColor;
+
+      // Central apex foliage
+      canvas.drawCircle(Offset(trunkTopX, trunkTopY - mainRadius * 0.35), mainRadius, canopyPaint);
+
+      // Side foliage clouds
+      if (completedDays >= 10) {
+        final subRadius = mainRadius * 0.72;
+        final subCanopyPaint = Paint()..color = canopyColor.withValues(alpha: 0.95);
+        canvas.drawCircle(
+          Offset(trunkTopX - mainRadius * 0.65, trunkTopY + mainRadius * 0.1),
+          subRadius,
+          subCanopyPaint,
+        );
+        canvas.drawCircle(
+          Offset(trunkTopX + mainRadius * 0.65, trunkTopY + mainRadius * 0.1),
+          subRadius,
+          subCanopyPaint,
+        );
+      }
+
+      // Fresh Leaf Clusters (proportional to completed days)
+      final leafCount = math.min(2 + (completedDays ~/ 2), 24);
+      final leafPaint = Paint()..color = const Color(0xFF86EFAC);
+      for (int i = 0; i < leafCount; i++) {
+        final angle = (i * (math.pi * 2 / leafCount)) + (_tick * 0.2);
+        final r = mainRadius * 0.85;
+        final lx = trunkTopX + math.cos(angle) * r;
+        final ly = (trunkTopY - mainRadius * 0.35) + math.sin(angle) * (r * 0.8);
+        canvas.drawCircle(Offset(lx, ly), 5.5, leafPaint);
+      }
+
+      // Blooming Flowers (from Day 25+)
+      if (completedDays >= 25) {
+        final flowerCount = math.min(1 + ((completedDays - 25) ~/ 4), 14);
+        final flowerPaint = Paint()..color = const Color(0xFFF43F5E);
+        final flowerCenterPaint = Paint()..color = const Color(0xFFFFD700);
+        for (int i = 0; i < flowerCount; i++) {
+          final fa = (i * (math.pi * 1.8 / flowerCount)) + 0.3;
+          final fr = mainRadius * 0.65;
+          final fx = trunkTopX + math.cos(fa) * fr;
+          final fy = (trunkTopY - mainRadius * 0.35) + math.sin(fa) * (fr * 0.75);
+          canvas.drawCircle(Offset(fx, fy), 6.0, flowerPaint);
+          canvas.drawCircle(Offset(fx, fy), 2.5, flowerCenterPaint);
+        }
+      }
+
+      // Hanging Red Apples & Golden Fruits (from Day 50+)
+      if (completedDays >= 50) {
+        final fruitCount = math.min(2 + ((completedDays - 50) ~/ 3), 16);
+        final applePaint = Paint()..color = const Color(0xFFDC2626);
+        final goldFruitPaint = Paint()..color = const Color(0xFFFFD700);
+        for (int i = 0; i < fruitCount; i++) {
+          final isGold = (i % 4 == 0);
+          final fAngle = (i * (math.pi * 1.7 / fruitCount)) + 0.6;
+          final fDist = mainRadius * 0.55;
+          final ax = trunkTopX + math.cos(fAngle) * fDist;
+          final ay = (trunkTopY - mainRadius * 0.25) + math.sin(fAngle) * (fDist * 0.65) + 8;
+          canvas.drawCircle(Offset(ax, ay), 7.0, isGold ? goldFruitPaint : applePaint);
+          // Fruit shine highlight
+          final shinePaint = Paint()..color = Colors.white.withValues(alpha: 0.7);
+          canvas.drawCircle(Offset(ax - 2, ay - 2), 2.0, shinePaint);
+        }
+      }
+
+      // Fireflies Aura (from Day 75+)
+      if (completedDays >= 75) {
+        final fireflyCount = math.min(4 + ((completedDays - 75) ~/ 3), 16);
+        final fireflyPaint = Paint()..color = const Color(0xFFFDE047);
+        for (int i = 0; i < fireflyCount; i++) {
+          final fx = trunkTopX + math.sin(_tick * 1.4 + i * 1.2) * (mainRadius * 1.25);
+          final fy = trunkTopY - 20 + math.cos(_tick * 1.1 + i * 0.9) * (mainRadius * 0.9);
+          canvas.drawCircle(Offset(fx, fy), 3.5, fireflyPaint);
+        }
+      }
+
+      // Royal Golden Crown & Rainbow Aura (from Day 100+)
+      if (completedDays >= 100) {
+        final crownPaint = Paint()..color = const Color(0xFFFFD700);
+        final crownCenter = Offset(trunkTopX, trunkTopY - mainRadius * 1.45);
+        canvas.drawCircle(crownCenter, 18, crownPaint);
+
+        // Rainbow aura ring
+        final auraPaint = Paint()
+          ..shader = const SweepGradient(
+            colors: [
+              Color(0xFFFF2D55),
+              Color(0xFFFF9500),
+              Color(0xFFFFCC00),
+              Color(0xFF34C759),
+              Color(0xFF007AFF),
+              Color(0xFFAF52DE),
+              Color(0xFFFF2D55),
+            ],
+          ).createShader(Rect.fromCircle(center: crownCenter, radius: 26))
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3.5;
+        canvas.drawCircle(crownCenter, 26, auraPaint);
+      }
     }
   }
 }
@@ -389,17 +475,15 @@ class _PocketKidsGrowingTreeProfileWidgetState
                   child: Text(
                     completedDaysCount == 0
                         ? "🌱 Sprout Stage: Complete Day 1 to grow your seedling!"
-                        : completedDaysCount <= 30
-                            ? "🌱 Seedling Stage (Days 1–30): Tender green stem growing tall!"
-                            : completedDaysCount <= 60
-                                ? "🌸 Blooming Stage (Days 31–60): Fresh flowers opening!"
-                                : completedDaysCount <= 100
-                                    ? "🌳 Sturdy Tree Stage (Days 61–100): Strong branches reached!"
-                                    : completedDaysCount <= 180
-                                        ? "🍎 Flourishing Tree (Days 101–180): Sweet apples hanging!"
-                                        : completedDaysCount <= 240
-                                            ? "✨ Canopy Tree (Days 181–240): Drifting firefly forest!"
-                                            : "👑 Ancient Wisdom Tree (Days 241–300): 300-Day Master Champion!",
+                        : completedDaysCount <= 10
+                            ? "🌱 Day $completedDaysCount Sprout: Tender green stem shooting up ($completedDaysCount% grown)!"
+                            : completedDaysCount <= 30
+                                ? "🌿 Day $completedDaysCount Young Sapling: Wooden trunk & side branches sprouting ($completedDaysCount% grown)!"
+                                : completedDaysCount <= 60
+                                    ? "🌸 Day $completedDaysCount Blooming Tree: Fresh flowers blossoming ($completedDaysCount% grown)!"
+                                    : completedDaysCount <= 100
+                                        ? "🍎 Day $completedDaysCount Fruit Tree: Sweet red apples & golden fruits hanging ($completedDaysCount% grown)!"
+                                        : "👑 Day $completedDaysCount Ancient Wisdom Tree: Royal Golden Crown ($completedDaysCount Days Conquered)!",
                     textAlign: TextAlign.center,
                     style: GoogleFonts.outfit(
                       color: const Color(0xFF0F3E34),

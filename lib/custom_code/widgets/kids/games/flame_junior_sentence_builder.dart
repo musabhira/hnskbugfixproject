@@ -685,6 +685,7 @@ class _PocketKidsSentenceBuilderPageState
   final List<JuniorSentenceTile> _availableTrayTiles = [];
 
   bool _isCompleted = false;
+  bool _hasMistake = false;
   int _highlightedWordIndex = -1; // For karaoke spoken highlight effect
 
   late AnimationController _trainWheelsController;
@@ -790,21 +791,16 @@ class _PocketKidsSentenceBuilderPageState
     }
 
     if (isCorrect) {
+      setState(() {
+        _hasMistake = false;
+      });
       _onRoundWon();
     } else {
-      // Gentle incorrect wobble
+      setState(() {
+        _hasMistake = true;
+      });
       HapticFeedback.heavyImpact();
       PocketGameAudioService.instance.playIncorrectSound();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "Almost there! Tap a block to swap order 😊",
-            style: GoogleFonts.fredoka(fontWeight: FontWeight.bold),
-          ),
-          backgroundColor: const Color(0xFFFF9500),
-          duration: const Duration(seconds: 2),
-        ),
-      );
     }
   }
 
@@ -956,18 +952,17 @@ class _PocketKidsSentenceBuilderPageState
             ),
           ),
 
-          // 📱 3. Top Navigation, Train & Meaning Card (Linear Non-Overlapping Layout)
+          // 📱 3. Responsive Scroll-Safe Layout (No Overlaps on any phone screen!)
           SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Top Header: Back Button, Day/Round Badge, Sound Out Prompt
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Back Button
                       IconButton(
                         onPressed: () => Navigator.of(context).pop(),
                         icon: const Icon(
@@ -979,8 +974,6 @@ class _PocketKidsSentenceBuilderPageState
                           padding: const EdgeInsets.all(12),
                         ),
                       ),
-
-                      // Day / Level Badge
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
@@ -999,6 +992,7 @@ class _PocketKidsSentenceBuilderPageState
                           ],
                         ),
                         child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             const Text("🚂", style: TextStyle(fontSize: 20)),
                             const SizedBox(width: 8),
@@ -1007,14 +1001,12 @@ class _PocketKidsSentenceBuilderPageState
                               style: GoogleFonts.fredoka(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 15,
+                                fontSize: 14,
                               ),
                             ),
                           ],
                         ),
                       ),
-
-                      // Sound Out Prompt Button
                       IconButton(
                         onPressed: () {
                           HapticFeedback.mediumImpact();
@@ -1031,11 +1023,12 @@ class _PocketKidsSentenceBuilderPageState
                       ),
                     ],
                   ),
+                ),
 
-                  const SizedBox(height: 10),
-
-                  // 🌟 10-Round Progress Dots
-                  Row(
+                // 🌟 Progress Dots
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(_rounds.length, (idx) {
                       final isPassed = idx < _currentRoundIndex ||
@@ -1065,271 +1058,116 @@ class _PocketKidsSentenceBuilderPageState
                       );
                     }),
                   ),
+                ),
 
-                  const SizedBox(height: 16),
+                const SizedBox(height: 10),
 
-                  // 🚂 Cartoon Locomotive Engine
-                  Row(
+                // Scrollable Central Game Section (Train Track + Hint + Word Depot)
+                Expanded(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // 🚂 Cartoon Choo-Choo Train & Wagon Tracks
+                        _buildChooChooTrainTrack(),
+
+                        const SizedBox(height: 14),
+
+                        // 💡 Native Translation & Hint Card
+                        _buildHintAndMeaningCard(),
+
+                        const SizedBox(height: 16),
+
+                        // 🍬 Scrambled Word Depot Platform (Station Word Blocks)
+                        _buildWordDepotPlatform(),
+
+                        const SizedBox(height: 20),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // ⏭️ Bottom Navigation & Level Actions Bar
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A).withValues(alpha: 0.95),
+                    border: const Border(
+                      top: BorderSide(color: Colors.white12, width: 1),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFFF2D55), Color(0xFFFF9500)],
+                      ElevatedButton.icon(
+                        onPressed: _currentDay > 1
+                            ? () => _switchDay(_currentDay - 1)
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white.withValues(alpha: 0.12),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
                           ),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFFF2D55).withValues(alpha: 0.4),
-                              blurRadius: 10,
-                            ),
-                          ],
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18),
+                          ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text("🚂", style: TextStyle(fontSize: 22)),
-                            const SizedBox(width: 6),
-                            Text(
-                              "EXPRESS",
-                              style: GoogleFonts.fredoka(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                                letterSpacing: 1.1,
-                              ),
-                            ),
-                          ],
+                        icon: const Icon(Icons.arrow_back_rounded, size: 18),
+                        label: Text(
+                          "PREV",
+                          style: GoogleFonts.fredoka(fontWeight: FontWeight.bold),
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Container(
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: Colors.white24,
-                            borderRadius: BorderRadius.circular(2),
+                      IconButton(
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          setState(() {
+                            _setupRound();
+                          });
+                        },
+                        icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.white.withValues(alpha: 0.15),
+                          padding: const EdgeInsets.all(12),
+                        ),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: _currentDay < 300
+                            ? () => _switchDay(_currentDay + 1)
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF34C759),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 10,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          elevation: 6,
+                        ),
+                        label: Text(
+                          "NEXT ➔",
+                          style: GoogleFonts.fredoka(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
                           ),
                         ),
+                        icon: const SizedBox.shrink(),
                       ),
                     ],
                   ),
-
-                  const SizedBox(height: 12),
-
-                  // 🚂 Wagon Slots
-                  Row(
-                    children: List.generate(_placedTiles.length, (index) {
-                      final tile = _placedTiles[index];
-                      final isHighlighted = (_highlightedWordIndex == index);
-
-                      return Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: GestureDetector(
-                            onTap: () => _onTapPlacedSlot(index),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 250),
-                              height: 85,
-                              decoration: BoxDecoration(
-                                color: tile != null
-                                    ? tile.cardColor
-                                    : Colors.white.withValues(alpha: 0.08),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: isHighlighted
-                                      ? const Color(0xFFFFD700)
-                                      : (tile != null
-                                          ? Colors.white
-                                          : Colors.white30),
-                                  width: isHighlighted ? 3.5 : 2.0,
-                                ),
-                                boxShadow: isHighlighted
-                                    ? [
-                                        const BoxShadow(
-                                          color: Color(0xFFFFD700),
-                                          blurRadius: 20,
-                                          spreadRadius: 2,
-                                        ),
-                                      ]
-                                    : (tile != null
-                                        ? [
-                                            BoxShadow(
-                                              color: tile.cardColor.withValues(alpha: 0.4),
-                                              blurRadius: 12,
-                                            ),
-                                          ]
-                                        : []),
-                              ),
-                              child: tile != null
-                                  ? Center(
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            tile.emoji,
-                                            style: const TextStyle(fontSize: 22),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            tile.text,
-                                            textAlign: TextAlign.center,
-                                            style: GoogleFonts.fredoka(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 15,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    )
-                                  : Center(
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.add_circle_outline_rounded,
-                                            color: Colors.white.withValues(alpha: 0.4),
-                                            size: 26,
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            "Slot ${index + 1}",
-                                            style: GoogleFonts.outfit(
-                                              color: Colors.white38,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-
-                  // 💡 Native Translation & Hint Card
-                  const SizedBox(height: 14),
-                  Center(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 18,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1E293B),
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: Colors.white12),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 8,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text("💡", style: TextStyle(fontSize: 16)),
-                          const SizedBox(width: 8),
-                          Flexible(
-                            child: Text(
-                              _currentChallenge.getLocalizedMeaning(),
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.outfit(
-                                color: const Color(0xFFFFD700),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // 🍬 5. Bottom Tray: Scrambled Magnetic Word Chips
-          Positioned(
-            left: 16,
-            right: 16,
-            bottom: 110,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  "TAP TO SNAP WORDS IN ORDER",
-                  style: GoogleFonts.fredoka(
-                    color: Colors.white54,
-                    fontSize: 13,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-                const SizedBox(height: 14),
-
-                // Scrambled Tiles Row
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  alignment: WrapAlignment.center,
-                  children: _availableTrayTiles.map((tile) {
-                    return GestureDetector(
-                      onTap: () => _onTapTrayTile(tile),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 14,
-                        ),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              tile.cardColor,
-                              tile.cardColor.withValues(alpha: 0.8),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(22),
-                          border: Border.all(color: Colors.white70, width: 2),
-                          boxShadow: [
-                            BoxShadow(
-                              color: tile.cardColor.withValues(alpha: 0.45),
-                              blurRadius: 16,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(tile.emoji, style: const TextStyle(fontSize: 22)),
-                            const SizedBox(width: 8),
-                            Text(
-                              tile.text,
-                              style: GoogleFonts.fredoka(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 17,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }).toList(),
                 ),
               ],
             ),
           ),
 
-          // 🎉 6. Celebratory Card when Completed
+          // 🎉 Celebratory Card when Round Completed
           if (_isCompleted)
             Positioned.fill(
               child: Center(
@@ -1437,86 +1275,458 @@ class _PocketKidsSentenceBuilderPageState
                 ),
               ),
             ),
+        ],
+      ),
+    );
+  }
 
-          // ⏭️ 7. Bottom Navigation & Level Actions Bar
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Previous Level Button
-                    ElevatedButton.icon(
-                      onPressed: _currentDay > 1
-                          ? () => _switchDay(_currentDay - 1)
-                          : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white.withValues(alpha: 0.12),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                      icon: const Icon(Icons.arrow_back_rounded, size: 20),
-                      label: Text(
-                        "PREV",
-                        style: GoogleFonts.fredoka(fontWeight: FontWeight.bold),
-                      ),
-                    ),
+  /// 🚂 Cartoon Choo-Choo Locomotive & Connected Wagons on Track
+  Widget _buildChooChooTrainTrack() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B).withValues(alpha: 0.85),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: _hasMistake
+              ? const Color(0xFFEF4444)
+              : const Color(0xFF38BDF8).withValues(alpha: 0.3),
+          width: _hasMistake ? 2.0 : 1.4,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Scrollable Train Track with Locomotive & Wagons
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  // 🚂 Cartoon Locomotive Engine
+                  _buildLocomotiveEngine(),
 
-                    // Reset / Clear Slots
-                    IconButton(
-                      onPressed: () {
-                        HapticFeedback.lightImpact();
-                        setState(() {
-                          _setupRound();
-                        });
-                      },
-                      icon: const Icon(Icons.refresh_rounded, color: Colors.white),
-                      style: IconButton.styleFrom(
-                        backgroundColor: Colors.white.withValues(alpha: 0.15),
-                        padding: const EdgeInsets.all(14),
-                      ),
-                    ),
+                  const SizedBox(width: 4),
 
-                    // Next Level Button
-                    ElevatedButton.icon(
-                      onPressed: _currentDay < 300
-                          ? () => _switchDay(_currentDay + 1)
-                          : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF34C759),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 12,
+                  // Wagons connected in order
+                  ...List.generate(_placedTiles.length, (idx) {
+                    final tile = _placedTiles[idx];
+                    final isHighlighted = (_highlightedWordIndex == idx);
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        // Coupler chain between cars
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 24),
+                          child: Text(
+                            '🔗',
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: Colors.white.withValues(alpha: 0.5),
+                            ),
+                          ),
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        elevation: 6,
-                      ),
-                      label: Text(
-                        "NEXT ➔",
-                        style: GoogleFonts.fredoka(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      icon: const SizedBox.shrink(),
-                    ),
-                  ],
-                ),
+                        const SizedBox(width: 4),
+                        // Wagon Car
+                        _buildTrainWagonCar(idx, tile, isHighlighted),
+                        const SizedBox(width: 4),
+                      ],
+                    );
+                  }),
+                ],
               ),
             ),
+          ),
+
+          const SizedBox(height: 6),
+
+          // Steel Railway Tracks & Cross Ties
+          Container(
+            height: 8,
+            margin: const EdgeInsets.symmetric(horizontal: 8),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF64748B), Color(0xFFCBD5E1), Color(0xFF64748B)],
+              ),
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 🚂 Cartoon Locomotive Engine with Puffing Steam & Spinning Wheels
+  Widget _buildLocomotiveEngine() {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.mediumImpact();
+        _tts.speak("Choo-Choo! All aboard!");
+      },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Steam Clouds Puffing from Chimney
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(width: 22),
+              AnimatedBuilder(
+                animation: _trainWheelsController,
+                builder: (context, child) {
+                  final s = 0.8 + (_trainWheelsController.value * 0.4);
+                  return Transform.scale(
+                    scale: s,
+                    child: const Text('💨', style: TextStyle(fontSize: 16)),
+                  );
+                },
+              ),
+            ],
+          ),
+          Container(
+            width: 100,
+            height: 85,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFFF2D55), Color(0xFFFF9500)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: Colors.white70, width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFF2D55).withValues(alpha: 0.4),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Stack(
+              children: [
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('🚂', style: TextStyle(fontSize: 26)),
+                      Text(
+                        'EXPRESS',
+                        style: GoogleFonts.fredoka(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  top: 4,
+                  right: 4,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFFD700),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 4),
+          // Spinning Locomotive Wheels
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RotationTransition(
+                turns: _trainWheelsController,
+                child: const Text('⚙️', style: TextStyle(fontSize: 14)),
+              ),
+              const SizedBox(width: 20),
+              RotationTransition(
+                turns: _trainWheelsController,
+                child: const Text('⚙️', style: TextStyle(fontSize: 14)),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 🚃 Tactile Train Wagon Car Slot (Accommodates words smoothly without overflow)
+  Widget _buildTrainWagonCar(int index, JuniorSentenceTile? tile, bool isHighlighted) {
+    return GestureDetector(
+      onTap: () => _onTapPlacedSlot(index),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: 105,
+            height: 85,
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+            decoration: BoxDecoration(
+              color: tile != null
+                  ? tile.cardColor
+                  : Colors.white.withValues(alpha: 0.07),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: isHighlighted
+                    ? const Color(0xFFFFD700)
+                    : (tile != null
+                        ? Colors.white
+                        : Colors.white30),
+                width: isHighlighted ? 3.0 : 1.8,
+              ),
+              boxShadow: isHighlighted
+                  ? [
+                      const BoxShadow(
+                        color: Color(0xFFFFD700),
+                        blurRadius: 16,
+                        spreadRadius: 2,
+                      ),
+                    ]
+                  : (tile != null
+                      ? [
+                          BoxShadow(
+                            color: tile.cardColor.withValues(alpha: 0.4),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ]
+                      : []),
+            ),
+            child: tile != null
+                ? Stack(
+                    children: [
+                      Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(tile.emoji, style: const TextStyle(fontSize: 22)),
+                            const SizedBox(height: 3),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                tile.text,
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.fredoka(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Positioned(
+                        top: 0,
+                        right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: const BoxDecoration(
+                            color: Colors.black26,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.close_rounded, size: 10, color: Colors.white70),
+                        ),
+                      ),
+                    ],
+                  )
+                : Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.add_circle_outline_rounded,
+                          color: Colors.white.withValues(alpha: 0.45),
+                          size: 22,
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          "Wagon ${index + 1}",
+                          style: GoogleFonts.outfit(
+                            color: Colors.white54,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+          ),
+          const SizedBox(height: 4),
+          // Wagon Wheels
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RotationTransition(
+                turns: _trainWheelsController,
+                child: const Text('⚙️', style: TextStyle(fontSize: 13)),
+              ),
+              const SizedBox(width: 22),
+              RotationTransition(
+                turns: _trainWheelsController,
+                child: const Text('⚙️', style: TextStyle(fontSize: 13)),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 💡 Native Malayalam Translation & Interactive Hint Card
+  Widget _buildHintAndMeaningCard() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: _hasMistake ? const Color(0xFFEF4444) : Colors.white12,
+          width: _hasMistake ? 1.6 : 1.0,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text("💡", style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  _currentChallenge.getLocalizedMeaning(),
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFD700),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (_hasMistake) ...[
+            const SizedBox(height: 6),
+            Text(
+              "⚠️ Tap any wagon to unhook and swap blocks 😊",
+              textAlign: TextAlign.center,
+              style: GoogleFonts.outfit(
+                color: const Color(0xFFFCA5A5),
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// 🍬 Word Depot Platform: Magnetic Scrambled Word Chips
+  Widget _buildWordDepotPlatform() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B).withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            "CHOO-CHOO WORD DEPOT 🚂",
+            style: GoogleFonts.fredoka(
+              color: Colors.white54,
+              fontSize: 12,
+              letterSpacing: 1.2,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            "Tap a block to hook it to the train!",
+            style: GoogleFonts.outfit(
+              color: Colors.white38,
+              fontSize: 11,
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          // Available Word Blocks
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            alignment: WrapAlignment.center,
+            children: _availableTrayTiles.map((tile) {
+              return GestureDetector(
+                onTap: () => _onTapTrayTile(tile),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 11,
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        tile.cardColor,
+                        tile.cardColor.withValues(alpha: 0.85),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white70, width: 1.8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: tile.cardColor.withValues(alpha: 0.4),
+                        blurRadius: 12,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(tile.emoji, style: const TextStyle(fontSize: 20)),
+                      const SizedBox(width: 6),
+                      Text(
+                        tile.text,
+                        style: GoogleFonts.fredoka(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
           ),
         ],
       ),
