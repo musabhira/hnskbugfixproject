@@ -78,30 +78,36 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
       final code = widget.initialPlanetCode!.toUpperCase();
       PoketPlanet? matched;
       for (final p in _planets) {
-        if (p.name.toUpperCase().contains(code)) {
-          matched = p;
-          break;
-        }
+        // Direct major/dwarf/exoplanet matches
+        if (code == 'MER' && p.id == 1) { matched = p; break; }
+        if (code == 'VEN' && p.id == 2) { matched = p; break; }
         if (code == 'EP' && p.id == 3) { matched = p; break; }
         if (code == 'MAR' && p.id == 4) { matched = p; break; }
         if (code == 'JUP' && p.id == 5) { matched = p; break; }
         if (code == 'SAT' && p.id == 6) { matched = p; break; }
-        if (code == 'LUN' && p.id == 30) { matched = p; break; }
-        if (code == 'EUR' && p.id == 51) { matched = p; break; }
-        if (code == 'VEN' && p.id == 2) { matched = p; break; }
-        if (code == 'TTN' && p.id == 61) { matched = p; break; }
-        if (code == 'PLT' && p.id == 9) { matched = p; break; }
+        if (code == 'URA' && p.id == 7) { matched = p; break; }
         if (code == 'NEP' && p.id == 8) { matched = p; break; }
+        if ((code == 'PLT' || code == 'PLU') && p.id == 9) { matched = p; break; }
+        if (code == 'KEP' && p.id == 452) { matched = p; break; }
+
+        // Satellite / Natural moon matches (MUST map to sat.toPlanet() to load the moon's own island!)
         for (final sat in p.satellites) {
-          if (sat.name.toUpperCase().contains(code) ||
-              (code == 'LUN' && sat.id == 30) ||
+          if ((code == 'LUN' && sat.id == 30) ||
               (code == 'EUR' && sat.id == 51) ||
-              (code == 'TTN' && sat.id == 61)) {
-            matched = p;
+              (code == 'GAN' && sat.id == 52) ||
+              (code == 'TTN' && sat.id == 61) ||
+              (code == 'TRI' && sat.id == 81) ||
+              sat.name.toUpperCase().contains(code)) {
+            matched = sat.toPlanet();
             break;
           }
         }
         if (matched != null) break;
+
+        if (p.name.toUpperCase().contains(code)) {
+          matched = p;
+          break;
+        }
       }
       if (matched != null) {
         _selectedPlanet = matched;
@@ -628,8 +634,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         name: 'Pluto ❄️',
         theme: 'Kuiper Belt Outer Rim (Dwarf Planet)',
         tagLine: 'Nitrogen Ice Dunes & Heart of Sputnik Planitia',
-        primaryColor: const Color(0xFFE2E8F0),
-        glowColor: const Color(0xFF94A3B8),
+        primaryColor: const Color(0xFFC084FC),
+        glowColor: const Color(0xFFA855F7),
         radius: 9,
         orbitDistance: 660,
         orbitSpeed: 0.16,
@@ -638,14 +644,14 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         isDwarfPlanet: true,
         countryMaps: _buildPlanetIslands(
           planetId: 9,
-          planetCode: 'PLU',
+          planetCode: 'PLT',
           baseIslandName: 'Sputnik Planitia',
           baseTag: 'Heart of Pluto',
-          landColor: const Color(0xFF475569),
-          waterColor: const Color(0xFF0F172A),
-          climate: 'Glacial Calm ❄️',
+          landColor: const Color(0xFF7C3AED),
+          waterColor: const Color(0xFF3B0764),
+          climate: 'Deep Cosmic Frost 🌌',
           climateIcon: Icons.ac_unit_rounded,
-          islandEmoji: '🤍',
+          islandEmoji: '🌌',
           shapeStyle: IslandShapeStyle.heartSanctuary,
           activeWaves: activeWaves,
         ),
@@ -1271,6 +1277,39 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                               color: Colors.white60, fontSize: 11),
                         ),
                       ],
+                    ),
+                  ),
+                  InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      setState(() => _activeScreen = 0);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      margin: const EdgeInsets.only(right: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white12),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.public_rounded,
+                              color: Color(0xFF38BDF8), size: 14),
+                          SizedBox(width: 4),
+                          Text(
+                            'Orbit',
+                            style: TextStyle(
+                              color: Color(0xFF38BDF8),
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   InkWell(

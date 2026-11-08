@@ -48,23 +48,30 @@ class PoketCosmosDistanceService {
   PoketCosmosDistanceService._();
   static final PoketCosmosDistanceService instance = PoketCosmosDistanceService._();
 
-  // Ordered list of solar system celestial orbital stops from inside out
+  // Ordered list of solar system celestial orbital stops from inside out (15 Worlds)
   static const List<String> solarSystemOrder = [
+    'MER', // Mercury
     'VEN', // Venus
     'EP',  // Earth Prime
     'LUN', // The Moon
     'MAR', // Mars
     'EUR', // Europa
+    'GAN', // Ganymede
     'JUP', // Jupiter
     'TTN', // Titan
     'SAT', // Saturn
+    'URA', // Uranus
+    'TRI', // Triton
     'NEP', // Neptune
     'PLT', // Pluto
+    'KEP', // Kepler-452b
   ];
 
   /// Mean heliocentric orbital distance in km for calculation
   double getOrbitalDistanceKm(String code) {
     switch (code.toUpperCase()) {
+      case 'MER':
+        return AstronomicalBodies.mercury;
       case 'VEN':
         return AstronomicalBodies.venus;
       case 'EP':
@@ -75,16 +82,25 @@ class PoketCosmosDistanceService {
         return AstronomicalBodies.mars;
       case 'EUR':
         return AstronomicalBodies.jupiter - AstronomicalBodies.europaOrbitOffset;
+      case 'GAN':
+        return AstronomicalBodies.jupiter + 1070400.0;
       case 'JUP':
         return AstronomicalBodies.jupiter;
       case 'TTN':
         return AstronomicalBodies.saturn - AstronomicalBodies.titanOrbitOffset;
       case 'SAT':
         return AstronomicalBodies.saturn;
+      case 'URA':
+        return AstronomicalBodies.uranus;
+      case 'TRI':
+        return AstronomicalBodies.neptune + 354800.0;
       case 'NEP':
         return AstronomicalBodies.neptune;
       case 'PLT':
+      case 'PLU':
         return AstronomicalBodies.pluto;
+      case 'KEP':
+        return 1.324e16; // 1,400 light-years in km
       default:
         return AstronomicalBodies.earth;
     }
@@ -93,6 +109,8 @@ class PoketCosmosDistanceService {
   /// Single clean planet name
   String getCleanPlanetName(String code) {
     switch (code.toUpperCase()) {
+      case 'MER':
+        return 'Mercury';
       case 'EP':
         return 'Earth';
       case 'MAR':
@@ -105,14 +123,23 @@ class PoketCosmosDistanceService {
         return 'Moon';
       case 'EUR':
         return 'Europa';
+      case 'GAN':
+        return 'Ganymede';
       case 'VEN':
         return 'Venus';
       case 'TTN':
         return 'Titan';
+      case 'URA':
+        return 'Uranus';
+      case 'TRI':
+        return 'Triton';
       case 'PLT':
+      case 'PLU':
         return 'Pluto';
       case 'NEP':
         return 'Neptune';
+      case 'KEP':
+        return 'Kepler-452b';
       default:
         return 'Earth';
     }
@@ -121,26 +148,37 @@ class PoketCosmosDistanceService {
   /// Emoji representation
   String getPlanetEmoji(String code) {
     switch (code.toUpperCase()) {
+      case 'MER':
+        return '⚪';
       case 'EP':
         return '🌍';
       case 'MAR':
         return '🔴';
       case 'JUP':
-        return '🪐';
+        return '🟠';
       case 'SAT':
         return '🪐';
       case 'LUN':
         return '🌕';
       case 'EUR':
         return '🧊';
+      case 'GAN':
+        return '🛡️';
       case 'VEN':
         return '☀️';
       case 'TTN':
         return '🪐';
+      case 'URA':
+        return '💎';
+      case 'TRI':
+        return '🔱';
       case 'PLT':
+      case 'PLU':
         return '🌌';
       case 'NEP':
         return '🌊';
+      case 'KEP':
+        return '🌿';
       default:
         return '🪐';
     }
@@ -150,15 +188,23 @@ class PoketCosmosDistanceService {
   String resolvePlanetCode(String? planetInput) {
     if (planetInput == null || planetInput.trim().isEmpty) return 'EP';
     final lower = planetInput.trim().toLowerCase();
+    // Specific natural satellites / moons first
+    if (lower.contains('moon') || lower.contains('lun') || lower.contains('lunar')) return 'LUN';
+    if (lower.contains('eur') || lower.contains('europa')) return 'EUR';
+    if (lower.contains('gan') || lower.contains('ganymede')) return 'GAN';
+    if (lower.contains('tit') || lower.contains('titan')) return 'TTN';
+    if (lower.contains('tri') || lower.contains('triton')) return 'TRI';
+    // Major & dwarf planets
+    if (lower.contains('merc') || lower == 'mer') return 'MER';
     if (lower.contains('mars') || lower == 'mar' || lower.contains('ares')) return 'MAR';
-    if (lower.contains('moon') || lower == 'lun' || lower.contains('lunar')) return 'LUN';
     if (lower.contains('jup') || lower == 'jupiter') return 'JUP';
     if (lower.contains('sat') || lower == 'saturn') return 'SAT';
-    if (lower.contains('eur') || lower == 'europa') return 'EUR';
     if (lower.contains('ven') || lower == 'venus') return 'VEN';
-    if (lower.contains('tit') || lower == 'titan') return 'TTN';
-    if (lower.contains('plut') || lower == 'pluto') return 'PLT';
+    if (lower.contains('ura') || lower == 'uranus') return 'URA';
     if (lower.contains('nep') || lower == 'neptune') return 'NEP';
+    if (lower.contains('plut') || lower == 'plt' || lower == 'plu') return 'PLT';
+    if (lower.contains('kep') || lower == 'kepler') return 'KEP';
+    if (lower.contains('earth') || lower == 'ep') return 'EP';
     return 'EP';
   }
 

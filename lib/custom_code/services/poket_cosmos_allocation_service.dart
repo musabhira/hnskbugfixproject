@@ -64,10 +64,10 @@ class PoketCosmosAllocationService {
   static const _kWaveOccupancyCountPrefix = 'poket_cosmos_wave_occ_count_';
   static const _kPlanetOccupiedPlotsPrefix = 'poket_cosmos_planet_occ_plots_';
 
-  // Scaling Constants (25 plots per island, 250 citizens per wave across 10 planets)
+  // Scaling Constants (25 plots per island, 375 citizens per wave across 15 Celestial Worlds)
   static const int maxPlotsPerIsland = 25;
-  static const int totalPlanetsCount = 10;
-  static const int waveCapacity = 250; // 10 planets * 25 plots
+  static const int totalPlanetsCount = 15;
+  static const int waveCapacity = 375; // 15 celestial worlds * 25 plots
 
   /// 🏷️ Algorithmic Infinite Island Naming Loop Engine
   /// Generates endless unique celestial island titles across infinite waves.
@@ -223,6 +223,62 @@ class PoketCosmosAllocationService {
       waterColor: Color(0xFF1E3A8A),
       climate: 'Deep Oceanic Tempest 🌊',
       shapeStyle: IslandShapeStyle.citadelApex,
+    ),
+    // Additional 5 Solar & Interstellar Celestial Worlds
+    CelestialColonyInfo(
+      planetId: 1,
+      planetName: 'Mercury ⚪',
+      code: 'MER',
+      islandName: 'Caloris Basin',
+      streetName: 'Scorched Ridge Way',
+      landColor: Color(0xFF64748B),
+      waterColor: Color(0xFF1E293B),
+      climate: 'High Heat Caloris 🔥',
+      shapeStyle: IslandShapeStyle.fortressPlateau,
+    ),
+    CelestialColonyInfo(
+      planetId: 52,
+      planetName: 'Ganymede 🛡️',
+      code: 'GAN',
+      islandName: 'Perrine Regio',
+      streetName: 'Magnetic Citadel Path',
+      landColor: Color(0xFF475569),
+      waterColor: Color(0xFF0284C7),
+      climate: 'Magnetic Ocean Glow ⚡',
+      shapeStyle: IslandShapeStyle.fortressPlateau,
+    ),
+    CelestialColonyInfo(
+      planetId: 7,
+      planetName: 'Uranus 💎',
+      code: 'URA',
+      islandName: 'Miranda Glade',
+      streetName: 'Cyan Ridge Boulevard',
+      landColor: Color(0xFF0E7490),
+      waterColor: Color(0xFF0891B2),
+      climate: 'Cyan Cryo Chill 🧊',
+      shapeStyle: IslandShapeStyle.hookPeninsula,
+    ),
+    CelestialColonyInfo(
+      planetId: 81,
+      planetName: 'Triton 🔱',
+      code: 'TRI',
+      islandName: 'Triton Geyser',
+      streetName: 'Sub-Zero Geyser Avenue',
+      landColor: Color(0xFF1E40AF),
+      waterColor: Color(0xFF60A5FA),
+      climate: 'Cryo Plume Frost ❄️',
+      shapeStyle: IslandShapeStyle.crescentLagoon,
+    ),
+    CelestialColonyInfo(
+      planetId: 452,
+      planetName: 'Kepler-452b 🌿',
+      code: 'KEP',
+      islandName: 'Cygnus Haven',
+      streetName: 'Earth 2.0 Biosphere Trail',
+      landColor: Color(0xFF15803D),
+      waterColor: Color(0xFF0D9488),
+      climate: 'Eternal Spring Biosphere 🌸',
+      shapeStyle: IslandShapeStyle.crescentLagoon,
     ),
   ];
 
