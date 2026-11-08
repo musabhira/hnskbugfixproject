@@ -5635,6 +5635,27 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   ),
                 ),
               ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    _navigateToDefenderPlotOnIsland();
+                  },
+                  icon: const Icon(Icons.map_rounded, size: 16),
+                  label: Text('View Island Plot On Map 🏝️',
+                      style: GoogleFonts.outfit(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0284C7),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(vertical: 11),
+                  ),
+                ),
+              ),
             ],
           ),
         );

@@ -52,7 +52,7 @@ class PoketSatellite {
   final Color glowColor;
   final double radius;
   final double orbitDistance; // Distance from parent planet center (e.g. 24.0)
-  final double orbitSpeed;    // Speed of orbit around parent planet
+  final double orbitSpeed; // Speed of orbit around parent planet
   final int totalPlots;
   final int occupiedPlots;
   final List<PoketCountryMap> countryMaps;
@@ -98,16 +98,16 @@ class PoketSatellite {
 
 /// 🏝️ Distinct Architectural Island Geometry Styles
 enum IslandShapeStyle {
-  crescentLagoon,   // C-shaped crescent wrapping around turquoise lagoon
-  sCurveArchipelago,// S-shaped winding dragon island
-  starAtoll,        // 4/5-point tropical star island with deep sea inlets
-  dualIsletBridge,  // Twin islands connected by sandbar/wooden bridge
-  ringAtoll,        // Circular atoll with large interior turquoise lagoon
-  hookPeninsula,    // J-shaped fishhook with elongated beach
-  heartSanctuary,   // Heart-shaped paradise island
-  cloverBays,       // 3-leaf clover with 3 deep lagoons
-  fortressPlateau,  // Diamond/hexagonal coral plateau
-  citadelApex,      // Royal octagonal palace island with golden domes
+  crescentLagoon, // C-shaped crescent wrapping around turquoise lagoon
+  sCurveArchipelago, // S-shaped winding dragon island
+  starAtoll, // 4/5-point tropical star island with deep sea inlets
+  dualIsletBridge, // Twin islands connected by sandbar/wooden bridge
+  ringAtoll, // Circular atoll with large interior turquoise lagoon
+  hookPeninsula, // J-shaped fishhook with elongated beach
+  heartSanctuary, // Heart-shaped paradise island
+  cloverBays, // 3-leaf clover with 3 deep lagoons
+  fortressPlateau, // Diamond/hexagonal coral plateau
+  citadelApex, // Royal octagonal palace island with golden domes
 }
 
 /// 🗺️ Country / Island Map inside a Planet
@@ -231,6 +231,7 @@ extension PlotDeedTierExtension on PlotDeedTier {
 /// ⚡ Citizen Activity & Eviction Status for Land Registry
 enum PlotStatus {
   occupied,
+  vacant,
   forSale,
   reserved,
   evictionWarning, // Days inactive > 3
@@ -491,23 +492,23 @@ class CosmosLoopAllocationService {
   ];
 
   static const List<int> planetOrderIds = [
-    3,   // Earth
-    30,  // The Moon
-    1,   // Mercury
-    2,   // Venus
-    4,   // Mars
-    45,  // Ceres
-    5,   // Jupiter
-    51,  // Europa
-    52,  // Ganymede
-    53,  // Callisto
-    6,   // Saturn
-    61,  // Titan
-    62,  // Enceladus
-    7,   // Uranus
-    8,   // Neptune
-    81,  // Triton
-    9,   // Pluto
+    3, // Earth
+    30, // The Moon
+    1, // Mercury
+    2, // Venus
+    4, // Mars
+    45, // Ceres
+    5, // Jupiter
+    51, // Europa
+    52, // Ganymede
+    53, // Callisto
+    6, // Saturn
+    61, // Titan
+    62, // Enceladus
+    7, // Uranus
+    8, // Neptune
+    81, // Triton
+    9, // Pluto
   ];
 
   static int get totalCelestialSpheres => planetOrderNames.length;
@@ -547,16 +548,17 @@ class CosmosLoopAllocationService {
 
   /// CEFR Epoch Progression Prefixes & Suffixes for Infinite Cycles
   static const List<String> cycleTierPrefixes = [
-    '',               // Cycle 1: Classic (A1 Genesis)
-    'Upper ',         // Cycle 2: A2 Ascendant
-    'Nova ',          // Cycle 3: B1 Intermediate
-    'Grand ',         // Cycle 4: B2 Fluency
-    'Apex ',          // Cycle 5: C1 Advanced
-    'Mastery ',       // Cycle 6: C2 Mastery
+    '', // Cycle 1: Classic (A1 Genesis)
+    'Upper ', // Cycle 2: A2 Ascendant
+    'Nova ', // Cycle 3: B1 Intermediate
+    'Grand ', // Cycle 4: B2 Fluency
+    'Apex ', // Cycle 5: C1 Advanced
+    'Mastery ', // Cycle 6: C2 Mastery
   ];
 
   /// 📍 Deterministic algorithm: Maps any user index (0 to 100,000,000+) to their exact celestial sphere, island, and slot
-  static CosmosAddress allocateUser({required int userIndex, String? userName}) {
+  static CosmosAddress allocateUser(
+      {required int userIndex, String? userName}) {
     if (userIndex == 0) {
       // User #0 is Supreme President Mus'ab on Crown Apex
       return const CosmosAddress(
@@ -571,7 +573,8 @@ class CosmosLoopAllocationService {
       );
     }
 
-    final int effectiveIndex = userIndex - 1; // 0-based for all regular citizens
+    final int effectiveIndex =
+        userIndex - 1; // 0-based for all regular citizens
     final int islandBatch = effectiveIndex ~/ slotsPerIsland;
     final int slotNumber = (effectiveIndex % slotsPerIsland) + 1;
     final int celestialIndex = islandBatch % totalCelestialSpheres;

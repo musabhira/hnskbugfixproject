@@ -1081,7 +1081,6 @@ class _SearchPageState extends State<SearchPage> {
                     final surfaceColor = colors['surface']!;
                     final borderColor = colors['border']!;
 
-                    const isCrown = false;
                     final isBeachfront = (lNum <= 6);
 
                     return GestureDetector(
@@ -1095,6 +1094,10 @@ class _SearchPageState extends State<SearchPage> {
                               targetPlanetCode: code,
                               targetPlotNumber: lNum,
                               targetWave: wave,
+                              userId: isOccupied
+                                  ? (plot['userId']?.toString())
+                                  : null,
+                              userName: isOccupied ? ownerName : null,
                             ),
                           ),
                         );
@@ -1129,112 +1132,140 @@ class _SearchPageState extends State<SearchPage> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            // Top: Planet Emoji + Global Plot #
+                            // Top Row: Planet Badge + Beachfront Icon (if applicable)
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  PoketCosmosDistanceService.instance
-                                      .getPlanetEmoji(code),
-                                  style: const TextStyle(fontSize: 12),
-                                ),
-                                Text(
-                                  '#$gNum',
-                                  style: GoogleFonts.orbitron(
-                                    color: accentColor,
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            // Plot Tier Subtitle
-                            Text(
-                              isBeachfront ? '🏖️ Beach' : '🏡 Plot $lNum',
-                              style: GoogleFonts.inter(
-                                color: isBeachfront
-                                    ? const Color(0xFF38BDF8)
-                                    : Colors.white70,
-                                fontSize: 9.5,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            // Owner Badge: Green Checkmark if Occupied, FREE tag if Available
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                if (isOccupied) ...[
-                                  Container(
-                                    padding: const EdgeInsets.all(2),
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFF10B981),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(Icons.check,
-                                        size: 8, color: Colors.black),
-                                  ),
-                                  const SizedBox(width: 3.5),
-                                  Flexible(
-                                    child: Text(
-                                      ownerName,
-                                      style: GoogleFonts.inter(
-                                        color: const Color(0xFF10B981),
-                                        fontSize: 8.5,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ] else ...[
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 5, vertical: 1.5),
-                                    decoration: BoxDecoration(
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 4.5, vertical: 1.5),
+                                  decoration: BoxDecoration(
+                                    color: primaryColor.withValues(alpha: 0.22),
+                                    borderRadius: BorderRadius.circular(5),
+                                    border: Border.all(
                                       color:
-                                          Colors.white.withValues(alpha: 0.08),
-                                      borderRadius: BorderRadius.circular(4),
-                                      border: Border.all(
-                                          color: accentColor.withValues(
-                                              alpha: 0.35),
-                                          width: 0.6),
-                                    ),
-                                    child: Text(
-                                      'FREE',
-                                      style: GoogleFonts.orbitron(
-                                        color: accentColor,
-                                        fontSize: 7.5,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 0.6,
-                                      ),
+                                          primaryColor.withValues(alpha: 0.40),
+                                      width: 0.5,
                                     ),
                                   ),
-                                ],
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        PoketCosmosDistanceService.instance
+                                            .getPlanetEmoji(code),
+                                        style: const TextStyle(fontSize: 10),
+                                      ),
+                                      const SizedBox(width: 2.5),
+                                      Text(
+                                        (wave > 1) ? '$code·W$wave' : code,
+                                        style: GoogleFonts.outfit(
+                                          color: accentColor,
+                                          fontSize: 8.5,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (isBeachfront)
+                                  const Text('🏖️',
+                                      style: TextStyle(fontSize: 10)),
                               ],
                             ),
-                            // Bottom: Planet Code Badge
-                            Container(
-                              width: double.infinity,
-                              alignment: Alignment.center,
-                              padding: const EdgeInsets.symmetric(vertical: 2),
-                              decoration: BoxDecoration(
-                                color: primaryColor.withValues(alpha: 0.16),
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(
-                                    color: primaryColor.withValues(alpha: 0.32),
-                                    width: 0.5),
-                              ),
-                              child: Text(
-                                (wave > 1) ? '$code • W$wave' : code,
-                                style: GoogleFonts.outfit(
-                                  color: accentColor,
-                                  fontSize: 8.5,
-                                  fontWeight: FontWeight.bold,
+
+                            // Center: Single, Clean, Prominent Plot Number
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '#$lNum',
+                                  style: GoogleFonts.orbitron(
+                                    color: Colors.white,
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 1),
+                                Text(
+                                  isBeachfront ? 'Beachfront' : 'Parcel #$gNum',
+                                  style: GoogleFonts.inter(
+                                    color: isBeachfront
+                                        ? const Color(0xFF38BDF8)
+                                        : Colors.white54,
+                                    fontSize: 8.0,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+
+                            // Bottom: Status Badge (Claimed with name / Bright FREE tag)
+                            if (isOccupied)
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 4, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF10B981)
+                                      .withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: const Color(0xFF10B981)
+                                        .withValues(alpha: 0.4),
+                                    width: 0.6,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.check_circle_rounded,
+                                        size: 9, color: Color(0xFF10B981)),
+                                    const SizedBox(width: 3),
+                                    Flexible(
+                                      child: Text(
+                                        ownerName,
+                                        style: GoogleFonts.inter(
+                                          color: const Color(0xFF10B981),
+                                          fontSize: 8.5,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            else
+                              Container(
+                                width: double.infinity,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF22C55E)
+                                      .withValues(alpha: 0.18),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: const Color(0xFF22C55E)
+                                        .withValues(alpha: 0.7),
+                                    width: 0.8,
+                                  ),
+                                ),
+                                child: Text(
+                                  '🟢 FREE',
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.orbitron(
+                                    color: const Color(0xFF4ADE80),
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.8,
+                                  ),
                                 ),
                               ),
-                            ),
                           ],
                         ),
                       ),
