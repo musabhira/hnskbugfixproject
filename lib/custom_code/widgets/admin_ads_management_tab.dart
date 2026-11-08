@@ -334,6 +334,127 @@ class _AdminAdsManagementTabState extends State<AdminAdsManagementTab> {
     }
   }
 
+  /// 👁️ Direct Full-Screen or Live Visual Preview for Admin Verification
+  Future<void> _previewLiveAd(AdUnitMetadata item) async {
+    HapticFeedback.mediumImpact();
+    final admob = PocketAdMobService.instance;
+    // Ensure admin preview override is ON so VIP doesn't block the preview
+    admob.setAdminAdPreviewOverride(true);
+
+    if (item.isInterstitial) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Loading full-screen Interstitial: ${item.name}...'),
+          backgroundColor: const Color(0xFFF59E0B),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      final res = await admob.showLiveTestInterstitial(item.unitId);
+      if (mounted && res['success'] != true) {
+        _showDiagnosticDialog(item, res);
+      }
+    } else if (item.isRewarded) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Loading full-screen Rewarded Video: ${item.name}...'),
+          backgroundColor: const Color(0xFF10B981),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      final res = await admob.showLiveTestRewarded(item.unitId);
+      if (mounted && res['success'] != true) {
+        _showDiagnosticDialog(item, res);
+      }
+    } else {
+      // Banner or Native modal preview
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: const Color(0xFF0F172A),
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          side: BorderSide(color: Color(0xFF38BDF8), width: 1.2),
+        ),
+        builder: (ctx) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        item.format,
+                        style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        item.name,
+                        style: GoogleFonts.outfit(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, color: Colors.white54),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+                Text('Unit ID: ${item.unitId}', style: const TextStyle(color: Colors.white38, fontSize: 10, fontFamily: 'monospace')),
+                const Divider(color: Colors.white12, height: 20),
+                Center(
+                  child: Container(
+                    constraints: const BoxConstraints(maxHeight: 380),
+                    child: SingleChildScrollView(
+                      child: PocketNativeAdCard(
+                        placement: item.placement,
+                        customAdUnitId: item.unitId,
+                        margin: EdgeInsets.zero,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1E293B),
+                      foregroundColor: const Color(0xFFFFFC00),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    onPressed: () => Navigator.pop(ctx),
+                    child: const Text('Close Preview', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
   void _showDiagnosticDialog(AdUnitMetadata item, Map<String, dynamic> res) {
     final success = res['success'] == true;
     final code = res['errorCode']?.toString();
@@ -578,6 +699,46 @@ class _AdminAdsManagementTabState extends State<AdminAdsManagementTab> {
                 onChanged: (val) {
                   setState(() {
                     admob.setAdminAdPreviewOverride(val);
+                  });
+                },
+              ),
+            ],
+          ),
+          const Divider(color: Colors.white12, height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Google Safe Test Ad Mode',
+                      style: GoogleFonts.outfit(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      admob.overrideTestMode == true
+                          ? 'FORCE ON: Using Google Sample Test Unit IDs (100% fill, zero policy risk).'
+                          : admob.overrideTestMode == false
+                              ? 'FORCE OFF: Using REAL Production Unit IDs from AdMob Console.'
+                              : 'AUTO: Testing in Debug/Profile, Production in Release builds.',
+                      style: GoogleFonts.inter(color: Colors.white38, fontSize: 10),
+                    ),
+                  ],
+                ),
+              ),
+              DropdownButton<bool?>(
+                value: admob.overrideTestMode,
+                dropdownColor: const Color(0xFF0F172A),
+                underline: const SizedBox.shrink(),
+                icon: const Icon(Icons.tune_rounded, color: Color(0xFF38BDF8), size: 18),
+                items: const [
+                  DropdownMenuItem(value: null, child: Text('Auto', style: TextStyle(color: Colors.white, fontSize: 11))),
+                  DropdownMenuItem(value: true, child: Text('Test Ads (Safe)', style: TextStyle(color: Color(0xFF34D399), fontSize: 11))),
+                  DropdownMenuItem(value: false, child: Text('Live Production', style: TextStyle(color: Color(0xFFFFD700), fontSize: 11))),
+                ],
+                onChanged: (val) {
+                  setState(() {
+                    admob.setOverrideTestMode(val);
                   });
                 },
               ),
@@ -918,22 +1079,44 @@ class _AdminAdsManagementTabState extends State<AdminAdsManagementTab> {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-          const SizedBox(height: 8),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF38BDF8),
-                side: const BorderSide(color: Color(0xFF38BDF8), width: 0.8),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                padding: const EdgeInsets.symmetric(vertical: 8),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0284C7),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                  ),
+                  icon: const Icon(Icons.play_circle_fill_rounded, size: 16),
+                  label: Text(
+                    item.isInterstitial || item.isRewarded ? '🎬 Show Full Screen' : '👁️ Show Preview',
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                  ),
+                  onPressed: () => _previewLiveAd(item),
+                ),
               ),
-              icon: isTestingThis
-                  ? const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 1.5, color: Color(0xFF38BDF8)))
-                  : const Icon(Icons.play_arrow_rounded, size: 15),
-              label: Text(isTestingThis ? 'Running Safe Test...' : 'Run Safe Test', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-              onPressed: _testingInProgress ? null : () => _runSafeTest(item),
-            ),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 2,
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF38BDF8),
+                    side: const BorderSide(color: Color(0xFF38BDF8), width: 0.8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                  ),
+                  icon: isTestingThis
+                      ? const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 1.5, color: Color(0xFF38BDF8)))
+                      : const Icon(Icons.network_check_rounded, size: 15),
+                  label: Text(isTestingThis ? 'Pinging...' : 'Ping Test', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                  onPressed: _testingInProgress ? null : () => _runSafeTest(item),
+                ),
+              ),
+            ],
           ),
         ],
       ),

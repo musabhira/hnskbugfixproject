@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/services/monetization_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 
 /// Architecture for Google AdMob and Sponsor Monetization with Ad-Free VIP Bypass
 class PocketAdService {
@@ -503,46 +504,15 @@ class PocketVibesStoryAdWidget extends StatefulWidget {
 class _PocketVibesStoryAdWidgetState extends State<PocketVibesStoryAdWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _progressController;
-
-  final List<Map<String, dynamic>> _vibeSponsors = [
-    {
-      'brand': 'Oxford English Masterclass',
-      'tagline': 'Certified Spoken Fluency',
-      'headline': 'Speak English Confidently in 30 Days',
-      'cta': 'Enroll Free',
-      'gradient': [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF0284C7)],
-      'icon': Icons.school_rounded,
-      'accent': Color(0xFF38BDF8),
-    },
-    {
-      'brand': 'Global Remote Careers',
-      'tagline': 'Work From Anywhere',
-      'headline': 'High-Paying Tech & Design Jobs for English Speakers',
-      'cta': 'Explore Jobs',
-      'gradient': [Color(0xFF064E3B), Color(0xFF065F46), Color(0xFF10B981)],
-      'icon': Icons.public_rounded,
-      'accent': Color(0xFF34D399),
-    },
-    {
-      'brand': 'Duolingo & IELTS Sprint',
-      'tagline': 'Band 8+ Guarantee',
-      'headline': 'Master Daily English Vocabulary & Speaking Drills',
-      'cta': 'Start Practice',
-      'gradient': [Color(0xFF451A03), Color(0xFF78350F), Color(0xFFF59E0B)],
-      'icon': Icons.emoji_events_rounded,
-      'accent': Color(0xFFFFD700),
-    },
-  ];
-
-  late final Map<String, dynamic> _currentSponsor;
+  bool _isVip = false;
 
   @override
   void initState() {
     super.initState();
-    _currentSponsor = (_vibeSponsors..shuffle()).first;
+    _checkVip();
     _progressController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 5),
+      duration: const Duration(seconds: 6),
     )..forward();
 
     _progressController.addStatusListener((status) {
@@ -550,6 +520,14 @@ class _PocketVibesStoryAdWidgetState extends State<PocketVibesStoryAdWidget>
         widget.onNext();
       }
     });
+  }
+
+  Future<void> _checkVip() async {
+    final vip = await PocketAdMobService.instance.isUserVip();
+    if (vip && mounted) {
+      setState(() => _isVip = true);
+      widget.onNext();
+    }
   }
 
   @override
@@ -560,111 +538,46 @@ class _PocketVibesStoryAdWidgetState extends State<PocketVibesStoryAdWidget>
 
   @override
   Widget build(BuildContext context) {
-    final gradient = _currentSponsor['gradient'] as List<Color>;
-    final accent = _currentSponsor['accent'] as Color;
+    if (_isVip) {
+      return const SizedBox.shrink();
+    }
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: const Color(0xFF0F172A),
       body: Stack(
         children: [
-          // Background Aesthetic Canvas
+          // Background Gradient
           Positioned.fill(
             child: Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: gradient,
+                  colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF0B1329)],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
               ),
               child: SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Spacer(),
-                      Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.35),
-                          borderRadius: BorderRadius.circular(28),
-                          border: Border.all(color: accent.withValues(alpha: 0.3), width: 1.5),
-                        ),
-                        child: Column(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: accent.withValues(alpha: 0.2),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(_currentSponsor['icon'] as IconData,
-                                  color: accent, size: 44),
-                            ),
-                            const SizedBox(height: 18),
-                            Text(
-                              _currentSponsor['headline'] as String,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontSize: 22,
-                                fontWeight: FontWeight.w900,
-                                height: 1.25,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              _currentSponsor['tagline'] as String,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.inter(
-                                color: Colors.white70,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
+                      // 🌟 Real Google AdMob Native Ad Card (Placement: Vibes with Ranking fallback)
+                      const PocketNativeAdCard(
+                        placement: PocketAdPlacement.vibes,
+                        margin: EdgeInsets.zero,
+                      ),
+                      const SizedBox(height: 16),
+                      // Skip / Next Button
+                      TextButton.icon(
+                        onPressed: widget.onNext,
+                        icon: const Icon(Icons.arrow_forward_rounded, color: Colors.white70, size: 16),
+                        label: Text(
+                          'Swipe or Tap for next Vibe',
+                          style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13),
                         ),
                       ),
                       const Spacer(),
-                      // Swipe Up / CTA Button
-                      Container(
-                        width: double.infinity,
-                        margin: const EdgeInsets.only(bottom: 20),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Opening sponsor link...',
-                                    style: GoogleFonts.outfit()),
-                                duration: const Duration(milliseconds: 700),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: accent,
-                            foregroundColor: Colors.black,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            elevation: 8,
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                _currentSponsor['cta'] as String,
-                                style: GoogleFonts.outfit(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              const Icon(Icons.arrow_forward_rounded, size: 18),
-                            ],
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -713,7 +626,7 @@ class _PocketVibesStoryAdWidgetState extends State<PocketVibesStoryAdWidget>
                           child: LinearProgressIndicator(
                             value: _progressController.value,
                             backgroundColor: Colors.white24,
-                            valueColor: AlwaysStoppedAnimation<Color>(accent),
+                            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFFD700)),
                             minHeight: 3,
                           ),
                         );
@@ -722,45 +635,31 @@ class _PocketVibesStoryAdWidgetState extends State<PocketVibesStoryAdWidget>
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        CircleAvatar(
-                          radius: 16,
-                          backgroundColor: accent.withValues(alpha: 0.2),
-                          child: Icon(_currentSponsor['icon'] as IconData,
-                              color: accent, size: 16),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                          ),
+                          child: const Text(
+                            'SPONSORED',
+                            style: TextStyle(
+                              color: Color(0xFFFFD700),
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 8),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _currentSponsor['brand'] as String,
-                              style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
-                            ),
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 4, vertical: 1),
-                                  decoration: BoxDecoration(
-                                    color: accent.withValues(alpha: 0.25),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    'SPONSORED',
-                                    style: GoogleFonts.outfit(
-                                      color: accent,
-                                      fontSize: 8,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                        Text(
+                          'Google AdMob Partner',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
                         ),
                         const Spacer(),
                         IconButton(

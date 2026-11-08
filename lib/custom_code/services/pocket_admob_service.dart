@@ -109,6 +109,11 @@ class PocketAdMobService {
     return !kReleaseMode;
   }
 
+  bool? get overrideTestMode => _overrideTestMode;
+  void setOverrideTestMode(bool? value) {
+    _overrideTestMode = value;
+  }
+
   // 🆔 AdMob App IDs
   static const String androidAppId = 'ca-app-pub-8489571803367790~4762910426';
   static const String iosAppId = 'ca-app-pub-8489571803367790~7234734906';
@@ -628,7 +633,7 @@ class PocketAdMobService {
           final profile = await SupaFlow.client
               .from('profile')
               .select('is_vip, is_premium, is_subscribed')
-              .eq('user_id', uid)
+              .or('user_id.eq.$uid,id.eq.$uid')
               .maybeSingle();
           if (profile != null) {
             final isVipDb = profile['is_vip'] == true ||
@@ -1159,6 +1164,80 @@ class PocketAdMobService {
     );
   }
 
+  /// 🎬 Displays a real full-screen Interstitial Ad directly on the device for Admin Verification
+  Future<Map<String, dynamic>> showLiveTestInterstitial(String unitId) async {
+    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
+      return {'success': true, 'simulated': true, 'message': 'Simulated full-screen ad on Desktop/Web'};
+    }
+    final completer = Completer<Map<String, dynamic>>();
+    InterstitialAd.load(
+      adUnitId: unitId,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+            onAdDismissedFullScreenContent: (ad) => ad.dispose(),
+            onAdFailedToShowFullScreenContent: (ad, err) => ad.dispose(),
+          );
+          ad.show();
+          if (!completer.isCompleted) {
+            completer.complete({'success': true, 'message': 'Interstitial Ad displayed on screen!'});
+          }
+        },
+        onAdFailedToLoad: (err) {
+          if (!completer.isCompleted) {
+            completer.complete({
+              'success': false,
+              'errorCode': err.code.toString(),
+              'errorMessage': err.message,
+            });
+          }
+        },
+      ),
+    );
+    return completer.future.timeout(
+      const Duration(seconds: 12),
+      onTimeout: () => {'success': false, 'errorCode': 'TIMEOUT', 'errorMessage': 'Timed out loading interstitial'},
+    );
+  }
+
+  /// 🎬 Displays a real full-screen Rewarded Video Ad directly on the device for Admin Verification
+  Future<Map<String, dynamic>> showLiveTestRewarded(String unitId) async {
+    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
+      return {'success': true, 'simulated': true, 'message': 'Simulated rewarded video on Desktop/Web'};
+    }
+    final completer = Completer<Map<String, dynamic>>();
+    RewardedAd.load(
+      adUnitId: unitId,
+      request: const AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: (ad) {
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+            onAdDismissedFullScreenContent: (ad) => ad.dispose(),
+            onAdFailedToShowFullScreenContent: (ad, err) => ad.dispose(),
+          );
+          ad.show(onUserEarnedReward: (ad, item) {});
+          if (!completer.isCompleted) {
+            completer.complete({'success': true, 'message': 'Rewarded Ad displayed on screen!'});
+          }
+        },
+        onAdFailedToLoad: (err) {
+          if (!completer.isCompleted) {
+            completer.complete({
+              'success': false,
+              'errorCode': err.code.toString(),
+              'errorMessage': err.message,
+            });
+          }
+        },
+      ),
+    );
+    return completer.future.timeout(
+      const Duration(seconds: 12),
+      onTimeout: () => {'success': false, 'errorCode': 'TIMEOUT', 'errorMessage': 'Timed out loading rewarded ad'},
+    );
+  }
+
   /// Toggle test mode
   void setTestMode(bool isTest) {
     _overrideTestMode = isTest;
@@ -1207,6 +1286,7 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
   BannerAd? _bannerAd;
   bool _isLoaded = false;
   bool _isVip = false;
+  bool _hasRetriedWithFallback = false;
 
   @override
   void initState() {
@@ -1227,14 +1307,17 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
     }
 
     final targetUnitId = widget.customAdUnitId ??
-        (PocketAdMobService.instance._isTestMode
-            ? PocketAdMobService.instance.getUnitIdForPlacement(widget.placement)
-            : PocketAdMobService.instance.getUnitIdForPlacement(widget.placement));
+        PocketAdMobService.instance.getUnitIdForPlacement(widget.placement);
 
+    _loadBanner(targetUnitId);
+  }
+
+  void _loadBanner(String unitId) {
     PocketAdMobService.instance._recordAdRequest(widget.placement.name);
 
+    _bannerAd?.dispose();
     _bannerAd = BannerAd(
-      adUnitId: targetUnitId,
+      adUnitId: unitId,
       size: AdSize.mediumRectangle, // 300x250 Instagram feed style
       request: const AdRequest(),
       listener: BannerAdListener(
@@ -1246,6 +1329,16 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
           PocketAdMobService.instance._recordAdFailed(widget.placement.name, err);
           ad.dispose();
           _bannerAd = null;
+          // 🔄 Auto-Fallback: If custom placement unit fails (e.g. Code 3 No-Fill on newly created IDs),
+          // instantly retry with the verified working Global Ranking Unit ID so Vibes & Homes NEVER stay blank!
+          if (!_hasRetriedWithFallback &&
+              unitId != PocketAdMobService.prodRankingAdUnitId &&
+              !PocketAdMobService.instance._isTestMode) {
+            _hasRetriedWithFallback = true;
+            _loadBanner(PocketAdMobService.prodRankingAdUnitId);
+            return;
+          }
+          if (mounted) setState(() => _isLoaded = false);
         },
         onAdImpression: (_) {
           PocketAdMobService.instance._recordAdImpression(widget.placement.name);
@@ -1600,9 +1693,9 @@ class _PocketTrueNativeAdWidgetState extends State<PocketTrueNativeAdWidget> {
   }
 }
 
-/// 💬 Sponsored Native Chat Bubble Ad Widget
-/// Automatically renders inside English Hub and 1-on-1 Chats like a clean incoming message bubble!
-class PocketChatBubbleAdWidget extends StatelessWidget {
+/// 💬 Sponsored Minimal Banner Chat Bubble Ad Widget
+/// Automatically renders inside English Hub and 1-on-1 Chats under receiver bubbles!
+class PocketChatBubbleAdWidget extends StatefulWidget {
   final EdgeInsetsGeometry margin;
   const PocketChatBubbleAdWidget({
     super.key,
@@ -1610,104 +1703,183 @@ class PocketChatBubbleAdWidget extends StatelessWidget {
   });
 
   @override
+  State<PocketChatBubbleAdWidget> createState() => _PocketChatBubbleAdWidgetState();
+}
+
+class _PocketChatBubbleAdWidgetState extends State<PocketChatBubbleAdWidget> {
+  BannerAd? _bannerAd;
+  bool _isLoaded = false;
+  bool _isVip = false;
+  bool _hasRetriedWithFallback = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkVipAndLoad();
+  }
+
+  Future<void> _checkVipAndLoad() async {
+    final vip = await PocketAdMobService.instance.isUserVip();
+    if (vip) {
+      if (mounted) setState(() => _isVip = true);
+      return;
+    }
+
+    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
+      if (mounted) setState(() => _isLoaded = true);
+      return;
+    }
+
+    final targetUnitId = PocketAdMobService.instance.getUnitIdForPlacement(PocketAdPlacement.home);
+    _loadBanner(targetUnitId);
+  }
+
+  void _loadBanner(String unitId) {
+    PocketAdMobService.instance._recordAdRequest('chat_bubble_banner');
+
+    _bannerAd?.dispose();
+    _bannerAd = BannerAd(
+      adUnitId: unitId,
+      size: AdSize.banner, // Standard 320x50 clean chat banner
+      request: const AdRequest(),
+      listener: BannerAdListener(
+        onAdLoaded: (_) {
+          PocketAdMobService.instance._recordAdLoaded('chat_bubble_banner');
+          if (mounted) setState(() => _isLoaded = true);
+        },
+        onAdFailedToLoad: (ad, err) {
+          PocketAdMobService.instance._recordAdFailed('chat_bubble_banner', err);
+          ad.dispose();
+          _bannerAd = null;
+          // Auto fallback to prodHomeAdUnitId if not already using it
+          if (!_hasRetriedWithFallback &&
+              unitId != PocketAdMobService.prodHomeAdUnitId &&
+              !PocketAdMobService.instance._isTestMode) {
+            _hasRetriedWithFallback = true;
+            _loadBanner(PocketAdMobService.prodHomeAdUnitId);
+            return;
+          }
+          if (mounted) setState(() => _isLoaded = false);
+        },
+        onAdImpression: (_) {
+          PocketAdMobService.instance._recordAdImpression('chat_bubble_banner');
+        },
+      ),
+    );
+
+    _bannerAd?.load();
+  }
+
+  @override
+  void dispose() {
+    _bannerAd?.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return FutureBuilder<bool>(
-      future: PocketAdMobService.instance.isUserVip(),
-      builder: (context, snapshot) {
-        if (snapshot.data == true) {
-          return const SizedBox.shrink(); // Suppressed for VIPs
-        }
-        return Container(
-          margin: margin,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1E293B).withValues(alpha: 0.8),
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(16),
-              topRight: Radius.circular(16),
-              bottomRight: Radius.circular(16),
-              bottomLeft: Radius.circular(4),
-            ),
-            border: Border.all(color: Colors.white12, width: 0.8),
+    if (_isVip) {
+      return const SizedBox.shrink();
+    }
+
+    if (!_isLoaded && _bannerAd != null) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      margin: widget.margin,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B).withValues(alpha: 0.85),
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
+          bottomRight: Radius.circular(16),
+          bottomLeft: Radius.circular(4),
+        ),
+        border: Border.all(color: Colors.white12, width: 0.8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: const Center(
-                      child: Text('🤖', style: TextStyle(fontSize: 13)),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Sponsored Partner',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                    decoration: BoxDecoration(
-                      color: Colors.white12,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: const Text(
-                      'Ad',
-                      style: TextStyle(color: Colors.white70, fontSize: 9.5, fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                ],
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                decoration: BoxDecoration(
+                  color: Colors.white12,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Text(
+                  'Ad',
+                  style: TextStyle(color: Colors.white70, fontSize: 9.5, fontWeight: FontWeight.w700),
+                ),
               ),
-              const SizedBox(height: 8),
-              const Text(
-                '✨ Practice English 1-on-1 with live AI Speaking Partners. Boost your IELTS / CEFR confidence today!',
-                style: TextStyle(color: Colors.white70, fontSize: 12.5, height: 1.3),
+              const SizedBox(width: 6),
+              Text(
+                'Sponsored Partner',
+                style: GoogleFonts.outfit(
+                  color: Colors.white70,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const SubscriptionPage()),
-                      );
-                    },
-                    child: const Text(
-                      'Go VIP – Remove All Ads 👑',
-                      style: TextStyle(color: Color(0xFFFFD700), fontSize: 11, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: const Text(
-                      'Try Free',
-                      style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
+              const Spacer(),
+              InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+                  );
+                },
+                child: const Text(
+                  'Go VIP 👑',
+                  style: TextStyle(color: Color(0xFFFFD700), fontSize: 10.5, fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),
-        );
-      },
+          const SizedBox(height: 6),
+          Center(
+            child: _bannerAd != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: SizedBox(
+                      width: _bannerAd!.size.width.toDouble(),
+                      height: _bannerAd!.size.height.toDouble(),
+                      child: AdWidget(ad: _bannerAd!),
+                    ),
+                  )
+                : Container(
+                    height: 50,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: Colors.white10),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('🤖 ', style: TextStyle(fontSize: 14)),
+                        Text(
+                          'Practice Spoken English daily with AI & live mates!',
+                          style: GoogleFonts.outfit(color: Colors.white70, fontSize: 11),
+                        ),
+                      ],
+                    ),
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }

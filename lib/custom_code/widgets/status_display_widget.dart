@@ -1262,13 +1262,102 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                   final actualMapIndex = onlyGroups.indexOf(statusGroup);
                   final profileId = statusGroup['profile']?['id']?.toString() ?? '$index';
                   
-                  return RepaintBoundary(
+                  final vibeWidget = RepaintBoundary(
                     key: ValueKey('status_h_$profileId'),
                     child: _buildStatusItem(statusGroup, actualMapIndex, true, listOverride: onlyGroups),
                   );
+
+                  // 📢 Insert Sponsor / Ad Vibe bubble during horizontal sideways scrolling every 3 avatars
+                  if (index > 0 && index % 3 == 0) {
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        vibeWidget,
+                        _buildHorizontalSponsorVibe(),
+                      ],
+                    );
+                  }
+
+                  return vibeWidget;
                 },
               ),
       ),
+    );
+  }
+
+  Widget _buildHorizontalSponsorVibe() {
+    return FutureBuilder<bool>(
+      future: PocketAdMobService.instance.isUserVip(),
+      builder: (context, snapshot) {
+        if (snapshot.data == true) return const SizedBox.shrink();
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => PocketVibesStoryAdWidget(
+                  onNext: () => Navigator.pop(context),
+                  onPrevious: () => Navigator.pop(context),
+                ),
+              ),
+            );
+          },
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 6),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 58,
+                  height: 58,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFFFD700), Color(0xFFF59E0B), Color(0xFFEA580C)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(2.5),
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color(0xFF0F172A),
+                    ),
+                    child: const Center(
+                      child: Icon(Icons.campaign_rounded, color: Color(0xFFFFD700), size: 24),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5), width: 0.6),
+                  ),
+                  child: const Text(
+                    'Ad',
+                    style: TextStyle(
+                      color: Color(0xFFFFD700),
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -1484,7 +1573,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
               listOverride: onlyGroups),
         );
 
-        if (widget.isVertical && index > 0 && index % 4 == 0) {
+        // 📢 Native Ad Card inserted every 3 vibes (matches Global Ranking standard)
+        if (widget.isVertical && index > 0 && (index + 1) % 3 == 0) {
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [

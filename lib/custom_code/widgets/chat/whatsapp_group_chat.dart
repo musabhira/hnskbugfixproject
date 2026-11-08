@@ -6410,8 +6410,9 @@ Draft: "$draft"''';
                                           nextMessage.createdAt);
                                     }
 
+                                    // 📢 Minimal Banner Ad under receiver messages every 6 messages
                                     final showNativeAd =
-                                        msgIndex > 0 && msgIndex % 12 == 0;
+                                        msgIndex > 0 && (msgIndex + 1) % 6 == 0 && !isMe;
 
                                     return RepaintBoundary(
                                       key: ValueKey('msg_bubble_${message.id}'),

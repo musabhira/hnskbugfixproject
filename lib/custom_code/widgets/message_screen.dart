@@ -1804,7 +1804,8 @@ class _MessageScreenState extends State<MessageScreen> {
               // Then regular messages
               final messageIndex = index - _ephemeralMessages.length;
               final message = _messages[messageIndex];
-              final showNativeAd = messageIndex > 0 && messageIndex % 12 == 0;
+              final showNativeAd =
+                  messageIndex > 0 && (messageIndex + 1) % 6 == 0 && message['sender_id'] != _senderId;
 
               if (showNativeAd) {
                 return Column(

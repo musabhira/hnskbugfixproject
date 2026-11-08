@@ -1143,12 +1143,21 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       combinedFeed.add(ReelFeedItem.game(specificGame));
     }
 
-    for (int i = 0; i < combinedNeighbors.length; i++) {
-      combinedFeed.add(ReelFeedItem.home(combinedNeighbors[i]));
+    int itemsSinceLastAd = 0;
+    void addAdultReelItem(ReelFeedItem item) {
+      combinedFeed.add(item);
+      itemsSinceLastAd++;
+      // 📢 Seamless Native Ad insertion every 3 to 4 content reels (Homes, Dialogue games, Challenges)
+      if (itemsSinceLastAd >= 3) {
+        combinedFeed.add(const ReelFeedItem.ad());
+        itemsSinceLastAd = 0;
+      }
+    }
 
+    for (int i = 0; i < combinedNeighbors.length; i++) {
       if (isKid) {
+        combinedFeed.add(ReelFeedItem.home(combinedNeighbors[i]));
         // 🧸 KIDS COMMUNICATION-RICH STREAM:
-        // Always supply a fun Kids Communication / Chat Comeback game after each home!
         if (gameIdx < games.length) {
           combinedFeed.add(ReelFeedItem.game(games[gameIdx++]));
         }
@@ -1167,28 +1176,24 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
         }
       } else {
         // 🏰 ADULT SPOKEN COMMUNICATION STREAM:
+        addAdultReelItem(ReelFeedItem.home(combinedNeighbors[i]));
+
         // Pair every single home with a Level-Matched Spoken English Dialogue Game!
         if (gameIdx < games.length) {
-          combinedFeed.add(ReelFeedItem.game(games[gameIdx++]));
+          addAdultReelItem(ReelFeedItem.game(games[gameIdx++]));
         }
 
         // Interleave light bite-sized content every 2-3 homes (Speak challenge, Vocab card, or short Story bite)
-        // Note: Bulky HR interviews ("Tell me about yourself") are excluded per User Audio Directive.
         if (i % 3 == 0 && speakIdx < speakChallenges.length) {
-          combinedFeed.add(ReelFeedItem.speakChallenge(speakChallenges[speakIdx++]));
+          addAdultReelItem(ReelFeedItem.speakChallenge(speakChallenges[speakIdx++]));
         } else if (i % 3 == 1 && vocabIdx < vocabCards.length) {
-          combinedFeed.add(ReelFeedItem.vocab(vocabCards[vocabIdx++]));
+          addAdultReelItem(ReelFeedItem.vocab(vocabCards[vocabIdx++]));
         } else if (i % 3 == 2 && storyIdx < stories.length) {
-          combinedFeed.add(ReelFeedItem.story(stories[storyIdx++]));
-        }
-
-        if (i > 0 && i % 3 == 0) {
-          // Native Ad insertion every 3 houses for non-VIP players
-          combinedFeed.add(const ReelFeedItem.ad());
+          addAdultReelItem(ReelFeedItem.story(stories[storyIdx++]));
         }
 
         if ((i + 1) % 4 == 0 && vibeIdx < publicVibes.length) {
-          combinedFeed.add(ReelFeedItem.vibe(publicVibes[vibeIdx++]));
+          addAdultReelItem(ReelFeedItem.vibe(publicVibes[vibeIdx++]));
         }
       }
     }
