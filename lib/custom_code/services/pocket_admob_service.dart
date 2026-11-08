@@ -87,7 +87,7 @@ class PocketAdTelemetryData {
 }
 
 /// 💎 Central Google AdMob Service for Pocket Mates
-/// 
+///
 /// User Directives:
 /// - "ആഡ് എവിടെയൊക്കെ ഇമ്പ്ലിമെന്റ് ചെയ്യാൻ പറ്റുമോ അവിടെയൊക്കെ ഇമ്പ്ലിമെന്റ് ചെയ്യുക."
 /// - "നേറ്റീവ് ആഡ് നല്ല രീതിയിൽ പ്ലേസ് ചെയ്യുക (Instagram standard)."
@@ -122,8 +122,10 @@ class PocketAdMobService {
 
   // 🎯 Google Official Safe Test Ad Unit IDs (Immediate testing without account bans)
   static const String _testBannerId = 'ca-app-pub-3940256099942544/6300978111';
-  static const String _testInterstitialId = 'ca-app-pub-3940256099942544/1033173712';
-  static const String _testRewardedId = 'ca-app-pub-3940256099942544/5224354917';
+  static const String _testInterstitialId =
+      'ca-app-pub-3940256099942544/1033173712';
+  static const String _testRewardedId =
+      'ca-app-pub-3940256099942544/5224354917';
   static const String testNativeId = 'ca-app-pub-3940256099942544/2247696110';
 
   // 🚀 Android Production Ad Unit IDs
@@ -135,46 +137,66 @@ class PocketAdMobService {
   static String prodReviewAdUnitId = 'ca-app-pub-8489571803367790/5846290758';
 
   // 🌟 Dedicated Native Advanced Ad Units (Android)
-  static String prodNativeHomeAdUnitId = 'ca-app-pub-8489571803367790/7490544913';
-  static String prodNativeVibesAdUnitId = 'ca-app-pub-8489571803367790/2725690431';
-  static String prodNativeLearningSummaryAdUnitId = 'ca-app-pub-8489571803367790/5519374733';
-  static String prodNativeRankingAdUnitId = 'ca-app-pub-8489571803367790/7490544913';
+  static String prodNativeHomeAdUnitId =
+      'ca-app-pub-8489571803367790/7490544913';
+  static String prodNativeVibesAdUnitId =
+      'ca-app-pub-8489571803367790/2725690431';
+  static String prodNativeLearningSummaryAdUnitId =
+      'ca-app-pub-8489571803367790/5519374733';
+  static String prodNativeRankingAdUnitId =
+      'ca-app-pub-8489571803367790/7490544913';
 
   // Interstitial Ad Units (Android)
-  static String prodLearningStepInterstitialId = 'ca-app-pub-8489571803367790/1304410512';
-  static String prodDayCompletionInterstitialId = 'ca-app-pub-8489571803367790/9793449634';
-  static String prodAttackInterstitialId = 'ca-app-pub-8489571803367790/6110401679';
+  static String prodLearningStepInterstitialId =
+      'ca-app-pub-8489571803367790/1304410512';
+  static String prodDayCompletionInterstitialId =
+      'ca-app-pub-8489571803367790/9793449634';
+  static String prodAttackInterstitialId =
+      'ca-app-pub-8489571803367790/6110401679';
 
   // Rewarded Ad Units (Android)
-  static String prodStoreCoinsRewardedId = 'ca-app-pub-8489571803367790/9802234672';
+  static String prodStoreCoinsRewardedId =
+      'ca-app-pub-8489571803367790/9802234672';
 
   // 🍏 iOS Production Ad Unit IDs
   // Banner / Medium Rectangle In-Feed Units (300x250)
-  static String prodIosRankingAdUnitId = 'ca-app-pub-8489571803367790/4063571266';
+  static String prodIosRankingAdUnitId =
+      'ca-app-pub-8489571803367790/4063571266';
   static String prodIosReelsAdUnitId = 'ca-app-pub-8489571803367790/7496771001';
   static String prodIosVibesAdUnitId = 'ca-app-pub-8489571803367790/1398266514';
   static String prodIosHomeAdUnitId = 'ca-app-pub-8489571803367790/8159115983';
-  static String prodIosReviewAdUnitId = 'ca-app-pub-8489571803367790/6921843905';
+  static String prodIosReviewAdUnitId =
+      'ca-app-pub-8489571803367790/6921843905';
 
   // 🌟 Dedicated Native Advanced Ad Units (iOS)
-  static String prodIosNativeHomeAdUnitId = 'ca-app-pub-8489571803367790/8043565915';
-  static String prodIosNativeVibesAdUnitId = 'ca-app-pub-8489571803367790/8805983242';
-  static String prodIosNativeLearningSummaryAdUnitId = 'ca-app-pub-8489571803367790/2132376644';
-  static String prodIosNativeRankingAdUnitId = 'ca-app-pub-8489571803367790/8043565915';
+  static String prodIosNativeHomeAdUnitId =
+      'ca-app-pub-8489571803367790/8043565915';
+  static String prodIosNativeVibesAdUnitId =
+      'ca-app-pub-8489571803367790/8805983242';
+  static String prodIosNativeLearningSummaryAdUnitId =
+      'ca-app-pub-8489571803367790/2132376644';
+  static String prodIosNativeRankingAdUnitId =
+      'ca-app-pub-8489571803367790/8043565915';
 
   // Interstitial Ad Units (iOS)
-  static String prodIosLearningStepInterstitialId = 'ca-app-pub-8489571803367790/6946106667';
-  static String prodIosDayCompletionInterstitialId = 'ca-app-pub-8489571803367790/7660210500';
-  static String prodIosAttackInterstitialId = 'ca-app-pub-8489571803367790/1669729255';
+  static String prodIosLearningStepInterstitialId =
+      'ca-app-pub-8489571803367790/6946106667';
+  static String prodIosDayCompletionInterstitialId =
+      'ca-app-pub-8489571803367790/7660210500';
+  static String prodIosAttackInterstitialId =
+      'ca-app-pub-8489571803367790/1669729255';
 
   // Rewarded Ad Units (iOS)
-  static String prodIosStoreCoinsRewardedId = 'ca-app-pub-8489571803367790/5688865317';
+  static String prodIosStoreCoinsRewardedId =
+      'ca-app-pub-8489571803367790/5688865317';
 
   // 📱 Dedicated Standard 320x50 Banner Unit (Android)
-  static String prodStandardBannerAdUnitId = 'ca-app-pub-8489571803367790/5182940361';
+  static String prodStandardBannerAdUnitId =
+      'ca-app-pub-8489571803367790/5182940361';
 
   // 📱 Dedicated Standard 320x50 Banner Unit (iOS)
-  static String prodIosStandardBannerAdUnitId = 'ca-app-pub-8489571803367790/8159115983';
+  static String prodIosStandardBannerAdUnitId =
+      'ca-app-pub-8489571803367790/8159115983';
 
   // Fallbacks / Legacy accessors
   static String get prodNativeAdUnitId => prodNativeHomeAdUnitId;
@@ -182,9 +204,11 @@ class PocketAdMobService {
   static String get prodRewardedAdUnitId => prodStoreCoinsRewardedId;
   static set prodRewardedAdUnitId(String val) => prodStoreCoinsRewardedId = val;
   static String get prodInterstitialAdUnitId => prodDayCompletionInterstitialId;
-  static set prodInterstitialAdUnitId(String val) => prodDayCompletionInterstitialId = val;
-  static String get prodBannerAdUnitId =>
-      Platform.isIOS ? prodIosStandardBannerAdUnitId : prodStandardBannerAdUnitId;
+  static set prodInterstitialAdUnitId(String val) =>
+      prodDayCompletionInterstitialId = val;
+  static String get prodBannerAdUnitId => Platform.isIOS
+      ? prodIosStandardBannerAdUnitId
+      : prodStandardBannerAdUnitId;
   static set prodBannerAdUnitId(String val) {
     if (Platform.isIOS) {
       prodIosStandardBannerAdUnitId = val;
@@ -194,8 +218,10 @@ class PocketAdMobService {
   }
 
   // ⚙️ Dynamic Learning Journey Ad Configuration
-  static int stepNativeAdFrequency = 4; // Show native ad card after every 4 steps
-  static int interstitialStepFrequency = 6; // Show interstitial after every 6 steps completed
+  static int stepNativeAdFrequency =
+      4; // Show native ad card after every 4 steps
+  static int interstitialStepFrequency =
+      6; // Show interstitial after every 6 steps completed
   static bool enableLearningBannerAds = true;
   static bool enableDailySummaryReviewAd = true;
 
@@ -302,8 +328,10 @@ class PocketAdMobService {
   }
 
   String get nativeAdUnitId => getNativeAdUnitId(PocketAdPlacement.home);
-  String get rewardedAdUnitId => getUnitIdForPlacement(PocketAdPlacement.storeCoins);
-  String get interstitialAdUnitId => getUnitIdForPlacement(PocketAdPlacement.dayCompletion);
+  String get rewardedAdUnitId =>
+      getUnitIdForPlacement(PocketAdPlacement.storeCoins);
+  String get interstitialAdUnitId =>
+      getUnitIdForPlacement(PocketAdPlacement.dayCompletion);
   String get bannerAdUnitId => getUnitIdForPlacement(PocketAdPlacement.banner);
 
   InterstitialAd? _interstitialAd;
@@ -314,8 +342,10 @@ class PocketAdMobService {
   static const Duration minInterstitialInterval = Duration(minutes: 3);
 
   // 🛡️ Legal Google AdMob Policy Compliance & Rate Limiting for Rewarded Ads
-  static const int kMaxRewardedAdsPerDay = 5; // Prevents ad-farming & invalid traffic policy limits
-  static const Duration minRewardedInterval = Duration(seconds: 60); // 1-minute cooldown
+  static const int kMaxRewardedAdsPerDay =
+      5; // Prevents ad-farming & invalid traffic policy limits
+  static const Duration minRewardedInterval =
+      Duration(seconds: 60); // 1-minute cooldown
   DateTime? _lastRewardedShownTime;
 
   /// Checks daily limit & cooldown compliance for Rewarded Ads according to Google AdMob Policies
@@ -336,8 +366,16 @@ class PocketAdMobService {
         'allowed': false,
         'reason': 'limit',
         'remaining': 0,
-        'message': 'Daily sponsor video limit reached ($kMaxRewardedAdsPerDay/$kMaxRewardedAdsPerDay). Earn more PS by completing lessons & battles!',
+        'message':
+            'Daily sponsor video limit reached ($kMaxRewardedAdsPerDay/$kMaxRewardedAdsPerDay). Earn more PS by completing lessons & battles!',
       };
+    }
+
+    if (_lastRewardedShownTime == null) {
+      final storedTime = prefs.getString('admob_last_rewarded_time');
+      if (storedTime != null) {
+        _lastRewardedShownTime = DateTime.tryParse(storedTime);
+      }
     }
 
     if (_lastRewardedShownTime != null) {
@@ -349,7 +387,8 @@ class PocketAdMobService {
           'reason': 'cooldown',
           'remaining': kMaxRewardedAdsPerDay - count,
           'wait': waitSec,
-          'message': 'Please wait ${waitSec}s before watching another sponsor video.',
+          'message':
+              'Please wait ${waitSec}s before watching another sponsor video.',
         };
       }
     }
@@ -360,10 +399,76 @@ class PocketAdMobService {
     };
   }
 
+  /// ⏱️ Returns remaining seconds in the 60-second cooldown period (0 if ready)
+  Future<int> getRewardedCooldownRemainingSeconds() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (_lastRewardedShownTime == null) {
+      final storedTime = prefs.getString('admob_last_rewarded_time');
+      if (storedTime != null) {
+        _lastRewardedShownTime = DateTime.tryParse(storedTime);
+      }
+    }
+    if (_lastRewardedShownTime == null) return 0;
+    final elapsed = DateTime.now().difference(_lastRewardedShownTime!);
+    if (elapsed < minRewardedInterval) {
+      return (minRewardedInterval.inSeconds - elapsed.inSeconds)
+          .clamp(0, minRewardedInterval.inSeconds);
+    }
+    return 0;
+  }
+
+  /// 🔋 Returns daily completed rewarded ad count for today (0 to 5)
+  Future<int> getRewardedDailyCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    final today = DateTime.now().toIso8601String().split('T')[0];
+    final storedDate = prefs.getString('admob_rewarded_date') ?? '';
+    int count = prefs.getInt('admob_rewarded_daily_count') ?? 0;
+    if (storedDate != today) {
+      count = 0;
+      await prefs.setString('admob_rewarded_date', today);
+      await prefs.setInt('admob_rewarded_daily_count', 0);
+    }
+    return count.clamp(0, kMaxRewardedAdsPerDay);
+  }
+
+  /// 🔋 Returns daily remaining rewarded ad count for today (5 to 0)
+  Future<int> getRewardedDailyRemaining() async {
+    final count = await getRewardedDailyCount();
+    return (kMaxRewardedAdsPerDay - count).clamp(0, kMaxRewardedAdsPerDay);
+  }
+
+  /// 🎁 Atomically grants +50 Pocket Score to the user across SharedPreferences and Supabase
+  Future<int> grantRewardedPocketScore() async {
+    final prefs = await SharedPreferences.getInstance();
+    final currentScore = prefs.getInt('user_pocket_score') ??
+        prefs.getInt('pocket_score') ??
+        150;
+    final newScore = currentScore + 50;
+    await prefs.setInt('user_pocket_score', newScore);
+    await prefs.setInt('pocket_score', newScore);
+
+    final uid = SupaFlow.client.auth.currentUser?.id;
+    if (uid != null && uid.isNotEmpty) {
+      try {
+        await SupaFlow.client
+            .from('users')
+            .update({'pocket_score': newScore}).eq('id', uid);
+      } catch (_) {}
+      try {
+        await SupaFlow.client
+            .from('profile')
+            .update({'pocket_score': newScore}).eq('user_id', uid);
+      } catch (_) {}
+    }
+    return newScore;
+  }
+
   /// Records successful rewarded ad completion for daily quota
   Future<void> _recordRewardedAdCompletion() async {
     _lastRewardedShownTime = DateTime.now();
     final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+        'admob_last_rewarded_time', _lastRewardedShownTime!.toIso8601String());
     final today = DateTime.now().toIso8601String().split('T')[0];
     final storedDate = prefs.getString('admob_rewarded_date') ?? '';
     int count = prefs.getInt('admob_rewarded_daily_count') ?? 0;
@@ -381,16 +486,16 @@ class PocketAdMobService {
 
   void _recordAdRequest(String placementName) {
     _telemetry.totalRequests++;
-    final metric = _telemetry.placementMetrics.putIfAbsent(
-        placementName, () => PocketAdPlacementMetric());
+    final metric = _telemetry.placementMetrics
+        .putIfAbsent(placementName, () => PocketAdPlacementMetric());
     metric.requests++;
   }
 
   void _recordAdLoaded(String placementName) {
     _telemetry.totalLoads++;
     _telemetry.lastSuccessTime = DateTime.now();
-    final metric = _telemetry.placementMetrics.putIfAbsent(
-        placementName, () => PocketAdPlacementMetric());
+    final metric = _telemetry.placementMetrics
+        .putIfAbsent(placementName, () => PocketAdPlacementMetric());
     metric.loads++;
     metric.lastLoadedTime = DateTime.now();
     _saveTelemetryLocally();
@@ -407,8 +512,8 @@ class PocketAdMobService {
     if (codeStr == '3') {
       _telemetry.totalNoFills++;
     }
-    final metric = _telemetry.placementMetrics.putIfAbsent(
-        placementName, () => PocketAdPlacementMetric());
+    final metric = _telemetry.placementMetrics
+        .putIfAbsent(placementName, () => PocketAdPlacementMetric());
     metric.fails++;
     if (codeStr == '3') metric.noFills++;
     metric.lastFailedTime = DateTime.now();
@@ -419,8 +524,8 @@ class PocketAdMobService {
 
   void _recordAdImpression(String placementName) {
     _telemetry.totalImpressions++;
-    final metric = _telemetry.placementMetrics.putIfAbsent(
-        placementName, () => PocketAdPlacementMetric());
+    final metric = _telemetry.placementMetrics
+        .putIfAbsent(placementName, () => PocketAdPlacementMetric());
     metric.impressions++;
     _saveTelemetryLocally();
   }
@@ -434,16 +539,19 @@ class PocketAdMobService {
       await prefs.setInt('admob_total_nofill', _telemetry.totalNoFills);
       await prefs.setInt('admob_total_imp', _telemetry.totalImpressions);
       if (_telemetry.lastSuccessTime != null) {
-        await prefs.setString('admob_last_success', _telemetry.lastSuccessTime!.toIso8601String());
+        await prefs.setString('admob_last_success',
+            _telemetry.lastSuccessTime!.toIso8601String());
       }
       if (_telemetry.lastFailureTime != null) {
-        await prefs.setString('admob_last_fail', _telemetry.lastFailureTime!.toIso8601String());
+        await prefs.setString(
+            'admob_last_fail', _telemetry.lastFailureTime!.toIso8601String());
       }
       if (_telemetry.latestErrorCode != null) {
         await prefs.setString('admob_latest_code', _telemetry.latestErrorCode!);
       }
       if (_telemetry.latestErrorMessage != null) {
-        await prefs.setString('admob_latest_msg', _telemetry.latestErrorMessage!);
+        await prefs.setString(
+            'admob_latest_msg', _telemetry.latestErrorMessage!);
       }
 
       // Sync aggregated production telemetry to Supabase backend asynchronously
@@ -455,13 +563,15 @@ class PocketAdMobService {
   Future<void> _syncTelemetryToBackend() async {
     // Throttle syncs to at most once every 30 seconds
     if (_lastBackendSyncTime != null &&
-        DateTime.now().difference(_lastBackendSyncTime!) < const Duration(seconds: 30)) {
+        DateTime.now().difference(_lastBackendSyncTime!) <
+            const Duration(seconds: 30)) {
       return;
     }
     _lastBackendSyncTime = DateTime.now();
 
     try {
-      final platform = Platform.isAndroid ? 'android' : (Platform.isIOS ? 'ios' : 'other');
+      final platform =
+          Platform.isAndroid ? 'android' : (Platform.isIOS ? 'ios' : 'other');
       final syncPayload = {
         'target_platform': 'admob_telemetry_$platform',
         'is_active': true,
@@ -570,7 +680,8 @@ class PocketAdMobService {
   Future<void> requestAppTrackingConsent() async {
     try {
       if (!kIsWeb && Platform.isIOS) {
-        final status = await AppTrackingTransparency.trackingAuthorizationStatus;
+        final status =
+            await AppTrackingTransparency.trackingAuthorizationStatus;
         if (status == TrackingStatus.notDetermined) {
           // Wait a brief delay after startup for iOS window hierarchy to stabilize
           await Future.delayed(const Duration(milliseconds: 1500));
@@ -592,23 +703,31 @@ class PocketAdMobService {
           .maybeSingle();
       if (res != null && res['metadata'] is Map) {
         final meta = res['metadata'] as Map<String, dynamic>;
-        if (meta['banner_id'] != null && (meta['banner_id'] as String).isNotEmpty) {
+        if (meta['banner_id'] != null &&
+            (meta['banner_id'] as String).isNotEmpty) {
           prodBannerAdUnitId = meta['banner_id'];
         }
-        if (meta['interstitial_id'] != null && (meta['interstitial_id'] as String).isNotEmpty) {
+        if (meta['interstitial_id'] != null &&
+            (meta['interstitial_id'] as String).isNotEmpty) {
           prodInterstitialAdUnitId = meta['interstitial_id'];
         }
-        if (meta['rewarded_id'] != null && (meta['rewarded_id'] as String).isNotEmpty) {
+        if (meta['rewarded_id'] != null &&
+            (meta['rewarded_id'] as String).isNotEmpty) {
           prodRewardedAdUnitId = meta['rewarded_id'];
         }
-        if (meta['native_id'] != null && (meta['native_id'] as String).isNotEmpty) {
+        if (meta['native_id'] != null &&
+            (meta['native_id'] as String).isNotEmpty) {
           prodNativeAdUnitId = meta['native_id'];
         }
         if (meta['step_native_frequency'] != null) {
-          stepNativeAdFrequency = int.tryParse(meta['step_native_frequency'].toString()) ?? stepNativeAdFrequency;
+          stepNativeAdFrequency =
+              int.tryParse(meta['step_native_frequency'].toString()) ??
+                  stepNativeAdFrequency;
         }
         if (meta['interstitial_step_frequency'] != null) {
-          interstitialStepFrequency = int.tryParse(meta['interstitial_step_frequency'].toString()) ?? interstitialStepFrequency;
+          interstitialStepFrequency =
+              int.tryParse(meta['interstitial_step_frequency'].toString()) ??
+                  interstitialStepFrequency;
         }
         if (meta['enable_learning_banners'] != null) {
           enableLearningBannerAds = meta['enable_learning_banners'] == true;
@@ -652,7 +771,8 @@ class PocketAdMobService {
         try {
           final profile = await SupaFlow.client
               .from('profile')
-              .select('is_vip, is_premium, is_subscribed, subscription_tier, role')
+              .select(
+                  'is_vip, is_premium, is_subscribed, subscription_tier, role')
               .or('user_id.eq.$uid,id.eq.$uid')
               .maybeSingle();
           if (profile != null) {
@@ -752,19 +872,23 @@ class PocketAdMobService {
           SnackBar(
             content: Row(
               children: [
-                const Icon(Icons.shield_outlined, color: Color(0xFFFFD700), size: 18),
+                const Icon(Icons.shield_outlined,
+                    color: Color(0xFFFFD700), size: 18),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    eligibility['message'] as String? ?? 'Sponsor video limit reached.',
-                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+                    eligibility['message'] as String? ??
+                        'Sponsor video limit reached.',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 12),
                   ),
                 ),
               ],
             ),
             backgroundColor: const Color(0xFF0F172A),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       }
@@ -787,27 +911,35 @@ class PocketAdMobService {
             title: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                   decoration: BoxDecoration(
                     color: const Color(0xFF10B981),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: const Text(
                     'Ad',
-                    style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w900),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900),
                   ),
                 ),
                 const SizedBox(width: 8),
                 const Text(
                   'Rewarded Ad (Desktop Sim)',
-                  style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.play_circle_fill_rounded, size: 54, color: Color(0xFF34D399)),
+                const Icon(Icons.play_circle_fill_rounded,
+                    size: 54, color: Color(0xFF34D399)),
                 const SizedBox(height: 12),
                 const Text(
                   '15-Second Rewarded Ad Simulation for Non-VIP players.\n\nOn mobile (Android/iOS), this plays a real Google AdMob video.',
@@ -816,14 +948,18 @@ class PocketAdMobService {
                 ),
                 const SizedBox(height: 14),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: const Color(0xFF065F46).withValues(alpha: 0.4),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     '🎁 Reward: +50 Pocket Score (${eligibility['remaining']} remaining today)',
-                    style: const TextStyle(color: Color(0xFF6EE7B7), fontWeight: FontWeight.bold, fontSize: 12),
+                    style: const TextStyle(
+                        color: Color(0xFF6EE7B7),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12),
                   ),
                 ),
               ],
@@ -831,7 +967,8 @@ class PocketAdMobService {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(false),
-                child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+                child: const Text('Cancel',
+                    style: TextStyle(color: Colors.white54)),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -839,7 +976,8 @@ class PocketAdMobService {
                   foregroundColor: Colors.white,
                 ),
                 onPressed: () => Navigator.of(ctx).pop(true),
-                child: const Text('CLAIM REWARD (+50 PS)', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text('CLAIM REWARD (+50 PS)',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -898,7 +1036,8 @@ class PocketAdMobService {
 
     // ⏱️ Policy Safeguard: Enforce minimum interval between interstitials (3 minutes)
     if (_lastInterstitialShownTime != null &&
-        DateTime.now().difference(_lastInterstitialShownTime!) < minInterstitialInterval) {
+        DateTime.now().difference(_lastInterstitialShownTime!) <
+            minInterstitialInterval) {
       onDismissed?.call();
       return;
     }
@@ -918,27 +1057,35 @@ class PocketAdMobService {
             title: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFBBF24),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: const Text(
                     'Ad',
-                    style: TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.w900),
+                    style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900),
                   ),
                 ),
                 const SizedBox(width: 8),
                 const Text(
                   'AdMob Interstitial Ad',
-                  style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.ads_click_rounded, size: 50, color: Color(0xFF38BDF8)),
+                const Icon(Icons.ads_click_rounded,
+                    size: 50, color: Color(0xFF38BDF8)),
                 const SizedBox(height: 12),
                 Text(
                   'Full-screen Interstitial Ad triggered for Non-VIP player.\n\nPlacement: ${placement.name}\nOn mobile (Android/iOS), this shows the full Google AdMob ad overlay.',
@@ -948,7 +1095,8 @@ class PocketAdMobService {
                 const SizedBox(height: 12),
                 Text(
                   '(VIPs never see this ad)',
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 11),
+                  style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.4), fontSize: 11),
                 ),
               ],
             ),
@@ -959,7 +1107,8 @@ class PocketAdMobService {
                   foregroundColor: Colors.black,
                 ),
                 onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('CONTINUE GAME (X)', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text('CONTINUE GAME (X)',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -1053,7 +1202,8 @@ class PocketAdMobService {
         'success': true,
         'simulated': true,
         'unitId': targetUnitId,
-        'message': 'Simulated desktop/web pass (Mobile Ads SDK requires Android or iOS device)',
+        'message':
+            'Simulated desktop/web pass (Mobile Ads SDK requires Android or iOS device)',
       };
     }
 
@@ -1161,7 +1311,8 @@ class PocketAdMobService {
                 'success': true,
                 'unitId': targetUnitId,
                 'size': '${primarySize.width}x${primarySize.height}',
-                'message': '${primarySize == AdSize.banner ? "Standard Banner (320x50)" : "Medium Rectangle (300x250)"} Ad loaded successfully!',
+                'message':
+                    '${primarySize == AdSize.banner ? "Standard Banner (320x50)" : "Medium Rectangle (300x250)"} Ad loaded successfully!',
               });
             }
           },
@@ -1184,7 +1335,8 @@ class PocketAdMobService {
                       'success': true,
                       'unitId': targetUnitId,
                       'size': '${secondarySize.width}x${secondarySize.height}',
-                      'message': 'Loaded successfully with alternate format: ${secondarySize == AdSize.banner ? "Standard Banner (320x50)" : "Medium Rectangle (300x250)"}!',
+                      'message':
+                          'Loaded successfully with alternate format: ${secondarySize == AdSize.banner ? "Standard Banner (320x50)" : "Medium Rectangle (300x250)"}!',
                     });
                   }
                 },
@@ -1193,9 +1345,11 @@ class PocketAdMobService {
                   if (!completer.isCompleted) {
                     String reason = 'Google AdMob Error: ${err.message}';
                     if (err.code == 3) {
-                      reason = 'Code 3 (NO_FILL): Unit ID is valid and active on AdMob servers; inventory will fill in production with real traffic.';
+                      reason =
+                          'Code 3 (NO_FILL): Unit ID is valid and active on AdMob servers; inventory will fill in production with real traffic.';
                     } else if (err.code == 1) {
-                      reason = 'Code 1 (INVALID_REQUEST): Verify ad format and App ID binding.';
+                      reason =
+                          'Code 1 (INVALID_REQUEST): Verify ad format and App ID binding.';
                     }
                     completer.complete({
                       'success': false,
@@ -1221,7 +1375,8 @@ class PocketAdMobService {
         'success': false,
         'unitId': targetUnitId,
         'errorCode': 'TIMEOUT',
-        'errorMessage': 'Ad request timed out after 10 seconds (network or AdMob server unresponsive)',
+        'errorMessage':
+            'Ad request timed out after 10 seconds (network or AdMob server unresponsive)',
       },
     );
   }
@@ -1229,7 +1384,11 @@ class PocketAdMobService {
   /// 🎬 Displays a real full-screen Interstitial Ad directly on the device for Admin Verification
   Future<Map<String, dynamic>> showLiveTestInterstitial(String unitId) async {
     if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
-      return {'success': true, 'simulated': true, 'message': 'Simulated full-screen ad on Desktop/Web'};
+      return {
+        'success': true,
+        'simulated': true,
+        'message': 'Simulated full-screen ad on Desktop/Web'
+      };
     }
     final completer = Completer<Map<String, dynamic>>();
     InterstitialAd.load(
@@ -1243,7 +1402,10 @@ class PocketAdMobService {
           );
           ad.show();
           if (!completer.isCompleted) {
-            completer.complete({'success': true, 'message': 'Interstitial Ad displayed on screen!'});
+            completer.complete({
+              'success': true,
+              'message': 'Interstitial Ad displayed on screen!'
+            });
           }
         },
         onAdFailedToLoad: (err) {
@@ -1259,14 +1421,22 @@ class PocketAdMobService {
     );
     return completer.future.timeout(
       const Duration(seconds: 12),
-      onTimeout: () => {'success': false, 'errorCode': 'TIMEOUT', 'errorMessage': 'Timed out loading interstitial'},
+      onTimeout: () => {
+        'success': false,
+        'errorCode': 'TIMEOUT',
+        'errorMessage': 'Timed out loading interstitial'
+      },
     );
   }
 
   /// 🎬 Displays a real full-screen Rewarded Video Ad directly on the device for Admin Verification
   Future<Map<String, dynamic>> showLiveTestRewarded(String unitId) async {
     if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
-      return {'success': true, 'simulated': true, 'message': 'Simulated rewarded video on Desktop/Web'};
+      return {
+        'success': true,
+        'simulated': true,
+        'message': 'Simulated rewarded video on Desktop/Web'
+      };
     }
     final completer = Completer<Map<String, dynamic>>();
     RewardedAd.load(
@@ -1280,7 +1450,10 @@ class PocketAdMobService {
           );
           ad.show(onUserEarnedReward: (ad, item) {});
           if (!completer.isCompleted) {
-            completer.complete({'success': true, 'message': 'Rewarded Ad displayed on screen!'});
+            completer.complete({
+              'success': true,
+              'message': 'Rewarded Ad displayed on screen!'
+            });
           }
         },
         onAdFailedToLoad: (err) {
@@ -1296,7 +1469,11 @@ class PocketAdMobService {
     );
     return completer.future.timeout(
       const Duration(seconds: 12),
-      onTimeout: () => {'success': false, 'errorCode': 'TIMEOUT', 'errorMessage': 'Timed out loading rewarded ad'},
+      onTimeout: () => {
+        'success': false,
+        'errorCode': 'TIMEOUT',
+        'errorMessage': 'Timed out loading rewarded ad'
+      },
     );
   }
 
@@ -1306,7 +1483,8 @@ class PocketAdMobService {
   }
 
   /// 🧪 Trigger a diagnostic test ad request directly from Admin Panel
-  Future<Map<String, dynamic>> runAdDiagnostics(PocketAdPlacement placement) async {
+  Future<Map<String, dynamic>> runAdDiagnostics(
+      PocketAdPlacement placement) async {
     final unitId = getUnitIdForPlacement(placement);
     final nativeUnitId = getNativeAdUnitId(placement);
     return {
@@ -1329,7 +1507,8 @@ class PocketAdMobService {
 /// ⚡ High Performance Ad Preload & In-Memory Cache Manager
 /// Preloads Banner / Native ads before the user scrolls, eliminating loading flickers & wait times!
 class PocketAdPreloadManager {
-  static final PocketAdPreloadManager instance = PocketAdPreloadManager._internal();
+  static final PocketAdPreloadManager instance =
+      PocketAdPreloadManager._internal();
   PocketAdPreloadManager._internal();
 
   final Map<PocketAdPlacement, BannerAd> _preloadedBanners = {};
@@ -1340,7 +1519,8 @@ class PocketAdPreloadManager {
     final isVip = await PocketAdMobService.instance.isUserVip();
     if (isVip) return;
     if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return;
-    if (_preloadedBanners.containsKey(placement) || _loadingPlacements.contains(placement)) {
+    if (_preloadedBanners.containsKey(placement) ||
+        _loadingPlacements.contains(placement)) {
       return;
     }
 
@@ -1359,15 +1539,18 @@ class PocketAdPreloadManager {
         onAdLoaded: (loadedAd) {
           _preloadedBanners[placement] = loadedAd as BannerAd;
           _loadingPlacements.remove(placement);
-          PocketAdMobService.instance._recordAdLoaded('preloaded_${placement.name}');
+          PocketAdMobService.instance
+              ._recordAdLoaded('preloaded_${placement.name}');
         },
         onAdFailedToLoad: (failedAd, err) {
           failedAd.dispose();
           _loadingPlacements.remove(placement);
-          PocketAdMobService.instance._recordAdFailed('preloaded_${placement.name}', err);
+          PocketAdMobService.instance
+              ._recordAdFailed('preloaded_${placement.name}', err);
           if (unitId != PocketAdMobService.prodRankingAdUnitId &&
               !PocketAdMobService.instance._isTestMode) {
-            _preloadFallback(placement, PocketAdMobService.prodRankingAdUnitId, size);
+            _preloadFallback(
+                placement, PocketAdMobService.prodRankingAdUnitId, size);
           }
         },
       ),
@@ -1376,8 +1559,10 @@ class PocketAdPreloadManager {
     ad.load();
   }
 
-  void _preloadFallback(PocketAdPlacement placement, String fallbackUnitId, AdSize size) {
-    if (_preloadedBanners.containsKey(placement) || _loadingPlacements.contains(placement)) return;
+  void _preloadFallback(
+      PocketAdPlacement placement, String fallbackUnitId, AdSize size) {
+    if (_preloadedBanners.containsKey(placement) ||
+        _loadingPlacements.contains(placement)) return;
     _loadingPlacements.add(placement);
     BannerAd(
       adUnitId: fallbackUnitId,
@@ -1439,7 +1624,8 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
   void initState() {
     super.initState();
     // ⚡ Try immediate instant render from Preloaded Ad Cache
-    final preloaded = PocketAdPreloadManager.instance.consumePreloadedAd(widget.placement);
+    final preloaded =
+        PocketAdPreloadManager.instance.consumePreloadedAd(widget.placement);
     if (preloaded != null) {
       _bannerAd = preloaded;
       _isLoaded = true;
@@ -1480,7 +1666,8 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
           if (mounted) setState(() => _isLoaded = true);
         },
         onAdFailedToLoad: (ad, err) {
-          PocketAdMobService.instance._recordAdFailed(widget.placement.name, err);
+          PocketAdMobService.instance
+              ._recordAdFailed(widget.placement.name, err);
           ad.dispose();
           _bannerAd = null;
           // 🔄 Auto-Fallback: If custom placement unit fails (e.g. Code 3 No-Fill on newly created IDs),
@@ -1495,7 +1682,8 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
           if (mounted) setState(() => _isLoaded = false);
         },
         onAdImpression: (_) {
-          PocketAdMobService.instance._recordAdImpression(widget.placement.name);
+          PocketAdMobService.instance
+              ._recordAdImpression(widget.placement.name);
         },
       ),
     );
@@ -1539,7 +1727,8 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                   decoration: BoxDecoration(
                     color: Colors.white12,
                     borderRadius: BorderRadius.circular(4),
@@ -1556,10 +1745,12 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
                 const SizedBox(width: 8),
                 Text(
                   'Sponsored · Google AdMob',
-                  style: GoogleFonts.outfit(color: Colors.white60, fontSize: 11),
+                  style:
+                      GoogleFonts.outfit(color: Colors.white60, fontSize: 11),
                 ),
                 const Spacer(),
-                const Text('Ad • ⓘ', style: TextStyle(color: Colors.white38, fontSize: 10)),
+                const Text('Ad • ⓘ',
+                    style: TextStyle(color: Colors.white38, fontSize: 10)),
               ],
             ),
             const SizedBox(height: 10),
@@ -1605,14 +1796,18 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
                     color: const Color(0xFF3B82F6),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
                     'Install',
-                    style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -1670,7 +1865,8 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                   decoration: BoxDecoration(
                     color: Colors.white12,
                     borderRadius: BorderRadius.circular(4),
@@ -1686,7 +1882,8 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
                   ),
                 ),
                 const Spacer(),
-                const Text('Ad • ⓘ', style: TextStyle(color: Colors.white38, fontSize: 10)),
+                const Text('Ad • ⓘ',
+                    style: TextStyle(color: Colors.white38, fontSize: 10)),
               ],
             ),
           ),
@@ -1745,7 +1942,8 @@ class PocketTrueNativeAdWidget extends StatefulWidget {
   });
 
   @override
-  State<PocketTrueNativeAdWidget> createState() => _PocketTrueNativeAdWidgetState();
+  State<PocketTrueNativeAdWidget> createState() =>
+      _PocketTrueNativeAdWidgetState();
 }
 
 class _PocketTrueNativeAdWidgetState extends State<PocketTrueNativeAdWidget> {
@@ -1788,13 +1986,15 @@ class _PocketTrueNativeAdWidgetState extends State<PocketTrueNativeAdWidget> {
           if (mounted) setState(() => _isLoaded = true);
         },
         onAdFailedToLoad: (ad, err) {
-          PocketAdMobService.instance._recordAdFailed(widget.placement.name, err);
+          PocketAdMobService.instance
+              ._recordAdFailed(widget.placement.name, err);
           ad.dispose();
           _nativeAd = null;
           if (mounted) setState(() => _isLoaded = false);
         },
         onAdImpression: (_) {
-          PocketAdMobService.instance._recordAdImpression(widget.placement.name);
+          PocketAdMobService.instance
+              ._recordAdImpression(widget.placement.name);
         },
       ),
     );
@@ -1857,7 +2057,8 @@ class PocketChatBubbleAdWidget extends StatefulWidget {
   });
 
   @override
-  State<PocketChatBubbleAdWidget> createState() => _PocketChatBubbleAdWidgetState();
+  State<PocketChatBubbleAdWidget> createState() =>
+      _PocketChatBubbleAdWidgetState();
 }
 
 class _PocketChatBubbleAdWidgetState extends State<PocketChatBubbleAdWidget> {
@@ -1884,7 +2085,8 @@ class _PocketChatBubbleAdWidgetState extends State<PocketChatBubbleAdWidget> {
       return;
     }
 
-    final targetUnitId = PocketAdMobService.instance.getUnitIdForPlacement(PocketAdPlacement.home);
+    final targetUnitId = PocketAdMobService.instance
+        .getUnitIdForPlacement(PocketAdPlacement.home);
     _loadBanner(targetUnitId);
   }
 
@@ -1902,7 +2104,8 @@ class _PocketChatBubbleAdWidgetState extends State<PocketChatBubbleAdWidget> {
           if (mounted) setState(() => _isLoaded = true);
         },
         onAdFailedToLoad: (ad, err) {
-          PocketAdMobService.instance._recordAdFailed('chat_bubble_banner', err);
+          PocketAdMobService.instance
+              ._recordAdFailed('chat_bubble_banner', err);
           ad.dispose();
           _bannerAd = null;
           // Auto fallback to prodHomeAdUnitId if not already using it
@@ -1967,14 +2170,18 @@ class _PocketChatBubbleAdWidgetState extends State<PocketChatBubbleAdWidget> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                 decoration: BoxDecoration(
                   color: Colors.white12,
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: const Text(
                   'Ad',
-                  style: TextStyle(color: Colors.white70, fontSize: 9.5, fontWeight: FontWeight.w700),
+                  style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.w700),
                 ),
               ),
               const SizedBox(width: 6),
@@ -1996,7 +2203,10 @@ class _PocketChatBubbleAdWidgetState extends State<PocketChatBubbleAdWidget> {
                 },
                 child: const Text(
                   'Go VIP 👑',
-                  style: TextStyle(color: Color(0xFFFFD700), fontSize: 10.5, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      color: Color(0xFFFFD700),
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -2026,7 +2236,8 @@ class _PocketChatBubbleAdWidgetState extends State<PocketChatBubbleAdWidget> {
                         const Text('🤖 ', style: TextStyle(fontSize: 14)),
                         Text(
                           'Practice Spoken English daily with AI & live mates!',
-                          style: GoogleFonts.outfit(color: Colors.white70, fontSize: 11),
+                          style: GoogleFonts.outfit(
+                              color: Colors.white70, fontSize: 11),
                         ),
                       ],
                     ),
@@ -2063,7 +2274,8 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
   void initState() {
     super.initState();
     // ⚡ Try immediate instant render from Preloaded Ad Cache
-    final preloaded = PocketAdPreloadManager.instance.consumePreloadedAd(PocketAdPlacement.banner);
+    final preloaded = PocketAdPreloadManager.instance
+        .consumePreloadedAd(PocketAdPlacement.banner);
     if (preloaded != null) {
       _bannerAd = preloaded;
       _isLoaded = true;
@@ -2153,7 +2365,11 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
                 color: Colors.white12,
                 borderRadius: BorderRadius.circular(4),
               ),
-              child: const Text('Ad', style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold)),
+              child: const Text('Ad',
+                  style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold)),
             ),
             const SizedBox(width: 8),
             InkWell(
@@ -2165,7 +2381,10 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
               },
               child: const Text(
                 'POKET VIP • Go VIP – Remove All Ads 👑',
-                style: TextStyle(color: Color(0xFFFFD700), fontSize: 12, fontWeight: FontWeight.w700),
+                style: TextStyle(
+                    color: Color(0xFFFFD700),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700),
               ),
             ),
           ],

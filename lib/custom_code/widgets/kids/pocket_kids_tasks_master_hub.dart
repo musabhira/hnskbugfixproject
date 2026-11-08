@@ -36,6 +36,8 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_level
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_alphabet_phonics_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/zero_foundation_curriculum_db.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_mission_curriculum_registry.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_daily_battery_reward_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_rewarded_score_alert_modal.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 import 'package:flame/components.dart' show Vector2;
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/flame_english_house_game.dart';
@@ -515,8 +517,8 @@ class _PocketKidsTasksMasterHubPageState
           'pocket_kids_day_${uid}_${calculatedCurrentDay}_step_${step}_done';
       final altKey =
           'pocket_day_${uid}_${calculatedCurrentDay}_step_${step}_done';
-      subFlags['step_$step'] = (prefs.getBool(flagKey) ?? false) ||
-          (prefs.getBool(altKey) ?? false);
+      subFlags['step_$step'] =
+          (prefs.getBool(flagKey) ?? false) || (prefs.getBool(altKey) ?? false);
     }
 
     if (mounted) {
@@ -1258,7 +1260,6 @@ class _PocketKidsTasksMasterHubPageState
     await _onSubStepFinished(day, 15);
   }
 
-
   Future<void> _showDefenseCardCelebrationDialog(
       int day, PopArtAvatarCardData card) async {
     await showDialog(
@@ -1393,8 +1394,12 @@ class _PocketKidsTasksMasterHubPageState
       final kidsDayMeta = [
         {
           'step': 1,
-          'title': day == 1 ? 'Meet Letters & Phonics' : 'Concept Room & Avatar Chat',
-          'sub': day == 1 ? 'Acoustic letter sounds & pronunciations' : '1-on-1 Avatar conversation',
+          'title': day == 1
+              ? 'Meet Letters & Phonics'
+              : 'Concept Room & Avatar Chat',
+          'sub': day == 1
+              ? 'Acoustic letter sounds & pronunciations'
+              : '1-on-1 Avatar conversation',
           'icon': '🔤',
           'color': const Color(0xFF00F0FF),
         },
@@ -1414,15 +1419,20 @@ class _PocketKidsTasksMasterHubPageState
         },
         {
           'step': 4,
-          'title': day == 1 ? '50+ Essential Beginner Words' : 'Spoken English Chat',
-          'sub': day == 1 ? 'Foundational word vault with native audio' : 'Interactive spoken dialogue practice',
+          'title':
+              day == 1 ? '50+ Essential Beginner Words' : 'Spoken English Chat',
+          'sub': day == 1
+              ? 'Foundational word vault with native audio'
+              : 'Interactive spoken dialogue practice',
           'icon': '📚',
           'color': const Color(0xFF10B981),
         },
         {
           'step': 5,
           'title': day == 1 ? 'Letter & Word Hunt' : 'Reading Room',
-          'sub': day == 1 ? 'Search and match word puzzle challenge' : 'Comprehension story reading & questions',
+          'sub': day == 1
+              ? 'Search and match word puzzle challenge'
+              : 'Comprehension story reading & questions',
           'icon': '🔍',
           'color': const Color(0xFFF59E0B),
         },
@@ -1443,7 +1453,9 @@ class _PocketKidsTasksMasterHubPageState
         {
           'step': 8,
           'title': 'Legend Bio Creator',
-          'sub': day == 1 ? "Mus'ab Hira Profile & Paragraph Builder" : 'Craft glowing hero & scientist profile cards',
+          'sub': day == 1
+              ? "Mus'ab Hira Profile & Paragraph Builder"
+              : 'Craft glowing hero & scientist profile cards',
           'icon': '👤',
           'color': const Color(0xFF10B981),
         },
@@ -1470,14 +1482,16 @@ class _PocketKidsTasksMasterHubPageState
         },
         {
           'step': 12,
-          'title': day == 1 ? 'Spoken English Chat' : '20-Turn Spoken Simulator',
+          'title':
+              day == 1 ? 'Spoken English Chat' : '20-Turn Spoken Simulator',
           'sub': '1-on-1 spoken conversation with Animal Companion',
           'icon': '🎙️',
           'color': const Color(0xFFEC4899),
         },
         {
           'step': 13,
-          'title': day == 1 ? 'Reading Room: The Crow' : 'Open-World Vocab Quest',
+          'title':
+              day == 1 ? 'Reading Room: The Crow' : 'Open-World Vocab Quest',
           'sub': 'Listen, read aloud & comprehension quest',
           'icon': '📖',
           'color': const Color(0xFF60A5FA),
@@ -3383,63 +3397,75 @@ class _PocketKidsTasksMasterHubPageState
                   ),
                   const SizedBox(width: 8),
 
-                  // Right: 🎯 Minimal Today Mission Button
-                  InkWell(
-                    onTap: () {
-                      HapticFeedback.mediumImpact();
-                      if (!_effectiveRulesAccepted) {
-                        PocketWorldGameRulesModal.show(
-                          context,
-                          currentDay: targetActiveDay,
-                          onPledgeAccepted: () {
-                            setState(() => _hasAcceptedRules = true);
-                            _loadData();
-                          },
-                        );
-                        return;
-                      }
-                      _scrollToDay(targetActiveDay, animate: true);
-                      _navigateToMissionPage(targetActiveDay);
-                    },
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 7),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFFC00),
+                  // Right: 🔋 Daily Battery + 🎯 Minimal Today Mission Button
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      PocketDailyBatteryRewardWidget(
+                        onRewardClaimed: () {
+                          _loadData();
+                        },
+                      ),
+                      const SizedBox(height: 6),
+                      InkWell(
+                        onTap: () {
+                          HapticFeedback.mediumImpact();
+                          if (!_effectiveRulesAccepted) {
+                            PocketWorldGameRulesModal.show(
+                              context,
+                              currentDay: targetActiveDay,
+                              onPledgeAccepted: () {
+                                setState(() => _hasAcceptedRules = true);
+                                _loadData();
+                              },
+                            );
+                            return;
+                          }
+                          _scrollToDay(targetActiveDay, animate: true);
+                          _navigateToMissionPage(targetActiveDay);
+                        },
                         borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.35),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 7),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFFC00),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.35),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
-                        ],
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                !_effectiveRulesAccepted
+                                    ? Icons.menu_book_rounded
+                                    : Icons.play_arrow_rounded,
+                                color: Colors.black,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                !_effectiveRulesAccepted
+                                    ? 'Rules 📜'
+                                    : 'Mission $targetActiveDay',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            !_effectiveRulesAccepted
-                                ? Icons.menu_book_rounded
-                                : Icons.play_arrow_rounded,
-                            color: Colors.black,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            !_effectiveRulesAccepted
-                                ? 'Rules 📜'
-                                : 'Mission $targetActiveDay',
-                            style: GoogleFonts.outfit(
-                              color: Colors.black,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    ],
                   ),
                 ],
               ),
@@ -6180,7 +6206,8 @@ class _PocketKidsTasksMasterHubPageState
       await prefs.setBool('pocket_student_day_${uid}_${day}_completed', true);
       await prefs.setInt('learning_student_last_completed_day_$uid', day);
       final now = DateTime.now();
-      await prefs.setString('learning_student_day_${uid}_${day}_completed_date', '${now.year}-${now.month}-${now.day}');
+      await prefs.setString('learning_student_day_${uid}_${day}_completed_date',
+          '${now.year}-${now.month}-${now.day}');
 
       // Award +50 Student Score
       await PocketFortressDefenseService.recordTrainingPoints(50, uid);
@@ -6199,7 +6226,8 @@ class _PocketKidsTasksMasterHubPageState
               Expanded(
                 child: Text(
                   '⚔️ Gate $day Breached! House ${day + 1} is now Unlocked! +50 Student Score Awarded.',
-                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.outfit(
+                      color: Colors.white, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -6237,7 +6265,8 @@ class _PocketKidsTasksMasterHubPageState
                 color: const Color(0xFFEF4444).withValues(alpha: 0.18),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.shield_rounded, color: Color(0xFFEF4444), size: 24),
+              child: const Icon(Icons.shield_rounded,
+                  color: Color(0xFFEF4444), size: 24),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -6254,9 +6283,13 @@ class _PocketKidsTasksMasterHubPageState
                     ),
                   ),
                   Text(
-                    isBreached ? 'Gate Cleared • Re-attack for Bonus Score' : 'Defeat Citadel to Unlock House ${day + 1}',
+                    isBreached
+                        ? 'Gate Cleared • Re-attack for Bonus Score'
+                        : 'Defeat Citadel to Unlock House ${day + 1}',
                     style: GoogleFonts.inter(
-                      color: isBreached ? const Color(0xFF10B981) : const Color(0xFFFFD700),
+                      color: isBreached
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFFFD700),
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                     ),
@@ -6278,7 +6311,8 @@ class _PocketKidsTasksMasterHubPageState
                   colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
                 ),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
+                border: Border.all(
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
               ),
               child: Row(
                 children: [
@@ -6287,13 +6321,17 @@ class _PocketKidsTasksMasterHubPageState
                     height: 52,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFFFD700), width: 2),
+                      border:
+                          Border.all(color: const Color(0xFFFFD700), width: 2),
                       image: robot.avatarUrl.isNotEmpty
-                          ? DecorationImage(image: NetworkImage(robot.avatarUrl), fit: BoxFit.cover)
+                          ? DecorationImage(
+                              image: NetworkImage(robot.avatarUrl),
+                              fit: BoxFit.cover)
                           : null,
                     ),
                     child: robot.avatarUrl.isEmpty
-                        ? const Center(child: Text('🤖', style: TextStyle(fontSize: 26)))
+                        ? const Center(
+                            child: Text('🤖', style: TextStyle(fontSize: 26)))
                         : null,
                   ),
                   const SizedBox(width: 12),
@@ -6317,9 +6355,11 @@ class _PocketKidsTasksMasterHubPageState
                             ),
                             const SizedBox(width: 6),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                                color: const Color(0xFFFFD700)
+                                    .withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
@@ -6336,7 +6376,8 @@ class _PocketKidsTasksMasterHubPageState
                         const SizedBox(height: 3),
                         Text(
                           '${robot.cefrRank} • Gate $day Fortress Guardian',
-                          style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+                          style: GoogleFonts.inter(
+                              color: Colors.white60, fontSize: 11),
                         ),
                       ],
                     ),
@@ -6360,7 +6401,8 @@ class _PocketKidsTasksMasterHubPageState
                   Expanded(
                     child: Text(
                       'Launch an attack against ${robot.name}\'s Citadel! Win or lose, completing the raid will break open Gate $day and grant +50 Score.',
-                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 12, height: 1.4),
+                      style: GoogleFonts.inter(
+                          color: Colors.white70, fontSize: 12, height: 1.4),
                     ),
                   ),
                 ],
@@ -6374,7 +6416,8 @@ class _PocketKidsTasksMasterHubPageState
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFEF4444),
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
                   elevation: 4,
                 ),
                 onPressed: () async {
@@ -6392,7 +6435,8 @@ class _PocketKidsTasksMasterHubPageState
                 icon: const Icon(Icons.flash_on_rounded, size: 20),
                 label: Text(
                   'LAUNCH ATTACK NOW ⚔️',
-                  style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 14),
+                  style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.w900, fontSize: 14),
                 ),
               ),
             ),
@@ -6400,7 +6444,9 @@ class _PocketKidsTasksMasterHubPageState
             Center(
               child: TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: Text('Cancel', style: GoogleFonts.outfit(color: Colors.white54, fontSize: 12)),
+                child: Text('Cancel',
+                    style: GoogleFonts.outfit(
+                        color: Colors.white54, fontSize: 12)),
               ),
             ),
           ],
@@ -7108,7 +7154,8 @@ class _PocketKidsTasksMasterHubPageState
             : null,
         content: Row(
           children: [
-            const Icon(Icons.shield_rounded, color: Color(0xFFFF5252), size: 16),
+            const Icon(Icons.shield_rounded,
+                color: Color(0xFFFF5252), size: 16),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -7748,7 +7795,8 @@ class _PocketKidsTasksMasterHubPageState
                           color: const Color(0xFFFFD700), width: 2.8),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFFF8906).withValues(alpha: 0.45),
+                          color:
+                              const Color(0xFFFF8906).withValues(alpha: 0.45),
                           blurRadius: 22,
                           spreadRadius: 3,
                         ),
@@ -7756,7 +7804,8 @@ class _PocketKidsTasksMasterHubPageState
                     ),
                     child: ClipOval(
                       child: VectorAvatarWidget(
-                        config: PocketKidsAvatarSystem.getAvatarConfigForDay(day),
+                        config:
+                            PocketKidsAvatarSystem.getAvatarConfigForDay(day),
                         size: 116,
                         showAura: false,
                       ),

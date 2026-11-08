@@ -35,6 +35,8 @@ import 'pocket_level_exam_dialog.dart';
 import 'pocket_alphabet_phonics_game_page.dart';
 import 'zero_foundation_curriculum_db.dart';
 import 'pocket_mission_curriculum_registry.dart';
+import 'pocket_daily_battery_reward_widget.dart';
+import 'pocket_rewarded_score_alert_modal.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 import 'package:flame/components.dart' show Vector2;
 import 'flame_english_house_game.dart';
@@ -303,7 +305,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     with SingleTickerProviderStateMixin {
   final _supabase = SupaFlow.client;
   // Initialize with large offset so Flutter clamps to maxScrollExtent on frame 1 without flashing the summit top!
-  final ScrollController _scrollController = ScrollController(initialScrollOffset: 999999.0);
+  final ScrollController _scrollController =
+      ScrollController(initialScrollOffset: 999999.0);
   late AnimationController _bobController;
 
   bool _isLoading = true;
@@ -324,7 +327,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
   // ⏱️ Midnight Daily Unlock Ticker
   Timer? _midnightTicker;
-  Duration _timeUntilMidnight = Learning60DayService.getRemainingTimeUntilMidnight();
+  Duration _timeUntilMidnight =
+      Learning60DayService.getRemainingTimeUntilMidnight();
   int _lastCompletedDay = 0;
   String? _lastCompletedDateStr;
   final Set<int> _completedDays = {};
@@ -336,9 +340,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   // User audio directive: "ഒരു വീട് കഴിഞ്ഞ് ഒരു ഗ്യാപ്പ് ഇട്ടിട്ട് ഗേറ്റ്. ഇപ്പോൾ ഭയങ്കര congested ആയി കിടക്കുന്നുണ്ട്. Distance double/triple ആക്കുക."
   static const double _nodeSpacingY = 560.0;
   static const double _expandedActiveGap = 0.0;
-  static const double _topPadding = 480.0; // Summit apex spacing with Citadel Palace
+  static const double _topPadding =
+      480.0; // Summit apex spacing with Citadel Palace
   static const double _bottomPadding = 320.0;
-  double get _ruleNodeY => _getNodeY(1) + 200.0; // Positioned below Day 1 at the bottom
+  double get _ruleNodeY =>
+      _getNodeY(1) + 200.0; // Positioned below Day 1 at the bottom
   final Map<String, bool> _subStepFlags = {};
   final Set<int> _daysWithStepsCompleted = {};
 
@@ -356,7 +362,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final email = _supabase.auth.currentUser?.email;
     if (AdminAuthService.isMasterAdminEmail(email)) return true;
     final uid = widget.userId;
-    if (uid != null && (AdminAuthService.isMasterAdminEmail(uid) || uid.toLowerCase().contains('musab') || uid.toLowerCase().contains('admin'))) return true;
+    if (uid != null &&
+        (AdminAuthService.isMasterAdminEmail(uid) ||
+            uid.toLowerCase().contains('musab') ||
+            uid.toLowerCase().contains('admin'))) return true;
     return false;
   }
 
@@ -390,6 +399,16 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     PocketSyllabusRepository.getSavedLevel().then((lvl) {
       if (mounted) setState(() => _currentLearnerLevel = lvl);
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 1800), () {
+        if (mounted) {
+          PocketRewardedScoreAlertModal.checkAndShowPeriodic(context,
+              onRewardClaimed: () {
+            _loadData();
+          });
+        }
+      });
+    });
   }
 
   @override
@@ -403,10 +422,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   }
 
   bool _isDayWaitingForMidnight(int day) {
-    if (_isMasterAdmin) return false; // 🔐 Master Admin bypasses all midnight locks
-    if (_isSubscribed) return false; // VIP Subscribers bypass the 24-hour midnight wait lock!
+    if (_isMasterAdmin)
+      return false; // 🔐 Master Admin bypasses all midnight locks
+    if (_isSubscribed)
+      return false; // VIP Subscribers bypass the 24-hour midnight wait lock!
     if (day <= 1) return false;
-    if (_isDayCompleted(day)) return false; // Completed days never wait for midnight!
+    if (_isDayCompleted(day))
+      return false; // Completed days never wait for midnight!
     if (!_isDayCompleted(day - 1)) return false;
     final lastCompDate = _completedDates[day - 1] ?? _lastCompletedDateStr;
     if (lastCompDate == null || lastCompDate.isEmpty) return false;
@@ -428,7 +450,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   /// 4. Not waiting for midnight digestion interval (bypassed by VIP subscription or admin)
   /// 🔐 Note: musabthonippadam@gmail.com (Master Admin) bypasses all locks instantly!
   bool _isDayUnlocked(int day, int currentDay) {
-    if (_isMasterAdmin) return true; // 🔐 Master admin bypass: All 90 days unlocked!
+    if (_isMasterAdmin)
+      return true; // 🔐 Master admin bypass: All 90 days unlocked!
     if (day == 1) return _hasAcceptedRules;
     // Sequential prerequisite check: previous level MUST be completed!
     if (!_isDayCompleted(day - 1)) return false;
@@ -464,7 +487,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     for (int d = 1; d <= _totalDays; d++) {
       if (prefs.getBool('pocket_day_${uid}_${d}_completed') == true) {
         completed.add(d);
-        final dDate = prefs.getString('learning_day_${uid}_${d}_completed_date');
+        final dDate =
+            prefs.getString('learning_day_${uid}_${d}_completed_date');
         if (dDate != null && dDate.isNotEmpty) {
           compDates[d] = dDate;
         }
@@ -483,11 +507,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       prefs.remove('pocket_day_${uid}_1_steps_completed');
     }
 
-    final int effectiveLastCompDay = completed.isNotEmpty
-        ? completed.reduce(math.max)
-        : lastCompDay;
+    final int effectiveLastCompDay =
+        completed.isNotEmpty ? completed.reduce(math.max) : lastCompDay;
     final String? effectiveLastCompDate = compDates[effectiveLastCompDay] ??
-        prefs.getString('learning_day_${uid}_${effectiveLastCompDay}_completed_date');
+        prefs.getString(
+            'learning_day_${uid}_${effectiveLastCompDay}_completed_date');
 
     // 🪙 Find the current active incomplete level sequentially
     int activeDay = 1;
@@ -517,16 +541,19 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         (prefs.getBool('pm_onboarding_completed') ?? false) ||
         (prefs.getBool('pm_onboarding_completed_$uid') ?? false) ||
         (prefs.getBool('pocket_world_rules_accepted_${uid}_v1') ??
-         prefs.getBool('pocket_world_rules_accepted_v1') ?? false);
+            prefs.getBool('pocket_world_rules_accepted_v1') ??
+            false);
 
     final isVip = await PocketAdService().isUserSubscribed();
-    final isCitadelConquered = await PocketPresidentService.hasConqueredPresidentialCitadel(uid);
+    final isCitadelConquered =
+        await PocketPresidentService.hasConqueredPresidentialCitadel(uid);
     final savedLevel = await PocketSyllabusRepository.getSavedLevel();
 
     final Map<String, bool> subFlags = {};
     bool previousStepDone = true;
     for (int step = 1; step <= 20; step++) {
-      final flagKey = 'pocket_day_${uid}_${calculatedCurrentDay}_step_${step}_done';
+      final flagKey =
+          'pocket_day_${uid}_${calculatedCurrentDay}_step_${step}_done';
       final rawDone = prefs.getBool(flagKey) ?? false;
       final isDone = rawDone && previousStepDone;
       subFlags['step_$step'] = isDone;
@@ -576,7 +603,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         // 🚨 Check Daily Consistency (User Audio Directive: Consistency loss / focus loss downgrade)
         if (!_hasCheckedConsistencyToday) {
           _hasCheckedConsistencyToday = true;
-          final consistencyRes = await PocketFortressDefenseService.checkDailyConsistency(
+          final consistencyRes =
+              await PocketFortressDefenseService.checkDailyConsistency(
             prog.currentDay,
             prog.streakDays,
           );
@@ -590,7 +618,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
   /// Returns the systematic stage-evolved avatar for the day, matching the Main Profile view exactly!
   VectorAvatarConfig _getAvatarForDay(int day) {
-    return VectorAvatarConfig.getEvolutionAvatarForStage(day, talismanId: _equippedTalismanId);
+    return VectorAvatarConfig.getEvolutionAvatarForStage(day,
+        talismanId: _equippedTalismanId);
   }
 
   double _getNodeXFractional(double dayFraction, double screenWidth) {
@@ -623,10 +652,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   double _getSubStepY(int activeDay, int stepNumber, {int totalSteps = 17}) {
     final denom = (totalSteps + 1).toDouble();
     final fraction = stepNumber / denom;
-    return _getNodeY(activeDay) - (fraction * (_nodeSpacingY + _expandedActiveGap));
+    return _getNodeY(activeDay) -
+        (fraction * (_nodeSpacingY + _expandedActiveGap));
   }
 
-  double _getSubStepX(int activeDay, int stepNumber, double screenWidth, {int totalSteps = 17}) {
+  double _getSubStepX(int activeDay, int stepNumber, double screenWidth,
+      {int totalSteps = 17}) {
     final denom = (totalSteps + 1).toDouble();
     final fraction = stepNumber / denom;
     final startX = _getNodeX(activeDay, screenWidth);
@@ -645,7 +676,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   }
 
   void _scrollToRule({bool animate = false}) {
-    if (!_scrollController.hasClients || !_scrollController.position.hasContentDimensions) return;
+    if (!_scrollController.hasClients ||
+        !_scrollController.position.hasContentDimensions) return;
     final targetY = _ruleNodeY - 280.0;
     final clampedY = targetY.clamp(
       0.0,
@@ -663,7 +695,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   }
 
   void _scrollToDay(int day, {bool animate = false}) {
-    if (!_scrollController.hasClients || !_scrollController.position.hasContentDimensions) return;
+    if (!_scrollController.hasClients ||
+        !_scrollController.position.hasContentDimensions) return;
     final targetY = _getNodeY(day) - 280.0;
     final clampedY = targetY.clamp(
       0.0,
@@ -687,13 +720,17 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     int pointsAwarded = (stepIndex == 17) ? 120 : 30;
     if (uid != null && uid.isNotEmpty) {
       final prefs = await SharedPreferences.getInstance();
-      final alreadyDone = prefs.getBool('pocket_day_${uid}_${day}_step_${stepIndex}_done') == true;
-      await prefs.setBool('pocket_day_${uid}_${day}_step_${stepIndex}_done', true);
+      final alreadyDone =
+          prefs.getBool('pocket_day_${uid}_${day}_step_${stepIndex}_done') ==
+              true;
+      await prefs.setBool(
+          'pocket_day_${uid}_${day}_step_${stepIndex}_done', true);
 
       // Award marks / Pocket Score for each step (User audio directive: 500-600 PS per day)
       // Steps 1 to 16 = 30 PS each, Step 17 Mastery Exam = 120 PS bonus (Total: 600 PS/day)
       if (!alreadyDone) {
-        await PocketFortressDefenseService.recordTrainingPoints(pointsAwarded, uid);
+        await PocketFortressDefenseService.recordTrainingPoints(
+            pointsAwarded, uid);
       }
 
       // Passing the 17th step (Mastery Exam) certifies Day and unlocks the next house gate!
@@ -701,7 +738,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         await prefs.setBool('pocket_day_${uid}_${day}_completed', true);
         await prefs.setInt('learning_last_completed_day_$uid', day);
         final now = DateTime.now();
-        await prefs.setString('learning_day_${uid}_${day}_completed_date', '${now.year}-${now.month}-${now.day}');
+        await prefs.setString('learning_day_${uid}_${day}_completed_date',
+            '${now.year}-${now.month}-${now.day}');
       }
     }
     HapticFeedback.heavyImpact();
@@ -739,7 +777,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     required String title,
     required String stepTag,
     required Color accentColor,
-    required Widget Function(BuildContext ctx, void Function(bool) markDone) childBuilder,
+    required Widget Function(BuildContext ctx, void Function(bool) markDone)
+        childBuilder,
   }) async {
     await Navigator.push(
       context,
@@ -750,17 +789,20 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             backgroundColor: const Color(0xFF131722),
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+              icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white),
               onPressed: () => Navigator.pop(pageCtx),
             ),
             title: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: accentColor.withValues(alpha: 0.18),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: accentColor.withValues(alpha: 0.6)),
+                    border:
+                        Border.all(color: accentColor.withValues(alpha: 0.6)),
                   ),
                   child: Text(
                     stepTag,
@@ -831,12 +873,16 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             backgroundColor: const Color(0xFF131722),
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+              icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white),
               onPressed: () => Navigator.pop(pageCtx),
             ),
             title: Text(
               'Day $day • 10 Core Vocabulary Words',
-              style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+              style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16),
             ),
           ),
           body: SafeArea(
@@ -853,7 +899,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         backgroundColor: const Color(0xFF10B981),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                       ),
                       onPressed: () async {
                         Navigator.pop(pageCtx);
@@ -862,7 +909,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       icon: const Icon(Icons.check_circle_rounded, size: 20),
                       label: Text(
                         'I MEMORIZED ALL 10 WORDS ✓',
-                        style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
+                        style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.w900, fontSize: 13),
                       ),
                     ),
                   );
@@ -873,7 +921,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   decoration: BoxDecoration(
                     color: const Color(0xFF131728),
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                    border:
+                        Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -888,7 +937,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         alignment: Alignment.center,
                         child: Text(
                           '${i + 1}',
-                          style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                          style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -900,33 +952,46 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                               children: [
                                 Text(
                                   item.word,
-                                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                                  style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16),
                                 ),
                                 const SizedBox(width: 8),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 1.5),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withValues(alpha: 0.08),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
                                     item.partOfSpeech.toUpperCase(),
-                                    style: GoogleFonts.inter(color: Colors.white60, fontSize: 8.5, fontWeight: FontWeight.bold),
+                                    style: GoogleFonts.inter(
+                                        color: Colors.white60,
+                                        fontSize: 8.5,
+                                        fontWeight: FontWeight.bold),
                                   ),
                                 ),
                               ],
                             ),
-                            if (!PocketLanguageService.isEnglish && item.localizedMeaning.isNotEmpty && item.localizedMeaning != item.definition) ...[
+                            if (!PocketLanguageService.isEnglish &&
+                                item.localizedMeaning.isNotEmpty &&
+                                item.localizedMeaning != item.definition) ...[
                               const SizedBox(height: 4),
                               Text(
                                 item.localizedMeaning,
-                                style: GoogleFonts.inter(color: const Color(0xFFFFD700), fontSize: 12.5, fontWeight: FontWeight.w600),
+                                style: GoogleFonts.inter(
+                                    color: const Color(0xFFFFD700),
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600),
                               ),
                             ],
                             const SizedBox(height: 4),
                             Text(
                               item.definition,
-                              style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5),
+                              style: GoogleFonts.inter(
+                                  color: Colors.white70, fontSize: 11.5),
                             ),
                           ],
                         ),
@@ -1308,7 +1373,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   ? (prefs.getBool('pm_day1_diagnostic_done_$uid') ?? false)
                   : false;
               if (!diagDone && mounted) {
-                final diag = await PocketDay1DiagnosticSheet.show(context, userId: uid);
+                final diag =
+                    await PocketDay1DiagnosticSheet.show(context, userId: uid);
                 if (diag != null) {
                   final skip1 = diag['skipStep1'] ?? false;
                   final skip2 = diag['skipStep2'] ?? false;
@@ -1324,7 +1390,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               }
             }
             if (!mounted) return;
-            final activeUid = widget.userId ?? _supabase.auth.currentUser?.id ?? '';
+            final activeUid =
+                widget.userId ?? _supabase.auth.currentUser?.id ?? '';
 
             if (step.type == 'letter_writing') {
               await StudentLetterWritingGamePage.show(
@@ -1448,7 +1515,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 context,
                 day: day,
                 userId: activeUid,
-                onProceedToNextDay: () async => _onSubStepFinished(day, step.stepNumber),
+                onProceedToNextDay: () async =>
+                    _onSubStepFinished(day, step.stepNumber),
               );
               await _loadData();
               return;
@@ -1833,7 +1901,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 2),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(6),
@@ -1849,7 +1918,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     ),
                     const SizedBox(width: 6),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 2),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFD700).withValues(alpha: 0.16),
                         borderRadius: BorderRadius.circular(6),
@@ -1884,7 +1954,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       borderRadius: BorderRadius.circular(16),
                       child: const Padding(
                         padding: EdgeInsets.all(4),
-                        child: Icon(Icons.close_rounded, color: Colors.white54, size: 20),
+                        child: Icon(Icons.close_rounded,
+                            color: Colors.white54, size: 20),
                       ),
                     ),
                   ],
@@ -1905,7 +1976,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: const Color(0xFFFFFC00).withValues(alpha: 0.6),
+                            color:
+                                const Color(0xFFFFFC00).withValues(alpha: 0.6),
                             width: 1.5,
                           ),
                         ),
@@ -1952,7 +2024,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
                 // Clean Minimal Tasks List
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.04),
                     borderRadius: BorderRadius.circular(12),
@@ -1992,11 +2065,14 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 2),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFD700).withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                        border: Border.all(
+                            color:
+                                const Color(0xFFFFD700).withValues(alpha: 0.4)),
                       ),
                       child: Text(
                         'PS ${PocketScoreLevelEngine.getRequiredScoreForLevel(day)}',
@@ -2008,7 +2084,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       ),
                     ),
                     const SizedBox(width: 8),
-                    const Text('•', style: TextStyle(color: Colors.white30, fontSize: 11)),
+                    const Text('•',
+                        style: TextStyle(color: Colors.white30, fontSize: 11)),
                     const SizedBox(width: 8),
                     Text(
                       '+${lesson.xpReward} XP',
@@ -2019,7 +2096,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       ),
                     ),
                     const SizedBox(width: 8),
-                    const Text('•', style: TextStyle(color: Colors.white30, fontSize: 11)),
+                    const Text('•',
+                        style: TextStyle(color: Colors.white30, fontSize: 11)),
                     const SizedBox(width: 8),
                     Text(
                       '${lesson.targetMinutes}m Practice',
@@ -2038,14 +2116,18 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   StatefulBuilder(
                     builder: (context, setModalState) {
                       return FutureBuilder<PocketNeighbor>(
-                        future: PocketFortressDefenseService.getRecommendedRivalTarget(
+                        future: PocketFortressDefenseService
+                            .getRecommendedRivalTarget(
                           userDay: day,
                           shuffleOffset: _levelRivalShuffleSeed,
                         ),
                         builder: (context, snapshot) {
                           final rival = snapshot.data;
-                          final targetLevel = rival?.day ?? PocketFortressDefenseService.getRecommendedTargetLevel(day);
-                          final rivalName = rival?.name ?? 'Challenger Lvl $targetLevel';
+                          final targetLevel = rival?.day ??
+                              PocketFortressDefenseService
+                                  .getRecommendedTargetLevel(day);
+                          final rivalName =
+                              rival?.name ?? 'Challenger Lvl $targetLevel';
                           final isRobo = rival?.isPocketRobo ?? false;
 
                           return Container(
@@ -2054,27 +2136,35 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  const Color(0xFF881337).withValues(alpha: 0.35),
-                                  const Color(0xFF4C0519).withValues(alpha: 0.5),
+                                  const Color(0xFF881337)
+                                      .withValues(alpha: 0.35),
+                                  const Color(0xFF4C0519)
+                                      .withValues(alpha: 0.5),
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(14),
-                              border: Border.all(color: const Color(0xFFFB7185).withValues(alpha: 0.4), width: 1.2),
+                              border: Border.all(
+                                  color: const Color(0xFFFB7185)
+                                      .withValues(alpha: 0.4),
+                                  width: 1.2),
                             ),
                             child: Row(
                               children: [
                                 Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFE11D48).withValues(alpha: 0.25),
+                                    color: const Color(0xFFE11D48)
+                                        .withValues(alpha: 0.25),
                                     shape: BoxShape.circle,
                                   ),
-                                  child: Text(isRobo ? '🤖' : '⚔️', style: const TextStyle(fontSize: 18)),
+                                  child: Text(isRobo ? '🤖' : '⚔️',
+                                      style: const TextStyle(fontSize: 18)),
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         children: [
@@ -2095,19 +2185,33 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                                 _levelRivalShuffleSeed++;
                                               });
                                             },
-                                            borderRadius: BorderRadius.circular(6),
+                                            borderRadius:
+                                                BorderRadius.circular(6),
                                             child: Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 5,
+                                                      vertical: 1.5),
                                               decoration: BoxDecoration(
-                                                color: Colors.white.withValues(alpha: 0.12),
-                                                borderRadius: BorderRadius.circular(4),
+                                                color: Colors.white
+                                                    .withValues(alpha: 0.12),
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
                                               ),
                                               child: Row(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: const [
-                                                  Icon(Icons.shuffle_rounded, size: 10, color: Color(0xFFFDA4AF)),
+                                                  Icon(Icons.shuffle_rounded,
+                                                      size: 10,
+                                                      color: Color(0xFFFDA4AF)),
                                                   SizedBox(width: 2),
-                                                  Text('Reroll 🎲', style: TextStyle(color: Color(0xFFFDA4AF), fontSize: 8.5, fontWeight: FontWeight.bold)),
+                                                  Text('Reroll 🎲',
+                                                      style: TextStyle(
+                                                          color:
+                                                              Color(0xFFFDA4AF),
+                                                          fontSize: 8.5,
+                                                          fontWeight:
+                                                              FontWeight.bold)),
                                                 ],
                                               ),
                                             ),
@@ -2125,7 +2229,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                       Text(
-                                        isRobo ? '🤖 AI Robot Citadel • Balanced Fair Defense' : '👤 Real Human House • Higher Loot',
+                                        isRobo
+                                            ? '🤖 AI Robot Citadel • Balanced Fair Defense'
+                                            : '👤 Real Human House • Higher Loot',
                                         style: const TextStyle(
                                           color: Colors.white60,
                                           fontSize: 9.5,
@@ -2139,7 +2245,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                     final hubContext = context;
                                     Navigator.pop(ctx);
                                     HapticFeedback.heavyImpact();
-                                    final activeRival = rival ?? await PocketFortressDefenseService.getRecommendedRivalTarget(userDay: day);
+                                    final activeRival = rival ??
+                                        await PocketFortressDefenseService
+                                            .getRecommendedRivalTarget(
+                                                userDay: day);
                                     if (!mounted || !hubContext.mounted) return;
                                     PocketCitadelAttackPage.openForUser(
                                       hubContext,
@@ -2151,8 +2260,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFFE11D48),
                                     foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 14, vertical: 10),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
                                     elevation: 0,
                                   ),
                                   child: Text(
@@ -2173,11 +2285,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 ] else ...[
                   Container(
                     margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.04),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.08)),
                     ),
                     child: Row(
                       children: [
@@ -2187,7 +2301,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             color: Colors.amber.withValues(alpha: 0.12),
                             shape: BoxShape.circle,
                           ),
-                          child: const Text('🔒', style: TextStyle(fontSize: 14)),
+                          child:
+                              const Text('🔒', style: TextStyle(fontSize: 14)),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
@@ -2229,10 +2344,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             _navigateToMissionPage(day);
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: isCurrent ? const Color(0xFFFFFC00) : const Color(0xFF00E5FF),
+                            backgroundColor: isCurrent
+                                ? const Color(0xFFFFFC00)
+                                : const Color(0xFF00E5FF),
                             foregroundColor: Colors.black,
                             padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
                             elevation: 0,
                           ),
                           child: Text(
@@ -2252,7 +2370,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             Navigator.pop(ctx);
                             _completeTodayTasks();
                           },
-                          icon: const Icon(Icons.check_circle_outline_rounded, color: Color(0xFF10B981), size: 24),
+                          icon: const Icon(Icons.check_circle_outline_rounded,
+                              color: Color(0xFF10B981), size: 24),
                           tooltip: 'Complete tasks',
                         ),
                       ],
@@ -2277,7 +2396,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Color(0xFF10B981)),
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                       ),
                       child: Text(
                         'REVIEW LEVEL $day (COMPLETED ✓)',
@@ -2294,11 +2414,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   if (day > 1 && !_isDayCompleted(day - 1)) ...[
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
                         color: Colors.redAccent.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4)),
+                        border: Border.all(
+                            color: Colors.redAccent.withValues(alpha: 0.4)),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -2322,8 +2444,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     const SizedBox(height: 8),
                   ],
 
-
-
                   // 2. Check if waiting for midnight
                   if (_isDayWaitingForMidnight(day)) ...[
                     Container(
@@ -2332,7 +2452,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       decoration: BoxDecoration(
                         color: Colors.amber.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+                        border: Border.all(
+                            color: Colors.amber.withValues(alpha: 0.3)),
                       ),
                       child: Column(
                         children: [
@@ -2353,7 +2474,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            Learning60DayService.formatRemainingCountdown(_timeUntilMidnight),
+                            Learning60DayService.formatRemainingCountdown(
+                                _timeUntilMidnight),
                             style: GoogleFonts.outfit(
                               color: Colors.white,
                               fontWeight: FontWeight.w900,
@@ -2383,10 +2505,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                           Navigator.pop(ctx);
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+                            MaterialPageRoute(
+                                builder: (_) => const SubscriptionPage()),
                           );
                         },
-                        icon: const Icon(Icons.workspace_premium_rounded, size: 18, color: Colors.black),
+                        icon: const Icon(Icons.workspace_premium_rounded,
+                            size: 18, color: Colors.black),
                         label: Text(
                           '👑 UNLOCK INSTANT BINGE MODE • Poket VIP',
                           style: GoogleFonts.outfit(
@@ -2399,7 +2523,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFFFD700),
                           foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           elevation: 2,
                         ),
@@ -2415,9 +2540,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         _navigateToMissionPage(day);
                       },
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+                        side: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.2)),
                         padding: const EdgeInsets.symmetric(vertical: 11),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
                       ),
                       child: Text(
                         'Preview Level $day',
@@ -2458,8 +2585,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   end: Alignment.bottomCenter,
                   colors: [Color(0xFF1E112A), Color(0xFF0F0B18)],
                 ),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                border: Border.all(color: const Color(0xFFFB7185).withValues(alpha: 0.35), width: 1.5),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(24)),
+                border: Border.all(
+                    color: const Color(0xFFFB7185).withValues(alpha: 0.35),
+                    width: 1.5),
                 boxShadow: [
                   BoxShadow(
                     color: const Color(0xFFE11D48).withValues(alpha: 0.25),
@@ -2490,10 +2620,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFE11D48).withValues(alpha: 0.2),
+                            color:
+                                const Color(0xFFE11D48).withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
-                          child: const Text('⚔️', style: TextStyle(fontSize: 20)),
+                          child:
+                              const Text('⚔️', style: TextStyle(fontSize: 20)),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
@@ -2521,7 +2653,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         ),
                         IconButton(
                           onPressed: () => Navigator.pop(modalCtx),
-                          icon: const Icon(Icons.close_rounded, color: Colors.white54, size: 20),
+                          icon: const Icon(Icons.close_rounded,
+                              color: Colors.white54, size: 20),
                         ),
                       ],
                     ),
@@ -2529,12 +2662,14 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
                     // Rival Card Builder
                     FutureBuilder<PocketNeighbor>(
-                      future: PocketFortressDefenseService.getRecommendedRivalTarget(
+                      future: PocketFortressDefenseService
+                          .getRecommendedRivalTarget(
                         userDay: userDay,
                         shuffleOffset: _levelRivalShuffleSeed,
                       ),
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
                           return Container(
                             height: 140,
                             alignment: Alignment.center,
@@ -2546,12 +2681,18 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         }
 
                         final rival = snapshot.data;
-                        final targetLevel = rival?.day ?? PocketFortressDefenseService.getRecommendedTargetLevel(userDay);
-                        final rivalName = rival?.name ?? 'Challenger Lvl $targetLevel';
+                        final targetLevel = rival?.day ??
+                            PocketFortressDefenseService
+                                .getRecommendedTargetLevel(userDay);
+                        final rivalName =
+                            rival?.name ?? 'Challenger Lvl $targetLevel';
                         final isRobo = rival?.isPocketRobo ?? false;
-                        final bio = (rival != null && rival.statusMessage.isNotEmpty)
+                        final bio = (rival != null &&
+                                rival.statusMessage.isNotEmpty)
                             ? rival.statusMessage
-                            : (isRobo ? 'Pocket AI Sentinel • Automated 4-Defense Trap System' : 'Dedicated English Learner');
+                            : (isRobo
+                                ? 'Pocket AI Sentinel • Automated 4-Defense Trap System'
+                                : 'Dedicated English Learner');
 
                         return Container(
                           padding: const EdgeInsets.all(16),
@@ -2566,7 +2707,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             ),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: const Color(0xFFFB7185).withValues(alpha: 0.4),
+                              color: const Color(0xFFFB7185)
+                                  .withValues(alpha: 0.4),
                               width: 1.2,
                             ),
                           ),
@@ -2597,12 +2739,15 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Row(
                                           children: [
                                             Text(
-                                              isRobo ? '🤖 AI ROBOT CITADEL' : '👤 RIVAL LEARNER',
+                                              isRobo
+                                                  ? '🤖 AI ROBOT CITADEL'
+                                                  : '👤 RIVAL LEARNER',
                                               style: GoogleFonts.outfit(
                                                 color: const Color(0xFFFECDD3),
                                                 fontSize: 10,
@@ -2612,15 +2757,21 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                             ),
                                             const Spacer(),
                                             Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 7,
+                                                      vertical: 2),
                                               decoration: BoxDecoration(
-                                                color: const Color(0xFFE11D48).withValues(alpha: 0.3),
-                                                borderRadius: BorderRadius.circular(6),
+                                                color: const Color(0xFFE11D48)
+                                                    .withValues(alpha: 0.3),
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
                                               ),
                                               child: Text(
                                                 'House Lvl $targetLevel',
                                                 style: GoogleFonts.outfit(
-                                                  color: const Color(0xFFFDA4AF),
+                                                  color:
+                                                      const Color(0xFFFDA4AF),
                                                   fontSize: 10,
                                                   fontWeight: FontWeight.w900,
                                                 ),
@@ -2658,32 +2809,55 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
                               // Matchmaking Stats / Loot Bar
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 8),
                                 decoration: BoxDecoration(
                                   color: Colors.black.withValues(alpha: 0.25),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
                                   children: [
                                     Row(
                                       children: [
-                                        const Text('🪙 ', style: TextStyle(fontSize: 12)),
-                                        Text('+50 Coins', style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 11, fontWeight: FontWeight.bold)),
+                                        const Text('🪙 ',
+                                            style: TextStyle(fontSize: 12)),
+                                        Text('+50 Coins',
+                                            style: GoogleFonts.outfit(
+                                                color: const Color(0xFFFFD700),
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.bold)),
                                       ],
                                     ),
-                                    Container(width: 1, height: 14, color: Colors.white12),
+                                    Container(
+                                        width: 1,
+                                        height: 14,
+                                        color: Colors.white12),
                                     Row(
                                       children: [
-                                        const Text('🏆 ', style: TextStyle(fontSize: 12)),
-                                        Text('+30 Trophies', style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontSize: 11, fontWeight: FontWeight.bold)),
+                                        const Text('🏆 ',
+                                            style: TextStyle(fontSize: 12)),
+                                        Text('+30 Trophies',
+                                            style: GoogleFonts.outfit(
+                                                color: const Color(0xFF38BDF8),
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.bold)),
                                       ],
                                     ),
-                                    Container(width: 1, height: 14, color: Colors.white12),
+                                    Container(
+                                        width: 1,
+                                        height: 14,
+                                        color: Colors.white12),
                                     Row(
                                       children: [
-                                        const Text('🛡️ ', style: TextStyle(fontSize: 12)),
-                                        Text('4 Trap Shields', style: GoogleFonts.outfit(color: const Color(0xFF34D399), fontSize: 11, fontWeight: FontWeight.bold)),
+                                        const Text('🛡️ ',
+                                            style: TextStyle(fontSize: 12)),
+                                        Text('4 Trap Shields',
+                                            style: GoogleFonts.outfit(
+                                                color: const Color(0xFF34D399),
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.bold)),
                                       ],
                                     ),
                                   ],
@@ -2701,7 +2875,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                         _levelRivalShuffleSeed++;
                                       });
                                     },
-                                    icon: const Icon(Icons.shuffle_rounded, size: 14, color: Color(0xFFFDA4AF)),
+                                    icon: const Icon(Icons.shuffle_rounded,
+                                        size: 14, color: Color(0xFFFDA4AF)),
                                     label: Text(
                                       'Reroll 🎲',
                                       style: GoogleFonts.outfit(
@@ -2711,9 +2886,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                       ),
                                     ),
                                     style: OutlinedButton.styleFrom(
-                                      side: const BorderSide(color: Color(0xFFFDA4AF)),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                      side: const BorderSide(
+                                          color: Color(0xFFFDA4AF)),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10)),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 10),
                                     ),
                                   ),
                                   const SizedBox(width: 10),
@@ -2723,8 +2902,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                         final hubContext = context;
                                         Navigator.pop(modalCtx);
                                         HapticFeedback.heavyImpact();
-                                        final activeRival = rival ?? await PocketFortressDefenseService.getRecommendedRivalTarget(userDay: userDay);
-                                        if (!mounted || !hubContext.mounted) return;
+                                        final activeRival = rival ??
+                                            await PocketFortressDefenseService
+                                                .getRecommendedRivalTarget(
+                                                    userDay: userDay);
+                                        if (!mounted || !hubContext.mounted)
+                                          return;
                                         PocketCitadelAttackPage.openForUser(
                                           hubContext,
                                           userId: activeRival.id,
@@ -2732,7 +2915,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                           attackerDay: userDay,
                                         );
                                       },
-                                      icon: const Icon(Icons.flash_on_rounded, size: 16),
+                                      icon: const Icon(Icons.flash_on_rounded,
+                                          size: 16),
                                       label: Text(
                                         'LAUNCH RAID ⚔️',
                                         style: GoogleFonts.outfit(
@@ -2742,10 +2926,14 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                         ),
                                       ),
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFFE11D48),
+                                        backgroundColor:
+                                            const Color(0xFFE11D48),
                                         foregroundColor: Colors.white,
-                                        padding: const EdgeInsets.symmetric(vertical: 11),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 11),
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10)),
                                         elevation: 2,
                                       ),
                                     ),
@@ -2841,173 +3029,192 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               children: [
                 // 1. The Scrollable Game World Map with Pull-to-Refresh
                 RefreshIndicator(
-            onRefresh: _loadData,
-            color: const Color(0xFFFFD700),
-            backgroundColor: const Color(0xFF13172A),
-            child: SingleChildScrollView(
-              controller: _scrollController,
-              physics: const AlwaysScrollableScrollPhysics(
-                parent: BouncingScrollPhysics(),
-              ),
-              child: SizedBox(
-                width: screenWidth,
-                height: totalMapHeight,
-                child: Stack(
-                  children: [
-                    // Background Biomes & Curved Trail Road
-                    Positioned.fill(
-                      child: CustomPaint(
-                        painter: _AdventureMapRoadPainter(
-                          totalDays: _totalDays,
-                          currentDay: targetActiveDay,
-                          screenWidth: screenWidth,
-                          nodeSpacingY: _nodeSpacingY,
-                          topPadding: _topPadding,
-                          ruleNodeY: _ruleNodeY,
-                          hasAcceptedRules: _effectiveRulesAccepted,
-                        ),
+                  onRefresh: _loadData,
+                  color: const Color(0xFFFFD700),
+                  backgroundColor: const Color(0xFF13172A),
+                  child: SingleChildScrollView(
+                    controller: _scrollController,
+                    physics: const AlwaysScrollableScrollPhysics(
+                      parent: BouncingScrollPhysics(),
+                    ),
+                    child: SizedBox(
+                      width: screenWidth,
+                      height: totalMapHeight,
+                      child: Stack(
+                        children: [
+                          // Background Biomes & Curved Trail Road
+                          Positioned.fill(
+                            child: CustomPaint(
+                              painter: _AdventureMapRoadPainter(
+                                totalDays: _totalDays,
+                                currentDay: targetActiveDay,
+                                screenWidth: screenWidth,
+                                nodeSpacingY: _nodeSpacingY,
+                                topPadding: _topPadding,
+                                ruleNodeY: _ruleNodeY,
+                                hasAcceptedRules: _effectiveRulesAccepted,
+                              ),
+                            ),
+                          ),
+
+                          // Biome Zone Banners & Scenery Props
+                          ..._buildBiomeProps(screenWidth),
+
+                          // 🏡 Viewport-Culled 90 Progressive Architectural English Houses & 3D Level Nodes
+                          // User Audio Directive: "hang aavaruthu... lightweight aayirikkanam... lazy loading okke koduthittu"
+                          Positioned.fill(
+                            child: AnimatedBuilder(
+                              animation: _scrollController,
+                              builder: (context, _) {
+                                final scrollOffset =
+                                    _scrollController.hasClients
+                                        ? _scrollController.offset
+                                        : 999999.0;
+                                final screenH =
+                                    MediaQuery.of(context).size.height;
+                                final minY = scrollOffset;
+                                final maxY = scrollOffset + screenH;
+
+                                return Stack(
+                                  children: [
+                                    // 🏡 90 Progressive Architectural English Houses (Viewport Culled)
+                                    for (int day = 1; day <= _totalDays; day++)
+                                      if (_isDayInViewport(day, minY, maxY))
+                                        _buildRoadmapHouse(
+                                            day, screenWidth, targetActiveDay),
+
+                                    // 🏰 Dedicated Home Visit Button (Spaced cleanly before the house)
+                                    for (int day = 1; day <= _totalDays; day++)
+                                      if (_isDayInViewport(day, minY, maxY))
+                                        _buildRoadmapHomeVisit(
+                                            day, screenWidth, targetActiveDay),
+
+                                    // 🌟 Prominent Resident Guardian Avatars (User Audio Directive: after Home Visit with generous space!)
+                                    for (int day = 1; day <= _totalDays; day++)
+                                      if (_isDayInViewport(day, minY, maxY))
+                                        _buildRoadmapResidentAvatar(
+                                            day, screenWidth, targetActiveDay),
+
+                                    // 🏰 Fortress Exam Gates & Stone Walls between Houses (User Audio Directive!)
+                                    for (int day = 1; day < _totalDays; day++)
+                                      if (_isDayInViewport(day, minY, maxY))
+                                        _buildRoadmapGate(
+                                            day, screenWidth, targetActiveDay),
+
+                                    // Interactive 3D Level Nodes (Days 1 to 90) (Viewport Culled)
+                                    for (int day = 1; day <= _totalDays; day++)
+                                      if (_isDayInViewport(day, minY, maxY))
+                                        _buildLevelNode(
+                                            day, screenWidth, targetActiveDay),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+
+                          // 🎯 Unified Syllabus Track Pill (Single Unified Syllabus)
+                          _buildSyllabusSelectorMenu(screenWidth),
+
+                          // 📜 Special "Rule" Level Node (Audio Directive: Before Level 1, show Rule level)
+                          _buildRuleLevelNode(screenWidth),
+
+                          // Bouncing Animated Character Avatar at Current Level or Rules Node
+                          _buildAnimatedAvatar(screenWidth, targetActiveDay),
+                        ],
                       ),
                     ),
-
-                    // Biome Zone Banners & Scenery Props
-                    ..._buildBiomeProps(screenWidth),
-
-                    // 🏡 Viewport-Culled 90 Progressive Architectural English Houses & 3D Level Nodes
-                    // User Audio Directive: "hang aavaruthu... lightweight aayirikkanam... lazy loading okke koduthittu"
-                    Positioned.fill(
-                      child: AnimatedBuilder(
-                        animation: _scrollController,
-                        builder: (context, _) {
-                          final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 999999.0;
-                          final screenH = MediaQuery.of(context).size.height;
-                          final minY = scrollOffset;
-                          final maxY = scrollOffset + screenH;
-
-                          return Stack(
-                            children: [
-                              // 🏡 90 Progressive Architectural English Houses (Viewport Culled)
-                              for (int day = 1; day <= _totalDays; day++)
-                                if (_isDayInViewport(day, minY, maxY))
-                                  _buildRoadmapHouse(day, screenWidth, targetActiveDay),
-
-                              // 🏰 Dedicated Home Visit Button (Spaced cleanly before the house)
-                              for (int day = 1; day <= _totalDays; day++)
-                                if (_isDayInViewport(day, minY, maxY))
-                                  _buildRoadmapHomeVisit(day, screenWidth, targetActiveDay),
-
-                              // 🌟 Prominent Resident Guardian Avatars (User Audio Directive: after Home Visit with generous space!)
-                              for (int day = 1; day <= _totalDays; day++)
-                                if (_isDayInViewport(day, minY, maxY))
-                                  _buildRoadmapResidentAvatar(day, screenWidth, targetActiveDay),
-
-                              // 🏰 Fortress Exam Gates & Stone Walls between Houses (User Audio Directive!)
-                              for (int day = 1; day < _totalDays; day++)
-                                if (_isDayInViewport(day, minY, maxY))
-                                  _buildRoadmapGate(day, screenWidth, targetActiveDay),
-
-                              // Interactive 3D Level Nodes (Days 1 to 90) (Viewport Culled)
-                              for (int day = 1; day <= _totalDays; day++)
-                                if (_isDayInViewport(day, minY, maxY))
-                                  _buildLevelNode(day, screenWidth, targetActiveDay),
-                            ],
-                          );
-                        },
-                      ),
-                    ),
-
-                    // 🎯 Unified Syllabus Track Pill (Single Unified Syllabus)
-                    _buildSyllabusSelectorMenu(screenWidth),
-
-                    // 📜 Special "Rule" Level Node (Audio Directive: Before Level 1, show Rule level)
-                    _buildRuleLevelNode(screenWidth),
-
-                    // Bouncing Animated Character Avatar at Current Level or Rules Node
-                    _buildAnimatedAvatar(screenWidth, targetActiveDay),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // 2. 🌐 Open World Vocabulary Hill-Climb Adventure (User Audio Directive)
-          Padding(
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 76,
-            ),
-            child: PocketOpenWorldGamePage(
-              currentDay: prog.currentDay,
-              streak: prog.streakDays,
-            ),
-          ),
-
-          // 3. 🏅 Global Leaderboard Tile List (Audio Directive)
-          Padding(
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 76,
-            ),
-            child: PocketGlobalRankListView(
-              currentUserId: widget.userId,
-            ),
-          ),
-        ],
-      ),
-    ),
-
-              // Subtle non-blocking loading shimmer beneath top HUD
-              if (_isLoading || _isRefreshing)
-                Positioned(
-                  top: MediaQuery.of(context).padding.top + 70,
-                  left: 0,
-                  right: 0,
-                  child: const LinearProgressIndicator(
-                    minHeight: 2.5,
-                    color: Color(0xFFFFD700),
-                    backgroundColor: Colors.transparent,
                   ),
                 ),
 
-              // 2. Sticky Glassmorphism Top HUD (Without Back button on tab navigation!)
-              _buildTopHUD(prog),
+                // 2. 🌐 Open World Vocabulary Hill-Climb Adventure (User Audio Directive)
+                Padding(
+                  padding: EdgeInsets.only(
+                    top: MediaQuery.of(context).padding.top + 76,
+                  ),
+                  child: PocketOpenWorldGamePage(
+                    currentDay: prog.currentDay,
+                    streak: prog.streakDays,
+                  ),
+                ),
 
-                // 3. ⚔️ & 🌐 & ⏳ Minimal Floating Actions Dock + Mission Button (Only on Roadmap)
-                if (_activeTargetTab == 0)
-                  Positioned(
-                    left: 12,
-                    right: 12,
-                    bottom: 16,
-                  child: Row(
-                    children: [
-                      // Left actions: Battle, Open World, Time Machine
-                      Expanded(
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          physics: const BouncingScrollPhysics(),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              _buildMinimalFloatingPill(
-                                icon: '🌐',
-                                label: 'Open World',
-                                onTap: () {
-                                  HapticFeedback.mediumImpact();
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => PocketOpenWorldGamePage(
-                                        currentDay: prog.currentDay,
-                                        streak: prog.streakDays,
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ],
+                // 3. 🏅 Global Leaderboard Tile List (Audio Directive)
+                Padding(
+                  padding: EdgeInsets.only(
+                    top: MediaQuery.of(context).padding.top + 76,
+                  ),
+                  child: PocketGlobalRankListView(
+                    currentUserId: widget.userId,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Subtle non-blocking loading shimmer beneath top HUD
+          if (_isLoading || _isRefreshing)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 70,
+              left: 0,
+              right: 0,
+              child: const LinearProgressIndicator(
+                minHeight: 2.5,
+                color: Color(0xFFFFD700),
+                backgroundColor: Colors.transparent,
+              ),
+            ),
+
+          // 2. Sticky Glassmorphism Top HUD (Without Back button on tab navigation!)
+          _buildTopHUD(prog),
+
+          // 3. ⚔️ & 🌐 & ⏳ Minimal Floating Actions Dock + Mission Button (Only on Roadmap)
+          if (_activeTargetTab == 0)
+            Positioned(
+              left: 12,
+              right: 12,
+              bottom: 16,
+              child: Row(
+                children: [
+                  // Left actions: Battle, Open World, Time Machine
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildMinimalFloatingPill(
+                            icon: '🌐',
+                            label: 'Open World',
+                            onTap: () {
+                              HapticFeedback.mediumImpact();
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => PocketOpenWorldGamePage(
+                                    currentDay: prog.currentDay,
+                                    streak: prog.streakDays,
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                        ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
 
-                      // Right: 🎯 Minimal Today Mission Button
+                  // Right: 🔋 Daily Battery + 🎯 Minimal Today Mission Button
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      PocketDailyBatteryRewardWidget(
+                        onRewardClaimed: () {
+                          _loadData();
+                        },
+                      ),
+                      const SizedBox(height: 6),
                       InkWell(
                         onTap: () {
                           HapticFeedback.mediumImpact();
@@ -3027,7 +3234,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         },
                         borderRadius: BorderRadius.circular(12),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 7),
                           decoration: BoxDecoration(
                             color: const Color(0xFFFFFC00),
                             borderRadius: BorderRadius.circular(12),
@@ -3043,13 +3251,17 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                !_effectiveRulesAccepted ? Icons.menu_book_rounded : Icons.play_arrow_rounded,
+                                !_effectiveRulesAccepted
+                                    ? Icons.menu_book_rounded
+                                    : Icons.play_arrow_rounded,
                                 color: Colors.black,
                                 size: 16,
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                !_effectiveRulesAccepted ? 'Rules 📜' : 'Mission $targetActiveDay',
+                                !_effectiveRulesAccepted
+                                    ? 'Rules 📜'
+                                    : 'Mission $targetActiveDay',
                                 style: GoogleFonts.outfit(
                                   color: Colors.black,
                                   fontWeight: FontWeight.w800,
@@ -3062,13 +3274,16 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       ),
                     ],
                   ),
-                ),
-
-                // 4. 🚀 Mobile Fast Scroll Scrubber Bar on right side (User Audio Directive!)
-                if (_activeTargetTab == 0)
-                  _buildFastScrollScrubber(screenWidth, MediaQuery.of(context).size.height),
-              ],
+                ],
+              ),
             ),
+
+          // 4. 🚀 Mobile Fast Scroll Scrubber Bar on right side (User Audio Directive!)
+          if (_activeTargetTab == 0)
+            _buildFastScrollScrubber(
+                screenWidth, MediaQuery.of(context).size.height),
+        ],
+      ),
     );
   }
 
@@ -3087,23 +3302,29 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onVerticalDragUpdate: (details) {
-          if (!_scrollController.hasClients || !_scrollController.position.hasContentDimensions) return;
+          if (!_scrollController.hasClients ||
+              !_scrollController.position.hasContentDimensions) return;
           final localY = details.localPosition.dy.clamp(0.0, scrubberHeight);
           final newFraction = (localY / scrubberHeight).clamp(0.0, 1.0);
-          final targetOffset = newFraction * _scrollController.position.maxScrollExtent;
+          final targetOffset =
+              newFraction * _scrollController.position.maxScrollExtent;
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (_scrollController.hasClients && _scrollController.position.hasContentDimensions) {
+            if (_scrollController.hasClients &&
+                _scrollController.position.hasContentDimensions) {
               _scrollController.jumpTo(targetOffset);
             }
           });
         },
         onTapDown: (details) {
-          if (!_scrollController.hasClients || !_scrollController.position.hasContentDimensions) return;
+          if (!_scrollController.hasClients ||
+              !_scrollController.position.hasContentDimensions) return;
           final localY = details.localPosition.dy.clamp(0.0, scrubberHeight);
           final newFraction = (localY / scrubberHeight).clamp(0.0, 1.0);
-          final targetOffset = newFraction * _scrollController.position.maxScrollExtent;
+          final targetOffset =
+              newFraction * _scrollController.position.maxScrollExtent;
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (_scrollController.hasClients && _scrollController.position.hasContentDimensions) {
+            if (_scrollController.hasClients &&
+                _scrollController.position.hasContentDimensions) {
               _scrollController.animateTo(
                 targetOffset,
                 duration: const Duration(milliseconds: 320),
@@ -3174,13 +3395,17 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   if (_scrollController.hasClients &&
                       _scrollController.position.hasContentDimensions &&
                       _scrollController.position.maxScrollExtent > 0) {
-                    fraction = (_scrollController.offset / _scrollController.position.maxScrollExtent).clamp(0.0, 1.0);
+                    fraction = (_scrollController.offset /
+                            _scrollController.position.maxScrollExtent)
+                        .clamp(0.0, 1.0);
                   }
                   // Inverted map: offset 0 is Day 90 (summit), offset max is Day 1 (valley)
-                  final approximateDay = ((1.0 - fraction) * 89 + 1).round().clamp(1, 90);
+                  final approximateDay =
+                      ((1.0 - fraction) * 89 + 1).round().clamp(1, 90);
 
                   return Positioned(
-                    top: (fraction * (scrubberHeight - 34)).clamp(0.0, scrubberHeight - 34),
+                    top: (fraction * (scrubberHeight - 34))
+                        .clamp(0.0, scrubberHeight - 34),
                     child: Container(
                       width: 28,
                       height: 34,
@@ -3193,7 +3418,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         borderRadius: BorderRadius.circular(14),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFFFD700).withValues(alpha: 0.6),
+                            color:
+                                const Color(0xFFFFD700).withValues(alpha: 0.6),
                             blurRadius: 8,
                             spreadRadius: 1,
                           ),
@@ -3202,7 +3428,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.drag_indicator_rounded, size: 10, color: Colors.black),
+                          const Icon(Icons.drag_indicator_rounded,
+                              size: 10, color: Colors.black),
                           Text(
                             '$approximateDay',
                             style: GoogleFonts.outfit(
@@ -3308,24 +3535,27 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             // Row 1: Compact 90-Day Mission Badge + Stats + Actions
             Row(
               children: [
-                    if (canPop) ...[
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_rounded,
-                            color: Colors.white, size: 16),
-                        onPressed: () => Navigator.pop(context),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                      const SizedBox(width: 6),
-                    ],
+                if (canPop) ...[
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_rounded,
+                        color: Colors.white, size: 16),
+                    onPressed: () => Navigator.pop(context),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                  const SizedBox(width: 6),
+                ],
 
                 // Minimal Day Badge
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFD700).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4), width: 0.8),
+                    border: Border.all(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                        width: 0.8),
                   ),
                   child: Text(
                     _isMasterAdmin && _adminSelectedDay != null
@@ -3342,7 +3572,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
                 // 🪙 Pocket Score (PS) & 🏆 Trophies Capsule (Audio Directive: Show PS, Coins, and Trophies count)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFD700).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
@@ -3355,7 +3586,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 1.5),
                         decoration: BoxDecoration(
                           color: const Color(0xFFFFD700),
                           borderRadius: BorderRadius.circular(5),
@@ -3413,7 +3645,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         SnackBar(
                           content: Text(
                             'Roadmap Refreshed! Day ${prog.currentDay} • 🪙 $_unifiedPocketScore PTS • 🏆 $_unifiedTrophies',
-                            style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
+                            style: GoogleFonts.outfit(
+                                fontWeight: FontWeight.bold, fontSize: 12),
                           ),
                           backgroundColor: const Color(0xFF10B981),
                           duration: const Duration(milliseconds: 1200),
@@ -3433,9 +3666,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         ? const SizedBox(
                             width: 14,
                             height: 14,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFFFD700)),
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Color(0xFFFFD700)),
                           )
-                        : const Icon(Icons.refresh_rounded, color: Colors.white, size: 16),
+                        : const Icon(Icons.refresh_rounded,
+                            color: Colors.white, size: 16),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -3453,12 +3688,16 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             backgroundColor: const Color(0xFF0F1524),
                             elevation: 0,
                             leading: IconButton(
-                              icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 18),
+                              icon: const Icon(Icons.arrow_back_ios_rounded,
+                                  color: Colors.white, size: 18),
                               onPressed: () => Navigator.pop(context),
                             ),
                             title: Text(
                               'CANYON DIRT BIKE 🏔️',
-                              style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                              style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16),
                             ),
                           ),
                           body: PocketWorldRankingTrailWidget(
@@ -3470,11 +3709,14 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     );
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFF9100).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFFFF9100).withValues(alpha: 0.5), width: 0.8),
+                      border: Border.all(
+                          color: const Color(0xFFFF9100).withValues(alpha: 0.5),
+                          width: 0.8),
                     ),
                     child: const Text('🏔️', style: TextStyle(fontSize: 14)),
                   ),
@@ -3483,7 +3725,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
                 // 🔊 Minimal BGM Speaker Toggle (Audio Directive)
                 ValueListenableBuilder<bool>(
-                  valueListenable: PocketGameAudioService.instance.isMutedNotifier,
+                  valueListenable:
+                      PocketGameAudioService.instance.isMutedNotifier,
                   builder: (context, isMuted, _) {
                     return GestureDetector(
                       onTap: () {
@@ -3491,18 +3734,26 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         PocketGameAudioService.instance.toggleMute();
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: isMuted ? Colors.white24 : const Color(0xFFFFFC00).withValues(alpha: 0.5),
+                            color: isMuted
+                                ? Colors.white24
+                                : const Color(0xFFFFFC00)
+                                    .withValues(alpha: 0.5),
                             width: 0.8,
                           ),
                         ),
                         child: Icon(
-                          isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
-                          color: isMuted ? Colors.white54 : const Color(0xFFFFFC00),
+                          isMuted
+                              ? Icons.volume_off_rounded
+                              : Icons.volume_up_rounded,
+                          color: isMuted
+                              ? Colors.white54
+                              : const Color(0xFFFFFC00),
                           size: 15,
                         ),
                       ),
@@ -3725,7 +3976,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               } else if (item.stageNumber == -2) {
                 _showDailyRoutineModal(prog);
               } else if (item.stageNumber == -1) {
-                await PocketDay1DiagnosticSheet.show(context, userId: widget.userId);
+                await PocketDay1DiagnosticSheet.show(context,
+                    userId: widget.userId);
                 if (mounted) setState(() {});
               } else if (item.stageNumber == 0) {
                 PocketWorldGameRulesModal.show(
@@ -3791,7 +4043,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         ? (isUnlocked ? '✓' : '⚡')
                         : isRule
                             ? (_effectiveRulesAccepted ? '✓' : '📜')
-                            : (isUnlocked ? '✓' : (isCurrentTarget ? '🔥' : '🔒')),
+                            : (isUnlocked
+                                ? '✓'
+                                : (isCurrentTarget ? '🔥' : '🔒')),
                     style: const TextStyle(fontSize: 8.5),
                   ),
                 ],
@@ -3840,7 +4094,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     height: 52,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFF818CF8), width: 2),
+                      border:
+                          Border.all(color: const Color(0xFF818CF8), width: 2),
                     ),
                     child: ClipOval(
                       child: VectorAvatarWidget(config: avatar, size: 48),
@@ -3861,7 +4116,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         ),
                         Text(
                           'Active Track: ${track.nameEn} • Level ${prog.currentDay}',
-                          style: const TextStyle(color: Colors.white70, fontSize: 12),
+                          style: const TextStyle(
+                              color: Colors.white70, fontSize: 12),
                         ),
                       ],
                     ),
@@ -3880,12 +4136,14 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 16),
+                        const Icon(Icons.check_circle_rounded,
+                            color: Color(0xFF10B981), size: 16),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             'AI Tutor Voice & Accent Calibrated',
-                            style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
+                            style: GoogleFonts.outfit(
+                                color: Colors.white, fontSize: 13),
                           ),
                         ),
                       ],
@@ -3893,12 +4151,14 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 16),
+                        const Icon(Icons.check_circle_rounded,
+                            color: Color(0xFF10B981), size: 16),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             'Syllabus Track Synced (${track.nameEn})',
-                            style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
+                            style: GoogleFonts.outfit(
+                                color: Colors.white, fontSize: 13),
                           ),
                         ),
                       ],
@@ -3913,11 +4173,14 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   onPressed: () => Navigator.pop(ctx),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF818CF8),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                   icon: const Icon(Icons.done_rounded, color: Colors.white),
-                  label: Text('Profile Ready ✓', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
+                  label: Text('Profile Ready ✓',
+                      style: GoogleFonts.outfit(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -3991,12 +4254,14 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.alarm_on_rounded, color: Color(0xFFF472B6), size: 18),
+                        const Icon(Icons.alarm_on_rounded,
+                            color: Color(0xFFF472B6), size: 18),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             'Daily Study Window: 15–20 Minutes',
-                            style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
+                            style: GoogleFonts.outfit(
+                                color: Colors.white, fontSize: 13),
                           ),
                         ),
                       ],
@@ -4004,12 +4269,14 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        const Icon(Icons.local_fire_department_rounded, color: Colors.amber, size: 18),
+                        const Icon(Icons.local_fire_department_rounded,
+                            color: Colors.amber, size: 18),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             'Streak Shield Active • Daily Habit Loop Engaged',
-                            style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
+                            style: GoogleFonts.outfit(
+                                color: Colors.white, fontSize: 13),
                           ),
                         ),
                       ],
@@ -4024,11 +4291,14 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   onPressed: () => Navigator.pop(ctx),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFF472B6),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                   icon: const Icon(Icons.done_rounded, color: Colors.white),
-                  label: Text('Routine Committed ✓', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
+                  label: Text('Routine Committed ✓',
+                      style: GoogleFonts.outfit(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -4041,7 +4311,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   /// 🎯 Milestone Target Detail & House Growth Preview Dialog
   void _showTargetStagePreviewDialog(TargetMilestoneItem item, int currentDay) {
     final isUnlocked = currentDay >= item.targetDay;
-    final stageAvatar = VectorAvatarConfig.getEvolutionAvatarForStage(item.targetDay);
+    final stageAvatar =
+        VectorAvatarConfig.getEvolutionAvatarForStage(item.targetDay);
 
     showDialog(
       context: context,
@@ -4068,9 +4339,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     ),
                   ),
                   Text(
-                    isUnlocked ? '✅ Milestone Achieved' : '🎯 Target In Progress',
+                    isUnlocked
+                        ? '✅ Milestone Achieved'
+                        : '🎯 Target In Progress',
                     style: TextStyle(
-                      color: isUnlocked ? const Color(0xFF10B981) : Colors.amber,
+                      color:
+                          isUnlocked ? const Color(0xFF10B981) : Colors.amber,
                       fontSize: 11,
                     ),
                   ),
@@ -4108,12 +4382,15 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     margin: const EdgeInsets.only(bottom: 8),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFD700).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.6)),
+                      border: Border.all(
+                          color:
+                              const Color(0xFFFFD700).withValues(alpha: 0.6)),
                     ),
                     child: Row(
                       children: [
@@ -4134,14 +4411,19 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       ],
                     ),
                   ),
-                  if (PocketScoreLevelEngine.getRequiredTrophiesForLevel(item.targetDay) > 0)
+                  if (PocketScoreLevelEngine.getRequiredTrophiesForLevel(
+                          item.targetDay) >
+                      0)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
                       margin: const EdgeInsets.only(bottom: 8),
                       decoration: BoxDecoration(
                         color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.6)),
+                        border: Border.all(
+                            color:
+                                const Color(0xFF00E5FF).withValues(alpha: 0.6)),
                       ),
                       child: Row(
                         children: [
@@ -4173,11 +4455,21 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         ],
                       ),
                     ),
-                  Text('🏡 House Stage: ${item.houseStage}', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                  Text('🏡 House Stage: ${item.houseStage}',
+                      style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13)),
                   const SizedBox(height: 4),
-                  Text('🛡️ Defense Unlock: ${item.defenseSummary}', style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5)),
+                  Text('🛡️ Defense Unlock: ${item.defenseSummary}',
+                      style: GoogleFonts.inter(
+                          color: Colors.white70, fontSize: 11.5)),
                   const SizedBox(height: 4),
-                  Text('🪙 Rewards: ${item.rewardSummary}', style: GoogleFonts.inter(color: const Color(0xFFFFD700), fontSize: 11.5, fontWeight: FontWeight.bold)),
+                  Text('🪙 Rewards: ${item.rewardSummary}',
+                      style: GoogleFonts.inter(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -4197,15 +4489,20 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFE11D48),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             ),
             icon: const Text('⚔️', style: TextStyle(fontSize: 14)),
-            label: Text('ATTACK TARGET CITADEL', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12)),
+            label: Text('ATTACK TARGET CITADEL',
+                style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.bold, fontSize: 12)),
             onPressed: () async {
               Navigator.pop(ctx);
               HapticFeedback.heavyImpact();
-              final rival = await PocketFortressDefenseService.getRecommendedRivalTarget(userDay: item.targetDay);
+              final rival =
+                  await PocketFortressDefenseService.getRecommendedRivalTarget(
+                      userDay: item.targetDay);
               if (!mounted) return;
               PocketCitadelAttackPage.openForUser(
                 context,
@@ -4276,7 +4573,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               decoration: BoxDecoration(
                 color: Colors.red.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+                border:
+                    Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -4292,7 +4590,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   const SizedBox(height: 4),
                   Text(
                     res.message,
-                    style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                    style:
+                        GoogleFonts.inter(color: Colors.white70, fontSize: 12),
                   ),
                 ],
               ),
@@ -4313,7 +4612,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFFFFC00),
               foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
             onPressed: () => Navigator.pop(ctx),
             child: Text(
@@ -4325,7 +4625,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       ),
     );
   }
-
 
   /// 📚 Minimal Syllabus Track Selector Menu directly above the Rules / Level 1 Node (User Audio Directive!)
   /// Displays "YOUR SYLLABUS" initially as generated during onboarding.
@@ -4490,26 +4789,27 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 right: 0,
                 child: Center(
                   child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
-                  decoration: BoxDecoration(
-                    color: _hasAcceptedRules
-                        ? const Color(0xFF10B981)
-                        : const Color(0xFFFFFC00),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: _hasAcceptedRules ? Colors.white38 : Colors.black26,
-                      width: 0.8,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 2.5),
+                    decoration: BoxDecoration(
+                      color: _hasAcceptedRules
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFFFFC00),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color:
+                            _hasAcceptedRules ? Colors.white38 : Colors.black26,
+                        width: 0.8,
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    _hasAcceptedRules ? '✓ VERIFIED' : 'START HERE 🔥',
-                    style: GoogleFonts.outfit(
-                      color: _hasAcceptedRules ? Colors.white : Colors.black,
-                      fontSize: 8.5,
-                      fontWeight: FontWeight.w900,
+                    child: Text(
+                      _hasAcceptedRules ? '✓ VERIFIED' : 'START HERE 🔥',
+                      style: GoogleFonts.outfit(
+                        color: _hasAcceptedRules ? Colors.white : Colors.black,
+                        fontSize: 8.5,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
-                  ),
                   ),
                 ),
               ),
@@ -4529,8 +4829,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     // User audio requirement: Before Get Started rules are accepted, Day 1 must stay LOCKED!
     final isLockedByRules = (day == 1 && !_effectiveRulesAccepted);
     final isWaitingForMidnight = _isDayWaitingForMidnight(day);
-    final isCompleted = _isDayCompleted(day) && _effectiveRulesAccepted && !isWaitingForMidnight;
-    final isUnlocked = _isDayUnlocked(day, currentDay) && !isLockedByRules && !isWaitingForMidnight;
+    final isCompleted = _isDayCompleted(day) &&
+        _effectiveRulesAccepted &&
+        !isWaitingForMidnight;
+    final isUnlocked = _isDayUnlocked(day, currentDay) &&
+        !isLockedByRules &&
+        !isWaitingForMidnight;
     final isCurrent = (day == currentDay) && isUnlocked && !isCompleted;
     final isBossMilestone = day == 7 ||
         day == 14 ||
@@ -4623,7 +4927,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     builder: (context, child) {
                       final scale = 1.0 + (_bobController.value * 0.28);
                       final beaconColor = day == 1
-                          ? const Color(0xFF10B981) // Green active beacon for Day 1
+                          ? const Color(
+                              0xFF10B981) // Green active beacon for Day 1
                           : const Color(0xFFFFFC00);
                       return Transform.scale(
                         scale: scale,
@@ -4633,7 +4938,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             boxShadow: [
                               BoxShadow(
                                 color: beaconColor.withValues(
-                                    alpha: 0.45 - (_bobController.value * 0.25)),
+                                    alpha:
+                                        0.45 - (_bobController.value * 0.25)),
                                 blurRadius: 14 + (_bobController.value * 8),
                                 spreadRadius: 3 + (_bobController.value * 4),
                               ),
@@ -4662,12 +4968,24 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         : (isCurrent
                             ? [const Color(0xFFFFFC00), const Color(0xFFFF8906)]
                             : (isCompleted
-                                ? [const Color(0xFF10B981), const Color(0xFF047857)]
+                                ? [
+                                    const Color(0xFF10B981),
+                                    const Color(0xFF047857)
+                                  ]
                                 : (isUnlocked
-                                    ? [const Color(0xFF00E5FF), const Color(0xFF0284C7)]
+                                    ? [
+                                        const Color(0xFF00E5FF),
+                                        const Color(0xFF0284C7)
+                                      ]
                                     : (isBossMilestone
-                                        ? [const Color(0xFF475569), const Color(0xFF1E293B)]
-                                        : [const Color(0xFF2A314A), const Color(0xFF181C2E)])))),
+                                        ? [
+                                            const Color(0xFF475569),
+                                            const Color(0xFF1E293B)
+                                          ]
+                                        : [
+                                            const Color(0xFF2A314A),
+                                            const Color(0xFF181C2E)
+                                          ])))),
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -4682,7 +5000,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                     ? const Color(0xFF38BDF8)
                                     : (isBossMilestone
                                         ? const Color(0xFFFFD700)
-                                        : Colors.white.withValues(alpha: 0.22))))),
+                                        : Colors.white
+                                            .withValues(alpha: 0.22))))),
                     width: (isCurrent || isWaitingForMidnight) ? 3.0 : 2.2,
                   ),
                   boxShadow: [
@@ -4692,11 +5011,16 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                           : (isCurrent
                               ? const Color(0xFFFFFC00).withValues(alpha: 0.5)
                               : (isCompleted
-                                  ? const Color(0xFF10B981).withValues(alpha: 0.4)
+                                  ? const Color(0xFF10B981)
+                                      .withValues(alpha: 0.4)
                                   : (isUnlocked
-                                      ? const Color(0xFF00E5FF).withValues(alpha: 0.45)
+                                      ? const Color(0xFF00E5FF)
+                                          .withValues(alpha: 0.45)
                                       : Colors.black.withValues(alpha: 0.5)))),
-                      blurRadius: (isCurrent || isUnlocked || isWaitingForMidnight) ? 16 : 8,
+                      blurRadius:
+                          (isCurrent || isUnlocked || isWaitingForMidnight)
+                              ? 16
+                              : 8,
                       offset: const Offset(0, 4),
                     ),
                   ],
@@ -4740,12 +5064,15 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                     )
                                   : (isBossMilestone
                                       ? Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           children: [
                                             Text(
                                               stage.emoji,
                                               style: TextStyle(
-                                                  fontSize: isBossMilestone ? 19 : 16),
+                                                  fontSize: isBossMilestone
+                                                      ? 19
+                                                      : 16),
                                             ),
                                             Text(
                                               '$day',
@@ -4758,10 +5085,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                           ],
                                         )
                                       : Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           children: [
                                             const Icon(Icons.lock_rounded,
-                                                color: Colors.white54, size: 12),
+                                                color: Colors.white54,
+                                                size: 12),
                                             const SizedBox(width: 2),
                                             Text(
                                               '$day',
@@ -4784,54 +5113,59 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   right: 0,
                   child: Center(
                     child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: isCurrent
-                          ? const Color(0xFFFFFC00)
-                          : (isCompleted
-                              ? const Color(0xFF0F172A)
-                              : const Color(0xFF1E293B)),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
                         color: isCurrent
-                            ? Colors.black38
+                            ? const Color(0xFFFFFC00)
                             : (isCompleted
-                                ? const Color(0xFF10B981)
-                                : const Color(0xFFFFD700).withValues(alpha: 0.6)),
-                        width: 1.2,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
+                                ? const Color(0xFF0F172A)
+                                : const Color(0xFF1E293B)),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
                           color: isCurrent
-                              ? const Color(0xFFFFFC00).withValues(alpha: 0.5)
-                              : Colors.black.withValues(alpha: 0.6),
-                          blurRadius: isCurrent ? 8 : 4,
-                          offset: const Offset(0, 2),
+                              ? Colors.black38
+                              : (isCompleted
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFFFFD700)
+                                      .withValues(alpha: 0.6)),
+                          width: 1.2,
                         ),
-                      ],
-                    ),
-                    child: Builder(
-                      builder: (context) {
-                        final reqScore = PocketScoreLevelEngine.getRequiredScoreForLevel(day);
-                        final reqTrophies = PocketScoreLevelEngine.getRequiredTrophiesForLevel(day);
-                        final label = reqTrophies > 0
-                            ? 'PS $reqScore • 🏆$reqTrophies'
-                            : 'PS $reqScore';
-                        return Text(
-                          label,
-                          style: GoogleFonts.outfit(
+                        boxShadow: [
+                          BoxShadow(
                             color: isCurrent
-                                ? Colors.black
-                                : (isCompleted
-                                    ? const Color(0xFF34D399)
-                                    : const Color(0xFFFFD700)),
-                            fontWeight: FontWeight.w900,
-                            fontSize: 11.0,
-                            letterSpacing: 0.3,
+                                ? const Color(0xFFFFFC00).withValues(alpha: 0.5)
+                                : Colors.black.withValues(alpha: 0.6),
+                            blurRadius: isCurrent ? 8 : 4,
+                            offset: const Offset(0, 2),
                           ),
-                        );
-                      },
-                    ),
+                        ],
+                      ),
+                      child: Builder(
+                        builder: (context) {
+                          final reqScore =
+                              PocketScoreLevelEngine.getRequiredScoreForLevel(
+                                  day);
+                          final reqTrophies = PocketScoreLevelEngine
+                              .getRequiredTrophiesForLevel(day);
+                          final label = reqTrophies > 0
+                              ? 'PS $reqScore • 🏆$reqTrophies'
+                              : 'PS $reqScore';
+                          return Text(
+                            label,
+                            style: GoogleFonts.outfit(
+                              color: isCurrent
+                                  ? Colors.black
+                                  : (isCompleted
+                                      ? const Color(0xFF34D399)
+                                      : const Color(0xFFFFD700)),
+                              fontWeight: FontWeight.w900,
+                              fontSize: 11.0,
+                              letterSpacing: 0.3,
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),
@@ -4844,34 +5178,38 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   right: -35,
                   child: Center(
                     child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1E1B4B),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFFFFD700), width: 0.9),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFFFD700).withValues(alpha: 0.25),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text('⏳', style: TextStyle(fontSize: 8)),
-                        const SizedBox(width: 3),
-                        Text(
-                          Learning60DayService.formatRemainingCountdown(_timeUntilMidnight),
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFFFFD700),
-                            fontSize: 8.5,
-                            fontWeight: FontWeight.w800,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E1B4B),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                            color: const Color(0xFFFFD700), width: 0.9),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                const Color(0xFFFFD700).withValues(alpha: 0.25),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('⏳', style: TextStyle(fontSize: 8)),
+                          const SizedBox(width: 3),
+                          Text(
+                            Learning60DayService.formatRemainingCountdown(
+                                _timeUntilMidnight),
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFD700),
+                              fontSize: 8.5,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -4904,7 +5242,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   right: 0,
                   child: Center(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 2),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFD700),
                         borderRadius: BorderRadius.circular(6),
@@ -4927,7 +5266,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   ),
                 ),
             ],
-
           ),
         ),
       ),
@@ -4945,7 +5283,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final nodeX = _getNodeX(day, screenWidth);
     final nodeY = _getNodeY(day);
     final isWaitingForMidnight = _isDayWaitingForMidnight(day);
-    final isUnlocked = _isDayUnlocked(day, currentDay) && (day > 1 || _hasAcceptedRules) && !isWaitingForMidnight;
+    final isUnlocked = _isDayUnlocked(day, currentDay) &&
+        (day > 1 || _hasAcceptedRules) &&
+        !isWaitingForMidnight;
     final isCompleted = _isDayCompleted(day);
     final isCurrent = (day == currentDay) && isUnlocked && !isCompleted;
 
@@ -4954,11 +5294,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     const double houseHeight = 138.0;
 
     // Center the house on nodeX, but keep safely within screen margins
-    final double houseLeft = (nodeX - (houseWidth / 2.0)).clamp(8.0, screenWidth - houseWidth - 8.0);
+    final double houseLeft =
+        (nodeX - (houseWidth / 2.0)).clamp(8.0, screenWidth - houseWidth - 8.0);
     // Align house with clean vertical spacing above the level stepping stone and home visit button
     final double houseTop = nodeY - houseHeight - 88.0;
 
-    final palette = HousePalette.presets[(day - 1) % HousePalette.presets.length];
+    final palette =
+        HousePalette.presets[(day - 1) % HousePalette.presets.length];
     final avatarConfig = _getAvatarForDay(day);
 
     return Positioned(
@@ -5040,7 +5382,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 ),
               ),
 
-
               // 4. Resident Avatar Guardian Chip (Click to open collectible card)
               Positioned(
                 top: 2,
@@ -5061,7 +5402,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             ? const Color(0xFFFFFC00)
                             : (isCompleted
                                 ? const Color(0xFF10B981)
-                                : (isUnlocked ? Colors.white54 : Colors.white24)),
+                                : (isUnlocked
+                                    ? Colors.white54
+                                    : Colors.white24)),
                         width: 1.2,
                       ),
                       boxShadow: [
@@ -5088,7 +5431,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   bottom: 24,
                   right: 8,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [Color(0xFFFF5722), Color(0xFFFF9800)],
@@ -5126,7 +5470,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   bottom: 24,
                   left: 8,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: const Color(0xFF0F172A).withValues(alpha: 0.92),
                       borderRadius: BorderRadius.circular(6),
@@ -5144,7 +5489,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.lock_rounded, color: Color(0xFFFFD700), size: 9),
+                        const Icon(Icons.lock_rounded,
+                            color: Color(0xFFFFD700), size: 9),
                         const SizedBox(width: 3),
                         Text(
                           'GATE LOCKED',
@@ -5171,20 +5517,24 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     child: AnimatedBuilder(
                       animation: _bobController,
                       builder: (context, _) {
-                        final bounceY = math.sin(_bobController.value * math.pi) * 5.0;
+                        final bounceY =
+                            math.sin(_bobController.value * math.pi) * 5.0;
                         return Transform.translate(
                           offset: Offset(0, -bounceY),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
                                 colors: [Color(0xFF10B981), Color(0xFF059669)],
                               ),
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.white, width: 1.5),
+                              border:
+                                  Border.all(color: Colors.white, width: 1.5),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF10B981).withValues(alpha: 0.65),
+                                  color: const Color(0xFF10B981)
+                                      .withValues(alpha: 0.65),
                                   blurRadius: 12,
                                   spreadRadius: 2,
                                   offset: const Offset(0, 3),
@@ -5194,7 +5544,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Text('👇', style: TextStyle(fontSize: 13)),
+                                const Text('👇',
+                                    style: TextStyle(fontSize: 13)),
                                 const SizedBox(width: 4),
                                 Text(
                                   'TAP TO ENTER DAY $day ➔',
@@ -5213,7 +5564,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     ),
                   ),
                 ),
-
             ],
           ),
         ),
@@ -5230,7 +5580,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final nodeY = _getNodeY(day);
 
     final double btnWidth = 110.0;
-    final double btnLeft = (nodeX - (btnWidth / 2.0)).clamp(12.0, screenWidth - btnWidth - 12.0);
+    final double btnLeft =
+        (nodeX - (btnWidth / 2.0)).clamp(12.0, screenWidth - btnWidth - 12.0);
     // Placed cleanly between the level circle node (nodeY - 32) and the house (houseTop: nodeY - houseHeight - 88)
     final double btnTop = nodeY - 70.0;
 
@@ -5291,16 +5642,19 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   /// 🌟 Prominent Resident Guardian Avatar along the mountain path (User Audio Directive!)
   /// Placed with larger size (52px) after Home Visit with generous breathing room.
   /// Tapping it opens the Holographic NFT Collectible Trading Card Dialog.
-  Widget _buildRoadmapResidentAvatar(int day, double screenWidth, int currentDay) {
+  Widget _buildRoadmapResidentAvatar(
+      int day, double screenWidth, int currentDay) {
     if (day > _totalDays) return const SizedBox.shrink();
     final nodeX = _getNodeX(day, screenWidth);
     final nodeY = _getNodeY(day);
-    final isUnlocked = _isDayUnlocked(day, currentDay) && (day > 1 || _hasAcceptedRules);
+    final isUnlocked =
+        _isDayUnlocked(day, currentDay) && (day > 1 || _hasAcceptedRules);
     final isCompleted = _isDayCompleted(day);
     final isCurrent = (day == currentDay);
 
     const double avatarSize = 52.0;
-    final double avatarLeft = (nodeX - (avatarSize / 2.0)).clamp(12.0, screenWidth - avatarSize - 12.0);
+    final double avatarLeft = (nodeX - (avatarSize / 2.0))
+        .clamp(12.0, screenWidth - avatarSize - 12.0);
     // Placed after Home Visit with clean breathing space (User Audio Directive!)
     final double avatarTop = nodeY - 130.0;
 
@@ -5341,7 +5695,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: borderColor.withValues(alpha: isCurrent ? 0.45 : 0.25),
+                      color: borderColor.withValues(
+                          alpha: isCurrent ? 0.45 : 0.25),
                       blurRadius: isCurrent ? 14 : 8,
                       spreadRadius: isCurrent ? 2 : 1,
                     ),
@@ -5365,7 +5720,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               const SizedBox(height: 3),
               // Floating Day / Guardian Pill Badge
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                 decoration: BoxDecoration(
                   color: const Color(0xFF0F172A).withValues(alpha: 0.92),
                   borderRadius: BorderRadius.circular(8),
@@ -5408,7 +5764,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       await prefs.setBool('pocket_day_${uid}_${day}_steps_completed', true);
       await prefs.setInt('learning_last_completed_day_$uid', day);
       final now = DateTime.now();
-      await prefs.setString('learning_day_${uid}_${day}_completed_date', '${now.year}-${now.month}-${now.day}');
+      await prefs.setString('learning_day_${uid}_${day}_completed_date',
+          '${now.year}-${now.month}-${now.day}');
       await prefs.setInt('pocket_learning_user_stage_$uid', day + 1);
       await prefs.setInt('learning_day_$uid', day + 1);
 
@@ -5439,7 +5796,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               Expanded(
                 child: Text(
                   '⚔️ Gate $day Breached! House ${day + 1} is now Unlocked! +50 Pocket Score Awarded.',
-                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.outfit(
+                      color: Colors.white, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -5477,7 +5835,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 color: const Color(0xFFEF4444).withValues(alpha: 0.18),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.shield_rounded, color: Color(0xFFEF4444), size: 24),
+              child: const Icon(Icons.shield_rounded,
+                  color: Color(0xFFEF4444), size: 24),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -5494,9 +5853,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     ),
                   ),
                   Text(
-                    isBreached ? 'Gate Cleared • Re-attack for Bonus PS' : 'Defeat Citadel to Unlock House ${day + 1}',
+                    isBreached
+                        ? 'Gate Cleared • Re-attack for Bonus PS'
+                        : 'Defeat Citadel to Unlock House ${day + 1}',
                     style: GoogleFonts.inter(
-                      color: isBreached ? const Color(0xFF10B981) : const Color(0xFFFFD700),
+                      color: isBreached
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFFFD700),
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                     ),
@@ -5518,7 +5881,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
                 ),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
+                border: Border.all(
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
               ),
               child: Row(
                 children: [
@@ -5527,13 +5891,17 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     height: 52,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFFFD700), width: 2),
+                      border:
+                          Border.all(color: const Color(0xFFFFD700), width: 2),
                       image: robot.avatarUrl.isNotEmpty
-                          ? DecorationImage(image: NetworkImage(robot.avatarUrl), fit: BoxFit.cover)
+                          ? DecorationImage(
+                              image: NetworkImage(robot.avatarUrl),
+                              fit: BoxFit.cover)
                           : null,
                     ),
                     child: robot.avatarUrl.isEmpty
-                        ? const Center(child: Text('🤖', style: TextStyle(fontSize: 26)))
+                        ? const Center(
+                            child: Text('🤖', style: TextStyle(fontSize: 26)))
                         : null,
                   ),
                   const SizedBox(width: 12),
@@ -5557,9 +5925,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             ),
                             const SizedBox(width: 6),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                                color: const Color(0xFFFFD700)
+                                    .withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
@@ -5576,7 +5946,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         const SizedBox(height: 3),
                         Text(
                           '${robot.cefrRank} • Gate $day Fortress Guardian',
-                          style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+                          style: GoogleFonts.inter(
+                              color: Colors.white60, fontSize: 11),
                         ),
                       ],
                     ),
@@ -5600,7 +5971,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   Expanded(
                     child: Text(
                       'Launch an attack against ${robot.name}\'s Citadel! Win or lose, completing the raid will break open Gate $day and grant +50 Pocket Score.',
-                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 12, height: 1.4),
+                      style: GoogleFonts.inter(
+                          color: Colors.white70, fontSize: 12, height: 1.4),
                     ),
                   ),
                 ],
@@ -5614,7 +5986,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFEF4444),
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
                   elevation: 4,
                 ),
                 onPressed: () async {
@@ -5632,7 +6005,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 icon: const Icon(Icons.flash_on_rounded, size: 20),
                 label: Text(
                   'LAUNCH ATTACK NOW ⚔️',
-                  style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 14),
+                  style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.w900, fontSize: 14),
                 ),
               ),
             ),
@@ -5640,7 +6014,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             Center(
               child: TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: Text('Cancel', style: GoogleFonts.outfit(color: Colors.white54, fontSize: 12)),
+                child: Text('Cancel',
+                    style: GoogleFonts.outfit(
+                        color: Colors.white54, fontSize: 12)),
               ),
             ),
           ],
@@ -5673,7 +6049,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final bool areHouseTasksDone = _isMasterAdmin ||
         isCompleted ||
         _isDayStepsCompleted(day) ||
-        (isCurrent && (completedTasks >= math.min(requiredSteps, 6) || _subStepFlags['step_$requiredSteps'] == true));
+        (isCurrent &&
+            (completedTasks >= math.min(requiredSteps, 6) ||
+                _subStepFlags['step_$requiredSteps'] == true));
     final bool isAttackReady = !isCompleted && isCurrent && areHouseTasksDone;
 
     // Exact midpoint along the mountain trail between house day and house day + 1
@@ -5682,7 +6060,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
     final double gateWidth = (screenWidth * 0.72).clamp(240.0, 280.0);
     const double gateHeight = 64.0;
-    final double gateLeft = (gateX - (gateWidth / 2.0)).clamp(8.0, screenWidth - gateWidth - 8.0);
+    final double gateLeft =
+        (gateX - (gateWidth / 2.0)).clamp(8.0, screenWidth - gateWidth - 8.0);
     final double gateTop = gateY - (gateHeight / 2.0);
 
     return Positioned(
@@ -5704,7 +6083,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               SnackBar(
                 backgroundColor: const Color(0xFF1E293B),
                 behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 content: Row(
                   children: [
                     const Text('🔒', style: TextStyle(fontSize: 18)),
@@ -5712,7 +6092,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     Expanded(
                       child: Text(
                         'Gate $day is locked! Complete House $currentDay & pass previous gates first.',
-                        style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                        style: GoogleFonts.outfit(
+                            color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
@@ -5728,7 +6109,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               SnackBar(
                 backgroundColor: const Color(0xFF1E293B),
                 behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 content: Row(
                   children: [
                     const Text('🔒', style: TextStyle(fontSize: 18)),
@@ -5736,7 +6118,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     Expanded(
                       child: Text(
                         'Complete House $day missions first to challenge Gate $day Citadel Defender! ($completedTasks/$requiredSteps done)',
-                        style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                        style: GoogleFonts.outfit(
+                            color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
@@ -5772,7 +6155,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             Color(0xFF475569),
                           ],
                         ),
-                        borderRadius: const BorderRadius.horizontal(left: Radius.circular(8)),
+                        borderRadius: const BorderRadius.horizontal(
+                            left: Radius.circular(8)),
                         border: Border.all(color: Colors.white24, width: 1.2),
                         boxShadow: [
                           BoxShadow(
@@ -5814,7 +6198,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             Color(0xFF1E293B),
                           ],
                         ),
-                        borderRadius: const BorderRadius.horizontal(right: Radius.circular(8)),
+                        borderRadius: const BorderRadius.horizontal(
+                            right: Radius.circular(8)),
                         border: Border.all(color: Colors.white24, width: 1.2),
                         boxShadow: [
                           BoxShadow(
@@ -5855,13 +6240,19 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         ? [const Color(0xFF047857), const Color(0xFF064E3B)]
                         : (isAttackReady
                             ? [const Color(0xFF7F1D1D), const Color(0xFF991B1B)]
-                            : [const Color(0xFF1E293B), const Color(0xFF0F172A)]),
+                            : [
+                                const Color(0xFF1E293B),
+                                const Color(0xFF0F172A)
+                              ]),
                   ),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(26), bottom: Radius.circular(8)),
+                  borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(26), bottom: Radius.circular(8)),
                   border: Border.all(
                     color: isCompleted
                         ? const Color(0xFF10B981)
-                        : (isAttackReady ? const Color(0xFFEF4444) : Colors.white24),
+                        : (isAttackReady
+                            ? const Color(0xFFEF4444)
+                            : Colors.white24),
                     width: isAttackReady || isCompleted ? 2.0 : 1.2,
                   ),
                   boxShadow: [
@@ -5889,7 +6280,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                           height: 38,
                           color: isCompleted
                               ? const Color(0xFF34D399)
-                              : (isAttackReady ? const Color(0xFFFCA5A5).withValues(alpha: 0.5) : Colors.white12),
+                              : (isAttackReady
+                                  ? const Color(0xFFFCA5A5)
+                                      .withValues(alpha: 0.5)
+                                  : Colors.white12),
                         ),
                       ),
                     ),
@@ -5898,10 +6292,14 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     Icon(
                       isCompleted
                           ? Icons.lock_open_rounded
-                          : (isAttackReady ? Icons.flash_on_rounded : Icons.lock_rounded),
+                          : (isAttackReady
+                              ? Icons.flash_on_rounded
+                              : Icons.lock_rounded),
                       color: isCompleted
                           ? const Color(0xFF6EE7B7)
-                          : (isAttackReady ? const Color(0xFFFF5252) : Colors.white38),
+                          : (isAttackReady
+                              ? const Color(0xFFFF5252)
+                              : Colors.white38),
                       size: isAttackReady ? 26 : 24,
                     ),
                   ],
@@ -5912,14 +6310,17 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               Positioned(
                 top: -8,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
                   decoration: BoxDecoration(
                     color: const Color(0xFF0F172A),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
                       color: isCompleted
                           ? const Color(0xFF10B981)
-                          : (isAttackReady ? const Color(0xFFEF4444) : Colors.white24),
+                          : (isAttackReady
+                              ? const Color(0xFFEF4444)
+                              : Colors.white24),
                       width: 1.2,
                     ),
                     boxShadow: [
@@ -5948,7 +6349,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         style: GoogleFonts.outfit(
                           color: isCompleted
                               ? const Color(0xFF34D399)
-                              : (isAttackReady ? const Color(0xFFF87171) : Colors.white54),
+                              : (isAttackReady
+                                  ? const Color(0xFFF87171)
+                                  : Colors.white54),
                           fontSize: 8.5,
                           fontWeight: FontWeight.w900,
                           letterSpacing: 0.4,
@@ -5972,10 +6375,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final isCompleted = _isDayCompleted(day);
     final isWaitingForMidnight = _isDayWaitingForMidnight(day);
     final currentDay = _progress?.currentDay ?? 1;
-    final isUnlocked = _isDayUnlocked(day, currentDay) && (day > 1 || _hasAcceptedRules);
+    final isUnlocked =
+        _isDayUnlocked(day, currentDay) && (day > 1 || _hasAcceptedRules);
     final isCurrent = (day == currentDay);
     final estateTitle = FlameEnglishHouseWidget.getEstateStageTitle(day);
-    final palette = HousePalette.presets[(day - 1) % HousePalette.presets.length];
+    final palette =
+        HousePalette.presets[(day - 1) % HousePalette.presets.length];
     final config = _getAvatarForDay(day);
     final reqScore = PocketScoreLevelEngine.getRequiredScoreForLevel(day);
     final reqTrophies = PocketScoreLevelEngine.getRequiredTrophiesForLevel(day);
@@ -6000,7 +6405,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               BoxShadow(
                 color: (isCurrent
                         ? const Color(0xFFFFFC00)
-                        : (isCompleted ? const Color(0xFFFF5722) : Colors.black))
+                        : (isCompleted
+                            ? const Color(0xFFFF5722)
+                            : Colors.black))
                     .withValues(alpha: 0.35),
                 blurRadius: 20,
                 offset: const Offset(0, 4),
@@ -6077,13 +6484,17 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                     ? '🔥 Mastered Estate • Hearth & Windows Glowing'
                                     : (isCurrent
                                         ? '📍 Current Level • Doorstep Entrance'
-                                        : (isUnlocked ? '⚡ Unlocked Estate' : '🔒 Locked Estate')),
+                                        : (isUnlocked
+                                            ? '⚡ Unlocked Estate'
+                                            : '🔒 Locked Estate')),
                                 style: GoogleFonts.inter(
                                   color: isCompleted
                                       ? const Color(0xFFFF9800)
                                       : (isCurrent
                                           ? const Color(0xFFFFFC00)
-                                          : (isUnlocked ? const Color(0xFF38BDF8) : Colors.white54)),
+                                          : (isUnlocked
+                                              ? const Color(0xFF38BDF8)
+                                              : Colors.white54)),
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -6101,7 +6512,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             padding: const EdgeInsets.all(4),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                              border: Border.all(
+                                  color: const Color(0xFFFFD700), width: 1.5),
                             ),
                             child: ClipOval(
                               child: VectorAvatarWidget(
@@ -6118,14 +6530,16 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
                     // Level Requirement info
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.06),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.stars_rounded, color: Color(0xFFFFD700), size: 16),
+                          const Icon(Icons.stars_rounded,
+                              color: Color(0xFFFFD700), size: 16),
                           const SizedBox(width: 6),
                           Text(
                             'Required Pocket Score: $reqScore${reqTrophies > 0 ? ' • 🏆 $reqTrophies Trophies' : ''}',
@@ -6157,10 +6571,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                               Navigator.pop(ctx);
                               _openAvatarCard(day);
                             },
-                            icon: const Icon(Icons.style_rounded, size: 16, color: Color(0xFFFFD700)),
+                            icon: const Icon(Icons.style_rounded,
+                                size: 16, color: Color(0xFFFFD700)),
                             label: Text(
                               'Guardian Card',
-                              style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
+                              style: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.w600),
                             ),
                           ),
                         ),
@@ -6173,7 +6589,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                   : (isCurrent
                                       ? const Color(0xFFFFFC00)
                                       : const Color(0xFF38BDF8)),
-                              foregroundColor: (isCurrent) ? Colors.black : Colors.white,
+                              foregroundColor:
+                                  (isCurrent) ? Colors.black : Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -6205,14 +6622,19 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             icon: Icon(
                               isCompleted
                                   ? Icons.replay_rounded
-                                  : (isCurrent ? Icons.play_arrow_rounded : Icons.lock_rounded),
+                                  : (isCurrent
+                                      ? Icons.play_arrow_rounded
+                                      : Icons.lock_rounded),
                               size: 18,
                             ),
                             label: Text(
                               isCompleted
                                   ? 'Replay Sub-Steps'
-                                  : (isCurrent ? 'Start Trail Step' : 'Gate Locked'),
-                              style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                                  : (isCurrent
+                                      ? 'Start Trail Step'
+                                      : 'Gate Locked'),
+                              style: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.bold),
                             ),
                           ),
                         ),
@@ -6230,7 +6652,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
   void _showMidnightLockedToast(int day) {
     HapticFeedback.selectionClick();
-    final countdownStr = Learning60DayService.formatRemainingCountdown(_timeUntilMidnight);
+    final countdownStr =
+        Learning60DayService.formatRemainingCountdown(_timeUntilMidnight);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: const Color(0xFF1E1B4B),
@@ -6277,11 +6700,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     bool canAttackGate = false;
 
     if (day > 1 && !_isDayCompleted(day - 1)) {
-      message = '🔒 House $day is locked! Attack Level ${day - 1} Citadel to breach Gate ${day - 1}!';
+      message =
+          '🔒 House $day is locked! Attack Level ${day - 1} Citadel to breach Gate ${day - 1}!';
       canAttackGate = true;
     } else if (_unifiedPocketScore < reqScore) {
       final missing = reqScore - _unifiedPocketScore;
-      message = '🪙 Requires $reqScore Pocket Score (Need $missing more PS). Complete previous missions to earn PS!';
+      message =
+          '🪙 Requires $reqScore Pocket Score (Need $missing more PS). Complete previous missions to earn PS!';
     }
 
     ScaffoldMessenger.of(context).clearSnackBars();
@@ -6302,7 +6727,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             : null,
         content: Row(
           children: [
-            const Icon(Icons.shield_rounded, color: Color(0xFFFF5252), size: 16),
+            const Icon(Icons.shield_rounded,
+                color: Color(0xFFFF5252), size: 16),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -6333,8 +6759,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final isRightSide = x >= screenWidth / 2;
     final labelWidth = 150.0;
     final cached = PocketDayCurriculumService.getCachedDay(day);
-    final topicEn = PocketDayCurriculumService.getLocalizedText(cached?['course']?['topic'], lang: 'en', fallback: 'Day $day Mission');
-    final topicMl = PocketDayCurriculumService.getLocalizedText(cached?['course']?['topic'], lang: 'ml');
+    final topicEn = PocketDayCurriculumService.getLocalizedText(
+        cached?['course']?['topic'],
+        lang: 'en',
+        fallback: 'Day $day Mission');
+    final topicMl = PocketDayCurriculumService.getLocalizedText(
+        cached?['course']?['topic'],
+        lang: 'ml');
     final grammar = cached?['grammarRule'] as Map<String, dynamic>? ?? {};
     final formula = grammar['formula']?.toString() ?? 'Daily Mastery';
 
@@ -6360,7 +6791,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 },
                 child: Container(
                   width: labelWidth,
-                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
@@ -6387,7 +6819,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 4, vertical: 1),
                             decoration: BoxDecoration(
                               color: const Color(0xFFFFD700),
                               borderRadius: BorderRadius.circular(4),
@@ -6402,7 +6835,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             ),
                           ),
                           const Spacer(),
-                          const Icon(Icons.info_outline_rounded, color: Color(0xFFFFD700), size: 12),
+                          const Icon(Icons.info_outline_rounded,
+                              color: Color(0xFFFFD700), size: 12),
                         ],
                       ),
                       const SizedBox(height: 3),
@@ -6486,14 +6920,27 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
   void _showTopicDetailsSheet(int day) {
     final cached = PocketDayCurriculumService.getCachedDay(day);
-    final topicEn = PocketDayCurriculumService.getLocalizedText(cached?['course']?['topic'], lang: 'en', fallback: 'Day $day Mission');
-    final topicMl = PocketDayCurriculumService.getLocalizedText(cached?['course']?['topic'], lang: 'ml');
+    final topicEn = PocketDayCurriculumService.getLocalizedText(
+        cached?['course']?['topic'],
+        lang: 'en',
+        fallback: 'Day $day Mission');
+    final topicMl = PocketDayCurriculumService.getLocalizedText(
+        cached?['course']?['topic'],
+        lang: 'ml');
     final grammar = cached?['grammarRule'] as Map<String, dynamic>? ?? {};
     final formula = grammar['formula']?.toString() ?? 'Daily Speaking Mastery';
-    final expEn = PocketDayCurriculumService.getLocalizedText(grammar['explanation'], lang: 'en');
-    final expMl = PocketDayCurriculumService.getLocalizedText(grammar['explanation'], lang: 'ml');
-    final goldenTipEn = PocketDayCurriculumService.getLocalizedText(grammar['goldenTip'], lang: 'en');
-    final goldenTipMl = PocketDayCurriculumService.getLocalizedText(grammar['goldenTip'], lang: 'ml');
+    final expEn = PocketDayCurriculumService.getLocalizedText(
+        grammar['explanation'],
+        lang: 'en');
+    final expMl = PocketDayCurriculumService.getLocalizedText(
+        grammar['explanation'],
+        lang: 'ml');
+    final goldenTipEn = PocketDayCurriculumService.getLocalizedText(
+        grammar['goldenTip'],
+        lang: 'en');
+    final goldenTipMl = PocketDayCurriculumService.getLocalizedText(
+        grammar['goldenTip'],
+        lang: 'ml');
 
     showModalBottomSheet(
       context: context,
@@ -6536,12 +6983,21 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('DAY $day CURRICULUM BOARD',
-                            style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 12, fontWeight: FontWeight.bold)),
+                            style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFD700),
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold)),
                         Text(topicEn,
-                            style: GoogleFonts.outfit(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
+                            style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold)),
                         if (topicMl.isNotEmpty && topicMl != topicEn)
                           Text(topicMl,
-                              style: GoogleFonts.inter(color: const Color(0xFF93C5FD), fontSize: 13, fontWeight: FontWeight.w600)),
+                              style: GoogleFonts.inter(
+                                  color: const Color(0xFF93C5FD),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600)),
                       ],
                     ),
                   ),
@@ -6554,21 +7010,34 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 decoration: BoxDecoration(
                   color: const Color(0xFF1E293B),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.5)),
+                  border: Border.all(
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.5)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('FORMULA / RULE:', style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontSize: 11, fontWeight: FontWeight.bold)),
+                    Text('FORMULA / RULE:',
+                        style: GoogleFonts.outfit(
+                            color: const Color(0xFF38BDF8),
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold)),
                     const SizedBox(height: 4),
-                    Text(formula, style: GoogleFonts.robotoMono(color: const Color(0xFFFFE066), fontSize: 15, fontWeight: FontWeight.bold)),
+                    Text(formula,
+                        style: GoogleFonts.robotoMono(
+                            color: const Color(0xFFFFE066),
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold)),
                     if (expMl.isNotEmpty) ...[
                       const SizedBox(height: 6),
-                      Text(expMl, style: GoogleFonts.inter(color: Colors.white, fontSize: 12.5)),
+                      Text(expMl,
+                          style: GoogleFonts.inter(
+                              color: Colors.white, fontSize: 12.5)),
                     ],
                     if (expEn.isNotEmpty && expEn != expMl) ...[
                       const SizedBox(height: 4),
-                      Text(expEn, style: GoogleFonts.inter(color: Colors.white60, fontSize: 11)),
+                      Text(expEn,
+                          style: GoogleFonts.inter(
+                              color: Colors.white60, fontSize: 11)),
                     ],
                   ],
                 ),
@@ -6581,7 +7050,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFD700).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                    border: Border.all(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
                   ),
                   child: Row(
                     children: [
@@ -6590,7 +7060,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       Expanded(
                         child: Text(
                           goldenTipMl.isNotEmpty ? goldenTipMl : goldenTipEn,
-                          style: GoogleFonts.inter(color: const Color(0xFFFFE066), fontSize: 12, fontWeight: FontWeight.w600),
+                          style: GoogleFonts.inter(
+                              color: const Color(0xFFFFE066),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600),
                         ),
                       ),
                     ],
@@ -6605,14 +7078,17 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF10B981),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                   ),
                   onPressed: () {
                     Navigator.pop(ctx);
                     _startActiveSubStep(day);
                   },
                   icon: const Icon(Icons.play_arrow_rounded, size: 22),
-                  label: Text('ENTER DAY $day LESSON ➔', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14)),
+                  label: Text('ENTER DAY $day LESSON ➔',
+                      style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.bold, fontSize: 14)),
                 ),
               ),
             ],
@@ -6657,7 +7133,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 },
                 child: Container(
                   width: labelWidth,
-                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFF2E1065), Color(0xFF1E1B4B)],
@@ -6727,7 +7204,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: const Color(0xFFFF8906).withValues(alpha: 0.7 - (_bobController.value * 0.3)),
+                        color: const Color(0xFFFF8906).withValues(
+                            alpha: 0.7 - (_bobController.value * 0.3)),
                         width: 2.0,
                       ),
                     ),
@@ -6778,11 +7256,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               left: 0,
               right: 0,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                 decoration: BoxDecoration(
                   color: const Color(0xFF0F172A),
                   borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: const Color(0xFFFFD700), width: 1.0),
+                  border:
+                      Border.all(color: const Color(0xFFFFD700), width: 1.0),
                 ),
                 child: Text(
                   'EVO ⚡',
@@ -6847,11 +7327,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
                   // Header Badge
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFF8906).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFFFD700), width: 1.0),
+                      border: Border.all(
+                          color: const Color(0xFFFFD700), width: 1.0),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -6938,7 +7420,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             Expanded(
                               child: Text(
                                 'House Stage: ${((day - 1) ~/ 10) + 1} of 9 Progressive Estates',
-                                style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5),
+                                style: GoogleFonts.inter(
+                                    color: Colors.white70, fontSize: 11.5),
                               ),
                             ),
                           ],
@@ -6951,7 +7434,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             Expanded(
                               child: Text(
                                 'Day Reward Target: ~600 Pocket Score across 17 steps',
-                                style: GoogleFonts.inter(color: const Color(0xFFFFD700), fontSize: 11.5, fontWeight: FontWeight.bold),
+                                style: GoogleFonts.inter(
+                                    color: const Color(0xFFFFD700),
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.bold),
                               ),
                             ),
                           ],
@@ -6964,7 +7450,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             Expanded(
                               child: Text(
                                 'Level Mastery Exam: Step 17 unlocks House ${day + 1} Gate',
-                                style: GoogleFonts.inter(color: const Color(0xFF10B981), fontSize: 11.5, fontWeight: FontWeight.bold),
+                                style: GoogleFonts.inter(
+                                    color: const Color(0xFF10B981),
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.bold),
                               ),
                             ),
                           ],
@@ -6994,7 +7483,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.play_arrow_rounded, color: Colors.black, size: 20),
+                          const Icon(Icons.play_arrow_rounded,
+                              color: Colors.black, size: 20),
                           const SizedBox(width: 6),
                           Text(
                             'START STEP 1 • CLIMB THE TRAIL',
@@ -7050,7 +7540,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   if (!step.isUnlocked) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('🔒 Complete step ${step.stepIndex - 1} first!'),
+                        content: Text(
+                            '🔒 Complete step ${step.stepIndex - 1} first!'),
                         duration: const Duration(seconds: 1),
                         behavior: SnackBarBehavior.floating,
                       ),
@@ -7061,7 +7552,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 },
                 child: Container(
                   width: labelWidth,
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                   decoration: BoxDecoration(
                     color: const Color(0xFF131728).withValues(alpha: 0.94),
                     borderRadius: BorderRadius.circular(10),
@@ -7109,7 +7601,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         style: GoogleFonts.inter(
                           color: step.isCompleted
                               ? const Color(0xFF10B981)
-                              : (step.isUnlocked ? const Color(0xFFFFD700) : Colors.white38),
+                              : (step.isUnlocked
+                                  ? const Color(0xFFFFD700)
+                                  : Colors.white38),
                           fontSize: 8,
                           fontWeight: FontWeight.w500,
                         ),
@@ -7136,7 +7630,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: step.color.withValues(alpha: 0.6 - (_bobController.value * 0.3)),
+                          color: step.color.withValues(
+                              alpha: 0.6 - (_bobController.value * 0.3)),
                           width: 2.2,
                         ),
                       ),
@@ -7152,7 +7647,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 if (!step.isUnlocked) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('🔒 Complete step ${step.stepIndex - 1} first!'),
+                      content:
+                          Text('🔒 Complete step ${step.stepIndex - 1} first!'),
                       duration: const Duration(seconds: 1),
                       behavior: SnackBarBehavior.floating,
                     ),
@@ -7170,8 +7666,14 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     colors: step.isCompleted
                         ? [const Color(0xFF10B981), const Color(0xFF047857)]
                         : (step.isUnlocked
-                            ? [step.color.withValues(alpha: 0.9), step.color.withValues(alpha: 0.6)]
-                            : [const Color(0xFF1F2438), const Color(0xFF121624)]),
+                            ? [
+                                step.color.withValues(alpha: 0.9),
+                                step.color.withValues(alpha: 0.6)
+                              ]
+                            : [
+                                const Color(0xFF1F2438),
+                                const Color(0xFF121624)
+                              ]),
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -7183,7 +7685,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: (step.isCompleted ? const Color(0xFF10B981) : (step.isUnlocked ? step.color : Colors.black))
+                      color: (step.isCompleted
+                              ? const Color(0xFF10B981)
+                              : (step.isUnlocked ? step.color : Colors.black))
                           .withValues(alpha: 0.4),
                       blurRadius: 10,
                       offset: const Offset(0, 3),
@@ -7192,13 +7696,15 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 ),
                 child: Center(
                   child: step.isCompleted
-                      ? const Icon(Icons.check_rounded, color: Colors.white, size: 20)
+                      ? const Icon(Icons.check_rounded,
+                          color: Colors.white, size: 20)
                       : (step.isUnlocked
                           ? Text(
                               step.icon,
                               style: const TextStyle(fontSize: 18),
                             )
-                          : const Icon(Icons.lock_rounded, color: Colors.white30, size: 16)),
+                          : const Icon(Icons.lock_rounded,
+                              color: Colors.white30, size: 16)),
                 ),
               ),
             ),
@@ -7209,7 +7715,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               left: 0,
               right: 0,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                 decoration: BoxDecoration(
                   color: const Color(0xFF0F172A),
                   borderRadius: BorderRadius.circular(6),
@@ -7247,7 +7754,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final List<Widget> widgets = [];
 
     // 🎯 Day Lesson & Topic Title Board (User Audio Directive: "veedu kazhinja udane oru title undavoolle athinte? Title-il oru board kodukkanam. Ithaanu innathe divasam padikkan ponennu paranjittu oru title board kodukkanam, valiya reethiyil ketto.")
-    final boardY = _getNodeY(activeDay) - ((0.22 / 18.0) * (_nodeSpacingY + _expandedActiveGap));
+    final boardY = _getNodeY(activeDay) -
+        ((0.22 / 18.0) * (_nodeSpacingY + _expandedActiveGap));
     final boardX = _getSubStepX(activeDay, 0, screenWidth);
     widgets.add(
       _buildDayTopicBillboardNode(
@@ -7260,7 +7768,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
     // 👑 Stage Character Evolution Node right before Step 1 (User Audio Directive!)
     // "Aa 1-mthe steppinu munne cheriya oru card ittittu, aa cardil tap cheythu kazhinju kazhinja aa avatar-ukal kaanum. 'Achieve - aa avatar achieve cheythu' ennullathu."
-    final avatarNodeY = _getNodeY(activeDay) - ((0.45 / 18.0) * (_nodeSpacingY + _expandedActiveGap));
+    final avatarNodeY = _getNodeY(activeDay) -
+        ((0.45 / 18.0) * (_nodeSpacingY + _expandedActiveGap));
     final avatarNodeX = _getSubStepX(activeDay, 0, screenWidth);
     widgets.add(
       _buildAvatarEvolutionNode(
@@ -7284,7 +7793,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     for (int k = 1; k <= totalStepsCount; k++) {
       final step = subSteps[k - 1];
       final y = _getSubStepY(activeDay, k, totalSteps: totalStepsCount);
-      final x = _getSubStepX(activeDay, k, screenWidth, totalSteps: totalStepsCount);
+      final x =
+          _getSubStepX(activeDay, k, screenWidth, totalSteps: totalStepsCount);
       final isActiveCurrent = (step.stepIndex == currentActiveStepIndex);
 
       widgets.add(
@@ -7331,8 +7841,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       targetX = _getNodeX(nextDay, screenWidth);
       targetY = _getNodeY(nextDay) + 48.0;
     } else {
-      targetX = _getSubStepX(activeDay, currentActiveStepIndex, screenWidth, totalSteps: totalStepsCount);
-      targetY = _getSubStepY(activeDay, currentActiveStepIndex, totalSteps: totalStepsCount) - 34.0;
+      targetX = _getSubStepX(activeDay, currentActiveStepIndex, screenWidth,
+          totalSteps: totalStepsCount);
+      targetY = _getSubStepY(activeDay, currentActiveStepIndex,
+              totalSteps: totalStepsCount) -
+          34.0;
     }
 
     return AnimatedPositioned(
@@ -7370,20 +7883,28 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 children: [
                   // Status badge above the car
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                     decoration: BoxDecoration(
-                      color: allDone ? const Color(0xFF10B981) : const Color(0xFFFFD700),
+                      color: allDone
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFFFD700),
                       borderRadius: BorderRadius.circular(10),
                       boxShadow: [
                         BoxShadow(
-                          color: (allDone ? const Color(0xFF10B981) : const Color(0xFFFFD700)).withValues(alpha: 0.4),
+                          color: (allDone
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFFFFD700))
+                              .withValues(alpha: 0.4),
                           blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),
                       ],
                     ),
                     child: Text(
-                      allDone ? 'House 2 Reached! 🏡' : 'Car at Step $currentActiveStepIndex',
+                      allDone
+                          ? 'House 2 Reached! 🏡'
+                          : 'Car at Step $currentActiveStepIndex',
                       style: GoogleFonts.outfit(
                         color: Colors.black,
                         fontSize: 9.5,
@@ -7401,7 +7922,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       gradient: LinearGradient(
                         colors: allDone
                             ? [const Color(0xFF10B981), const Color(0xFF059669)]
-                            : [const Color(0xFFFF9800), const Color(0xFFE65100)],
+                            : [
+                                const Color(0xFFFF9800),
+                                const Color(0xFFE65100)
+                              ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                       ),
@@ -7532,8 +8056,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   } else if (sittingAtGate) {
                     _showGateCitadelAttackDialog(effectiveAvatarDay);
                   } else {
-                    final isWaitingForMidnight = _isDayWaitingForMidnight(effectiveAvatarDay);
-                    final isUnlocked = _isDayUnlocked(effectiveAvatarDay, effectiveAvatarDay);
+                    final isWaitingForMidnight =
+                        _isDayWaitingForMidnight(effectiveAvatarDay);
+                    final isUnlocked =
+                        _isDayUnlocked(effectiveAvatarDay, effectiveAvatarDay);
                     final isCompleted = _isDayCompleted(effectiveAvatarDay);
                     if (_isMasterAdmin || isCompleted || isUnlocked) {
                       _startActiveSubStep(effectiveAvatarDay);
@@ -7548,12 +8074,17 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: sittingAtGate ? const Color(0xFFEF4444) : Colors.white,
+                    color:
+                        sittingAtGate ? const Color(0xFFEF4444) : Colors.white,
                     borderRadius: BorderRadius.circular(12),
-                    border: sittingAtGate ? Border.all(color: const Color(0xFFFFD700), width: 1.5) : null,
+                    border: sittingAtGate
+                        ? Border.all(color: const Color(0xFFFFD700), width: 1.5)
+                        : null,
                     boxShadow: [
                       BoxShadow(
-                        color: sittingAtGate ? const Color(0xFFEF4444).withValues(alpha: 0.5) : Colors.black.withValues(alpha: 0.35),
+                        color: sittingAtGate
+                            ? const Color(0xFFEF4444).withValues(alpha: 0.5)
+                            : Colors.black.withValues(alpha: 0.35),
                         blurRadius: sittingAtGate ? 12 : 8,
                         offset: const Offset(0, 2),
                       ),
@@ -7609,7 +8140,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                          color: sittingAtGate ? const Color(0xFFFF5252) : const Color(0xFFFFFC00), width: 3.0),
+                          color: sittingAtGate
+                              ? const Color(0xFFFF5252)
+                              : const Color(0xFFFFFC00),
+                          width: 3.0),
                       boxShadow: [
                         BoxShadow(
                           color: sittingAtGate
@@ -7619,7 +8153,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                           spreadRadius: 2,
                         ),
                         BoxShadow(
-                          color: const Color(0xFFFF5722).withValues(alpha: 0.45),
+                          color:
+                              const Color(0xFFFF5722).withValues(alpha: 0.45),
                           blurRadius: 26,
                           spreadRadius: 4,
                         ),
@@ -7728,7 +8263,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         top: _getNodeY(21) + 55,
         child: _buildZoneBanner(
           title: '🏜️ ZONE 2: DESERT DUNES & OASIS',
-          subtitle: 'Day 21 Habit Anchor, Spoken Confidence & Idioms (Days 21–40)',
+          subtitle:
+              'Day 21 Habit Anchor, Spoken Confidence & Idioms (Days 21–40)',
           color: const Color(0xFFFFB700),
         ),
       ),
@@ -7903,12 +8439,14 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFFFFD700).withValues(alpha: 0.55 + (pulse * 0.25)),
+                              color: const Color(0xFFFFD700)
+                                  .withValues(alpha: 0.55 + (pulse * 0.25)),
                               blurRadius: 30,
                               spreadRadius: 6,
                             ),
                             BoxShadow(
-                              color: const Color(0xFFFF8906).withValues(alpha: 0.40),
+                              color: const Color(0xFFFF8906)
+                                  .withValues(alpha: 0.40),
                               blurRadius: 38,
                               spreadRadius: 8,
                             ),
@@ -7926,17 +8464,31 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
                       colors: isConquered
-                          ? [const Color(0xFFFFD700), const Color(0xFF10B981), const Color(0xFF047857)]
+                          ? [
+                              const Color(0xFFFFD700),
+                              const Color(0xFF10B981),
+                              const Color(0xFF047857)
+                            ]
                           : (isUnlocked
-                              ? [const Color(0xFFFFFC00), const Color(0xFFFFD700), const Color(0xFFFF8906)]
-                              : [const Color(0xFF334155), const Color(0xFF1E293B), const Color(0xFF0F172A)]),
+                              ? [
+                                  const Color(0xFFFFFC00),
+                                  const Color(0xFFFFD700),
+                                  const Color(0xFFFF8906)
+                                ]
+                              : [
+                                  const Color(0xFF334155),
+                                  const Color(0xFF1E293B),
+                                  const Color(0xFF0F172A)
+                                ]),
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     border: Border.all(
                       color: isConquered
                           ? const Color(0xFF6EE7B7)
-                          : (isUnlocked ? Colors.white : const Color(0xFFFFD700).withValues(alpha: 0.5)),
+                          : (isUnlocked
+                              ? Colors.white
+                              : const Color(0xFFFFD700).withValues(alpha: 0.5)),
                       width: isUnlocked ? 3.5 : 2.0,
                     ),
                     boxShadow: [
@@ -7976,14 +8528,19 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 Positioned(
                   bottom: -10,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: isConquered
                           ? const Color(0xFF10B981)
-                          : (isUnlocked ? const Color(0xFFDC2626) : const Color(0xFF0F172A)),
+                          : (isUnlocked
+                              ? const Color(0xFFDC2626)
+                              : const Color(0xFF0F172A)),
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                        color: isConquered ? Colors.white : const Color(0xFFFFD700),
+                        color: isConquered
+                            ? Colors.white
+                            : const Color(0xFFFFD700),
                         width: 1.2,
                       ),
                       boxShadow: [
@@ -8060,7 +8617,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final nodeY = _getNodeY(91);
     final isRightSide = nodeX >= screenWidth / 2;
     final double cardWidth = ((screenWidth / 2) - 42.0).clamp(100.0, 140.0);
-    final double cardLeft = isRightSide ? 12.0 : (screenWidth - cardWidth - 12.0);
+    final double cardLeft =
+        isRightSide ? 12.0 : (screenWidth - cardWidth - 12.0);
     final double cardTop = nodeY - 21.0;
     final isUnlocked = (currentDay >= 91) || (_completedDays.contains(90));
 
@@ -8108,7 +8666,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      _hasConqueredCitadel ? 'CITADEL CONQUERED' : 'PALACE RAID',
+                      _hasConqueredCitadel
+                          ? 'CITADEL CONQUERED'
+                          : 'PALACE RAID',
                       style: GoogleFonts.outfit(
                         color: const Color(0xFFFFD700),
                         fontSize: 9.5,
@@ -8169,7 +8729,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               decoration: BoxDecoration(
                 color: const Color(0xFF1E293B),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.5)),
+                border: Border.all(
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.5)),
               ),
               child: Row(
                 children: [
@@ -8191,7 +8752,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             const SizedBox(height: 12),
             Text(
               'Once you complete Day 90, you will face The President of Pocket World in a 250-question boss battle. Conquering the citadel awards the Official Day 90 Fluency Certificate!',
-              style: GoogleFonts.outfit(color: Colors.white, fontSize: 12.5, height: 1.4),
+              style: GoogleFonts.outfit(
+                  color: Colors.white, fontSize: 12.5, height: 1.4),
             ),
           ],
         ),
@@ -8203,12 +8765,14 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFFD700),
                 foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
               onPressed: () => Navigator.pop(ctx),
               child: Text(
                 'UNDERSTOOD 🫡',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
+                style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w900, fontSize: 13),
               ),
             ),
           ),
@@ -8252,7 +8816,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               decoration: BoxDecoration(
                 color: const Color(0xFF1E293B),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                border: Border.all(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
               ),
               child: Row(
                 children: [
@@ -8274,7 +8839,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             const SizedBox(height: 12),
             Text(
               'Face 250 sequential boss trial questions and breach the Presidential Palace to prove complete C2 English Fluency!',
-              style: GoogleFonts.outfit(color: Colors.white, fontSize: 12.5, height: 1.4),
+              style: GoogleFonts.outfit(
+                  color: Colors.white, fontSize: 12.5, height: 1.4),
             ),
           ],
         ),
@@ -8287,7 +8853,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFFFD700),
               foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
             onPressed: () {
               Navigator.pop(ctx);
@@ -8299,7 +8866,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             },
             child: Text(
               'START ATTACK ⚔️',
-              style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
+              style:
+                  GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
             ),
           ),
         ],
@@ -8378,7 +8946,8 @@ class _AdventureMapRoadPainter extends CustomPainter {
       canvas.drawCircle(Offset(cx + 22, cy - 8), 34, cloudPaintBright);
       canvas.drawCircle(Offset(cx + 44, cy), 26, cloudPaint);
       canvas.drawRRect(
-        RRect.fromRectAndRadius(Rect.fromLTWH(cx - 20, cy + 4, 84, 22), const Radius.circular(11)),
+        RRect.fromRectAndRadius(
+            Rect.fromLTWH(cx - 20, cy + 4, 84, 22), const Radius.circular(11)),
         cloudPaint,
       );
     }
@@ -8389,11 +8958,13 @@ class _AdventureMapRoadPainter extends CustomPainter {
     final paint = Paint()
       ..shader = const LinearGradient(
         colors: [
-          Color(0xFF4A0E18), // Top 0.0 - 0.12: Zone 5: Volcanic Magma Crimson & Citadel Apex
+          Color(
+              0xFF4A0E18), // Top 0.0 - 0.12: Zone 5: Volcanic Magma Crimson & Citadel Apex
           Color(0xFF1B386E), // 0.35: Zone 4: Sky Blue Cloud Realm
           Color(0xFF26144A), // 0.58: Zone 3: Cyberpunk Electric Violet
           Color(0xFF4A2B0F), // 0.80: Zone 2: Warm Desert Golden Amber
-          Color(0xFF0F3822), // Bottom 1.0: Zone 1: Lush Forest Green (Day 1 starts here)
+          Color(
+              0xFF0F3822), // Bottom 1.0: Zone 1: Lush Forest Green (Day 1 starts here)
         ],
         stops: [0.12, 0.35, 0.58, 0.80, 1.0],
         begin: Alignment.topCenter,
@@ -8452,21 +9023,30 @@ class _AdventureMapRoadPainter extends CustomPainter {
       if (day % 2 == 1) {
         if (day <= 25) {
           // Lush Forest Zone
-          drawEmoji(day % 3 == 0 ? '🌲' : (day % 3 == 1 ? '🌿' : '🌸'), xOpposite, y - 10, 22);
+          drawEmoji(day % 3 == 0 ? '🌲' : (day % 3 == 1 ? '🌿' : '🌸'),
+              xOpposite, y - 10, 22);
         } else if (day <= 45) {
           // Desert & Mountain Savannah
-          drawEmoji(day % 3 == 0 ? '🌴' : (day % 3 == 1 ? '🌵' : '🪨'), xOpposite, y - 10, 22);
+          drawEmoji(day % 3 == 0 ? '🌴' : (day % 3 == 1 ? '🌵' : '🪨'),
+              xOpposite, y - 10, 22);
         } else if (day <= 70) {
           // Mystic Highland & Crystals
-          drawEmoji(day % 3 == 0 ? '💎' : (day % 3 == 1 ? '🔮' : '⚡'), xOpposite, y - 10, 22);
+          drawEmoji(day % 3 == 0 ? '💎' : (day % 3 == 1 ? '🔮' : '⚡'),
+              xOpposite, y - 10, 22);
         } else {
           // Volcanic Summit
-          drawEmoji(day % 3 == 0 ? '🌋' : (day % 3 == 1 ? '🔥' : '🪙'), xOpposite, y - 10, 24);
+          drawEmoji(day % 3 == 0 ? '🌋' : (day % 3 == 1 ? '🔥' : '🪙'),
+              xOpposite, y - 10, 24);
         }
       }
 
       // 3. Trailside Campfires & Lantern Torches (Audio: flames & extraordinary ground touches)
-      if (day == 4 || day == 12 || day == 24 || day == 38 || day == 52 || day == 72) {
+      if (day == 4 ||
+          day == 12 ||
+          day == 24 ||
+          day == 38 ||
+          day == 52 ||
+          day == 72) {
         drawEmoji('🔥', xOpposite, y + 25, 20);
         drawEmoji('🪵', xOpposite + 16, y + 28, 16);
       } else if (day % 6 == 0) {
@@ -8537,7 +9117,8 @@ class _AdventureMapRoadPainter extends CustomPainter {
 
       if (day == 1) {
         fullPath.moveTo(p1.dx, p1.dy);
-        if (day < currentDay && hasAcceptedRules) completedPath.moveTo(p1.dx, p1.dy);
+        if (day < currentDay && hasAcceptedRules)
+          completedPath.moveTo(p1.dx, p1.dy);
       }
 
       // Natural mountain switchback curve
@@ -8616,7 +9197,12 @@ class _SyllabusExamDialogState extends State<_SyllabusExamDialog> {
           },
           {
             'q': 'How do you greet someone in the morning?',
-            'options': ['Good Night', 'Good Morning', 'Good Evening', 'Goodbye'],
+            'options': [
+              'Good Night',
+              'Good Morning',
+              'Good Evening',
+              'Goodbye'
+            ],
             'correct': 1,
             'exp': '"Good Morning" is the polite greeting for the morning.',
           },
@@ -8654,13 +9240,15 @@ class _SyllabusExamDialogState extends State<_SyllabusExamDialog> {
             'exp': 'With subject "you", we use the auxiliary verb "do".',
           },
           {
-            'q': 'Complete the sentence: "They ___ playing football right now."',
+            'q':
+                'Complete the sentence: "They ___ playing football right now."',
             'options': ['is', 'are', 'was', 'am'],
             'correct': 1,
             'exp': 'Present continuous with "They" takes "are".',
           },
           {
-            'q': 'Choose the correct possessive pronoun: "This book belongs to John. It is ___."',
+            'q':
+                'Choose the correct possessive pronoun: "This book belongs to John. It is ___."',
             'options': ['her', 'hers', 'his', 'him'],
             'correct': 2,
             'exp': '"His" is the possessive pronoun for John (he).',
@@ -8669,7 +9257,8 @@ class _SyllabusExamDialogState extends State<_SyllabusExamDialog> {
             'q': 'Negative form: "I don\'t have ___ money."',
             'options': ['some', 'any', 'many', 'much of'],
             'correct': 1,
-            'exp': 'In negative sentences, "any" is typically used with uncountable nouns.',
+            'exp':
+                'In negative sentences, "any" is typically used with uncountable nouns.',
           },
         ];
       case LearnerLevel.elementary:
@@ -8678,25 +9267,30 @@ class _SyllabusExamDialogState extends State<_SyllabusExamDialog> {
             'q': 'Conditional clause: "If it rains tomorrow, we ___ at home."',
             'options': ['stayed', 'will stay', 'would stay', 'staying'],
             'correct': 1,
-            'exp': 'First conditional takes Present Simple in "if" clause and "will + verb" in main clause.',
+            'exp':
+                'First conditional takes Present Simple in "if" clause and "will + verb" in main clause.',
           },
           {
-            'q': 'Preposition of time: "She has been working here ___ three years."',
+            'q':
+                'Preposition of time: "She has been working here ___ three years."',
             'options': ['since', 'for', 'during', 'from'],
             'correct': 1,
             'exp': '"For" is used for periods/durations of time (3 years).',
           },
           {
-            'q': 'Conjunction: "The meal was tasty, ___ it was rather expensive."',
+            'q':
+                'Conjunction: "The meal was tasty, ___ it was rather expensive."',
             'options': ['because', 'although', 'so', 'therefore'],
             'correct': 1,
             'exp': '"Although" introduces a contrast or concession.',
           },
           {
-            'q': 'Indirect question: "Could you tell me where the station ___?"',
+            'q':
+                'Indirect question: "Could you tell me where the station ___?"',
             'options': ['is', 'is it', 'it is located at', 'does it be'],
             'correct': 0,
-            'exp': 'In indirect questions, the word order is statement order (subject + verb).',
+            'exp':
+                'In indirect questions, the word order is statement order (subject + verb).',
           },
           {
             'q': 'Gerund phrase: "I look forward to ___ you soon."',
@@ -8708,31 +9302,45 @@ class _SyllabusExamDialogState extends State<_SyllabusExamDialog> {
       case LearnerLevel.middle:
         return [
           {
-            'q': 'Third conditional: "Had I known about the storm, I ___ earlier."',
-            'options': ['left', 'would leave', 'would have left', 'will have left'],
+            'q':
+                'Third conditional: "Had I known about the storm, I ___ earlier."',
+            'options': [
+              'left',
+              'would leave',
+              'would have left',
+              'will have left'
+            ],
             'correct': 2,
-            'exp': 'Inverted third conditional requires "would have + past participle".',
+            'exp':
+                'Inverted third conditional requires "would have + past participle".',
           },
           {
-            'q': 'Prepositional phrase: "The flight was delayed ___ inclement weather."',
+            'q':
+                'Prepositional phrase: "The flight was delayed ___ inclement weather."',
             'options': ['due to', 'because', 'owing', 'despite of'],
             'correct': 0,
-            'exp': '"Due to" acts as an adjectival/adverbial preposition phrase followed by a noun phrase.',
+            'exp':
+                '"Due to" acts as an adjectival/adverbial preposition phrase followed by a noun phrase.',
           },
           {
-            'q': 'Subject-verb agreement: "Neither the manager nor the assistants ___ in the hall."',
+            'q':
+                'Subject-verb agreement: "Neither the manager nor the assistants ___ in the hall."',
             'options': ['was', 'were', 'is', 'has been'],
             'correct': 1,
-            'exp': 'With "neither... nor", the verb agrees with the closer subject ("assistants" -> were).',
+            'exp':
+                'With "neither... nor", the verb agrees with the closer subject ("assistants" -> were).',
           },
           {
-            'q': 'Collocation: "She delivered her keynote with tremendous poise and ___."',
+            'q':
+                'Collocation: "She delivered her keynote with tremendous poise and ___."',
             'options': ['eloquence', 'reluctance', 'negligence', 'ambivalence'],
             'correct': 0,
-            'exp': '"Eloquence" signifies fluent and persuasive expressive speaking.',
+            'exp':
+                '"Eloquence" signifies fluent and persuasive expressive speaking.',
           },
           {
-            'q': 'Phrasal verb: "The council must come up ___ a viable alternative."',
+            'q':
+                'Phrasal verb: "The council must come up ___ a viable alternative."',
             'options': ['with', 'to', 'for', 'about'],
             'correct': 0,
             'exp': '"Come up with" means to produce or formulate an idea/plan.',
@@ -8741,67 +9349,90 @@ class _SyllabusExamDialogState extends State<_SyllabusExamDialog> {
       case LearnerLevel.advanced:
         return [
           {
-            'q': 'Vocabulary: "His analysis was so ___ that even sceptics accepted his conclusions."',
+            'q':
+                'Vocabulary: "His analysis was so ___ that even sceptics accepted his conclusions."',
             'options': ['cogent', 'spurious', 'superfluous', 'tenuous'],
             'correct': 0,
             'exp': '"Cogent" means clear, logical, and convincing.',
           },
           {
-            'q': 'Inversion: "Scarcely had the session begun ___ the microphone malfunctioned."',
+            'q':
+                'Inversion: "Scarcely had the session begun ___ the microphone malfunctioned."',
             'options': ['than', 'when', 'then', 'that'],
             'correct': 1,
-            'exp': '"Scarcely... when" is the standard correlative inversion pair.',
+            'exp':
+                '"Scarcely... when" is the standard correlative inversion pair.',
           },
           {
-            'q': 'Collocation: "The committee reached a unanimous ___ after prolonged debate."',
+            'q':
+                'Collocation: "The committee reached a unanimous ___ after prolonged debate."',
             'options': ['consensus', 'contention', 'dissent', 'ambiguity'],
             'correct': 0,
-            'exp': '"Unanimous consensus" indicates complete agreement across all parties.',
+            'exp':
+                '"Unanimous consensus" indicates complete agreement across all parties.',
           },
           {
-            'q': 'Subjunctive mood: "It is imperative that the CEO ___ present at the hearing."',
+            'q':
+                'Subjunctive mood: "It is imperative that the CEO ___ present at the hearing."',
             'options': ['is', 'be', 'was', 'would be'],
             'correct': 1,
             'exp': 'Formal mandative subjunctive uses the bare base form "be".',
           },
           {
-            'q': 'Idiomatic discourse: "To mitigate geopolitical risk, supply chain agility is of ___ importance."',
+            'q':
+                'Idiomatic discourse: "To mitigate geopolitical risk, supply chain agility is of ___ importance."',
             'options': ['paramount', 'nominal', 'trivial', 'ancillary'],
             'correct': 0,
-            'exp': '"Paramount" means more important than anything else; supreme.',
+            'exp':
+                '"Paramount" means more important than anything else; supreme.',
           },
         ];
       case LearnerLevel.expert:
         return [
           {
-            'q': 'Elite Lexicon: "Her diplomatic discourse exhibited rare perspicacity and ___."',
+            'q':
+                'Elite Lexicon: "Her diplomatic discourse exhibited rare perspicacity and ___."',
             'options': ['finesse', 'obloquy', 'solipsism', 'vacillation'],
             'correct': 0,
-            'exp': '"Finesse" denotes intricate and refined skill or diplomacy.',
+            'exp':
+                '"Finesse" denotes intricate and refined skill or diplomacy.',
           },
           {
-            'q': 'Nuance: "His critique was commended for its incisive and ___ reasoning."',
+            'q':
+                'Nuance: "His critique was commended for its incisive and ___ reasoning."',
             'options': ['trenchant', 'specious', 'platitudinous', 'insipid'],
             'correct': 0,
-            'exp': '"Trenchant" describes expression that is vigorous, incisive, and keenly effective.',
+            'exp':
+                '"Trenchant" describes expression that is vigorous, incisive, and keenly effective.',
           },
           {
-            'q': 'Adverbial phrasing: "Notwithstanding strenuous opposition, the motion was ___ approved."',
+            'q':
+                'Adverbial phrasing: "Notwithstanding strenuous opposition, the motion was ___ approved."',
             'options': ['summarily', 'tentatively', 'feebly', 'gratuitously'],
             'correct': 0,
-            'exp': '"Summarily" means expeditiously and without delay or formal hesitation.',
+            'exp':
+                '"Summarily" means expeditiously and without delay or formal hesitation.',
           },
           {
-            'q': 'Philosophical rhetoric: "The lecturer warned against conflating temporal fame with ___ value."',
-            'options': ['ephemeral', 'intrinsic', 'circumstantial', 'utilitarian'],
+            'q':
+                'Philosophical rhetoric: "The lecturer warned against conflating temporal fame with ___ value."',
+            'options': [
+              'ephemeral',
+              'intrinsic',
+              'circumstantial',
+              'utilitarian'
+            ],
             'correct': 1,
-            'exp': '"Intrinsic" denotes belonging naturally; essential and timeless.',
+            'exp':
+                '"Intrinsic" denotes belonging naturally; essential and timeless.',
           },
           {
-            'q': 'Stylistic mastery: "He spoke with such erudition that the audience was held in ___ silence."',
+            'q':
+                'Stylistic mastery: "He spoke with such erudition that the audience was held in ___ silence."',
             'options': ['rapt', 'lukewarm', 'flippant', 'perfunctory'],
             'correct': 0,
-            'exp': '"Rapt" describes intense and completely absorbed fascination.',
+            'exp':
+                '"Rapt" describes intense and completely absorbed fascination.',
           },
         ];
     }
@@ -8852,7 +9483,9 @@ class _SyllabusExamDialogState extends State<_SyllabusExamDialog> {
       child: Container(
         constraints: const BoxConstraints(maxWidth: 440),
         padding: const EdgeInsets.all(18),
-        child: _finished ? _buildCertificateView(themeColor) : _buildExamContent(q, themeColor),
+        child: _finished
+            ? _buildCertificateView(themeColor)
+            : _buildExamContent(q, themeColor),
       ),
     );
   }
@@ -8888,13 +9521,15 @@ class _SyllabusExamDialogState extends State<_SyllabusExamDialog> {
                   ),
                   Text(
                     'CEFR Syllabus Level Assessment',
-                    style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+                    style:
+                        GoogleFonts.inter(color: Colors.white60, fontSize: 11),
                   ),
                 ],
               ),
             ),
             IconButton(
-              icon: const Icon(Icons.close_rounded, color: Colors.white54, size: 20),
+              icon: const Icon(Icons.close_rounded,
+                  color: Colors.white54, size: 20),
               onPressed: () => Navigator.pop(context),
             ),
           ],
@@ -8971,7 +9606,8 @@ class _SyllabusExamDialogState extends State<_SyllabusExamDialog> {
               borderRadius: BorderRadius.circular(12),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
                   color: cardBg,
                   borderRadius: BorderRadius.circular(12),
@@ -9012,9 +9648,13 @@ class _SyllabusExamDialogState extends State<_SyllabusExamDialog> {
                       ),
                     ),
                     if (_answered && idx == q['correct'])
-                      const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 18),
-                    if (_answered && idx == _selectedIndex && idx != q['correct'])
-                      const Icon(Icons.cancel_rounded, color: Color(0xFFEF4444), size: 18),
+                      const Icon(Icons.check_circle_rounded,
+                          color: Color(0xFF10B981), size: 18),
+                    if (_answered &&
+                        idx == _selectedIndex &&
+                        idx != q['correct'])
+                      const Icon(Icons.cancel_rounded,
+                          color: Color(0xFFEF4444), size: 18),
                   ],
                 ),
               ),
@@ -9038,7 +9678,8 @@ class _SyllabusExamDialogState extends State<_SyllabusExamDialog> {
                 Expanded(
                   child: Text(
                     q['exp'] as String,
-                    style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5),
+                    style: GoogleFonts.inter(
+                        color: Colors.white70, fontSize: 11.5),
                   ),
                 ),
               ],
@@ -9052,12 +9693,16 @@ class _SyllabusExamDialogState extends State<_SyllabusExamDialog> {
                 backgroundColor: themeColor,
                 foregroundColor: Colors.black,
                 padding: const EdgeInsets.symmetric(vertical: 11),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
               onPressed: _next,
               child: Text(
-                _currentIndex < _questions.length - 1 ? 'NEXT QUESTION →' : 'VIEW CERTIFICATE 🏆',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 12.5),
+                _currentIndex < _questions.length - 1
+                    ? 'NEXT QUESTION →'
+                    : 'VIEW CERTIFICATE 🏆',
+                style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w900, fontSize: 12.5),
               ),
             ),
           ),
@@ -9099,7 +9744,8 @@ class _SyllabusExamDialogState extends State<_SyllabusExamDialog> {
         const SizedBox(height: 4),
         Text(
           'Track: ${widget.track.nameEn} (${widget.track.code})',
-          style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600),
+          style: GoogleFonts.outfit(
+              color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 14),
 
@@ -9116,25 +9762,43 @@ class _SyllabusExamDialogState extends State<_SyllabusExamDialog> {
             children: [
               Column(
                 children: [
-                  Text('SCORE', style: GoogleFonts.outfit(color: Colors.white54, fontSize: 11)),
+                  Text('SCORE',
+                      style: GoogleFonts.outfit(
+                          color: Colors.white54, fontSize: 11)),
                   const SizedBox(height: 2),
-                  Text('$_score / ${_questions.length}', style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text('$_score / ${_questions.length}',
+                      style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold)),
                 ],
               ),
               Container(width: 1, height: 28, color: Colors.white12),
               Column(
                 children: [
-                  Text('ACCURACY', style: GoogleFonts.outfit(color: Colors.white54, fontSize: 11)),
+                  Text('ACCURACY',
+                      style: GoogleFonts.outfit(
+                          color: Colors.white54, fontSize: 11)),
                   const SizedBox(height: 2),
-                  Text('$pct%', style: GoogleFonts.outfit(color: themeColor, fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text('$pct%',
+                      style: GoogleFonts.outfit(
+                          color: themeColor,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold)),
                 ],
               ),
               Container(width: 1, height: 28, color: Colors.white12),
               Column(
                 children: [
-                  Text('BONUS', style: GoogleFonts.outfit(color: Colors.white54, fontSize: 11)),
+                  Text('BONUS',
+                      style: GoogleFonts.outfit(
+                          color: Colors.white54, fontSize: 11)),
                   const SizedBox(height: 2),
-                  Text('+${_score * 30} PS', style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text('+${_score * 30} PS',
+                      style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold)),
                 ],
               ),
             ],
@@ -9147,7 +9811,8 @@ class _SyllabusExamDialogState extends State<_SyllabusExamDialog> {
           decoration: BoxDecoration(
             color: const Color(0xFFFFD700).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.3)),
+            border: Border.all(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.3)),
           ),
           child: Row(
             children: [
@@ -9173,14 +9838,16 @@ class _SyllabusExamDialogState extends State<_SyllabusExamDialog> {
               backgroundColor: themeColor,
               foregroundColor: Colors.black,
               padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
             onPressed: () {
               Navigator.pop(context);
             },
             child: Text(
               'CLAIM & RETURN TO MAP',
-              style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
+              style:
+                  GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
             ),
           ),
         ),
@@ -9188,4 +9855,3 @@ class _SyllabusExamDialogState extends State<_SyllabusExamDialog> {
     );
   }
 }
-

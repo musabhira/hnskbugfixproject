@@ -86,16 +86,14 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
       await PocketAdMobService.instance.showRewardedAd(
         context: context,
         onUserEarnedReward: (reward) async {
-          final prefs = await SharedPreferences.getInstance();
-          final newScore = _currentPS + 50;
-          await prefs.setInt('pocket_score', newScore);
-          final eligibility =
-              await PocketAdMobService.instance.checkRewardedAdEligibility();
+          final updatedPS =
+              await PocketAdMobService.instance.grantRewardedPocketScore();
+          final remaining =
+              await PocketAdMobService.instance.getRewardedDailyRemaining();
           if (mounted) {
             setState(() {
-              _currentPS = newScore;
-              _rewardedRemaining = eligibility['remaining'] as int? ??
-                  (_rewardedRemaining - 1).clamp(0, 5);
+              _currentPS = updatedPS;
+              _rewardedRemaining = remaining;
             });
             ScaffoldMessenger.of(context).hideCurrentSnackBar();
             ScaffoldMessenger.of(context).showSnackBar(
