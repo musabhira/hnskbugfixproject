@@ -1708,19 +1708,21 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
     }
 
     if (_bannerAd == null) {
-      // 💻 Desktop / Windows Native Ad Simulation Card
+      // 💻 Desktop / Windows / Web Native Ad Simulation (Instagram Feed Post Style)
       return Container(
         margin: widget.margin,
-        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E293B).withValues(alpha: 0.6),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white12, width: 0.8),
+          color: const Color(0xFF0F172A),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.1),
+            width: 1.0,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.25),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+              color: Colors.black.withValues(alpha: 0.35),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -1728,134 +1730,202 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                  decoration: BoxDecoration(
-                    color: Colors.white12,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: const Text(
-                    'Ad',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
+            // Instagram-Style Post Header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+              child: Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFFF59E0B).withValues(alpha: 0.6),
+                        width: 1.5,
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Pocket Mates Ads',
-                  style:
-                      GoogleFonts.outfit(color: Colors.white60, fontSize: 11),
-                ),
-                const Spacer(),
-                const Text('Ad • ⓘ',
-                    style: TextStyle(color: Colors.white38, fontSize: 10)),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.white12),
-                  ),
-                  child: const Center(
-                    child: Text('📱', style: TextStyle(fontSize: 22)),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Pocket AI English Companion',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/images/pocket_mates_logo.png',
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: const Color(0xFF1E293B),
+                          alignment: Alignment.center,
+                          child: const Icon(Icons.bolt_rounded,
+                              color: Color(0xFFF59E0B), size: 20),
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Boost your vocabulary with daily live battles & AI mates.',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white60,
-                          fontSize: 11,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Text(
-                    'Install',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            InkWell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const SubscriptionPage()),
-                );
-              },
-              borderRadius: BorderRadius.circular(6),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                    'Go VIP – Remove All Ads 👑',
-                    style: TextStyle(
-                      color: const Color(0xFFFFD700).withValues(alpha: 0.9),
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                'Pocket Mates Ads',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.2,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            const Icon(
+                              Icons.verified_rounded,
+                              color: Color(0xFFF59E0B),
+                              size: 15,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Text(
+                              'Sponsored',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white54,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Text(
+                              '•',
+                              style: TextStyle(
+                                  color: Colors.white30, fontSize: 10),
+                            ),
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 5, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(
+                                  color: Colors.white24,
+                                  width: 0.6,
+                                ),
+                              ),
+                              child: Text(
+                                'Ad',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white70,
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.more_horiz_rounded,
+                      color: Colors.white38, size: 20),
+                ],
               ),
             ),
+            // Simulated Instagram Content
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white12),
+                    ),
+                    child: const Center(
+                      child: Text('📱', style: TextStyle(fontSize: 24)),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Pocket AI English Companion',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Boost your vocabulary with daily live battles & AI mates.',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white60,
+                            fontSize: 11,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3B82F6),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      'Install',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Sleek VIP Action Button
+            _buildVipUpgradeBar(context),
           ],
         ),
       );
     }
 
+    // 📱 Production Mobile Native Ad (Instagram Feed Post Layout)
     return Container(
       margin: widget.margin,
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B).withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white12, width: 0.8),
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.1),
+          width: 1.0,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.25),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -1863,68 +1933,257 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Sponsored Header
+          // 📸 Instagram-Style Post Header
           Padding(
-            padding: const EdgeInsets.fromLTRB(14, 10, 14, 6),
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
             child: Row(
               children: [
+                // Circular Pocket Mates Brand Avatar with subtle gold ring
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                  width: 38,
+                  height: 38,
                   decoration: BoxDecoration(
-                    color: Colors.white12,
-                    borderRadius: BorderRadius.circular(4),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFFF59E0B).withValues(alpha: 0.6),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+                        blurRadius: 6,
+                        spreadRadius: 1,
+                      ),
+                    ],
                   ),
-                  child: Text(
-                    'SPONSORED',
-                    style: GoogleFonts.outfit(
-                      color: Colors.white70,
-                      fontSize: 9,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 0.6,
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/images/pocket_mates_logo.png',
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: const Color(0xFF1E293B),
+                        alignment: Alignment.center,
+                        child: const Icon(Icons.bolt_rounded,
+                            color: Color(0xFFF59E0B), size: 20),
+                      ),
                     ),
                   ),
                 ),
-                const Spacer(),
-                const Text('Ad • ⓘ',
-                    style: TextStyle(color: Colors.white38, fontSize: 10)),
+                const SizedBox(width: 10),
+                // Brand Name + Golden Verified Badge + Sponsored Subtitle
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              'Pocket Mates Ads',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.2,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          // Golden Verified Tick Badge
+                          const Icon(
+                            Icons.verified_rounded,
+                            color: Color(0xFFF59E0B),
+                            size: 15,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Text(
+                            'Sponsored',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white54,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const Text(
+                            '•',
+                            style:
+                                TextStyle(color: Colors.white30, fontSize: 10),
+                          ),
+                          const SizedBox(width: 6),
+                          // AdMob Mandatory Ad Tag
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 5, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(
+                                color: Colors.white24,
+                                width: 0.6,
+                              ),
+                            ),
+                            child: Text(
+                              'Ad',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white70,
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.4,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                // 3-dots Instagram options menu
+                IconButton(
+                  icon: const Icon(Icons.more_horiz_rounded,
+                      color: Colors.white38, size: 20),
+                  padding: EdgeInsets.zero,
+                  constraints:
+                      const BoxConstraints(minWidth: 32, minHeight: 32),
+                  splashRadius: 18,
+                  tooltip: 'Sponsored Ad by Google AdMob',
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Sponsored advertisement. Upgrade to Pocket VIP to remove all ads.',
+                          style: GoogleFonts.outfit(fontSize: 12),
+                        ),
+                        backgroundColor: const Color(0xFF1E293B),
+                        duration: const Duration(seconds: 3),
+                        action: SnackBarAction(
+                          label: 'Go VIP',
+                          textColor: const Color(0xFFFFD700),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const SubscriptionPage()),
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
           ),
-          // Ad Canvas
+
+          // 🖼️ Ad Creative Canvas (Centered Instagram Post Media Frame)
           Center(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: SizedBox(
-                width: _bannerAd!.size.width.toDouble(),
-                height: _bannerAd!.size.height.toDouble(),
-                child: AdWidget(ad: _bannerAd!),
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 10),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.08),
+                  width: 1.0,
+                ),
+                color: Colors.black26,
               ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(14, 6, 14, 8),
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const SubscriptionPage()),
-                  );
-                },
-                child: Text(
-                  'Go VIP – Remove All Ads 👑',
-                  style: TextStyle(
-                    color: const Color(0xFFFFD700).withValues(alpha: 0.9),
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w700,
-                  ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  width: _bannerAd!.size.width.toDouble(),
+                  height: _bannerAd!.size.height.toDouble(),
+                  child: AdWidget(ad: _bannerAd!),
                 ),
               ),
             ),
           ),
+
+          // 👑 Sleek Yellow/Golden VIP Upgrade Button (AdMob policy compliant safe spacing)
+          _buildVipUpgradeBar(context),
         ],
+      ),
+    );
+  }
+
+  /// 👑 High-end Golden/Yellow VIP upgrade bar with rounded borders and clear click separation
+  Widget _buildVipUpgradeBar(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                const Color(0xFFF59E0B).withValues(alpha: 0.18),
+                const Color(0xFFD97706).withValues(alpha: 0.10),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: const Color(0xFFF59E0B).withValues(alpha: 0.45),
+              width: 1.0,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Text('👑', style: TextStyle(fontSize: 13)),
+              ),
+              const SizedBox(width: 9),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Go VIP – Remove All Ads',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      'Enjoy 100% ad-free experience & unlimited learning',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white54,
+                        fontSize: 10,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 13,
+                color: Color(0xFFFFD700),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -2367,6 +2626,5 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
     // 📢 User Directive: If the ad did not load/fill, do NOT show test ad or placeholder box.
     // Instead, collapse cleanly so the screen appears completely normal without ads.
     return const SizedBox.shrink();
-  }
   }
 }
