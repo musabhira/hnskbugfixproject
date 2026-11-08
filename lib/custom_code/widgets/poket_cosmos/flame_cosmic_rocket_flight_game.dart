@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 import 'package:pocket_mates_app/custom_code/services/poket_cosmos_distance_service.dart';
 
-/// 🌟 Dynamic Plasma Particle emitted from the Rocket Engine
+/// 🌟 Dynamic Engine Exhaust / Contrail Particle
 class PlasmaThrustParticle {
   double x;
   double y;
@@ -39,7 +39,7 @@ class CosmicStarParticle {
   double radius;
   double alpha;
   double blinkSpeed;
-  double depth; // 0.2 (distant) to 1.0 (near)
+  double depth;
 
   CosmicStarParticle({
     required this.x,
@@ -51,7 +51,43 @@ class CosmicStarParticle {
   });
 }
 
-/// 🚀 Full-Screen Flame Interplanetary Rocket Flight Simulation
+/// ☁️ Drifting Atmospheric Cloud Particle for Aeroplane Flight
+class AtmosphericCloud {
+  double x;
+  double y;
+  double width;
+  double height;
+  double speed;
+  double opacity;
+
+  AtmosphericCloud({
+    required this.x,
+    required this.y,
+    required this.width,
+    required this.height,
+    required this.speed,
+    required this.opacity,
+  });
+}
+
+/// 🏝️ Passing Archipelago Island Beneath Aeroplane Flight
+class PassingIsland {
+  double relX; // -0.8 to 0.8
+  double appearProgress; // 0.0 to 0.9
+  double radius;
+  Color sandColor;
+  Color vegetationColor;
+
+  PassingIsland({
+    required this.relX,
+    required this.appearProgress,
+    required this.radius,
+    required this.sandColor,
+    required this.vegetationColor,
+  });
+}
+
+/// 🚀 / ✈️ Full-Screen Flame Cosmic & Atmospheric Flight Simulation
 class FlameCosmicRocketFlightGame extends FlameGame {
   final CosmosFlightManifest manifest;
   final void Function(double currentKm, double progressFraction) onDistanceProgress;
@@ -72,25 +108,56 @@ class FlameCosmicRocketFlightGame extends FlameGame {
   double _gameTime = 0.0;
   bool isPaused = false;
 
-  // Particle Pools
+  // Zoom Level (0.6x to 1.8x)
+  double zoomLevel = 1.0;
+
+  void setZoom(double z) {
+    zoomLevel = z.clamp(0.6, 1.8);
+  }
+
+  void zoomIn() {
+    setZoom(zoomLevel + 0.15);
+  }
+
+  void zoomOut() {
+    setZoom(zoomLevel - 0.15);
+  }
+
+  void resetZoom() {
+    zoomLevel = 1.0;
+  }
+
+  // Particle & Object Pools
   final List<CosmicStarParticle> _stars = [];
   final List<PlasmaThrustParticle> _thrustParticles = [];
+  final List<AtmosphericCloud> _clouds = [];
+  final List<PassingIsland> _passingIslands = [];
   final math.Random _rng = math.Random(42);
 
-  // Slingshot Planet State
+  // Slingshot State for Interplanetary
   bool _isSlingshotLooping = false;
   String? _activeSlingshotCode;
   double _slingshotAngle = 0.0;
 
   @override
-  Color backgroundColor() => const Color(0xFF070B14); // Deep space abyss
+  Color backgroundColor() => manifest.isSamePlanet
+      ? const Color(0xFF0369A1) // Oceanic sky blue
+      : const Color(0xFF070B14); // Deep space black void
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
 
-    // Generate 160 deep space parallax stars
-    for (int i = 0; i < 160; i++) {
+    if (manifest.isSamePlanet) {
+      _initAtmosphericEnvironment();
+    } else {
+      _initSpaceEnvironment();
+    }
+  }
+
+  void _initSpaceEnvironment() {
+    _stars.clear();
+    for (int i = 0; i < 170; i++) {
       _stars.add(
         CosmicStarParticle(
           x: (_rng.nextDouble() - 0.5) * 1600,
@@ -104,18 +171,66 @@ class FlameCosmicRocketFlightGame extends FlameGame {
     }
   }
 
+  void _initAtmosphericEnvironment() {
+    _clouds.clear();
+    for (int i = 0; i < 18; i++) {
+      _clouds.add(
+        AtmosphericCloud(
+          x: (_rng.nextDouble() - 0.5) * 1200,
+          y: (_rng.nextDouble() - 0.5) * 2200,
+          width: 90.0 + _rng.nextDouble() * 140.0,
+          height: 38.0 + _rng.nextDouble() * 45.0,
+          speed: 120.0 + _rng.nextDouble() * 180.0,
+          opacity: 0.35 + _rng.nextDouble() * 0.45,
+        ),
+      );
+    }
+
+    _passingIslands.clear();
+    _passingIslands.addAll([
+      PassingIsland(
+        relX: -0.35,
+        appearProgress: 0.12,
+        radius: 48,
+        sandColor: const Color(0xFFFDE68A),
+        vegetationColor: const Color(0xFF15803D),
+      ),
+      PassingIsland(
+        relX: 0.42,
+        appearProgress: 0.28,
+        radius: 65,
+        sandColor: const Color(0xFFFEF08A),
+        vegetationColor: const Color(0xFF16A34A),
+      ),
+      PassingIsland(
+        relX: -0.22,
+        appearProgress: 0.46,
+        radius: 54,
+        sandColor: const Color(0xFFFDE68A),
+        vegetationColor: const Color(0xFF047857),
+      ),
+      PassingIsland(
+        relX: 0.30,
+        appearProgress: 0.62,
+        radius: 42,
+        sandColor: const Color(0xFFFEF08A),
+        vegetationColor: const Color(0xFF15803D),
+      ),
+    ]);
+  }
+
   /// ⚡ Single Tap Burst
   void applyThrustBoost() {
     _boostTimer = 0.85;
     _currentSpeedMultiplier = 2.8;
-    _burstPlasmaSparks(count: 18);
+    _burstParticles(count: manifest.isSamePlanet ? 14 : 18);
   }
 
   /// 🔥 Continuous Long-Press Hyperthrust
   void startContinuousThrust() {
     _isHoldingThrust = true;
     _currentSpeedMultiplier = 3.4;
-    _burstPlasmaSparks(count: 12);
+    _burstParticles(count: manifest.isSamePlanet ? 10 : 14);
   }
 
   void stopContinuousThrust() {
@@ -125,19 +240,38 @@ class FlameCosmicRocketFlightGame extends FlameGame {
     }
   }
 
-  void _burstPlasmaSparks({int count = 12}) {
+  void _burstParticles({int count = 12}) {
     for (int i = 0; i < count; i++) {
-      _thrustParticles.add(
-        PlasmaThrustParticle(
-          x: (_rng.nextDouble() - 0.5) * 14.0,
-          y: 40.0,
-          vx: (_rng.nextDouble() - 0.5) * 75,
-          vy: 85.0 + _rng.nextDouble() * 140,
-          maxLife: 0.35 + _rng.nextDouble() * 0.25,
-          color: (i % 2 == 0) ? const Color(0xFFFFD700) : const Color(0xFF00E5FF),
-          radius: 2.5 + _rng.nextDouble() * 2.5,
-        ),
-      );
+      if (manifest.isSamePlanet) {
+        // Airplane twin jet contrails & afterburner sparks
+        final side = (i % 2 == 0) ? -18.0 : 18.0;
+        _thrustParticles.add(
+          PlasmaThrustParticle(
+            x: side + (_rng.nextDouble() - 0.5) * 6.0,
+            y: 22.0,
+            vx: (_rng.nextDouble() - 0.5) * 35,
+            vy: 95.0 + _rng.nextDouble() * 120,
+            maxLife: 0.45 + _rng.nextDouble() * 0.3,
+            color: (i % 3 == 0)
+                ? const Color(0xFFFFD700)
+                : Colors.white.withValues(alpha: 0.9),
+            radius: 2.0 + _rng.nextDouble() * 2.5,
+          ),
+        );
+      } else {
+        // Rocket plasma thruster
+        _thrustParticles.add(
+          PlasmaThrustParticle(
+            x: (_rng.nextDouble() - 0.5) * 14.0,
+            y: 40.0,
+            vx: (_rng.nextDouble() - 0.5) * 75,
+            vy: 85.0 + _rng.nextDouble() * 140,
+            maxLife: 0.35 + _rng.nextDouble() * 0.25,
+            color: (i % 2 == 0) ? const Color(0xFFFFD700) : const Color(0xFF00E5FF),
+            radius: 2.5 + _rng.nextDouble() * 2.5,
+          ),
+        );
+      }
     }
   }
 
@@ -149,11 +283,11 @@ class FlameCosmicRocketFlightGame extends FlameGame {
 
     if (_hasArrived) return;
 
-    // Manage continuous hold or single tap boost decay
+    // Boost decay
     if (_isHoldingThrust) {
       _currentSpeedMultiplier = 3.4;
-      if (_rng.nextDouble() < 0.4) {
-        _burstPlasmaSparks(count: 3);
+      if (_rng.nextDouble() < 0.45) {
+        _burstParticles(count: 3);
       }
     } else if (_boostTimer > 0) {
       _boostTimer -= dt;
@@ -162,61 +296,91 @@ class FlameCosmicRocketFlightGame extends FlameGame {
       }
     }
 
-    // Normal flight speed: base transit ~10-12s, boost cuts it to ~4-5s
-    final double baseSpeed = manifest.isSamePlanet ? 0.16 : 0.085;
+    // Flight forward speed
+    // Same planet plane: ~8-10s base
+    // Space rocket: ~10-12s base
+    final double baseSpeed = manifest.isSamePlanet ? 0.13 : 0.088;
     final double step = baseSpeed * _currentSpeedMultiplier * dt;
 
-    // Slingshot loop logic around intermediate celestial bodies (staged e.g. Moon then Mars)
-    final intermediateCodes = manifest.intermediatePlanetCodes;
-    bool inSlingshot = false;
-    String? currentTargetCode;
+    if (!manifest.isSamePlanet) {
+      // Slingshot logic for interplanetary rocket
+      final intermediateCodes = manifest.intermediatePlanetCodes;
+      bool inSlingshot = false;
+      String? currentTargetCode;
 
-    if (intermediateCodes.isNotEmpty) {
-      if (intermediateCodes.length == 1) {
-        if (_flightProgress >= 0.35 && _flightProgress <= 0.65) {
-          inSlingshot = true;
-          currentTargetCode = intermediateCodes[0];
+      if (intermediateCodes.isNotEmpty) {
+        if (intermediateCodes.length == 1) {
+          if (_flightProgress >= 0.35 && _flightProgress <= 0.65) {
+            inSlingshot = true;
+            currentTargetCode = intermediateCodes[0];
+          }
+        } else {
+          if (_flightProgress >= 0.25 && _flightProgress <= 0.44) {
+            inSlingshot = true;
+            currentTargetCode = intermediateCodes[0];
+          } else if (_flightProgress >= 0.50 && _flightProgress <= 0.68) {
+            inSlingshot = true;
+            currentTargetCode = intermediateCodes[1];
+          }
         }
+      }
+
+      if (inSlingshot) {
+        _isSlingshotLooping = true;
+        _activeSlingshotCode = currentTargetCode;
+        _slingshotAngle += dt * 3.8 * _currentSpeedMultiplier;
+        _flightProgress += step * 0.55;
       } else {
-        // Multi-stop staging: Moon loop at 0.25..0.44, Mars/Jupiter assist loop at 0.50..0.68
-        if (_flightProgress >= 0.25 && _flightProgress <= 0.44) {
-          inSlingshot = true;
-          currentTargetCode = intermediateCodes[0];
-        } else if (_flightProgress >= 0.50 && _flightProgress <= 0.68) {
-          inSlingshot = true;
-          currentTargetCode = intermediateCodes[1];
+        _isSlingshotLooping = false;
+        _activeSlingshotCode = null;
+        _flightProgress += step;
+      }
+
+      // Continuous plasma trail for rocket
+      final spawnCount = (_boostTimer > 0) ? 4 : 2;
+      for (int i = 0; i < spawnCount; i++) {
+        _thrustParticles.add(
+          PlasmaThrustParticle(
+            x: (_rng.nextDouble() - 0.5) * 8.0,
+            y: 36.0,
+            vx: (_rng.nextDouble() - 0.5) * 24.0,
+            vy: 45.0 + _rng.nextDouble() * 75.0,
+            maxLife: 0.22 + _rng.nextDouble() * 0.18,
+            color: (_rng.nextBool()) ? const Color(0xFF38BDF8) : const Color(0xFFFFD700),
+            radius: 1.5 + _rng.nextDouble() * 1.5,
+          ),
+        );
+      }
+    } else {
+      // Same-planet aeroplane forward progress
+      _flightProgress += step;
+
+      // Update atmospheric clouds
+      for (final cloud in _clouds) {
+        cloud.y += cloud.speed * _currentSpeedMultiplier * dt;
+        if (cloud.y > 1100) {
+          cloud.y = -1100;
+          cloud.x = (_rng.nextDouble() - 0.5) * 1200;
         }
+      }
+
+      // Continuous jet contrails from twin wing engines
+      for (final side in [-18.0, 18.0]) {
+        _thrustParticles.add(
+          PlasmaThrustParticle(
+            x: side + (_rng.nextDouble() - 0.5) * 3.0,
+            y: 22.0,
+            vx: (_rng.nextDouble() - 0.5) * 10.0,
+            vy: 65.0 + _rng.nextDouble() * 60.0,
+            maxLife: 0.55 + _rng.nextDouble() * 0.35,
+            color: Colors.white.withValues(alpha: 0.85),
+            radius: 2.2 + _rng.nextDouble() * 2.0,
+          ),
+        );
       }
     }
 
-    if (inSlingshot) {
-      _isSlingshotLooping = true;
-      _activeSlingshotCode = currentTargetCode;
-      _slingshotAngle += dt * 3.8 * _currentSpeedMultiplier;
-      _flightProgress += step * 0.55; // Slower forward progress while in gravity assist loop
-    } else {
-      _isSlingshotLooping = false;
-      _activeSlingshotCode = null;
-      _flightProgress += step;
-    }
-
-    // Emit standard plasma flame engine exhaust
-    final spawnCount = (_boostTimer > 0) ? 4 : 2;
-    for (int i = 0; i < spawnCount; i++) {
-      _thrustParticles.add(
-        PlasmaThrustParticle(
-          x: (_rng.nextDouble() - 0.5) * 8.0,
-          y: 36.0,
-          vx: (_rng.nextDouble() - 0.5) * 24.0,
-          vy: 45.0 + _rng.nextDouble() * 75.0,
-          maxLife: 0.22 + _rng.nextDouble() * 0.18,
-          color: (_rng.nextBool()) ? const Color(0xFF38BDF8) : const Color(0xFFFFD700),
-          radius: 1.5 + _rng.nextDouble() * 1.5,
-        ),
-      );
-    }
-
-    // Update existing particles
+    // Update particle life
     _thrustParticles.removeWhere((p) => !p.update(dt));
 
     // Cap and check arrival
@@ -239,6 +403,440 @@ class FlameCosmicRocketFlightGame extends FlameGame {
     final cx = w / 2;
     final cy = h / 2;
 
+    // Apply Dynamic Viewport Zoom Transformation
+    canvas.save();
+    canvas.translate(cx, cy);
+    canvas.scale(zoomLevel);
+    canvas.translate(-cx, -cy);
+
+    if (manifest.isSamePlanet) {
+      _renderIntraPlanetaryAeroplaneFlight(canvas, w, h, cx, cy);
+    } else {
+      _renderInterplanetaryRocketFlight(canvas, w, h, cx, cy);
+    }
+
+    canvas.restore();
+  }
+
+  // =========================================================================
+  // ✈️ MODE 1: INTRA-PLANETARY AEROPLANE ISLAND-TO-ISLAND FLIGHT
+  // =========================================================================
+
+  void _renderIntraPlanetaryAeroplaneFlight(
+    Canvas canvas,
+    double w,
+    double h,
+    double cx,
+    double cy,
+  ) {
+    // 1. Planetary Atmospheric Sky & Ocean Backdrop
+    _drawAtmosphericSkyAndOcean(canvas, w, h);
+
+    // 2. Passing Archipelago Islands Below
+    _drawPassingArchipelagoMap(canvas, w, h, cx);
+
+    // 3. Drifting Lower Atmospheric Clouds
+    _drawDriftingClouds(canvas, cx, cy, isUpper: false);
+
+    // 4. Approaching Destination Island at the Top (appears past 50% progress)
+    if (_flightProgress > 0.48) {
+      _drawApproachingDestinationIsland(canvas, w, h, cx);
+    }
+
+    // 5. Jet Aeroplane Cruiser
+    canvas.save();
+    // Gentle navigation banking angle (-8° to +8°)
+    final bankAngle = math.sin(_gameTime * 1.8) * 0.12;
+    final planeY = cy + 40.0;
+    canvas.translate(cx, planeY);
+    canvas.rotate(bankAngle);
+
+    // Render Contrail / Jet Exhaust Particles
+    for (final p in _thrustParticles) {
+      final alpha = (p.life / p.maxLife).clamp(0.0, 1.0);
+      canvas.drawCircle(
+        Offset(p.x, p.y),
+        p.radius * (0.8 + (1.0 - alpha) * 1.6),
+        Paint()..color = p.color.withValues(alpha: alpha * 0.75),
+      );
+    }
+
+    // Draw Sleek Atmospheric Passenger Jet
+    _drawAeroplane(canvas, isBoosting: _boostTimer > 0 || _isHoldingThrust);
+    canvas.restore();
+
+    // 6. Drifting Upper Atmospheric Clouds (Above the airplane)
+    _drawDriftingClouds(canvas, cx, cy, isUpper: true);
+  }
+
+  /// 🌅 Sky gradient and ocean water matching origin planet climate
+  void _drawAtmosphericSkyAndOcean(Canvas canvas, double w, double h) {
+    final code = manifest.originCode.toUpperCase();
+    final List<Color> skyGradient;
+    final Color oceanDeep;
+
+    switch (code) {
+      case 'MAR':
+        skyGradient = const [
+          Color(0xFFFED7AA), // Peach Horizon
+          Color(0xFFF97316), // Amber
+          Color(0xFFE11D48), // Coral Pink
+          Color(0xFF9F1239), // Rose Dusk
+        ];
+        oceanDeep = const Color(0xFF7F1D1D); // Red terra sea
+        break;
+      case 'JUP':
+        skyGradient = const [
+          Color(0xFFFDE68A), // Auroral Gold
+          Color(0xFF38BDF8), // Cyan Ribbon
+          Color(0xFF1D4ED8), // Cobalt
+          Color(0xFF1E1B4B), // Indigo
+        ];
+        oceanDeep = const Color(0xFF0F172A);
+        break;
+      case 'SAT':
+        skyGradient = const [
+          Color(0xFFFEF08A), // Radiant Ring Gold
+          Color(0xFFF59E0B), // Amber
+          Color(0xFFDB2777), // Twilight Pink
+          Color(0xFF4A044E), // Deep Plum
+        ];
+        oceanDeep = const Color(0xFF3B0764);
+        break;
+      case 'EUR':
+        skyGradient = const [
+          Color(0xFFE0F2FE), // Glacial White
+          Color(0xFF38BDF8), // Shimmering Ice Cyan
+          Color(0xFF0284C7), // Deep Azure
+          Color(0xFF1E1B4B), // Indigo
+        ];
+        oceanDeep = const Color(0xFF0C4A6E);
+        break;
+      case 'TTN':
+        skyGradient = const [
+          Color(0xFFFDE68A), // Golden Methane Dawn
+          Color(0xFF0D9488), // Methane Teal
+          Color(0xFF065F46), // Emerald Twilight
+          Color(0xFF042F2E), // Petrol
+        ];
+        oceanDeep = const Color(0xFF042F2E);
+        break;
+      default: // Earth Prime
+        skyGradient = const [
+          Color(0xFFE0F2FE), // Horizon White Mist
+          Color(0xFF7DD3FC), // Sunlit Cyan
+          Color(0xFF0284C7), // Deep Azure
+          Color(0xFF0369A1), // Royal Sky Blue
+        ];
+        oceanDeep = const Color(0xFF0284C7);
+    }
+
+    // Sky base
+    final skyPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: skyGradient,
+      ).createShader(Rect.fromLTWH(0, 0, w, h));
+    canvas.drawRect(Rect.fromLTWH(0, 0, w, h), skyPaint);
+
+    // Ocean water layer beneath the flight path (translucent azure depths)
+    final oceanPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          oceanDeep.withValues(alpha: 0.40),
+          oceanDeep.withValues(alpha: 0.85),
+        ],
+      ).createShader(Rect.fromLTWH(0, 0, w, h));
+    canvas.drawRect(Rect.fromLTWH(0, 0, w, h), oceanPaint);
+
+    // Subtle wave ripples drifting down
+    final waveYOffset = (_gameTime * 45.0) % 80.0;
+    final wavePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.08)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+    for (double y = -80.0 + waveYOffset; y < h + 80.0; y += 75.0) {
+      final wavePath = Path();
+      wavePath.moveTo(0, y);
+      for (double x = 0; x < w; x += 60) {
+        wavePath.quadraticBezierTo(x + 30, y + 6, x + 60, y);
+      }
+      canvas.drawPath(wavePath, wavePaint);
+    }
+  }
+
+  /// 🏝️ Archipelago islands passing underneath the plane
+  void _drawPassingArchipelagoMap(Canvas canvas, double w, double h, double cx) {
+    for (final island in _passingIslands) {
+      // Island scrolls downwards as flight progresses
+      final islandProgress = (_flightProgress - island.appearProgress) / 0.40;
+      if (islandProgress < -0.2 || islandProgress > 1.2) continue;
+
+      final islandX = cx + (island.relX * (w * 0.45));
+      final islandY = -120.0 + (islandProgress * (h + 240.0));
+      final r = island.radius;
+
+      // Island Sandy Shore / Shallow Lagoon Ring
+      final shorePaint = Paint()
+        ..color = island.sandColor.withValues(alpha: 0.85)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+      canvas.drawOval(
+        Rect.fromCenter(center: Offset(islandX, islandY), width: r * 2.3, height: r * 1.8),
+        shorePaint,
+      );
+
+      // Inner Lush Landform
+      final landPaint = Paint()..color = island.vegetationColor;
+      canvas.drawOval(
+        Rect.fromCenter(center: Offset(islandX, islandY), width: r * 1.8, height: r * 1.3),
+        landPaint,
+      );
+
+      // Coastal Wave Foam Ring
+      final foamPaint = Paint()
+        ..color = Colors.white.withValues(alpha: 0.4)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5;
+      canvas.drawOval(
+        Rect.fromCenter(center: Offset(islandX, islandY), width: r * 2.5, height: r * 2.0),
+        foamPaint,
+      );
+    }
+  }
+
+  /// 🏝️ Approaching Destination Island at Top
+  /// "ഒരു ചെറുതായിട്ട് മേലെ ഇങ്ങനെ പകുതിയായിട്ട് ഒരു ചെറിയ ദ്വീപ് പോലെ കാണിക്കുക"
+  void _drawApproachingDestinationIsland(Canvas canvas, double w, double h, double cx) {
+    final destProgress = ((_flightProgress - 0.48) / 0.52).clamp(0.0, 1.0);
+
+    // Island emerges from top horizon
+    final islandWidth = w * (0.55 + destProgress * 0.45);
+    final islandHeight = 110.0 + (destProgress * 130.0);
+    final islandCenterY = -40.0 + (destProgress * 80.0);
+
+    canvas.save();
+    canvas.translate(cx, islandCenterY);
+
+    // 1. Coastal Turquoise Atoll Lagoon Glow
+    final lagoonGlow = Paint()
+      ..color = const Color(0xFF38BDF8).withValues(alpha: 0.45 * destProgress)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18);
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset.zero, width: islandWidth * 1.25, height: islandHeight * 1.25),
+      lagoonGlow,
+    );
+
+    // 2. Golden Sand Shoreline
+    final sandPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFFEF08A), Color(0xFFFDE68A), Color(0xFFF59E0B)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromCenter(center: Offset.zero, width: islandWidth, height: islandHeight));
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset.zero, width: islandWidth, height: islandHeight),
+      sandPaint,
+    );
+
+    // 3. Lush Green Island Plateau
+    final greenPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFF22C55E), Color(0xFF16A34A), Color(0xFF15803D)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromCenter(center: Offset.zero, width: islandWidth * 0.82, height: islandHeight * 0.78));
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset.zero, width: islandWidth * 0.82, height: islandHeight * 0.78),
+      greenPaint,
+    );
+
+    // 4. Island Landing Strip / Runway
+    final runwayPaint = Paint()..color = const Color(0xFF1E293B);
+    final runwayRect = Rect.fromCenter(center: Offset.zero, width: islandWidth * 0.38, height: 20);
+    canvas.drawRRect(RRect.fromRectAndRadius(runwayRect, const Radius.circular(4)), runwayPaint);
+
+    // Runway Centerline & Lights
+    final linePaint = Paint()
+      ..color = const Color(0xFFFFD700)
+      ..strokeWidth = 2.0;
+    canvas.drawLine(
+      Offset(-islandWidth * 0.16, 0),
+      Offset(islandWidth * 0.16, 0),
+      linePaint,
+    );
+
+    // Approach Beacons
+    final beaconPaint = Paint()..color = const Color(0xFF00E5FF);
+    canvas.drawCircle(Offset(-islandWidth * 0.18, 0), 3, beaconPaint);
+    canvas.drawCircle(Offset(islandWidth * 0.18, 0), 3, beaconPaint);
+
+    // 5. Destination Label Banner
+    _drawText(
+      canvas,
+      '🏝️ ${manifest.destinationName.toUpperCase()} ISLAND',
+      0,
+      (islandHeight * 0.38),
+      color: Colors.white,
+    );
+
+    canvas.restore();
+  }
+
+  /// ✈️ Sleek Jet Cruiser Aeroplane
+  void _drawAeroplane(Canvas canvas, {bool isBoosting = false}) {
+    // 1. Twin Engine Afterburner Glow when Boosting
+    if (isBoosting) {
+      final glowPaint = Paint()
+        ..color = const Color(0xFFFF9100).withValues(alpha: 0.65)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
+      canvas.drawCircle(const Offset(-18, 20), 12, glowPaint);
+      canvas.drawCircle(const Offset(18, 20), 12, glowPaint);
+    }
+
+    // 2. Swept Wings
+    final wingPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFF8FAFC), Color(0xFFCBD5E1), Color(0xFF94A3B8)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(const Rect.fromLTWH(-55, -10, 110, 36));
+
+    final wingsPath = Path()
+      ..moveTo(0, -12)
+      ..lineTo(54, 16)
+      ..lineTo(48, 24)
+      ..lineTo(14, 16)
+      ..lineTo(0, 20)
+      ..lineTo(-14, 16)
+      ..lineTo(-48, 24)
+      ..lineTo(-54, 16)
+      ..close();
+    canvas.drawPath(wingsPath, wingPaint);
+
+    // Wing Leading Edge Accents
+    final cyanTrim = Paint()..color = const Color(0xFF0284C7);
+    canvas.drawLine(const Offset(0, -10), const Offset(52, 16), cyanTrim..strokeWidth = 1.8);
+    canvas.drawLine(const Offset(0, -10), const Offset(-52, 16), cyanTrim..strokeWidth = 1.8);
+
+    // Wingtip Strobe Lights (Blinking port red, starboard green)
+    final blink = (math.sin(_gameTime * 8.0) > 0.0);
+    if (blink) {
+      final redStrobe = Paint()..color = const Color(0xFFEF4444);
+      final greenStrobe = Paint()..color = const Color(0xFF22C55E);
+      canvas.drawCircle(const Offset(-54, 16), 2.5, redStrobe);
+      canvas.drawCircle(const Offset(54, 16), 2.5, greenStrobe);
+    }
+
+    // 3. Jet Engine Nacelles under wings
+    final nacellePaint = Paint()..color = const Color(0xFF475569);
+    for (final nx in [-18.0, 18.0]) {
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromCenter(center: Offset(nx, 10), width: 7.5, height: 18),
+          const Radius.circular(3.5),
+        ),
+        nacellePaint,
+      );
+      // Turbine intake rim
+      canvas.drawOval(
+        Rect.fromCenter(center: Offset(nx, 1), width: 7.5, height: 3.5),
+        Paint()..color = const Color(0xFF0284C7),
+      );
+    }
+
+    // 4. Horizontal Stabilizers & Tail Fin
+    final tailPath = Path()
+      ..moveTo(0, 18)
+      ..lineTo(22, 34)
+      ..lineTo(18, 38)
+      ..lineTo(0, 32)
+      ..lineTo(-18, 38)
+      ..lineTo(-22, 34)
+      ..close();
+    canvas.drawPath(tailPath, wingPaint);
+
+    // Vertical Fin Shadow
+    final finPath = Path()
+      ..moveTo(0, 12)
+      ..lineTo(3.5, 34)
+      ..lineTo(-3.5, 34)
+      ..close();
+    canvas.drawPath(finPath, Paint()..color = const Color(0xFF64748B));
+
+    // 5. Main Fuselage
+    final fuselagePath = Path()
+      ..moveTo(0, -36) // Sleek nose
+      ..cubicTo(9, -20, 8, 12, 6, 32)
+      ..lineTo(-6, 32)
+      ..cubicTo(-8, 12, -9, -20, 0, -36)
+      ..close();
+
+    final fuselagePaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFFFFFFF), Color(0xFFF1F5F9), Color(0xFFCBD5E1)],
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+      ).createShader(const Rect.fromLTWH(-9, -36, 18, 68));
+    canvas.drawPath(fuselagePath, fuselagePaint);
+
+    // 6. Cockpit Windshield (Vibrant Cyan Glass)
+    final visorPaint = Paint()..color = const Color(0xFF0284C7);
+    final cockpitPath = Path()
+      ..moveTo(0, -26)
+      ..lineTo(5, -17)
+      ..lineTo(3.5, -14)
+      ..lineTo(-3.5, -14)
+      ..lineTo(-5, -17)
+      ..close();
+    canvas.drawPath(cockpitPath, visorPaint);
+
+    // Glass glare reflection
+    canvas.drawCircle(const Offset(-1.5, -20), 1.6, Paint()..color = Colors.white.withValues(alpha: 0.9));
+
+    // 7. Passenger Windows Row
+    final windowPaint = Paint()..color = const Color(0xFF38BDF8);
+    for (int i = 0; i < 4; i++) {
+      final wy = -7.0 + (i * 7.0);
+      canvas.drawCircle(Offset(-4.5, wy), 1.0, windowPaint);
+      canvas.drawCircle(Offset(4.5, wy), 1.0, windowPaint);
+    }
+  }
+
+  /// ☁️ Drifting clouds with soft billows
+  void _drawDriftingClouds(Canvas canvas, double cx, double cy, {required bool isUpper}) {
+    canvas.save();
+    canvas.translate(cx, cy);
+
+    final cloudPaint = Paint();
+    final filterClouds = isUpper ? _clouds.sublist(9) : _clouds.sublist(0, 9);
+
+    for (final cloud in filterClouds) {
+      cloudPaint.color = Colors.white.withValues(alpha: cloud.opacity * (isUpper ? 0.35 : 0.65));
+      final rect = Rect.fromCenter(
+        center: Offset(cloud.x, cloud.y),
+        width: cloud.width,
+        height: cloud.height,
+      );
+      canvas.drawOval(rect, cloudPaint);
+    }
+
+    canvas.restore();
+  }
+
+  // =========================================================================
+  // 🚀 MODE 2: INTERPLANETARY ROCKET ORBIT & INFINITE COSMIC VOID FLIGHT
+  // =========================================================================
+
+  void _renderInterplanetaryRocketFlight(
+    Canvas canvas,
+    double w,
+    double h,
+    double cx,
+    double cy,
+  ) {
     // 1. Cosmic Nebula Dust Cloud
     final nebulaPaint = Paint()
       ..shader = RadialGradient(
@@ -251,7 +849,7 @@ class FlameCosmicRocketFlightGame extends FlameGame {
       ).createShader(Rect.fromLTWH(0, 0, w, h));
     canvas.drawRect(Rect.fromLTWH(0, 0, w, h), nebulaPaint);
 
-    // 2. Parallax Stars (Moving downward as rocket travels upward)
+    // 2. Parallax Stars (Infinite void stream)
     final scrollOffset = (_flightProgress * 1800.0) % 2400.0;
     canvas.save();
     canvas.translate(cx, cy);
@@ -266,9 +864,10 @@ class FlameCosmicRocketFlightGame extends FlameGame {
     }
     canvas.restore();
 
-    // 3. Render Origin Atmosphere & Planetary Launch Surface (Receding as rocket climbs)
-    if (_flightProgress < 0.42) {
-      final originAlpha = (1.0 - (_flightProgress / 0.42)).clamp(0.0, 1.0);
+    // 3. Render Origin Atmosphere Ceiling & Planetary Launch Surface
+    // "ആ ലിമിറ്റേഷൻ കഴിഞ്ഞാൽ ഈ സ്ഥലം ഇങ്ങനെ ഗ്രേഡിയന്റ് ബ്ലാക്ക് ആയാൽ മതി"
+    if (_flightProgress < 0.44) {
+      final originAlpha = (1.0 - (_flightProgress / 0.44)).clamp(0.0, 1.0);
       _drawOriginAtmosphereAndSurface(canvas, w, h, originAlpha);
     }
 
@@ -278,42 +877,47 @@ class FlameCosmicRocketFlightGame extends FlameGame {
       final double planetCenterY = h * 0.45;
       final double planetRadius = 55.0;
 
-      // Draw gravitational orbit guide ring
       final orbitRingPaint = Paint()
         ..color = const Color(0xFF38BDF8).withValues(alpha: 0.3)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.2;
       canvas.drawCircle(Offset(cx, planetCenterY), 95.0, orbitRingPaint);
 
-      // Draw intermediate planet
       _drawPlanetSphere(canvas, cx, planetCenterY, planetRadius, activeCode, alpha: 1.0);
 
-      // Draw label
       final name = PoketCosmosDistanceService.instance.getCleanPlanetName(activeCode);
       _drawText(canvas, '$name Gravity Assist', cx, planetCenterY + planetRadius + 14,
           color: const Color(0xFFFFD700));
     }
 
-    // 5. Render Destination Celestial Sphere (Approaching from top: 0.65 to 1.0)
-    if (_flightProgress > 0.60) {
-      final destProgress = ((_flightProgress - 0.60) / 0.40).clamp(0.0, 1.0);
+    // 5. Render Destination Celestial Sphere (Approaching from top: 0.58 to 1.0)
+    if (_flightProgress > 0.58) {
+      final destProgress = ((_flightProgress - 0.58) / 0.42).clamp(0.0, 1.0);
       final destRadius = 35.0 + (destProgress * 85.0);
       final destY = -30.0 + (destProgress * (h * 0.38));
       _drawPlanetSphere(canvas, cx, destY, destRadius, manifest.destinationCode, alpha: destProgress);
     }
 
-    // 6. Rocket Ship (Positioned in center, tilts/orbits dynamically during slingshot)
+    // 6. Rocket Ship (Positioned in center, tilts gracefully into orbital ascent curve)
+    // "റോക്കറ്റ് ഇങ്ങനെ പോകുന്നു പിന്നെ വളയും"
     canvas.save();
     double rocketX = cx;
     double rocketY = cy + 40.0;
     double rocketAngle = 0.0;
 
     if (_isSlingshotLooping) {
-      // Orbiting around intermediate planet at (cx, h * 0.45)
       final orbitR = 95.0;
       rocketX = cx + math.cos(_slingshotAngle) * orbitR;
       rocketY = (h * 0.45) + math.sin(_slingshotAngle) * orbitR;
-      rocketAngle = _slingshotAngle + (math.pi / 2); // Facing tangential flight direction
+      rocketAngle = _slingshotAngle + (math.pi / 2);
+    } else {
+      // Natural Orbital Ascent Curve: lifts off vertically, curves gracefully into orbit (15°-24° tilt)
+      if (_flightProgress >= 0.06 && _flightProgress <= 0.42) {
+        final curveFraction = ((_flightProgress - 0.06) / 0.36);
+        // Smooth sine arc tilt
+        rocketAngle = math.sin(curveFraction * math.pi) * 0.36;
+        rocketX += math.sin(curveFraction * math.pi) * 28.0;
+      }
     }
 
     canvas.translate(rocketX, rocketY);
@@ -330,7 +934,7 @@ class FlameCosmicRocketFlightGame extends FlameGame {
     }
 
     // Draw Sleek Cosmic Rocket Body
-    _drawRocketShip(canvas, isBoosting: _boostTimer > 0);
+    _drawRocketShip(canvas, isBoosting: _boostTimer > 0 || _isHoldingThrust);
     canvas.restore();
   }
 
@@ -360,7 +964,7 @@ class FlameCosmicRocketFlightGame extends FlameGame {
 
     // 3. Main Hull Fuselage
     final hullPath = Path()
-      ..moveTo(0, -38) // Nose cone tip
+      ..moveTo(0, -38)
       ..cubicTo(14, -14, 13, 14, 11, 26)
       ..lineTo(-11, 26)
       ..cubicTo(-13, 14, -14, -14, 0, -38)
@@ -376,10 +980,7 @@ class FlameCosmicRocketFlightGame extends FlameGame {
 
     // 4. Cockpit Viewport Visor
     final visorPaint = Paint()..color = const Color(0xFF38BDF8);
-    canvas.drawOval(
-      const Rect.fromLTWH(-5.5, -16, 11, 16),
-      visorPaint,
-    );
+    canvas.drawOval(const Rect.fromLTWH(-5.5, -16, 11, 16), visorPaint);
     canvas.drawOval(
       const Rect.fromLTWH(-3.5, -14, 5, 8),
       Paint()..color = Colors.white.withValues(alpha: 0.8),
@@ -390,7 +991,7 @@ class FlameCosmicRocketFlightGame extends FlameGame {
     canvas.drawRect(const Rect.fromLTWH(-7, 2, 14, 2.5), goldStripe);
   }
 
-  /// 🪐 3D Planet Sphere Renderer with Atmospheres & Surface Bands
+  /// 🪐 3D Planet Sphere Renderer
   void _drawPlanetSphere(Canvas canvas, double x, double y, double radius, String planetCode, {double alpha = 1.0}) {
     canvas.save();
     canvas.translate(x, y);
@@ -451,7 +1052,6 @@ class FlameCosmicRocketFlightGame extends FlameGame {
         atmosphericGlow = const Color(0xFF38BDF8);
     }
 
-    // Outer Atmospheric Halo
     canvas.drawCircle(
       Offset.zero,
       radius * 1.18,
@@ -460,7 +1060,6 @@ class FlameCosmicRocketFlightGame extends FlameGame {
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
     );
 
-    // Planet Body Sphere (3D Light Spherical Gradient)
     final spherePaint = Paint()
       ..shader = RadialGradient(
         center: const Alignment(-0.35, -0.35),
@@ -469,7 +1068,6 @@ class FlameCosmicRocketFlightGame extends FlameGame {
       ).createShader(Rect.fromCircle(center: Offset.zero, radius: radius));
     canvas.drawCircle(Offset.zero, radius, spherePaint);
 
-    // Special: Saturn Ring System
     if (planetCode.toUpperCase() == 'SAT') {
       final ringPaint = Paint()
         ..color = const Color(0xFFFEF08A).withValues(alpha: 0.55 * alpha)
@@ -485,144 +1083,136 @@ class FlameCosmicRocketFlightGame extends FlameGame {
     canvas.restore();
   }
 
-  /// 🌍 Realistic Origin Atmosphere & Ground Launch Surface with House
-  /// Atmospheric colors match CitadelScenicLandscapePainter celestial horizons
+  /// 🌍 Origin Planetary Atmosphere Ceiling & Ground Base
+  /// "ബോട്ടം ഫില്ലഡ് ആയി കിടക്കണം... ആ ലിമിറ്റേഷൻ കഴിഞ്ഞാൽ ഈ സ്ഥലം ഇങ്ങനെ ഗ്രേഡിയന്റ് ബ്ലാക്ക് ആയാൽ മതി"
   void _drawOriginAtmosphereAndSurface(Canvas canvas, double w, double h, double alpha) {
     final cx = w / 2;
     final code = manifest.originCode.toUpperCase();
 
-    // 1. Atmosphere Gradient (Sky layer transitioning into space from horizon)
     final List<Color> skyColors;
     final Color landColor;
 
     switch (code) {
       case 'MAR':
-        // Mars: Deep rose-wine to sunset pink & coral into warm amber & peach
         skyColors = const [
-          Color(0xFFFED7AA), // Peach Horizon Haze
-          Color(0xFFF97316), // Warm Amber Glow
-          Color(0xFFE11D48), // Vivid Coral Pink
-          Color(0xFF9F1239), // Sunset Magenta-Pink
-          Color(0xFF4C0519), // Deep Rose-Wine
+          Color(0xFFFED7AA),
+          Color(0xFFF97316),
+          Color(0xFFE11D48),
+          Color(0xFF9F1239),
+          Color(0xFF4C0519),
         ];
         landColor = const Color(0xFF991B1B);
         break;
       case 'JUP':
-        // Jupiter: Jovian cobalt & indigo into auroral gold
         skyColors = const [
-          Color(0xFFF59E0B), // Auroral Gold Horizon
-          Color(0xFF0284C7), // Azure Ribbon
-          Color(0xFF1D4ED8), // Electric Jovian Cobalt
-          Color(0xFF1E1B4B), // Royal Indigo
-          Color(0xFF020617), // Deep Space Abyss
+          Color(0xFFF59E0B),
+          Color(0xFF0284C7),
+          Color(0xFF1D4ED8),
+          Color(0xFF1E1B4B),
+          Color(0xFF020617),
         ];
         landColor = const Color(0xFF065F46);
         break;
       case 'SAT':
-        // Saturn: Ring gold & amber into cosmic purple
         skyColors = const [
-          Color(0xFFFEF08A), // Radiant Gold Horizon
-          Color(0xFFD97706), // Golden Amber
-          Color(0xFFDB2777), // Sunset Pink Glow
-          Color(0xFF9D174D), // Twilight Rose-Pink
-          Color(0xFF3B0764), // Cosmic Purple Void
+          Color(0xFFFEF08A),
+          Color(0xFFD97706),
+          Color(0xFFDB2777),
+          Color(0xFF9D174D),
+          Color(0xFF3B0764),
         ];
         landColor = const Color(0xFF92400E);
         break;
       case 'LUN':
-        // Moon: Lunar ash into slate & pure obsidian void
         skyColors = const [
-          Color(0xFF1E293B), // Horizon Lunar Ash
-          Color(0xFF0F172A), // Slate Space Dusk
-          Color(0xFF020617), // Deep Obsidian
-          Color(0xFF000000), // Pure Black Void
+          Color(0xFF1E293B),
+          Color(0xFF0F172A),
+          Color(0xFF020617),
+          Color(0xFF000000),
         ];
         landColor = const Color(0xFF334155);
         break;
       case 'EUR':
-        // Europa: Glacial ice into cyan aurora & cosmic indigo
         skyColors = const [
-          Color(0xFFE0F2FE), // Glacial White Horizon
-          Color(0xFF0284C7), // Shimmering Cyan Ice
-          Color(0xFFC026D3), // Rose-Violet Twilight
-          Color(0xFF701A75), // Deep Magenta Glow
-          Color(0xFF1E1B4B), // Cosmic Indigo Void
+          Color(0xFFE0F2FE),
+          Color(0xFF0284C7),
+          Color(0xFFC026D3),
+          Color(0xFF701A75),
+          Color(0xFF1E1B4B),
         ];
         landColor = const Color(0xFF0284C7);
         break;
       case 'VEN':
-        // Venus: Sulfuric golden dawn into apricot & plum twilight
         skyColors = const [
-          Color(0xFFFEF08A), // Radiant Warm Corona
-          Color(0xFFF59E0B), // Sulfuric Golden Dawn
-          Color(0xFFC2410C), // Deep Terracotta
-          Color(0xFF831843), // Sunset Wine
-          Color(0xFF4A044E), // Deep Plum Twilight
+          Color(0xFFFEF08A),
+          Color(0xFFF59E0B),
+          Color(0xFFC2410C),
+          Color(0xFF831843),
+          Color(0xFF4A044E),
         ];
         landColor = const Color(0xFFB45309);
         break;
       case 'TTN':
-        // Titan: Golden methane into methane cyan & petrol teal
         skyColors = const [
-          Color(0xFFFBBF24), // Golden Methane Horizon
-          Color(0xFFB45309), // Amber Smog Layer
-          Color(0xFF0F766E), // Methane Cyan Glow
-          Color(0xFF065F46), // Emerald Twilight
-          Color(0xFF042F2E), // Deep Petrol Teal
+          Color(0xFFFBBF24),
+          Color(0xFFB45309),
+          Color(0xFF0F766E),
+          Color(0xFF065F46),
+          Color(0xFF042F2E),
         ];
         landColor = const Color(0xFF047857);
         break;
       case 'NEP':
-        // Neptune: Pale icy silver into cyan & electric violet
         skyColors = const [
-          Color(0xFFE0E7FF), // Pale Icy Silver Horizon
-          Color(0xFF0284C7), // Shimmering Cyan Aurora
-          Color(0xFF4338CA), // Electric Violet Ribbon
-          Color(0xFF1E1B4B), // Midnight Indigo
-          Color(0xFF020617), // Deep Space Abyss
+          Color(0xFFE0E7FF),
+          Color(0xFF0284C7),
+          Color(0xFF4338CA),
+          Color(0xFF1E1B4B),
+          Color(0xFF020617),
         ];
         landColor = const Color(0xFF1D4ED8);
         break;
       case 'PLT':
-        // Pluto: Distant frozen rose into neon purple & royal amethyst
         skyColors = const [
-          Color(0xFFF5D0FE), // Distant Frozen Rose Horizon
-          Color(0xFFA855F7), // Neon Purple Aurora
-          Color(0xFF6B21A8), // Vibrant Violet Nebula
-          Color(0xFF2E1065), // Cosmic Amethyst Twilight
-          Color(0xFF030712), // Deep Space Obsidian
+          Color(0xFFF5D0FE),
+          Color(0xFFA855F7),
+          Color(0xFF6B21A8),
+          Color(0xFF2E1065),
+          Color(0xFF030712),
         ];
         landColor = const Color(0xFF581C87);
         break;
       default: // Earth Prime
         skyColors = const [
-          Color(0xFFBAE6FD), // Horizon Mist
-          Color(0xFF38BDF8), // Vibrant Cyan
-          Color(0xFF0284C7), // Deep Azure
-          Color(0xFF0C4A6E), // Deep Sea
-          Color(0xFF020617), // Space Void
+          Color(0xFFBAE6FD),
+          Color(0xFF38BDF8),
+          Color(0xFF0284C7),
+          Color(0xFF0C4A6E),
+          Color(0xFF020617),
         ];
         landColor = const Color(0xFF16A34A);
     }
 
+    // Atmosphere gradient with smooth transition to gradient black void
     final skyPaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.bottomCenter,
         end: Alignment.topCenter,
         colors: [
-          for (final c in skyColors) c.withValues(alpha: alpha * 0.9),
+          for (final c in skyColors) c.withValues(alpha: alpha * 0.95),
+          const Color(0xFF070B14).withValues(alpha: alpha),
           Colors.transparent,
         ],
       ).createShader(Rect.fromLTWH(0, 0, w, h));
     canvas.drawRect(Rect.fromLTWH(0, 0, w, h), skyPaint);
 
-    // 2. Horizon ground surface curve that drops down during ascent
-    final surfaceY = h * 0.72 + (_flightProgress * h * 1.55);
+    // Ground surface that recedes downward as rocket ascends
+    final surfaceY = h * 0.72 + (_flightProgress * h * 1.85);
     final surfacePath = Path()
       ..moveTo(-50, surfaceY)
       ..quadraticBezierTo(cx, surfaceY - 26, w + 50, surfaceY)
-      ..lineTo(w + 50, h + 100)
-      ..lineTo(-50, h + 100)
+      ..lineTo(w + 50, h + 120)
+      ..lineTo(-50, h + 120)
       ..close();
 
     final landPaint = Paint()
@@ -633,10 +1223,10 @@ class FlameCosmicRocketFlightGame extends FlameGame {
           landColor.withValues(alpha: 0.95 * alpha),
           const Color(0xFF0B132B).withValues(alpha: 0.95 * alpha),
         ],
-      ).createShader(Rect.fromLTWH(0, surfaceY - 26, w, h - surfaceY + 126));
+      ).createShader(Rect.fromLTWH(0, surfaceY - 26, w, h - surfaceY + 146));
     canvas.drawPath(surfacePath, landPaint);
 
-    // 3. Citizen Launchpad & Home Base (At center-left of the launch surface)
+    // Citizen Launchpad & Home Base
     final houseX = cx - 65;
     final houseY = surfaceY - 14;
 
@@ -674,7 +1264,7 @@ class FlameCosmicRocketFlightGame extends FlameGame {
     // Origin Location Label Pill
     _drawText(
       canvas,
-      '🏡 ${manifest.originName.toUpperCase()} SURFACE',
+      '🏡 ${manifest.originName.toUpperCase()} HOME BASE',
       cx,
       surfaceY + 18,
       color: Colors.white.withValues(alpha: 0.85 * alpha),

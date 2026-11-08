@@ -584,6 +584,31 @@ class PoketCosmosAllocationService {
   CitizenPlot? _cachedBirthPlot;
   CitizenPlot? get currentBirthPlot => _cachedBirthPlot;
 
+  /// 🪐 Returns the exact, verified planet code of the currently viewing user
+  String getCurrentViewerPlanetCode() {
+    if (_cachedBirthPlot != null) {
+      return PoketCosmosDistanceService.instance.resolvePlanetCode(_cachedBirthPlot!.planetName);
+    }
+    final uid = SupaFlow.client.auth.currentUser?.id;
+    if (uid != null) {
+      if (_userBirthPlots.containsKey(uid)) {
+        return PoketCosmosDistanceService.instance.resolvePlanetCode(_userBirthPlots[uid]!.planetName);
+      }
+      final plot = getCachedUserPlot(uid);
+      if (plot != null) {
+        _cachedBirthPlot = plot;
+        return PoketCosmosDistanceService.instance.resolvePlanetCode(plot.planetName);
+      }
+    }
+    return 'EP';
+  }
+
+  /// 🪐 Returns the clean name of the current viewing user's home planet
+  String getCurrentViewerPlanetName() {
+    final code = getCurrentViewerPlanetCode();
+    return PoketCosmosDistanceService.instance.getCleanPlanetName(code);
+  }
+
   // User-scoped in-memory cache
   final Map<String, CitizenPlot> _userBirthPlots = {};
 
@@ -915,6 +940,7 @@ class PoketCosmosAllocationService {
               status: PlotStatus.occupied,
             );
             _userBirthPlots[uid] = plot;
+            _cachedBirthPlot = plot;
             return plot;
           }
         }
@@ -930,6 +956,7 @@ class PoketCosmosAllocationService {
         final existing = _readSavedPlotFromPrefs(prefs, userName, avatar, uid: uid);
         if (existing != null) {
           if (uid != null) _userBirthPlots[uid] = existing;
+          _cachedBirthPlot = existing;
           return existing;
         }
       }

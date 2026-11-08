@@ -64,6 +64,9 @@ class _SearchPageState extends State<SearchPage> {
     super.initState();
     _selectedTab = 'people';
     _plotsScrollController.addListener(_onPlotsScroll);
+    PoketCosmosAllocationService.instance.ensureUserHasAllocatedPlot().then((_) {
+      if (mounted) setState(() {});
+    });
     PoketCosmosAllocationService.instance.loadAllRegisteredProfiles().then((_) {
       if (mounted) setState(() {});
     });
@@ -1348,8 +1351,15 @@ class _SearchPageState extends State<SearchPage> {
                     child: OutlinedButton(
                       onPressed: () {
                         Navigator.pop(ctx);
+                        final myOriginCode = PoketCosmosAllocationService.instance.getCurrentViewerPlanetCode();
+                        final myPlot = PoketCosmosAllocationService.instance.currentBirthPlot?.plotNumber ?? 1;
                         final flightManifest = PoketCosmosDistanceService.instance
-                            .calculateFlightManifest(originCode: 'EP', destinationCode: code);
+                            .calculateFlightManifest(
+                          originCode: myOriginCode,
+                          destinationCode: code,
+                          originPlot: myPlot,
+                          destinationPlot: localNum,
+                        );
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -2311,9 +2321,8 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
             : LearningMilestoneStage.getStageForDay(userDay);
 
         // 🌌 Resolve Scientific Interplanetary Flight Manifest & Exact Plot Address
-        final myPlanetCode = PoketCosmosDistanceService.instance.resolvePlanetCode(
-          PoketCosmosAllocationService.instance.currentBirthPlot?.planetName,
-        );
+        final myPlanetCode = PoketCosmosAllocationService.instance.getCurrentViewerPlanetCode();
+        final myPlotNumber = PoketCosmosAllocationService.instance.currentBirthPlot?.plotNumber ?? 1;
         String targetPlanetCode = 'EP';
         String targetPlanetName = 'Earth';
         int targetPlotNumber = 1;
@@ -2368,6 +2377,8 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
             PoketCosmosDistanceService.instance.calculateFlightManifest(
           originCode: myPlanetCode,
           destinationCode: targetPlanetCode,
+          originPlot: myPlotNumber,
+          destinationPlot: targetPlotNumber,
         );
 
         return GestureDetector(
@@ -2753,9 +2764,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                               ),
                               const SizedBox(width: 4.5),
                               Text(
-                                flightManifest.isSamePlanet
-                                    ? '12,400 km'
-                                    : flightManifest.formattedDistance,
+                                flightManifest.formattedDistance,
                                 style: GoogleFonts.orbitron(
                                   color: const Color(0xFF38BDF8),
                                   fontSize: 9.5,

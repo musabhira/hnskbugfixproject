@@ -9,8 +9,10 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citad
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/flame_cosmic_rocket_flight_game.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_resident_island_view.dart';
 
-/// 🚀 Full-Screen Cosmic Rocket Flight Simulation Page
-/// Provides interactive space travel from viewer's planet to searched user's planet.
+/// 🚀 / ✈️ Full-Screen Cosmic & Atmospheric Flight Simulation Page
+/// Provides dual-mode travel:
+/// - Intra-Planetary (same planet): Aeroplane archipelago flight over island maps
+/// - Interplanetary (different planets): Cosmic rocket launch, orbital ascent & deep space void
 class PoketCosmicFlightPage extends StatefulWidget {
   final CosmosFlightManifest manifest;
   final String targetUserId;
@@ -49,6 +51,7 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
   bool _hasArrived = false;
   bool _isBoosting = false;
   bool _isPaused = false;
+  double _baseScale = 1.0;
 
   late AnimationController _pulseController;
 
@@ -57,6 +60,27 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
     setState(() {
       _isPaused = !_isPaused;
       _game.isPaused = _isPaused;
+    });
+  }
+
+  void _zoomIn() {
+    HapticFeedback.selectionClick();
+    setState(() {
+      _game.zoomIn();
+    });
+  }
+
+  void _zoomOut() {
+    HapticFeedback.selectionClick();
+    setState(() {
+      _game.zoomOut();
+    });
+  }
+
+  void _resetZoom() {
+    HapticFeedback.selectionClick();
+    setState(() {
+      _game.resetZoom();
     });
   }
 
@@ -137,7 +161,6 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
   void _proceedToCitadel() {
     Navigator.of(context).pop(); // Dismiss flight simulation
 
-    // If targeted a specific cosmos plot, route directly to that resident island & highlight plot
     if (widget.destinationPlotNumber != null) {
       Navigator.push(
         context,
@@ -165,7 +188,6 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
       return;
     }
 
-    // Default open for user or robot
     PocketCitadelAttackPage.openForUser(
       context,
       userId: widget.targetUserId,
@@ -190,16 +212,19 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
         PoketCosmosDistanceService.instance.formatKilometers(_currentTraversedKm);
     final totalDist = widget.manifest.formattedDistance;
 
+    final isSamePlanet = widget.manifest.isSamePlanet;
+
     final intermediateSlingshot =
+        !isSamePlanet &&
         widget.manifest.intermediatePlanetCodes.isNotEmpty &&
         _flightProgress >= 0.35 &&
         _flightProgress <= 0.65;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF070B14),
+      backgroundColor: isSamePlanet ? const Color(0xFF0369A1) : const Color(0xFF070B14),
       body: Stack(
         children: [
-          // 1. Full-Screen Interactive Flame Game Viewport (Tap/Hold anywhere boosts thrust)
+          // 1. Full-Screen Interactive Flame Game Viewport (Tap/Hold anywhere boosts thrust; pinch-to-zoom)
           Positioned.fill(
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
@@ -207,11 +232,21 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
               onLongPressStart: (_) => _startContinuousThrust(),
               onLongPressEnd: (_) => _stopContinuousThrust(),
               onLongPressCancel: _stopContinuousThrust,
+              onScaleStart: (details) {
+                _baseScale = _game.zoomLevel;
+              },
+              onScaleUpdate: (details) {
+                if (details.pointerCount > 1) {
+                  setState(() {
+                    _game.setZoom(_baseScale * details.scale);
+                  });
+                }
+              },
               child: GameWidget(game: _game),
             ),
           ),
 
-          // 2. Ultra-Minimal Transit Flight HUD (Google Maps Style)
+          // 2. Flight Navigation Header HUD
           Positioned(
             top: topPadding + 10,
             left: 14,
@@ -219,7 +254,7 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Top Navigation Bar
+                // Top Action Bar
                 Row(
                   children: [
                     // Back Button
@@ -247,13 +282,20 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
                         decoration: BoxDecoration(
                           color: const Color(0xFF0F172A).withValues(alpha: 0.88),
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4), width: 0.8),
+                          border: Border.all(
+                            color: isSamePlanet
+                                ? const Color(0xFF38BDF8).withValues(alpha: 0.6)
+                                : const Color(0xFF818CF8).withValues(alpha: 0.5),
+                            width: 0.8,
+                          ),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              '${PoketCosmosDistanceService.instance.getPlanetEmoji(widget.manifest.originCode)} ${widget.manifest.originName}',
+                              isSamePlanet
+                                  ? '🏝️ ${widget.manifest.originName}'
+                                  : '${PoketCosmosDistanceService.instance.getPlanetEmoji(widget.manifest.originCode)} ${widget.manifest.originName}',
                               style: GoogleFonts.outfit(
                                 color: Colors.white70,
                                 fontSize: 11,
@@ -262,13 +304,21 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 6),
-                              child: Text('➔', style: TextStyle(color: Color(0xFF38BDF8), fontSize: 12)),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 6),
+                              child: Text(
+                                isSamePlanet ? '✈️' : '➔',
+                                style: TextStyle(
+                                  color: isSamePlanet ? const Color(0xFFFFD700) : const Color(0xFF38BDF8),
+                                  fontSize: 12,
+                                ),
+                              ),
                             ),
                             Flexible(
                               child: Text(
-                                '${PoketCosmosDistanceService.instance.getPlanetEmoji(widget.manifest.destinationCode)} ${widget.manifest.destinationName}',
+                                isSamePlanet
+                                    ? '🏝️ ${widget.manifest.destinationName}'
+                                    : '${PoketCosmosDistanceService.instance.getPlanetEmoji(widget.manifest.destinationCode)} ${widget.manifest.destinationName}',
                                 style: GoogleFonts.outfit(
                                   color: Colors.white,
                                   fontSize: 11.5,
@@ -290,9 +340,14 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
                         decoration: BoxDecoration(
-                          color: _isPaused ? const Color(0xFFF59E0B).withValues(alpha: 0.35) : Colors.black.withValues(alpha: 0.6),
+                          color: _isPaused
+                              ? const Color(0xFFF59E0B).withValues(alpha: 0.35)
+                              : Colors.black.withValues(alpha: 0.6),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: _isPaused ? const Color(0xFFF59E0B) : Colors.white24, width: 0.8),
+                          border: Border.all(
+                            color: _isPaused ? const Color(0xFFF59E0B) : Colors.white24,
+                            width: 0.8,
+                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -361,7 +416,7 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
                           Flexible(
                             child: Row(
                               children: [
-                                const Text('📍', style: TextStyle(fontSize: 12)),
+                                Text(isSamePlanet ? '🛬' : '📍', style: const TextStyle(fontSize: 12)),
                                 const SizedBox(width: 5),
                                 Flexible(
                                   child: Text(
@@ -380,7 +435,9 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            _isBoosting ? '🔥 BOOST' : '${((1.0 - _flightProgress) * 100).toInt()}% left',
+                            _isBoosting
+                                ? (isSamePlanet ? '⚡ JET BOOST' : '🔥 WARP')
+                                : '${((1.0 - _flightProgress) * 100).toInt()}% left',
                             style: GoogleFonts.outfit(
                               color: _isBoosting ? const Color(0xFFFFD700) : const Color(0xFF38BDF8),
                               fontSize: 11,
@@ -408,12 +465,80 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
             ),
           ),
 
-          // 3. Slingshot Assist Dynamic Alert Banner
+          // 3. Zoom Controls Floating Dock on Right Edge
+          Positioned(
+            top: topPadding + 115,
+            right: 14,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A).withValues(alpha: 0.85),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.white24, width: 0.8),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.35),
+                    blurRadius: 10,
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Zoom In (+)
+                  GestureDetector(
+                    onTap: _zoomIn,
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: const BoxDecoration(
+                        color: Colors.white10,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.zoom_in_rounded, color: Colors.white, size: 18),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  // Current Zoom Level Indicator / Reset
+                  GestureDetector(
+                    onTap: _resetZoom,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+                      child: Text(
+                        '${(_game.zoomLevel * 100).toInt()}%',
+                        style: GoogleFonts.orbitron(
+                          color: const Color(0xFF38BDF8),
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  // Zoom Out (-)
+                  GestureDetector(
+                    onTap: _zoomOut,
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: const BoxDecoration(
+                        color: Colors.white10,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.zoom_out_rounded, color: Colors.white, size: 18),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // 4. Slingshot Assist Dynamic Alert Banner (Interplanetary)
           if (intermediateSlingshot)
             Positioned(
               top: topPadding + 115,
               left: 24,
-              right: 24,
+              right: 68,
               child: AnimatedOpacity(
                 duration: const Duration(milliseconds: 300),
                 opacity: 1.0,
@@ -449,7 +574,72 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
               ),
             ),
 
-          // 4. Bottom Controls: Minimal Target Label & Right Floating Launch/Boost Button
+          // 5. Centered Pause Notification Banner
+          if (_isPaused)
+            Center(
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 24),
+                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.94),
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                      blurRadius: 20,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.pause_circle_filled_rounded, color: Color(0xFFFFD700), size: 36),
+                    const SizedBox(height: 8),
+                    Text(
+                      'FLIGHT PAUSED',
+                      style: GoogleFonts.orbitron(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'യാത്ര താൽക്കാലികമായി നിർത്തിയിരിക്കുന്നു',
+                      style: GoogleFonts.inter(
+                        color: Colors.white70,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    ElevatedButton.icon(
+                      onPressed: _togglePause,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFFFC00),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      ),
+                      icon: const Icon(Icons.play_arrow_rounded, color: Colors.black, size: 18),
+                      label: Text(
+                        'RESUME FLIGHT / തുടരുക',
+                        style: GoogleFonts.outfit(
+                          color: Colors.black,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+          // 6. Bottom Controls: Target Label & Right Floating Launch/Boost Button
           if (!_hasArrived) ...[
             // Target Citizen Pill on Bottom-Left
             Positioned(
@@ -465,7 +655,11 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.person_pin_circle_rounded, color: Color(0xFF38BDF8), size: 15),
+                    Icon(
+                      isSamePlanet ? Icons.location_city_rounded : Icons.person_pin_circle_rounded,
+                      color: const Color(0xFF38BDF8),
+                      size: 15,
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       widget.targetName,
@@ -480,7 +674,7 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
               ),
             ),
 
-            // Floating Launch / Boost FAB on Bottom-Right (Audio directive: Tap to go, hold to accelerate)
+            // Floating Launch / Boost FAB on Bottom-Right
             Positioned(
               bottom: bottomPadding + 16,
               right: 18,
@@ -499,7 +693,9 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
                       gradient: LinearGradient(
                         colors: _isBoosting
                             ? [const Color(0xFFFF9100), const Color(0xFFFFD700)]
-                            : [const Color(0xFF00E5FF), const Color(0xFF2563EB)],
+                            : (isSamePlanet
+                                ? [const Color(0xFF0284C7), const Color(0xFF38BDF8)]
+                                : [const Color(0xFF00E5FF), const Color(0xFF2563EB)]),
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -517,13 +713,19 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          _isBoosting ? Icons.local_fire_department_rounded : Icons.rocket_launch_rounded,
+                          _isBoosting
+                              ? Icons.local_fire_department_rounded
+                              : (isSamePlanet
+                                  ? Icons.airplanemode_active_rounded
+                                  : Icons.rocket_launch_rounded),
                           color: Colors.white,
                           size: 24,
                         ),
                         const SizedBox(height: 1),
                         Text(
-                          _isBoosting ? 'WARP' : 'BOOST',
+                          _isBoosting
+                              ? (isSamePlanet ? 'AFTERBURN' : 'WARP')
+                              : (isSamePlanet ? 'JET' : 'BOOST'),
                           style: GoogleFonts.outfit(
                             color: Colors.white,
                             fontSize: 9.5,
@@ -539,7 +741,7 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
             ),
           ],
 
-          // 5. Orbital Arrival Celebration Modal
+          // 7. Arrival Celebration Modal (Dual-mode adaptive)
           if (_hasArrived)
             Positioned(
               bottom: bottomPadding + 20,
@@ -576,13 +778,17 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            PoketCosmosDistanceService.instance.getPlanetEmoji(widget.manifest.destinationCode),
+                            isSamePlanet
+                                ? '🏝️'
+                                : PoketCosmosDistanceService.instance.getPlanetEmoji(widget.manifest.destinationCode),
                             style: const TextStyle(fontSize: 22),
                           ),
                           const SizedBox(width: 8),
                           Flexible(
                             child: Text(
-                              'ARRIVED AT ${widget.manifest.destinationName.toUpperCase()}',
+                              isSamePlanet
+                                  ? 'TOUCHDOWN AT ${widget.manifest.destinationName.toUpperCase()} ISLAND 🛬'
+                                  : 'ARRIVED AT ${widget.manifest.destinationName.toUpperCase()} 🪐',
                               style: GoogleFonts.orbitron(
                                 color: const Color(0xFFFFD700),
                                 fontSize: 13,
@@ -596,7 +802,9 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Traversed ${widget.manifest.formattedDistance} to ${widget.targetName}\'s planetary dwelling.',
+                        isSamePlanet
+                            ? 'Traversed ${widget.manifest.formattedDistance} across atmospheric airways to ${widget.targetName}\'s island residence.'
+                            : 'Traversed ${widget.manifest.formattedDistance} to ${widget.targetName}\'s planetary dwelling.',
                         style: GoogleFonts.inter(
                           color: const Color(0xFFCBD5E1),
                           fontSize: 12,
@@ -622,17 +830,21 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
-                                widget.destinationPlotNumber != null
-                                    ? Icons.location_on_rounded
-                                    : Icons.fort_rounded,
+                                isSamePlanet
+                                    ? Icons.flight_land_rounded
+                                    : (widget.destinationPlotNumber != null
+                                        ? Icons.location_on_rounded
+                                        : Icons.fort_rounded),
                                 color: Colors.black,
                                 size: 18,
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                widget.destinationPlotNumber != null
-                                    ? 'LAND AT PLOT #${widget.destinationPlotNumber} ➔'
-                                    : 'VISIT HOUSE / CITADEL ➔',
+                                isSamePlanet
+                                    ? 'VISIT LANDING 🛬 / വിസിറ്റ് ലാൻഡിംഗ്'
+                                    : (widget.destinationPlotNumber != null
+                                        ? 'LAND AT PLOT #${widget.destinationPlotNumber} ➔'
+                                        : 'VISIT HOUSE / CITADEL ➔'),
                                 style: GoogleFonts.outfit(
                                   color: Colors.black,
                                   fontSize: 13.5,

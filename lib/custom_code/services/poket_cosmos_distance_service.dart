@@ -166,18 +166,29 @@ class PoketCosmosDistanceService {
   CosmosFlightManifest calculateFlightManifest({
     required String originCode,
     required String destinationCode,
+    int? originPlot,
+    int? destinationPlot,
   }) {
     final orig = originCode.trim().toUpperCase();
     final dest = destinationCode.trim().toUpperCase();
 
     if (orig == dest) {
+      double localKm = AstronomicalBodies.samePlanetDistance;
+      if (originPlot != null && destinationPlot != null) {
+        final diff = (originPlot - destinationPlot).abs();
+        if (diff == 0) {
+          localKm = 450.0; // Same neighborhood/district
+        } else {
+          localKm = (diff * 520.0 + 850.0).clamp(500.0, 20000.0);
+        }
+      }
       return CosmosFlightManifest(
         originCode: orig,
         originName: getCleanPlanetName(orig),
         destinationCode: dest,
         destinationName: getCleanPlanetName(dest),
-        distanceKm: AstronomicalBodies.samePlanetDistance,
-        formattedDistance: '12,400 km',
+        distanceKm: localKm,
+        formattedDistance: formatKilometers(localKm),
         intermediatePlanetCodes: [],
         isSamePlanet: true,
       );
