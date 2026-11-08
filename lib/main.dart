@@ -124,6 +124,7 @@ void main() {
       // 5f. Initialize Poket Cosmos Born Address & Plot Allocation Engine
       try {
         PoketCosmosAllocationService.instance.ensureUserHasAllocatedPlot();
+        PoketCosmosAllocationService.instance.loadAllRegisteredProfiles();
       } catch (_) {}
 
       // 6. Initialize Pocket Native Language service (Hindi, Tamil, Malayalam, etc.)

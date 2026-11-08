@@ -28,7 +28,8 @@ class PocketCitadelStoreSheet extends StatefulWidget {
   }
 
   @override
-  State<PocketCitadelStoreSheet> createState() => _PocketCitadelStoreSheetState();
+  State<PocketCitadelStoreSheet> createState() =>
+      _PocketCitadelStoreSheetState();
 }
 
 class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
@@ -48,8 +49,10 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
   Future<void> _loadStoreData() async {
     final ps = await PocketCitadelStoreService.instance.getUserPocketScore();
     final owned = await PocketCitadelStoreService.instance.getOwnedDefenses();
-    final equipped = await PocketCitadelStoreService.instance.getEquippedDefenses();
-    final eligibility = await PocketAdMobService.instance.checkRewardedAdEligibility();
+    final equipped =
+        await PocketCitadelStoreService.instance.getEquippedDefenses();
+    final eligibility =
+        await PocketAdMobService.instance.checkRewardedAdEligibility();
     final remaining = eligibility['remaining'] as int? ?? 5;
 
     if (mounted) {
@@ -69,7 +72,8 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Daily sponsor video limit (5/5) reached. Resets tomorrow!'),
+          content:
+              Text('Daily sponsor video limit (5/5) reached. Resets tomorrow!'),
           backgroundColor: Color(0xFF0F172A),
           behavior: SnackBarBehavior.floating,
         ),
@@ -85,11 +89,13 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
           final prefs = await SharedPreferences.getInstance();
           final newScore = _currentPS + 50;
           await prefs.setInt('pocket_score', newScore);
-          final eligibility = await PocketAdMobService.instance.checkRewardedAdEligibility();
+          final eligibility =
+              await PocketAdMobService.instance.checkRewardedAdEligibility();
           if (mounted) {
             setState(() {
               _currentPS = newScore;
-              _rewardedRemaining = eligibility['remaining'] as int? ?? (_rewardedRemaining - 1).clamp(0, 5);
+              _rewardedRemaining = eligibility['remaining'] as int? ??
+                  (_rewardedRemaining - 1).clamp(0, 5);
             });
             ScaffoldMessenger.of(context).hideCurrentSnackBar();
             ScaffoldMessenger.of(context).showSnackBar(
@@ -138,7 +144,8 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
       return;
     }
 
-    final success = await PocketCitadelStoreService.instance.purchaseDefense(item);
+    final success =
+        await PocketCitadelStoreService.instance.purchaseDefense(item);
     if (success) {
       widget.onPurchased?.call();
       await _loadStoreData();
@@ -238,9 +245,12 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                   children: [
                     // 📺 Free PS via Ad
                     GestureDetector(
-                      onTap: (_isWatchingAd || _rewardedRemaining <= 0) ? null : _watchRewardedAd,
+                      onTap: (_isWatchingAd || _rewardedRemaining <= 0)
+                          ? null
+                          : _watchRewardedAd,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 5),
                         decoration: BoxDecoration(
                           color: _rewardedRemaining > 0
                               ? const Color(0xFF10B981).withValues(alpha: 0.18)
@@ -260,7 +270,9 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                             Text(
                               _rewardedRemaining > 0 ? '+50 PS' : '5/5 Done',
                               style: GoogleFonts.outfit(
-                                color: _rewardedRemaining > 0 ? const Color(0xFF34D399) : Colors.white54,
+                                color: _rewardedRemaining > 0
+                                    ? const Color(0xFF34D399)
+                                    : Colors.white54,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 11.5,
                               ),
@@ -272,11 +284,14 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                     const SizedBox(width: 8),
                     // Balance Badge
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFD700).withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.6)),
+                        border: Border.all(
+                            color:
+                                const Color(0xFFFFD700).withValues(alpha: 0.6)),
                       ),
                       child: Row(
                         children: [
@@ -311,7 +326,9 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
               ),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: _rewardedRemaining > 0 ? const Color(0xFF10B981) : Colors.white24,
+                color: _rewardedRemaining > 0
+                    ? const Color(0xFF10B981)
+                    : Colors.white24,
                 width: 1.2,
               ),
               boxShadow: [
@@ -326,7 +343,10 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: (_rewardedRemaining > 0 ? const Color(0xFF10B981) : Colors.white24).withValues(alpha: 0.2),
+                    color: (_rewardedRemaining > 0
+                            ? const Color(0xFF10B981)
+                            : Colors.white24)
+                        .withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: const Text('📺', style: TextStyle(fontSize: 20)),
@@ -349,7 +369,9 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                             ? 'Daily Sponsor Reward ($_rewardedRemaining/5 available)'
                             : 'Daily Sponsor Reward (5/5 Completed today)',
                         style: GoogleFonts.inter(
-                          color: _rewardedRemaining > 0 ? const Color(0xFF6EE7B7) : Colors.white54,
+                          color: _rewardedRemaining > 0
+                              ? const Color(0xFF6EE7B7)
+                              : Colors.white54,
                           fontSize: 11,
                           fontWeight: FontWeight.w500,
                         ),
@@ -358,13 +380,18 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: (_isWatchingAd || _rewardedRemaining <= 0) ? null : _watchRewardedAd,
+                  onPressed: (_isWatchingAd || _rewardedRemaining <= 0)
+                      ? null
+                      : _watchRewardedAd,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _rewardedRemaining > 0 ? const Color(0xFF10B981) : Colors.white24,
+                    backgroundColor: _rewardedRemaining > 0
+                        ? const Color(0xFF10B981)
+                        : Colors.white24,
                     foregroundColor: Colors.white,
                     disabledBackgroundColor: Colors.white12,
                     disabledForegroundColor: Colors.white38,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -373,7 +400,8 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                       ? const SizedBox(
                           width: 14,
                           height: 14,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white),
                         )
                       : Text(
                           _rewardedRemaining > 0 ? 'CLAIM +50' : 'CLAIMED',
@@ -392,7 +420,8 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
           // List of Defense Weapons
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)))
+                ? const Center(
+                    child: CircularProgressIndicator(color: Color(0xFF38BDF8)))
                 : ListView.separated(
                     padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
                     itemCount: PocketCitadelStoreService.catalog.length,
@@ -417,7 +446,8 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                           boxShadow: isEquipped
                               ? [
                                   BoxShadow(
-                                    color: item.themeColor.withValues(alpha: 0.18),
+                                    color:
+                                        item.themeColor.withValues(alpha: 0.18),
                                     blurRadius: 14,
                                     spreadRadius: 1,
                                   ),
@@ -440,7 +470,8 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                                 ),
                               ),
                               child: Center(
-                                child: Text(item.icon, style: const TextStyle(fontSize: 26)),
+                                child: Text(item.icon,
+                                    style: const TextStyle(fontSize: 26)),
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -465,10 +496,13 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                                         ),
                                       ),
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 2),
                                         decoration: BoxDecoration(
-                                          color: item.themeColor.withValues(alpha: 0.2),
-                                          borderRadius: BorderRadius.circular(6),
+                                          color: item.themeColor
+                                              .withValues(alpha: 0.2),
+                                          borderRadius:
+                                              BorderRadius.circular(6),
                                         ),
                                         child: Text(
                                           '+${item.extraGates} Gates',
@@ -494,7 +528,8 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
 
                                   // Action / Price Row
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
                                         'Type: ${item.challengeType}',
@@ -516,9 +551,11 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                                                 ? Colors.black
                                                 : Colors.white38,
                                             elevation: 0,
-                                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 14, vertical: 8),
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(10),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
                                             ),
                                           ),
                                           onPressed: () => _buyItem(item),
@@ -534,12 +571,14 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                                         GestureDetector(
                                           onTap: () => _toggleEquip(item.id),
                                           child: Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 12, vertical: 6),
                                             decoration: BoxDecoration(
                                               color: isEquipped
                                                   ? const Color(0xFF10B981)
                                                   : Colors.white12,
-                                              borderRadius: BorderRadius.circular(10),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
                                               border: Border.all(
                                                 color: isEquipped
                                                     ? const Color(0xFF34D399)
@@ -550,15 +589,24 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 Icon(
-                                                  isEquipped ? Icons.shield_rounded : Icons.add_moderator_rounded,
+                                                  isEquipped
+                                                      ? Icons.shield_rounded
+                                                      : Icons
+                                                          .add_moderator_rounded,
                                                   size: 14,
-                                                  color: isEquipped ? Colors.black : Colors.white70,
+                                                  color: isEquipped
+                                                      ? Colors.black
+                                                      : Colors.white70,
                                                 ),
                                                 const SizedBox(width: 4),
                                                 Text(
-                                                  isEquipped ? 'EQUIPPED' : 'EQUIP',
+                                                  isEquipped
+                                                      ? 'EQUIPPED'
+                                                      : 'EQUIP',
                                                   style: GoogleFonts.outfit(
-                                                    color: isEquipped ? Colors.black : Colors.white,
+                                                    color: isEquipped
+                                                        ? Colors.black
+                                                        : Colors.white,
                                                     fontWeight: FontWeight.w900,
                                                     fontSize: 11,
                                                   ),
