@@ -7,6 +7,7 @@ import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_m
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/island_aerial_view.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'poket_cosmos_vocab_dictionary.dart';
+import 'poket_cosmos_distance_service.dart';
 
 /// 🪐 Definition of a Permanent Celestial Colony in Pocket Cosmos
 class CelestialColonyInfo {
@@ -1188,8 +1189,9 @@ class PoketCosmosAllocationService {
               break;
             }
           }
-          if (!occ.contains(pickedPlotNum) && !resSet.contains(pickedPlotNum))
+          if (!occ.contains(pickedPlotNum) && !resSet.contains(pickedPlotNum)) {
             break;
+          }
         }
       }
     }
@@ -1675,7 +1677,7 @@ class PoketCosmosAllocationService {
   }
 
   /// 🏛️ Iconic Community Pioneers across all 10 celestial bodies
-  List<CitizenPlot> _getColonyPioneers(CelestialColonyInfo colony) {
+  List<CitizenPlot> getColonyPioneers(CelestialColonyInfo colony) {
     switch (colony.code) {
       case 'EP':
         return [
@@ -1961,19 +1963,17 @@ class PoketCosmosAllocationService {
           .select('description')
           .eq('class_name', 'neighbor_pass')
           .eq('is_active', true);
-      if (res is List) {
-        for (final row in res) {
-          final desc = row['description']?.toString();
-          if (desc != null && desc.isNotEmpty) {
-            try {
-              final pass = NeighborReservationPass.fromJson(jsonDecode(desc));
-              if (!now.isAfter(pass.expiresAt) && pass.islandId == islandId) {
-                if (!active.any((p) => p.plotNumber == pass.plotNumber)) {
-                  active.add(pass);
-                }
+      for (final row in res) {
+        final desc = row['description']?.toString();
+        if (desc != null && desc.isNotEmpty) {
+          try {
+            final pass = NeighborReservationPass.fromJson(jsonDecode(desc));
+            if (!now.isAfter(pass.expiresAt) && pass.islandId == islandId) {
+              if (!active.any((p) => p.plotNumber == pass.plotNumber)) {
+                active.add(pass);
               }
-            } catch (_) {}
-          }
+            }
+          } catch (_) {}
         }
       }
     } catch (_) {}
@@ -2149,38 +2149,7 @@ class PoketCosmosAllocationService {
       );
     }
 
-    // 5. Check local registry of created passes
-    final prefs = await SharedPreferences.getInstance();
-    final rawJson = prefs.getString(_kReservationsKey);
-    if (rawJson != null) {
-      final Map<String, dynamic> store = jsonDecode(rawJson);
-      if (store.containsKey(cleanCode)) {
-        final pass = NeighborReservationPass.fromJson(store[cleanCode]);
-        if (!DateTime.now().isAfter(pass.expiresAt)) {
-          return pass;
-        }
-      }
-    }
-
-    // 6. Check cloud Supabase app_codes for remote friend referral
-    try {
-      final res = await SupaFlow.client
-          .from('app_codes')
-          .select('description')
-          .eq('class_name', 'neighbor_pass')
-          .eq('class_code', cleanCode)
-          .eq('is_active', true)
-          .maybeSingle();
-      if (res != null && res['description'] != null) {
-        final pass = NeighborReservationPass.fromJson(
-            jsonDecode(res['description'].toString()));
-        if (!DateTime.now().isAfter(pass.expiresAt)) {
-          return pass;
-        }
-      }
-    } catch (_) {}
-
-    // 7. Graceful deterministic fallback for valid custom referral codes
+    // 5. Graceful deterministic fallback for valid custom referral codes
     if (cleanCode.length >= 3) {
       final hash = cleanCode.hashCode.abs();
       final colony = colonies[hash % colonies.length];

@@ -29,7 +29,16 @@ import 'pocket_reels_content_engine.dart';
 import '../report_dailoge.dart';
 
 /// Item type for the Reels Feed: Homestead, Interactive Mini-Game, Public Vibe, Story, Interview, Speak Challenge, Vocab, or Native Ad
-enum ReelItemType { home, game, vibe, story, interview, speakChallenge, vocabCard, ad }
+enum ReelItemType {
+  home,
+  game,
+  vibe,
+  story,
+  interview,
+  speakChallenge,
+  vocabCard,
+  ad
+}
 
 class ReelVibeItem {
   final String id;
@@ -82,7 +91,8 @@ class ReelVibeCard {
               ];
 
   String get mediaUrl => stories.isNotEmpty ? stories.first.mediaUrl : '';
-  String get mediaType => stories.isNotEmpty ? stories.first.mediaType : 'video';
+  String get mediaType =>
+      stories.isNotEmpty ? stories.first.mediaType : 'video';
   String? get caption => stories.isNotEmpty ? stories.first.caption : null;
   int get duration => stories.isNotEmpty ? stories.first.duration : 10;
 }
@@ -231,8 +241,10 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
   String? _currentlyPlayingHouseId;
 
   // Games state
-  final Map<String, int?> _selectedAnswers = {}; // gameId -> selected option index
-  final Map<String, List<String>> _sentenceBuilderUserOrder = {}; // gameId -> selected words in order
+  final Map<String, int?> _selectedAnswers =
+      {}; // gameId -> selected option index
+  final Map<String, List<String>> _sentenceBuilderUserOrder =
+      {}; // gameId -> selected words in order
   final Map<String, bool?> _sentenceBuilderResults = {}; // gameId -> isCorrect
 
   // Content Audio Narration (TTS) & Interactive Voice Recognition (STT)
@@ -243,7 +255,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
   String _activeSpeechChallengeId = '';
   String _recognizedSpokenWords = '';
   final Map<String, bool?> _speakChallengeResults = {}; // cardId -> isPassed
-  final Map<String, String> _speakChallengeUserText = {}; // cardId -> recognized transcript
+  final Map<String, String> _speakChallengeUserText =
+      {}; // cardId -> recognized transcript
   bool _isTtsSpeaking = false;
   String? _currentTtsCardId;
 
@@ -288,7 +301,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     // ⚡ Upfront Preload Homes Reel Ad immediately upon opening Homes!
     PocketAdMobService.instance.isUserVip().then((vip) {
       if (!vip) {
-        PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.reels);
+        PocketAdPreloadManager.instance
+            .preloadForPlacement(PocketAdPlacement.reels);
       }
     });
 
@@ -296,7 +310,10 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     _initAll(); // Silent background enrich with live Supabase profiles
 
     if (widget.isActive && _feedItems.isNotEmpty) {
-      final initialId = widget.initialHouseId ?? widget.initialNeighbor?.id ?? _feedItems.first.neighbor?.id ?? 'house_default';
+      final initialId = widget.initialHouseId ??
+          widget.initialNeighbor?.id ??
+          _feedItems.first.neighbor?.id ??
+          'house_default';
       _playHomeMusic(initialId);
     }
   }
@@ -398,7 +415,10 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     if (widget.isActive != oldWidget.isActive) {
       if (widget.isActive) {
         if (!_isHomesAudioMuted) {
-          final id = _currentlyPlayingHouseId ?? widget.initialHouseId ?? widget.initialNeighbor?.id ?? 'house_default';
+          final id = _currentlyPlayingHouseId ??
+              widget.initialHouseId ??
+              widget.initialNeighbor?.id ??
+              'house_default';
           _playHomeMusic(id);
         }
       } else {
@@ -410,10 +430,13 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
       _pauseBgm();
       _stopAllAudioAndSpeech();
-    } else if (state == AppLifecycleState.resumed && !_isHomesAudioMuted && widget.isActive) {
+    } else if (state == AppLifecycleState.resumed &&
+        !_isHomesAudioMuted &&
+        widget.isActive) {
       if (_currentlyPlayingHouseId != null) {
         _playHomeMusic(_currentlyPlayingHouseId!);
       }
@@ -423,7 +446,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
   Future<void> _playHomeMusic(String houseId) async {
     _currentlyPlayingHouseId = houseId;
     if (_isHomesAudioMuted) return;
-    await PocketGameAudioService.instance.playHomeTheme(houseId, forceUnmute: true);
+    await PocketGameAudioService.instance
+        .playHomeTheme(houseId, forceUnmute: true);
   }
 
   void _pauseBgm() {
@@ -436,7 +460,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     if (PocketKidsService.isKidAccount) {
       PocketGameAudioService.instance.playAmbientBgm();
     } else if (_currentlyPlayingHouseId != null) {
-      PocketGameAudioService.instance.playHomeTheme(_currentlyPlayingHouseId!, forceUnmute: true);
+      PocketGameAudioService.instance
+          .playHomeTheme(_currentlyPlayingHouseId!, forceUnmute: true);
     } else {
       PocketGameAudioService.instance.playAmbientBgm();
     }
@@ -447,7 +472,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     setState(() {
       _isHomesAudioMuted = !_isHomesAudioMuted;
     });
-    PocketGameAudioService.instance.setMuted(_isHomesAudioMuted, persist: false);
+    PocketGameAudioService.instance
+        .setMuted(_isHomesAudioMuted, persist: false);
     if (!_isHomesAudioMuted && widget.isActive) {
       _resumeBgm();
     }
@@ -531,7 +557,9 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       final prefs = await SharedPreferences.getInstance();
       final currentUserId = _supabase.auth.currentUser?.id;
       final savedLang = prefs.getString('pm_native_language') ??
-          (currentUserId != null ? prefs.getString('pm_native_language_$currentUserId') : null);
+          (currentUserId != null
+              ? prefs.getString('pm_native_language_$currentUserId')
+              : null);
 
       if (savedLang != null && savedLang.isNotEmpty) {
         if (mounted) setState(() => _userNativeLanguage = savedLang);
@@ -559,10 +587,12 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
 
     if (isKid) {
       final kidsRobots = PocketKidsRobotsData.robotsAndHomies;
-      final kidsGames = PocketReelsGameEngine.getKidsCommunicationGames(count: 14);
+      final kidsGames =
+          PocketReelsGameEngine.getKidsCommunicationGames(count: 14);
       final kidsStories = PocketReelsContentEngine.getKidsStories(count: 4);
       final kidsVocab = PocketReelsContentEngine.getKidsVocabCards(count: 4);
-      final kidsSpeak = PocketReelsContentEngine.getKidsSpeakChallenges(count: 4);
+      final kidsSpeak =
+          PocketReelsContentEngine.getKidsSpeakChallenges(count: 4);
 
       int gIdx = 0;
       int sIdx = 0;
@@ -581,7 +611,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
             paletteId: 'royal_gold',
             isMe: false,
             hasActiveShield: true,
-            statusMessage: 'Official Sovereign Palace of King Lion. Welcome young cubs!',
+            statusMessage:
+                'Official Sovereign Palace of King Lion. Welcome young cubs!',
             isPocketRobo: true,
             hp: 10000,
             maxHp: 10000,
@@ -609,7 +640,9 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
               streak: mate.dayLevel,
               rank: mate.ageGroup == '4-6'
                   ? 'Junior Cub'
-                  : (mate.ageGroup == '6-8' ? 'Mountain Scout' : 'Star Explorer'),
+                  : (mate.ageGroup == '6-8'
+                      ? 'Mountain Scout'
+                      : 'Star Explorer'),
               paletteId: _randomPalette(mate.dayLevel),
               statusMessage: mate.bio,
               hasActiveShield: true,
@@ -678,7 +711,9 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
         }
       }
 
-      if (spokenGames.isNotEmpty) items.add(ReelFeedItem.game(spokenGames[gIdx++]));
+      if (spokenGames.isNotEmpty) {
+        items.add(ReelFeedItem.game(spokenGames[gIdx++]));
+      }
 
       // 📢 Seamless Native Ad insertion: right after 2 reels (index 2 / 3rd slide)
       if (items.length >= 2) {
@@ -747,7 +782,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           paletteId: 'royal_gold',
           isMe: false,
           hasActiveShield: true,
-          statusMessage: 'Official Sovereign Palace of King Lion. Welcome young cubs!',
+          statusMessage:
+              'Official Sovereign Palace of King Lion. Welcome young cubs!',
           isPocketRobo: true,
           hp: 10000,
           maxHp: 10000,
@@ -782,7 +818,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
 
         final profiles = await _supabase
             .from('profile')
-            .select('id, user_id, name, display_name, day, learning_day, pocket_score, daily_streak, profile_image_url')
+            .select(
+                'id, user_id, name, display_name, day, learning_day, pocket_score, daily_streak, profile_image_url')
             .neq('user_id', currentUserId ?? '')
             .order('day', ascending: false)
             .limit(30);
@@ -798,8 +835,11 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
               pocketScore: score,
             );
             final streak = (p['daily_streak'] as num?)?.toInt() ?? 1;
-            final name = p['name']?.toString() ?? p['display_name']?.toString() ?? 'English Learner';
-            final id = p['user_id']?.toString() ?? p['id']?.toString() ?? 'user';
+            final name = p['name']?.toString() ??
+                p['display_name']?.toString() ??
+                'English Learner';
+            final id =
+                p['user_id']?.toString() ?? p['id']?.toString() ?? 'user';
 
             rawNeighbors.add(
               PocketNeighbor(
@@ -836,7 +876,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     try {
       final protectedSet = <String>{};
       for (final n in rawNeighbors) {
-        if (await PocketFortressDefenseService.isUnderPresidentialProtection(n.id)) {
+        if (await PocketFortressDefenseService.isUnderPresidentialProtection(
+            n.id)) {
           protectedSet.add(n.id);
         }
       }
@@ -850,17 +891,16 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
 
     // 4. Strict Seen vs Unseen Separation:
     // Unseen homes appear first! Seen homes are pushed to the very bottom!
-    List<PocketNeighbor> unviewed = rawNeighbors
-        .where((n) => !_viewedHomeIds.contains(n.id))
-        .toList();
-    List<PocketNeighbor> seen = rawNeighbors
-        .where((n) => _viewedHomeIds.contains(n.id))
-        .toList();
+    List<PocketNeighbor> unviewed =
+        rawNeighbors.where((n) => !_viewedHomeIds.contains(n.id)).toList();
+    List<PocketNeighbor> seen =
+        rawNeighbors.where((n) => _viewedHomeIds.contains(n.id)).toList();
 
     // If unviewed pool is small, generate additional full-spectrum robots dynamically
     if (unviewed.length < 12) {
       _dynamicHomeBatchSeed += 50;
-      final extraRobots = _generateFullSpectrumHomes(count: 24, seedOffset: _dynamicHomeBatchSeed);
+      final extraRobots = _generateFullSpectrumHomes(
+          count: 24, seedOffset: _dynamicHomeBatchSeed);
       for (final r in extraRobots) {
         if (!_viewedHomeIds.contains(r.id)) {
           unviewed.add(r);
@@ -902,10 +942,12 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       } else {
         // Deep linked house not in pool: explicitly construct the intended home at index 0
         PocketNeighbor targetNeighbor;
-        if (PocketPresidentService.isPresidentId(targetId) || targetId == 'pocket_president') {
+        if (PocketPresidentService.isPresidentId(targetId) ||
+            targetId == 'pocket_president') {
           targetNeighbor = PocketNeighbor.createPresident();
         } else if (PocketRobotService.isRobotId(targetId)) {
-          final bot = PocketRobotService.getRobotById(targetId) ?? PocketRobotService.getRobotByLevel(1);
+          final bot = PocketRobotService.getRobotById(targetId) ??
+              PocketRobotService.getRobotByLevel(1);
           final dynLvl = PocketRobotService.getDynamicLevel(bot);
           targetNeighbor = PocketNeighbor(
             id: bot.id,
@@ -973,16 +1015,20 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           stories: const [
             ReelVibeItem(
               id: 'kl_s1',
-              mediaUrl: 'https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=800&q=80',
+              mediaUrl:
+                  'https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=800&q=80',
               mediaType: 'image',
-              caption: '🦁 Word of the Day: "COURAGE" ✨ Be brave and speak English words loud and proud today!',
+              caption:
+                  '🦁 Word of the Day: "COURAGE" ✨ Be brave and speak English words loud and proud today!',
               duration: 10,
             ),
             ReelVibeItem(
               id: 'kl_s2',
-              mediaUrl: 'https://images.unsplash.com/photo-1534188753412-3e26d0d618d6?w=800&q=80',
+              mediaUrl:
+                  'https://images.unsplash.com/photo-1534188753412-3e26d0d618d6?w=800&q=80',
               mediaType: 'image',
-              caption: '🎈 King Lion Rhyme: "Little cubs climb high and true, learning English words anew!" ⭐',
+              caption:
+                  '🎈 King Lion Rhyme: "Little cubs climb high and true, learning English words anew!" ⭐',
               duration: 10,
             ),
           ],
@@ -996,9 +1042,11 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           stories: const [
             ReelVibeItem(
               id: 'st_s1',
-              mediaUrl: 'https://images.unsplash.com/photo-1538099130811-745e64318258?w=800&q=80',
+              mediaUrl:
+                  'https://images.unsplash.com/photo-1538099130811-745e64318258?w=800&q=80',
               mediaType: 'image',
-              caption: '🐾 Phonics Fun! Letter "T" makes the /t/ sound! Can you say: Tiger, Tree, Treasure? 🌟',
+              caption:
+                  '🐾 Phonics Fun! Letter "T" makes the /t/ sound! Can you say: Tiger, Tree, Treasure? 🌟',
               duration: 10,
             ),
           ],
@@ -1012,9 +1060,11 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           stories: const [
             ReelVibeItem(
               id: 'pp_s1',
-              mediaUrl: 'https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=800&q=80',
+              mediaUrl:
+                  'https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=800&q=80',
               mediaType: 'image',
-              caption: '✨ Polite Magic Words! Always remember to say "Please" and "Thank You" with a smile! 🎋',
+              caption:
+                  '✨ Polite Magic Words! Always remember to say "Please" and "Thank You" with a smile! 🎋',
               duration: 10,
             ),
           ],
@@ -1028,9 +1078,11 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           stories: const [
             ReelVibeItem(
               id: 'bb_s1',
-              mediaUrl: 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=800&q=80',
+              mediaUrl:
+                  'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=800&q=80',
               mediaType: 'image',
-              caption: '🥕 Fruit Words Quiz! "An apple a day keeps the doctor away!" What is your favorite fruit? 🍎🍌',
+              caption:
+                  '🥕 Fruit Words Quiz! "An apple a day keeps the doctor away!" What is your favorite fruit? 🍎🍌',
               duration: 10,
             ),
           ],
@@ -1044,7 +1096,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
         final nowIso = DateTime.now().toIso8601String();
         final vibesRes = await _supabase
             .from('statuses')
-            .select('id, user_id, media_url, media_type, caption, duration, is_private, status_privacy, profile:profile_id(id, name, display_name, profile_image_url, learning_day)')
+            .select(
+                'id, user_id, media_url, media_type, caption, duration, is_private, status_privacy, profile:profile_id(id, name, display_name, profile_image_url, learning_day)')
             .eq('is_active', true)
             .gt('expires_at', nowIso)
             .order('created_at', ascending: false)
@@ -1053,8 +1106,10 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
         final Map<String, List<Map<String, dynamic>>> groupedVibes = {};
         for (final v in vibesRes) {
           final rawMeta = v['metadata'];
-          final isPriv = (v['is_private'] == true) || (rawMeta is Map && rawMeta['is_private'] == true);
-          final privType = v['status_privacy']?.toString() ?? (rawMeta is Map ? rawMeta['status_privacy']?.toString() : null);
+          final isPriv = (v['is_private'] == true) ||
+              (rawMeta is Map && rawMeta['is_private'] == true);
+          final privType = v['status_privacy']?.toString() ??
+              (rawMeta is Map ? rawMeta['status_privacy']?.toString() : null);
           if (isPriv || (privType != null && privType != 'public')) continue;
 
           final mediaUrl = v['media_url']?.toString() ?? '';
@@ -1068,9 +1123,18 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
         groupedVibes.forEach((uId, vList) {
           final first = vList.first;
           final profile = first['profile'];
-          final authorName = (profile is Map ? (profile['name'] ?? profile['display_name']) : null)?.toString() ?? 'Vibe Creator';
-          final authorAvatar = (profile is Map ? profile['profile_image_url'] : null)?.toString();
-          final day = (profile is Map ? (profile['learning_day'] as num?)?.toInt() : null) ?? 1;
+          final authorName = (profile is Map
+                      ? (profile['name'] ?? profile['display_name'])
+                      : null)
+                  ?.toString() ??
+              'Vibe Creator';
+          final authorAvatar =
+              (profile is Map ? profile['profile_image_url'] : null)
+                  ?.toString();
+          final day = (profile is Map
+                  ? (profile['learning_day'] as num?)?.toInt()
+                  : null) ??
+              1;
 
           final stories = vList.map((item) {
             return ReelVibeItem(
@@ -1107,16 +1171,20 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
             stories: const [
               ReelVibeItem(
                 id: 'maya_s1',
-                mediaUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80',
+                mediaUrl:
+                    'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80',
                 mediaType: 'image',
-                caption: 'Consistency is power! 15 minutes of daily practice unlocks fluency. ✨',
+                caption:
+                    'Consistency is power! 15 minutes of daily practice unlocks fluency. ✨',
                 duration: 10,
               ),
               ReelVibeItem(
                 id: 'maya_s2',
-                mediaUrl: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&q=80',
+                mediaUrl:
+                    'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&q=80',
                 mediaType: 'image',
-                caption: 'Quick tip: Speak out loud every sentence you construct today! 🗣️🔥',
+                caption:
+                    'Quick tip: Speak out loud every sentence you construct today! 🗣️🔥',
                 duration: 10,
               ),
             ],
@@ -1130,16 +1198,20 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
             stories: const [
               ReelVibeItem(
                 id: 'alex_s1',
-                mediaUrl: 'https://images.unsplash.com/photo-1546776310-eef45dd6d63c?w=800&q=80',
+                mediaUrl:
+                    'https://images.unsplash.com/photo-1546776310-eef45dd6d63c?w=800&q=80',
                 mediaType: 'image',
-                caption: 'Mastering tenses today! Challenge your Citadel in the arena. 🏰⚡',
+                caption:
+                    'Mastering tenses today! Challenge your Citadel in the arena. 🏰⚡',
                 duration: 10,
               ),
               ReelVibeItem(
                 id: 'alex_s2',
-                mediaUrl: 'https://images.unsplash.com/photo-1517842645767-c639042777db?w=800&q=80',
+                mediaUrl:
+                    'https://images.unsplash.com/photo-1517842645767-c639042777db?w=800&q=80',
                 mediaType: 'image',
-                caption: 'Spot the difference: "I have eaten" vs "I ate". Practice now! 💡',
+                caption:
+                    'Spot the difference: "I have eaten" vs "I ate". Practice now! 💡',
                 duration: 10,
               ),
             ],
@@ -1176,8 +1248,11 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
         orElse: () => games.isNotEmpty
             ? games.first
             : (isKid
-                ? PocketReelsGameEngine.getKidsCommunicationGames(count: 1).first
-                : PocketReelsGameEngine.getSpokenCommunicationGames(userLevel: widget.userLevel, count: 1).first),
+                ? PocketReelsGameEngine.getKidsCommunicationGames(count: 1)
+                    .first
+                : PocketReelsGameEngine.getSpokenCommunicationGames(
+                        userLevel: widget.userLevel, count: 1)
+                    .first),
       );
       combinedFeed.add(ReelFeedItem.game(specificGame));
     }
@@ -1235,7 +1310,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
         }
 
         if ((i + 1) % 4 == 0 && vibeIdx < publicVibes.length) {
-          addAdultReelItem(ReelFeedItem.vibe(publicVibes[vibeIdx++]));
+          addReelItem(ReelFeedItem.vibe(publicVibes[vibeIdx++]));
         }
       }
     }
@@ -1274,8 +1349,10 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
         // Kids mode lazy loading: animal companion homes & rich kids communication challenges
         final kidRobots = PocketKidsRobotsData.robotsAndHomies;
         final newHomes = List<KidMate>.from(kidRobots)..shuffle(math.Random());
-        final newGames = PocketReelsGameEngine.getKidsCommunicationGames(count: 6);
-        final newSpeak = PocketReelsContentEngine.getKidsSpeakChallenges(count: 3);
+        final newGames =
+            PocketReelsGameEngine.getKidsCommunicationGames(count: 6);
+        final newSpeak =
+            PocketReelsContentEngine.getKidsSpeakChallenges(count: 3);
         final newVocab = PocketReelsContentEngine.getKidsVocabCards(count: 3);
 
         int gIdx = 0;
@@ -1310,7 +1387,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
         }
       } else {
         _dynamicHomeBatchSeed += 30;
-        final newRobots = _generateFullSpectrumHomes(count: 18, seedOffset: _dynamicHomeBatchSeed);
+        final newRobots = _generateFullSpectrumHomes(
+            count: 18, seedOffset: _dynamicHomeBatchSeed);
         final unseenNewRobots = _distributeWithLevelGap(
           newRobots.where((r) => !_viewedHomeIds.contains(r.id)).toList(),
           minGap: 6,
@@ -1360,27 +1438,46 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
   }
 
   /// 🏰 Generate rich architectural showcase houses spanning all 6 major tiers (Levels 1 to 90)
-  List<PocketNeighbor> _generateFullSpectrumHomes({int count = 30, int seedOffset = 0}) {
+  List<PocketNeighbor> _generateFullSpectrumHomes(
+      {int count = 30, int seedOffset = 0}) {
     final List<PocketNeighbor> bots = [];
     final palettes = [
-      'terracotta', 'emerald', 'royal_gold', 'cyber_yellow',
-      'sakura', 'mirror_glass', 'nordic', 'slate'
+      'terracotta',
+      'emerald',
+      'royal_gold',
+      'cyber_yellow',
+      'sakura',
+      'mirror_glass',
+      'nordic',
+      'slate'
     ];
     final botNames = [
-      'Zenith Explorer 🌱', 'Aura Warden 🏡', 'Nexus Knight 🏰', 'Echo Scholar 🏛️',
-      'Nova Strategist 💎', 'Solar Citadel 👑', 'Lunar Scribe 🏡', 'Vortex Defender 🏰',
-      'Phoenix Titan 🏛️', 'Cyber Sentinel 💎', 'Quantum Speaker 👑', 'Starlight Master 🏛️',
-      'Breeze Cottage 🌱', 'Brick Haven 🏡', 'Granite Keep 🏰', 'Marble Palace 🏛️'
+      'Zenith Explorer 🌱',
+      'Aura Warden 🏡',
+      'Nexus Knight 🏰',
+      'Echo Scholar 🏛️',
+      'Nova Strategist 💎',
+      'Solar Citadel 👑',
+      'Lunar Scribe 🏡',
+      'Vortex Defender 🏰',
+      'Phoenix Titan 🏛️',
+      'Cyber Sentinel 💎',
+      'Quantum Speaker 👑',
+      'Starlight Master 🏛️',
+      'Breeze Cottage 🌱',
+      'Brick Haven 🏡',
+      'Granite Keep 🏰',
+      'Marble Palace 🏛️'
     ];
 
     // Key architectural anchor days representing all 6 visual house evolutions
     final anchorStages = [
-      1, 3, 5,        // Tier 1: Wooden Cabin 🌱
+      1, 3, 5, // Tier 1: Wooden Cabin 🌱
       10, 14, 18, 20, // Tier 2: Brick Villa 🏡
       26, 32, 38, 44, // Tier 3: Stone Fortress 🏰
       50, 56, 62, 68, // Tier 4: Imperial Manor 🏛️
       72, 78, 84, 88, // Tier 5: Cyber Citadel 💎
-      90,             // Tier 6: Supreme Empire 👑
+      90, // Tier 6: Supreme Empire 👑
     ];
 
     for (int i = 0; i < count; i++) {
@@ -1389,7 +1486,11 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       final name = '${botNames[i % botNames.length]} #${seedOffset + i + 1}';
       final rank = stage >= 71
           ? 'Cyber Grandmaster'
-          : (stage >= 46 ? 'Imperial Sovereign' : (stage >= 21 ? 'Stone Commander' : (stage >= 8 ? 'Villa Resident' : 'Pioneer Scout')));
+          : (stage >= 46
+              ? 'Imperial Sovereign'
+              : (stage >= 21
+                  ? 'Stone Commander'
+                  : (stage >= 8 ? 'Villa Resident' : 'Pioneer Scout')));
 
       bots.add(
         PocketNeighbor(
@@ -1417,7 +1518,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
   /// This ensures that after a Level 1 Wooden Cabin, the next house is a higher tier
   /// (e.g. Level 18 Brick Villa, Level 52 Imperial Manor, Level 88 Cyber Citadel)
   /// so each swipe displays fresh, non-repetitive architecture!
-  List<PocketNeighbor> _distributeWithLevelGap(List<PocketNeighbor> source, {int minGap = 6}) {
+  List<PocketNeighbor> _distributeWithLevelGap(List<PocketNeighbor> source,
+      {int minGap = 6}) {
     if (source.length <= 2) return source;
 
     final pool = List<PocketNeighbor>.from(source)..shuffle(math.Random());
@@ -1430,7 +1532,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       final lastDay = result.last.day;
 
       // Find candidates with at least minGap level difference
-      final validIdx = pool.indexWhere((n) => (n.day - lastDay).abs() >= minGap);
+      final validIdx =
+          pool.indexWhere((n) => (n.day - lastDay).abs() >= minGap);
 
       if (validIdx != -1) {
         result.add(pool.removeAt(validIdx));
@@ -1453,7 +1556,14 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
   }
 
   String _randomPalette(int day) {
-    const palettes = ['terracotta', 'slate', 'nordic', 'sakura', 'emerald', 'cyber'];
+    const palettes = [
+      'terracotta',
+      'slate',
+      'nordic',
+      'sakura',
+      'emerald',
+      'cyber'
+    ];
     return palettes[day % palettes.length];
   }
 
@@ -1464,7 +1574,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
         SnackBar(
           backgroundColor: const Color(0xFF1E3A8A),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           content: Row(
             children: [
               const Text('🏛️', style: TextStyle(fontSize: 20)),
@@ -1472,7 +1583,10 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
               Expanded(
                 child: Text(
                   '${neighbor.name}\'s Citadel is under Presidential Protection! Defended by the Sovereign Guard for 48 hours.',
-                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                  style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600),
                 ),
               ),
             ],
@@ -1505,7 +1619,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
             SnackBar(
               backgroundColor: const Color(0xFF1E293B),
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
               content: Row(
                 children: [
                   const Text('🦁', style: TextStyle(fontSize: 18)),
@@ -1513,7 +1628,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                   Expanded(
                     child: Text(
                       'You and ${neighbor.name} are already Pocket Mates! 🎈',
-                      style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
+                      style:
+                          GoogleFonts.outfit(color: Colors.white, fontSize: 13),
                     ),
                   ),
                 ],
@@ -1565,14 +1681,16 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       return;
     }
 
-    final isAlreadyMate = await PocketMateService.isMate(currentUserId, neighbor.id);
+    final isAlreadyMate =
+        await PocketMateService.isMate(currentUserId, neighbor.id);
     if (isAlreadyMate) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: const Color(0xFF1E293B),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             content: Row(
               children: [
                 const Text('🤝', style: TextStyle(fontSize: 18)),
@@ -1580,7 +1698,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                 Expanded(
                   child: Text(
                     'You and ${neighbor.name} are already Pocket Mates!',
-                    style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
+                    style:
+                        GoogleFonts.outfit(color: Colors.white, fontSize: 13),
                   ),
                 ),
               ],
@@ -1595,7 +1714,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       senderId: currentUserId,
       receiverId: neighbor.id,
       contextType: 'homes_reels',
-      message: 'Saw your Citadel Home and wants to connect as your Pocket Mate! 🏰',
+      message:
+          'Saw your Citadel Home and wants to connect as your Pocket Mate! 🏰',
     );
 
     if (mounted) {
@@ -1603,7 +1723,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
         SnackBar(
           backgroundColor: const Color(0xFF1E293B),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           content: Row(
             children: [
               const Text('🤝', style: TextStyle(fontSize: 18)),
@@ -1627,7 +1748,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     final currentUserId = _supabase.auth.currentUser?.id;
     if (currentUserId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please log in to start a Poket Talk Pact')),
+        const SnackBar(
+            content: Text('Please log in to start a Poket Talk Pact')),
       );
       return;
     }
@@ -1645,7 +1767,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: const Color(0xFFFFD600).withValues(alpha: 0.5)),
+            side: BorderSide(
+                color: const Color(0xFFFFD600).withValues(alpha: 0.5)),
           ),
           content: Row(
             children: [
@@ -1708,9 +1831,11 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       PocketReelsGameEngine.markGameViewed(item.gameCard!.id);
     } else if (item.type == ReelItemType.story && item.storyCard != null) {
       PocketReelsContentEngine.markContentViewed(item.storyCard!.id);
-    } else if (item.type == ReelItemType.interview && item.interviewCard != null) {
+    } else if (item.type == ReelItemType.interview &&
+        item.interviewCard != null) {
       PocketReelsContentEngine.markContentViewed(item.interviewCard!.id);
-    } else if (item.type == ReelItemType.speakChallenge && item.speakChallengeCard != null) {
+    } else if (item.type == ReelItemType.speakChallenge &&
+        item.speakChallengeCard != null) {
       PocketReelsContentEngine.markContentViewed(item.speakChallengeCard!.id);
     } else if (item.type == ReelItemType.vocabCard && item.vocabCard != null) {
       PocketReelsContentEngine.markContentViewed(item.vocabCard!.id);
@@ -1788,7 +1913,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                 _playHomeMusic(item.neighbor!.id);
               } else {
                 // Keep background music running smoothly across games, challenges & vibes!
-                if (!_isHomesAudioMuted && !PocketGameAudioService.instance.isPlayingNotifier.value) {
+                if (!_isHomesAudioMuted &&
+                    !PocketGameAudioService.instance.isPlayingNotifier.value) {
                   _resumeBgm();
                 }
               }
@@ -1802,15 +1928,21 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
               final item = _feedItems[index];
               if (item.type == ReelItemType.game && item.gameCard != null) {
                 return _buildInteractiveGameSlide(item.gameCard!, index);
-              } else if (item.type == ReelItemType.vibe && item.vibeCard != null) {
+              } else if (item.type == ReelItemType.vibe &&
+                  item.vibeCard != null) {
                 return _buildVibeReelSlide(item.vibeCard!, index);
-              } else if (item.type == ReelItemType.story && item.storyCard != null) {
+              } else if (item.type == ReelItemType.story &&
+                  item.storyCard != null) {
                 return _buildStorySlide(item.storyCard!, index);
-              } else if (item.type == ReelItemType.interview && item.interviewCard != null) {
+              } else if (item.type == ReelItemType.interview &&
+                  item.interviewCard != null) {
                 return _buildInterviewSlide(item.interviewCard!, index);
-              } else if (item.type == ReelItemType.speakChallenge && item.speakChallengeCard != null) {
-                return _buildSpeakChallengeSlide(item.speakChallengeCard!, index);
-              } else if (item.type == ReelItemType.vocabCard && item.vocabCard != null) {
+              } else if (item.type == ReelItemType.speakChallenge &&
+                  item.speakChallengeCard != null) {
+                return _buildSpeakChallengeSlide(
+                    item.speakChallengeCard!, index);
+              } else if (item.type == ReelItemType.vocabCard &&
+                  item.vocabCard != null) {
                 return _buildVocabSlide(item.vocabCard!, index);
               } else if (item.type == ReelItemType.ad) {
                 return _buildNativeAdReelSlide(index);
@@ -1922,7 +2054,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           return const SizedBox.shrink(); // 100% ad-free for VIPs
         }
         // ⚡ Preload next reel ad in background for upcoming reels
-        PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.reels);
+        PocketAdPreloadManager.instance
+            .preloadForPlacement(PocketAdPlacement.reels);
         return Container(
           color: const Color(0xFF0F172A),
           child: Stack(
@@ -1932,7 +2065,11 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
               Container(
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF0B1329)],
+                    colors: [
+                      Color(0xFF0F172A),
+                      Color(0xFF1E293B),
+                      Color(0xFF0B1329)
+                    ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                   ),
@@ -1945,21 +2082,37 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                          color:
+                              const Color(0xFFFFD700).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                          border: Border.all(
+                              color: const Color(0xFFFFD700)
+                                  .withValues(alpha: 0.4)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Text('SPONSORED', style: TextStyle(color: Color(0xFFFFD700), fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
+                            const Text('SPONSORED',
+                                style: TextStyle(
+                                    color: Color(0xFFFFD700),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1.1)),
                             const SizedBox(width: 6),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                              decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(3)),
-                              child: const Text('Ad', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 4, vertical: 1),
+                              decoration: BoxDecoration(
+                                  color: Colors.white24,
+                                  borderRadius: BorderRadius.circular(3)),
+                              child: const Text('Ad',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.bold)),
                             ),
                           ],
                         ),
@@ -1972,8 +2125,11 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                       const SizedBox(height: 20),
                       TextButton.icon(
                         onPressed: _scrollToNextReel,
-                        icon: const Icon(Icons.arrow_downward_rounded, color: Colors.white60, size: 16),
-                        label: const Text('Swipe up for next English Mate', style: TextStyle(color: Colors.white60, fontSize: 12)),
+                        icon: const Icon(Icons.arrow_downward_rounded,
+                            color: Colors.white60, size: 16),
+                        label: const Text('Swipe up for next English Mate',
+                            style:
+                                TextStyle(color: Colors.white60, fontSize: 12)),
                       ),
                     ],
                   ),
@@ -1997,647 +2153,671 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       onTap: _scrollToNextReel,
       child: Stack(
         children: [
-        // 🌄 1. Living Citadel Scenery (Alternates between Day Sunlit Meadow and Night Twilight)
-        Positioned.fill(
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: isDaytime
-                    ? const [
-                        Color(0xFF38BDF8), // Azure sunny sky
-                        Color(0xFF7DD3FC), // Horizon bright morning
-                        Color(0xFF34D399), // Sunlit green foothills
-                        Color(0xFF15803D), // Lush emerald ground
-                      ]
-                    : const [
-                        Color(0xFF0F172A), // Deep navy sky
-                        Color(0xFF1E293B), // Horizon twilight
-                        Color(0xFF1B4D3E), // Emerald foothills
-                        Color(0xFF0B251E), // Lush lawn ground
-                      ],
-                stops: const [0.0, 0.40, 0.60, 1.0],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
-            child: Stack(
-              children: [
-                Positioned(
-                  top: 35,
-                  right: 25,
-                  child: Opacity(
-                    opacity: isDaytime ? 0.9 : 0.7,
-                    child: isDaytime
-                        ? Row(
-                            children: const [
-                              Text('☀️', style: TextStyle(fontSize: 24)),
-                              SizedBox(width: 14),
-                              Text('☁️', style: TextStyle(fontSize: 18)),
-                              SizedBox(width: 24),
-                              Text('🕊️', style: TextStyle(fontSize: 14)),
-                            ],
-                          )
-                        : Row(
-                            children: const [
-                              Text('🌙', style: TextStyle(fontSize: 20)),
-                              SizedBox(width: 20),
-                              Text('✨', style: TextStyle(fontSize: 14)),
-                              SizedBox(width: 30),
-                              Text('⭐', style: TextStyle(fontSize: 10)),
-                            ],
-                          ),
-                  ),
-                ),
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: screenH * 0.46,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: isDaytime
-                            ? [
-                                const Color(0xFF22C55E).withValues(alpha: 0.35),
-                                const Color(0xFF16A34A).withValues(alpha: 0.7),
-                                const Color(0xFF14532D),
-                              ]
-                            : [
-                                const Color(0xFF10B981).withValues(alpha: 0.15),
-                                const Color(0xFF064E3B).withValues(alpha: 0.5),
-                                const Color(0xFF022C22),
-                              ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(32),
-                        topRight: Radius.circular(32),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        // ☀️/🌙 Day vs Night Atmosphere Mode Pill
-        Positioned(
-          top: MediaQuery.of(context).padding.top + 16,
-          right: 18,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isDaytime
-                    ? const Color(0xFFFDE047).withValues(alpha: 0.7)
-                    : const Color(0xFF818CF8).withValues(alpha: 0.7),
-                width: 1.2,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(isDaytime ? '☀️' : '🌙', style: const TextStyle(fontSize: 12)),
-                const SizedBox(width: 5),
-                Text(
-                  isDaytime ? 'DAY MEADOW' : 'STARLIGHT NIGHT',
-                  style: GoogleFonts.outfit(
-                    color: isDaytime ? const Color(0xFFFEF08A) : const Color(0xFFC7D2FE),
-                    fontSize: 9.5,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.6,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        // 🏠 2. The Fixed 2D Citadel House (Positioned high up so it's completely clear of text!)
-        Positioned(
-          top: 60,
-          left: 0,
-          right: 0,
-          height: screenH * 0.48,
-          child: Center(
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width * 0.94,
-              child: FlameEnglishHouseWidget(
-                currentDay: neighbor.day,
-                streak: neighbor.streak,
-                isDamaged: neighbor.isDamaged,
-                houseId: neighbor.id,
-                paletteId: neighbor.paletteId,
-                isPresident: isPresident,
-              ),
-            ),
-          ),
-        ),
-
-        // 🏛️ Presidential Protection Overlay Badge
-        if (_protectedHomeIds.contains(neighbor.id))
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 58,
-            left: 14,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E3A8A).withValues(alpha: 0.9),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: const Color(0xFF60A5FA),
-                  width: 1.2,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.35),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('🏛️', style: TextStyle(fontSize: 14)),
-                  const SizedBox(width: 5),
-                  Text(
-                    'Presidential Protection 🛡️',
-                    style: GoogleFonts.outfit(
-                      color: const Color(0xFF93C5FD),
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-        // Vignette subtle gradient for reel contrast
-        Positioned.fill(
-          child: IgnorePointer(
+          // 🌄 1. Living Citadel Scenery (Alternates between Day Sunlit Meadow and Night Twilight)
+          Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    Colors.black.withValues(alpha: 0.4),
-                    Colors.transparent,
-                    Colors.transparent,
-                    Colors.black.withValues(alpha: 0.88),
-                  ],
-                  stops: const [0.0, 0.12, 0.55, 1.0],
+                  colors: isDaytime
+                      ? const [
+                          Color(0xFF38BDF8), // Azure sunny sky
+                          Color(0xFF7DD3FC), // Horizon bright morning
+                          Color(0xFF34D399), // Sunlit green foothills
+                          Color(0xFF15803D), // Lush emerald ground
+                        ]
+                      : const [
+                          Color(0xFF0F172A), // Deep navy sky
+                          Color(0xFF1E293B), // Horizon twilight
+                          Color(0xFF1B4D3E), // Emerald foothills
+                          Color(0xFF0B251E), // Lush lawn ground
+                        ],
+                  stops: const [0.0, 0.40, 0.60, 1.0],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
               ),
-            ),
-          ),
-        ),
-
-        // 🛡️ 3. Right Side Floating Action Column (ATTACK + DOORBELL + VIBES/SHARE + HP)
-        Positioned(
-          right: 14,
-          bottom: 25,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // ⚔️ GLOWING ATTACK BUTTON
-              AnimatedBuilder(
-                animation: _pulseController,
-                builder: (context, child) {
-                  final scale = 1.0 + (_pulseController.value * 0.08);
-                  return Transform.scale(
-                    scale: scale,
-                    child: GestureDetector(
-                      onTap: () => _onAttackTapped(neighbor),
-                      child: Container(
-                        width: 58,
-                        height: 58,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFFFFC00), Color(0xFFFF3D00)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFFFFC00).withValues(alpha: 0.5),
-                              blurRadius: 18,
-                              spreadRadius: 2,
+              child: Stack(
+                children: [
+                  Positioned(
+                    top: 35,
+                    right: 25,
+                    child: Opacity(
+                      opacity: isDaytime ? 0.9 : 0.7,
+                      child: isDaytime
+                          ? Row(
+                              children: const [
+                                Text('☀️', style: TextStyle(fontSize: 24)),
+                                SizedBox(width: 14),
+                                Text('☁️', style: TextStyle(fontSize: 18)),
+                                SizedBox(width: 24),
+                                Text('🕊️', style: TextStyle(fontSize: 14)),
+                              ],
+                            )
+                          : Row(
+                              children: const [
+                                Text('🌙', style: TextStyle(fontSize: 20)),
+                                SizedBox(width: 20),
+                                Text('✨', style: TextStyle(fontSize: 14)),
+                                SizedBox(width: 30),
+                                Text('⭐', style: TextStyle(fontSize: 10)),
+                              ],
                             ),
-                          ],
-                          border: Border.all(color: Colors.white, width: 2),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: screenH * 0.46,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: isDaytime
+                              ? [
+                                  const Color(0xFF22C55E)
+                                      .withValues(alpha: 0.35),
+                                  const Color(0xFF16A34A)
+                                      .withValues(alpha: 0.7),
+                                  const Color(0xFF14532D),
+                                ]
+                              : [
+                                  const Color(0xFF10B981)
+                                      .withValues(alpha: 0.15),
+                                  const Color(0xFF064E3B)
+                                      .withValues(alpha: 0.5),
+                                  const Color(0xFF022C22),
+                                ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
                         ),
-                        child: const Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text('⚔️', style: TextStyle(fontSize: 20)),
-                              Text(
-                                'ATTACK',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ],
-                          ),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(32),
+                          topRight: Radius.circular(32),
                         ),
                       ),
                     ),
-                  );
-                },
-              ),
-              const SizedBox(height: 14),
-
-              // 🤝 Mates Request Button (User Audio Directive: Doorbell replaced with Mates request)
-              GestureDetector(
-                onTap: () => _onSendMateRequest(neighbor),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.black.withValues(alpha: 0.7),
-                    border: Border.all(color: Colors.white24, width: 1.2),
                   ),
-                  child: const Center(
-                    child: Text('🤝', style: TextStyle(fontSize: 18)),
+                ],
+              ),
+            ),
+          ),
+
+          // ☀️/🌙 Day vs Night Atmosphere Mode Pill
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 16,
+            right: 18,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isDaytime
+                      ? const Color(0xFFFDE047).withValues(alpha: 0.7)
+                      : const Color(0xFF818CF8).withValues(alpha: 0.7),
+                  width: 1.2,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(isDaytime ? '☀️' : '🌙',
+                      style: const TextStyle(fontSize: 12)),
+                  const SizedBox(width: 5),
+                  Text(
+                    isDaytime ? 'DAY MEADOW' : 'STARLIGHT NIGHT',
+                    style: GoogleFonts.outfit(
+                      color: isDaytime
+                          ? const Color(0xFFFEF08A)
+                          : const Color(0xFFC7D2FE),
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.6,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // 🏠 2. The Fixed 2D Citadel House (Positioned high up so it's completely clear of text!)
+          Positioned(
+            top: 60,
+            left: 0,
+            right: 0,
+            height: screenH * 0.48,
+            child: Center(
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.94,
+                child: FlameEnglishHouseWidget(
+                  currentDay: neighbor.day,
+                  streak: neighbor.streak,
+                  isDamaged: neighbor.isDamaged,
+                  houseId: neighbor.id,
+                  paletteId: neighbor.paletteId,
+                  isPresident: isPresident,
+                ),
+              ),
+            ),
+          ),
+
+          // 🏛️ Presidential Protection Overlay Badge
+          if (_protectedHomeIds.contains(neighbor.id))
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 58,
+              left: 14,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E3A8A).withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: const Color(0xFF60A5FA),
+                    width: 1.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF3B82F6).withValues(alpha: 0.35),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('🏛️', style: TextStyle(fontSize: 14)),
+                    const SizedBox(width: 5),
+                    Text(
+                      'Presidential Protection 🛡️',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFF93C5FD),
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+          // Vignette subtle gradient for reel contrast
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.black.withValues(alpha: 0.4),
+                      Colors.transparent,
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.88),
+                    ],
+                    stops: const [0.0, 0.12, 0.55, 1.0],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
                   ),
                 ),
               ),
-              const SizedBox(height: 3),
-              Text(
-                'Mates',
-                style: GoogleFonts.outfit(
-                  color: Colors.white70,
-                  fontSize: 9.5,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 14),
+            ),
+          ),
 
-              // ⚡ Poket Talk Pact Request Button (User Audio Directive: strictly for human peers, hide on robots)
-              if (!neighbor.isPocketRobo &&
-                  !PocketRobotService.isRobotId(neighbor.id) &&
-                  !neighbor.id.startsWith('robot_')) ...[
+          // 🛡️ 3. Right Side Floating Action Column (ATTACK + DOORBELL + VIBES/SHARE + HP)
+          Positioned(
+            right: 14,
+            bottom: 25,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // ⚔️ GLOWING ATTACK BUTTON
+                AnimatedBuilder(
+                  animation: _pulseController,
+                  builder: (context, child) {
+                    final scale = 1.0 + (_pulseController.value * 0.08);
+                    return Transform.scale(
+                      scale: scale,
+                      child: GestureDetector(
+                        onTap: () => _onAttackTapped(neighbor),
+                        child: Container(
+                          width: 58,
+                          height: 58,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFFFFC00), Color(0xFFFF3D00)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFFFFC00)
+                                    .withValues(alpha: 0.5),
+                                blurRadius: 18,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                          child: const Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text('⚔️', style: TextStyle(fontSize: 20)),
+                                Text(
+                                  'ATTACK',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 14),
+
+                // 🤝 Mates Request Button (User Audio Directive: Doorbell replaced with Mates request)
                 GestureDetector(
-                  onTap: () => _onSendPocketTalkRequest(neighbor),
+                  onTap: () => _onSendMateRequest(neighbor),
                   child: Container(
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.black.withValues(alpha: 0.7),
-                      border: Border.all(
-                        color: const Color(0xFFFFD600).withValues(alpha: 0.6),
-                        width: 1.2,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFFFD600).withValues(alpha: 0.25),
-                          blurRadius: 8,
-                          spreadRadius: -1,
-                        ),
-                      ],
+                      border: Border.all(color: Colors.white24, width: 1.2),
                     ),
                     child: const Center(
-                      child: Text('⚡', style: TextStyle(fontSize: 18)),
+                      child: Text('🤝', style: TextStyle(fontSize: 18)),
                     ),
                   ),
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  'Poket Talk',
+                  'Mates',
                   style: GoogleFonts.outfit(
-                    color: const Color(0xFFFFD600),
-                    fontSize: 9.0,
+                    color: Colors.white70,
+                    fontSize: 9.5,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 14),
-              ],
 
-              // 🟢 Energetic Bouncing/Jumping Green Arrow Button (User Audio Directive: tap to advance)
-              _buildJumpingArrowButton(size: 46),
-              const SizedBox(height: 14),
-
-              // ✈️ Minimal Share Button (Instagram Reels style)
-              GestureDetector(
-                onTap: () => _onShareHomeTapped(neighbor),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.black.withValues(alpha: 0.7),
-                    border: Border.all(color: Colors.white24, width: 1.2),
-                  ),
-                  child: const Center(
-                    child: Icon(Icons.share_outlined, color: Colors.white, size: 20),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                'Share',
-                style: GoogleFonts.outfit(
-                  color: Colors.white70,
-                  fontSize: 9.5,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 14),
-
-              // 🛡️ Citadel & User Safety Menu (Report / Block)
-              GestureDetector(
-                onTap: () => _showNeighborSafetyMenu(neighbor),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.black.withValues(alpha: 0.7),
-                    border: Border.all(color: Colors.white24, width: 1.2),
-                  ),
-                  child: const Center(
-                    child: Icon(Icons.more_vert_rounded,
-                        color: Colors.white70, size: 20),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                'Options',
-                style: GoogleFonts.outfit(
-                  color: Colors.white70,
-                  fontSize: 9.5,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              // 🏛️ Presidential Protection status pill (shown only if protected; 100% indicator removed per User Directive)
-              if (_protectedHomeIds.contains(neighbor.id)) ...[
-                const SizedBox(height: 14),
-                Container(
-                  width: 46,
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1E3A8A).withValues(alpha: 0.85),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: const Color(0xFF60A5FA),
-                      width: 1,
-                    ),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('🏛️', style: TextStyle(fontSize: 13)),
-                      const SizedBox(height: 1),
-                      Text(
-                        'Shield',
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFF93C5FD),
-                          fontSize: 8.5,
-                          fontWeight: FontWeight.bold,
+                // ⚡ Poket Talk Pact Request Button (User Audio Directive: strictly for human peers, hide on robots)
+                if (!neighbor.isPocketRobo &&
+                    !PocketRobotService.isRobotId(neighbor.id) &&
+                    !neighbor.id.startsWith('robot_')) ...[
+                  GestureDetector(
+                    onTap: () => _onSendPocketTalkRequest(neighbor),
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.black.withValues(alpha: 0.7),
+                        border: Border.all(
+                          color: const Color(0xFFFFD600).withValues(alpha: 0.6),
+                          width: 1.2,
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-
-        // 👤 4. Bottom Left Resident Profile Overlay
-        Positioned(
-          left: 16,
-          right: 88,
-          bottom: 20,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Avatar with Story Circle & Name Row
-              Row(
-                children: [
-                  // Animated gradient story ring around avatar
-                  Container(
-                    width: 48,
-                    height: 48,
-                    padding: const EdgeInsets.all(2.5),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const SweepGradient(
-                        colors: [
-                          Color(0xFFFF007A),
-                          Color(0xFFFFFC00),
-                          Color(0xFF00F0FF),
-                          Color(0xFFFF007A),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                const Color(0xFFFFD600).withValues(alpha: 0.25),
+                            blurRadius: 8,
+                            spreadRadius: -1,
+                          ),
                         ],
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFFF007A).withValues(alpha: 0.35),
-                          blurRadius: 8,
-                        ),
-                      ],
-                    ),
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Color(0xFF070B0D),
-                      ),
-                      padding: const EdgeInsets.all(2),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(22),
-                        child: PocketKidsService.isKidAccount &&
-                                PocketKidsRobotsData.robotsAndHomies.any((m) => m.id == neighbor.id)
-                            ? Center(
-                                child: Text(
-                                  PocketKidsRobotsData.robotsAndHomies
-                                      .firstWhere((m) => m.id == neighbor.id)
-                                      .avatar,
-                                  style: const TextStyle(fontSize: 22),
-                                ),
-                              )
-                            : (neighbor.id == 'king_lion'
-                                ? const Center(child: Text('🦁', style: TextStyle(fontSize: 22)))
-                                : VectorAvatarWidget(
-                                    config: VectorAvatarConfig.getEvolutionAvatarForStage(neighbor.day),
-                                    size: 40,
-                                  )),
+                      child: const Center(
+                        child: Text('⚡', style: TextStyle(fontSize: 18)),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Flexible(
-                              child: Text(
-                                neighbor.name,
-                                style: GoogleFonts.outfit(
-                                  color: Colors.white,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            if (neighbor.isPocketRobo) ...[
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF4338CA),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: const Color(0xFF818CF8),
-                                    width: 0.8,
-                                  ),
-                                ),
-                                child: const Text(
-                                  '🤖',
-                                  style: TextStyle(fontSize: 11),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(
-                                  color: const Color(0xFFFFFC00).withValues(alpha: 0.4),
-                                  width: 0.8,
-                                ),
-                              ),
-                              child: Text(
-                                '🔥 Day ${neighbor.day}',
-                                style: GoogleFonts.outfit(
-                                  color: const Color(0xFFFFFC00),
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              '• ${neighbor.rank}',
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                  const SizedBox(height: 3),
+                  Text(
+                    'Poket Talk',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFD600),
+                      fontSize: 9.0,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
+                  const SizedBox(height: 14),
                 ],
-              ),
-              const SizedBox(height: 8),
 
-              // Status Quote Bubble
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.65),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white12),
-                ),
-                child: Text(
-                  neighbor.statusMessage,
-                  style: GoogleFonts.inter(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    fontSize: 12,
-                    height: 1.3,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              // 🎵 Ambient House Music Track Pill
-              Builder(
-                builder: (context) {
-                  final track = HomeMusicTracks.getTrackForHouse(neighbor.id);
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 6),
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                // 🟢 Energetic Bouncing/Jumping Green Arrow Button (User Audio Directive: tap to advance)
+                _buildJumpingArrowButton(size: 46),
+                const SizedBox(height: 14),
+
+                // ✈️ Minimal Share Button (Instagram Reels style)
+                GestureDetector(
+                  onTap: () => _onShareHomeTapped(neighbor),
+                  child: Container(
+                    width: 44,
+                    height: 44,
                     decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.5),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white12, width: 0.8),
+                      shape: BoxShape.circle,
+                      color: Colors.black.withValues(alpha: 0.7),
+                      border: Border.all(color: Colors.white24, width: 1.2),
                     ),
-                    child: Row(
+                    child: const Center(
+                      child: Icon(Icons.share_outlined,
+                          color: Colors.white, size: 20),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  'Share',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white70,
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                // 🛡️ Citadel & User Safety Menu (Report / Block)
+                GestureDetector(
+                  onTap: () => _showNeighborSafetyMenu(neighbor),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withValues(alpha: 0.7),
+                      border: Border.all(color: Colors.white24, width: 1.2),
+                    ),
+                    child: const Center(
+                      child: Icon(Icons.more_vert_rounded,
+                          color: Colors.white70, size: 20),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  'Options',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white70,
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                // 🏛️ Presidential Protection status pill (shown only if protected; 100% indicator removed per User Directive)
+                if (_protectedHomeIds.contains(neighbor.id)) ...[
+                  const SizedBox(height: 14),
+                  Container(
+                    width: 46,
+                    padding: const EdgeInsets.symmetric(vertical: 5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E3A8A).withValues(alpha: 0.85),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFF60A5FA),
+                        width: 1,
+                      ),
+                    ),
+                    child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
-                          Icons.music_note_rounded,
-                          color: Color(0xFFFFFC00),
-                          size: 12,
-                        ),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            '${track.title} • ${track.genre}',
-                            style: GoogleFonts.outfit(
-                              color: Colors.white.withValues(alpha: 0.85),
-                              fontSize: 10,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        const Text('🏛️', style: TextStyle(fontSize: 13)),
+                        const SizedBox(height: 1),
+                        Text(
+                          'Shield',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF93C5FD),
+                            fontSize: 8.5,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
                     ),
-                  );
-                },
-              ),
-
-              // Swipe Up Hint
-              Row(
-                children: [
-                  const Icon(Icons.keyboard_arrow_up_rounded, color: Colors.white38, size: 16),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Swipe up for next Reel',
-                    style: GoogleFonts.outfit(
-                      color: Colors.white38,
-                      fontSize: 10.5,
-                      letterSpacing: 0.3,
-                    ),
                   ),
                 ],
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
-    ),
-  );
+
+          // 👤 4. Bottom Left Resident Profile Overlay
+          Positioned(
+            left: 16,
+            right: 88,
+            bottom: 20,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Avatar with Story Circle & Name Row
+                Row(
+                  children: [
+                    // Animated gradient story ring around avatar
+                    Container(
+                      width: 48,
+                      height: 48,
+                      padding: const EdgeInsets.all(2.5),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: const SweepGradient(
+                          colors: [
+                            Color(0xFFFF007A),
+                            Color(0xFFFFFC00),
+                            Color(0xFF00F0FF),
+                            Color(0xFFFF007A),
+                          ],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                const Color(0xFFFF007A).withValues(alpha: 0.35),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFF070B0D),
+                        ),
+                        padding: const EdgeInsets.all(2),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(22),
+                          child: PocketKidsService.isKidAccount &&
+                                  PocketKidsRobotsData.robotsAndHomies
+                                      .any((m) => m.id == neighbor.id)
+                              ? Center(
+                                  child: Text(
+                                    PocketKidsRobotsData.robotsAndHomies
+                                        .firstWhere((m) => m.id == neighbor.id)
+                                        .avatar,
+                                    style: const TextStyle(fontSize: 22),
+                                  ),
+                                )
+                              : (neighbor.id == 'king_lion'
+                                  ? const Center(
+                                      child: Text('🦁',
+                                          style: TextStyle(fontSize: 22)))
+                                  : VectorAvatarWidget(
+                                      config: VectorAvatarConfig
+                                          .getEvolutionAvatarForStage(
+                                              neighbor.day),
+                                      size: 40,
+                                    )),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  neighbor.name,
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (neighbor.isPocketRobo) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 5, vertical: 1.5),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF4338CA),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: const Color(0xFF818CF8),
+                                      width: 0.8,
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    '🤖',
+                                    style: TextStyle(fontSize: 11),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFFC00)
+                                      .withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: const Color(0xFFFFFC00)
+                                        .withValues(alpha: 0.4),
+                                    width: 0.8,
+                                  ),
+                                ),
+                                child: Text(
+                                  '🔥 Day ${neighbor.day}',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFFFFFC00),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                '• ${neighbor.rank}',
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+
+                // Status Quote Bubble
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.65),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: Text(
+                    neighbor.statusMessage,
+                    style: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      fontSize: 12,
+                      height: 1.3,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                // 🎵 Ambient House Music Track Pill
+                Builder(
+                  builder: (context) {
+                    final track = HomeMusicTracks.getTrackForHouse(neighbor.id);
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3.5),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.white12, width: 0.8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.music_note_rounded,
+                            color: Color(0xFFFFFC00),
+                            size: 12,
+                          ),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              '${track.title} • ${track.genre}',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white.withValues(alpha: 0.85),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+
+                // Swipe Up Hint
+                Row(
+                  children: [
+                    const Icon(Icons.keyboard_arrow_up_rounded,
+                        color: Colors.white38, size: 16),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Swipe up for next Reel',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white38,
+                        fontSize: 10.5,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   /// 🛡️ Safety Menu for Citadel Homesteads (Apple/Play Store UGC Compliance)
@@ -2667,7 +2847,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Row(
                   children: [
-                    const Icon(Icons.shield_outlined, color: Colors.amber, size: 22),
+                    const Icon(Icons.shield_outlined,
+                        color: Colors.amber, size: 22),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -2688,11 +2869,13 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                 leading: const Icon(Icons.flag_outlined, color: Colors.amber),
                 title: Text(
                   'Report Citadel / Player',
-                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w600),
+                  style: GoogleFonts.outfit(
+                      color: Colors.white, fontWeight: FontWeight.w600),
                 ),
                 subtitle: Text(
                   'Report offensive house name, bio, or abusive behavior',
-                  style: GoogleFonts.outfit(color: Colors.white54, fontSize: 12),
+                  style:
+                      GoogleFonts.outfit(color: Colors.white54, fontSize: 12),
                 ),
                 onTap: () {
                   Navigator.pop(bottomSheetContext);
@@ -2705,14 +2888,17 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.block_outlined, color: Colors.redAccent),
+                leading:
+                    const Icon(Icons.block_outlined, color: Colors.redAccent),
                 title: Text(
                   'Block ${neighbor.name}',
-                  style: GoogleFonts.outfit(color: Colors.redAccent, fontWeight: FontWeight.w600),
+                  style: GoogleFonts.outfit(
+                      color: Colors.redAccent, fontWeight: FontWeight.w600),
                 ),
                 subtitle: Text(
                   'Hide this Citadel homestead and prevent all interactions',
-                  style: GoogleFonts.outfit(color: Colors.white54, fontSize: 12),
+                  style:
+                      GoogleFonts.outfit(color: Colors.white54, fontSize: 12),
                 ),
                 onTap: () {
                   Navigator.pop(bottomSheetContext);
@@ -2723,11 +2909,13 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                     onBlocked: () {
                       if (mounted) {
                         setState(() {
-                          _feedItems.removeWhere((item) => item.neighbor?.id == neighbor.id);
+                          _feedItems.removeWhere(
+                              (item) => item.neighbor?.id == neighbor.id);
                         });
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('${neighbor.name} blocked and removed from feed'),
+                            content: Text(
+                                '${neighbor.name} blocked and removed from feed'),
                             backgroundColor: Colors.redAccent,
                           ),
                         );
@@ -2772,7 +2960,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           Positioned.fill(
             child: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 child: Center(
                   child: SingleChildScrollView(
                     physics: const NeverScrollableScrollPhysics(),
@@ -2792,7 +2981,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.keyboard_arrow_up_rounded, color: Colors.white24, size: 16),
+                  const Icon(Icons.keyboard_arrow_up_rounded,
+                      color: Colors.white24, size: 16),
                   const SizedBox(width: 4),
                   Text(
                     'Swipe up for next Reel',
@@ -2837,7 +3027,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                       ],
                     ),
                     child: const Center(
-                      child: Icon(Icons.share_outlined, color: Colors.white, size: 20),
+                      child: Icon(Icons.share_outlined,
+                          color: Colors.white, size: 20),
                     ),
                   ),
                 ),
@@ -2945,7 +3136,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
               ? Center(
                   child: Text(
                     'Tap words below to assemble your sentence...',
-                    style: GoogleFonts.inter(color: Colors.white38, fontSize: 12),
+                    style:
+                        GoogleFonts.inter(color: Colors.white38, fontSize: 12),
                   ),
                 )
               : Wrap(
@@ -2960,11 +3152,13 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                               HapticFeedback.selectionClick();
                               setState(() {
                                 currentOrder.remove(word);
-                                _sentenceBuilderUserOrder[card.id] = currentOrder;
+                                _sentenceBuilderUserOrder[card.id] =
+                                    currentOrder;
                               });
                             },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
                           color: const Color(0xFFFFFC00),
                           borderRadius: BorderRadius.circular(10),
@@ -3004,7 +3198,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
               child: Opacity(
                 opacity: isUsed ? 0.3 : 1.0,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
                     color: const Color(0xFF334155),
                     borderRadius: BorderRadius.circular(12),
@@ -3039,9 +3234,11 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                 },
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: Colors.white24),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text('Reset', style: TextStyle(color: Colors.white70)),
+                child: const Text('Reset',
+                    style: TextStyle(color: Colors.white70)),
               ),
               const SizedBox(width: 12),
               ElevatedButton(
@@ -3051,12 +3248,14 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                         HapticFeedback.heavyImpact();
                         bool correct = true;
                         for (int i = 0; i < targetWords.length; i++) {
-                          if (currentOrder[i].toLowerCase() != targetWords[i].toLowerCase()) {
+                          if (currentOrder[i].toLowerCase() !=
+                              targetWords[i].toLowerCase()) {
                             correct = false;
                             break;
                           }
                         }
-                        final wasUnanswered = _sentenceBuilderResults[card.id] == null;
+                        final wasUnanswered =
+                            _sentenceBuilderResults[card.id] == null;
                         setState(() {
                           _sentenceBuilderResults[card.id] = correct;
                         });
@@ -3070,17 +3269,21 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                               await PocketKidsService.addStars(5);
                             }
                           } else {
-                            PocketGameAudioService.instance.playIncorrectSound();
+                            PocketGameAudioService.instance
+                                .playIncorrectSound();
                           }
                         }
                       },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFFFC00),
                   foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 ),
-                child: const Text('Check Sentence', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text('Check Sentence',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -3120,7 +3323,10 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
             ),
             child: Text(
               card.contextSituation!,
-              style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5, fontStyle: FontStyle.italic),
+              style: GoogleFonts.inter(
+                  color: Colors.white70,
+                  fontSize: 11.5,
+                  fontStyle: FontStyle.italic),
               textAlign: TextAlign.center,
             ),
           ),
@@ -3148,7 +3354,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
             children: [
               // Character Header Bar
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.25),
                   borderRadius: const BorderRadius.only(
@@ -3164,7 +3371,10 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
                         shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.6), width: 1.5),
+                        border: Border.all(
+                            color:
+                                const Color(0xFFFFFC00).withValues(alpha: 0.6),
+                            width: 1.5),
                       ),
                       child: Center(
                         child: Text(
@@ -3201,7 +3411,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                     GestureDetector(
                       onTap: () => _playTtsForCard(card.id, card.prompt),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 9, vertical: 5),
                         decoration: BoxDecoration(
                           color: isTtsThis
                               ? const Color(0xFFFFFC00)
@@ -3217,8 +3428,12 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              isTtsThis ? Icons.volume_up_rounded : Icons.volume_up_outlined,
-                              color: isTtsThis ? Colors.black : const Color(0xFFFFFC00),
+                              isTtsThis
+                                  ? Icons.volume_up_rounded
+                                  : Icons.volume_up_outlined,
+                              color: isTtsThis
+                                  ? Colors.black
+                                  : const Color(0xFFFFFC00),
                               size: 15,
                             ),
                             const SizedBox(width: 4),
@@ -3320,7 +3535,10 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
             ),
             child: Text(
               card.contextSituation!,
-              style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5, fontStyle: FontStyle.italic),
+              style: GoogleFonts.inter(
+                  color: Colors.white70,
+                  fontSize: 11.5,
+                  fontStyle: FontStyle.italic),
               textAlign: TextAlign.center,
             ),
           ),
@@ -3443,7 +3661,9 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: isThisSelected
-                      ? (isThisCorrect ? const Color(0xFF10B981) : Colors.redAccent)
+                      ? (isThisCorrect
+                          ? const Color(0xFF10B981)
+                          : Colors.redAccent)
                       : Colors.white12,
                 ),
                 child: Center(
@@ -3469,9 +3689,11 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                 ),
               ),
               if (hasAnswered && isThisCorrect)
-                const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 18),
+                const Icon(Icons.check_circle_rounded,
+                    color: Color(0xFF10B981), size: 18),
               if (hasAnswered && isThisSelected && !isThisCorrect)
-                const Icon(Icons.cancel_rounded, color: Colors.redAccent, size: 18),
+                const Icon(Icons.cancel_rounded,
+                    color: Colors.redAccent, size: 18),
             ],
           ),
         ),
@@ -3532,7 +3754,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
               if (isCorrect && isKid) ...[
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFFC00),
                     borderRadius: BorderRadius.circular(8),
@@ -3685,10 +3908,12 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Microphone access unavailable or speech permission denied.'),
+            content: const Text(
+                'Microphone access unavailable or speech permission denied.'),
             backgroundColor: const Color(0xFF1E293B),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       }
@@ -3730,18 +3955,25 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       await _speechToText.stop();
     } catch (_) {}
 
-    final spoken = (_speakChallengeUserText[card.id] ?? _recognizedSpokenWords).trim().toLowerCase();
-    final target = card.targetSpeech.toLowerCase().replaceAll(RegExp(r'[^a-z0-9\s]'), '');
-    final targetWords = target.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
-    final spokenWords = spoken.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toSet();
+    final spoken = (_speakChallengeUserText[card.id] ?? _recognizedSpokenWords)
+        .trim()
+        .toLowerCase();
+    final target =
+        card.targetSpeech.toLowerCase().replaceAll(RegExp(r'[^a-z0-9\s]'), '');
+    final targetWords =
+        target.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+    final spokenWords =
+        spoken.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toSet();
 
     int matchedWords = 0;
     for (final word in targetWords) {
       if (spokenWords.contains(word)) matchedWords++;
     }
 
-    final ratio = targetWords.isNotEmpty ? matchedWords / targetWords.length : 0.0;
-    final isPassed = ratio >= 0.4 || (targetWords.isNotEmpty && spoken.contains(targetWords.first));
+    final ratio =
+        targetWords.isNotEmpty ? matchedWords / targetWords.length : 0.0;
+    final isPassed = ratio >= 0.4 ||
+        (targetWords.isNotEmpty && spoken.contains(targetWords.first));
 
     if (mounted) {
       setState(() {
@@ -3790,354 +4022,386 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           Positioned.fill(
             child: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.only(left: 20, right: 68, top: 16, bottom: 24),
+                padding: const EdgeInsets.only(
+                    left: 20, right: 68, top: 16, bottom: 24),
                 child: Center(
                   child: SingleChildScrollView(
                     physics: const NeverScrollableScrollPhysics(),
                     child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Category Tag & Audio Read-Along Pill
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF59E0B).withValues(alpha: 0.18),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: const Color(0xFFF59E0B), width: 1),
-                            ),
-                            child: Text(
-                              story.category,
-                              style: GoogleFonts.outfit(
-                                color: const Color(0xFFFBBF24),
-                                fontSize: 10,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.8,
-                              ),
-                            ),
-                          ),
-                          const Spacer(),
-                          GestureDetector(
-                            onTap: () => _playTtsForCard(story.id, story.fullReadText),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Category Tag & Audio Read-Along Pill
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: isSpeakingThis
-                                    ? const Color(0xFFFFFC00)
-                                    : Colors.white.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(14),
+                                color: const Color(0xFFF59E0B)
+                                    .withValues(alpha: 0.18),
+                                borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: isSpeakingThis ? const Color(0xFFFFFC00) : Colors.white24,
-                                ),
+                                    color: const Color(0xFFF59E0B), width: 1),
                               ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    isSpeakingThis ? Icons.volume_up_rounded : Icons.headphones_rounded,
-                                    size: 14,
-                                    color: isSpeakingThis ? Colors.black : Colors.white70,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    isSpeakingThis ? 'Reading ⏸️' : 'Read Along 🎧',
-                                    style: GoogleFonts.outfit(
-                                      color: isSpeakingThis ? Colors.black : Colors.white70,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
+                              child: Text(
+                                story.category,
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFBBF24),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.8,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Title
-                      Text(
-                        story.title,
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 21,
-                          fontWeight: FontWeight.bold,
-                          height: 1.25,
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-
-                      // Story Paragraphs Box
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF0F172A).withValues(alpha: 0.75),
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: Colors.white12),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: story.paragraphs.map((para) {
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
-                              child: Text(
-                                para,
-                                style: GoogleFonts.inter(
-                                  color: Colors.white.withValues(alpha: 0.9),
-                                  fontSize: 13.5,
-                                  height: 1.5,
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Key Vocab Chips
-                      if (story.keyVocab.isNotEmpty) ...[
-                        Text(
-                          'KEY VOCABULARY IN STORY',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white54,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.8,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: story.keyVocab.map((v) {
-                            final word = v['word'] ?? '';
-                            final phonetic = v['phonetic'] ?? '';
-                            return GestureDetector(
-                              onTap: () => _playTtsForCard('vocab_$word', word),
+                            const Spacer(),
+                            GestureDetector(
+                              onTap: () =>
+                                  _playTtsForCard(story.id, story.fullReadText),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 5),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+                                  color: isSpeakingThis
+                                      ? const Color(0xFFFFFC00)
+                                      : Colors.white.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: isSpeakingThis
+                                        ? const Color(0xFFFFFC00)
+                                        : Colors.white24,
+                                  ),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Icon(Icons.volume_up_rounded, size: 12, color: Color(0xFF38BDF8)),
+                                    Icon(
+                                      isSpeakingThis
+                                          ? Icons.volume_up_rounded
+                                          : Icons.headphones_rounded,
+                                      size: 14,
+                                      color: isSpeakingThis
+                                          ? Colors.black
+                                          : Colors.white70,
+                                    ),
                                     const SizedBox(width: 4),
                                     Text(
-                                      '$word $phonetic',
+                                      isSpeakingThis
+                                          ? 'Reading ⏸️'
+                                          : 'Read Along 🎧',
                                       style: GoogleFonts.outfit(
-                                        color: const Color(0xFF7DD3FC),
-                                        fontSize: 11.5,
-                                        fontWeight: FontWeight.w600,
+                                        color: isSpeakingThis
+                                            ? Colors.black
+                                            : Colors.white70,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                            );
-                          }).toList(),
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-
-                      // Moral & Dynamic Native Takeaway Box
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              const Color(0xFFF59E0B).withValues(alpha: 0.15),
-                              const Color(0xFFD97706).withValues(alpha: 0.08),
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.4)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                const Text('💡', style: TextStyle(fontSize: 16)),
-                                const SizedBox(width: 6),
-                                Expanded(
-                                  child: Text(
-                                    '${_userNativeLanguage.toUpperCase()} TAKEAWAY',
-                                    style: GoogleFonts.outfit(
-                                      color: const Color(0xFFFBBF24),
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: 0.6,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              story.getMoral(_userNativeLanguage),
-                              style: GoogleFonts.inter(
-                                color: Colors.white,
-                                fontSize: 13,
-                                height: 1.4,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Moral: "${story.moralEn}"',
-                              style: GoogleFonts.inter(
-                                color: Colors.white60,
-                                fontSize: 11.5,
-                                fontStyle: FontStyle.italic,
-                              ),
                             ),
                           ],
                         ),
-                      ),
-                      const SizedBox(height: 16),
+                        const SizedBox(height: 12),
 
-                      // Continue Button
-                      GestureDetector(
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          _stopAllAudioAndSpeech();
-                          if (_verticalPageController.hasClients) {
-                            _verticalPageController.nextPage(
-                              duration: const Duration(milliseconds: 320),
-                              curve: Curves.easeOutCubic,
-                            );
-                          }
-                        },
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFFFFC00), Color(0xFFFF9100)],
-                            ),
-                            borderRadius: BorderRadius.circular(12),
+                        // Title
+                        Text(
+                          story.title,
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 21,
+                            fontWeight: FontWeight.bold,
+                            height: 1.25,
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Story Paragraphs Box
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color:
+                                const Color(0xFF0F172A).withValues(alpha: 0.75),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(color: Colors.white12),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: story.paragraphs.map((para) {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: Text(
+                                  para,
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white.withValues(alpha: 0.9),
+                                    fontSize: 13.5,
+                                    height: 1.5,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Key Vocab Chips
+                        if (story.keyVocab.isNotEmpty) ...[
+                          Text(
+                            'KEY VOCABULARY IN STORY',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white54,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: story.keyVocab.map((v) {
+                              final word = v['word'] ?? '';
+                              final phonetic = v['phonetic'] ?? '';
+                              return GestureDetector(
+                                onTap: () =>
+                                    _playTtsForCard('vocab_$word', word),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF38BDF8)
+                                        .withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                        color: const Color(0xFF38BDF8)
+                                            .withValues(alpha: 0.4)),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.volume_up_rounded,
+                                          size: 12, color: Color(0xFF38BDF8)),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '$word $phonetic',
+                                        style: GoogleFonts.outfit(
+                                          color: const Color(0xFF7DD3FC),
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+
+                        // Moral & Dynamic Native Takeaway Box
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                                const Color(0xFFD97706).withValues(alpha: 0.08),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                                color: const Color(0xFFF59E0B)
+                                    .withValues(alpha: 0.4)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              Row(
+                                children: [
+                                  const Text('💡',
+                                      style: TextStyle(fontSize: 16)),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      '${_userNativeLanguage.toUpperCase()} TAKEAWAY',
+                                      style: GoogleFonts.outfit(
+                                        color: const Color(0xFFFBBF24),
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 0.6,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
                               Text(
-                                'CONTINUE REEL FEED',
-                                style: GoogleFonts.outfit(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 12,
-                                  letterSpacing: 0.8,
+                                story.getMoral(_userNativeLanguage),
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  height: 1.4,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              const SizedBox(width: 6),
-                              const Icon(Icons.arrow_forward_rounded, color: Colors.black, size: 16),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Moral: "${story.moralEn}"',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white60,
+                                  fontSize: 11.5,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
                             ],
                           ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 16),
+
+                        // Continue Button
+                        GestureDetector(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            _stopAllAudioAndSpeech();
+                            if (_verticalPageController.hasClients) {
+                              _verticalPageController.nextPage(
+                                duration: const Duration(milliseconds: 320),
+                                curve: Curves.easeOutCubic,
+                              );
+                            }
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFFFFC00), Color(0xFFFF9100)],
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'CONTINUE REEL FEED',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 12,
+                                    letterSpacing: 0.8,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                const Icon(Icons.arrow_forward_rounded,
+                                    color: Colors.black, size: 16),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
 
-        // Right-Side Action Rail (Jumping Arrow, Audio Read, Like, Share)
-        Positioned(
-          right: 14,
-          bottom: MediaQuery.of(context).padding.bottom + 24,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // 🟢 Bouncing/Jumping Green Arrow Button (User Audio Directive: right above audio button)
-              _buildJumpingArrowButton(size: 46),
-              const SizedBox(height: 14),
+          // Right-Side Action Rail (Jumping Arrow, Audio Read, Like, Share)
+          Positioned(
+            right: 14,
+            bottom: MediaQuery.of(context).padding.bottom + 24,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 🟢 Bouncing/Jumping Green Arrow Button (User Audio Directive: right above audio button)
+                _buildJumpingArrowButton(size: 46),
+                const SizedBox(height: 14),
 
-              // Audio Toggle Button
-              GestureDetector(
-                onTap: () => _playTtsForCard(story.id, story.fullReadText),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: isSpeakingThis
-                        ? const Color(0xFFFFFC00)
-                        : Colors.black.withValues(alpha: 0.65),
-                    border: Border.all(color: Colors.white24),
-                  ),
-                  child: Icon(
-                    isSpeakingThis ? Icons.pause_rounded : Icons.headphones_rounded,
-                    color: isSpeakingThis ? Colors.black : Colors.white,
-                    size: 20,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-
-              // Like Button
-              GestureDetector(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('❤️ Story saved to Favorites!'),
-                      behavior: SnackBarBehavior.floating,
-                      backgroundColor: Color(0xFF1E293B),
-                      duration: Duration(seconds: 2),
+                // Audio Toggle Button
+                GestureDetector(
+                  onTap: () => _playTtsForCard(story.id, story.fullReadText),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isSpeakingThis
+                          ? const Color(0xFFFFFC00)
+                          : Colors.black.withValues(alpha: 0.65),
+                      border: Border.all(color: Colors.white24),
                     ),
-                  );
-                },
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.black.withValues(alpha: 0.65),
-                    border: Border.all(color: Colors.white24),
+                    child: Icon(
+                      isSpeakingThis
+                          ? Icons.pause_rounded
+                          : Icons.headphones_rounded,
+                      color: isSpeakingThis ? Colors.black : Colors.white,
+                      size: 20,
+                    ),
                   ),
-                  child: const Icon(Icons.favorite_rounded, color: Color(0xFFEF4444), size: 20),
                 ),
-              ),
-              const SizedBox(height: 14),
+                const SizedBox(height: 14),
 
-              // Share Button
-              GestureDetector(
-                onTap: () {
-                  HapticFeedback.mediumImpact();
-                  PocketFeedVibeShareSheet.show(
-                    context,
-                    customText: '📖 ${story.title}\n${story.paragraphs.first}\n\n💡 Moral: ${story.moralEn}',
-                  );
-                },
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.black.withValues(alpha: 0.65),
-                    border: Border.all(color: Colors.white24),
+                // Like Button
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('❤️ Story saved to Favorites!'),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: Color(0xFF1E293B),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withValues(alpha: 0.65),
+                      border: Border.all(color: Colors.white24),
+                    ),
+                    child: const Icon(Icons.favorite_rounded,
+                        color: Color(0xFFEF4444), size: 20),
                   ),
-                  child: const Icon(Icons.share_rounded, color: Colors.white, size: 20),
                 ),
-              ),
-            ],
+                const SizedBox(height: 14),
+
+                // Share Button
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.mediumImpact();
+                    PocketFeedVibeShareSheet.show(
+                      context,
+                      customText:
+                          '📖 ${story.title}\n${story.paragraphs.first}\n\n💡 Moral: ${story.moralEn}',
+                    );
+                  },
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withValues(alpha: 0.65),
+                      border: Border.all(color: Colors.white24),
+                    ),
+                    child: const Icon(Icons.share_rounded,
+                        color: Colors.white, size: 20),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 
   /// 💼 2. Interview & Workplace Communication Q&A Slide
   Widget _buildInterviewSlide(ReelInterviewCard interview, int index) {
@@ -4170,345 +4434,383 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           Positioned.fill(
             child: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.only(left: 20, right: 68, top: 16, bottom: 24),
+                padding: const EdgeInsets.only(
+                    left: 20, right: 68, top: 16, bottom: 24),
                 child: Center(
                   child: SingleChildScrollView(
                     physics: const NeverScrollableScrollPhysics(),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Category Tag
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF38BDF8).withValues(alpha: 0.18),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFF38BDF8), width: 1),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Category Tag
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color:
+                                const Color(0xFF38BDF8).withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                                color: const Color(0xFF38BDF8), width: 1),
+                          ),
+                          child: Text(
+                            interview.category,
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF38BDF8),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
                         ),
-                        child: Text(
-                          interview.category,
+                        const SizedBox(height: 12),
+
+                        // Interview Question Box
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                            ),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                                color: const Color(0xFF38BDF8)
+                                    .withValues(alpha: 0.4),
+                                width: 1.5),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Text('🎯',
+                                      style: TextStyle(fontSize: 16)),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      interview.question,
+                                      style: GoogleFonts.outfit(
+                                        color: Colors.white,
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.bold,
+                                        height: 1.3,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  'Context: ${interview.situationContext}',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white60,
+                                    fontSize: 11,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+
+                        // STAR Breakdown
+                        Text(
+                          '⭐ STAR METHOD BREAKDOWN',
                           style: GoogleFonts.outfit(
-                            color: const Color(0xFF38BDF8),
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
+                            color: const Color(0xFFFFFC00),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
                             letterSpacing: 0.8,
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
+                        const SizedBox(height: 8),
 
-                      // Interview Question Box
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
-                          ),
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4), width: 1.5),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
+                        _buildStarTile('S - Situation', interview.starSituation,
+                            const Color(0xFF38BDF8)),
+                        const SizedBox(height: 6),
+                        _buildStarTile('A - Action Taken', interview.starAction,
+                            const Color(0xFFF59E0B)),
+                        const SizedBox(height: 6),
+                        _buildStarTile('R - Key Result', interview.starResult,
+                            const Color(0xFF10B981)),
+                        const SizedBox(height: 14),
+
+                        // Listen to Model Answer Button
+                        GestureDetector(
+                          onTap: () => _playTtsForCard(
+                              interview.id, interview.fullSpokenAnswer),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 11),
+                            decoration: BoxDecoration(
+                              color: isSpeakingThis
+                                  ? const Color(0xFFFFFC00)
+                                  : const Color(0xFF1E293B),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: isSpeakingThis
+                                    ? const Color(0xFFFFFC00)
+                                    : Colors.white24,
+                                width: 1.2,
+                              ),
+                            ),
+                            child: Row(
                               children: [
-                                const Text('🎯', style: TextStyle(fontSize: 16)),
-                                const SizedBox(width: 8),
+                                Icon(
+                                  isSpeakingThis
+                                      ? Icons.volume_up_rounded
+                                      : Icons.play_arrow_rounded,
+                                  color: isSpeakingThis
+                                      ? Colors.black
+                                      : const Color(0xFFFFFC00),
+                                  size: 22,
+                                ),
+                                const SizedBox(width: 10),
                                 Expanded(
                                   child: Text(
-                                    interview.question,
+                                    isSpeakingThis
+                                        ? 'Speaking Answer... Tap to Pause'
+                                        : 'Hear Native Spoken Answer 🗣️',
                                     style: GoogleFonts.outfit(
-                                      color: Colors.white,
-                                      fontSize: 17,
+                                      color: isSpeakingThis
+                                          ? Colors.black
+                                          : Colors.white,
+                                      fontSize: 13,
                                       fontWeight: FontWeight.bold,
-                                      height: 1.3,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.08),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                'Context: ${interview.situationContext}',
-                                style: GoogleFonts.inter(
-                                  color: Colors.white60,
-                                  fontSize: 11,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-
-                      // STAR Breakdown
-                      Text(
-                        '⭐ STAR METHOD BREAKDOWN',
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFFFFFC00),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-
-                      _buildStarTile('S - Situation', interview.starSituation, const Color(0xFF38BDF8)),
-                      const SizedBox(height: 6),
-                      _buildStarTile('A - Action Taken', interview.starAction, const Color(0xFFF59E0B)),
-                      const SizedBox(height: 6),
-                      _buildStarTile('R - Key Result', interview.starResult, const Color(0xFF10B981)),
-                      const SizedBox(height: 14),
-
-                      // Listen to Model Answer Button
-                      GestureDetector(
-                        onTap: () => _playTtsForCard(interview.id, interview.fullSpokenAnswer),
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-                          decoration: BoxDecoration(
-                            color: isSpeakingThis
-                                ? const Color(0xFFFFFC00)
-                                : const Color(0xFF1E293B),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: isSpeakingThis ? const Color(0xFFFFFC00) : Colors.white24,
-                              width: 1.2,
-                            ),
                           ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                isSpeakingThis ? Icons.volume_up_rounded : Icons.play_arrow_rounded,
-                                color: isSpeakingThis ? Colors.black : const Color(0xFFFFFC00),
-                                size: 22,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  isSpeakingThis ? 'Speaking Answer... Tap to Pause' : 'Hear Native Spoken Answer 🗣️',
-                                  style: GoogleFonts.outfit(
-                                    color: isSpeakingThis ? Colors.black : Colors.white,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Power Phrases
-                      if (interview.powerPhrases.isNotEmpty) ...[
-                        Text(
-                          'POWER PHRASES TO USE',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white54,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.8,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: interview.powerPhrases.map((phrase) {
-                            return GestureDetector(
-                              onTap: () => _playTtsForCard('p_$phrase', phrase),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: Colors.white10,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: Colors.white24),
-                                ),
-                                child: Text(
-                                  '"$phrase"',
-                                  style: GoogleFonts.inter(
-                                    color: Colors.white,
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
                         ),
                         const SizedBox(height: 12),
-                      ],
 
-                      // Dynamic Native Language Career Tip Box
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1E3A8A).withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.35)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${_userNativeLanguage.toUpperCase()} CAREER TIP 💼',
-                              style: GoogleFonts.outfit(
-                                color: const Color(0xFF7DD3FC),
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.6,
-                              ),
+                        // Power Phrases
+                        if (interview.powerPhrases.isNotEmpty) ...[
+                          Text(
+                            'POWER PHRASES TO USE',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white54,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.8,
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              interview.getTip(_userNativeLanguage),
-                              style: GoogleFonts.inter(
-                                color: Colors.white,
-                                fontSize: 12.5,
-                                height: 1.35,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-
-                      // Continue Button
-                      GestureDetector(
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          _stopAllAudioAndSpeech();
-                          if (_verticalPageController.hasClients) {
-                            _verticalPageController.nextPage(
-                              duration: const Duration(milliseconds: 320),
-                              curve: Curves.easeOutCubic,
-                            );
-                          }
-                        },
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFFFFC00), Color(0xFFFF9100)],
-                            ),
-                            borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          const SizedBox(height: 6),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: interview.powerPhrases.map((phrase) {
+                              return GestureDetector(
+                                onTap: () =>
+                                    _playTtsForCard('p_$phrase', phrase),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 9, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white10,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: Colors.white24),
+                                  ),
+                                  child: Text(
+                                    '"$phrase"',
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white,
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+
+                        // Dynamic Native Language Career Tip Box
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color:
+                                const Color(0xFF1E3A8A).withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                                color: const Color(0xFF38BDF8)
+                                    .withValues(alpha: 0.35)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'CONTINUE REEL FEED',
+                                '${_userNativeLanguage.toUpperCase()} CAREER TIP 💼',
                                 style: GoogleFonts.outfit(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 12,
-                                  letterSpacing: 0.8,
+                                  color: const Color(0xFF7DD3FC),
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.6,
                                 ),
                               ),
-                              const SizedBox(width: 6),
-                              const Icon(Icons.arrow_forward_rounded, color: Colors.black, size: 16),
+                              const SizedBox(height: 4),
+                              Text(
+                                interview.getTip(_userNativeLanguage),
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 12.5,
+                                  height: 1.35,
+                                ),
+                              ),
                             ],
                           ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 14),
+
+                        // Continue Button
+                        GestureDetector(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            _stopAllAudioAndSpeech();
+                            if (_verticalPageController.hasClients) {
+                              _verticalPageController.nextPage(
+                                duration: const Duration(milliseconds: 320),
+                                curve: Curves.easeOutCubic,
+                              );
+                            }
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFFFFC00), Color(0xFFFF9100)],
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'CONTINUE REEL FEED',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 12,
+                                    letterSpacing: 0.8,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                const Icon(Icons.arrow_forward_rounded,
+                                    color: Colors.black, size: 16),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
 
-        // Right Rail (Jumping Arrow, Audio Read, Like, Share)
-        Positioned(
-          right: 14,
-          bottom: MediaQuery.of(context).padding.bottom + 24,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // 🟢 Energetic Bouncing/Jumping Green Arrow Button (User Audio Directive: tap to advance)
-              _buildJumpingArrowButton(size: 46),
-              const SizedBox(height: 14),
+          // Right Rail (Jumping Arrow, Audio Read, Like, Share)
+          Positioned(
+            right: 14,
+            bottom: MediaQuery.of(context).padding.bottom + 24,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 🟢 Energetic Bouncing/Jumping Green Arrow Button (User Audio Directive: tap to advance)
+                _buildJumpingArrowButton(size: 46),
+                const SizedBox(height: 14),
 
-              GestureDetector(
-                onTap: () => _playTtsForCard(interview.id, interview.fullSpokenAnswer),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: isSpeakingThis ? const Color(0xFFFFFC00) : Colors.black.withValues(alpha: 0.65),
-                    border: Border.all(color: Colors.white24),
-                  ),
-                  child: Icon(
-                    isSpeakingThis ? Icons.pause_rounded : Icons.volume_up_rounded,
-                    color: isSpeakingThis ? Colors.black : Colors.white,
-                    size: 20,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-              GestureDetector(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('❤️ Interview Q&A Saved!'),
-                      behavior: SnackBarBehavior.floating,
-                      backgroundColor: Color(0xFF1E293B),
+                GestureDetector(
+                  onTap: () =>
+                      _playTtsForCard(interview.id, interview.fullSpokenAnswer),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isSpeakingThis
+                          ? const Color(0xFFFFFC00)
+                          : Colors.black.withValues(alpha: 0.65),
+                      border: Border.all(color: Colors.white24),
                     ),
-                  );
-                },
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.black.withValues(alpha: 0.65),
-                    border: Border.all(color: Colors.white24),
+                    child: Icon(
+                      isSpeakingThis
+                          ? Icons.pause_rounded
+                          : Icons.volume_up_rounded,
+                      color: isSpeakingThis ? Colors.black : Colors.white,
+                      size: 20,
+                    ),
                   ),
-                  child: const Icon(Icons.favorite_rounded, color: Color(0xFFEF4444), size: 20),
                 ),
-              ),
-              const SizedBox(height: 14),
-              GestureDetector(
-                onTap: () {
-                  HapticFeedback.mediumImpact();
-                  PocketFeedVibeShareSheet.show(
-                    context,
-                    customText: '💼 Interview Vault\nQuestion: "${interview.question}"\nModel Answer:\n${interview.fullSpokenAnswer}',
-                  );
-                },
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.black.withValues(alpha: 0.65),
-                    border: Border.all(color: Colors.white24),
+                const SizedBox(height: 14),
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('❤️ Interview Q&A Saved!'),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: Color(0xFF1E293B),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withValues(alpha: 0.65),
+                      border: Border.all(color: Colors.white24),
+                    ),
+                    child: const Icon(Icons.favorite_rounded,
+                        color: Color(0xFFEF4444), size: 20),
                   ),
-                  child: const Icon(Icons.share_rounded, color: Colors.white, size: 20),
                 ),
-              ),
-            ],
+                const SizedBox(height: 14),
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.mediumImpact();
+                    PocketFeedVibeShareSheet.show(
+                      context,
+                      customText:
+                          '💼 Interview Vault\nQuestion: "${interview.question}"\nModel Answer:\n${interview.fullSpokenAnswer}',
+                    );
+                  },
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withValues(alpha: 0.65),
+                      border: Border.all(color: Colors.white24),
+                    ),
+                    child: const Icon(Icons.share_rounded,
+                        color: Colors.white, size: 20),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 
   Widget _buildStarTile(String label, String text, Color accentColor) {
     return Container(
@@ -4524,12 +4826,16 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
         children: [
           Text(
             label,
-            style: GoogleFonts.outfit(color: accentColor, fontSize: 11, fontWeight: FontWeight.bold),
+            style: GoogleFonts.outfit(
+                color: accentColor, fontSize: 11, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 2),
           Text(
             text,
-            style: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.9), fontSize: 12, height: 1.35),
+            style: GoogleFonts.inter(
+                color: Colors.white.withValues(alpha: 0.9),
+                fontSize: 12,
+                height: 1.35),
           ),
         ],
       ),
@@ -4537,8 +4843,10 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
   }
 
   /// 🗣️ 3. Interactive Chatbot Speaking Challenge Slide (Speech Recognition + AI Coach)
-  Widget _buildSpeakChallengeSlide(ReelSpeakChallengeCard challenge, int index) {
-    final isListeningThis = _isListening && _activeSpeechChallengeId == challenge.id;
+  Widget _buildSpeakChallengeSlide(
+      ReelSpeakChallengeCard challenge, int index) {
+    final isListeningThis =
+        _isListening && _activeSpeechChallengeId == challenge.id;
     final hasPassed = _speakChallengeResults[challenge.id] == true;
     final hasFailed = _speakChallengeResults[challenge.id] == false;
 
@@ -4568,361 +4876,396 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           Positioned.fill(
             child: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.only(left: 20, right: 68, top: 16, bottom: 24),
+                padding: const EdgeInsets.only(
+                    left: 20, right: 68, top: 16, bottom: 24),
                 child: Center(
                   child: SingleChildScrollView(
                     physics: const NeverScrollableScrollPhysics(),
                     child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Coach Header Pill
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: const Color(0xFF10B981), width: 1.2),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(challenge.coachAvatar, style: const TextStyle(fontSize: 16)),
-                            const SizedBox(width: 6),
-                            Text(
-                              challenge.coachName,
-                              style: GoogleFonts.outfit(
-                                color: const Color(0xFF34D399),
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // AI Coach Speech Bubble
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1E293B),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.white24),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('💬', style: TextStyle(fontSize: 20)),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                challenge.coachPrompt,
-                                style: GoogleFonts.inter(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                  height: 1.35,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      Text(
-                        'SPEAK THIS CLEARLY ALOUD 🎙️',
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFFFFFC00),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.0,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-
-                      // Target Speech Glowing Card
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: hasPassed
-                                ? const Color(0xFF10B981)
-                                : const Color(0xFF06B6D4).withValues(alpha: 0.6),
-                            width: 2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: (hasPassed ? const Color(0xFF10B981) : const Color(0xFF06B6D4))
-                                  .withValues(alpha: 0.25),
-                              blurRadius: 16,
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            Text(
-                              '"${challenge.targetSpeech}"',
-                              style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
-                                height: 1.3,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              '/${challenge.phoneticGuide}/',
-                              style: GoogleFonts.inter(
-                                color: const Color(0xFF7DD3FC),
-                                fontSize: 11.5,
-                                fontStyle: FontStyle.italic,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Dynamic Native Guidance Box
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.06),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '${_userNativeLanguage.toUpperCase()} TIP: ${challenge.getGuidance(_userNativeLanguage)}',
-                          style: GoogleFonts.inter(
-                            color: Colors.white70,
-                            fontSize: 11.5,
-                            height: 1.3,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Big Glowing Microphone Button
-                      GestureDetector(
-                        onTap: () => _toggleSpeechChallenge(challenge),
-                        child: AnimatedBuilder(
-                          animation: _pulseController,
-                          builder: (context, _) {
-                            final pulse = isListeningThis ? _pulseController.value : 0.0;
-                            return Container(
-                              width: 72 + (pulse * 8),
-                              height: 72 + (pulse * 8),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: LinearGradient(
-                                  colors: isListeningThis
-                                      ? [const Color(0xFFEF4444), const Color(0xFFDC2626)]
-                                      : [const Color(0xFF10B981), const Color(0xFF059669)],
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: (isListeningThis ? const Color(0xFFEF4444) : const Color(0xFF10B981))
-                                        .withValues(alpha: 0.5 + (pulse * 0.3)),
-                                    blurRadius: 18 + (pulse * 12),
-                                    spreadRadius: pulse * 4,
-                                  ),
-                                ],
-                              ),
-                              child: Center(
-                                child: Icon(
-                                  isListeningThis ? Icons.mic_rounded : Icons.mic_none_rounded,
-                                  color: Colors.white,
-                                  size: 34,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-
-                      Text(
-                        isListeningThis
-                            ? 'Listening... Speak into mic!'
-                            : (hasPassed ? 'Passed! Tap to practice again' : 'Tap Mic & Speak the sentence'),
-                        style: GoogleFonts.outfit(
-                          color: isListeningThis ? const Color(0xFFEF4444) : Colors.white70,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-
-
-                      // Success or Retry Feedback
-                      if (hasPassed) ...[
-                        const SizedBox(height: 10),
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Coach Header Pill
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 5),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: const Color(0xFF10B981)),
-                          ),
-                          child: Text(
-                            '🎉 Fantastic Pronunciation! +${challenge.pointsReward} Pocket Score!',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFF34D399),
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ] else if (hasFailed) ...[
-                        const SizedBox(height: 10),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: Colors.orange.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: Colors.orange),
-                          ),
-                          child: Text(
-                            'Keep going! Tap mic and say the full sentence clearly.',
-                            style: GoogleFonts.outfit(color: Colors.orange, fontSize: 12),
-                          ),
-                        ),
-                      ],
-
-                      const SizedBox(height: 16),
-
-                      // Continue Button
-                      GestureDetector(
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          _stopAllAudioAndSpeech();
-                          if (_verticalPageController.hasClients) {
-                            _verticalPageController.nextPage(
-                              duration: const Duration(milliseconds: 320),
-                              curve: Curves.easeOutCubic,
-                            );
-                          }
-                        },
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFFFFC00), Color(0xFFFF9100)],
-                            ),
-                            borderRadius: BorderRadius.circular(12),
+                            color:
+                                const Color(0xFF10B981).withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                                color: const Color(0xFF10B981), width: 1.2),
                           ),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
+                              Text(challenge.coachAvatar,
+                                  style: const TextStyle(fontSize: 16)),
+                              const SizedBox(width: 6),
                               Text(
-                                'CONTINUE REEL FEED',
+                                challenge.coachName,
                                 style: GoogleFonts.outfit(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 12,
-                                  letterSpacing: 0.8,
+                                  color: const Color(0xFF34D399),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
                                 ),
                               ),
-                              const SizedBox(width: 6),
-                              const Icon(Icons.arrow_forward_rounded, color: Colors.black, size: 16),
                             ],
                           ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 12),
+
+                        // AI Coach Speech Bubble
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E293B),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.white24),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('💬', style: TextStyle(fontSize: 20)),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  challenge.coachPrompt,
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    height: 1.35,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        Text(
+                          'SPEAK THIS CLEARLY ALOUD 🎙️',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFFC00),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+
+                        // Target Speech Glowing Card
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: hasPassed
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFF06B6D4)
+                                      .withValues(alpha: 0.6),
+                              width: 2,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: (hasPassed
+                                        ? const Color(0xFF10B981)
+                                        : const Color(0xFF06B6D4))
+                                    .withValues(alpha: 0.25),
+                                blurRadius: 16,
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              Text(
+                                '"${challenge.targetSpeech}"',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                  height: 1.3,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                '/${challenge.phoneticGuide}/',
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFF7DD3FC),
+                                  fontSize: 11.5,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Dynamic Native Guidance Box
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.06),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '${_userNativeLanguage.toUpperCase()} TIP: ${challenge.getGuidance(_userNativeLanguage)}',
+                            style: GoogleFonts.inter(
+                              color: Colors.white70,
+                              fontSize: 11.5,
+                              height: 1.3,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Big Glowing Microphone Button
+                        GestureDetector(
+                          onTap: () => _toggleSpeechChallenge(challenge),
+                          child: AnimatedBuilder(
+                            animation: _pulseController,
+                            builder: (context, _) {
+                              final pulse = isListeningThis
+                                  ? _pulseController.value
+                                  : 0.0;
+                              return Container(
+                                width: 72 + (pulse * 8),
+                                height: 72 + (pulse * 8),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: LinearGradient(
+                                    colors: isListeningThis
+                                        ? [
+                                            const Color(0xFFEF4444),
+                                            const Color(0xFFDC2626)
+                                          ]
+                                        : [
+                                            const Color(0xFF10B981),
+                                            const Color(0xFF059669)
+                                          ],
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: (isListeningThis
+                                              ? const Color(0xFFEF4444)
+                                              : const Color(0xFF10B981))
+                                          .withValues(
+                                              alpha: 0.5 + (pulse * 0.3)),
+                                      blurRadius: 18 + (pulse * 12),
+                                      spreadRadius: pulse * 4,
+                                    ),
+                                  ],
+                                ),
+                                child: Center(
+                                  child: Icon(
+                                    isListeningThis
+                                        ? Icons.mic_rounded
+                                        : Icons.mic_none_rounded,
+                                    color: Colors.white,
+                                    size: 34,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+
+                        Text(
+                          isListeningThis
+                              ? 'Listening... Speak into mic!'
+                              : (hasPassed
+                                  ? 'Passed! Tap to practice again'
+                                  : 'Tap Mic & Speak the sentence'),
+                          style: GoogleFonts.outfit(
+                            color: isListeningThis
+                                ? const Color(0xFFEF4444)
+                                : Colors.white70,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+
+                        // Success or Retry Feedback
+                        if (hasPassed) ...[
+                          const SizedBox(height: 10),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981)
+                                  .withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(10),
+                              border:
+                                  Border.all(color: const Color(0xFF10B981)),
+                            ),
+                            child: Text(
+                              '🎉 Fantastic Pronunciation! +${challenge.pointsReward} Pocket Score!',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFF34D399),
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ] else if (hasFailed) ...[
+                          const SizedBox(height: 10),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.orange),
+                            ),
+                            child: Text(
+                              'Keep going! Tap mic and say the full sentence clearly.',
+                              style: GoogleFonts.outfit(
+                                  color: Colors.orange, fontSize: 12),
+                            ),
+                          ),
+                        ],
+
+                        const SizedBox(height: 16),
+
+                        // Continue Button
+                        GestureDetector(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            _stopAllAudioAndSpeech();
+                            if (_verticalPageController.hasClients) {
+                              _verticalPageController.nextPage(
+                                duration: const Duration(milliseconds: 320),
+                                curve: Curves.easeOutCubic,
+                              );
+                            }
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFFFFC00), Color(0xFFFF9100)],
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'CONTINUE REEL FEED',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 12,
+                                    letterSpacing: 0.8,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                const Icon(Icons.arrow_forward_rounded,
+                                    color: Colors.black, size: 16),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
 
-        // Right Rail (Jumping Arrow, Pronunciation, Like, Share)
-        Positioned(
-          right: 14,
-          bottom: MediaQuery.of(context).padding.bottom + 24,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // 🟢 Energetic Bouncing/Jumping Green Arrow Button (User Audio Directive: tap to advance)
-              _buildJumpingArrowButton(size: 46),
-              const SizedBox(height: 14),
+          // Right Rail (Jumping Arrow, Pronunciation, Like, Share)
+          Positioned(
+            right: 14,
+            bottom: MediaQuery.of(context).padding.bottom + 24,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 🟢 Energetic Bouncing/Jumping Green Arrow Button (User Audio Directive: tap to advance)
+                _buildJumpingArrowButton(size: 46),
+                const SizedBox(height: 14),
 
-              // Listen to Correct Pronunciation
-              GestureDetector(
-                onTap: () => _playTtsForCard(challenge.id, challenge.targetSpeech),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.black.withValues(alpha: 0.65),
-                    border: Border.all(color: Colors.white24),
-                  ),
-                  child: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFFC00), size: 20),
-                ),
-              ),
-              const SizedBox(height: 14),
-              GestureDetector(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('❤️ Speaking Challenge Saved!'),
-                      behavior: SnackBarBehavior.floating,
-                      backgroundColor: Color(0xFF1E293B),
+                // Listen to Correct Pronunciation
+                GestureDetector(
+                  onTap: () =>
+                      _playTtsForCard(challenge.id, challenge.targetSpeech),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withValues(alpha: 0.65),
+                      border: Border.all(color: Colors.white24),
                     ),
-                  );
-                },
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.black.withValues(alpha: 0.65),
-                    border: Border.all(color: Colors.white24),
+                    child: const Icon(Icons.volume_up_rounded,
+                        color: Color(0xFFFFFC00), size: 20),
                   ),
-                  child: const Icon(Icons.favorite_rounded, color: Color(0xFFEF4444), size: 20),
                 ),
-              ),
-              const SizedBox(height: 14),
-              GestureDetector(
-                onTap: () {
-                  HapticFeedback.mediumImpact();
-                  PocketFeedVibeShareSheet.show(
-                    context,
-                    customText: '🗣️ AI Speaking Challenge\nSituation: ${challenge.situation}\nSay: "${challenge.targetSpeech}"',
-                  );
-                },
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.black.withValues(alpha: 0.65),
-                    border: Border.all(color: Colors.white24),
+                const SizedBox(height: 14),
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('❤️ Speaking Challenge Saved!'),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: Color(0xFF1E293B),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withValues(alpha: 0.65),
+                      border: Border.all(color: Colors.white24),
+                    ),
+                    child: const Icon(Icons.favorite_rounded,
+                        color: Color(0xFFEF4444), size: 20),
                   ),
-                  child: const Icon(Icons.share_rounded, color: Colors.white, size: 20),
                 ),
-              ),
-            ],
+                const SizedBox(height: 14),
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.mediumImpact();
+                    PocketFeedVibeShareSheet.show(
+                      context,
+                      customText:
+                          '🗣️ AI Speaking Challenge\nSituation: ${challenge.situation}\nSay: "${challenge.targetSpeech}"',
+                    );
+                  },
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withValues(alpha: 0.65),
+                      border: Border.all(color: Colors.white24),
+                    ),
+                    child: const Icon(Icons.share_rounded,
+                        color: Colors.white, size: 20),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 
   /// ⚡ 4. Power Vocabulary & Idiom Slide with Dynamic Multi-Language Meaning
   Widget _buildVocabSlide(ReelVocabCard vocab, int index) {
@@ -4952,347 +5295,370 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           Positioned.fill(
             child: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.only(left: 20, right: 68, top: 16, bottom: 24),
+                padding: const EdgeInsets.only(
+                    left: 20, right: 68, top: 16, bottom: 24),
                 child: Center(
                   child: SingleChildScrollView(
                     physics: const NeverScrollableScrollPhysics(),
                     child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Part of Speech Tag
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFA855F7).withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFA855F7), width: 1),
-                        ),
-                        child: Text(
-                          vocab.partOfSpeech.toUpperCase(),
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFFC084FC),
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.8,
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Part of Speech Tag
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color:
+                                const Color(0xFFA855F7).withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                                color: const Color(0xFFA855F7), width: 1),
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-
-                      // Word with Speaker Icon
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              vocab.word,
-                              style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                                height: 1.15,
-                              ),
+                          child: Text(
+                            vocab.partOfSpeech.toUpperCase(),
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFC084FC),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.8,
                             ),
                           ),
-                          GestureDetector(
-                            onTap: () => _playTtsForCard(vocab.id, vocab.word),
-                            child: Container(
-                              width: 38,
-                              height: 38,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: const Color(0xFFFFFC00),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFFFFFC00).withValues(alpha: 0.4),
-                                    blurRadius: 8,
-                                  ),
-                                ],
-                              ),
-                              child: const Icon(Icons.volume_up_rounded, color: Colors.black, size: 20),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-
-                      // Phonetic
-                      Text(
-                        vocab.phonetic,
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFFE9D5FF),
-                          fontSize: 13,
-                          fontStyle: FontStyle.italic,
                         ),
-                      ),
-                      const SizedBox(height: 16),
+                        const SizedBox(height: 14),
 
-                      // Definition Box
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1E293B).withValues(alpha: 0.8),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.white12),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        // Word with Speaker Icon
+                        Row(
                           children: [
-                            Text(
-                              'DEFINITION (ENGLISH)',
-                              style: GoogleFonts.outfit(
-                                color: Colors.white54,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.6,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              vocab.definitionEn,
-                              style: GoogleFonts.inter(
-                                color: Colors.white,
-                                fontSize: 13.5,
-                                height: 1.35,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Example Context Sentence Box
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.4),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFA855F7).withValues(alpha: 0.3)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                const Text('💬', style: TextStyle(fontSize: 14)),
-                                const SizedBox(width: 6),
-                                Text(
-                                  'EXAMPLE SENTENCE',
-                                  style: GoogleFonts.outfit(
-                                    color: const Color(0xFFC084FC),
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 0.6,
-                                  ),
+                            Expanded(
+                              child: Text(
+                                vocab.word,
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  height: 1.15,
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              '"${vocab.contextSentence}"',
-                              style: GoogleFonts.inter(
-                                color: Colors.white,
-                                fontSize: 13,
-                                fontStyle: FontStyle.italic,
-                                height: 1.35,
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Dynamic Native Language Meaning Box (Strictly Zero Hardcoding)
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              const Color(0xFFA855F7).withValues(alpha: 0.18),
-                              const Color(0xFF7E22CE).withValues(alpha: 0.08),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFA855F7).withValues(alpha: 0.4)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                const Text('🌐', style: TextStyle(fontSize: 14)),
-                                const SizedBox(width: 6),
-                                Expanded(
-                                  child: Text(
-                                    '${_userNativeLanguage.toUpperCase()} MEANING',
-                                    style: GoogleFonts.outfit(
-                                      color: const Color(0xFFE9D5FF),
-                                      fontSize: 10.5,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: 0.6,
+                            GestureDetector(
+                              onTap: () =>
+                                  _playTtsForCard(vocab.id, vocab.word),
+                              child: Container(
+                                width: 38,
+                                height: 38,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: const Color(0xFFFFFC00),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFFFFFC00)
+                                          .withValues(alpha: 0.4),
+                                      blurRadius: 8,
                                     ),
-                                  ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              vocab.getMeaning(_userNativeLanguage),
-                              style: GoogleFonts.inter(
-                                color: Colors.white,
-                                fontSize: 13.5,
-                                height: 1.4,
-                                fontWeight: FontWeight.w500,
+                                child: const Icon(Icons.volume_up_rounded,
+                                    color: Colors.black, size: 20),
                               ),
                             ),
                           ],
                         ),
-                      ),
-                      const SizedBox(height: 10),
+                        const SizedBox(height: 4),
 
-                      // Pro Tip
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFFC00).withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.3)),
-                        ),
-                        child: Text(
-                          '💡 Pro Tip: ${vocab.proTip}',
+                        // Phonetic
+                        Text(
+                          vocab.phonetic,
                           style: GoogleFonts.inter(
-                            color: const Color(0xFFFFFC00),
-                            fontSize: 11,
+                            color: const Color(0xFFE9D5FF),
+                            fontSize: 13,
                             fontStyle: FontStyle.italic,
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
+                        const SizedBox(height: 16),
 
-                      // Continue Button
-                      GestureDetector(
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          _stopAllAudioAndSpeech();
-                          if (_verticalPageController.hasClients) {
-                            _verticalPageController.nextPage(
-                              duration: const Duration(milliseconds: 320),
-                              curve: Curves.easeOutCubic,
-                            );
-                          }
-                        },
-                        child: Container(
+                        // Definition Box
+                        Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFFFFC00), Color(0xFFFF9100)],
-                            ),
-                            borderRadius: BorderRadius.circular(12),
+                            color:
+                                const Color(0xFF1E293B).withValues(alpha: 0.8),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.white12),
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'CONTINUE REEL FEED',
+                                'DEFINITION (ENGLISH)',
                                 style: GoogleFonts.outfit(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 12,
-                                  letterSpacing: 0.8,
+                                  color: Colors.white54,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.6,
                                 ),
                               ),
-                              const SizedBox(width: 6),
-                              const Icon(Icons.arrow_forward_rounded, color: Colors.black, size: 16),
+                              const SizedBox(height: 4),
+                              Text(
+                                vocab.definitionEn,
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 13.5,
+                                  height: 1.35,
+                                ),
+                              ),
                             ],
                           ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 12),
+
+                        // Example Context Sentence Box
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.4),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                                color: const Color(0xFFA855F7)
+                                    .withValues(alpha: 0.3)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Text('💬',
+                                      style: TextStyle(fontSize: 14)),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'EXAMPLE SENTENCE',
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFFC084FC),
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.6,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                '"${vocab.contextSentence}"',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontStyle: FontStyle.italic,
+                                  height: 1.35,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Dynamic Native Language Meaning Box (Strictly Zero Hardcoding)
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                const Color(0xFFA855F7).withValues(alpha: 0.18),
+                                const Color(0xFF7E22CE).withValues(alpha: 0.08),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                                color: const Color(0xFFA855F7)
+                                    .withValues(alpha: 0.4)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Text('🌐',
+                                      style: TextStyle(fontSize: 14)),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      '${_userNativeLanguage.toUpperCase()} MEANING',
+                                      style: GoogleFonts.outfit(
+                                        color: const Color(0xFFE9D5FF),
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 0.6,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                vocab.getMeaning(_userNativeLanguage),
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 13.5,
+                                  height: 1.4,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+
+                        // Pro Tip
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color:
+                                const Color(0xFFFFFC00).withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                                color: const Color(0xFFFFFC00)
+                                    .withValues(alpha: 0.3)),
+                          ),
+                          child: Text(
+                            '💡 Pro Tip: ${vocab.proTip}',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFFFFFC00),
+                              fontSize: 11,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Continue Button
+                        GestureDetector(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            _stopAllAudioAndSpeech();
+                            if (_verticalPageController.hasClients) {
+                              _verticalPageController.nextPage(
+                                duration: const Duration(milliseconds: 320),
+                                curve: Curves.easeOutCubic,
+                              );
+                            }
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFFFFC00), Color(0xFFFF9100)],
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'CONTINUE REEL FEED',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 12,
+                                    letterSpacing: 0.8,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                const Icon(Icons.arrow_forward_rounded,
+                                    color: Colors.black, size: 16),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
 
-        // Right Rail (Jumping Arrow, Pronunciation, Like, Share)
-        Positioned(
-          right: 14,
-          bottom: MediaQuery.of(context).padding.bottom + 24,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // 🟢 Energetic Bouncing/Jumping Green Arrow Button (User Audio Directive: tap to advance)
-              _buildJumpingArrowButton(size: 46),
-              const SizedBox(height: 14),
+          // Right Rail (Jumping Arrow, Pronunciation, Like, Share)
+          Positioned(
+            right: 14,
+            bottom: MediaQuery.of(context).padding.bottom + 24,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 🟢 Energetic Bouncing/Jumping Green Arrow Button (User Audio Directive: tap to advance)
+                _buildJumpingArrowButton(size: 46),
+                const SizedBox(height: 14),
 
-              GestureDetector(
-                onTap: () => _playTtsForCard(vocab.id, vocab.word),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.black.withValues(alpha: 0.65),
-                    border: Border.all(color: Colors.white24),
-                  ),
-                  child: const Icon(Icons.volume_up_rounded, color: Colors.white, size: 20),
-                ),
-              ),
-              const SizedBox(height: 14),
-              GestureDetector(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('❤️ Vocabulary Word Saved!'),
-                      behavior: SnackBarBehavior.floating,
-                      backgroundColor: Color(0xFF1E293B),
+                GestureDetector(
+                  onTap: () => _playTtsForCard(vocab.id, vocab.word),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withValues(alpha: 0.65),
+                      border: Border.all(color: Colors.white24),
                     ),
-                  );
-                },
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.black.withValues(alpha: 0.65),
-                    border: Border.all(color: Colors.white24),
+                    child: const Icon(Icons.volume_up_rounded,
+                        color: Colors.white, size: 20),
                   ),
-                  child: const Icon(Icons.favorite_rounded, color: Color(0xFFEF4444), size: 20),
                 ),
-              ),
-              const SizedBox(height: 14),
-              GestureDetector(
-                onTap: () {
-                  HapticFeedback.mediumImpact();
-                  PocketFeedVibeShareSheet.show(
-                    context,
-                    customText: '⚡ Word of the Day: ${vocab.word} (${vocab.partOfSpeech})\nDefinition: ${vocab.definitionEn}\nExample: "${vocab.contextSentence}"',
-                  );
-                },
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.black.withValues(alpha: 0.65),
-                    border: Border.all(color: Colors.white24),
+                const SizedBox(height: 14),
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('❤️ Vocabulary Word Saved!'),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: Color(0xFF1E293B),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withValues(alpha: 0.65),
+                      border: Border.all(color: Colors.white24),
+                    ),
+                    child: const Icon(Icons.favorite_rounded,
+                        color: Color(0xFFEF4444), size: 20),
                   ),
-                  child: const Icon(Icons.share_rounded, color: Colors.white, size: 20),
                 ),
-              ),
-            ],
+                const SizedBox(height: 14),
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.mediumImpact();
+                    PocketFeedVibeShareSheet.show(
+                      context,
+                      customText:
+                          '⚡ Word of the Day: ${vocab.word} (${vocab.partOfSpeech})\nDefinition: ${vocab.definitionEn}\nExample: "${vocab.contextSentence}"',
+                    );
+                  },
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withValues(alpha: 0.65),
+                      border: Border.all(color: Colors.white24),
+                    ),
+                    child: const Icon(Icons.share_rounded,
+                        color: Colors.white, size: 20),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 }
 
 class _PocketReelVibeSlideView extends StatefulWidget {
@@ -5309,7 +5675,8 @@ class _PocketReelVibeSlideView extends StatefulWidget {
   });
 
   @override
-  State<_PocketReelVibeSlideView> createState() => _PocketReelVibeSlideViewState();
+  State<_PocketReelVibeSlideView> createState() =>
+      _PocketReelVibeSlideViewState();
 }
 
 class _PocketReelVibeSlideViewState extends State<_PocketReelVibeSlideView> {
@@ -5319,7 +5686,8 @@ class _PocketReelVibeSlideViewState extends State<_PocketReelVibeSlideView> {
   Widget build(BuildContext context) {
     final vibe = widget.vibe;
     final stories = vibe.stories;
-    final activeIndex = _currentStoryIndex.clamp(0, stories.isEmpty ? 0 : stories.length - 1);
+    final activeIndex =
+        _currentStoryIndex.clamp(0, stories.isEmpty ? 0 : stories.length - 1);
     final currentItem = stories.isNotEmpty ? stories[activeIndex] : null;
     final mediaUrl = currentItem?.mediaUrl ?? vibe.mediaUrl;
     final caption = currentItem?.caption ?? vibe.caption;
@@ -5337,13 +5705,18 @@ class _PocketReelVibeSlideViewState extends State<_PocketReelVibeSlideView> {
                     errorBuilder: (_, __, ___) => Container(
                       decoration: const BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF0284C7)],
+                          colors: [
+                            Color(0xFF0F172A),
+                            Color(0xFF1E293B),
+                            Color(0xFF0284C7)
+                          ],
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                         ),
                       ),
                       child: const Center(
-                        child: Icon(Icons.play_circle_fill_rounded, size: 72, color: Colors.white38),
+                        child: Icon(Icons.play_circle_fill_rounded,
+                            size: 72, color: Colors.white38),
                       ),
                     ),
                   )
@@ -5446,7 +5819,8 @@ class _PocketReelVibeSlideViewState extends State<_PocketReelVibeSlideView> {
                       boxShadow: isPassedOrCurrent
                           ? [
                               BoxShadow(
-                                color: const Color(0xFFFFFC00).withValues(alpha: 0.6),
+                                color: const Color(0xFFFFFC00)
+                                    .withValues(alpha: 0.6),
                                 blurRadius: 4,
                               ),
                             ]
@@ -5516,20 +5890,25 @@ class _PocketReelVibeSlideViewState extends State<_PocketReelVibeSlideView> {
                       height: 40,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFFFFFC00), width: 1.8),
+                        border: Border.all(
+                            color: const Color(0xFFFFFC00), width: 1.8),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
+                            color:
+                                const Color(0xFFFFFC00).withValues(alpha: 0.35),
                             blurRadius: 8,
                           ),
                         ],
                       ),
                       child: ClipOval(
-                        child: vibe.authorAvatarUrl != null && vibe.authorAvatarUrl!.startsWith('http')
+                        child: vibe.authorAvatarUrl != null &&
+                                vibe.authorAvatarUrl!.startsWith('http')
                             ? Image.network(
                                 vibe.authorAvatarUrl!,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => const Icon(Icons.person, color: Colors.white70),
+                                errorBuilder: (_, __, ___) => const Icon(
+                                    Icons.person,
+                                    color: Colors.white70),
                               )
                             : const Icon(Icons.person, color: Colors.white70),
                       ),
@@ -5556,12 +5935,18 @@ class _PocketReelVibeSlideViewState extends State<_PocketReelVibeSlideView> {
                               if (vibe.isRobot) ...[
                                 const SizedBox(width: 5),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 5, vertical: 1.5),
                                   decoration: BoxDecoration(
-                                    color: Colors.blueGrey.withValues(alpha: 0.5),
+                                    color:
+                                        Colors.blueGrey.withValues(alpha: 0.5),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
-                                  child: const Text('BOT', style: TextStyle(color: Colors.white, fontSize: 8.5, fontWeight: FontWeight.bold)),
+                                  child: const Text('BOT',
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 8.5,
+                                          fontWeight: FontWeight.bold)),
                                 ),
                               ],
                             ],
@@ -5570,12 +5955,15 @@ class _PocketReelVibeSlideViewState extends State<_PocketReelVibeSlideView> {
                           Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2.5),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFFFFC00).withValues(alpha: 0.18),
+                                  color: const Color(0xFFFFFC00)
+                                      .withValues(alpha: 0.18),
                                   borderRadius: BorderRadius.circular(6),
                                   border: Border.all(
-                                    color: const Color(0xFFFFFC00).withValues(alpha: 0.5),
+                                    color: const Color(0xFFFFFC00)
+                                        .withValues(alpha: 0.5),
                                     width: 0.9,
                                   ),
                                 ),
@@ -5591,14 +5979,18 @@ class _PocketReelVibeSlideViewState extends State<_PocketReelVibeSlideView> {
                               if (stories.length > 1) ...[
                                 const SizedBox(width: 6),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
                                     color: Colors.white12,
                                     borderRadius: BorderRadius.circular(5),
                                   ),
                                   child: Text(
                                     '${activeIndex + 1}/${stories.length}',
-                                    style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w600),
+                                    style: const TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600),
                                   ),
                                 ),
                               ],
@@ -5610,7 +6002,6 @@ class _PocketReelVibeSlideViewState extends State<_PocketReelVibeSlideView> {
                   ],
                 ),
               ),
-
               if (caption != null && caption.isNotEmpty) ...[
                 const SizedBox(height: 10),
                 Text(
@@ -5659,7 +6050,8 @@ class _PocketReelVibeSlideViewState extends State<_PocketReelVibeSlideView> {
                     border: Border.all(color: Colors.white, width: 2),
                   ),
                   child: const Center(
-                    child: Icon(Icons.keyboard_arrow_down_rounded, color: Colors.black, size: 28),
+                    child: Icon(Icons.keyboard_arrow_down_rounded,
+                        color: Colors.black, size: 28),
                   ),
                 ),
               ),
@@ -5689,14 +6081,16 @@ class _PocketReelVibeSlideViewState extends State<_PocketReelVibeSlideView> {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFFFFC00).withValues(alpha: 0.45),
+                            color:
+                                const Color(0xFFFFFC00).withValues(alpha: 0.45),
                             blurRadius: 10,
                             offset: const Offset(0, 3),
                           ),
                         ],
                       ),
                       child: const Center(
-                        child: Icon(Icons.castle_rounded, color: Colors.black, size: 22),
+                        child: Icon(Icons.castle_rounded,
+                            color: Colors.black, size: 22),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -5734,7 +6128,8 @@ class _PocketReelVibeSlideViewState extends State<_PocketReelVibeSlideView> {
                     color: Colors.black.withValues(alpha: 0.6),
                     border: Border.all(color: Colors.white24),
                   ),
-                  child: const Icon(Icons.favorite_rounded, color: Color(0xFFEF4444), size: 22),
+                  child: const Icon(Icons.favorite_rounded,
+                      color: Color(0xFFEF4444), size: 22),
                 ),
               ),
               const SizedBox(height: 14),
@@ -5745,7 +6140,8 @@ class _PocketReelVibeSlideViewState extends State<_PocketReelVibeSlideView> {
                   HapticFeedback.mediumImpact();
                   PocketFeedVibeShareSheet.show(
                     context,
-                    customText: '✨ ${vibe.authorName}\'s Vibe\n${caption ?? ''}\n$mediaUrl',
+                    customText:
+                        '✨ ${vibe.authorName}\'s Vibe\n${caption ?? ''}\n$mediaUrl',
                   );
                 },
                 child: Container(
@@ -5756,7 +6152,8 @@ class _PocketReelVibeSlideViewState extends State<_PocketReelVibeSlideView> {
                     color: Colors.black.withValues(alpha: 0.6),
                     border: Border.all(color: Colors.white24),
                   ),
-                  child: const Icon(Icons.share_rounded, color: Colors.white, size: 20),
+                  child: const Icon(Icons.share_rounded,
+                      color: Colors.white, size: 20),
                 ),
               ),
               const SizedBox(height: 14),
@@ -5833,8 +6230,7 @@ class _PocketReelVibeSlideViewState extends State<_PocketReelVibeSlideView> {
               },
             ),
             ListTile(
-              leading:
-                  const Icon(Icons.block_rounded, color: Colors.redAccent),
+              leading: const Icon(Icons.block_rounded, color: Colors.redAccent),
               title: Text('Block ${vibe.authorName}',
                   style: const TextStyle(
                       color: Colors.redAccent, fontWeight: FontWeight.w600)),

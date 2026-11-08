@@ -8,9 +8,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
-import 'package:pocket_mates_app/custom_code/services/pocket_ad_preload_manager.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocket_native_ad_card.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocket_banner_ad_widget.dart';
 
 /// 🌟 Day 1 Dedicated Interactive Game-First Learning & Defense Flow for Kids
 class PocketKidsDay1DetailPage extends StatefulWidget {
@@ -31,7 +28,8 @@ class PocketKidsDay1DetailPage extends StatefulWidget {
   }
 
   @override
-  State<PocketKidsDay1DetailPage> createState() => _PocketKidsDay1DetailPageState();
+  State<PocketKidsDay1DetailPage> createState() =>
+      _PocketKidsDay1DetailPageState();
 }
 
 class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
@@ -63,8 +61,6 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
   final List<String> _targetSentence = ['I', 'see', 'a', 'cat'];
   final List<String> _placedSentenceWords = [];
   List<String> _availableSentenceWords = ['cat', 'I', 'a', 'see'];
-
-
 
   static const List<Map<String, dynamic>> _stepsMeta = [
     {
@@ -103,8 +99,10 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
   void initState() {
     super.initState();
     // 🚀 Upfront Preloading of Step Native Review Ad and Sticky Banner Ad for Kids
-    PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.review);
-    PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.banner);
+    PocketAdPreloadManager.instance
+        .preloadForPlacement(PocketAdPlacement.review);
+    PocketAdPreloadManager.instance
+        .preloadForPlacement(PocketAdPlacement.banner);
 
     _pulseController = AnimationController(
       vsync: this,
@@ -319,7 +317,9 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
         final text = result.recognizedWords.toLowerCase();
         setState(() => _spokenResultText = result.recognizedWords);
 
-        if (text.contains('cat') || text.contains('see') || text.contains('i see')) {
+        if (text.contains('cat') ||
+            text.contains('see') ||
+            text.contains('i see')) {
           _speech.stop();
           setState(() => _isSpeakingMic = false);
           if (isAskAnswer) {
@@ -362,7 +362,6 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
       _markStepCompleted(3);
     }
   }
-
 
   void _showStepCheerModal(int stepIndex) {
     showModalBottomSheet(
@@ -407,12 +406,15 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF10B981),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 32, vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
                   ),
                   onPressed: () {
                     // Preload next step Native Ad immediately
-                    PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.review);
+                    PocketAdPreloadManager.instance
+                        .preloadForPlacement(PocketAdPlacement.review);
                     Navigator.pop(ctx);
                     setState(() {
                       _activeStep = (stepIndex + 1).clamp(0, 4);
@@ -421,7 +423,8 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                   },
                   child: Text(
                     'CONTINUE TO NEXT GAME 🚀',
-                    style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 15),
+                    style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.w900, fontSize: 15),
                   ),
                 ),
               ),
@@ -473,7 +476,9 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text('⭐ +18 Stars  •  🛡️ Shield Armed',
-                      style: TextStyle(color: Color(0xFFFDE047), fontWeight: FontWeight.bold)),
+                      style: TextStyle(
+                          color: Color(0xFFFDE047),
+                          fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -481,23 +486,31 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
             OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Color(0xFFFDE047), width: 1.4),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               ),
               icon: const Text('📺', style: TextStyle(fontSize: 16)),
               label: Text(
                 'Watch Ad for +50 Bonus Stars! ⭐',
-                style: GoogleFonts.outfit(color: const Color(0xFFFDE047), fontWeight: FontWeight.bold, fontSize: 13),
+                style: GoogleFonts.outfit(
+                    color: const Color(0xFFFDE047),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13),
               ),
               onPressed: () async {
-                final rewarded = await PocketAdMobService.instance.showRewardedAd(
+                bool rewarded = false;
+                await PocketAdMobService.instance.showRewardedAd(
                   context: context,
-                  onRewardEarned: (reward) async {
+                  onUserEarnedReward: (reward) async {
+                    rewarded = true;
                     await PocketKidsService.addStars(50);
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('🌟 +50 BONUS STARS CLAIMED FROM REWARD AD! 🦁✨'),
+                          content: Text(
+                              '🌟 +50 BONUS STARS CLAIMED FROM REWARD AD! 🦁✨'),
                           backgroundColor: Color(0xFF10B981),
                         ),
                       );
@@ -522,18 +535,22 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFFD700),
                 foregroundColor: const Color(0xFF78350F),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
               ),
               onPressed: () {
-                PocketAdMobService.instance.showInterstitialAd(context: context);
+                PocketAdMobService.instance
+                    .showInterstitialAd(context: context);
                 Navigator.pop(ctx);
                 Navigator.pop(context);
                 widget.onCompleted?.call();
               },
               child: Text(
                 'RETURN TO TRAIL MAP 🗺️',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 14),
+                style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w900, fontSize: 14),
               ),
             ),
           ],
@@ -567,7 +584,7 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
             ),
 
             // 🎯 Sticky Banner Ad at bottom
-            const PocketBannerAdWidget(placement: PocketAdPlacement.banner),
+            const PocketBannerAdWidget(),
           ],
         ),
       ),
@@ -580,7 +597,8 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                color: Colors.white, size: 20),
             onPressed: () => Navigator.pop(context),
           ),
           const SizedBox(width: 8),
@@ -599,7 +617,8 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                 ),
                 Text(
                   'Kids 90-Day Adventure Road',
-                  style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 11),
+                  style: GoogleFonts.inter(
+                      color: const Color(0xFF94A3B8), fontSize: 11),
                 ),
               ],
             ),
@@ -671,7 +690,8 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                 const SizedBox(height: 2),
                 Text(
                   'Complete all 5 games to conquer Day 1 and unlock your Hero Card!',
-                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 11, height: 1.3),
+                  style: GoogleFonts.inter(
+                      color: Colors.white70, fontSize: 11, height: 1.3),
                 ),
               ],
             ),
@@ -720,19 +740,23 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
               ),
               child: Row(
                 children: [
-                  Text(meta['icon'] as String, style: const TextStyle(fontSize: 16)),
+                  Text(meta['icon'] as String,
+                      style: const TextStyle(fontSize: 16)),
                   const SizedBox(width: 6),
                   Text(
                     'Step ${i + 1}',
                     style: GoogleFonts.outfit(
-                      color: isActive ? Colors.white : (isDone ? const Color(0xFF10B981) : Colors.white60),
+                      color: isActive
+                          ? Colors.white
+                          : (isDone ? const Color(0xFF10B981) : Colors.white60),
                       fontWeight: isActive ? FontWeight.w900 : FontWeight.bold,
                       fontSize: 11.5,
                     ),
                   ),
                   if (isDone) ...[
                     const SizedBox(width: 4),
-                    const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 14),
+                    const Icon(Icons.check_circle_rounded,
+                        color: Color(0xFF10B981), size: 14),
                   ],
                 ],
               ),
@@ -819,7 +843,9 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                     child: Text(
                       b['letter'] as String,
                       style: GoogleFonts.outfit(
-                        color: (b['color'] == Colors.amber) ? const Color(0xFF78350F) : Colors.white,
+                        color: (b['color'] == Colors.amber)
+                            ? const Color(0xFF78350F)
+                            : Colors.white,
                         fontSize: 40,
                         fontWeight: FontWeight.w900,
                         shadows: [
@@ -876,10 +902,13 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                   height: 64,
                   margin: const EdgeInsets.symmetric(horizontal: 4),
                   decoration: BoxDecoration(
-                    color: hasLetter ? const Color(0xFF3B82F6) : const Color(0xFF1E293B),
+                    color: hasLetter
+                        ? const Color(0xFF3B82F6)
+                        : const Color(0xFF1E293B),
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
-                      color: hasLetter ? const Color(0xFF60A5FA) : Colors.white24,
+                      color:
+                          hasLetter ? const Color(0xFF60A5FA) : Colors.white24,
                       width: 2,
                     ),
                   ),
@@ -907,13 +936,16 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2563EB),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
                 ),
                 onPressed: () => _tapAvailableLetter(l),
                 child: Text(
                   l,
-                  style: GoogleFonts.outfit(fontSize: 26, fontWeight: FontWeight.w900),
+                  style: GoogleFonts.outfit(
+                      fontSize: 26, fontWeight: FontWeight.w900),
                 ),
               );
             }).toList(),
@@ -998,13 +1030,15 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                                 colors: [Color(0xFFFF2D55), Color(0xFFFF9500)],
                               ),
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.white70, width: 2),
+                              border:
+                                  Border.all(color: Colors.white70, width: 2),
                             ),
                             alignment: Alignment.center,
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Text('🚂', style: TextStyle(fontSize: 22)),
+                                const Text('🚂',
+                                    style: TextStyle(fontSize: 22)),
                                 Text(
                                   'EXPRESS',
                                   style: GoogleFonts.fredoka(
@@ -1042,12 +1076,14 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                               padding: EdgeInsets.only(bottom: 20),
                               child: Text(
                                 '🔗',
-                                style: TextStyle(fontSize: 13, color: Colors.white54),
+                                style: TextStyle(
+                                    fontSize: 13, color: Colors.white54),
                               ),
                             ),
                             const SizedBox(width: 3),
                             GestureDetector(
-                              onTap: hasWord ? () => _unhookSentenceWord(i) : null,
+                              onTap:
+                                  hasWord ? () => _unhookSentenceWord(i) : null,
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
@@ -1057,10 +1093,15 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                                     height: 72,
                                     padding: const EdgeInsets.all(4),
                                     decoration: BoxDecoration(
-                                      color: hasWord ? c : Colors.white.withValues(alpha: 0.08),
+                                      color: hasWord
+                                          ? c
+                                          : Colors.white
+                                              .withValues(alpha: 0.08),
                                       borderRadius: BorderRadius.circular(16),
                                       border: Border.all(
-                                        color: hasWord ? Colors.white : Colors.white24,
+                                        color: hasWord
+                                            ? Colors.white
+                                            : Colors.white24,
                                         width: 1.8,
                                       ),
                                       boxShadow: hasWord
@@ -1075,9 +1116,12 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                                     ),
                                     child: hasWord
                                         ? Column(
-                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
-                                              Text(em, style: const TextStyle(fontSize: 18)),
+                                              Text(em,
+                                                  style: const TextStyle(
+                                                      fontSize: 18)),
                                               const SizedBox(height: 2),
                                               FittedBox(
                                                 fit: BoxFit.scaleDown,
@@ -1093,7 +1137,8 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                                             ],
                                           )
                                         : Column(
-                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
                                               const Icon(
                                                 Icons.add_rounded,
@@ -1113,9 +1158,11 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                                   const SizedBox(height: 4),
                                   const Row(
                                     children: [
-                                      Text('⚙️', style: TextStyle(fontSize: 12)),
+                                      Text('⚙️',
+                                          style: TextStyle(fontSize: 12)),
                                       SizedBox(width: 14),
-                                      Text('⚙️', style: TextStyle(fontSize: 12)),
+                                      Text('⚙️',
+                                          style: TextStyle(fontSize: 12)),
                                     ],
                                   ),
                                 ],
@@ -1135,7 +1182,11 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                   margin: const EdgeInsets.symmetric(horizontal: 4),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF64748B), Color(0xFFCBD5E1), Color(0xFF64748B)],
+                      colors: [
+                        Color(0xFF64748B),
+                        Color(0xFFCBD5E1),
+                        Color(0xFF64748B)
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(3),
                   ),
@@ -1191,7 +1242,8 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
               return GestureDetector(
                 onTap: () => _tapAvailableSentenceWord(w),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFF0284C7), Color(0xFF0284C7)],
@@ -1258,7 +1310,8 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.volume_up_rounded, color: Color(0xFF34D399), size: 28),
+                  icon: const Icon(Icons.volume_up_rounded,
+                      color: Color(0xFF34D399), size: 28),
                   onPressed: () => _speak("I see a cat!"),
                 ),
                 const SizedBox(width: 8),
@@ -1298,9 +1351,13 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.check_circle_rounded, color: Color(0xFF34D399), size: 18),
+                  Icon(Icons.check_circle_rounded,
+                      color: Color(0xFF34D399), size: 18),
                   SizedBox(width: 8),
-                  Text('Voice Echo Mastered! ⭐⭐⭐', style: TextStyle(color: Color(0xFF34D399), fontWeight: FontWeight.bold)),
+                  Text('Voice Echo Mastered! ⭐⭐⭐',
+                      style: TextStyle(
+                          color: Color(0xFF34D399),
+                          fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -1317,10 +1374,13 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
               height: 90,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: _isSpeakingMic ? const Color(0xFFEF4444) : const Color(0xFF10B981),
+                color: _isSpeakingMic
+                    ? const Color(0xFFEF4444)
+                    : const Color(0xFF10B981),
                 boxShadow: [
                   BoxShadow(
-                    color: (_isSpeakingMic ? Colors.red : Colors.green).withValues(alpha: 0.5),
+                    color: (_isSpeakingMic ? Colors.red : Colors.green)
+                        .withValues(alpha: 0.5),
                     blurRadius: 20,
                     spreadRadius: 4,
                   ),
@@ -1384,7 +1444,8 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                     children: [
                       Text(
                         'Cyber Cat asks:',
-                        style: GoogleFonts.outfit(color: const Color(0xFFFDE047), fontSize: 12),
+                        style: GoogleFonts.outfit(
+                            color: const Color(0xFFFDE047), fontSize: 12),
                       ),
                       const SizedBox(height: 2),
                       Text(
@@ -1399,7 +1460,8 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFDE047)),
+                  icon: const Icon(Icons.volume_up_rounded,
+                      color: Color(0xFFFDE047)),
                   onPressed: () => _speak("What do you see?"),
                 ),
               ],
@@ -1430,9 +1492,13 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.check_circle_rounded, color: Color(0xFFFDE047), size: 18),
+                  Icon(Icons.check_circle_rounded,
+                      color: Color(0xFFFDE047), size: 18),
                   SizedBox(width: 8),
-                  Text('Dialogue Completed! ⭐⭐⭐', style: TextStyle(color: Color(0xFFFDE047), fontWeight: FontWeight.bold)),
+                  Text('Dialogue Completed! ⭐⭐⭐',
+                      style: TextStyle(
+                          color: Color(0xFFFDE047),
+                          fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -1449,10 +1515,13 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
               height: 90,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: _isSpeakingMic ? const Color(0xFFEF4444) : const Color(0xFFF59E0B),
+                color: _isSpeakingMic
+                    ? const Color(0xFFEF4444)
+                    : const Color(0xFFF59E0B),
                 boxShadow: [
                   BoxShadow(
-                    color: (_isSpeakingMic ? Colors.red : Colors.amber).withValues(alpha: 0.5),
+                    color: (_isSpeakingMic ? Colors.red : Colors.amber)
+                        .withValues(alpha: 0.5),
                     blurRadius: 20,
                     spreadRadius: 4,
                   ),
@@ -1476,6 +1545,4 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
       ),
     );
   }
-
-
 }

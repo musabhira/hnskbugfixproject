@@ -10,8 +10,6 @@ import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
-import 'package:pocket_mates_app/custom_code/services/pocket_ad_preload_manager.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocket_banner_ad_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_100day_syllabus_db.dart';
 
 // ============================================================================
@@ -364,8 +362,10 @@ class KidsSentenceCurriculum {
       if (parts.length >= 3) {
         final third = (parts.length / 3).ceil();
         final part1 = parts.sublist(0, third).join(' ');
-        final part2 = parts.sublist(third, math.min(third * 2, parts.length)).join(' ');
-        final part3 = parts.sublist(math.min(third * 2, parts.length)).join(' ');
+        final part2 =
+            parts.sublist(third, math.min(third * 2, parts.length)).join(' ');
+        final part3 =
+            parts.sublist(math.min(third * 2, parts.length)).join(' ');
 
         return JuniorSentenceChallenge(
           day: day,
@@ -445,16 +445,58 @@ class KidsSentenceCurriculum {
     // 3. Extra fun sentences pool to guarantee at least 10 rounds per day!
     final List<List<String>> extraSentences = [
       ["The sun", "is shining", "brightly", "സൂര്യൻ തിളങ്ങുന്നു ☀️", "☀️"],
-      ["Little puppy", "can run", "very fast", "നായക്കുട്ടി വേഗത്തിൽ ഓടുന്നു 🐶", "🐶"],
-      ["Birds can", "sing a", "sweet song", "പക്ഷികൾ മനോഹരമായി പാടുന്നു 🐦", "🐦"],
-      ["We love to", "play in", "the park", "ഞങ്ങൾ പാർക്കിൽ കളിക്കുന്നു 🏞️", "🏞️"],
-      ["Fish can", "swim in", "the water", "മത്സ്യം വെള്ളത്തിൽ നീന്തുന്നു 🐟", "🐟"],
+      [
+        "Little puppy",
+        "can run",
+        "very fast",
+        "നായക്കുട്ടി വേഗത്തിൽ ഓടുന്നു 🐶",
+        "🐶"
+      ],
+      [
+        "Birds can",
+        "sing a",
+        "sweet song",
+        "പക്ഷികൾ മനോഹരമായി പാടുന്നു 🐦",
+        "🐦"
+      ],
+      [
+        "We love to",
+        "play in",
+        "the park",
+        "ഞങ്ങൾ പാർക്കിൽ കളിക്കുന്നു 🏞️",
+        "🏞️"
+      ],
+      [
+        "Fish can",
+        "swim in",
+        "the water",
+        "മത്സ്യം വെള്ളത്തിൽ നീന്തുന്നു 🐟",
+        "🐟"
+      ],
       ["I have a", "small red", "ball", "എനിക്ക് ചെറിയൊരു പന്തുണ്ട് ⚽", "⚽"],
       ["The car goes", "fast on", "the road", "വണ്ടി റോഡിൽ ഓടുന്നു 🚗", "🚗"],
       ["She has an", "apple and", "orange", "ആപ്പിളും ഓറഞ്ചും ഉണ്ട് 🍎", "🍎"],
-      ["Let us go", "to the", "garden", "നമുക്ക് പൂന്തോട്ടത്തിൽ പോകാം 🌸", "🌸"],
-      ["The stars are", "shining in", "the night", "നക്ഷത്രങ്ങൾ മിന്നുന്നു ⭐", "⭐"],
-      ["We are happy", "every single", "day", "ഞങ്ങൾ എപ്പോഴും സന്തോഷവന്മാരാണ് 😊", "😊"],
+      [
+        "Let us go",
+        "to the",
+        "garden",
+        "നമുക്ക് പൂന്തോട്ടത്തിൽ പോകാം 🌸",
+        "🌸"
+      ],
+      [
+        "The stars are",
+        "shining in",
+        "the night",
+        "നക്ഷത്രങ്ങൾ മിന്നുന്നു ⭐",
+        "⭐"
+      ],
+      [
+        "We are happy",
+        "every single",
+        "day",
+        "ഞങ്ങൾ എപ്പോഴും സന്തോഷവന്മാരാണ് 😊",
+        "😊"
+      ],
       ["Look at the", "big yellow", "moon", "വലിയ മഞ്ഞ ചന്ദ്രൻ 🌙", "🌙"],
     ];
 
@@ -702,7 +744,8 @@ class _PocketKidsSentenceBuilderPageState
     _flameGame = SentenceBuilderFlameEngine();
 
     // 🚀 Preload banner ad for zero latency
-    PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.banner);
+    PocketAdPreloadManager.instance
+        .preloadForPlacement(PocketAdPlacement.banner);
 
     _trainWheelsController = AnimationController(
       vsync: this,
@@ -882,14 +925,17 @@ class _PocketKidsSentenceBuilderPageState
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                PocketAdMobService.instance.showInterstitialAd(context: context);
+                PocketAdMobService.instance
+                    .showInterstitialAd(context: context);
                 Navigator.of(ctx).pop();
                 Navigator.of(context).pop();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF10B981),
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
               ),
               child: Text(
                 'Awesome! 🚀',
@@ -966,7 +1012,8 @@ class _PocketKidsSentenceBuilderPageState
               children: [
                 // Top Header: Back Button, Day/Round Badge, Sound Out Prompt
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -993,7 +1040,8 @@ class _PocketKidsSentenceBuilderPageState
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF007AFF).withValues(alpha: 0.4),
+                              color: const Color(0xFF007AFF)
+                                  .withValues(alpha: 0.4),
                               blurRadius: 14,
                             ),
                           ],
@@ -1056,7 +1104,8 @@ class _PocketKidsSentenceBuilderPageState
                           boxShadow: isCurrent
                               ? [
                                   BoxShadow(
-                                    color: const Color(0xFFFFD700).withValues(alpha: 0.6),
+                                    color: const Color(0xFFFFD700)
+                                        .withValues(alpha: 0.6),
                                     blurRadius: 6,
                                   ),
                                 ]
@@ -1098,7 +1147,8 @@ class _PocketKidsSentenceBuilderPageState
 
                 // ⏭️ Bottom Navigation & Level Actions Bar
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
                     color: const Color(0xFF0F172A).withValues(alpha: 0.95),
                     border: const Border(
@@ -1126,7 +1176,8 @@ class _PocketKidsSentenceBuilderPageState
                         icon: const Icon(Icons.arrow_back_rounded, size: 18),
                         label: Text(
                           "PREV",
-                          style: GoogleFonts.fredoka(fontWeight: FontWeight.bold),
+                          style:
+                              GoogleFonts.fredoka(fontWeight: FontWeight.bold),
                         ),
                       ),
                       IconButton(
@@ -1136,7 +1187,8 @@ class _PocketKidsSentenceBuilderPageState
                             _setupRound();
                           });
                         },
-                        icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+                        icon: const Icon(Icons.refresh_rounded,
+                            color: Colors.white),
                         style: IconButton.styleFrom(
                           backgroundColor: Colors.white.withValues(alpha: 0.15),
                           padding: const EdgeInsets.all(12),
@@ -1172,7 +1224,7 @@ class _PocketKidsSentenceBuilderPageState
                 ),
 
                 // 🎯 Sticky Banner Ad at bottom
-                const PocketBannerAdWidget(placement: PocketAdPlacement.banner),
+                const PocketBannerAdWidget(),
               ],
             ),
           ),
@@ -1367,7 +1419,11 @@ class _PocketKidsSentenceBuilderPageState
             margin: const EdgeInsets.symmetric(horizontal: 8),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF64748B), Color(0xFFCBD5E1), Color(0xFF64748B)],
+                colors: [
+                  Color(0xFF64748B),
+                  Color(0xFFCBD5E1),
+                  Color(0xFF64748B)
+                ],
               ),
               borderRadius: BorderRadius.circular(4),
             ),
@@ -1479,7 +1535,8 @@ class _PocketKidsSentenceBuilderPageState
   }
 
   /// 🚃 Tactile Train Wagon Car Slot (Accommodates words smoothly without overflow)
-  Widget _buildTrainWagonCar(int index, JuniorSentenceTile? tile, bool isHighlighted) {
+  Widget _buildTrainWagonCar(
+      int index, JuniorSentenceTile? tile, bool isHighlighted) {
     return GestureDetector(
       onTap: () => _onTapPlacedSlot(index),
       child: Column(
@@ -1498,9 +1555,7 @@ class _PocketKidsSentenceBuilderPageState
               border: Border.all(
                 color: isHighlighted
                     ? const Color(0xFFFFD700)
-                    : (tile != null
-                        ? Colors.white
-                        : Colors.white30),
+                    : (tile != null ? Colors.white : Colors.white30),
                 width: isHighlighted ? 3.0 : 1.8,
               ),
               boxShadow: isHighlighted
@@ -1528,7 +1583,8 @@ class _PocketKidsSentenceBuilderPageState
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(tile.emoji, style: const TextStyle(fontSize: 22)),
+                            Text(tile.emoji,
+                                style: const TextStyle(fontSize: 22)),
                             const SizedBox(height: 3),
                             FittedBox(
                               fit: BoxFit.scaleDown,
@@ -1554,7 +1610,8 @@ class _PocketKidsSentenceBuilderPageState
                             color: Colors.black26,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.close_rounded, size: 10, color: Colors.white70),
+                          child: const Icon(Icons.close_rounded,
+                              size: 10, color: Colors.white70),
                         ),
                       ),
                     ],
