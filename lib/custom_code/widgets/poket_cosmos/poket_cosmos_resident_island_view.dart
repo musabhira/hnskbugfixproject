@@ -89,7 +89,7 @@ class _PoketCosmosResidentIslandViewState
         plotNumber: pNum,
         userId: widget.userId ?? 'plot_citizen_$pNum',
         userName: widget.userName ?? 'Citizen #$pNum',
-        userAvatar: widget.userAvatar ?? ((pNum == 1) ? '👑' : '🏡'),
+        userAvatar: widget.userAvatar ?? '🏡',
         day: 1,
         pocketScore: 100,
         streetName: effectiveStreetName,
@@ -100,9 +100,7 @@ class _PoketCosmosResidentIslandViewState
         coordinates: Offset.zero,
         isVip: false,
         isPresident: false,
-        tier: (pNum == 1)
-            ? PlotDeedTier.royalCitadel
-            : (pNum <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+        tier: (pNum <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
         status: PlotStatus.occupied,
       );
     } else {
@@ -158,7 +156,18 @@ class _PoketCosmosResidentIslandViewState
     final Map<int, CitizenPlot> plotsMap = {
       for (final p in colonyOccupied) p.plotNumber: p,
     };
-    plotsMap[updatedPlot.plotNumber] = updatedPlot;
+
+    // If user's plot is on this island, preserve real database details and update coordinates
+    if (plotsMap.containsKey(updatedPlot.plotNumber)) {
+      final existing = plotsMap[updatedPlot.plotNumber]!;
+      plotsMap[updatedPlot.plotNumber] = existing.copyWith(
+        coordinates: targetPos,
+        userName: (widget.userName != null && widget.userName!.isNotEmpty) ? widget.userName : existing.userName,
+        userAvatar: (widget.userAvatar != null && widget.userAvatar!.isNotEmpty) ? widget.userAvatar : existing.userAvatar,
+      );
+    } else {
+      plotsMap[updatedPlot.plotNumber] = updatedPlot;
+    }
 
     final plotsList = plotsMap.values.toList()
       ..sort((a, b) => a.plotNumber.compareTo(b.plotNumber));
@@ -597,6 +606,7 @@ class _PoketCosmosResidentIslandViewState
                         : null,
                     planetName: _colony.planetName,
                     initialReservations: _reservations,
+                    onPlotPurchased: () => _loadResidentIsland(),
                     onPlotTapped: (tappedPlot) {
                       HapticFeedback.mediumImpact();
                       PocketCitadelAttackPage.openForUser(

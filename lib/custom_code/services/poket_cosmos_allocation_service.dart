@@ -385,22 +385,28 @@ class PoketCosmosAllocationService {
       localPlotNumber: targetPlotNumber,
     );
 
-    // Fetch user profile and score
+    // Fetch user profile and score (checking both id and user_id for RLS compatibility)
     int userScore = 0;
     String userName = 'Citizen';
     String userAvatar = '🦁';
+    String? profileDocId;
+    String existingBio = '';
     try {
       final res = await SupaFlow.client
           .from('profile')
-          .select('id, name, profile_image_url, pocket_score')
-          .eq('id', uid)
+          .select('id, user_id, name, profile_image_url, pocket_score, bio')
+          .or('id.eq.$uid,user_id.eq.$uid')
           .maybeSingle();
       if (res != null) {
+        profileDocId = res['id']?.toString();
         userScore = (res['pocket_score'] as num?)?.toInt() ?? 0;
         userName = res['name']?.toString() ?? 'Citizen';
         userAvatar = res['profile_image_url']?.toString() ?? '🦁';
+        existingBio = res['bio']?.toString() ?? '';
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('⚠️ buyAndSwitchPlot fetch profile non-fatal: $e');
+    }
 
     if (userScore < price) {
       if (!context.mounted) return false;
@@ -419,12 +425,38 @@ class PoketCosmosAllocationService {
     final plotStr = targetPlotNumber.toString().padLeft(2, '0');
     final newPin = 'PKT-W$waveStr-$targetPlanetCode-I$waveStr-P$plotStr';
     final newScore = userScore - price;
+    final effectiveIslandName = (targetWave == 1)
+        ? colony.islandName
+        : generateInfiniteIslandName(colony.code, targetWave, targetWave);
+    final effectiveStreetName = (targetWave == 1)
+        ? colony.streetName
+        : 'Wave $targetWave ${colony.streetName}';
 
     try {
-      await SupaFlow.client.from('profile').update({
+      // Clean previous pin from bio and append new pin, keeping user's personal bio
+      final cleanBio = existingBio
+          .replaceAll(RegExp(r'\s*(\n\n)?🏡\s*PKT-W\d+-[A-Z]+-I\d+-P\d+.*$'), '')
+          .trim();
+      final newBio = cleanBio.isEmpty
+          ? '🏡 Citizen of $effectiveIslandName, ${colony.planetName} ($newPin)'
+          : '$cleanBio\n\n🏡 $newPin';
+
+      final updatePayload = {
         'pocket_score': newScore,
-        'bio': newPin,
-      }).eq('id', uid);
+        'bio': newBio,
+        'country': effectiveIslandName,
+        'city': effectiveStreetName,
+        'updated_at': DateTime.now().toIso8601String(),
+      };
+
+      if (profileDocId != null && profileDocId.isNotEmpty) {
+        try {
+          await SupaFlow.client.from('profile').update(updatePayload).eq('id', profileDocId);
+        } catch (_) {}
+      }
+      try {
+        await SupaFlow.client.from('profile').update(updatePayload).eq('user_id', uid);
+      } catch (_) {}
 
       // Update in-memory user plot
       final newPlot = CitizenPlot(
@@ -434,9 +466,9 @@ class PoketCosmosAllocationService {
         userAvatar: userAvatar,
         day: 1,
         pocketScore: newScore,
-        streetName: colony.streetName,
-        postOffice: colony.islandName,
-        countryName: colony.islandName,
+        streetName: effectiveStreetName,
+        postOffice: effectiveIslandName,
+        countryName: effectiveIslandName,
         planetName: colony.planetName,
         postalPinCode: newPin,
         coordinates: Offset.zero,
@@ -445,6 +477,9 @@ class PoketCosmosAllocationService {
       );
       _userBirthPlots[uid] = newPlot;
       _cachedBirthPlot = newPlot;
+
+      // Save to SharedPreferences
+      await saveBirthplace(newPlot);
 
       // Refresh registered profiles cache & clear cached plots
       clearPlotCaches();
@@ -605,7 +640,7 @@ class PoketCosmosAllocationService {
           coordinates: Offset.zero,
           isVip: false,
           isPresident: false,
-          tier: (localPlot == 1) ? PlotDeedTier.royalCitadel : (localPlot <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+          tier: (localPlot <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
           status: PlotStatus.occupied,
         );
         _userBirthPlots[userId] = plot;
@@ -687,7 +722,7 @@ class PoketCosmosAllocationService {
           coordinates: Offset.zero,
           isVip: false,
           isPresident: false,
-          tier: (plotNum == 1) ? PlotDeedTier.royalCitadel : (plotNum <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+          tier: (plotNum <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
           status: PlotStatus.occupied,
         );
         _userBirthPlots[userId] = plot;
@@ -752,7 +787,7 @@ class PoketCosmosAllocationService {
             coordinates: Offset.zero,
             isVip: false,
             isPresident: false,
-            tier: (plotNum == 1) ? PlotDeedTier.royalCitadel : (plotNum <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+            tier: (plotNum <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
             status: PlotStatus.occupied,
           );
           _userBirthPlots[userId] = plot;
@@ -784,7 +819,7 @@ class PoketCosmosAllocationService {
       coordinates: Offset.zero,
       isVip: false,
       isPresident: false,
-      tier: (plotNumber == 1) ? PlotDeedTier.royalCitadel : (plotNumber <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+      tier: (plotNumber <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
       status: PlotStatus.occupied,
     );
 
@@ -813,7 +848,7 @@ class PoketCosmosAllocationService {
         final profileRes = await SupaFlow.client
             .from('profile')
             .select('country, city, bio, name, profile_image_url')
-            .eq('id', uid)
+            .or('id.eq.$uid,user_id.eq.$uid')
             .maybeSingle();
 
         if (profileRes != null) {
@@ -840,11 +875,7 @@ class PoketCosmosAllocationService {
               planetName: colony.planetName,
               coordinates: Offset.zero,
               postalPinCode: match.group(0)!,
-              tier: (plotNum == 1)
-                  ? PlotDeedTier.presidential
-                  : (plotNum <= 6
-                      ? PlotDeedTier.beachfront
-                      : PlotDeedTier.standard),
+              tier: (plotNum <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
               status: PlotStatus.occupied,
             );
             _userBirthPlots[uid] = plot;
@@ -889,9 +920,7 @@ class PoketCosmosAllocationService {
           planetName: reservation.planetName,
           coordinates: Offset.zero,
           postalPinCode: reservation.cosmosPin,
-          tier: (reservation.plotNumber == 1)
-              ? PlotDeedTier.presidential
-              : (reservation.plotNumber <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+          tier: (reservation.plotNumber <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
           status: PlotStatus.occupied,
         );
         await saveBirthplace(plot);
@@ -1004,9 +1033,7 @@ class PoketCosmosAllocationService {
       planetName: pickedColony.planetName,
       coordinates: Offset.zero,
       postalPinCode: cosmosPin,
-      tier: (pickedPlotNum == 1)
-          ? PlotDeedTier.presidential
-          : (pickedPlotNum <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+      tier: (pickedPlotNum <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
       status: PlotStatus.occupied,
     );
 
@@ -1038,15 +1065,46 @@ class PoketCosmosAllocationService {
     await prefs.setString(_kCosmosPin, plot.postalPinCode);
     await prefs.setBool(_kDeedClaimed, true);
 
-    // 3. Save to Supabase profile table if user is authenticated
+    // 3. Save to Supabase profile table if user is authenticated (preserving existing bio)
     try {
       final user = SupaFlow.client.auth.currentUser;
       if (user != null) {
-        await SupaFlow.client.from('profile').update({
+        String existingBio = '';
+        String? profileDocId;
+        try {
+          final res = await SupaFlow.client
+              .from('profile')
+              .select('id, bio')
+              .or('id.eq.${user.id},user_id.eq.${user.id}')
+              .maybeSingle();
+          if (res != null) {
+            profileDocId = res['id']?.toString();
+            existingBio = res['bio']?.toString() ?? '';
+          }
+        } catch (_) {}
+
+        final cleanBio = existingBio
+            .replaceAll(RegExp(r'\s*(\n\n)?🏡\s*PKT-W\d+-[A-Z]+-I\d+-P\d+.*$'), '')
+            .trim();
+        final newBio = cleanBio.isEmpty
+            ? '🏡 Citizen of ${plot.countryName}, ${plot.planetName} (${plot.postalPinCode})'
+            : '$cleanBio\n\n🏡 ${plot.postalPinCode}';
+
+        final payload = {
           'country': plot.countryName,
           'city': plot.streetName,
-          'bio': '🏡 Citizen of ${plot.countryName}, ${plot.planetName} (${plot.postalPinCode})',
-        }).eq('id', user.id);
+          'bio': newBio,
+          'updated_at': DateTime.now().toIso8601String(),
+        };
+
+        if (profileDocId != null && profileDocId.isNotEmpty) {
+          try {
+            await SupaFlow.client.from('profile').update(payload).eq('id', profileDocId);
+          } catch (_) {}
+        }
+        try {
+          await SupaFlow.client.from('profile').update(payload).eq('user_id', user.id);
+        } catch (_) {}
       }
     } catch (e) {
       debugPrint('⚠️ Supabase profile update non-fatal: $e');
@@ -1354,9 +1412,7 @@ class PoketCosmosAllocationService {
             planetName: colony.planetName,
             coordinates: coord,
             postalPinCode: pin,
-            tier: targetPlot == 1
-                ? (colony.code == 'EP' && wave == 1 ? PlotDeedTier.presidential : PlotDeedTier.royalCitadel)
-                : (targetPlot <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+            tier: (targetPlot <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
             status: PlotStatus.occupied,
           );
         }
@@ -1385,15 +1441,15 @@ class PoketCosmosAllocationService {
     switch (colony.code) {
       case 'EP':
         return [
-          _createPioneer(colony, 1, 'Captain Gaia', '👑', 90, 1250, PlotDeedTier.presidential),
+          _createPioneer(colony, 1, 'Captain Gaia', '🌿', 90, 1250, PlotDeedTier.beachfront),
           _createPioneer(colony, 3, 'Arjun Varma', '🏄', 68, 840, PlotDeedTier.beachfront),
-          _createPioneer(colony, 5, 'Sophia Chen', '🌿', 52, 710, PlotDeedTier.beachfront),
+          _createPioneer(colony, 5, 'Sophia Chen', '🌸', 52, 710, PlotDeedTier.beachfront),
           _createPioneer(colony, 8, 'Marcus Brody', '☕', 34, 490, PlotDeedTier.standard),
           _createPioneer(colony, 12, 'Ananya Nair', '🎨', 82, 990, PlotDeedTier.standard),
         ];
       case 'MAR':
         return [
-          _createPioneer(colony, 1, 'Commander Ares', '👑', 88, 1180, PlotDeedTier.presidential),
+          _createPioneer(colony, 1, 'Commander Ares', '🧑‍🚀', 88, 1180, PlotDeedTier.beachfront),
           _createPioneer(colony, 3, 'Dr. Ryan Stone', '🚀', 64, 830, PlotDeedTier.beachfront),
           _createPioneer(colony, 6, 'Elena Rostova', '👩‍🚀', 45, 650, PlotDeedTier.beachfront),
           _createPioneer(colony, 9, 'Kenji Sato', '🛰️', 38, 540, PlotDeedTier.standard),
@@ -1401,63 +1457,63 @@ class PoketCosmosAllocationService {
         ];
       case 'JUP':
         return [
-          _createPioneer(colony, 1, 'Solaria Prime', '👑', 92, 1310, PlotDeedTier.presidential),
+          _createPioneer(colony, 1, 'Solaria Prime', '⚡', 92, 1310, PlotDeedTier.beachfront),
           _createPioneer(colony, 4, 'Galileo Vance', '🪐', 70, 880, PlotDeedTier.beachfront),
-          _createPioneer(colony, 7, 'Lyra Thorne', '⚡', 55, 730, PlotDeedTier.standard),
+          _createPioneer(colony, 7, 'Lyra Thorne', '✨', 55, 730, PlotDeedTier.standard),
           _createPioneer(colony, 10, 'Zephyr Cole', '🌌', 40, 580, PlotDeedTier.standard),
         ];
       case 'LUN':
         return [
-          _createPioneer(colony, 1, 'Apollo Warden', '👑', 85, 1150, PlotDeedTier.presidential),
-          _createPioneer(colony, 3, 'Luna Armstrong', '🌕', 62, 810, PlotDeedTier.beachfront),
+          _createPioneer(colony, 1, 'Apollo Warden', '🌕', 85, 1150, PlotDeedTier.beachfront),
+          _createPioneer(colony, 3, 'Luna Armstrong', '👩‍🚀', 62, 810, PlotDeedTier.beachfront),
           _createPioneer(colony, 5, 'Viktor Cross', '👨‍🚀', 48, 670, PlotDeedTier.beachfront),
           _createPioneer(colony, 11, 'Selene Zhao', '✨', 76, 930, PlotDeedTier.standard),
         ];
       case 'SAT':
         return [
-          _createPioneer(colony, 1, 'Titan Overseer', '👑', 89, 1220, PlotDeedTier.presidential),
-          _createPioneer(colony, 4, 'Cassini Drake', '🪐', 66, 850, PlotDeedTier.beachfront),
+          _createPioneer(colony, 1, 'Titan Overseer', '🪐', 89, 1220, PlotDeedTier.beachfront),
+          _createPioneer(colony, 4, 'Cassini Drake', '🛰️', 66, 850, PlotDeedTier.beachfront),
           _createPioneer(colony, 7, 'Rhea Sterling', '💍', 51, 690, PlotDeedTier.standard),
-          _createPioneer(colony, 13, 'Hyperion Reed', '🛰️', 36, 510, PlotDeedTier.standard),
+          _createPioneer(colony, 13, 'Hyperion Reed', '✨', 36, 510, PlotDeedTier.standard),
         ];
       case 'EUR':
         return [
-          _createPioneer(colony, 1, 'Cryo Explorer', '👑', 84, 1140, PlotDeedTier.presidential),
-          _createPioneer(colony, 3, 'Frost Voyager', '❄️', 58, 770, PlotDeedTier.beachfront),
-          _createPioneer(colony, 6, 'Glacia North', '🧊', 44, 620, PlotDeedTier.beachfront),
-          _createPioneer(colony, 10, 'Boreas Vance', '🔬', 72, 900, PlotDeedTier.standard),
+          _createPioneer(colony, 1, 'Cryo Explorer', '❄️', 84, 1140, PlotDeedTier.beachfront),
+          _createPioneer(colony, 3, 'Frost Voyager', '🧊', 58, 770, PlotDeedTier.beachfront),
+          _createPioneer(colony, 6, 'Glacia North', '🔬', 44, 620, PlotDeedTier.beachfront),
+          _createPioneer(colony, 10, 'Boreas Vance', '🔭', 72, 900, PlotDeedTier.standard),
         ];
       case 'VEN':
         return [
-          _createPioneer(colony, 1, 'Aphrodite Sentinel', '👑', 87, 1190, PlotDeedTier.presidential),
-          _createPioneer(colony, 4, 'Solar Flare', '☀️', 61, 800, PlotDeedTier.beachfront),
-          _createPioneer(colony, 8, 'Aurelia Blaze', '🔥', 47, 660, PlotDeedTier.standard),
-          _createPioneer(colony, 12, 'Helios Thorne', '✨', 78, 940, PlotDeedTier.standard),
+          _createPioneer(colony, 1, 'Aphrodite Sentinel', '☀️', 87, 1190, PlotDeedTier.beachfront),
+          _createPioneer(colony, 4, 'Solar Flare', '🔥', 61, 800, PlotDeedTier.beachfront),
+          _createPioneer(colony, 8, 'Aurelia Blaze', '✨', 47, 660, PlotDeedTier.standard),
+          _createPioneer(colony, 12, 'Helios Thorne', '🌟', 78, 940, PlotDeedTier.standard),
         ];
       case 'TTN':
         return [
-          _createPioneer(colony, 1, 'Kraken Voyager', '👑', 86, 1170, PlotDeedTier.presidential),
-          _createPioneer(colony, 3, 'Methane Drifter', '🛶', 59, 790, PlotDeedTier.beachfront),
+          _createPioneer(colony, 1, 'Kraken Voyager', '🛶', 86, 1170, PlotDeedTier.beachfront),
+          _createPioneer(colony, 3, 'Methane Drifter', '🌊', 59, 790, PlotDeedTier.beachfront),
           _createPioneer(colony, 7, 'Dune Navigator', '🪐', 43, 610, PlotDeedTier.standard),
           _createPioneer(colony, 11, 'Huygens Lee', '🔬', 75, 910, PlotDeedTier.standard),
         ];
       case 'PLT':
         return [
-          _createPioneer(colony, 1, 'Tombaugh Warden', '👑', 91, 1280, PlotDeedTier.presidential),
-          _createPioneer(colony, 4, 'Starlight Nomad', '🌌', 65, 840, PlotDeedTier.beachfront),
+          _createPioneer(colony, 1, 'Tombaugh Warden', '🌌', 91, 1280, PlotDeedTier.beachfront),
+          _createPioneer(colony, 4, 'Starlight Nomad', '✨', 65, 840, PlotDeedTier.beachfront),
           _createPioneer(colony, 8, 'Charon Shade', '❄️', 50, 680, PlotDeedTier.standard),
-          _createPioneer(colony, 13, 'Nyx Celestial', '✨', 79, 950, PlotDeedTier.standard),
+          _createPioneer(colony, 13, 'Nyx Celestial', '💫', 79, 950, PlotDeedTier.standard),
         ];
       case 'NEP':
         return [
-          _createPioneer(colony, 1, 'Triton Vanguard', '👑', 88, 1200, PlotDeedTier.presidential),
-          _createPioneer(colony, 4, 'Azure Siren', '🌊', 63, 820, PlotDeedTier.beachfront),
-          _createPioneer(colony, 7, 'Abyss Diver', '🐬', 49, 670, PlotDeedTier.standard),
-          _createPioneer(colony, 12, 'Oceanic Prime', '🌀', 77, 930, PlotDeedTier.standard),
+          _createPioneer(colony, 1, 'Triton Vanguard', '🌊', 88, 1200, PlotDeedTier.beachfront),
+          _createPioneer(colony, 4, 'Azure Siren', '🐬', 63, 820, PlotDeedTier.beachfront),
+          _createPioneer(colony, 7, 'Abyss Diver', '🌀', 49, 670, PlotDeedTier.standard),
+          _createPioneer(colony, 12, 'Oceanic Prime', '✨', 77, 930, PlotDeedTier.standard),
         ];
       default:
         return [
-          _createPioneer(colony, 1, 'Cosmic Pioneer', '👑', 80, 1000, PlotDeedTier.presidential),
+          _createPioneer(colony, 1, 'Cosmic Pioneer', '🌟', 80, 1000, PlotDeedTier.beachfront),
           _createPioneer(colony, 4, 'Starlight Explorer', '🚀', 50, 700, PlotDeedTier.standard),
         ];
     }

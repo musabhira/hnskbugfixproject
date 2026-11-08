@@ -295,6 +295,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     _loadFortressDefenseData();
     _loadPocketScore();
     _loadGlobalRank();
+    PoketCosmosAllocationService.instance.loadAllRegisteredProfiles();
   }
 
   @override

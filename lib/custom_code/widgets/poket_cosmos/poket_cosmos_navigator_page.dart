@@ -1605,6 +1605,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                       plots: _currentIslandPlots,
                       selectedPlotNumber: _inspectedPlot?.plotNumber,
                       onPlotTapped: _showPlotDetailsSheet,
+                      onPlotPurchased: () => _loadIslandPlots(island),
                     ),
                   ),
                 );

@@ -20,6 +20,7 @@ class IslandAerialViewWidget extends StatefulWidget {
   final double zoomScale;
   final List<CitizenPlot> plots;
   final ValueChanged<CitizenPlot>? onPlotTapped;
+  final VoidCallback? onPlotPurchased;
   final int? selectedPlotNumber;
   final String? planetName;
   final Map<int, NeighborReservationPass>? initialReservations;
@@ -31,6 +32,7 @@ class IslandAerialViewWidget extends StatefulWidget {
     this.zoomScale = 1.0,
     this.plots = const [],
     this.onPlotTapped,
+    this.onPlotPurchased,
     this.selectedPlotNumber,
     this.planetName,
     this.initialReservations,
@@ -523,6 +525,66 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
             ElevatedButton(
               onPressed: () async {
                 Navigator.pop(ctx);
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (dCtx) => AlertDialog(
+                    backgroundColor: const Color(0xFF0F172A),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      side: const BorderSide(color: Color(0xFF38BDF8), width: 1.5),
+                    ),
+                    title: Row(
+                      children: [
+                        const Text('🏡 ', style: TextStyle(fontSize: 22)),
+                        Expanded(
+                          child: Text(
+                            'Acquire Plot #$plotNumber?',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    content: Text(
+                      'Are you sure you want to purchase and relocate your permanent residence to Plot #$plotNumber on ${colony.planetName} (${widget.island.name}) for $marketPrice Pocket Score?\n\nYour address and profile deed will be permanently updated.',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: Colors.white70,
+                        fontSize: 13,
+                        height: 1.45,
+                      ),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(dCtx, false),
+                        child: Text(
+                          'Cancel',
+                          style: GoogleFonts.outfit(color: Colors.white60),
+                        ),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF10B981),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        onPressed: () => Navigator.pop(dCtx, true),
+                        child: Text(
+                          'Confirm ($marketPrice PS)',
+                          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (confirm != true) return;
+
                 final ok = await PoketCosmosAllocationService.instance.buyAndSwitchPlot(
                   context: context,
                   targetPlanetCode: colony.code,
@@ -531,6 +593,7 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
                 );
                 if (ok && mounted) {
                   await _loadReservations();
+                  widget.onPlotPurchased?.call();
                   setState(() {});
                 }
               },
