@@ -75,15 +75,18 @@ class _PoketCosmosResidentIslandViewState
     final int wave = math.max(1, widget.targetWave ?? 1);
 
     // Direct planet colony & plot routing (fixes bug where all plots showed the same default island)
-    if (widget.targetPlanetCode != null && widget.targetPlanetCode!.isNotEmpty) {
-      colony = PoketCosmosAllocationService.instance.getColonyByCode(widget.targetPlanetCode!);
-      final int pNum = (widget.targetPlotNumber ?? 1).clamp(1, PoketCosmosAllocationService.maxPlotsPerIsland);
+    if (widget.targetPlanetCode != null &&
+        widget.targetPlanetCode!.isNotEmpty) {
+      colony = PoketCosmosAllocationService.instance
+          .getColonyByCode(widget.targetPlanetCode!);
+      final int pNum = (widget.targetPlotNumber ?? 1)
+          .clamp(1, PoketCosmosAllocationService.maxPlotsPerIsland);
       final String effectiveIslandName = (wave == 1)
           ? colony.islandName
-          : PoketCosmosAllocationService.generateInfiniteIslandName(colony.code, wave, wave);
-      final String effectiveStreetName = (wave == 1)
-          ? colony.streetName
-          : 'Wave $wave ${colony.streetName}';
+          : PoketCosmosAllocationService.generateInfiniteIslandName(
+              colony.code, wave, wave);
+      final String effectiveStreetName =
+          (wave == 1) ? colony.streetName : 'Wave $wave ${colony.streetName}';
 
       plot = CitizenPlot(
         plotNumber: pNum,
@@ -96,7 +99,8 @@ class _PoketCosmosResidentIslandViewState
         postOffice: effectiveIslandName,
         countryName: effectiveIslandName,
         planetName: colony.planetName,
-        postalPinCode: 'PKT-W${wave.toString().padLeft(2, '0')}-${colony.code}-I${wave.toString().padLeft(2, '0')}-P${pNum.toString().padLeft(2, '0')}',
+        postalPinCode:
+            'PKT-W${wave.toString().padLeft(2, '0')}-${colony.code}-I${wave.toString().padLeft(2, '0')}-P${pNum.toString().padLeft(2, '0')}',
         coordinates: Offset.zero,
         isVip: false,
         isPresident: false,
@@ -122,7 +126,8 @@ class _PoketCosmosResidentIslandViewState
     // 3. Build Island Model with subtle procedural variation per wave
     final effectiveIslandTitle = (wave == 1)
         ? plot.countryName
-        : PoketCosmosAllocationService.generateInfiniteIslandName(colony.code, wave, wave);
+        : PoketCosmosAllocationService.generateInfiniteIslandName(
+            colony.code, wave, wave);
 
     final island = PoketCountryMap(
       id: colony.planetId * 100 + wave,
@@ -162,8 +167,12 @@ class _PoketCosmosResidentIslandViewState
       final existing = plotsMap[updatedPlot.plotNumber]!;
       plotsMap[updatedPlot.plotNumber] = existing.copyWith(
         coordinates: targetPos,
-        userName: (widget.userName != null && widget.userName!.isNotEmpty) ? widget.userName : existing.userName,
-        userAvatar: (widget.userAvatar != null && widget.userAvatar!.isNotEmpty) ? widget.userAvatar : existing.userAvatar,
+        userName: (widget.userName != null && widget.userName!.isNotEmpty)
+            ? widget.userName
+            : existing.userName,
+        userAvatar: (widget.userAvatar != null && widget.userAvatar!.isNotEmpty)
+            ? widget.userAvatar
+            : existing.userAvatar,
       );
     } else {
       plotsMap[updatedPlot.plotNumber] = updatedPlot;
@@ -196,7 +205,8 @@ class _PoketCosmosResidentIslandViewState
 
     final painterScale = ((worldHeight / 850.0) * 1.15).clamp(0.95, 1.50);
     final targetWorldX = worldWidth / 2 + _myPlot.coordinates.dx * painterScale;
-    final targetWorldY = worldHeight / 2 + _myPlot.coordinates.dy * painterScale;
+    final targetWorldY =
+        worldHeight / 2 + _myPlot.coordinates.dy * painterScale;
 
     final minTx = sW - (worldWidth * targetScale);
     final minTy = sH - (worldHeight * targetScale);
@@ -259,7 +269,10 @@ class _PoketCosmosResidentIslandViewState
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
           border: Border(top: BorderSide(color: Color(0xFF38BDF8), width: 1.5)),
           boxShadow: [
-            BoxShadow(color: Color(0x66000000), blurRadius: 24, offset: Offset(0, -6)),
+            BoxShadow(
+                color: Color(0x66000000),
+                blurRadius: 24,
+                offset: Offset(0, -6)),
           ],
         ),
         child: Column(
@@ -296,7 +309,8 @@ class _PoketCosmosResidentIslandViewState
             const SizedBox(height: 6),
             Text(
               'Select any of the 10 celestial colonies to inspect its 20-plot island, landscape, and registered community members.',
-              style: GoogleFonts.outfit(color: const Color(0xFF94A3B8), fontSize: 12),
+              style: GoogleFonts.outfit(
+                  color: const Color(0xFF94A3B8), fontSize: 12),
             ),
             const SizedBox(height: 14),
             Expanded(
@@ -351,15 +365,22 @@ class _PoketCosmosResidentIslandViewState
                                             ? '🌕'
                                             : c.planetName.contains('Jupiter')
                                                 ? '🟠'
-                                                : c.planetName.contains('Saturn')
+                                                : c.planetName
+                                                        .contains('Saturn')
                                                     ? '🪐'
-                                                    : c.planetName.contains('Europa')
+                                                    : c.planetName
+                                                            .contains('Europa')
                                                         ? '🧊'
-                                                        : c.planetName.contains('Venus')
+                                                        : c.planetName.contains(
+                                                                'Venus')
                                                             ? '✨'
-                                                            : c.planetName.contains('Titan')
+                                                            : c.planetName
+                                                                    .contains(
+                                                                        'Titan')
                                                                 ? '🟢'
-                                                                : c.planetName.contains('Neptune')
+                                                                : c.planetName
+                                                                        .contains(
+                                                                            'Neptune')
                                                                     ? '🔵'
                                                                     : '🟣',
                                 style: const TextStyle(fontSize: 22),
@@ -388,7 +409,8 @@ class _PoketCosmosResidentIslandViewState
                                             horizontal: 6, vertical: 2),
                                         decoration: BoxDecoration(
                                           color: const Color(0xFF16A34A),
-                                          borderRadius: BorderRadius.circular(6),
+                                          borderRadius:
+                                              BorderRadius.circular(6),
                                         ),
                                         child: Text(
                                           'YOUR RESIDENCE',
@@ -469,14 +491,16 @@ class _PoketCosmosResidentIslandViewState
               ctx,
               id: 'all',
               title: 'All 20 Island Parcels',
-              subtitle: 'Show all houses, pre-booked countdowns, and vacant plots',
+              subtitle:
+                  'Show all houses, pre-booked countdowns, and vacant plots',
               icon: Icons.grid_view_rounded,
             ),
             _buildFilterOption(
               ctx,
               id: 'occupied',
               title: 'Occupied Citizens Only',
-              subtitle: 'Focus on settled community homes and architectural compounds',
+              subtitle:
+                  'Focus on settled community homes and architectural compounds',
               icon: Icons.home_rounded,
             ),
             _buildFilterOption(
@@ -510,7 +534,9 @@ class _PoketCosmosResidentIslandViewState
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isSel ? const Color(0xFF16A34A).withValues(alpha: 0.18) : Colors.transparent,
+          color: isSel
+              ? const Color(0xFF16A34A).withValues(alpha: 0.18)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isSel ? const Color(0xFF4ADE80) : const Color(0xFF334155),
@@ -519,7 +545,10 @@ class _PoketCosmosResidentIslandViewState
         ),
         child: Row(
           children: [
-            Icon(icon, color: isSel ? const Color(0xFF4ADE80) : const Color(0xFF94A3B8), size: 20),
+            Icon(icon,
+                color:
+                    isSel ? const Color(0xFF4ADE80) : const Color(0xFF94A3B8),
+                size: 20),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -535,13 +564,15 @@ class _PoketCosmosResidentIslandViewState
                   ),
                   Text(
                     subtitle,
-                    style: GoogleFonts.outfit(color: const Color(0xFF94A3B8), fontSize: 11),
+                    style: GoogleFonts.outfit(
+                        color: const Color(0xFF94A3B8), fontSize: 11),
                   ),
                 ],
               ),
             ),
             if (isSel)
-              const Icon(Icons.check_circle_rounded, color: Color(0xFF4ADE80), size: 18),
+              const Icon(Icons.check_circle_rounded,
+                  color: Color(0xFF4ADE80), size: 18),
           ],
         ),
       ),
@@ -703,10 +734,10 @@ class _PoketCosmosResidentIslandViewState
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          '${_colony.planetName} • ${_myPlot.postalPinCode}',
+                          '${_colony.planetName} • Plot #${widget.targetPlotNumber ?? _myPlot.plotNumber}',
                           style: GoogleFonts.jetBrainsMono(
                             color: const Color(0xFF38BDF8),
-                            fontSize: 10.5,
+                            fontSize: 11,
                             fontWeight: FontWeight.w600,
                           ),
                           maxLines: 1,
@@ -714,27 +745,6 @@ class _PoketCosmosResidentIslandViewState
                         ),
                       ],
                     ),
-                  ),
-                  // 📋 Copy PIN Button
-                  IconButton(
-                    icon: const Icon(Icons.copy_rounded,
-                        color: Color(0xFF38BDF8), size: 18),
-                    tooltip: 'Copy Born Address PIN',
-                    padding: const EdgeInsets.all(6),
-                    constraints: const BoxConstraints(),
-                    onPressed: () {
-                      Clipboard.setData(
-                          ClipboardData(text: _myPlot.postalPinCode));
-                      HapticFeedback.lightImpact();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                              'Born Address PIN ${_myPlot.postalPinCode} copied!'),
-                          backgroundColor: const Color(0xFF16A34A),
-                          duration: const Duration(seconds: 2),
-                        ),
-                      );
-                    },
                   ),
                   const SizedBox(width: 4),
                   // 🔍 Planet / Cosmos Island Search & Switch Button
@@ -777,7 +787,8 @@ class _PoketCosmosResidentIslandViewState
                   flex: 3,
                   child: Builder(
                     builder: (context) {
-                      final isHomeColony = (_colony.planetName == _myPlot.planetName);
+                      final isHomeColony =
+                          (_colony.planetName == _myPlot.planetName);
                       return ElevatedButton.icon(
                         onPressed: () {
                           HapticFeedback.mediumImpact();
@@ -790,7 +801,8 @@ class _PoketCosmosResidentIslandViewState
                             );
                           }
                         },
-                        icon: Text(isHomeColony ? '🏡' : '🚀', style: const TextStyle(fontSize: 16)),
+                        icon: Text(isHomeColony ? '🏡' : '🚀',
+                            style: const TextStyle(fontSize: 16)),
                         label: Text(
                           isHomeColony
                               ? 'FOCUS TO MY PLOT (#${_myPlot.plotNumber})'
@@ -804,13 +816,17 @@ class _PoketCosmosResidentIslandViewState
                           overflow: TextOverflow.ellipsis,
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: isHomeColony ? const Color(0xFF16A34A) : const Color(0xFF2563EB),
+                          backgroundColor: isHomeColony
+                              ? const Color(0xFF16A34A)
+                              : const Color(0xFF2563EB),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                             side: BorderSide(
-                              color: isHomeColony ? const Color(0xFF4ADE80) : const Color(0xFF60A5FA),
+                              color: isHomeColony
+                                  ? const Color(0xFF4ADE80)
+                                  : const Color(0xFF60A5FA),
                               width: 1.2,
                             ),
                           ),
@@ -863,4 +879,3 @@ class _PoketCosmosResidentIslandViewState
     );
   }
 }
-

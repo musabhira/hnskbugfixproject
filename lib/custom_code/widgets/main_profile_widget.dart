@@ -81,7 +81,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   final _supabase = SupaFlow.client;
   late material.TabController _profileTabController;
   final ScrollController _scrollController = ScrollController();
-  final PageController _profileHorizontalPageController = PageController(initialPage: 0);
+  final PageController _profileHorizontalPageController =
+      PageController(initialPage: 0);
   int _profileHorizontalPageIndex = 0;
 
   // Data State
@@ -160,7 +161,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         (_profileData?['learning_day'] as num?)?.toInt() ??
         (_profileData?['learning_stage'] as num?)?.toInt() ??
         _localUserStage;
-    final score = (_profileData?['pocket_score'] as num?)?.toInt() ?? _pocketScore;
+    final score =
+        (_profileData?['pocket_score'] as num?)?.toInt() ?? _pocketScore;
     return PocketScoreLevelEngine.calculateEffectiveLevel(
       day: lDay,
       pocketScore: score,
@@ -394,8 +396,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         dbScore = math.max(ps, math.max(xp, lp));
       }
 
-      final unifiedScore = await PocketFortressDefenseService.getUnifiedScore(userId, true);
-      final finalScore = math.max(dbScore, math.max(unifiedScore, _pocketScore));
+      final unifiedScore =
+          await PocketFortressDefenseService.getUnifiedScore(userId, true);
+      final finalScore =
+          math.max(dbScore, math.max(unifiedScore, _pocketScore));
 
       // Sync local cache
       final prefs = await SharedPreferences.getInstance();
@@ -1340,21 +1344,28 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   height: 42,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFFFFFC00), width: 1.8),
+                    border:
+                        Border.all(color: const Color(0xFFFFFC00), width: 1.8),
                   ),
                   child: ClipOval(
-                    child: (senderAvatar != null && senderAvatar.startsWith('http'))
+                    child: (senderAvatar != null &&
+                            senderAvatar.startsWith('http'))
                         ? CachedNetworkImage(
                             imageUrl: senderAvatar,
                             fit: BoxFit.cover,
-                            placeholder: (_, __) => Container(color: Colors.white12),
-                            errorWidget: (_, __, ___) => const Icon(Icons.person, color: Colors.white),
+                            placeholder: (_, __) =>
+                                Container(color: Colors.white12),
+                            errorWidget: (_, __, ___) =>
+                                const Icon(Icons.person, color: Colors.white),
                           )
                         : Container(
                             color: const Color(0xFF1E293B),
                             child: Center(
                               child: Text(
-                                (senderAvatar != null && senderAvatar.isNotEmpty) ? senderAvatar : '👤',
+                                (senderAvatar != null &&
+                                        senderAvatar.isNotEmpty)
+                                    ? senderAvatar
+                                    : '👤',
                                 style: const TextStyle(fontSize: 18),
                               ),
                             ),
@@ -1381,9 +1392,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           ),
                           const SizedBox(width: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 1.5),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFFFC00).withValues(alpha: 0.2),
+                              color: const Color(0xFFFFFC00)
+                                  .withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
@@ -1435,7 +1448,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   },
                   child: Text(
                     'Dismiss',
-                    style: GoogleFonts.outfit(color: Colors.white60, fontSize: 13),
+                    style:
+                        GoogleFonts.outfit(color: Colors.white60, fontSize: 13),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -1443,8 +1457,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFFFC00),
                     foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                     elevation: 3,
                   ),
                   onPressed: () async {
@@ -1469,11 +1485,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           behavior: SnackBarBehavior.floating,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
-                            side: const BorderSide(color: Color(0xFF10B981), width: 1.5),
+                            side: const BorderSide(
+                                color: Color(0xFF10B981), width: 1.5),
                           ),
                           content: Row(
                             children: [
-                              const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 20),
+                              const Icon(Icons.check_circle_rounded,
+                                  color: Color(0xFF10B981), size: 20),
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
@@ -1490,7 +1508,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       );
                     }
                   },
-                  icon: const Icon(Icons.handshake_rounded, size: 16, color: Colors.black),
+                  icon: const Icon(Icons.handshake_rounded,
+                      size: 16, color: Colors.black),
                   label: Text(
                     'Accept 🤝',
                     style: GoogleFonts.outfit(
@@ -1720,8 +1739,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     if (myId == null) return;
     final targetId = userId;
     if (targetId.isEmpty) return;
-    final targetName = _profileData?['name']?.toString() ?? _profileData?['display_name']?.toString() ?? 'Mate';
-    final targetAvatar = _profileData?['profile_picture_url']?.toString() ?? _profileData?['avatar_url']?.toString();
+    final targetName = _profileData?['name']?.toString() ??
+        _profileData?['display_name']?.toString() ??
+        'Mate';
+    final targetAvatar = _profileData?['profile_picture_url']?.toString() ??
+        _profileData?['avatar_url']?.toString();
 
     HapticFeedback.heavyImpact();
     // 🤝 Send ONLY Pocket Talk Spoken Pact challenge (strictly decoupled from Pocket Mate friend request)
@@ -1757,19 +1779,22 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.bolt_rounded, color: Color(0xFFFFD700), size: 20),
+              const Icon(Icons.bolt_rounded,
+                  color: Color(0xFFFFD700), size: 20),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   '⚡ 4-Day Pocket Talk Challenge sent to $targetName! Check Requests & Chats.',
-                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.outfit(
+                      color: Colors.white, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
           ),
           backgroundColor: const Color(0xFF1E1B4B),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
     }
@@ -1826,7 +1851,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
     final int userRank = _getUserGlobalRank();
     final bool isTop10 = userRank > 0 && userRank <= 10;
-    final rankTheme = isTop10 ? PocketTopRankTheme.getThemeForRank(userRank) : null;
+    final rankTheme =
+        isTop10 ? PocketTopRankTheme.getThemeForRank(userRank) : null;
 
     final Color bgColor;
     final Color textColor;
@@ -1855,291 +1881,303 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     }
 
     final profileBody = Container(
-        decoration: bgGradient != null
-            ? BoxDecoration(
-                gradient: LinearGradient(
-                  colors: bgGradient,
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              )
-            : null,
-        child: material.Stack(
-          children: [
-            PocketSnapFlameRefresh(
-              onRefresh: _handleProfileRefresh,
-              primaryFlameColor: const Color(0xFFFFFC00),
-              accentFlameColor: const Color(0xFFFF5722),
-              pullText: 'Pull to refresh profile... 🔥',
-              readyText: 'Release to update! ✨',
-              refreshingText: 'Refreshing profile & citadel... 🔥',
-              successText: 'Profile updated! ✨',
-              child: material.NestedScrollView(
-                controller: _scrollController,
-                headerSliverBuilder: (context, innerBoxIsScrolled) {
-                  return [
-                    if (!widget.hideAppBar)
-                      material.SliverAppBar(
-                        elevation: 0,
-                        pinned: true,
-                        backgroundColor: Colors.transparent,
-                        leading: material.IconButton(
-                          icon: const Icon(material.Icons.arrow_back, size: 22),
+      decoration: bgGradient != null
+          ? BoxDecoration(
+              gradient: LinearGradient(
+                colors: bgGradient,
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            )
+          : null,
+      child: material.Stack(
+        children: [
+          PocketSnapFlameRefresh(
+            onRefresh: _handleProfileRefresh,
+            primaryFlameColor: const Color(0xFFFFFC00),
+            accentFlameColor: const Color(0xFFFF5722),
+            pullText: 'Pull to refresh profile... 🔥',
+            readyText: 'Release to update! ✨',
+            refreshingText: 'Refreshing profile & citadel... 🔥',
+            successText: 'Profile updated! ✨',
+            child: material.NestedScrollView(
+              controller: _scrollController,
+              headerSliverBuilder: (context, innerBoxIsScrolled) {
+                return [
+                  if (!widget.hideAppBar)
+                    material.SliverAppBar(
+                      elevation: 0,
+                      pinned: true,
+                      backgroundColor: Colors.transparent,
+                      leading: material.IconButton(
+                        icon: const Icon(material.Icons.arrow_back, size: 22),
+                        color: textColor,
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                      title: Text(
+                        _profileData?['username'] ??
+                            _profileData?['shop_name'] ??
+                            _profileData?['name'] ??
+                            '',
+                        style: GoogleFonts.outfit(
                           color: textColor,
-                          onPressed: () => Navigator.of(context).pop(),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
                         ),
-                title: Text(
-                  _profileData?['username'] ??
-                      _profileData?['shop_name'] ??
-                      _profileData?['name'] ??
-                      '',
-                  style: GoogleFonts.outfit(
-                    color: textColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
-                ),
-                centerTitle: false,
-                actions: [
-                  if (isMe) ...[
-                    material.InkWell(
-                      onTap: () {
-                        HapticFeedback.mediumImpact();
-                        _profileHorizontalPageController.animateToPage(
-                          1,
-                          duration: const Duration(milliseconds: 350),
-                          curve: Curves.easeInOutCubic,
-                        );
-                      },
-                      borderRadius: BorderRadius.circular(16),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                        margin: const EdgeInsets.symmetric(vertical: 8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF0284C7).withValues(alpha: 0.25),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFF38BDF8), width: 1.0),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text('🏝️', style: TextStyle(fontSize: 13)),
-                            const SizedBox(width: 4),
-                            Text(
-                              'My Island',
-                              style: GoogleFonts.outfit(
-                                color: const Color(0xFF38BDF8),
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.bold,
+                      ),
+                      centerTitle: false,
+                      actions: [
+                        if (isMe) ...[
+                          material.InkWell(
+                            onTap: () {
+                              HapticFeedback.mediumImpact();
+                              _profileHorizontalPageController.animateToPage(
+                                1,
+                                duration: const Duration(milliseconds: 350),
+                                curve: Curves.easeInOutCubic,
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 5),
+                              margin: const EdgeInsets.symmetric(vertical: 8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF0284C7)
+                                    .withValues(alpha: 0.25),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                    color: const Color(0xFF38BDF8), width: 1.0),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Text('🏝️',
+                                      style: TextStyle(fontSize: 13)),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'My Island',
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFF38BDF8),
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    material.IconButton(
-                      icon: const Icon(material.Icons.gps_fixed_rounded, size: 21),
-                      color: const Color(0xFFFFD700),
-                      onPressed: () {
-                        HapticFeedback.mediumImpact();
-                        PocketCitadelAttackPage.openForUser(
-                          context,
-                          userId: userId,
-                          isDefenseMode: true,
-                          attackerDay: _getEffectiveDay(),
-                        );
-                      },
-                      tooltip: 'Preview Attack Profile / Citadel Defense',
-                    ),
-                    material.IconButton(
-                      icon:
-                          const Icon(material.Icons.settings_rounded, size: 22),
-                      color: textColor,
-                      onPressed: () {
-                        material.Navigator.push(
-                          context,
-                          material.MaterialPageRoute(
-                            builder: (context) => const SettingsPage(),
                           ),
-                        );
-                      },
-                      tooltip: 'Settings',
-                    ),
-                  ],
-                  if (!isMe) ...[
-                    material.IconButton(
-                      icon: const Icon(material.Icons.map_rounded, size: 22),
-                      color: const Color(0xFF38BDF8),
-                      tooltip: "View Citizen's Island Plot 🗺️",
-                      onPressed: () {
-                        HapticFeedback.mediumImpact();
-                        _profileHorizontalPageController.animateToPage(
-                          1,
-                          duration: const Duration(milliseconds: 350),
-                          curve: Curves.easeInOutCubic,
-                        );
-                      },
-                    ),
-                    PopupMenuButton<String>(
-                      icon: const Icon(material.Icons.more_vert),
-                      color: const Color(0xFF1E293B),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: const BorderSide(color: Colors.white24),
-                      ),
-                      iconColor: textColor,
-                      onSelected: (value) async {
-                        final authorName = _profileData?['name']?.toString() ??
-                            _profileData?['display_name']?.toString() ??
-                            'User';
-                        final authorHandle =
-                            _profileData?['username']?.toString() ?? authorName;
-                        final targetUid = userId;
-                        if (value == 'ViewIslandPlot') {
-                          HapticFeedback.mediumImpact();
-                          _profileHorizontalPageController.animateToPage(
-                            1,
-                            duration: const Duration(milliseconds: 350),
-                            curve: Curves.easeInOutCubic,
-                          );
-                        } else if (value == 'Report') {
-                          ReportHelper.showReportDialog(
-                            context: context,
-                            contentType: 'user',
-                            contentId: targetUid,
-                            contentTitle: '$authorName (@$authorHandle)',
-                            onReportSubmitted: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                      'Report submitted. Thank you for keeping Poket Mates safe.'),
-                                  behavior: SnackBarBehavior.floating,
-                                  backgroundColor: Colors.green,
+                          material.IconButton(
+                            icon: const Icon(material.Icons.gps_fixed_rounded,
+                                size: 21),
+                            color: const Color(0xFFFFD700),
+                            onPressed: () {
+                              HapticFeedback.mediumImpact();
+                              PocketCitadelAttackPage.openForUser(
+                                context,
+                                userId: userId,
+                                isDefenseMode: true,
+                                attackerDay: _getEffectiveDay(),
+                              );
+                            },
+                            tooltip: 'Preview Attack Profile / Citadel Defense',
+                          ),
+                          material.IconButton(
+                            icon: const Icon(material.Icons.settings_rounded,
+                                size: 22),
+                            color: textColor,
+                            onPressed: () {
+                              material.Navigator.push(
+                                context,
+                                material.MaterialPageRoute(
+                                  builder: (context) => const SettingsPage(),
                                 ),
                               );
                             },
-                          );
-                        } else if (value == 'Block') {
-                          final blocked = await ReportHelper.blockUser(
-                            context: context,
-                            targetUserId: targetUid,
-                            targetUserName: authorName,
-                            onBlocked: () {
-                              if (mounted) {
-                                setState(() {
-                                  _isBlocked = true;
-                                  _isFollowing = false;
-                                });
+                            tooltip: 'Settings',
+                          ),
+                        ],
+                        if (!isMe) ...[
+                          material.IconButton(
+                            icon: const Icon(material.Icons.map_rounded,
+                                size: 22),
+                            color: const Color(0xFF38BDF8),
+                            tooltip: "View Citizen's Island Plot 🗺️",
+                            onPressed: () {
+                              HapticFeedback.mediumImpact();
+                              _profileHorizontalPageController.animateToPage(
+                                1,
+                                duration: const Duration(milliseconds: 350),
+                                curve: Curves.easeInOutCubic,
+                              );
+                            },
+                          ),
+                          PopupMenuButton<String>(
+                            icon: const Icon(material.Icons.more_vert),
+                            color: const Color(0xFF1E293B),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: const BorderSide(color: Colors.white24),
+                            ),
+                            iconColor: textColor,
+                            onSelected: (value) async {
+                              final authorName = _profileData?['name']
+                                      ?.toString() ??
+                                  _profileData?['display_name']?.toString() ??
+                                  'User';
+                              final authorHandle =
+                                  _profileData?['username']?.toString() ??
+                                      authorName;
+                              final targetUid = userId;
+                              if (value == 'ViewIslandPlot') {
+                                HapticFeedback.mediumImpact();
+                                _profileHorizontalPageController.animateToPage(
+                                  1,
+                                  duration: const Duration(milliseconds: 350),
+                                  curve: Curves.easeInOutCubic,
+                                );
+                              } else if (value == 'Report') {
+                                ReportHelper.showReportDialog(
+                                  context: context,
+                                  contentType: 'user',
+                                  contentId: targetUid,
+                                  contentTitle: '$authorName (@$authorHandle)',
+                                  onReportSubmitted: () {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                            'Report submitted. Thank you for keeping Poket Mates safe.'),
+                                        behavior: SnackBarBehavior.floating,
+                                        backgroundColor: Colors.green,
+                                      ),
+                                    );
+                                  },
+                                );
+                              } else if (value == 'Block') {
+                                final blocked = await ReportHelper.blockUser(
+                                  context: context,
+                                  targetUserId: targetUid,
+                                  targetUserName: authorName,
+                                  onBlocked: () {
+                                    if (mounted) {
+                                      setState(() {
+                                        _isBlocked = true;
+                                        _isFollowing = false;
+                                      });
+                                    }
+                                  },
+                                );
+                                if (blocked && mounted) {
+                                  setState(() {
+                                    _isBlocked = true;
+                                    _isFollowing = false;
+                                  });
+                                }
                               }
                             },
-                          );
-                          if (blocked && mounted) {
-                            setState(() {
-                              _isBlocked = true;
-                              _isFollowing = false;
-                            });
-                          }
-                        }
-                      },
-                      itemBuilder: (context) => [
-                        const PopupMenuItem(
-                          value: 'ViewIslandPlot',
-                          child: Row(
-                            children: [
-                              Icon(Icons.map_rounded,
-                                  color: Color(0xFF38BDF8), size: 18),
-                              SizedBox(width: 8),
-                              Text('View Island Plot 🏝️',
-                                  style: TextStyle(color: Colors.white)),
+                            itemBuilder: (context) => [
+                              const PopupMenuItem(
+                                value: 'ViewIslandPlot',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.map_rounded,
+                                        color: Color(0xFF38BDF8), size: 18),
+                                    SizedBox(width: 8),
+                                    Text('View Island Plot 🏝️',
+                                        style: TextStyle(color: Colors.white)),
+                                  ],
+                                ),
+                              ),
+                              const PopupMenuItem(
+                                value: 'Report',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.flag_rounded,
+                                        color: Colors.orangeAccent, size: 18),
+                                    SizedBox(width: 8),
+                                    Text('Report User',
+                                        style: TextStyle(color: Colors.white)),
+                                  ],
+                                ),
+                              ),
+                              const PopupMenuItem(
+                                value: 'Block',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.block_rounded,
+                                        color: Colors.redAccent, size: 18),
+                                    SizedBox(width: 8),
+                                    Text('Block User',
+                                        style:
+                                            TextStyle(color: Colors.redAccent)),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
-                        ),
-                        const PopupMenuItem(
-                          value: 'Report',
-                          child: Row(
-                            children: [
-                              Icon(Icons.flag_rounded,
-                                  color: Colors.orangeAccent, size: 18),
-                              SizedBox(width: 8),
-                              Text('Report User',
-                                  style: TextStyle(color: Colors.white)),
-                            ],
-                          ),
-                        ),
-                        const PopupMenuItem(
-                          value: 'Block',
-                          child: Row(
-                            children: [
-                              Icon(Icons.block_rounded,
-                                  color: Colors.redAccent, size: 18),
-                              SizedBox(width: 8),
-                              Text('Block User',
-                                  style: TextStyle(color: Colors.redAccent)),
-                            ],
-                          ),
-                        ),
+                        ],
                       ],
                     ),
-                  ],
-                ],
-              ),
-              material.SliverToBoxAdapter(
-                child: _buildProfileHeader(
-                    textColor, btnColor, btnTextColor, isMe),
-              ),
-              material.SliverPersistentHeader(
-                  pinned: true,
-                  delegate: _SliverAppBarDelegate(
-                    material.TabBar(
-                      key: ValueKey('tab_bar_profile_$isMe'),
-                      controller: _profileTabController,
-                      labelColor: textColor,
-                      unselectedLabelColor: textColor.withValues(alpha: 0.4),
-                      indicatorColor: isTop10 ? btnColor : textColor,
-                      indicatorWeight: 1.5,
-                      tabs: const [
-                        material.Tab(
-                          icon: Icon(material.Icons.grid_on_rounded, size: 22),
-                        ),
-                        material.Tab(
-                          icon: Icon(material.Icons.forum_outlined, size: 22),
-                        ),
-                        material.Tab(
-                          icon: Icon(material.Icons.fort_rounded, size: 22),
-                        ),
-                        material.Tab(
-                          icon: Icon(material.Icons.face_retouching_natural_rounded, size: 22),
-                        ),
-                      ],
-                    ),
-                    bgColor,
+                  material.SliverToBoxAdapter(
+                    child: _buildProfileHeader(
+                        textColor, btnColor, btnTextColor, isMe),
                   ),
+                  material.SliverPersistentHeader(
+                    pinned: true,
+                    delegate: _SliverAppBarDelegate(
+                      material.TabBar(
+                        key: ValueKey('tab_bar_profile_$isMe'),
+                        controller: _profileTabController,
+                        labelColor: textColor,
+                        unselectedLabelColor: textColor.withValues(alpha: 0.4),
+                        indicatorColor: isTop10 ? btnColor : textColor,
+                        indicatorWeight: 1.5,
+                        tabs: const [
+                          material.Tab(
+                            icon:
+                                Icon(material.Icons.grid_on_rounded, size: 22),
+                          ),
+                          material.Tab(
+                            icon: Icon(material.Icons.forum_outlined, size: 22),
+                          ),
+                          material.Tab(
+                            icon: Icon(material.Icons.fort_rounded, size: 22),
+                          ),
+                          material.Tab(
+                            icon: Icon(
+                                material.Icons.face_retouching_natural_rounded,
+                                size: 22),
+                          ),
+                        ],
+                      ),
+                      bgColor,
+                    ),
+                  ),
+                ];
+              },
+              body: Container(
+                color: bgColor,
+                child: material.TabBarView(
+                  key: ValueKey('tab_view_profile_$isMe'),
+                  controller: _profileTabController,
+                  children: [
+                    _buildAdultCardsTab(textColor, bgColor),
+                    _ThreadsTab(
+                      items: _threadItems,
+                      textColor: textColor,
+                      btnColor: btnColor,
+                      btnTextColor: btnTextColor,
+                    ),
+                    _buildCitadelHouseTab(textColor, btnColor, isMe),
+                    _buildCompanionsMilestoneTab(textColor, btnColor, isMe),
+                  ],
                 ),
-            ];
-          },
-          body: Container(
-            color: bgColor,
-            child: material.TabBarView(
-              key: ValueKey('tab_view_profile_$isMe'),
-              controller: _profileTabController,
-              children: [
-                _buildAdultCardsTab(textColor, bgColor),
-                _ThreadsTab(
-                  items: _threadItems,
-                  textColor: textColor,
-                  btnColor: btnColor,
-                  btnTextColor: btnTextColor,
-                ),
-                _buildCitadelHouseTab(textColor, btnColor, isMe),
-                _buildCompanionsMilestoneTab(textColor, btnColor, isMe),
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
-    ],
-  ),
-);
+    );
 
     final cosmosCoords = _resolveUserCosmosCoordinates();
 
@@ -2147,7 +2185,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       backgroundColor: bgColor,
       body: PageView(
         controller: _profileHorizontalPageController,
-        physics: const ClampingScrollPhysics(),
+        physics: _profileHorizontalPageIndex == 1
+            ? const NeverScrollableScrollPhysics()
+            : const ClampingScrollPhysics(),
         onPageChanged: (idx) {
           if (mounted) setState(() => _profileHorizontalPageIndex = idx);
         },
@@ -2184,188 +2224,179 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       physics: const BouncingScrollPhysics(),
       child: Column(
         children: [
-                        if (_isHouseProtected) ...[
-                          // 🚧 Yellow & Black Police Crime Scene Tape & Sentries (User Audio Directive)
-                          Container(
-                            margin: const EdgeInsets.fromLTRB(16, 8, 16, 6),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFFFEF08A), Color(0xFFFDE047)],
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                  color: const Color(0xFFCA8A04), width: 1.5),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.15),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Text('🚧',
-                                        style: TextStyle(fontSize: 14)),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      'CRIME SCENE • DO NOT CROSS • POLICE INVESTIGATION',
-                                      style: GoogleFonts.outfit(
-                                        color: const Color(0xFF78350F),
-                                        fontSize: 10.5,
-                                        fontWeight: FontWeight.w900,
-                                        letterSpacing: 0.5,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    const Text('🚧',
-                                        style: TextStyle(fontSize: 14)),
-                                  ],
-                                ),
-                                const SizedBox(height: 5),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF0F172A),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Text('👮‍♂️ 🚔 👮‍♀️',
-                                          style: TextStyle(fontSize: 13)),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        '24H PRESIDENTIAL POLICE SHIELD (${(_protectionMinutesLeft / 60).toStringAsFixed(1)}h remaining)',
-                                        style: GoogleFonts.outfit(
-                                          color: const Color(0xFF38BDF8),
-                                          fontSize: 10.5,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                        FlameEnglishHouseWidget(
-                          key: ValueKey('house_${_getEffectiveDay()}'),
-                          currentDay: _getEffectiveDay(),
-                          streak: (_profileData?['daily_streak'] as num?)
-                                  ?.toInt() ??
-                              1,
-                          isDamaged: _fortressStatus?.isDamaged ?? false,
-                          houseId: isMe ? 'me' : (widget.userId ?? ''),
-                          showTestingControls: false,
-                          onDayChanged: (d) => _jumpToDay(d),
+          if (_isHouseProtected) ...[
+            // 🚧 Yellow & Black Police Crime Scene Tape & Sentries (User Audio Directive)
+            Container(
+              margin: const EdgeInsets.fromLTRB(16, 8, 16, 6),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFEF08A), Color(0xFFFDE047)],
+                ),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFCA8A04), width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('🚧', style: TextStyle(fontSize: 14)),
+                      const SizedBox(width: 6),
+                      Text(
+                        'CRIME SCENE • DO NOT CROSS • POLICE INVESTIGATION',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFF78350F),
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
                         ),
-                        if (!isMe) ...[
-                          const SizedBox(height: 12),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: SizedBox(
-                              width: double.infinity,
-                              height: 46,
-                              child: ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFDC2626),
-                                  foregroundColor: Colors.white,
-                                  elevation: 6,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14)),
-                                ),
-                                onPressed: () {
-                                  final day = _getEffectiveDay();
-                                  final streak =
-                                      (_profileData?['daily_streak'] as num?)
-                                              ?.toInt() ??
-                                          1;
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => PocketWorldStreetPage(
-                                        currentDay: day,
-                                        streak: streak,
-                                      ),
-                                    ),
-                                  );
-                                },
-                                icon: const Icon(Icons.flash_on_rounded,
-                                    size: 20),
-                                label: Text(
-                                  'VISIT ON STREET & RAID CITADEL ⚔️',
-                                  style: GoogleFonts.outfit(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13.5,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ),
-                            ),
+                      ),
+                      const SizedBox(width: 6),
+                      const Text('🚧', style: TextStyle(fontSize: 14)),
+                    ],
+                  ),
+                  const SizedBox(height: 5),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('👮‍♂️ 🚔 👮‍♀️',
+                            style: TextStyle(fontSize: 13)),
+                        const SizedBox(width: 8),
+                        Text(
+                          '24H PRESIDENTIAL POLICE SHIELD (${(_protectionMinutesLeft / 60).toStringAsFixed(1)}h remaining)',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF38BDF8),
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.bold,
                           ),
-                          const SizedBox(height: 10),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: SizedBox(
-                              width: double.infinity,
-                              height: 46,
-                              child: ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF0284C7),
-                                  foregroundColor: Colors.white,
-                                  elevation: 5,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14)),
-                                ),
-                                onPressed: _isMateRequested
-                                    ? null
-                                    : () => _sendPocketTalkChallengeFromProfile(),
-                                icon: const Icon(Icons.bolt_rounded,
-                                    color: Color(0xFFFFD700), size: 22),
-                                label: Text(
-                                  _isMateRequested
-                                      ? 'POCKET TALK REQUEST PENDING ⏳'
-                                      : 'CHALLENGE TO POCKET TALK (4-DAY PACT) ⚡',
-                                  style: GoogleFonts.outfit(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13,
-                                    letterSpacing: 0.3,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 24),
-                        if (_fortressStatus?.presidentNotice != null) ...[
-                          _buildPresidentNoticeBanner(),
-                          const SizedBox(height: 16),
-                        ],
-                        if (_fortressStatus?.isJailed == true) ...[
-                          _buildJailSentenceBanner(),
-                          const SizedBox(height: 16),
-                        ],
-                        if (isMe) ...[
-                          const SizedBox(height: 16),
-                          _buildMinimalAttackersSection(),
-                          const SizedBox(height: 16),
-                          _buildCitadelFightArenaDesk(),
-                        ] else ...[
-                          const SizedBox(height: 16),
-                          _buildOtherUserCitadelSection(day, textColor, btnColor),
-                        ],
-                        const SizedBox(height: 32),
+                        ),
                       ],
                     ),
-                  );
+                  ),
+                ],
+              ),
+            ),
+          ],
+          FlameEnglishHouseWidget(
+            key: ValueKey('house_${_getEffectiveDay()}'),
+            currentDay: _getEffectiveDay(),
+            streak: (_profileData?['daily_streak'] as num?)?.toInt() ?? 1,
+            isDamaged: _fortressStatus?.isDamaged ?? false,
+            houseId: isMe ? 'me' : (widget.userId ?? ''),
+            showTestingControls: false,
+            onDayChanged: (d) => _jumpToDay(d),
+          ),
+          if (!isMe) ...[
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SizedBox(
+                width: double.infinity,
+                height: 46,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFDC2626),
+                    foregroundColor: Colors.white,
+                    elevation: 6,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
+                  onPressed: () {
+                    final day = _getEffectiveDay();
+                    final streak =
+                        (_profileData?['daily_streak'] as num?)?.toInt() ?? 1;
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => PocketWorldStreetPage(
+                          currentDay: day,
+                          streak: streak,
+                        ),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.flash_on_rounded, size: 20),
+                  label: Text(
+                    'VISIT ON STREET & RAID CITADEL ⚔️',
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13.5,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SizedBox(
+                width: double.infinity,
+                height: 46,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0284C7),
+                    foregroundColor: Colors.white,
+                    elevation: 5,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
+                  onPressed: _isMateRequested
+                      ? null
+                      : () => _sendPocketTalkChallengeFromProfile(),
+                  icon: const Icon(Icons.bolt_rounded,
+                      color: Color(0xFFFFD700), size: 22),
+                  label: Text(
+                    _isMateRequested
+                        ? 'POCKET TALK REQUEST PENDING ⏳'
+                        : 'CHALLENGE TO POCKET TALK (4-DAY PACT) ⚡',
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 24),
+          if (_fortressStatus?.presidentNotice != null) ...[
+            _buildPresidentNoticeBanner(),
+            const SizedBox(height: 16),
+          ],
+          if (_fortressStatus?.isJailed == true) ...[
+            _buildJailSentenceBanner(),
+            const SizedBox(height: 16),
+          ],
+          if (isMe) ...[
+            const SizedBox(height: 16),
+            _buildMinimalAttackersSection(),
+            const SizedBox(height: 16),
+            _buildCitadelFightArenaDesk(),
+          ] else ...[
+            const SizedBox(height: 16),
+            _buildOtherUserCitadelSection(day, textColor, btnColor),
+          ],
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
   }
 
   /// 🎴 Collectible Milestone PopArt Cards Tab for Public Profiles (User Audio Directive!)
@@ -2380,178 +2411,176 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(12, 6, 12, 40),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            childAspectRatio: 0.72,
-            crossAxisSpacing: 8,
-            mainAxisSpacing: 8,
-          ),
-          itemCount: 90,
-          itemBuilder: (context, index) {
-            final cardDay = index + 1;
-            final isUnlocked = cardDay <= effectiveDay;
-            final card =
-                PopArtCardHelper.getCardForDay(cardDay, isMale: isMale);
+        crossAxisCount: 3,
+        childAspectRatio: 0.72,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+      ),
+      itemCount: 90,
+      itemBuilder: (context, index) {
+        final cardDay = index + 1;
+        final isUnlocked = cardDay <= effectiveDay;
+        final card = PopArtCardHelper.getCardForDay(cardDay, isMale: isMale);
 
-            final gameInfo = PocketCitadelChallengeGenerator.getGameForUserCard(
+        final gameInfo = PocketCitadelChallengeGenerator.getGameForUserCard(
+            widget.userId ?? 'adult_hero', cardDay);
+        final difficulty =
+            PocketCitadelChallengeGenerator.getDifficultyForUserCard(
                 widget.userId ?? 'adult_hero', cardDay);
-            final difficulty =
-                PocketCitadelChallengeGenerator.getDifficultyForUserCard(
-                    widget.userId ?? 'adult_hero', cardDay);
 
-            if (!isUnlocked) {
-              return GestureDetector(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  PocketDefenseCardDetailSheet.show(
-                    context,
-                    card: card,
-                    cardDay: cardDay,
-                    gameInfo: gameInfo,
-                    difficulty: difficulty,
-                    isUnlocked: false,
-                    isCardLost: false,
-                    isKidMode: false,
-                    defenderId: widget.userId ?? 'adult_hero',
-                    defenderName: _profileData?['username'] ??
-                        _profileData?['name'] ??
-                        'Defender',
-                  );
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A).withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white12, width: 1),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.lock_rounded,
-                          color: Color(0xFF64748B), size: 22),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Day $cardDay',
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFF94A3B8),
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        'LOCKED',
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFF475569),
-                          fontSize: 8,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+        if (!isUnlocked) {
+          return GestureDetector(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              PocketDefenseCardDetailSheet.show(
+                context,
+                card: card,
+                cardDay: cardDay,
+                gameInfo: gameInfo,
+                difficulty: difficulty,
+                isUnlocked: false,
+                isCardLost: false,
+                isKidMode: false,
+                defenderId: widget.userId ?? 'adult_hero',
+                defenderName: _profileData?['username'] ??
+                    _profileData?['name'] ??
+                    'Defender',
               );
-            }
-
-            return GestureDetector(
-              onTap: () {
-                PocketDefenseCardDetailSheet.show(
-                  context,
-                  card: card,
-                  cardDay: cardDay,
-                  gameInfo: gameInfo,
-                  difficulty: difficulty,
-                  isUnlocked: true,
-                  isCardLost: false,
-                  isKidMode: false,
-                  defenderId: widget.userId ?? 'adult_hero',
-                  defenderName: _profileData?['username'] ??
-                      _profileData?['name'] ??
-                      'Defender',
-                );
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: const Color(0xFFFFD700).withValues(alpha: 0.7),
-                    width: 1.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFFFD700).withValues(alpha: 0.2),
-                      blurRadius: 6,
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10.5),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      CustomPaint(painter: PopArtCardCustomPainter(data: card)),
-                      Positioned(
-                        top: 3,
-                        left: 3,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 4, vertical: 1.5),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.75),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            'Day $cardDay',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFFFFD700),
-                              fontSize: 8,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 3,
-                        left: 3,
-                        right: 3,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 3, vertical: 1.5),
-                          decoration: BoxDecoration(
-                            color:
-                                const Color(0xFF0F172A).withValues(alpha: 0.90),
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(
-                                color: const Color(0xFF38BDF8), width: 0.6),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(gameInfo.icon,
-                                  style: const TextStyle(fontSize: 7.5)),
-                              const SizedBox(width: 2),
-                              Flexible(
-                                child: Text(
-                                  gameInfo.title,
-                                  style: GoogleFonts.outfit(
-                                    color: const Color(0xFF38BDF8),
-                                    fontSize: 7,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A).withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white12, width: 1),
               ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.lock_rounded,
+                      color: Color(0xFF64748B), size: 22),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Day $cardDay',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFF94A3B8),
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    'LOCKED',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFF475569),
+                      fontSize: 8,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return GestureDetector(
+          onTap: () {
+            PocketDefenseCardDetailSheet.show(
+              context,
+              card: card,
+              cardDay: cardDay,
+              gameInfo: gameInfo,
+              difficulty: difficulty,
+              isUnlocked: true,
+              isCardLost: false,
+              isKidMode: false,
+              defenderId: widget.userId ?? 'adult_hero',
+              defenderName: _profileData?['username'] ??
+                  _profileData?['name'] ??
+                  'Defender',
             );
           },
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.7),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                  blurRadius: 6,
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10.5),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  CustomPaint(painter: PopArtCardCustomPainter(data: card)),
+                  Positioned(
+                    top: 3,
+                    left: 3,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 4, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.75),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        'Day $cardDay',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 8,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 3,
+                    left: 3,
+                    right: 3,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 3, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F172A).withValues(alpha: 0.90),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                            color: const Color(0xFF38BDF8), width: 0.6),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(gameInfo.icon,
+                              style: const TextStyle(fontSize: 7.5)),
+                          const SizedBox(width: 2),
+                          Flexible(
+                            child: Text(
+                              gameInfo.title,
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFF38BDF8),
+                                fontSize: 7,
+                                fontWeight: FontWeight.w900,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         );
+      },
+    );
   }
 
   // ➕ Center Floating Action Button (Audio Directive 3)
@@ -3138,7 +3167,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                                 Color(0xFF0369A1)
                                               ],
                                             ),
-                                            borderRadius: BorderRadius.circular(6),
+                                            borderRadius:
+                                                BorderRadius.circular(6),
                                           ),
                                           child: Text(
                                             'Day ${index + 1}: ${info.icon} ${info.title}',
@@ -3157,8 +3187,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 6, vertical: 2),
                                         decoration: BoxDecoration(
-                                          color: diffColor.withValues(alpha: 0.2),
-                                          borderRadius: BorderRadius.circular(4),
+                                          color:
+                                              diffColor.withValues(alpha: 0.2),
+                                          borderRadius:
+                                              BorderRadius.circular(4),
                                           border: Border.all(
                                               color: diffColor, width: 0.8),
                                         ),
@@ -3609,14 +3641,18 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               : '${timeDiff.inDays}d ago');
 
                       final bool isSelf = entry.attackerId.isNotEmpty &&
-                          (entry.attackerId == userId || entry.attackerId == 'me');
+                          (entry.attackerId == userId ||
+                              entry.attackerId == 'me');
                       final String rawName = entry.attackerName.trim();
-                      final displayAttackerName = (rawName.isNotEmpty && rawName.toLowerCase() != 'you' && !isSelf)
+                      final displayAttackerName = (rawName.isNotEmpty &&
+                              rawName.toLowerCase() != 'you' &&
+                              !isSelf)
                           ? rawName
                           : (isSelf ? 'Test Raid' : 'Shadow Citadel Raider 🦹');
-                      final displayAttackerAvatar = entry.attackerAvatar.isNotEmpty
-                          ? entry.attackerAvatar
-                          : '⚔️';
+                      final displayAttackerAvatar =
+                          entry.attackerAvatar.isNotEmpty
+                              ? entry.attackerAvatar
+                              : '⚔️';
 
                       Widget attackerAvatarWidget;
                       if (displayAttackerAvatar.startsWith('http')) {
@@ -3628,7 +3664,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             height: 44,
                             fit: BoxFit.cover,
                             placeholder: (_, __) => const Center(
-                              child: CircularProgressIndicator(strokeWidth: 1.5, color: Color(0xFFEF4444)),
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 1.5, color: Color(0xFFEF4444)),
                             ),
                             errorWidget: (_, __, ___) => const Center(
                               child: Text('⚔️', style: TextStyle(fontSize: 22)),
@@ -3651,7 +3688,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           color: const Color(0xFF1E293B),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: const Color(0xFFEF4444).withValues(alpha: 0.35),
+                            color:
+                                const Color(0xFFEF4444).withValues(alpha: 0.35),
                             width: 1.2,
                           ),
                           boxShadow: [
@@ -3736,7 +3774,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                   if (targetId.isEmpty ||
                                       targetId == userId ||
                                       targetId == 'me' ||
-                                      entry.attackerName.trim().toLowerCase() == 'you') {
+                                      entry.attackerName.trim().toLowerCase() ==
+                                          'you') {
                                     final rival =
                                         await PocketFortressDefenseService
                                             .getRecommendedRivalTarget(
@@ -3814,7 +3853,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   // ⚔️ CITADEL FIGHT ARENA: SPEED DUELS (User Audio Directive: "അവന്റെ മെയിൻ പ്രൊഫൈൽ വിഡ്ജറ്റിൽ ഫൈറ്റ് ചെയ്തത് കാണിക്കണം... തീഫ് ഡെസ്കിൽ കാണിക്കുമല്ലോ, അതേപോലെ അവിടെ കാണിക്കണം. ആരൊക്കെ ഫൈറ്റ് ചെയ്തു എന്ന് പറഞ്ഞിട്ട്.")
   Widget _buildCitadelFightArenaDesk() {
-    final currentUserId = widget.userId ?? SupaFlow.client.auth.currentUser?.id ?? '';
+    final currentUserId =
+        widget.userId ?? SupaFlow.client.auth.currentUser?.id ?? '';
     return FutureBuilder<List<CitadelFightChallenge>>(
       future: PocketCitadelFightService.getAllChallenges(currentUserId),
       builder: (context, snapshot) {
@@ -3824,10 +3864,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 c.opponentId == currentUserId &&
                 (c.status == 'pending' || c.status == 'pending_opponent'))
             .toList();
-        final recentFinished = challenges
-            .where((c) => c.status == 'completed')
-            .take(5)
-            .toList();
+        final recentFinished =
+            challenges.where((c) => c.status == 'completed').take(5).toList();
 
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -3887,7 +3925,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+                            color:
+                                const Color(0xFFFFD700).withValues(alpha: 0.3),
                             blurRadius: 8,
                           ),
                         ],
@@ -3918,10 +3957,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 6, vertical: 1.5),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                                  color: const Color(0xFFFFD700)
+                                      .withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(6),
                                   border: Border.all(
-                                      color: const Color(0xFFFFD700), width: 0.8),
+                                      color: const Color(0xFFFFD700),
+                                      width: 0.8),
                                 ),
                                 child: Text(
                                   PocketLanguageService.localize(
@@ -3994,10 +4035,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             : '${duel.challengerScore} pts';
 
                         final chalName = duel.challengerName.trim();
-                        final safeChalName = (chalName.isNotEmpty && chalName.toLowerCase() != 'you')
+                        final safeChalName = (chalName.isNotEmpty &&
+                                chalName.toLowerCase() != 'you')
                             ? chalName
                             : 'Arena Challenger ⚔️';
-                        final safeChalAvatar = duel.challengerAvatar.isNotEmpty ? duel.challengerAvatar : '⚔️';
+                        final safeChalAvatar = duel.challengerAvatar.isNotEmpty
+                            ? duel.challengerAvatar
+                            : '⚔️';
 
                         return Material(
                           color: Colors.transparent,
@@ -4005,15 +4049,17 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             borderRadius: BorderRadius.circular(16),
                             onTap: () {
                               HapticFeedback.selectionClick();
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => WhatsAppGroupChat(
-                                    groupId: 'p:${duel.challengerId}',
-                                    groupName: safeChalName,
-                                    groupImage: safeChalAvatar,
-                                  ),
-                                ),
-                              ).then((_) => setState(() {}));
+                              Navigator.of(context)
+                                  .push(
+                                    MaterialPageRoute(
+                                      builder: (_) => WhatsAppGroupChat(
+                                        groupId: 'p:${duel.challengerId}',
+                                        groupName: safeChalName,
+                                        groupImage: safeChalAvatar,
+                                      ),
+                                    ),
+                                  )
+                                  .then((_) => setState(() {}));
                             },
                             child: Container(
                               margin: const EdgeInsets.only(bottom: 10),
@@ -4022,12 +4068,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                 color: const Color(0xFF1E293B),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: const Color(0xFFEF4444).withValues(alpha: 0.6),
+                                  color: const Color(0xFFEF4444)
+                                      .withValues(alpha: 0.6),
                                   width: 1.5,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFFEF4444).withValues(alpha: 0.15),
+                                    color: const Color(0xFFEF4444)
+                                        .withValues(alpha: 0.15),
                                     blurRadius: 10,
                                   ),
                                 ],
@@ -4053,23 +4101,33 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                               width: 44,
                                               height: 44,
                                               fit: BoxFit.cover,
-                                              placeholder: (_, __) => const Center(
-                                                child: CircularProgressIndicator(strokeWidth: 1.5, color: Color(0xFFEF4444)),
+                                              placeholder: (_, __) =>
+                                                  const Center(
+                                                child:
+                                                    CircularProgressIndicator(
+                                                        strokeWidth: 1.5,
+                                                        color:
+                                                            Color(0xFFEF4444)),
                                               ),
-                                              errorWidget: (_, __, ___) => const Center(
-                                                child: Text('⚔️', style: TextStyle(fontSize: 22)),
+                                              errorWidget: (_, __, ___) =>
+                                                  const Center(
+                                                child: Text('⚔️',
+                                                    style: TextStyle(
+                                                        fontSize: 22)),
                                               ),
                                             ),
                                           )
                                         : Center(
                                             child: Text(safeChalAvatar,
-                                                style: const TextStyle(fontSize: 22)),
+                                                style: const TextStyle(
+                                                    fontSize: 22)),
                                           ),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Row(
                                           children: [
@@ -4085,16 +4143,25 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                               ),
                                             ),
                                             Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 6,
+                                                      vertical: 2),
                                               decoration: BoxDecoration(
-                                                color: const Color(0xFFDC2626).withValues(alpha: 0.25),
-                                                borderRadius: BorderRadius.circular(6),
-                                                border: Border.all(color: const Color(0xFFDC2626), width: 0.8),
+                                                color: const Color(0xFFDC2626)
+                                                    .withValues(alpha: 0.25),
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                                border: Border.all(
+                                                    color:
+                                                        const Color(0xFFDC2626),
+                                                    width: 0.8),
                                               ),
                                               child: Text(
                                                 'Fought you ⚔️',
                                                 style: GoogleFonts.outfit(
-                                                  color: const Color(0xFFFCA5A5),
+                                                  color:
+                                                      const Color(0xFFFCA5A5),
                                                   fontSize: 9.5,
                                                   fontWeight: FontWeight.bold,
                                                 ),
@@ -4115,7 +4182,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                     ),
                                   ),
                                   const SizedBox(width: 8),
-                                  const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white38, size: 14),
+                                  const Icon(Icons.arrow_forward_ios_rounded,
+                                      color: Colors.white38, size: 14),
                                 ],
                               ),
                             ),
@@ -4145,16 +4213,32 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       const SizedBox(height: 8),
                       ...recentFinished.map((duel) {
                         final isChallenger = duel.challengerId == currentUserId;
-                        final myScore = isChallenger ? duel.challengerScore : duel.opponentScore;
-                        final oppScore = isChallenger ? duel.opponentScore : duel.challengerScore;
-                        final myTime = isChallenger ? duel.challengerTimeSeconds : duel.opponentTimeSeconds;
-                        final oppTime = isChallenger ? duel.opponentTimeSeconds : duel.challengerTimeSeconds;
-                        final rawOppName = (isChallenger ? duel.opponentName : duel.challengerName).trim();
-                        final oppName = (rawOppName.isNotEmpty && rawOppName.toLowerCase() != 'you')
+                        final myScore = isChallenger
+                            ? duel.challengerScore
+                            : duel.opponentScore;
+                        final oppScore = isChallenger
+                            ? duel.opponentScore
+                            : duel.challengerScore;
+                        final myTime = isChallenger
+                            ? duel.challengerTimeSeconds
+                            : duel.opponentTimeSeconds;
+                        final oppTime = isChallenger
+                            ? duel.opponentTimeSeconds
+                            : duel.challengerTimeSeconds;
+                        final rawOppName = (isChallenger
+                                ? duel.opponentName
+                                : duel.challengerName)
+                            .trim();
+                        final oppName = (rawOppName.isNotEmpty &&
+                                rawOppName.toLowerCase() != 'you')
                             ? rawOppName
                             : 'Arena Rival ⚔️';
-                        final rawOppAvatar = (isChallenger ? duel.opponentAvatar : duel.challengerAvatar).trim();
-                        final oppAvatar = rawOppAvatar.isNotEmpty ? rawOppAvatar : '⚔️';
+                        final rawOppAvatar = (isChallenger
+                                ? duel.opponentAvatar
+                                : duel.challengerAvatar)
+                            .trim();
+                        final oppAvatar =
+                            rawOppAvatar.isNotEmpty ? rawOppAvatar : '⚔️';
                         final won = duel.winnerId == currentUserId;
                         final isDraw = duel.winnerId == 'draw';
 
@@ -4167,13 +4251,17 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             border: Border.all(
                               color: won
                                   ? const Color(0xFFFFD700)
-                                  : (isDraw ? Colors.white30 : Colors.redAccent.withValues(alpha: 0.4)),
+                                  : (isDraw
+                                      ? Colors.white30
+                                      : Colors.redAccent
+                                          .withValues(alpha: 0.4)),
                               width: won ? 1.4 : 1.0,
                             ),
                           ),
                           child: Row(
                             children: [
-                              Text(won ? '🏆' : (isDraw ? '🤝' : '💥'), style: const TextStyle(fontSize: 22)),
+                              Text(won ? '🏆' : (isDraw ? '🤝' : '💥'),
+                                  style: const TextStyle(fontSize: 22)),
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Column(
@@ -4182,9 +4270,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                     Text(
                                       won
                                           ? 'YOU WON (+1 Gold Trophy 🏆)'
-                                          : (isDraw ? 'DRAW MATCH' : '$oppName Won'),
+                                          : (isDraw
+                                              ? 'DRAW MATCH'
+                                              : '$oppName Won'),
                                       style: GoogleFonts.outfit(
-                                        color: won ? const Color(0xFFFFD700) : Colors.white,
+                                        color: won
+                                            ? const Color(0xFFFFD700)
+                                            : Colors.white,
                                         fontWeight: FontWeight.w900,
                                         fontSize: 12.5,
                                       ),
@@ -4204,18 +4296,23 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                   onTap: () {
                                     PocketCitadelFightModal.startDirectDuel(
                                       context,
-                                      opponentId: isChallenger ? duel.opponentId : duel.challengerId,
+                                      opponentId: isChallenger
+                                          ? duel.opponentId
+                                          : duel.challengerId,
                                       opponentName: oppName,
                                       opponentAvatar: oppAvatar,
                                       opponentDay: 1,
                                     );
                                   },
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 5),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFDC2626).withValues(alpha: 0.25),
+                                      color: const Color(0xFFDC2626)
+                                          .withValues(alpha: 0.25),
                                       borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: Colors.redAccent, width: 0.8),
+                                      border: Border.all(
+                                          color: Colors.redAccent, width: 0.8),
                                     ),
                                     child: const Text('REMATCH ⚔️',
                                         style: TextStyle(
@@ -4329,11 +4426,17 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final bio = _profileData?['bio'] ?? '';
     final profileUrl = _profileData?['profile_image_url'];
     final String currentEmail = SupaFlow.client.auth.currentUser?.email ?? '';
-    final String targetName = (_profileData?['name'] ?? _profileData?['username'] ?? '').toString().toLowerCase();
+    final String targetName =
+        (_profileData?['name'] ?? _profileData?['username'] ?? '')
+            .toString()
+            .toLowerCase();
     final isVerified = _profileData?['verified'] == true ||
         _profileData?['is_vip'] == true ||
         _profileData?['is_subscribed'] == true ||
-        (isMe && (currentEmail.contains('musab') || currentEmail.contains('thonippadam') || currentEmail.contains('mussabira'))) ||
+        (isMe &&
+            (currentEmail.contains('musab') ||
+                currentEmail.contains('thonippadam') ||
+                currentEmail.contains('mussabira'))) ||
         targetName.contains('musab') ||
         targetName.contains('thonippadam') ||
         targetName.contains('mussabira');
@@ -4343,8 +4446,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final isTop10 = rank > 0 && rank <= 10;
     final isDark = !isTop10;
     final rankTheme = isTop10 ? PocketTopRankTheme.getThemeForRank(rank) : null;
-    final secondaryTextColor = rankTheme?.secondaryTextColor ?? const Color(0xFFA8A8A8);
-    final dividerColor = rankTheme?.borderColor.withValues(alpha: 0.25) ?? const Color(0xFF262626);
+    final secondaryTextColor =
+        rankTheme?.secondaryTextColor ?? const Color(0xFFA8A8A8);
+    final dividerColor = rankTheme?.borderColor.withValues(alpha: 0.25) ??
+        const Color(0xFF262626);
 
     // Layout 1: Unified Classic Instagram Layout (Left Avatar, Right Stats) across all 90 levels (Audio directive)
     final headerContent = _buildLayoutGenesis(
@@ -5237,8 +5342,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     width: size,
                     height: size,
                     fit: BoxFit.cover,
-                    placeholder: (_, __) =>
-                        Container(color: dividerColor),
+                    placeholder: (_, __) => Container(color: dividerColor),
                     errorWidget: (_, __, ___) => Container(
                       color: dividerColor,
                       child: Icon(Icons.person,
@@ -5324,8 +5428,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   ),
                   const SizedBox(height: 12),
                   IconButton(
-                    icon: const Icon(Icons.close,
-                        color: Colors.white, size: 28),
+                    icon:
+                        const Icon(Icons.close, color: Colors.white, size: 28),
                     onPressed: () => Navigator.pop(ctx),
                   ),
                 ],
@@ -5343,8 +5447,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         if (profileUrl != null && profileUrl.isNotEmpty) {
           setState(() => _showAvatarMode = !_showAvatarMode);
           if (isMe) {
-            SharedPreferences.getInstance().then((p) =>
-                p.setBool('show_avatar_mode_$userId', _showAvatarMode));
+            SharedPreferences.getInstance().then(
+                (p) => p.setBool('show_avatar_mode_$userId', _showAvatarMode));
           }
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -5388,7 +5492,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   }
 
   /// 🐾 4th Tab: Pocket Mates Avatar Milestone Companions (Audio Directive: larger avatars, glowing aura, no top ribbon, tap opens 3D NFT Card Dialog)
-  Widget _buildCompanionsMilestoneTab(Color textColor, Color btnColor, bool isMe) {
+  Widget _buildCompanionsMilestoneTab(
+      Color textColor, Color btnColor, bool isMe) {
     final int userLevel = _getEffectiveDay();
     var currentCfg = _getAvatarConfig();
     final animals90 = VectorAvatarConfig.get90DayAnimals();
@@ -5397,152 +5502,164 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(12, 4, 12, 32),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          childAspectRatio: 0.69,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-        ),
-        itemCount: animals90.length,
-        itemBuilder: (context, index) {
-          final companionDay = index + 1;
-          final a = animals90[index];
-          final isUnlocked = VectorAvatarConfig.isCompanionUnlocked(companionDay, userLevel);
-          final isEquipped = currentCfg.species == a.species;
+        crossAxisCount: 3,
+        childAspectRatio: 0.69,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+      ),
+      itemCount: animals90.length,
+      itemBuilder: (context, index) {
+        final companionDay = index + 1;
+        final a = animals90[index];
+        final isUnlocked =
+            VectorAvatarConfig.isCompanionUnlocked(companionDay, userLevel);
+        final isEquipped = currentCfg.species == a.species;
 
-          final previewCfg = VectorAvatarConfig.getEvolutionAvatarForStage(
-            companionDay,
-            talismanId: _equippedTalismanId,
-          ).copyWith(
-            skinColor: isEquipped ? currentCfg.skinColor : null,
-            hairColor: isEquipped ? currentCfg.hairColor : null,
-          );
+        final previewCfg = VectorAvatarConfig.getEvolutionAvatarForStage(
+          companionDay,
+          talismanId: _equippedTalismanId,
+        ).copyWith(
+          skinColor: isEquipped ? currentCfg.skinColor : null,
+          hairColor: isEquipped ? currentCfg.hairColor : null,
+        );
 
-          return GestureDetector(
-            onTap: () async {
-              HapticFeedback.mediumImpact();
-              // Open 3D Holographic NFT Card Dialog (User audio: "അതിൽ ടാപ്പ് ചെയ്യുന്ന സമയത്ത് എക്വിപ്ഡ് അവതാർ എന്ന് പറഞ്ഞിട്ട് ഒരു അലർട്ട് ബോക്സ് വരുക")
-              await NftTradingCardDialog.show(
-                context,
-                day: companionDay,
-                config: previewCfg,
-                userId: userId,
-                isOwner: isMe && isUnlocked,
-              );
+        return GestureDetector(
+          onTap: () async {
+            HapticFeedback.mediumImpact();
+            // Open 3D Holographic NFT Card Dialog (User audio: "അതിൽ ടാപ്പ് ചെയ്യുന്ന സമയത്ത് എക്വിപ്ഡ് അവതാർ എന്ന് പറഞ്ഞിട്ട് ഒരു അലർട്ട് ബോക്സ് വരുക")
+            await NftTradingCardDialog.show(
+              context,
+              day: companionDay,
+              config: previewCfg,
+              userId: userId,
+              isOwner: isMe && isUnlocked,
+            );
 
-              if (isUnlocked && isMe) {
-                final newCfg = userLevel >= 90
-                    ? previewCfg
-                    : VectorAvatarConfig.getEvolutionAvatarForStage(
-                        userLevel,
-                        talismanId: _equippedTalismanId,
-                      ).copyWith(species: a.species);
+            if (isUnlocked && isMe) {
+              final newCfg = userLevel >= 90
+                  ? previewCfg
+                  : VectorAvatarConfig.getEvolutionAvatarForStage(
+                      userLevel,
+                      talismanId: _equippedTalismanId,
+                    ).copyWith(species: a.species);
 
-                setState(() {
-                  _profileData ??= {};
-                  _profileData!['avatar_config'] = newCfg.toMap();
-                  _showAvatarMode = true;
-                });
+              setState(() {
+                _profileData ??= {};
+                _profileData!['avatar_config'] = newCfg.toMap();
+                _showAvatarMode = true;
+              });
 
-                try {
-                  final uid = _supabase.auth.currentUser?.id;
-                  if (uid != null) {
-                    await _supabase.from('profile').update({
-                      'avatar_config': newCfg.toMap(),
-                    }).eq('user_id', uid);
-                  }
-                } catch (_) {}
-              }
-            },
-            child: Container(
-              decoration: BoxDecoration(
+              try {
+                final uid = _supabase.auth.currentUser?.id;
+                if (uid != null) {
+                  await _supabase.from('profile').update({
+                    'avatar_config': newCfg.toMap(),
+                  }).eq('user_id', uid);
+                }
+              } catch (_) {}
+            }
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: isEquipped
+                  ? const Color(0xFF1E2238)
+                  : (isUnlocked
+                      ? const Color(0xFF141724)
+                      : const Color(0xFF0C0E17)),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
                 color: isEquipped
-                    ? const Color(0xFF1E2238)
-                    : (isUnlocked ? const Color(0xFF141724) : const Color(0xFF0C0E17)),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: isEquipped
-                      ? const Color(0xFFFFD700)
-                      : (isUnlocked ? Colors.white24 : Colors.white10),
-                  width: isEquipped ? 2 : 1,
-                ),
-                boxShadow: isEquipped
-                    ? [
-                        BoxShadow(
-                          color: const Color(0xFFFFD700).withValues(alpha: 0.25),
-                          blurRadius: 10,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
-                    : null,
+                    ? const Color(0xFFFFD700)
+                    : (isUnlocked ? Colors.white24 : Colors.white10),
+                width: isEquipped ? 2 : 1,
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 8),
-                  // 🌟 Larger Avatar with Active Animated Aura (Audio Directive: "കുറച്ചുകൂടി വലിപ്പത്തിൽ പ്ലേസ് ചെയ്യുക... ബാക്കിൽ ഒരു ആനിമേഷൻ ഉണ്ട്, അതേ ആനിമേഷൻ ഇവിടെയും കൊടുക്കുക")
-                  Expanded(
-                    child: Center(
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          VectorAvatarWidget(
-                            config: previewCfg,
-                            size: 74,
-                            showAura: isUnlocked,
-                          ),
-                          if (!isUnlocked)
-                            Container(
-                              width: 74,
-                              height: 74,
-                              decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.65),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.lock_rounded, size: 24, color: Colors.white54),
-                            ),
-                        ],
+              boxShadow: isEquipped
+                  ? [
+                      BoxShadow(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(6, 0, 6, 8),
-                    child: Column(
+                    ]
+                  : null,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(height: 8),
+                // 🌟 Larger Avatar with Active Animated Aura (Audio Directive: "കുറച്ചുകൂടി വലിപ്പത്തിൽ പ്ലേസ് ചെയ്യുക... ബാക്കിൽ ഒരു ആനിമേഷൻ ഉണ്ട്, അതേ ആനിമേഷൻ ഇവിടെയും കൊടുക്കുക")
+                Expanded(
+                  child: Center(
+                    child: Stack(
+                      alignment: Alignment.center,
                       children: [
-                        Text(
-                          a.species.replaceAll('_', ' ').split(' ').map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' '),
-                          style: GoogleFonts.outfit(
-                            color: isUnlocked ? Colors.white : Colors.white60,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
+                        VectorAvatarWidget(
+                          config: previewCfg,
+                          size: 74,
+                          showAura: isUnlocked,
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          isUnlocked
-                              ? (isEquipped ? 'EQUIPPED ✨' : 'UNLOCKED 🌱')
-                              : 'DAY $companionDay 🔒',
-                          style: GoogleFonts.outfit(
-                            color: isEquipped
-                                ? const Color(0xFFFFD700)
-                                : (isUnlocked ? const Color(0xFF10B981) : Colors.white38),
-                            fontSize: 9,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.3,
+                        if (!isUnlocked)
+                          Container(
+                            width: 74,
+                            height: 74,
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.65),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.lock_rounded,
+                                size: 24, color: Colors.white54),
                           ),
-                        ),
                       ],
                     ),
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 6),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(6, 0, 6, 8),
+                  child: Column(
+                    children: [
+                      Text(
+                        a.species
+                            .replaceAll('_', ' ')
+                            .split(' ')
+                            .map((w) => w.isNotEmpty
+                                ? '${w[0].toUpperCase()}${w.substring(1)}'
+                                : '')
+                            .join(' '),
+                        style: GoogleFonts.outfit(
+                          color: isUnlocked ? Colors.white : Colors.white60,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        isUnlocked
+                            ? (isEquipped ? 'EQUIPPED ✨' : 'UNLOCKED 🌱')
+                            : 'DAY $companionDay 🔒',
+                        style: GoogleFonts.outfit(
+                          color: isEquipped
+                              ? const Color(0xFFFFD700)
+                              : (isUnlocked
+                                  ? const Color(0xFF10B981)
+                                  : Colors.white38),
+                          fontSize: 9,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          );
-        },
-      );
+          ),
+        );
+      },
+    );
   }
 
   /// Interactive bottom sheet for switching unlocked companions and checking upcoming unlock levels
@@ -5992,12 +6109,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 HapticFeedback.heavyImpact();
                 Day90MasterCertificateDialog.show(
                   context,
-                  userName: shopName != null && shopName.isNotEmpty ? shopName : name,
+                  userName:
+                      shopName != null && shopName.isNotEmpty ? shopName : name,
                   userDay: activeStage.day >= 90 ? activeStage.day : 91,
                 );
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
                 decoration: BoxDecoration(
                   color: isTop10
                       ? Colors.black.withValues(alpha: 0.05)
@@ -6061,7 +6180,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             },
             child: Container(
               margin: const EdgeInsets.only(top: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6.5),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6.5),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
@@ -6140,7 +6260,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         if (lower.contains('neptune')) return 'Neptune';
         if (lower.contains('pluto')) return 'Pluto';
         String clean = fullName.replaceAll(RegExp(r'[^\w\s]'), '').trim();
-        clean = clean.replaceFirst(RegExp(r'^The\s+', caseSensitive: false), '');
+        clean =
+            clean.replaceFirst(RegExp(r'^The\s+', caseSensitive: false), '');
         return clean.split(' ').first;
     }
   }
@@ -6152,7 +6273,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     if (PocketRobotService.isRobotId(currentUserId)) {
       final robot = PocketRobotService.getRobotById(currentUserId);
       if (robot != null) {
-        final colony = PoketCosmosAllocationService.instance.getColonyByPlanetName(robot.planetName);
+        final colony = PoketCosmosAllocationService.instance
+            .getColonyByPlanetName(robot.planetName);
         return {
           'planetCode': colony.code,
           'plotNumber': robot.plotNumber,
@@ -6176,11 +6298,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     }
 
     // 3. Registered profiles cache check (real Supabase chronological sequential ordering)
-    final cached = PoketCosmosAllocationService.instance.getCachedUserPlot(currentUserId);
+    final cached =
+        PoketCosmosAllocationService.instance.getCachedUserPlot(currentUserId);
     if (cached != null) {
-      final colony = PoketCosmosAllocationService.instance.getColonyByPlanetName(cached.planetName);
+      final colony = PoketCosmosAllocationService.instance
+          .getColonyByPlanetName(cached.planetName);
       final pinMatch = RegExp(r'PKT-W(\d+)-').firstMatch(cached.postalPinCode);
-      final wave = pinMatch != null ? (int.tryParse(pinMatch.group(1) ?? '1') ?? 1) : 1;
+      final wave =
+          pinMatch != null ? (int.tryParse(pinMatch.group(1) ?? '1') ?? 1) : 1;
       return {
         'planetCode': colony.code,
         'plotNumber': cached.plotNumber,
@@ -6189,9 +6314,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     }
 
     // 4. If current user is viewing their own profile and has an allocated birth plot
-    if (isMe && PoketCosmosAllocationService.instance.currentBirthPlot != null) {
+    if (isMe &&
+        PoketCosmosAllocationService.instance.currentBirthPlot != null) {
       final p = PoketCosmosAllocationService.instance.currentBirthPlot!;
-      final colony = PoketCosmosAllocationService.instance.getColonyByPlanetName(p.planetName);
+      final colony = PoketCosmosAllocationService.instance
+          .getColonyByPlanetName(p.planetName);
       return {
         'planetCode': colony.code,
         'plotNumber': p.plotNumber,
@@ -6200,9 +6327,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     }
 
     // 5. Deterministic stable fallback based on userId
-    final colIndex = currentUserId.hashCode.abs() % PoketCosmosAllocationService.colonies.length;
+    final colIndex = currentUserId.hashCode.abs() %
+        PoketCosmosAllocationService.colonies.length;
     final colony = PoketCosmosAllocationService.colonies[colIndex];
-    final localPlot = ((currentUserId.hashCode.abs() ~/ 10) % PoketCosmosAllocationService.maxPlotsPerIsland) + 1;
+    final localPlot = ((currentUserId.hashCode.abs() ~/ 10) %
+            PoketCosmosAllocationService.maxPlotsPerIsland) +
+        1;
     return {
       'planetCode': colony.code,
       'plotNumber': localPlot,
@@ -6212,13 +6342,15 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   String _getResolvedCosmosAddressText(String bio) {
     final coords = _resolveUserCosmosCoordinates();
-    final colony = PoketCosmosAllocationService.instance.getColonyByCode(coords['planetCode'] as String? ?? 'EP');
+    final colony = PoketCosmosAllocationService.instance
+        .getColonyByCode(coords['planetCode'] as String? ?? 'EP');
     final cleanPlanet = _getCleanPlanetName(colony.code, colony.planetName);
     final wave = coords['wave'] as int? ?? 1;
     final plotNum = coords['plotNumber'] as int? ?? 1;
     final islandName = (wave == 1)
         ? colony.islandName
-        : PoketCosmosAllocationService.generateInfiniteIslandName(colony.code, wave, wave);
+        : PoketCosmosAllocationService.generateInfiniteIslandName(
+            colony.code, wave, wave);
     final plotStr = plotNum.toString().padLeft(2, '0');
     return 'Plot #$plotStr • $islandName • $cleanPlanet';
   }
@@ -6264,7 +6396,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     String? profileUrl,
   ) {
     final userRank = _getUserGlobalRank();
-    final rankTheme = (userRank > 0 && userRank <= 10) ? PocketTopRankTheme.getThemeForRank(userRank) : null;
+    final rankTheme = (userRank > 0 && userRank <= 10)
+        ? PocketTopRankTheme.getThemeForRank(userRank)
+        : null;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -6482,11 +6616,15 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     height: 38,
                     decoration: BoxDecoration(
                       color: _isFollowing
-                          ? (rankTheme != null ? rankTheme.btnColor.withValues(alpha: 0.16) : const Color(0xFF262626))
+                          ? (rankTheme != null
+                              ? rankTheme.btnColor.withValues(alpha: 0.16)
+                              : const Color(0xFF262626))
                           : btnColor,
                       borderRadius: BorderRadius.circular(8),
                       border: _isFollowing
-                          ? Border.all(color: (rankTheme?.borderColor ?? textColor).withValues(alpha: 0.3))
+                          ? Border.all(
+                              color: (rankTheme?.borderColor ?? textColor)
+                                  .withValues(alpha: 0.3))
                           : null,
                     ),
                     child: InkWell(
@@ -6498,7 +6636,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               ? "Following"
                               : (_isRequested ? "Requested" : "Follow"),
                           style: GoogleFonts.outfit(
-                            color: _isFollowing ? (rankTheme?.textColor ?? textColor) : btnTextColor,
+                            color: _isFollowing
+                                ? (rankTheme?.textColor ?? textColor)
+                                : btnTextColor,
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
@@ -6508,154 +6648,163 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   ),
                 ),
                 const SizedBox(width: 8),
-                  if (_isMate)
-                    Expanded(
-                      child: Container(
-                        height: 38,
-                        decoration: BoxDecoration(
-                          color: rankTheme != null
-                              ? rankTheme.btnColor.withValues(alpha: 0.16)
-                              : const Color(0xFF262626),
-                          borderRadius: BorderRadius.circular(8),
-                          border: rankTheme != null
-                              ? Border.all(color: rankTheme.borderColor.withValues(alpha: 0.45))
-                              : null,
-                        ),
-                        child: InkWell(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => WhatsAppGroupChat(
-                                  groupId: 'p:$userId',
-                                  groupName: name,
-                                  groupImage: profileUrl,
+                if (_isMate)
+                  Expanded(
+                    child: Container(
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: rankTheme != null
+                            ? rankTheme.btnColor.withValues(alpha: 0.16)
+                            : const Color(0xFF262626),
+                        borderRadius: BorderRadius.circular(8),
+                        border: rankTheme != null
+                            ? Border.all(
+                                color: rankTheme.borderColor
+                                    .withValues(alpha: 0.45))
+                            : null,
+                      ),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => WhatsAppGroupChat(
+                                groupId: 'p:$userId',
+                                groupName: name,
+                                groupImage: profileUrl,
+                              ),
+                            ),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(8),
+                        child: Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.chat_bubble_outline_rounded,
+                                  size: 15,
+                                  color: rankTheme?.primaryColor ??
+                                      const Color(0xFF10B981)),
+                              const SizedBox(width: 5),
+                              Text(
+                                "Message",
+                                style: GoogleFonts.outfit(
+                                  color: rankTheme?.textColor ?? textColor,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            );
-                          },
-                          borderRadius: BorderRadius.circular(8),
-                          child: Center(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.chat_bubble_outline_rounded,
-                                    size: 15,
-                                    color: rankTheme?.primaryColor ?? const Color(0xFF10B981)),
-                                const SizedBox(width: 5),
-                                Text(
-                                  "Message",
-                                  style: GoogleFonts.outfit(
-                                    color: rankTheme?.textColor ?? textColor,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    )
-                  else
-                    Expanded(
-                      child: Container(
-                        height: 38,
-                        decoration: BoxDecoration(
-                          color: _isMateRequested
-                              ? Colors.white10
-                              : (rankTheme != null
-                                  ? rankTheme.btnColor.withValues(alpha: 0.16)
-                                  : const Color(0xFFFFFC00).withValues(alpha: 0.18)),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: _isMateRequested
-                                ? Colors.white24
-                                : (rankTheme != null
-                                    ? rankTheme.borderColor.withValues(alpha: 0.5)
-                                    : const Color(0xFFFFFC00).withValues(alpha: 0.6)),
-                          ),
-                        ),
-                        child: InkWell(
-                          onTap: _isMateRequested
-                              ? () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                          'Mate request already sent. Waiting for them to accept!'),
-                                      behavior: SnackBarBehavior.floating,
-                                      backgroundColor: Color(0xFF1E293B),
-                                    ),
-                                  );
-                                }
-                              : () async {
-                                  final myId = _supabase.auth.currentUser?.id;
-                                  if (myId == null) return;
-                                  HapticFeedback.mediumImpact();
-                                  setState(() => _isMateRequested = true);
-                                  final ok = await PocketMateService.sendMateRequest(
-                                    senderId: myId,
-                                    receiverId: userId,
-                                    message: "Hi $name, let's connect and practice English together!",
-                                    contextType: 'english_hub',
-                                  );
-                                  await PocketTrophyService.ensurePact(
-                                      myId: myId, otherUserId: userId);
-                                  if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Row(
-                                          children: [
-                                            const Icon(Icons.check_circle_rounded,
-                                                color: Color(0xFF10B981), size: 18),
-                                            const SizedBox(width: 8),
-                                            Expanded(
-                                              child: Text(
-                                                'Requested! $name will see it in their Requests tab.',
-                                                style: GoogleFonts.outfit(color: Colors.white),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        backgroundColor: const Color(0xFF1E293B),
-                                        behavior: SnackBarBehavior.floating,
-                                      ),
-                                    );
-                                  }
-                                },
-                          borderRadius: BorderRadius.circular(8),
-                          child: Center(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  _isMateRequested
-                                      ? Icons.hourglass_top_rounded
-                                      : Icons.person_add_alt_1_rounded,
-                                  size: 15,
-                                  color: _isMateRequested
-                                      ? Colors.white70
-                                      : (rankTheme?.primaryColor ?? const Color(0xFFFFFC00)),
-                                ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  _isMateRequested
-                                      ? "Requested"
-                                      : "Mate",
-                                  style: GoogleFonts.outfit(
-                                    color: _isMateRequested
-                                        ? Colors.white70
-                                        : (rankTheme?.textColor ?? const Color(0xFFFFFC00)),
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
+                            ],
                           ),
                         ),
                       ),
                     ),
+                  )
+                else
+                  Expanded(
+                    child: Container(
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: _isMateRequested
+                            ? Colors.white10
+                            : (rankTheme != null
+                                ? rankTheme.btnColor.withValues(alpha: 0.16)
+                                : const Color(0xFFFFFC00)
+                                    .withValues(alpha: 0.18)),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: _isMateRequested
+                              ? Colors.white24
+                              : (rankTheme != null
+                                  ? rankTheme.borderColor.withValues(alpha: 0.5)
+                                  : const Color(0xFFFFFC00)
+                                      .withValues(alpha: 0.6)),
+                        ),
+                      ),
+                      child: InkWell(
+                        onTap: _isMateRequested
+                            ? () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        'Mate request already sent. Waiting for them to accept!'),
+                                    behavior: SnackBarBehavior.floating,
+                                    backgroundColor: Color(0xFF1E293B),
+                                  ),
+                                );
+                              }
+                            : () async {
+                                final myId = _supabase.auth.currentUser?.id;
+                                if (myId == null) return;
+                                HapticFeedback.mediumImpact();
+                                setState(() => _isMateRequested = true);
+                                final ok =
+                                    await PocketMateService.sendMateRequest(
+                                  senderId: myId,
+                                  receiverId: userId,
+                                  message:
+                                      "Hi $name, let's connect and practice English together!",
+                                  contextType: 'english_hub',
+                                );
+                                await PocketTrophyService.ensurePact(
+                                    myId: myId, otherUserId: userId);
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Row(
+                                        children: [
+                                          const Icon(Icons.check_circle_rounded,
+                                              color: Color(0xFF10B981),
+                                              size: 18),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              'Requested! $name will see it in their Requests tab.',
+                                              style: GoogleFonts.outfit(
+                                                  color: Colors.white),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      backgroundColor: const Color(0xFF1E293B),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                }
+                              },
+                        borderRadius: BorderRadius.circular(8),
+                        child: Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                _isMateRequested
+                                    ? Icons.hourglass_top_rounded
+                                    : Icons.person_add_alt_1_rounded,
+                                size: 15,
+                                color: _isMateRequested
+                                    ? Colors.white70
+                                    : (rankTheme?.primaryColor ??
+                                        const Color(0xFFFFFC00)),
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                _isMateRequested ? "Requested" : "Mate",
+                                style: GoogleFonts.outfit(
+                                  color: _isMateRequested
+                                      ? Colors.white70
+                                      : (rankTheme?.textColor ??
+                                          const Color(0xFFFFFC00)),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Container(
@@ -6953,328 +7102,389 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         return StatefulBuilder(
           builder: (ctx, setSheetState) {
             return Container(
-          height: MediaQuery.of(ctx).size.height * 0.72,
-          decoration: const BoxDecoration(
-            color: Color(0xFF0F172A),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-            border: Border(
-              top: BorderSide(color: Color(0xFFFFFC00), width: 1.5),
-            ),
-          ),
-          child: Column(
-            children: [
-              // Header Drag Handle & Title
-              Container(
-                margin: const EdgeInsets.only(top: 10, bottom: 6),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.white24,
-                  borderRadius: BorderRadius.circular(2),
+              height: MediaQuery.of(ctx).size.height * 0.72,
+              decoration: const BoxDecoration(
+                color: Color(0xFF0F172A),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                border: Border(
+                  top: BorderSide(color: Color(0xFFFFFC00), width: 1.5),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 16, 12),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(7),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Text('🤝', style: TextStyle(fontSize: 18)),
+              child: Column(
+                children: [
+                  // Header Drag Handle & Title
+                  Container(
+                    margin: const EdgeInsets.only(top: 10, bottom: 6),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Your Pocket Mates',
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            'Companions, learning partners & lifelong mates',
-                            style: GoogleFonts.inter(
-                              color: Colors.white60,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close_rounded, color: Colors.white70),
-                      onPressed: () => Navigator.pop(ctx),
-                    ),
-                  ],
-                ),
-              ),
-              const Divider(color: Colors.white10, height: 1),
-
-              // Mates List
-              Expanded(
-                child: FutureBuilder<List<Map<String, dynamic>>>(
-                  future: PocketMateService.getDetailedMatesList(targetUid),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(
-                        child: CircularProgressIndicator(color: Color(0xFFFFFC00)),
-                      );
-                    }
-                    final mates = snapshot.data ?? [];
-                    if (mates.isEmpty) {
-                      return Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text('🤝', style: TextStyle(fontSize: 36)),
-                            const SizedBox(height: 12),
-                            Text(
-                              'No Mates Connected Yet',
-                              style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Start PocketTalk 4-day pacts or add mates to connect!',
-                              style: GoogleFonts.inter(
-                                color: Colors.white54,
-                                fontSize: 12,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-
-                    return ListView.separated(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      itemCount: mates.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 8),
-                      itemBuilder: (context, index) {
-                        final mate = mates[index];
-                        final mId = mate['id']?.toString() ?? '';
-                        final name = mate['name']?.toString() ?? 'Pocket Mate';
-                        final subtitle = mate['subtitle']?.toString() ?? '';
-                        final avatarUrl = mate['avatar_url']?.toString();
-                        final isRobot = mate['is_robot'] == true;
-                        final isPresident = mate['is_president'] == true;
-
-                        return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 16, 12),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(7),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF1E293B),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: isPresident
-                                  ? const Color(0xFFFFD700)
-                                  : (isRobot ? const Color(0xFF06B6D4) : Colors.white12),
-                              width: isPresident ? 1.4 : 1.0,
-                            ),
+                            color:
+                                const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                            shape: BoxShape.circle,
                           ),
-                          child: Row(
+                          child:
+                              const Text('🤝', style: TextStyle(fontSize: 18)),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Avatar
-                              Container(
-                                width: 44,
-                                height: 44,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: isPresident
-                                        ? const Color(0xFFFFD700)
-                                        : (isRobot ? const Color(0xFF06B6D4) : const Color(0xFFFFFC00)),
-                                    width: 1.5,
-                                  ),
-                                ),
-                                child: ClipOval(
-                                  child: (avatarUrl != null && avatarUrl.isNotEmpty)
-                                      ? CachedNetworkImage(
-                                          imageUrl: avatarUrl,
-                                          fit: BoxFit.cover,
-                                          errorWidget: (_, __, ___) => Center(
-                                            child: Text(
-                                              name.isNotEmpty ? name[0].toUpperCase() : 'M',
-                                              style: const TextStyle(color: Color(0xFFFFFC00), fontWeight: FontWeight.bold),
-                                            ),
-                                          ),
-                                        )
-                                      : Center(
-                                          child: Text(
-                                            isRobot ? '🤖' : (isPresident ? '🏛️' : '👤'),
-                                            style: const TextStyle(fontSize: 20),
-                                          ),
-                                        ),
+                              Text(
+                                'Your Pocket Mates',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      name,
-                                      style: GoogleFonts.outfit(
-                                        color: Colors.white,
-                                        fontSize: 14.5,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      subtitle,
-                                      style: GoogleFonts.inter(
-                                        color: isPresident
-                                            ? const Color(0xFFFFD700)
-                                            : (isRobot ? const Color(0xFF67E8F9) : Colors.white60),
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
+                              Text(
+                                'Companions, learning partners & lifelong mates',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white60,
+                                  fontSize: 11,
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              // Chat Button
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFFFFC00),
-                                  foregroundColor: Colors.black,
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                  minimumSize: const Size(64, 32),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  elevation: 0,
-                                ),
-                                onPressed: () {
-                                  Navigator.pop(ctx);
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => WhatsAppGroupChat(
-                                        groupId: isPresident ? 'president' : (isRobot ? 'r:$mId' : 'm:$mId'),
-                                        groupName: name,
-                                        groupImage: avatarUrl,
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: Text(
-                                  'Chat 💬',
-                                  style: GoogleFonts.outfit(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 11.5,
-                                  ),
-                                ),
-                              ),
-                              if (targetUid == myId && !isPresident) ...[
-                                const SizedBox(width: 4),
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.person_remove_rounded,
-                                    color: Colors.white38,
-                                    size: 19,
-                                  ),
-                                  tooltip: 'Remove Mate',
-                                  constraints: const BoxConstraints(),
-                                  padding: const EdgeInsets.all(6),
-                                  onPressed: () async {
-                                    final confirm = await showDialog<bool>(
-                                      context: ctx,
-                                      builder: (dCtx) => AlertDialog(
-                                        backgroundColor: const Color(0xFF1E293B),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(16),
-                                          side: const BorderSide(color: Colors.white12),
-                                        ),
-                                        title: Row(
-                                          children: [
-                                            const Icon(Icons.person_remove_rounded, color: Colors.redAccent, size: 22),
-                                            const SizedBox(width: 8),
-                                            Text(
-                                              'Remove Mate?',
-                                              style: GoogleFonts.outfit(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        content: Text(
-                                          'Are you sure you want to remove "$name" from your Mates list?',
-                                          style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () => Navigator.pop(dCtx, false),
-                                            child: Text('Cancel', style: GoogleFonts.outfit(color: Colors.white54)),
-                                          ),
-                                          ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.redAccent,
-                                              foregroundColor: Colors.white,
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                            ),
-                                            onPressed: () => Navigator.pop(dCtx, true),
-                                            child: Text('Remove', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-
-                                    if (confirm == true) {
-                                      await PocketMateService.removeMateLocally(myId, mId);
-                                      if (mounted) {
-                                        setState(() {
-                                          _friendsCount = (_friendsCount - 1).clamp(0, 999999);
-                                        });
-                                      }
-                                      setSheetState(() {
-                                        mates.removeAt(index);
-                                      });
-                                      if (mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(
-                                            content: Text('Removed $name from Mates.'),
-                                            backgroundColor: const Color(0xFF1E293B),
-                                            behavior: SnackBarBehavior.floating,
-                                          ),
-                                        );
-                                      }
-                                    }
-                                  },
-                                ),
-                              ],
                             ],
                           ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close_rounded,
+                              color: Colors.white70),
+                          onPressed: () => Navigator.pop(ctx),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(color: Colors.white10, height: 1),
+
+                  // Mates List
+                  Expanded(
+                    child: FutureBuilder<List<Map<String, dynamic>>>(
+                      future: PocketMateService.getDetailedMatesList(targetUid),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(
+                                color: Color(0xFFFFFC00)),
+                          );
+                        }
+                        final mates = snapshot.data ?? [];
+                        if (mates.isEmpty) {
+                          return Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text('🤝',
+                                    style: TextStyle(fontSize: 36)),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'No Mates Connected Yet',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Start PocketTalk 4-day pacts or add mates to connect!',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white54,
+                                    fontSize: 12,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        return ListView.separated(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          itemCount: mates.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 8),
+                          itemBuilder: (context, index) {
+                            final mate = mates[index];
+                            final mId = mate['id']?.toString() ?? '';
+                            final name =
+                                mate['name']?.toString() ?? 'Pocket Mate';
+                            final subtitle = mate['subtitle']?.toString() ?? '';
+                            final avatarUrl = mate['avatar_url']?.toString();
+                            final isRobot = mate['is_robot'] == true;
+                            final isPresident = mate['is_president'] == true;
+
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E293B),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isPresident
+                                      ? const Color(0xFFFFD700)
+                                      : (isRobot
+                                          ? const Color(0xFF06B6D4)
+                                          : Colors.white12),
+                                  width: isPresident ? 1.4 : 1.0,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  // Avatar
+                                  Container(
+                                    width: 44,
+                                    height: 44,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: isPresident
+                                            ? const Color(0xFFFFD700)
+                                            : (isRobot
+                                                ? const Color(0xFF06B6D4)
+                                                : const Color(0xFFFFFC00)),
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    child: ClipOval(
+                                      child: (avatarUrl != null &&
+                                              avatarUrl.isNotEmpty)
+                                          ? CachedNetworkImage(
+                                              imageUrl: avatarUrl,
+                                              fit: BoxFit.cover,
+                                              errorWidget: (_, __, ___) =>
+                                                  Center(
+                                                child: Text(
+                                                  name.isNotEmpty
+                                                      ? name[0].toUpperCase()
+                                                      : 'M',
+                                                  style: const TextStyle(
+                                                      color: Color(0xFFFFFC00),
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                              ),
+                                            )
+                                          : Center(
+                                              child: Text(
+                                                isRobot
+                                                    ? '🤖'
+                                                    : (isPresident
+                                                        ? '🏛️'
+                                                        : '👤'),
+                                                style: const TextStyle(
+                                                    fontSize: 20),
+                                              ),
+                                            ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          name,
+                                          style: GoogleFonts.outfit(
+                                            color: Colors.white,
+                                            fontSize: 14.5,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          subtitle,
+                                          style: GoogleFonts.inter(
+                                            color: isPresident
+                                                ? const Color(0xFFFFD700)
+                                                : (isRobot
+                                                    ? const Color(0xFF67E8F9)
+                                                    : Colors.white60),
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  // Chat Button
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFFFFFC00),
+                                      foregroundColor: Colors.black,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 6),
+                                      minimumSize: const Size(64, 32),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      elevation: 0,
+                                    ),
+                                    onPressed: () {
+                                      Navigator.pop(ctx);
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              WhatsAppGroupChat(
+                                            groupId: isPresident
+                                                ? 'president'
+                                                : (isRobot
+                                                    ? 'r:$mId'
+                                                    : 'm:$mId'),
+                                            groupName: name,
+                                            groupImage: avatarUrl,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: Text(
+                                      'Chat 💬',
+                                      style: GoogleFonts.outfit(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 11.5,
+                                      ),
+                                    ),
+                                  ),
+                                  if (targetUid == myId && !isPresident) ...[
+                                    const SizedBox(width: 4),
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.person_remove_rounded,
+                                        color: Colors.white38,
+                                        size: 19,
+                                      ),
+                                      tooltip: 'Remove Mate',
+                                      constraints: const BoxConstraints(),
+                                      padding: const EdgeInsets.all(6),
+                                      onPressed: () async {
+                                        final confirm = await showDialog<bool>(
+                                          context: ctx,
+                                          builder: (dCtx) => AlertDialog(
+                                            backgroundColor:
+                                                const Color(0xFF1E293B),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                              side: const BorderSide(
+                                                  color: Colors.white12),
+                                            ),
+                                            title: Row(
+                                              children: [
+                                                const Icon(
+                                                    Icons.person_remove_rounded,
+                                                    color: Colors.redAccent,
+                                                    size: 22),
+                                                const SizedBox(width: 8),
+                                                Text(
+                                                  'Remove Mate?',
+                                                  style: GoogleFonts.outfit(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 16,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            content: Text(
+                                              'Are you sure you want to remove "$name" from your Mates list?',
+                                              style: GoogleFonts.inter(
+                                                  color: Colors.white70,
+                                                  fontSize: 13),
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () =>
+                                                    Navigator.pop(dCtx, false),
+                                                child: Text('Cancel',
+                                                    style: GoogleFonts.outfit(
+                                                        color: Colors.white54)),
+                                              ),
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      Colors.redAccent,
+                                                  foregroundColor: Colors.white,
+                                                  shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10)),
+                                                ),
+                                                onPressed: () =>
+                                                    Navigator.pop(dCtx, true),
+                                                child: Text('Remove',
+                                                    style: GoogleFonts.outfit(
+                                                        fontWeight:
+                                                            FontWeight.bold)),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+
+                                        if (confirm == true) {
+                                          await PocketMateService
+                                              .removeMateLocally(myId, mId);
+                                          if (mounted) {
+                                            setState(() {
+                                              _friendsCount =
+                                                  (_friendsCount - 1)
+                                                      .clamp(0, 999999);
+                                            });
+                                          }
+                                          setSheetState(() {
+                                            mates.removeAt(index);
+                                          });
+                                          if (mounted) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                    'Removed $name from Mates.'),
+                                                backgroundColor:
+                                                    const Color(0xFF1E293B),
+                                                behavior:
+                                                    SnackBarBehavior.floating,
+                                              ),
+                                            );
+                                          }
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            );
+                          },
                         );
                       },
-                    );
-                  },
-                ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-          );
-        },
-      );
-    },
-  );
-}
+            );
+          },
+        );
+      },
+    );
+  }
 
   Widget _buildInstagramStatColumn({
     required String label,

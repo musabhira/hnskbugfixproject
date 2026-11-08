@@ -92,8 +92,8 @@ class HomePageWidgetTree extends ConsumerStatefulWidget {
 class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   final supabase = SupaFlow.client;
   // final scaffoldKey = GlobalKey<ScaffoldState>(); // Removed ScaffoldKey
-  // 4-Item Minimal Navigation: 0 = Chat, 1 = English Hub, 2 = Target, 3 = Profile
-  int _currentIndex = 0;
+  // 5-Item Navigation: 0 = Homes, 1 = English Hub, 2 = Chat (Center Default), 3 = Target, 4 = Profile
+  int _currentIndex = 2;
   String? profileId;
   bool _isVerified = false;
   bool _isLoading = true;
@@ -299,10 +299,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     PocketGameAudioService.instance.stop();
     _pageController = PageController(initialPage: _chatTabIndex);
     PocketHomeNavigationController.switchToHomes = () {
-      if (mounted) setState(() => _currentIndex = 1);
+      if (mounted) setState(() => _currentIndex = 0);
     };
     PocketHomeNavigationController.switchToChat = () {
-      if (mounted) setState(() => _currentIndex = 0);
+      if (mounted) setState(() => _currentIndex = 2);
     };
     ContactsNameService().initialize();
     PocketKidsService.isKidAccountNotifier
@@ -660,18 +660,17 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       if (initialTab != null) {
         safeSetState(() {
           // Map tab indices to 5-item bottom navigation:
-          // 0=Chat, 1=Homes, 2=English Hub, 3=Target, 4=Profile
-          // Default on open is Chat (0)
-          if (initialTab == 1) {
-            _currentIndex = 1; // Homes
-          } else if (initialTab == 2) {
-            _currentIndex = 2; // English Hub
+          // 0=Homes, 1=English Hub, 2=Chat (Default Center), 3=Target, 4=Profile
+          if (initialTab == 0) {
+            _currentIndex = 0; // Homes
+          } else if (initialTab == 1) {
+            _currentIndex = 1; // English Hub
           } else if (initialTab == 3) {
             _currentIndex = 3; // Target
           } else if (initialTab >= 4) {
             _currentIndex = 4; // Profile
           } else {
-            _currentIndex = 0; // Default to Chat
+            _currentIndex = 2; // Default to Center Chat
           }
         });
         await prefs.remove('initial_home_tab_$userId');
@@ -1202,7 +1201,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             material.Scaffold(
               backgroundColor: material.Colors.transparent,
               bottomNavigationBar: _buildBottomNavigationBar(context),
-              floatingActionButton: _currentIndex == 0
+              floatingActionButton: _currentIndex == 2
                   ? material.FloatingActionButton.extended(
                       heroTag: 'mates_ranking_fab',
                       onPressed: () {
@@ -1240,17 +1239,17 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                               : const Color(0xFFFFFC00),
                         ),
                       )
-                    : _currentIndex == 1
+                    : _currentIndex == 0
                         ? PocketHomesReelsFeedWidget(
                             key:
                                 const ValueKey('adult_active_homes_reels_root'),
                             onBackToChat: () =>
-                                setState(() => _currentIndex = 0),
+                                setState(() => _currentIndex = 2),
                           )
-                        : _currentIndex == 2
+                        : _currentIndex == 1
                             ? EnglishLearningGroupChatWidget(
                                 onCancel: () =>
-                                    setState(() => _currentIndex = 0),
+                                    setState(() => _currentIndex = 2),
                               )
                             : _currentIndex == 3
                                 ? EnglishTasksMasterHubPage(
@@ -5617,24 +5616,17 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                // 1. Chat
+                // 1. Homes (Reels vertical scroll feed)
                 _buildNavItem(
-                  icon: material.Icons.chat_bubble_rounded,
+                  icon: material.Icons.cottage_rounded,
                   isSelected: _currentIndex == 0,
                   onTap: () => setState(() => _currentIndex = 0),
                 ),
 
-                // 2. Homes (Reels vertical scroll feed)
-                _buildNavItem(
-                  icon: material.Icons.cottage_rounded,
-                  isSelected: _currentIndex == 1,
-                  onTap: () => setState(() => _currentIndex = 1),
-                ),
-
-                // 3. English Hub
+                // 2. English Hub / Community Chat
                 _buildNavItem(
                   icon: material.Icons.group_rounded,
-                  isSelected: _currentIndex == 2,
+                  isSelected: _currentIndex == 1,
                   onTap: () async {
                     if (_currentUserId == null || _currentUserId!.isEmpty) {
                       final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
@@ -5643,12 +5635,19 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             "Please login to join Group Chats and English Hub",
                       );
                       if (isAuth && mounted) {
-                        setState(() => _currentIndex = 2);
+                        setState(() => _currentIndex = 1);
                       }
                     } else {
-                      setState(() => _currentIndex = 2);
+                      setState(() => _currentIndex = 1);
                     }
                   },
+                ),
+
+                // 3. Chat (Center tab, Default on app launch!)
+                _buildNavItem(
+                  icon: material.Icons.chat_bubble_rounded,
+                  isSelected: _currentIndex == 2,
+                  onTap: () => setState(() => _currentIndex = 2),
                 ),
 
                 // 4. Target
