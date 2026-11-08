@@ -9,6 +9,9 @@ import 'package:flame/components.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_ad_preload_manager.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocket_banner_ad_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_100day_syllabus_db.dart';
 
 // ============================================================================
@@ -698,6 +701,9 @@ class _PocketKidsSentenceBuilderPageState
     _currentRoundIndex = 0;
     _flameGame = SentenceBuilderFlameEngine();
 
+    // 🚀 Preload banner ad for zero latency
+    PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.banner);
+
     _trainWheelsController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
@@ -876,6 +882,7 @@ class _PocketKidsSentenceBuilderPageState
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
+                PocketAdMobService.instance.showInterstitialAd(context: context);
                 Navigator.of(ctx).pop();
                 Navigator.of(context).pop();
               },
@@ -1163,6 +1170,9 @@ class _PocketKidsSentenceBuilderPageState
                     ],
                   ),
                 ),
+
+                // 🎯 Sticky Banner Ad at bottom
+                const PocketBannerAdWidget(placement: PocketAdPlacement.banner),
               ],
             ),
           ),

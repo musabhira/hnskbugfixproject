@@ -287,7 +287,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
 
     // ⚡ Upfront Preload Homes Reel Ad immediately upon opening Homes!
     PocketAdMobService.instance.isUserVip().then((vip) {
-      if (!vip && !PocketKidsService.isKidAccount) {
+      if (!vip) {
         PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.reels);
       }
     });
@@ -592,6 +592,12 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
 
       if (kidsGames.isNotEmpty) items.add(ReelFeedItem.game(kidsGames[gIdx++]));
 
+      // 📢 Seamless Native Ad insertion in Kids feed right after 2 reels (index 2 / 3rd slide)
+      if (items.length >= 2) {
+        items.add(const ReelFeedItem.ad());
+      }
+
+      int kidSeedItemsSinceAd = 0;
       for (int i = 0; i < kidsRobots.length; i++) {
         final mate = kidsRobots[i];
         items.add(
@@ -613,9 +619,19 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
             ),
           ),
         );
+        kidSeedItemsSinceAd++;
+        if (kidSeedItemsSinceAd >= 3) {
+          items.add(const ReelFeedItem.ad());
+          kidSeedItemsSinceAd = 0;
+        }
 
         if (gIdx < kidsGames.length) {
           items.add(ReelFeedItem.game(kidsGames[gIdx++]));
+          kidSeedItemsSinceAd++;
+          if (kidSeedItemsSinceAd >= 3) {
+            items.add(const ReelFeedItem.ad());
+            kidSeedItemsSinceAd = 0;
+          }
         }
 
         if (i % 3 == 0 && spkIdx < kidsSpeak.length) {
@@ -665,7 +681,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       if (spokenGames.isNotEmpty) items.add(ReelFeedItem.game(spokenGames[gIdx++]));
 
       // 📢 Seamless Native Ad insertion: right after 2 reels (index 2 / 3rd slide)
-      if (items.length >= 2 && !PocketKidsService.isKidAccount) {
+      if (items.length >= 2) {
         items.add(const ReelFeedItem.ad());
       }
 
@@ -673,7 +689,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       for (int i = 0; i < adultRobots.length; i++) {
         items.add(ReelFeedItem.home(adultRobots[i]));
         seedItemsSinceAd++;
-        if (seedItemsSinceAd >= 3 && !PocketKidsService.isKidAccount) {
+        if (seedItemsSinceAd >= 3) {
           items.add(const ReelFeedItem.ad());
           seedItemsSinceAd = 0;
         }
@@ -682,7 +698,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
         if (gIdx < spokenGames.length) {
           items.add(ReelFeedItem.game(spokenGames[gIdx++]));
           seedItemsSinceAd++;
-          if (seedItemsSinceAd >= 3 && !PocketKidsService.isKidAccount) {
+          if (seedItemsSinceAd >= 3) {
             items.add(const ReelFeedItem.ad());
             seedItemsSinceAd = 0;
           }
@@ -1168,7 +1184,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
 
     int itemsSinceLastAd = 0;
     bool isFirstAdPlaced = false;
-    void addAdultReelItem(ReelFeedItem item) {
+    void addReelItem(ReelFeedItem item) {
       combinedFeed.add(item);
       itemsSinceLastAd++;
       // 📢 User Directive: First ad appears right after 2 reels (index 2 / 3rd slide); subsequent ads every 3-4 reels
@@ -1182,40 +1198,40 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
 
     for (int i = 0; i < combinedNeighbors.length; i++) {
       if (isKid) {
-        combinedFeed.add(ReelFeedItem.home(combinedNeighbors[i]));
+        addReelItem(ReelFeedItem.home(combinedNeighbors[i]));
         // 🧸 KIDS COMMUNICATION-RICH STREAM:
         if (gameIdx < games.length) {
-          combinedFeed.add(ReelFeedItem.game(games[gameIdx++]));
+          addReelItem(ReelFeedItem.game(games[gameIdx++]));
         }
 
         // Interleave animal speak challenge, vocab card, or fable every 2-3 homes
         if (i % 3 == 0 && speakIdx < speakChallenges.length) {
-          combinedFeed.add(ReelFeedItem.speakChallenge(speakChallenges[speakIdx++]));
+          addReelItem(ReelFeedItem.speakChallenge(speakChallenges[speakIdx++]));
         } else if (i % 3 == 1 && vocabIdx < vocabCards.length) {
-          combinedFeed.add(ReelFeedItem.vocab(vocabCards[vocabIdx++]));
+          addReelItem(ReelFeedItem.vocab(vocabCards[vocabIdx++]));
         } else if (i % 3 == 2 && storyIdx < stories.length) {
-          combinedFeed.add(ReelFeedItem.story(stories[storyIdx++]));
+          addReelItem(ReelFeedItem.story(stories[storyIdx++]));
         }
 
         if ((i + 1) % 3 == 0 && vibeIdx < publicVibes.length) {
-          combinedFeed.add(ReelFeedItem.vibe(publicVibes[vibeIdx++]));
+          addReelItem(ReelFeedItem.vibe(publicVibes[vibeIdx++]));
         }
       } else {
         // 🏰 ADULT SPOKEN COMMUNICATION STREAM:
-        addAdultReelItem(ReelFeedItem.home(combinedNeighbors[i]));
+        addReelItem(ReelFeedItem.home(combinedNeighbors[i]));
 
         // Pair every single home with a Level-Matched Spoken English Dialogue Game!
         if (gameIdx < games.length) {
-          addAdultReelItem(ReelFeedItem.game(games[gameIdx++]));
+          addReelItem(ReelFeedItem.game(games[gameIdx++]));
         }
 
         // Interleave light bite-sized content every 2-3 homes (Speak challenge, Vocab card, or short Story bite)
         if (i % 3 == 0 && speakIdx < speakChallenges.length) {
-          addAdultReelItem(ReelFeedItem.speakChallenge(speakChallenges[speakIdx++]));
+          addReelItem(ReelFeedItem.speakChallenge(speakChallenges[speakIdx++]));
         } else if (i % 3 == 1 && vocabIdx < vocabCards.length) {
-          addAdultReelItem(ReelFeedItem.vocab(vocabCards[vocabIdx++]));
+          addReelItem(ReelFeedItem.vocab(vocabCards[vocabIdx++]));
         } else if (i % 3 == 2 && storyIdx < stories.length) {
-          addAdultReelItem(ReelFeedItem.story(stories[storyIdx++]));
+          addReelItem(ReelFeedItem.story(stories[storyIdx++]));
         }
 
         if ((i + 1) % 4 == 0 && vibeIdx < publicVibes.length) {
@@ -1899,9 +1915,6 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
 
   /// 📢 Native Ad Reel Slide styled like an aesthetic full-screen sponsor card
   Widget _buildNativeAdReelSlide(int index) {
-    if (PocketKidsService.isKidAccount) {
-      return const SizedBox.shrink();
-    }
     return FutureBuilder<bool>(
       future: PocketAdMobService.instance.isUserVip(),
       builder: (context, snapshot) {

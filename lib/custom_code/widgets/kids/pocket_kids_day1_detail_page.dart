@@ -8,6 +8,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_ad_preload_manager.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocket_native_ad_card.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocket_banner_ad_widget.dart';
 
 /// 🌟 Day 1 Dedicated Interactive Game-First Learning & Defense Flow for Kids
 class PocketKidsDay1DetailPage extends StatefulWidget {
@@ -99,6 +102,10 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
   @override
   void initState() {
     super.initState();
+    // 🚀 Upfront Preloading of Step Native Review Ad and Sticky Banner Ad for Kids
+    PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.review);
+    PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.banner);
+
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1400),
@@ -361,9 +368,10 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (ctx) {
         return Container(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
           decoration: const BoxDecoration(
             color: Color(0xFF0F172A),
             borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
@@ -387,24 +395,34 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                 'You earned 3 Golden Stars! Keep climbing!',
                 style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
               ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF10B981),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                ),
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  setState(() {
-                    _activeStep = (stepIndex + 1).clamp(0, 4);
-                  });
-                  _speakCurrentStepPrompt();
-                },
-                child: Text(
-                  'CONTINUE TO NEXT GAME 🚀',
-                  style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 14),
+              const SizedBox(height: 14),
+
+              // 🚀 Zero-Lag Upfront Preloaded Native Ad inside Step Completion Modal
+              const PocketNativeAdCard(placement: PocketAdPlacement.review),
+              const SizedBox(height: 16),
+
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF10B981),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  onPressed: () {
+                    // Preload next step Native Ad immediately
+                    PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.review);
+                    Navigator.pop(ctx);
+                    setState(() {
+                      _activeStep = (stepIndex + 1).clamp(0, 4);
+                    });
+                    _speakCurrentStepPrompt();
+                  },
+                  child: Text(
+                    'CONTINUE TO NEXT GAME 🚀',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 15),
+                  ),
                 ),
               ),
             ],
@@ -466,20 +484,36 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               ),
-              icon: const Text('⭐', style: TextStyle(fontSize: 16)),
+              icon: const Text('📺', style: TextStyle(fontSize: 16)),
               label: Text(
-                'Claim +50 Celebration Stars! 🦁',
+                'Watch Ad for +50 Bonus Stars! ⭐',
                 style: GoogleFonts.outfit(color: const Color(0xFFFDE047), fontWeight: FontWeight.bold, fontSize: 13),
               ),
               onPressed: () async {
-                await PocketKidsService.addStars(50);
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('🌟 +50 CELEBRATION STARS CLAIMED! 🦁✨'),
-                      backgroundColor: Color(0xFF10B981),
-                    ),
-                  );
+                final rewarded = await PocketAdMobService.instance.showRewardedAd(
+                  context: context,
+                  onRewardEarned: (reward) async {
+                    await PocketKidsService.addStars(50);
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('🌟 +50 BONUS STARS CLAIMED FROM REWARD AD! 🦁✨'),
+                          backgroundColor: Color(0xFF10B981),
+                        ),
+                      );
+                    }
+                  },
+                );
+                if (!rewarded) {
+                  await PocketKidsService.addStars(50);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('🌟 +50 CELEBRATION STARS CLAIMED! 🦁✨'),
+                        backgroundColor: Color(0xFF10B981),
+                      ),
+                    );
+                  }
                 }
               },
             ),
@@ -492,6 +526,7 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
               onPressed: () {
+                PocketAdMobService.instance.showInterstitialAd(context: context);
                 Navigator.pop(ctx);
                 Navigator.pop(context);
                 widget.onCompleted?.call();
@@ -530,6 +565,9 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                 child: _buildActiveGameContent(),
               ),
             ),
+
+            // 🎯 Sticky Banner Ad at bottom
+            const PocketBannerAdWidget(placement: PocketAdPlacement.banner),
           ],
         ),
       ),

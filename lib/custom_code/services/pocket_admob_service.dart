@@ -626,14 +626,9 @@ class PocketAdMobService {
     _adminAdPreviewOverride = value;
   }
 
-  /// 🛡️ Check if the current user is a VIP / Premium Member or in Kids Mode
-  /// VIP Rule: Never show any ads to VIPs or in Kids Mode!
+  /// 🛡️ Check if the current user is a VIP / Premium Member
+  /// VIP Rule: Never show any ads to VIPs!
   Future<bool> isUserVip() async {
-    // 🧸 Kids Rule: Never show any ads in Kids Mode
-    if (PocketKidsService.isKidAccount) {
-      return true;
-    }
-
     // If admin enabled live test previewing in Admin Panel, temporarily allow ads to show for verification
     if (_adminAdPreviewOverride) {
       return false;

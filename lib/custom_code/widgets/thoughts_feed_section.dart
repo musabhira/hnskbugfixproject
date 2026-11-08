@@ -70,7 +70,7 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
     _fetchUserLikes();
     // ⚡ Preload Native Ad for Thoughts Feed upfront
     PocketAdMobService.instance.isUserVip().then((vip) {
-      if (!vip && widget.isKidMode != true && !PocketKidsService.isKidAccount) {
+      if (!vip) {
         PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.home);
       }
     });
