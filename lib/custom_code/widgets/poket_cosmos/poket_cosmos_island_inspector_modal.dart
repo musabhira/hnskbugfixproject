@@ -16,7 +16,7 @@ import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_m
 /// - 25 equal partitioned territorial district cells with crisp cartographic boundary lines
 /// - 25 plots per island:
 ///   - Plot #1: Occupied Pioneer Citadel
-///   - Plot #2: 5-Hour pre-booked neighbor reservation with live countdown timer
+///   - Plot #2: 4-Hour pre-booked neighbor reservation with live countdown timer
 ///   - Plots #3 to #25: Vacant parcels with center pulsing `➕` button
 /// - Cruising speedboats & yachts with white foaming wake trails on all celestial gradient oceans
 /// - Top 10-planet selector chips + Prev/Next chevron buttons
@@ -100,7 +100,7 @@ class _PoketCosmosIslandInspectorModalState
       shapeStyle: colony.shapeStyle,
     );
 
-    // Plot #2: Pre-booked Neighbor Reservation with active 5-hour countdown timer
+    // Plot #2: Pre-booked Neighbor Reservation with active 4-hour countdown timer
     const reservationPlotNum = 2;
     final pass = NeighborReservationPass(
       code: 'PKT-W01-${colony.code}-I01-P02',
@@ -112,7 +112,7 @@ class _PoketCosmosIslandInspectorModalState
       plotNumber: reservationPlotNum,
       hostUserName: 'Cosmic Pioneer',
       createdAt: DateTime.now().subtract(const Duration(minutes: 28)),
-      expiresAt: DateTime.now().add(const Duration(hours: 4, minutes: 32)),
+      expiresAt: DateTime.now().add(const Duration(hours: 3, minutes: 32)),
     );
 
     _currentReservations = {reservationPlotNum: pass};

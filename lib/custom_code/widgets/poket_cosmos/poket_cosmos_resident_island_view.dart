@@ -12,7 +12,7 @@ import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_n
 /// 🏝️ Fullscreen Resident Island Map for Main Profile PageView
 /// Shows the citizen's actual island with:
 /// - Real citizen houses on occupied plots
-/// - ⏳ Animated rotating countdown timer rings on 5-hour pre-booked parcels
+/// - ⏳ Animated rotating countdown timer rings on 4-hour pre-booked parcels
 /// - ➕ Glowing Plus buttons on vacant parcels
 /// - Edge-to-edge ocean with zero broken bottom/top
 /// - Bottom "FOCUS MY HOUSE 🏡" and "COSMOS EXPLORER 🪐" floating FABs
@@ -148,7 +148,7 @@ class _PoketCosmosResidentIslandViewState
 
     final updatedPlot = plot.copyWith(coordinates: targetPos);
 
-    // 5. Load active 5-hour reservations for this island
+    // 5. Load active 4-hour reservations for this island
     final reservationsMap = await PoketCosmosAllocationService.instance
         .getActiveReservationsMap(island.id);
 
@@ -474,7 +474,7 @@ class _PoketCosmosResidentIslandViewState
               ctx,
               id: 'vacant',
               title: 'Available for Pre-booking',
-              subtitle: 'Highlight open plots and active 5-hour reservations',
+              subtitle: 'Highlight open plots and active 4-hour reservations',
               icon: Icons.add_circle_outline_rounded,
             ),
           ],
@@ -698,6 +698,8 @@ class _PoketCosmosResidentIslandViewState
                             fontSize: 10.5,
                             fontWeight: FontWeight.w600,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),

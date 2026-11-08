@@ -2942,7 +2942,7 @@ class IslandAerialPainter extends CustomPainter {
         }
       }
 
-      // 2. Check if pre-booked for 5 hours
+      // 2. Check if pre-booked for 4 hours
       final reservation = reservations[plotNumber];
       final isPreBooked = reservation != null && !reservation.isExpired;
 

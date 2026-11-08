@@ -3193,51 +3193,58 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             return Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 3),
-                                      decoration: BoxDecoration(
-                                        gradient: const LinearGradient(
-                                          colors: [
-                                            Color(0xFF0284C7),
-                                            Color(0xFF0369A1)
-                                          ],
-                                        ),
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      child: Text(
-                                        'Day ${index + 1}: ${info.icon} ${info.title}',
-                                        style: GoogleFonts.outfit(
-                                          color: Colors.white,
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w800,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 6, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: diffColor.withValues(alpha: 0.2),
-                                        borderRadius: BorderRadius.circular(4),
-                                        border: Border.all(
-                                            color: diffColor, width: 0.8),
-                                      ),
-                                      child: Text(
-                                        q.difficulty.toUpperCase(),
-                                        style: GoogleFonts.outfit(
-                                          color: diffColor,
-                                          fontSize: 9,
-                                          fontWeight: FontWeight.w800,
+                                Expanded(
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Flexible(
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 3),
+                                          decoration: BoxDecoration(
+                                            gradient: const LinearGradient(
+                                              colors: [
+                                                Color(0xFF0284C7),
+                                                Color(0xFF0369A1)
+                                              ],
+                                            ),
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: Text(
+                                            'Day ${index + 1}: ${info.icon} ${info.title}',
+                                            style: GoogleFonts.outfit(
+                                              color: Colors.white,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w800,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: diffColor.withValues(alpha: 0.2),
+                                          borderRadius: BorderRadius.circular(4),
+                                          border: Border.all(
+                                              color: diffColor, width: 0.8),
+                                        ),
+                                        child: Text(
+                                          q.difficulty.toUpperCase(),
+                                          style: GoogleFonts.outfit(
+                                            color: diffColor,
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
+                                const SizedBox(width: 8),
                                 if (isMe)
                                   IconButton(
                                     icon: const Icon(Icons.edit_note_rounded,
@@ -5656,27 +5663,33 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'PoketMates Progression Prestige',
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'PoketMates Progression Prestige',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Level $userLevel Mate • $unlockedCount/90 Unlocked 🌱',
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFFFFFC00),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 11.5,
+                            const SizedBox(height: 2),
+                            Text(
+                              'Level $userLevel Mate • $unlockedCount/90 Unlocked 🌱',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFFFFFC00),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 11.5,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                       if (userLevel >= 90)
                         TextButton.icon(
@@ -8071,26 +8084,32 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '⚡ 90-Level Live Theme Switcher',
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16.5,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '⚡ 90-Level Live Theme Switcher',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16.5,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Tap any level (1–90) to preview live colors & companions',
-                            style: GoogleFonts.inter(
-                              color: Colors.white60,
-                              fontSize: 11,
+                            const SizedBox(height: 2),
+                            Text(
+                              'Tap any level (1–90) to preview live colors & companions',
+                              style: GoogleFonts.inter(
+                                color: Colors.white60,
+                                fontSize: 11,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(ctx),

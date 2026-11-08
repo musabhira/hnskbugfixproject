@@ -14,7 +14,7 @@ import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_i
 /// 2. Explore the full Solar System & 35-plot islands.
 /// 3. Backfill & allocate all existing registered users with exclusive plots.
 /// 4. Reset local deed state for infinite testing.
-/// 5. Generate and copy 5-hour friend reservation codes.
+/// 5. Generate and copy 4-hour friend reservation codes.
 class PoketCosmosTestCenterModal extends StatefulWidget {
   const PoketCosmosTestCenterModal({super.key});
 
