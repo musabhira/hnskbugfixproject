@@ -3222,7 +3222,7 @@ class IslandAerialPainter extends CustomPainter {
         _drawWalkwayPaths(canvas, parcelRect, housePos, day);
         _drawArchitecturalRoof(canvas, housePos, day, isSel, plotNumber);
         _drawPrivateYardAnimalsAndItems(canvas, parcelRect, day, plotNumber);
-        _drawEstateNameBoard(canvas, parcelRect, citizenPlot, isSel);
+        _drawParcelNumberBadge(canvas, parcelRect, plotNumber, isSel);
 
         canvas.restore();
 
@@ -3260,8 +3260,8 @@ class IslandAerialPainter extends CustomPainter {
         );
       } else if (isPreBooked) {
         // ⏳ Render 4-Hour Animated Rotating Countdown Timer Ring
-        _drawPreBookedParcel(
-            canvas, housePos, parcelRect, plotRot, reservation, isSel);
+        _drawPreBookedParcel(canvas, housePos, parcelRect, plotRot, reservation,
+            plotNumber, isSel);
       } else {
         // ➕ Render Vacant Plot with center pulsing Plus (+) icon
         _drawVacantParcelWithPlus(
@@ -3403,27 +3403,58 @@ class IslandAerialPainter extends CustomPainter {
     canvas.drawLine(
         const Offset(0, -plusSize), const Offset(0, plusSize), plusPaint);
 
-    // 4. Subtle "PLOT #{plotNumber}" label
-    final textPainter = TextPainter(
+    // 4. Clean centered "#$plotNumber" badge inside the vacant parcel
+    final label = '#$plotNumber';
+    final tp = TextPainter(
       text: TextSpan(
-        text: 'PLOT #$plotNumber',
-        style: const TextStyle(
-          color: Color(0xFFFDA4AF),
-          fontSize: 3.3,
+        text: label,
+        style: TextStyle(
+          color: isSel ? const Color(0xFFFFD700) : const Color(0xFFFDA4AF),
+          fontSize: 3.1,
           fontWeight: FontWeight.bold,
-          letterSpacing: 0.3,
+          letterSpacing: 0.2,
         ),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    textPainter.paint(canvas, Offset(-textPainter.width / 2, -8.5));
+
+    final badgeWidth = math.max(10.5, tp.width + 3.4);
+    const badgeHeight = 4.8;
+    final badgeRect = Rect.fromCenter(
+        center: const Offset(0, -9.5), width: badgeWidth, height: badgeHeight);
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+          badgeRect.translate(0.25, 0.35), const Radius.circular(1.2)),
+      Paint()..color = Colors.black38,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(badgeRect, const Radius.circular(1.2)),
+      Paint()..color = const Color(0xFF0F172A).withValues(alpha: 0.85),
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(badgeRect, const Radius.circular(1.2)),
+      Paint()
+        ..color = isSel
+            ? const Color(0xFFFFD700)
+            : const Color(0xFFE11D48).withValues(alpha: 0.7)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = isSel ? 0.8 : 0.5,
+    );
+    tp.paint(canvas, Offset(-tp.width / 2, -9.5 - tp.height / 2));
 
     canvas.restore();
   }
 
   // ⏳ Pre-Booked Parcel with Animated Rotating Countdown Timer Ring
-  void _drawPreBookedParcel(Canvas canvas, Offset housePos, Rect parcelRect,
-      double plotRot, NeighborReservationPass pass, bool isSel) {
+  void _drawPreBookedParcel(
+      Canvas canvas,
+      Offset housePos,
+      Rect parcelRect,
+      double plotRot,
+      NeighborReservationPass pass,
+      int plotNumber,
+      bool isSel) {
     canvas.save();
     canvas.translate(housePos.dx, housePos.dy);
     canvas.rotate(plotRot);
@@ -3513,6 +3544,48 @@ class IslandAerialPainter extends CustomPainter {
       textDirection: TextDirection.ltr,
     )..layout();
     timePainter.paint(canvas, Offset(-timePainter.width / 2, 7.5));
+
+    // 4. Centered "#$plotNumber" badge inside pre-booked parcel
+    final preLabel = '#$plotNumber';
+    final preTp = TextPainter(
+      text: TextSpan(
+        text: preLabel,
+        style: TextStyle(
+          color: isSel ? const Color(0xFFFFD700) : const Color(0xFFFDE68A),
+          fontSize: 2.9,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.2,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+
+    final preBadgeWidth = math.max(10.5, preTp.width + 3.4);
+    const preBadgeHeight = 4.8;
+    final preBadgeRect = Rect.fromCenter(
+        center: const Offset(0, -8.2),
+        width: preBadgeWidth,
+        height: preBadgeHeight);
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+          preBadgeRect.translate(0.25, 0.35), const Radius.circular(1.2)),
+      Paint()..color = Colors.black38,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(preBadgeRect, const Radius.circular(1.2)),
+      Paint()..color = const Color(0xFF0F172A).withValues(alpha: 0.85),
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(preBadgeRect, const Radius.circular(1.2)),
+      Paint()
+        ..color = isSel
+            ? const Color(0xFFFFD700)
+            : const Color(0xFFF59E0B).withValues(alpha: 0.7)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = isSel ? 0.8 : 0.5,
+    );
+    preTp.paint(canvas, Offset(-preTp.width / 2, -8.2 - preTp.height / 2));
 
     canvas.restore();
   }
@@ -3919,51 +3992,10 @@ class IslandAerialPainter extends CustomPainter {
     }
   }
 
-  // 6. Estate Entrance Nameplate Signboard on the side (യൂസർ നെയിം ഒരു സൈഡിൽ കൊണ്ട് ഇടാം)
-  void _drawEstateNameBoard(
-      Canvas canvas, Rect parcelRect, CitizenPlot plot, bool isSel) {
-    // Placed neatly on the side of the property entrance
-    final boardCenter = Offset(parcelRect.left + 6.0, parcelRect.bottom + 1.2);
-    final boardRect =
-        Rect.fromCenter(center: boardCenter, width: 25.0, height: 5.8);
-
-    // Signpost wooden/slate legs
-    final postPaint = Paint()
-      ..color = const Color(0xFF334155)
-      ..strokeWidth = 0.8;
-    canvas.drawLine(Offset(boardRect.left + 2.0, boardRect.bottom),
-        Offset(boardRect.left + 2.0, boardRect.bottom + 2.4), postPaint);
-    canvas.drawLine(Offset(boardRect.right - 2.0, boardRect.bottom),
-        Offset(boardRect.right - 2.0, boardRect.bottom + 2.4), postPaint);
-
-    // Signboard shadow & body
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-          boardRect.translate(0.3, 0.4), const Radius.circular(1.0)),
-      Paint()..color = Colors.black38,
-    );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(boardRect, const Radius.circular(1.0)),
-      Paint()
-        ..color = isSel ? const Color(0xFF1E293B) : const Color(0xFF0F172A),
-    );
-    // Gold/White border
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(boardRect, const Radius.circular(1.0)),
-      Paint()
-        ..color = isSel
-            ? const Color(0xFFFFD700)
-            : const Color(0xFF94A3B8).withValues(alpha: 0.8)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = isSel ? 0.9 : 0.55,
-    );
-
-    // Identifiable Plot Number & Citizen Name Text on Estate Board (#1 Musab)
-    final displayName = getCitizenDisplayName(plot);
-    final shortName = displayName.length > 8
-        ? '${displayName.substring(0, 8)}..'
-        : displayName;
-    final label = '#${plot.plotNumber} · $shortName';
+  // 6. Minimal Parcel Number Badge strictly inside the property boundary
+  void _drawParcelNumberBadge(
+      Canvas canvas, Rect parcelRect, int plotNumber, bool isSel) {
+    final label = '#$plotNumber';
     final tp = TextPainter(
       text: TextSpan(
         text: label,
@@ -3977,8 +4009,38 @@ class IslandAerialPainter extends CustomPainter {
       textDirection: TextDirection.ltr,
     )..layout();
 
+    final badgeWidth = math.max(10.5, tp.width + 3.4);
+    const badgeHeight = 4.8;
+    // Positioned strictly inside the parcel near the front entrance (safe from fences & walls)
+    final badgeCenter = Offset(parcelRect.left + 7.5, parcelRect.bottom - 4.2);
+    final badgeRect = Rect.fromCenter(
+        center: badgeCenter, width: badgeWidth, height: badgeHeight);
+
+    // Subtle drop shadow
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+          badgeRect.translate(0.25, 0.35), const Radius.circular(1.2)),
+      Paint()..color = Colors.black45,
+    );
+    // Dark slate badge body
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(badgeRect, const Radius.circular(1.2)),
+      Paint()
+        ..color = isSel ? const Color(0xFF1E293B) : const Color(0xFF0F172A),
+    );
+    // Gold or cyan border
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(badgeRect, const Radius.circular(1.2)),
+      Paint()
+        ..color = isSel
+            ? const Color(0xFFFFD700)
+            : const Color(0xFF38BDF8).withValues(alpha: 0.75)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = isSel ? 0.8 : 0.5,
+    );
+
     tp.paint(canvas,
-        Offset(boardCenter.dx - tp.width / 2, boardCenter.dy - tp.height / 2));
+        Offset(badgeCenter.dx - tp.width / 2, badgeCenter.dy - tp.height / 2));
   }
 
   // 1. Clustered Round Trees on Yard Corners (Images 1 & 3)
