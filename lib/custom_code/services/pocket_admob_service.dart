@@ -1732,21 +1732,21 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
     }
 
     if (_bannerAd == null) {
-      // 💻 Desktop / Windows / Web Native Ad Simulation (Instagram Feed Post Style)
+      // 💻 Desktop / Windows / Web Native Ad Simulation (Chat Tile + FAB VIP Style)
       return Container(
         margin: widget.margin,
         decoration: BoxDecoration(
-          color: const Color(0xFF0F172A),
+          color: const Color(0xFF131B26).withValues(alpha: 0.85),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.1),
+            color: Colors.white.withValues(alpha: 0.08),
             width: 1.0,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.35),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
+              color: Colors.black.withValues(alpha: 0.25),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -1754,35 +1754,44 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Instagram-Style Post Header
+            // Chat Tile-Style Header
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
               child: Row(
                 children: [
+                  // 48x48 Avatar with Glowing Aura Ring matching ConversationTile
                   Container(
-                    width: 38,
-                    height: 38,
+                    width: 48,
+                    height: 48,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
+                      color: const Color(0xFF131B26),
                       border: Border.all(
-                        color: const Color(0xFFF59E0B).withValues(alpha: 0.6),
+                        color: const Color(0xFFFFFC00).withValues(alpha: 0.6),
                         width: 1.5,
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFFFC00).withValues(alpha: 0.25),
+                          blurRadius: 10,
+                          spreadRadius: 1.5,
+                        ),
+                      ],
                     ),
                     child: ClipOval(
                       child: Image.asset(
                         'assets/images/pocket_mates_logo.png',
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Container(
-                          color: const Color(0xFF1E293B),
+                          color: const Color(0xFF131B26),
                           alignment: Alignment.center,
                           child: const Icon(Icons.bolt_rounded,
-                              color: Color(0xFFF59E0B), size: 20),
+                              color: Color(0xFFFFFC00), size: 24),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1792,12 +1801,12 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
                           children: [
                             Flexible(
                               child: Text(
-                                'Pocket Mates Ads',
+                                'Poket Mates Ads',
                                 style: GoogleFonts.outfit(
                                   color: Colors.white,
-                                  fontSize: 13.5,
+                                  fontSize: 14.5,
                                   fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.2,
+                                  letterSpacing: 0.1,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -1806,7 +1815,7 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
                             const SizedBox(width: 4),
                             const Icon(
                               Icons.verified_rounded,
-                              color: Color(0xFFF59E0B),
+                              color: Color(0xFFFFFC00),
                               size: 15,
                             ),
                           ],
@@ -1860,12 +1869,12 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
                 ],
               ),
             ),
-            // Simulated Instagram Content
+            // Simulated Content
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: 12),
+              margin: const EdgeInsets.symmetric(horizontal: 14),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFF1E293B),
+                color: const Color(0xFF0F172A),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: Colors.white12),
               ),
@@ -1875,7 +1884,7 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0F172A),
+                      color: const Color(0xFF131B26),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: Colors.white12),
                     ),
@@ -1889,7 +1898,7 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Pocket AI English Companion',
+                          'Poket AI English Companion',
                           style: GoogleFonts.outfit(
                             color: Colors.white,
                             fontSize: 13,
@@ -1914,42 +1923,42 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6),
+                      color: const Color(0xFFFFFC00),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Text(
                       'Install',
                       style: TextStyle(
-                          color: Colors.white,
+                          color: Colors.black,
                           fontSize: 11,
-                          fontWeight: FontWeight.bold),
+                          fontWeight: FontWeight.w800),
                     ),
                   ),
                 ],
               ),
             ),
-            // Sleek VIP Action Button
+            // Sleek VIP Action Button (Mates Rank Yellow FAB Style)
             _buildVipUpgradeBar(context),
           ],
         ),
       );
     }
 
-    // 📱 Production Mobile Native Ad (Instagram Feed Post Layout)
+    // 📱 Production Mobile Native Ad (Chat Tile Theme + Mates Rank Style VIP)
     return Container(
       margin: widget.margin,
       decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
+        color: const Color(0xFF131B26).withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
+          color: Colors.white.withValues(alpha: 0.08),
           width: 1.0,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.35),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -1957,26 +1966,27 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 📸 Instagram-Style Post Header
+          // 📸 Chat Tile-Style Header
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
             child: Row(
               children: [
-                // Circular Pocket Mates Brand Avatar with subtle gold ring
+                // 48x48 Avatar with Glowing Aura Ring matching ConversationTile
                 Container(
-                  width: 38,
-                  height: 38,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
+                    color: const Color(0xFF131B26),
                     border: Border.all(
-                      color: const Color(0xFFF59E0B).withValues(alpha: 0.6),
+                      color: const Color(0xFFFFFC00).withValues(alpha: 0.6),
                       width: 1.5,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
-                        blurRadius: 6,
-                        spreadRadius: 1,
+                        color: const Color(0xFFFFFC00).withValues(alpha: 0.25),
+                        blurRadius: 10,
+                        spreadRadius: 1.5,
                       ),
                     ],
                   ),
@@ -1985,15 +1995,15 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
                       'assets/images/pocket_mates_logo.png',
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => Container(
-                        color: const Color(0xFF1E293B),
+                        color: const Color(0xFF131B26),
                         alignment: Alignment.center,
                         child: const Icon(Icons.bolt_rounded,
-                            color: Color(0xFFF59E0B), size: 20),
+                            color: Color(0xFFFFFC00), size: 24),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 12),
                 // Brand Name + Golden Verified Badge + Sponsored Subtitle
                 Expanded(
                   child: Column(
@@ -2004,12 +2014,12 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
                         children: [
                           Flexible(
                             child: Text(
-                              'Pocket Mates Ads',
+                              'Poket Mates Ads',
                               style: GoogleFonts.outfit(
                                 color: Colors.white,
-                                fontSize: 13.5,
+                                fontSize: 14.5,
                                 fontWeight: FontWeight.w700,
-                                letterSpacing: 0.2,
+                                letterSpacing: 0.1,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -2019,7 +2029,7 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
                           // Golden Verified Tick Badge
                           const Icon(
                             Icons.verified_rounded,
-                            color: Color(0xFFF59E0B),
+                            color: Color(0xFFFFFC00),
                             size: 15,
                           ),
                         ],
@@ -2069,7 +2079,7 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
                     ],
                   ),
                 ),
-                // 3-dots Instagram options menu
+                // 3-dots options menu
                 IconButton(
                   icon: const Icon(Icons.more_horiz_rounded,
                       color: Colors.white38, size: 20),
@@ -2082,7 +2092,7 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
-                          'Sponsored advertisement. Upgrade to Pocket VIP to remove all ads.',
+                          'Sponsored advertisement. Upgrade to Poket VIP to remove all ads.',
                           style: GoogleFonts.outfit(fontSize: 12),
                         ),
                         backgroundColor: const Color(0xFF1E293B),
@@ -2109,7 +2119,7 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
           // 🖼️ Ad Creative Canvas (Centered Instagram Post Media Frame)
           Center(
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 10),
+              margin: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
@@ -2129,17 +2139,17 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
             ),
           ),
 
-          // 👑 Sleek Yellow/Golden VIP Upgrade Button (AdMob policy compliant safe spacing)
+          // 👑 Signature Mates Rank-Style Full Width Yellow VIP Button
           _buildVipUpgradeBar(context),
         ],
       ),
     );
   }
 
-  /// 👑 High-end Golden/Yellow VIP upgrade bar with rounded borders and clear click separation
+  /// 👑 Signature Mates Rank-Style Full Width Yellow VIP Button (Matching App FAB & Action buttons)
   Widget _buildVipUpgradeBar(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
       child: InkWell(
         onTap: () {
           Navigator.push(
@@ -2147,63 +2157,45 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
             MaterialPageRoute(builder: (_) => const SubscriptionPage()),
           );
         },
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(20),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                const Color(0xFFF59E0B).withValues(alpha: 0.18),
-                const Color(0xFFD97706).withValues(alpha: 0.10),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: const Color(0xFFF59E0B).withValues(alpha: 0.45),
-              width: 1.0,
-            ),
+            color: const Color(0xFFFFFC00),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.25),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: const Text('👑', style: TextStyle(fontSize: 13)),
-              ),
-              const SizedBox(width: 9),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Go VIP – Remove All Ads',
-                      style: GoogleFonts.outfit(
-                        color: const Color(0xFFFFD700),
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      'Enjoy 100% ad-free experience & unlimited learning',
-                      style: GoogleFonts.outfit(
-                        color: Colors.white54,
-                        fontSize: 10,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+              const Text('👑', style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 8),
+              Text(
+                'Go VIP – Remove All Ads',
+                style: GoogleFonts.outfit(
+                  color: Colors.black,
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.3,
                 ),
               ),
+              const SizedBox(width: 6),
               const Icon(
-                Icons.arrow_forward_ios_rounded,
-                size: 13,
-                color: Color(0xFFFFD700),
+                Icons.arrow_forward_rounded,
+                color: Colors.black,
+                size: 16,
               ),
             ],
           ),

@@ -504,25 +504,15 @@ class PocketVibesStoryAdWidget extends StatefulWidget {
   State<PocketVibesStoryAdWidget> createState() => _PocketVibesStoryAdWidgetState();
 }
 
-class _PocketVibesStoryAdWidgetState extends State<PocketVibesStoryAdWidget>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _progressController;
+class _PocketVibesStoryAdWidgetState extends State<PocketVibesStoryAdWidget> {
   bool _isVip = false;
 
   @override
   void initState() {
     super.initState();
     _checkVip();
-    _progressController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 6),
-    )..forward();
-
-    _progressController.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        widget.onNext();
-      }
-    });
+    // 📢 User Directive: Story ad must NEVER auto-advance or rush the user!
+    // The ad stays completely static until the user manually taps or swipes to proceed.
   }
 
   Future<void> _checkVip() async {
@@ -534,15 +524,10 @@ class _PocketVibesStoryAdWidgetState extends State<PocketVibesStoryAdWidget>
   }
 
   @override
-  void dispose() {
-    _progressController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     if (_isVip) {
       return const SizedBox.shrink();
+    }
     }
 
     return Scaffold(
@@ -620,20 +605,14 @@ class _PocketVibesStoryAdWidgetState extends State<PocketVibesStoryAdWidget>
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Column(
                   children: [
-                    // Story Progress Bar
-                    AnimatedBuilder(
-                      animation: _progressController,
-                      builder: (context, child) {
-                        return ClipRRect(
-                          borderRadius: BorderRadius.circular(3),
-                          child: LinearProgressIndicator(
-                            value: _progressController.value,
-                            backgroundColor: Colors.white24,
-                            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFFD700)),
-                            minHeight: 3,
-                          ),
-                        );
-                      },
+                    // Story Progress Bar (Static steady indicator for Ads - no auto-skip timer!)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(3),
+                      child: Container(
+                        height: 3,
+                        width: double.infinity,
+                        color: const Color(0xFFFFD700),
+                      ),
                     ),
                     const SizedBox(height: 12),
                     Row(
@@ -657,7 +636,7 @@ class _PocketVibesStoryAdWidgetState extends State<PocketVibesStoryAdWidget>
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Pocket Mates Ads',
+                          'Poket Mates Ads',
                           style: GoogleFonts.outfit(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
