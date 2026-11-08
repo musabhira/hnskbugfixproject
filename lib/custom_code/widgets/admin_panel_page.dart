@@ -14988,6 +14988,51 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                     ),
                   ],
                 ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          backgroundColor: const Color(0xFF0F172A),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          title: const Text('Sync All Citizen Plots?', style: TextStyle(color: Colors.white)),
+                          content: const Text(
+                            'This will verify all registered users in Supabase profile table and ensure every citizen has an assigned unique cosmic PIN across the 10 planets.',
+                            style: TextStyle(color: Colors.white70),
+                          ),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0284C7)),
+                              onPressed: () => Navigator.pop(ctx, true),
+                              child: const Text('Sync Now'),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirm != true) return;
+                      final res = await PoketCosmosAllocationService.instance.syncAndAllocateExistingUsers();
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Sync complete! Total: ${res['total']}, Newly Assigned: ${res['newlyAllocated']}'),
+                          backgroundColor: const Color(0xFF10B981),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.sync_rounded, size: 18),
+                    label: const Text('Sync All Citizen Plots (10 Planets)'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFA855F7),
+                      side: const BorderSide(color: Color(0xFFA855F7)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
