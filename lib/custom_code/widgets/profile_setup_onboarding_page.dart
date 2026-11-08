@@ -327,7 +327,10 @@ class _ProfileSetupOnboardingPageState
           ? _nameController.text.trim()
           : 'Pocket Mate';
       final phone = _phoneController.text.trim();
-      final cleanSlug = name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+      final base = name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+      final baseSlug = base.isNotEmpty ? base : 'mate';
+      final shortUid = userId.replaceAll('-', '').substring(0, math.min(5, userId.replaceAll('-', '').length)).toLowerCase();
+      final cleanSlug = '$baseSlug-$shortUid';
 
       // 1. Guarantee public.users record
       await _supabase.from('users').upsert({
@@ -383,10 +386,25 @@ class _ProfileSetupOnboardingPageState
         profilePayload['profile_image_url'] = uploadedImageUrl;
       }
 
-      await _supabase.from('profile').upsert(
-            profilePayload,
-            onConflict: 'user_id',
-          );
+      try {
+        await _supabase.from('profile').upsert(
+              profilePayload,
+              onConflict: 'user_id',
+            );
+      } catch (upsertErr) {
+        if (upsertErr.toString().contains('slug') ||
+            upsertErr.toString().contains('23505') ||
+            upsertErr.toString().contains('unique')) {
+          profilePayload['slug'] =
+              '$cleanSlug-${DateTime.now().millisecondsSinceEpoch % 100000}';
+          await _supabase.from('profile').upsert(
+                profilePayload,
+                onConflict: 'user_id',
+              );
+        } else {
+          rethrow;
+        }
+      }
 
       // 4. Cache state and flags locally so onboarding is never shown again
       final prefs = await SharedPreferences.getInstance();

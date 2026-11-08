@@ -1548,7 +1548,7 @@ class PocketAdPreloadManager {
               ._recordAdFailed('preloaded_${placement.name}', err);
           if (!PocketAdMobService.instance._isTestMode) {
             final fallbackId = (placement == PocketAdPlacement.banner)
-                ? PocketAdMobService._testBannerId
+                ? PocketAdMobService.prodHomeAdUnitId
                 : PocketAdMobService.prodRankingAdUnitId;
             if (unitId != fallbackId) {
               _preloadFallback(placement, fallbackId, size);
@@ -2143,7 +2143,8 @@ class _PocketChatBubbleAdWidgetState extends State<PocketChatBubbleAdWidget> {
       return const SizedBox.shrink();
     }
 
-    if (!_isLoaded && _bannerAd != null) {
+    if ((Platform.isAndroid || Platform.isIOS) &&
+        (!_isLoaded || _bannerAd == null)) {
       return const SizedBox.shrink();
     }
 
@@ -2320,15 +2321,18 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
           PocketAdMobService.instance._recordAdFailed('standard_banner', err);
           ad.dispose();
           _bannerAd = null;
-          // Auto-fallback: if prod banner unit has no fill, retry with official verified banner unit
+          // Auto-fallback in production: retry with alternate production unit (NEVER test banner in production!)
           if (!_hasRetriedWithFallback &&
-              unitId != PocketAdMobService._testBannerId &&
               !PocketAdMobService.instance._isTestMode) {
             _hasRetriedWithFallback = true;
-            _loadBanner(PocketAdMobService._testBannerId);
+            final fallbackProdId =
+                (unitId != PocketAdMobService.prodHomeAdUnitId)
+                    ? PocketAdMobService.prodHomeAdUnitId
+                    : PocketAdMobService.prodReelsAdUnitId;
+            _loadBanner(fallbackProdId);
             return;
           }
-          if (mounted) setState(() => _isLoaded = true);
+          if (mounted) setState(() => _isLoaded = false);
         },
         onAdImpression: (_) {
           PocketAdMobService.instance._recordAdImpression('standard_banner');
@@ -2360,48 +2364,9 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
       );
     }
 
-    // Aesthetic sponsor banner fallback (VIP Promo / Ad Placeholder) so the slot is always filled seamlessly
-    return Container(
-      margin: widget.margin,
-      height: 50,
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.white12),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-            decoration: BoxDecoration(
-              color: Colors.white12,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: const Text('Ad',
-                style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold)),
-          ),
-          const SizedBox(width: 8),
-          InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const SubscriptionPage()),
-              );
-            },
-            child: const Text(
-              'POKET VIP • Go VIP – Remove All Ads 👑',
-              style: TextStyle(
-                  color: Color(0xFFFFD700),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700),
-            ),
-          ),
-        ],
-      ),
-    );
+    // 📢 User Directive: If the ad did not load/fill, do NOT show test ad or placeholder box.
+    // Instead, collapse cleanly so the screen appears completely normal without ads.
+    return const SizedBox.shrink();
+  }
   }
 }

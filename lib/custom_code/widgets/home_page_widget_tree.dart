@@ -754,16 +754,17 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               (supabase.auth.currentUser?.email ?? '').split('@').first;
           final displayName =
               emailPrefix.isNotEmpty ? emailPrefix : 'Pocket Mate';
-          final cleanSlug =
+          final base =
               displayName.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+          final baseSlug = base.isNotEmpty ? base : 'mate';
+          final shortUid = userId.replaceAll('-', '').substring(0, math.min(5, userId.replaceAll('-', '').length)).toLowerCase();
+          final cleanSlug = '$baseSlug-$shortUid';
           final fallbackProfile = {
             'id': userId,
             'user_id': userId,
             'name': displayName,
             'shop_name': displayName.toLowerCase().replaceAll(' ', '-'),
-            'slug': cleanSlug.isNotEmpty
-                ? cleanSlug
-                : 'mate${DateTime.now().millisecondsSinceEpoch % 10000}',
+            'slug': cleanSlug,
             'learning_day': 1,
             'learning_stage': 1,
             'learning_points': 0,
@@ -772,9 +773,23 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             'english_level': 'Beginner (A1-A2)',
             'learning_goal': 'Daily Fluency & Speaking',
           };
-          await supabase
-              .from('profile')
-              .upsert(fallbackProfile, onConflict: 'user_id');
+          try {
+            await supabase
+                .from('profile')
+                .upsert(fallbackProfile, onConflict: 'user_id');
+          } catch (upsertErr) {
+            if (upsertErr.toString().contains('slug') ||
+                upsertErr.toString().contains('23505') ||
+                upsertErr.toString().contains('unique')) {
+              fallbackProfile['slug'] =
+                  '$cleanSlug-${DateTime.now().millisecondsSinceEpoch % 100000}';
+              await supabase
+                  .from('profile')
+                  .upsert(fallbackProfile, onConflict: 'user_id');
+            } else {
+              rethrow;
+            }
+          }
           profileResponse = fallbackProfile;
         } catch (healErr) {
           debugPrint('Profile auto-heal in HomePage error: $healErr');
