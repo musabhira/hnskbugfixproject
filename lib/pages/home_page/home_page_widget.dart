@@ -5,6 +5,7 @@ import '/custom_code/widgets/kids/pocket_pure_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/pocket_homes_reels_feed_widget.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_home_navigation_controller.dart';
 import 'home_page_model.dart';
 export 'home_page_model.dart';
 
@@ -34,6 +35,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     PocketGameAudioService.instance.stop();
     _model = createModel(context, () => HomePageModel());
 
+    PocketHomeNavigationController.horizontalPageController = _homeHorizontalPageController;
     PocketKidsService.isKidAccountNotifier.addListener(_onModeChanged);
     PocketKidsService.currentWorldModeNotifier.addListener(_onModeChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
@@ -41,6 +43,9 @@ class _HomePageWidgetState extends State<HomePageWidget> {
 
   @override
   void dispose() {
+    if (PocketHomeNavigationController.horizontalPageController == _homeHorizontalPageController) {
+      PocketHomeNavigationController.horizontalPageController = null;
+    }
     _homeHorizontalPageController.dispose();
     PocketKidsService.isKidAccountNotifier.removeListener(_onModeChanged);
     PocketKidsService.currentWorldModeNotifier.removeListener(_onModeChanged);
@@ -59,11 +64,12 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     return PageView(
       controller: _homeHorizontalPageController,
       physics: const ClampingScrollPhysics(),
-      children: const [
+      children: [
         PocketHomesReelsFeedWidget(
-          key: ValueKey('adult_active_homes_reels_root'),
+          key: const ValueKey('adult_active_homes_reels_root'),
+          onBackToChat: PocketHomeNavigationController.scrollToChat,
         ),
-        custom_widgets.HomePageWidgetTree(
+        const custom_widgets.HomePageWidgetTree(
           key: ValueKey('adult_active_home_root'),
         ),
       ],

@@ -2107,136 +2107,32 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   ),
 );
 
+    final cosmosCoords = _resolveUserCosmosCoordinates();
+
     return material.Scaffold(
       backgroundColor: bgColor,
-      body: material.Stack(
+      body: PageView(
+        controller: _profileHorizontalPageController,
+        physics: const ClampingScrollPhysics(),
+        onPageChanged: (idx) {
+          if (mounted) setState(() => _profileHorizontalPageIndex = idx);
+        },
         children: [
-          PageView(
-            controller: _profileHorizontalPageController,
-            physics: const ClampingScrollPhysics(),
-            onPageChanged: (idx) {
-              if (mounted) setState(() => _profileHorizontalPageIndex = idx);
+          profileBody,
+          PoketCosmosResidentIslandView(
+            userId: userId,
+            userName: _profileData?['name']?.toString(),
+            userAvatar: _profileData?['avatar_url']?.toString(),
+            targetPlanetCode: cosmosCoords['planetCode'] as String?,
+            targetPlotNumber: cosmosCoords['plotNumber'] as int?,
+            targetWave: cosmosCoords['wave'] as int?,
+            onBack: () {
+              _profileHorizontalPageController.animateToPage(
+                0,
+                duration: const Duration(milliseconds: 320),
+                curve: Curves.easeInOut,
+              );
             },
-            children: [
-              profileBody,
-              PoketCosmosResidentIslandView(
-                userId: userId,
-                userName: _profileData?['name']?.toString(),
-                userAvatar: _profileData?['avatar_url']?.toString(),
-                onBack: () {
-                  _profileHorizontalPageController.animateToPage(
-                    0,
-                    duration: const Duration(milliseconds: 320),
-                    curve: Curves.easeInOut,
-                  );
-                },
-              ),
-            ],
-          ),
-
-          // 🎚️ Floating Top Segmented Switcher (Audio Directive: easy swipe/switch between Profile & Island Map)
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 6,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.all(3),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0F172A).withValues(alpha: 0.88),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: Colors.white24, width: 0.8),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black45,
-                      blurRadius: 10,
-                      offset: Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-                        _profileHorizontalPageController.animateToPage(
-                          0,
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOutCubic,
-                        );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 5.5),
-                        decoration: BoxDecoration(
-                          color: _profileHorizontalPageIndex == 0
-                              ? const Color(0xFF2563EB)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.person_rounded,
-                                color: Colors.white, size: 14),
-                            const SizedBox(width: 5),
-                            Text(
-                              'Profile',
-                              style: GoogleFonts.outfit(
-                                color: _profileHorizontalPageIndex == 0
-                                    ? Colors.white
-                                    : Colors.white70,
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-                        _profileHorizontalPageController.animateToPage(
-                          1,
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOutCubic,
-                        );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 5.5),
-                        decoration: BoxDecoration(
-                          color: _profileHorizontalPageIndex == 1
-                              ? const Color(0xFF10B981)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.explore_rounded,
-                                color: Colors.white, size: 14),
-                            const SizedBox(width: 5),
-                            Text(
-                              'Island Map',
-                              style: GoogleFonts.outfit(
-                                color: _profileHorizontalPageIndex == 1
-                                    ? Colors.white
-                                    : Colors.white70,
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ),
         ],
       ),
@@ -6215,40 +6111,82 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     }
   }
 
-  String _getResolvedCosmosAddressText(String bio) {
-    // 1. Check if user is a robot
+  Map<String, dynamic> _resolveUserCosmosCoordinates() {
     final currentUserId = userId;
+
+    // 1. Robot check
     if (PocketRobotService.isRobotId(currentUserId)) {
       final robot = PocketRobotService.getRobotById(currentUserId);
       if (robot != null) {
         final colony = PoketCosmosAllocationService.instance.getColonyByPlanetName(robot.planetName);
-        final cleanPlanet = _getCleanPlanetName(colony.code, robot.planetName);
-        return '$cleanPlanet • ${robot.islandName} • Plot #${robot.plotNumber}';
+        return {
+          'planetCode': colony.code,
+          'plotNumber': robot.plotNumber,
+          'wave': 1,
+        };
       }
     }
 
-    // 2. Check for Cosmos Address PIN in user's bio
+    // 2. Bio pin check
+    final bio = _profileData?['bio']?.toString() ?? '';
     final match = RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(bio);
     if (match != null) {
+      final wave = int.tryParse(match.group(1) ?? '1') ?? 1;
       final code = match.group(2) ?? 'EP';
       final plot = int.tryParse(match.group(4) ?? '1') ?? 1;
-      final colony =
-          PoketCosmosAllocationService.instance.getColonyByCode(code);
-      final cleanPlanet = _getCleanPlanetName(code, colony.planetName);
-      return '$cleanPlanet • ${colony.islandName} • Plot #$plot';
+      return {
+        'planetCode': code,
+        'plotNumber': plot,
+        'wave': wave,
+      };
     }
 
-    // 3. Fallback to current authenticated user's allocated plot
-    final currentPlot =
-        PoketCosmosAllocationService.instance.currentBirthPlot;
-    if (currentPlot != null) {
-      final colony =
-          PoketCosmosAllocationService.instance.getColonyByPlanetName(currentPlot.planetName);
-      final cleanPlanet = _getCleanPlanetName(colony.code, currentPlot.planetName);
-      return '$cleanPlanet • ${currentPlot.countryName} • Plot #${currentPlot.plotNumber}';
+    // 3. Registered profiles cache check (real Supabase chronological sequential ordering)
+    final cached = PoketCosmosAllocationService.instance.getCachedUserPlot(currentUserId);
+    if (cached != null) {
+      final colony = PoketCosmosAllocationService.instance.getColonyByPlanetName(cached.planetName);
+      final pinMatch = RegExp(r'PKT-W(\d+)-').firstMatch(cached.postalPinCode);
+      final wave = pinMatch != null ? (int.tryParse(pinMatch.group(1) ?? '1') ?? 1) : 1;
+      return {
+        'planetCode': colony.code,
+        'plotNumber': cached.plotNumber,
+        'wave': wave,
+      };
     }
 
-    return 'Earth • Ocean Whisper Atoll • Plot #01';
+    // 4. If current user is viewing their own profile and has an allocated birth plot
+    if (isMe && PoketCosmosAllocationService.instance.currentBirthPlot != null) {
+      final p = PoketCosmosAllocationService.instance.currentBirthPlot!;
+      final colony = PoketCosmosAllocationService.instance.getColonyByPlanetName(p.planetName);
+      return {
+        'planetCode': colony.code,
+        'plotNumber': p.plotNumber,
+        'wave': 1,
+      };
+    }
+
+    // 5. Deterministic stable fallback based on userId
+    final colIndex = currentUserId.hashCode.abs() % PoketCosmosAllocationService.colonies.length;
+    final colony = PoketCosmosAllocationService.colonies[colIndex];
+    final localPlot = ((currentUserId.hashCode.abs() ~/ 10) % PoketCosmosAllocationService.maxPlotsPerIsland) + 1;
+    return {
+      'planetCode': colony.code,
+      'plotNumber': localPlot,
+      'wave': 1,
+    };
+  }
+
+  String _getResolvedCosmosAddressText(String bio) {
+    final coords = _resolveUserCosmosCoordinates();
+    final colony = PoketCosmosAllocationService.instance.getColonyByCode(coords['planetCode'] as String? ?? 'EP');
+    final cleanPlanet = _getCleanPlanetName(colony.code, colony.planetName);
+    final wave = coords['wave'] as int? ?? 1;
+    final plotNum = coords['plotNumber'] as int? ?? 1;
+    final islandName = (wave == 1)
+        ? colony.islandName
+        : PoketCosmosAllocationService.generateInfiniteIslandName(colony.code, wave, wave);
+    final plotStr = plotNum.toString().padLeft(2, '0');
+    return '$cleanPlanet • $islandName • Plot #$plotStr';
   }
 
   Widget _buildVerifiedGoldenTick({double size = 18}) {

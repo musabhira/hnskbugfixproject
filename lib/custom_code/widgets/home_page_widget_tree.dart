@@ -38,6 +38,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_daily
 import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_home_navigation_controller.dart';
 import 'package:pocket_mates_app/custom_code/widgets/snap/snap_view_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
@@ -7149,29 +7150,36 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Row(
                         children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: material.Image.asset(
-                                  'assets/images/pocket_mates_logo.png',
-                                  width: 28,
-                                  height: 28,
-                                  fit: BoxFit.contain,
+                          GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              PocketHomeNavigationController.scrollToHomes();
+                            },
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: material.Image.asset(
+                                    'assets/images/pocket_mates_logo.png',
+                                    width: 28,
+                                    height: 28,
+                                    fit: BoxFit.contain,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'PoketMates',
-                                style: GoogleFonts.outfit(
-                                  color: material.Colors.white,
-                                  fontSize: 20.0,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: -0.2,
+                                const SizedBox(width: 8),
+                                Text(
+                                  'PoketMates',
+                                  style: GoogleFonts.outfit(
+                                    color: material.Colors.white,
+                                    fontSize: 20.0,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: -0.2,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                           const Spacer(),
                           Row(

@@ -36,6 +36,8 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
   List<String> _ownedDefenses = [];
   List<String> _equippedDefenses = [];
   bool _isLoading = true;
+  int _rewardedRemaining = 5;
+  bool _isWatchingAd = false;
 
   @override
   void initState() {
@@ -47,43 +49,71 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
     final ps = await PocketCitadelStoreService.instance.getUserPocketScore();
     final owned = await PocketCitadelStoreService.instance.getOwnedDefenses();
     final equipped = await PocketCitadelStoreService.instance.getEquippedDefenses();
+    final eligibility = await PocketAdMobService.instance.checkRewardedAdEligibility();
+    final remaining = eligibility['remaining'] as int? ?? 5;
 
     if (mounted) {
       setState(() {
         _currentPS = ps;
         _ownedDefenses = owned;
         _equippedDefenses = equipped;
+        _rewardedRemaining = remaining;
         _isLoading = false;
       });
     }
   }
 
   Future<void> _watchRewardedAd() async {
-    await PocketAdMobService.instance.showRewardedAd(
-      context: context,
-      onUserEarnedReward: (reward) async {
-        final prefs = await SharedPreferences.getInstance();
-        final newScore = _currentPS + 50;
-        await prefs.setInt('pocket_score', newScore);
-        if (mounted) {
-          setState(() => _currentPS = newScore);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Row(
-                children: [
-                  Text('🎉', style: TextStyle(fontSize: 18)),
-                  SizedBox(width: 8),
-                  Text('+50 Pocket Score granted! 🛡️',
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-                ],
+    if (_isWatchingAd) return;
+    if (_rewardedRemaining <= 0) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Daily sponsor video limit (5/5) reached. Resets tomorrow!'),
+          backgroundColor: Color(0xFF0F172A),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isWatchingAd = true);
+    try {
+      await PocketAdMobService.instance.showRewardedAd(
+        context: context,
+        onUserEarnedReward: (reward) async {
+          final prefs = await SharedPreferences.getInstance();
+          final newScore = _currentPS + 50;
+          await prefs.setInt('pocket_score', newScore);
+          final eligibility = await PocketAdMobService.instance.checkRewardedAdEligibility();
+          if (mounted) {
+            setState(() {
+              _currentPS = newScore;
+              _rewardedRemaining = eligibility['remaining'] as int? ?? (_rewardedRemaining - 1).clamp(0, 5);
+            });
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Row(
+                  children: [
+                    Text('🎉', style: TextStyle(fontSize: 18)),
+                    SizedBox(width: 8),
+                    Text('+50 Pocket Score granted! 🛡️',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                backgroundColor: Color(0xFF10B981),
+                behavior: SnackBarBehavior.floating,
               ),
-              backgroundColor: Color(0xFF10B981),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
-      },
-    );
+            );
+          }
+        },
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isWatchingAd = false);
+      }
+    }
   }
 
   Future<void> _buyItem(CitadelDefenseItem item) async {
@@ -208,13 +238,19 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                   children: [
                     // 📺 Free PS via Ad
                     GestureDetector(
-                      onTap: _watchRewardedAd,
+                      onTap: (_isWatchingAd || _rewardedRemaining <= 0) ? null : _watchRewardedAd,
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.18),
+                          color: _rewardedRemaining > 0
+                              ? const Color(0xFF10B981).withValues(alpha: 0.18)
+                              : Colors.white10,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.6)),
+                          border: Border.all(
+                            color: _rewardedRemaining > 0
+                                ? const Color(0xFF10B981).withValues(alpha: 0.6)
+                                : Colors.white24,
+                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -222,9 +258,9 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                             const Text('📺', style: TextStyle(fontSize: 12)),
                             const SizedBox(width: 4),
                             Text(
-                              '+50 PS',
+                              _rewardedRemaining > 0 ? '+50 PS' : '5/5 Done',
                               style: GoogleFonts.outfit(
-                                color: const Color(0xFF34D399),
+                                color: _rewardedRemaining > 0 ? const Color(0xFF34D399) : Colors.white54,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 11.5,
                               ),
@@ -274,7 +310,10 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFF10B981), width: 1.2),
+              border: Border.all(
+                color: _rewardedRemaining > 0 ? const Color(0xFF10B981) : Colors.white24,
+                width: 1.2,
+              ),
               boxShadow: [
                 BoxShadow(
                   color: const Color(0xFF10B981).withValues(alpha: 0.15),
@@ -287,7 +326,7 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                    color: (_rewardedRemaining > 0 ? const Color(0xFF10B981) : Colors.white24).withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: const Text('📺', style: TextStyle(fontSize: 20)),
@@ -306,9 +345,11 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                         ),
                       ),
                       Text(
-                        'Daily Sponsor Reward (Max 5/day)',
+                        _rewardedRemaining > 0
+                            ? 'Daily Sponsor Reward ($_rewardedRemaining/5 available)'
+                            : 'Daily Sponsor Reward (5/5 Completed today)',
                         style: GoogleFonts.inter(
-                          color: const Color(0xFF6EE7B7),
+                          color: _rewardedRemaining > 0 ? const Color(0xFF6EE7B7) : Colors.white54,
                           fontSize: 11,
                           fontWeight: FontWeight.w500,
                         ),
@@ -317,23 +358,30 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: _watchRewardedAd,
+                  onPressed: (_isWatchingAd || _rewardedRemaining <= 0) ? null : _watchRewardedAd,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF10B981),
+                    backgroundColor: _rewardedRemaining > 0 ? const Color(0xFF10B981) : Colors.white24,
                     foregroundColor: Colors.white,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    disabledBackgroundColor: Colors.white12,
+                    disabledForegroundColor: Colors.white38,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  child: Text(
-                    'CLAIM +50',
-                    style: GoogleFonts.outfit(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 11.5,
-                    ),
-                  ),
+                  child: _isWatchingAd
+                      ? const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        )
+                      : Text(
+                          _rewardedRemaining > 0 ? 'CLAIM +50' : 'CLAIMED',
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 11.5,
+                          ),
+                        ),
                 ),
               ],
             ),

@@ -549,6 +549,74 @@ class PoketCosmosAllocationService {
     );
   }
 
+  /// Synchronous plot lookup from memory cache or registered profiles index
+  CitizenPlot? getCachedUserPlot(String userId) {
+    if (_userBirthPlots.containsKey(userId)) {
+      return _userBirthPlots[userId];
+    }
+    if (PocketRobotService.isRobotId(userId)) {
+      final meta = PocketRobotService.getCosmosAddressForRobotId(userId);
+      final colony = getColonyByCode(meta['planetCode'] ?? 'EP');
+      final plot = CitizenPlot(
+        plotNumber: meta['plotNumber'] as int? ?? 1,
+        userId: userId,
+        userName: meta['robotName'] ?? 'Pocket Robot',
+        userAvatar: '🤖',
+        day: 7,
+        pocketScore: 500,
+        streetName: meta['streetName'] ?? colony.streetName,
+        postOffice: meta['islandName'] ?? colony.islandName,
+        countryName: meta['islandName'] ?? colony.islandName,
+        planetName: meta['planetName'] ?? colony.planetName,
+        postalPinCode: meta['cosmosPin'] ?? 'PKT-W01-${colony.code}-I01-P01',
+        coordinates: Offset.zero,
+        isVip: false,
+        isPresident: false,
+        tier: PlotDeedTier.standard,
+        status: PlotStatus.occupied,
+      );
+      _userBirthPlots[userId] = plot;
+      return plot;
+    }
+    if (_allRegisteredProfiles.isNotEmpty) {
+      final profIdx = _allRegisteredProfiles.indexWhere((p) {
+        final id = p['id']?.toString();
+        final uid = p['user_id']?.toString();
+        return (id != null && id == userId) || (uid != null && uid == userId);
+      });
+      if (profIdx != -1) {
+        final prof = _allRegisteredProfiles[profIdx];
+        final gNum = profIdx + 1;
+        final parsed = parseGlobalPlotNumber(gNum);
+        final colony = parsed['colony'] as CelestialColonyInfo;
+        final localPlot = parsed['localPlotNumber'] as int;
+        final wave = parsed['wave'] as int;
+        final pinStr = 'PKT-W${wave.toString().padLeft(2, '0')}-${colony.code}-I${wave.toString().padLeft(2, '0')}-P${localPlot.toString().padLeft(2, '0')}';
+        final plot = CitizenPlot(
+          plotNumber: localPlot,
+          userId: userId,
+          userName: prof['name']?.toString() ?? 'Citizen #$gNum',
+          userAvatar: prof['profile_image_url']?.toString() ?? '🦁',
+          day: 1,
+          pocketScore: prof['pocket_score'] as int? ?? 100,
+          streetName: (wave == 1) ? colony.streetName : 'Wave $wave ${colony.streetName}',
+          postOffice: (wave == 1) ? colony.islandName : generateInfiniteIslandName(colony.code, wave, wave),
+          countryName: (wave == 1) ? colony.islandName : generateInfiniteIslandName(colony.code, wave, wave),
+          planetName: colony.planetName,
+          postalPinCode: pinStr,
+          coordinates: Offset.zero,
+          isVip: false,
+          isPresident: false,
+          tier: (localPlot == 1) ? PlotDeedTier.royalCitadel : (localPlot <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+          status: PlotStatus.occupied,
+        );
+        _userBirthPlots[userId] = plot;
+        return plot;
+      }
+    }
+    return null;
+  }
+
   /// 🎯 Loads or resolves the exact permanent CitizenPlot for ANY specific userId (Human or Robot)
   /// Guaranteed 100% consistent across Profile, Citadel Attack Page, and Island Aerial View!
   Future<CitizenPlot> getUserPlot({
@@ -587,7 +655,76 @@ class PoketCosmosAllocationService {
       return plot;
     }
 
-    // 3. Supabase profile query
+    // 3. Check registered profiles list first for deterministic sequential assignment
+    if (_allRegisteredProfiles.isEmpty) {
+      await loadAllRegisteredProfiles();
+    }
+
+    final profIdx = _allRegisteredProfiles.indexWhere((p) {
+      final id = p['id']?.toString();
+      final uid = p['user_id']?.toString();
+      return (id != null && id == userId) || (uid != null && uid == userId);
+    });
+
+    if (profIdx != -1) {
+      final prof = _allRegisteredProfiles[profIdx];
+      final bio = prof['bio']?.toString() ?? '';
+      final pinMatch = RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(bio);
+      if (pinMatch != null) {
+        final planetCode = pinMatch.group(2) ?? 'EP';
+        final plotNum = int.tryParse(pinMatch.group(4) ?? '1') ?? 1;
+        final colony = getColonyByCode(planetCode);
+        final plot = CitizenPlot(
+          plotNumber: plotNum,
+          userId: userId,
+          userName: prof['name']?.toString() ?? fallbackName ?? 'Citizen',
+          userAvatar: prof['profile_image_url']?.toString() ?? fallbackAvatar ?? '🦁',
+          day: 1,
+          pocketScore: 100,
+          streetName: colony.streetName,
+          postOffice: colony.islandName,
+          countryName: colony.islandName,
+          planetName: colony.planetName,
+          postalPinCode: pinMatch.group(0) ?? 'PKT-W01-$planetCode-I01-P${plotNum.toString().padLeft(2, '0')}',
+          coordinates: Offset.zero,
+          isVip: false,
+          isPresident: false,
+          tier: (plotNum == 1) ? PlotDeedTier.royalCitadel : (plotNum <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+          status: PlotStatus.occupied,
+        );
+        _userBirthPlots[userId] = plot;
+        return plot;
+      }
+
+      final gNum = profIdx + 1;
+      final parsed = parseGlobalPlotNumber(gNum);
+      final colony = parsed['colony'] as CelestialColonyInfo;
+      final localPlot = parsed['localPlotNumber'] as int;
+      final wave = parsed['wave'] as int;
+      final pinStr = 'PKT-W${wave.toString().padLeft(2, '0')}-${colony.code}-I${wave.toString().padLeft(2, '0')}-P${localPlot.toString().padLeft(2, '0')}';
+      final plot = CitizenPlot(
+        plotNumber: localPlot,
+        userId: userId,
+        userName: prof['name']?.toString() ?? fallbackName ?? 'Citizen #$gNum',
+        userAvatar: prof['profile_image_url']?.toString() ?? fallbackAvatar ?? '🦁',
+        day: 1,
+        pocketScore: prof['pocket_score'] as int? ?? 100,
+        streetName: (wave == 1) ? colony.streetName : 'Wave $wave ${colony.streetName}',
+        postOffice: (wave == 1) ? colony.islandName : generateInfiniteIslandName(colony.code, wave, wave),
+        countryName: (wave == 1) ? colony.islandName : generateInfiniteIslandName(colony.code, wave, wave),
+        planetName: colony.planetName,
+        postalPinCode: pinStr,
+        coordinates: Offset.zero,
+        isVip: false,
+        isPresident: false,
+        tier: (localPlot == 1) ? PlotDeedTier.royalCitadel : (localPlot <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+        status: PlotStatus.occupied,
+      );
+      _userBirthPlots[userId] = plot;
+      return plot;
+    }
+
+    // 4. Supabase direct profile query fallback
     try {
       final res = await SupaFlow.client
           .from('profile')
@@ -628,7 +765,7 @@ class PoketCosmosAllocationService {
       debugPrint('⚠️ getUserPlot Supabase non-fatal: $e');
     }
 
-    // 4. Stable deterministic plot calculation based on userId
+    // 5. Stable deterministic plot calculation based on userId
     final colIndex = userId.hashCode.abs() % colonies.length;
     final targetColony = colonies[colIndex];
     final plotNumber = ((userId.hashCode.abs() ~/ 10) % maxPlotsPerIsland) + 1;
@@ -1080,17 +1217,7 @@ class PoketCosmosAllocationService {
     final coords = IslandAerialPainter.get35PlotCoordinates(colony.shapeStyle);
     final Map<int, CitizenPlot> plotMap = {};
 
-    // 1. Seed Iconic Community Pioneers for this colony (ensuring every island is rich & alive)
-    final pioneers = _getColonyPioneers(colony);
-    for (final p in pioneers) {
-      if (p.plotNumber <= maxPlotsPerIsland && p.plotNumber - 1 < coords.length) {
-        plotMap[p.plotNumber] = p.copyWith(
-          coordinates: coords[p.plotNumber - 1],
-        );
-      }
-    }
-
-    // 2. Fetch real registered users from Supabase profile table
+    // 1. Real database users from Supabase profile table
     try {
       final res = await SupaFlow.client
           .from('profile')
@@ -1132,8 +1259,8 @@ class PoketCosmosAllocationService {
           }
         }
 
-        // If not matched by bio, use deterministic round-robin wave distribution
-        if (!matchesColony && (country == null || country.isEmpty || country == colony.islandName)) {
+        // If not matched by bio, use deterministic sequential wave & colony distribution
+        if (!matchesColony) {
           final userWave = (i ~/ waveCapacity) + 1;
           final colonyIdx = ((i % waveCapacity) ~/ maxPlotsPerIsland) % colonies.length;
           if (userWave == wave && colonies[colonyIdx].code == colony.code) {
