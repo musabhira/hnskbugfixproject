@@ -165,6 +165,15 @@ class PocketNeighbor {
     return (id.hashCode.abs() ~/ 10) % 20 + 1;
   }
 
+  int get effectiveWave {
+    final pin = effectiveCosmosPin;
+    final match = RegExp(r'PKT-W(\d+)-').firstMatch(pin);
+    if (match != null) {
+      return int.tryParse(match.group(1) ?? '1') ?? 1;
+    }
+    return 1;
+  }
+
   String get effectiveCosmosPin {
     if (cosmosPin != null && cosmosPin!.isNotEmpty) return cosmosPin!;
     if (isPresident) return 'PKT-W01-EP-I01-P01';

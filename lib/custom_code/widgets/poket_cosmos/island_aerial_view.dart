@@ -351,7 +351,7 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
     final colony = PoketCosmosAllocationService.instance.getColonyByPlanetName(widget.planetName ?? widget.island.name);
     final minimalPin = 'PKT-${colony.code}-$plotNumber';
     final targetWave = (widget.island.id ~/ 100) > 0 ? (widget.island.id ~/ 100) : 1;
-    final marketPrice = PoketCosmosAllocationService.instance.calculatePlotMarketPrice(
+    final marketPrice = PoketCosmosAllocationService.calculatePlotMarketPrice(
       wave: targetWave,
       planetCode: colony.code,
       localPlotNumber: plotNumber,
@@ -380,7 +380,7 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
               child: Container(
                 width: 36,
                 height: 4,
-                margin: const EdgeInsets.bottom(14),
+                margin: const EdgeInsets.only(bottom: 14),
                 decoration: BoxDecoration(
                   color: Colors.white24,
                   borderRadius: BorderRadius.circular(2),

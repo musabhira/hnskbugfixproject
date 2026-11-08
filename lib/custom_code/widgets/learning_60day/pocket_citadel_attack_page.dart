@@ -772,6 +772,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       context,
       MaterialPageRoute(
         builder: (_) => PoketCosmosResidentIslandView(
+          userId: widget.neighbor.id,
+          userName: widget.neighbor.name,
           targetPlanetCode: widget.neighbor.effectivePlanetCode,
           targetPlotNumber: widget.neighbor.effectivePlotNumber,
           targetWave: widget.neighbor.effectiveWave,
@@ -5043,7 +5045,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       {bool isNight = false, String cycleLabel = ''}) {
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -5052,8 +5054,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               onTap: () => Navigator.pop(context, _raidStep == 3),
               borderRadius: BorderRadius.circular(20),
               child: Container(
-                width: 36,
-                height: 36,
+                width: 34,
+                height: 34,
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.65),
                   shape: BoxShape.circle,
@@ -5061,7 +5063,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 ),
                 child: const Center(
                   child: Icon(Icons.arrow_back_ios_new_rounded,
-                      color: Colors.white, size: 16),
+                      color: Colors.white, size: 15),
                 ),
               ),
             ),
@@ -5071,9 +5073,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               child: GestureDetector(
                 onTap: () => _showDefenderCosmosAddressSheet(context),
                 child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.70),
                     borderRadius: BorderRadius.circular(20),
@@ -5095,13 +5097,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         _getPlanetEmoji(widget.neighbor.effectivePlanetCode),
                         style: const TextStyle(fontSize: 12),
                       ),
-                      const SizedBox(width: 5),
+                      const SizedBox(width: 4),
                       Flexible(
                         child: Text(
                           '${_getCleanPlanetName(widget.neighbor.effectivePlanetCode, widget.neighbor.effectivePlanetName)} • #${widget.neighbor.effectivePlotNumber}',
                           style: GoogleFonts.outfit(
                             color: Colors.white,
-                            fontSize: 11,
+                            fontSize: 10.5,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 0.2,
                           ),
@@ -5109,7 +5111,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 3),
                       const Icon(Icons.info_outline_rounded,
                           size: 11, color: Color(0xFF38BDF8)),
                     ],
@@ -5128,8 +5130,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     onTap: _togglePerspective,
                     borderRadius: BorderRadius.circular(20),
                     child: Container(
-                      width: 36,
-                      height: 36,
+                      width: 32,
+                      height: 32,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Color(0xFF0284C7), Color(0xFF4F46E5)],
@@ -5148,12 +5150,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       child: Center(
                         child: Text(
                           _isVantageView ? '🏰' : '🔭',
-                          style: const TextStyle(fontSize: 16),
+                          style: const TextStyle(fontSize: 14),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 5),
                 ],
 
                 // 2. ☀️ / 🌙 Day & Night Theme Toggle Minimal Icon Button
@@ -5166,8 +5168,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   },
                   borderRadius: BorderRadius.circular(20),
                   child: Container(
-                    width: 36,
-                    height: 36,
+                    width: 32,
+                    height: 32,
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.70),
                       shape: BoxShape.circle,
@@ -5195,12 +5197,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         color: isNight
                             ? const Color(0xFFFDE047)
                             : const Color(0xFF38BDF8),
-                        size: 18,
+                        size: 16,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 5),
 
                 // 🔊 Music & Audio Speaker Toggle Button (User Audio Directive)
                 ValueListenableBuilder<bool>(
@@ -5215,8 +5217,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       },
                       borderRadius: BorderRadius.circular(20),
                       child: Container(
-                        width: 36,
-                        height: 36,
+                        width: 32,
+                        height: 32,
                         decoration: BoxDecoration(
                           color: Colors.black.withValues(alpha: 0.70),
                           shape: BoxShape.circle,
@@ -5244,22 +5246,22 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             color: isMuted
                                 ? Colors.white38
                                 : const Color(0xFFFFD700),
-                            size: 18,
+                            size: 16,
                           ),
                         ),
                       ),
                     );
                   },
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 5),
 
                 // 👤 Defender Profile Icon Button
                 InkWell(
                   onTap: _openDefenderProfile,
                   borderRadius: BorderRadius.circular(20),
                   child: Container(
-                    width: 34,
-                    height: 34,
+                    width: 32,
+                    height: 32,
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.65),
                       shape: BoxShape.circle,
@@ -5268,7 +5270,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     ),
                     child: const Center(
                       child: Icon(Icons.person_rounded,
-                          color: Color(0xFFA78BFA), size: 17),
+                          color: Color(0xFFA78BFA), size: 16),
                     ),
                   ),
                 ),
@@ -5279,8 +5281,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   onTap: _navigateToDefenderPlotOnIsland,
                   borderRadius: BorderRadius.circular(20),
                   child: Container(
-                    width: 34,
-                    height: 34,
+                    width: 32,
+                    height: 32,
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.65),
                       shape: BoxShape.circle,
@@ -5289,7 +5291,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     ),
                     child: const Center(
                       child: Icon(Icons.travel_explore_rounded,
-                          color: Color(0xFF38BDF8), size: 17),
+                          color: Color(0xFF38BDF8), size: 16),
                     ),
                   ),
                 ),
@@ -5299,8 +5301,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 PopupMenuButton<String>(
                   tooltip: 'Citadel Options',
                   icon: Container(
-                    width: 34,
-                    height: 34,
+                    width: 32,
+                    height: 32,
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.70),
                       shape: BoxShape.circle,
@@ -5311,7 +5313,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     ),
                     child: const Center(
                       child: Icon(Icons.more_vert_rounded,
-                          color: Colors.white70, size: 17),
+                          color: Colors.white70, size: 16),
                     ),
                   ),
                   color: const Color(0xFF1E293B),
@@ -5320,7 +5322,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     side: const BorderSide(color: Colors.white24),
                   ),
                   onSelected: (val) {
-                    if (val == 'view_plot') {
+                    if (val == 'citadel_stats') {
+                      _showCitadelStatsSheet();
+                    } else if (val == 'view_plot') {
                       _navigateToDefenderPlotOnIsland();
                     } else if (val == 'share_vibes') {
                       _shareCitadelToVibes();
@@ -5331,6 +5335,18 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     }
                   },
                   itemBuilder: (ctx) => [
+                    const PopupMenuItem(
+                      value: 'citadel_stats',
+                      child: Row(
+                        children: [
+                          Icon(Icons.shield_outlined,
+                              color: Color(0xFFFDE047), size: 18),
+                          SizedBox(width: 8),
+                          Text('Citadel Info & Stats 🏰',
+                              style: TextStyle(color: Colors.white)),
+                        ],
+                      ),
+                    ),
                     const PopupMenuItem(
                       value: 'view_plot',
                       child: Row(
