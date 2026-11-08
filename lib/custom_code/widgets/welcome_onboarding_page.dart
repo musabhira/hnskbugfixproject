@@ -130,7 +130,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   FlutterTts? _flutterTts;
   bool _isAvatarSpeaking = false;
   String _generatedPassword = '';
-  bool _useCustomPassword = false;
+  bool _useCustomPassword = true;
 
   // Onboarding Selections
   String _selectedNativeLanguage = 'Hindi';
@@ -824,7 +824,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   void _generateNewPassword() {
     setState(() {
       _generatedPassword = _createRandomSecurePassword();
-      if (_isSignUpMode) {
+      if (_isSignUpMode && !_useCustomPassword) {
         _passwordController.text = _generatedPassword;
       }
     });
@@ -4725,6 +4725,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
             onPressed: () {
               setState(() {
                 _isSignUpMode = true;
+                _useCustomPassword = true;
                 _mode = WelcomeMode.signIn;
               });
             },
@@ -5130,6 +5131,10 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                                       HapticFeedback.selectionClick();
                                       setState(() {
                                         _useCustomPassword = false;
+                                        if (_generatedPassword.isEmpty) {
+                                          _generatedPassword =
+                                              _createRandomSecurePassword();
+                                        }
                                         _passwordController.text =
                                             _generatedPassword;
                                       });
@@ -5137,7 +5142,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                                     icon: const Icon(Icons.auto_awesome_rounded,
                                         size: 14, color: Color(0xFF10B981)),
                                     label: Text(
-                                      'Use auto-generated ($_generatedPassword)',
+                                      'Auto-Generate Secure Password 🔑',
                                       style: GoogleFonts.inter(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
@@ -5288,6 +5293,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                                 onPressed: () {
                                   setState(() {
                                     _isSignUpMode = !_isSignUpMode;
+                                    _useCustomPassword = true;
                                     _errorMessage = null;
                                   });
                                 },

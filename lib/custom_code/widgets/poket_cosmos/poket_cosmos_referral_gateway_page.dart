@@ -113,7 +113,7 @@ class _PoketCosmosReferralGatewayPageState
       } else {
         HapticFeedback.heavyImpact();
         setState(() {
-          _validationError = 'Invalid or expired code. Try PKT-TEST or PKT-JUPITER!';
+          _validationError = 'Invalid or expired referral code. Please check with your friend.';
           _isCheckingCode = false;
         });
       }
@@ -125,7 +125,7 @@ class _PoketCosmosReferralGatewayPageState
     }
   }
 
-  void _proceedToCeremony({String? inviteCode}) {
+  void _proceedToCeremony({String? inviteCode, bool forceReallocate = false}) {
     HapticFeedback.mediumImpact();
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
@@ -137,6 +137,7 @@ class _PoketCosmosReferralGatewayPageState
             userAvatar: widget.userAvatar,
             userAge: widget.userAge,
             initialInviteCode: inviteCode,
+            forceReallocate: forceReallocate,
           ),
         ),
       ),
@@ -277,7 +278,7 @@ class _PoketCosmosReferralGatewayPageState
 
                     // Title
                     Text(
-                      'DO YOU HAVE A\nREFERRAL CODE?',
+                      'DO YOU HAVE AN ISLAND\nREFERRAL CODE?',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.outfit(
                         color: Colors.white,
@@ -289,7 +290,7 @@ class _PoketCosmosReferralGatewayPageState
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      'Got an invite from a friend? Enter their code to be born on their exact planet & reserve an adjacent neighbor plot!',
+                      'Got an invite code from a friend? Enter it below to be born on their exact island as neighbors, or let the Cosmos assign your destiny.',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.plusJakartaSans(
                         color: const Color(0xFF94A3B8),
@@ -337,7 +338,7 @@ class _PoketCosmosReferralGatewayPageState
                             _buildChoiceButton(
                               label: 'NO, ASSIGN MY DESTINY ➔',
                               isPrimary: false,
-                              onTap: () => _proceedToCeremony(),
+                              onTap: () => _proceedToCeremony(forceReallocate: true),
                             ),
                           ] else ...[
                             // Code Input Field
@@ -353,7 +354,7 @@ class _PoketCosmosReferralGatewayPageState
                                 letterSpacing: 3.0,
                               ),
                               decoration: InputDecoration(
-                                hintText: 'E.G. PKT-TEST',
+                                hintText: 'E.G. PKT-EP-12-8419',
                                 hintStyle: GoogleFonts.outfit(
                                   color: Colors.white24,
                                   fontSize: 16,
@@ -438,18 +439,6 @@ class _PoketCosmosReferralGatewayPageState
                               isPrimary: true,
                               isLoading: _isCheckingCode,
                               onTap: _isCheckingCode ? null : _verifyAndEnter,
-                            ),
-
-                            const SizedBox(height: 10),
-
-                            // Quick test pills
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                _buildTestPill('PKT-TEST'),
-                                const SizedBox(width: 8),
-                                _buildTestPill('PKT-JUPITER'),
-                              ],
                             ),
 
                             const SizedBox(height: 10),
@@ -545,34 +534,6 @@ class _PoketCosmosReferralGatewayPageState
                   letterSpacing: 1.2,
                 ),
               ),
-      ),
-    );
-  }
-
-  Widget _buildTestPill(String code) {
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        setState(() {
-          _codeController.text = code;
-          _validationError = null;
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1E293B),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white24, width: 0.8),
-        ),
-        child: Text(
-          'Try: $code',
-          style: GoogleFonts.outfit(
-            color: const Color(0xFF38BDF8),
-            fontSize: 10.5,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
       ),
     );
   }

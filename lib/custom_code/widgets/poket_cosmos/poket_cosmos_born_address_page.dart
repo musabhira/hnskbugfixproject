@@ -34,6 +34,7 @@ class PoketCosmosBornAddressPage extends StatefulWidget {
   final int? userAge;
   final String? initialInviteCode;
   final String? targetPlanetName;
+  final bool forceReallocate;
 
   const PoketCosmosBornAddressPage({
     super.key,
@@ -42,6 +43,7 @@ class PoketCosmosBornAddressPage extends StatefulWidget {
     this.userAge,
     this.initialInviteCode,
     this.targetPlanetName,
+    this.forceReallocate = false,
   });
 
   static Future<void> launch(
@@ -52,6 +54,7 @@ class PoketCosmosBornAddressPage extends StatefulWidget {
     String? initialInviteCode,
     String? inviteCode,
     String? targetPlanetName,
+    bool forceReallocate = false,
   }) {
     return Navigator.of(context).push(
       MaterialPageRoute(
@@ -61,6 +64,7 @@ class PoketCosmosBornAddressPage extends StatefulWidget {
           userAge: userAge,
           initialInviteCode: initialInviteCode ?? inviteCode,
           targetPlanetName: targetPlanetName,
+          forceReallocate: forceReallocate,
         ),
       ),
     );
@@ -175,6 +179,7 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
       userName: widget.userName,
       avatar: widget.userAvatar,
       targetPlanetName: widget.targetPlanetName,
+      forceReallocate: widget.forceReallocate,
     );
 
     final colony = PoketCosmosAllocationService.instance.getColonyByPlanetName(plot.planetName);
@@ -496,10 +501,7 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    (_selectedCosmosPlanet != null
-                            ? _selectedCosmosPlanet!.name.split(' ').first
-                            : _assignedPlot.planetName)
-                        .toUpperCase(),
+                    _assignedPlot.planetName.toUpperCase(),
                     style: GoogleFonts.outfit(
                       color: Colors.white,
                       fontSize: 24,
@@ -733,10 +735,8 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
           });
         }
 
-        final plotPinCode =
-            'PKT-${_assignedPlot.plotNumber.toString().padLeft(3, '0')}';
         final fullBornAddress =
-            '${widget.userName}\nPlot #${_assignedPlot.plotNumber}, ${_assignedPlot.streetName} • PIN: $plotPinCode\n${_assignedPlot.countryName}, ${_assignedPlot.planetName}';
+            '${widget.userName}\nPlot #${_assignedPlot.plotNumber} • ${_assignedPlot.countryName} • ${_assignedPlot.planetName}';
 
         return Stack(
           fit: StackFit.expand,
@@ -926,13 +926,13 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
                             ],
                           ),
                           const SizedBox(height: 5),
-                          // Layer 2 (Bottom): Full Address visible completely!
+                          // Layer 2 (Bottom): Minimal Clean Address
                           Text(
-                            'Plot #${_assignedPlot.plotNumber}, ${_assignedPlot.streetName} • PIN: $plotPinCode\n${_assignedPlot.countryName}, ${_assignedPlot.planetName}',
+                            'Plot #${_assignedPlot.plotNumber} • ${_assignedPlot.countryName} • ${_assignedPlot.planetName}',
                             style: GoogleFonts.plusJakartaSans(
                               color: const Color(0xFFCBD5E1),
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
                               height: 1.35,
                             ),
                           ),

@@ -423,7 +423,17 @@ class _ProfileSetupOnboardingPageState
         }
         await prefs.setInt('pm_age_$userId', calculatedAge);
       }
-      profilePayload['account_type'] = calculatedAge <= 9 ? 'kid' : 'adult';
+      final bool isExplicitKid = PocketKidsService.isPureKidAccount ||
+          (prefs.getString('pm_app_world_mode') == 'kids');
+
+      // Strictly retain Adult vs Kid mode chosen during Onboarding!
+      // Do NOT switch an Adult onboarding user to Kids based on Date of Birth.
+      // Student mode is completely removed.
+      if (isExplicitKid) {
+        profilePayload['account_type'] = 'kid';
+      } else {
+        profilePayload['account_type'] = 'adult';
+      }
       await prefs.setInt('pm_daily_goal_mins_$userId', _selectedDailyGoalMins);
       await prefs.setString('pm_active_island_$userId', 'english');
 
@@ -450,11 +460,8 @@ class _ProfileSetupOnboardingPageState
 
         if (!mounted) return;
 
-        // Route strictly based on age:
-        // 🧒 Age 1 to 9 -> Kids World (PocketPureKidsHomePage)
-        // 🧑 Age 10 to unlimited -> Adult World (No student mode!)
-        if (calculatedAge <= 9) {
-          // Pure Kids World (Ages 1-9)
+        if (isExplicitKid) {
+          // Pure Kids World (Only if explicitly chosen in onboarding)
           await PocketKidsService.activateKidAccount(
             name: name,
             ageGroup: calculatedAge <= 6 ? '4-6' : '6-8',
@@ -463,7 +470,7 @@ class _ProfileSetupOnboardingPageState
             isPureKid: true,
           );
         } else {
-          // Adult Mode (Ages 10 to unlimited - 100% Student Mode Removed)
+          // Adult Mode (Strictly maintained - 100% Student Mode Removed, no DOB downgrading)
           await PocketKidsService.activateAdultAccount();
           if (!mounted) return;
 
@@ -1330,7 +1337,7 @@ class _ProfileSetupOnboardingPageState
                   const Text('🎉', style: TextStyle(fontSize: 18)),
                   const SizedBox(width: 8),
                   Text(
-                    'Age: $calculatedAge Years Old (Matches peers ${math.max(16, calculatedAge - 3)}–${calculatedAge + 4})',
+                    'Age: $calculatedAge Years Old',
                     style: GoogleFonts.outfit(
                       color: const Color(0xFF34D399),
                       fontSize: 13,
