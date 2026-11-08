@@ -31,6 +31,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart'
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin_ads_management_tab.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_navigator_page.dart';
+import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_service.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -88,6 +89,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   List<Map<String, dynamic>> allToolConfigs = [];
   bool isLoadingToolConfigs = false;
   String toolUserSearchQuery = "";
+
+  // Cosmos Wave Expansion State
+  int _cosmosActiveWave = 1;
+  bool _isUnlockingCosmosWave = false;
 
   // E-Learning State
   List<Map<String, dynamic>> allCourses = [];
@@ -206,7 +211,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 20, vsync: this);
+    _tabController = TabController(length: 21, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showPasswordDialog();
       _loadRobotCycleData();
@@ -217,7 +222,17 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       _loadLionKidsInquiries();
       _loadReviewModeConfig();
       _loadCertificatesData();
+      _loadCosmosAdminStats();
     });
+  }
+
+  Future<void> _loadCosmosAdminStats() async {
+    final wave = await PoketCosmosAllocationService.instance.getActiveWaveIndex();
+    if (mounted) {
+      setState(() {
+        _cosmosActiveWave = wave;
+      });
+    }
   }
 
   Future<void> _loadReviewModeConfig() async {
@@ -857,6 +872,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       'Certificates Desk 📜',
       'VIP & Premium Users 👑',
       'AdMob & Ads 📺',
+      'Cosmos Islands 🌌',
     ];
 
     return Scaffold(
@@ -948,6 +964,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             Tab(
                 icon: Icon(Icons.ads_click_rounded),
                 text: 'Ads 📺'),
+            Tab(
+                icon: Icon(Icons.public_rounded),
+                text: 'Cosmos 🌌'),
           ],
         ),
       ),
@@ -974,6 +993,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           _buildCertificatesTab(),
           _buildPremiumUsersTab(),
           const AdminAdsManagementTab(),
+          _buildCosmosAdminTab(),
         ],
       ),
     );
@@ -1025,10 +1045,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         'icon': Icons.tune_rounded,
       },
       {
-        'title': '🌌 Poket Cosmos Map (NEW)',
-        'subtitle': 'Google Maps navigation, Flame travel & plots',
+        'title': '🌌 Poket Cosmos Waves & Islands',
+        'subtitle': 'Manage 10 planets, wave expansion & 250 plot packs',
         'color': const Color(0xFF38BDF8),
-        'tabIndex': -1, // Launches standalone Poket Cosmos Master Navigator
+        'tabIndex': 20,
         'icon': Icons.satellite_alt_rounded,
       },
     ];
@@ -14708,6 +14728,382 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
             fontSize: 11,
             fontWeight: selected ? FontWeight.bold : FontWeight.normal,
           ),
+        ),
+      ),
+    );
+  }
+
+  // =========================================================================
+  // 🌌 POKET COSMOS WAVE & ISLAND CONTROL TAB (ADMIN)
+  // =========================================================================
+  Widget _buildCosmosAdminTab() {
+    final totalPlots = _cosmosActiveWave * 250;
+    final totalIslands = _cosmosActiveWave * 10;
+    final occupiedPlots = math.min(totalUsers > 0 ? totalUsers : 277, totalPlots);
+    final availablePlots = math.max(0, totalPlots - occupiedPlots);
+    final occupancyPct = (occupiedPlots / totalPlots * 100).toStringAsFixed(1);
+    final currentBasePrice = PoketCosmosAllocationService.calculatePlotMarketPrice(
+      wave: _cosmosActiveWave,
+      planetCode: 'EP',
+      localPlotNumber: 10,
+      totalOccupiedInWave: occupiedPlots % 250,
+    );
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header Card
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFF38BDF8), width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF0284C7).withValues(alpha: 0.25),
+                  blurRadius: 18,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0284C7).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFF38BDF8), width: 1.2),
+                      ),
+                      child: const Text('🌌', style: TextStyle(fontSize: 28)),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Poket Cosmos Wave Engine',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            '10 Planets • 25 Plots Per Island • 250 Plots Per Wave',
+                            style: GoogleFonts.plusJakartaSans(
+                              color: const Color(0xFF94A3B8),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                // Stats Grid
+                Row(
+                  children: [
+                    _buildCosmosMetric('Current Wave', 'Wave $_cosmosActiveWave', const Color(0xFF38BDF8), Icons.waves_rounded),
+                    const SizedBox(width: 10),
+                    _buildCosmosMetric('Total Planets', '10 Worlds', const Color(0xFFA855F7), Icons.public_rounded),
+                    const SizedBox(width: 10),
+                    _buildCosmosMetric('Total Islands', '$totalIslands Islands', const Color(0xFF10B981), Icons.terrain_rounded),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    _buildCosmosMetric('Total Plots', '$totalPlots Plots', const Color(0xFFFBBF24), Icons.home_work_rounded),
+                    const SizedBox(width: 10),
+                    _buildCosmosMetric('Occupied', '$occupiedPlots ($occupancyPct%)', const Color(0xFFEC4899), Icons.people_alt_rounded),
+                    const SizedBox(width: 10),
+                    _buildCosmosMetric('Available (+)', '$availablePlots Free', const Color(0xFF34D399), Icons.add_circle_outline_rounded),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Action 1: Add 10 Islands (+250 Plots) Button
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: const Color(0xFF334155)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.add_business_rounded, color: Color(0xFF38BDF8), size: 22),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Manual Wave & Island Expansion',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Instantly adds 10 new islands (1 new island to each of the 10 planets) and releases 250 new citizen plots. Syncs globally to Supabase for all users.',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: const Color(0xFF94A3B8),
+                    fontSize: 12.5,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isUnlockingCosmosWave ? null : _handleAdminUnlockNextWave,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0284C7),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      elevation: 4,
+                    ),
+                    child: _isUnlockingCosmosWave
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.add_circle_rounded, size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                '➕ ADD 10 ISLANDS (+250 PLOTS) 🏝️',
+                                style: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+
+          // Action 2: Real Estate Economics & Price Card
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: const Color(0xFF334155)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.trending_up_rounded, color: Color(0xFFFBBF24), size: 22),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Real Estate Market Valuation Dynamics',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Current Base Price: $currentBasePrice PS. Land value dynamically calculates from supply vs demand ($occupancyPct% occupied). When you add 10 islands, total supply expands, lowering prices for new users; as plots fill up, prices rise.',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: const Color(0xFF94A3B8),
+                    fontSize: 12.5,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () async {
+                          PoketCosmosAllocationService.instance.clearPlotCaches();
+                          await _loadCosmosAdminStats();
+                          if (!mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Cosmos plot caches cleared & refreshed!')),
+                          );
+                        },
+                        icon: const Icon(Icons.refresh_rounded, size: 18),
+                        label: const Text('Refresh Caches'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF38BDF8),
+                          side: const BorderSide(color: Color(0xFF38BDF8)),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const PoketCosmosNavigatorPage(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.rocket_launch_rounded, size: 18),
+                        label: const Text('Launch Cosmos Map'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF10B981),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleAdminUnlockNextWave() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            const Text('🏝️', style: TextStyle(fontSize: 24)),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Add 10 Islands (+250 Plots)?',
+                style: GoogleFonts.outfit(color: Colors.white, fontSize: 18),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'This will unlock Wave ${_cosmosActiveWave + 1}, adding 1 island to each of the 10 planets and expanding the universe to ${(_cosmosActiveWave + 1) * 250} total plots globally.',
+          style: GoogleFonts.plusJakartaSans(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0284C7),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Confirm Unlock'),
+          ),
+        ],
+      ),
+    );
+
+    if (ok != true) return;
+
+    setState(() => _isUnlockingCosmosWave = true);
+    try {
+      final newWave = await PoketCosmosAllocationService.instance.unlockNextWave();
+      setState(() {
+        _cosmosActiveWave = newWave;
+        _isUnlockingCosmosWave = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('🎉 Successfully unlocked Wave $newWave! 10 new islands & 250 plots added globally!'),
+            backgroundColor: const Color(0xFF10B981),
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() => _isUnlockingCosmosWave = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error unlocking wave: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Widget _buildCosmosMetric(String title, String value, Color color, IconData icon) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B).withValues(alpha: 0.9),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: color, size: 14),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    title,
+                    style: GoogleFonts.plusJakartaSans(
+                      color: Colors.white60,
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              value,
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontSize: 13.5,
+                fontWeight: FontWeight.bold,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ),
       ),
     );

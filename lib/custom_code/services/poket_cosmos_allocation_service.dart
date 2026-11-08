@@ -301,10 +301,8 @@ class PoketCosmosAllocationService {
           .from('profile')
           .select('id, user_id, name, bio, profile_image_url, pocket_score, created_at')
           .order('created_at', ascending: true);
-      if (res != null) {
-        _allRegisteredProfiles = List<Map<String, dynamic>>.from(res);
-        _profilesLoaded = true;
-      }
+      _allRegisteredProfiles = List<Map<String, dynamic>>.from(res);
+      _profilesLoaded = true;
     } catch (e) {
       debugPrint('⚠️ loadAllRegisteredProfiles non-fatal: $e');
     }
@@ -448,7 +446,8 @@ class PoketCosmosAllocationService {
       _userBirthPlots[uid] = newPlot;
       _cachedBirthPlot = newPlot;
 
-      // Refresh registered profiles cache
+      // Refresh registered profiles cache & clear cached plots
+      clearPlotCaches();
       await loadAllRegisteredProfiles(forceRefresh: true);
 
       if (!context.mounted) return true;
@@ -478,7 +477,6 @@ class PoketCosmosAllocationService {
       final parsed = parseGlobalPlotNumber(gNum);
       final colony = parsed['colony'] as CelestialColonyInfo;
       final int lNum = parsed['localPlotNumber'] as int;
-      final int wave = parsed['wave'] as int;
 
       String ownerName = 'Available';
       String avatar = '🟢';
@@ -1094,10 +1092,79 @@ class PoketCosmosAllocationService {
   // 🌊 100-CRORE WAVE OCCUPANCY & "HOUSE FULL" ENGINE
   // =========================================================================
 
-  /// Gets the currently active Wave Index (starts at 1)
+  /// Gets the currently active Wave Index (calculated from total users + remote admin override)
   Future<int> getActiveWaveIndex() async {
+    int userBasedWave = 1;
+    try {
+      final res = await SupaFlow.client.from('profile').select('id');
+      final count = (res as List).length;
+      if (count > 0) {
+        userBasedWave = ((count - 1) ~/ waveCapacity) + 1;
+      }
+    } catch (_) {}
+
+    int remoteWave = 1;
+    try {
+      final res = await SupaFlow.client
+          .from('app_codes')
+          .select('class_code')
+          .eq('class_name', 'cosmos_waves')
+          .maybeSingle();
+      if (res != null && res['class_code'] != null) {
+        remoteWave = int.tryParse(res['class_code'].toString()) ?? 1;
+      }
+    } catch (_) {}
+
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getInt(_kActiveWaveIndexKey) ?? 1;
+    final localWave = prefs.getInt(_kActiveWaveIndexKey) ?? 1;
+
+    final effectiveWave = math.max(1, math.max(userBasedWave, math.max(remoteWave, localWave)));
+    return effectiveWave;
+  }
+
+  /// 🌌 Admin or System unlocks next 10 Islands (+250 Plots across all 10 Planets)
+  Future<int> unlockNextWave() async {
+    final currentWave = await getActiveWaveIndex();
+    final nextWave = currentWave + 1;
+
+    // 1. Save to SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_kActiveWaveIndexKey, nextWave);
+
+    // 2. Persist to Supabase app_codes table for global sync across all devices
+    try {
+      final existing = await SupaFlow.client
+          .from('app_codes')
+          .select('id')
+          .eq('class_name', 'cosmos_waves')
+          .maybeSingle();
+
+      if (existing != null) {
+        await SupaFlow.client.from('app_codes').update({
+          'class_code': nextWave.toString(),
+          'updated_at': DateTime.now().toIso8601String(),
+        }).eq('class_name', 'cosmos_waves');
+      } else {
+        await SupaFlow.client.from('app_codes').insert({
+          'class_name': 'cosmos_waves',
+          'class_code': nextWave.toString(),
+          'description': 'Global Active Waves in Poket Cosmos (10 islands per wave, 250 plots)',
+          'is_active': true,
+        });
+      }
+    } catch (e) {
+      debugPrint('⚠️ Supabase sync for cosmos_waves: $e');
+    }
+
+    // 3. Clear in-memory caches
+    _colonyPlotsCache.clear();
+
+    return nextWave;
+  }
+
+  /// Clears in-memory caches for all colony plots
+  void clearPlotCaches() {
+    _colonyPlotsCache.clear();
   }
 
   /// Gets occupied plot numbers (1..18) for a planet in a given wave
@@ -1221,9 +1288,9 @@ class PoketCosmosAllocationService {
     try {
       final res = await SupaFlow.client
           .from('profile')
-          .select('id, user_id, name, display_name, profile_image_url, current_day, user_day, learning_day, pocket_score, bio, country')
+          .select('id, user_id, name, display_name, profile_image_url, learning_day, day, pocket_score, bio, country, created_at')
           .order('created_at', ascending: true)
-          .limit(500);
+          .limit(1000);
 
       final List<dynamic> profiles = res as List<dynamic>;
 
@@ -1235,10 +1302,9 @@ class PoketCosmosAllocationService {
         final String rawName = (item['display_name'] ?? item['name'] ?? 'Citizen ${i + 1}').toString();
         final String name = rawName.isNotEmpty ? rawName : 'Citizen ${i + 1}';
         final String? avatarUrl = item['profile_image_url'] as String?;
-        final int day = (item['learning_day'] ?? item['current_day'] ?? item['user_day'] ?? (25 + (i * 7) % 65)) as int;
-        final int score = (item['pocket_score'] ?? (600 + (i * 45) % 800)) as int;
+        final int day = (item['learning_day'] ?? item['day'] ?? (25 + (i * 7) % 65)) as int;
+        final int score = (item['pocket_score'] as num?)?.toInt() ?? (600 + (i * 45) % 800);
         final String? bio = item['bio'] as String?;
-        final String? country = item['country'] as String?;
 
         // Determine if this user belongs to this colony
         bool matchesColony = false;
@@ -1279,7 +1345,7 @@ class PoketCosmosAllocationService {
             plotNumber: targetPlot,
             userId: uid,
             userName: name,
-            userAvatar: (avatarUrl != null && avatarUrl.isNotEmpty) ? avatarUrl : '🚀',
+            userAvatar: (avatarUrl != null && avatarUrl.isNotEmpty) ? avatarUrl : '🦁',
             day: math.max(1, day),
             pocketScore: score,
             streetName: colony.streetName,
@@ -1289,7 +1355,7 @@ class PoketCosmosAllocationService {
             coordinates: coord,
             postalPinCode: pin,
             tier: targetPlot == 1
-                ? PlotDeedTier.presidential
+                ? (colony.code == 'EP' && wave == 1 ? PlotDeedTier.presidential : PlotDeedTier.royalCitadel)
                 : (targetPlot <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
             status: PlotStatus.occupied,
           );

@@ -154,7 +154,7 @@ class _PoketCosmosResidentIslandViewState
 
     // 6. Island occupied plots (current citizen + real database neighbors & pioneers)
     final colonyOccupied = await PoketCosmosAllocationService.instance
-        .getOccupiedPlotsForColony(colony);
+        .getOccupiedPlotsForColony(colony, wave: wave);
     final Map<int, CitizenPlot> plotsMap = {
       for (final p in colonyOccupied) p.plotNumber: p,
     };

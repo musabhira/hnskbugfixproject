@@ -3,13 +3,13 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flame/game.dart' hide Matrix4;
-import '/backend/supabase/supabase.dart';
 import 'poket_cosmos_models.dart';
 import 'flame_solar_system_game.dart';
 import 'island_aerial_view.dart';
 import 'planet_sphere_icon_widget.dart';
 import '../verified_switch_page.dart';
 import '../../services/pocket_game_audio_service.dart';
+import '../../services/poket_cosmos_allocation_service.dart';
 
 /// 🌌 Poket Cosmos Explorer:
 /// - Screen 0: Fullscreen Solar System & Scientific Moons (compact 3D tilt bend button & iOS back).
@@ -28,8 +28,8 @@ class PoketCosmosNavigatorPage extends StatefulWidget {
   });
 
   /// Static accessor to all scientific cosmos planets
-  static List<PoketPlanet> buildCosmosPlanets() =>
-      _PoketCosmosNavigatorPageState._buildCosmosPlanets();
+  static List<PoketPlanet> buildCosmosPlanets({int activeWaves = 1}) =>
+      _PoketCosmosNavigatorPageState._buildCosmosPlanets(activeWaves: activeWaves);
 
   @override
   State<PoketCosmosNavigatorPage> createState() =>
@@ -59,7 +59,6 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
   List<CitizenPlot> _currentIslandPlots = [];
   CitizenPlot? _inspectedPlot;
 
-  bool _isAmbientAudioPlaying = true;
   double _currentAerialZoom = 1.0;
   late AnimationController _ambientOceanAnimController;
 
@@ -74,6 +73,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
     )..repeat();
     _islandPageController = PageController(viewportFraction: 0.84);
     _planets = _buildCosmosPlanets();
+    _refreshCosmosWaves();
     if (widget.initialPlanetCode != null && widget.initialPlanetCode!.isNotEmpty) {
       final code = widget.initialPlanetCode!.toUpperCase();
       PoketPlanet? matched;
@@ -138,6 +138,21 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
     super.dispose();
   }
 
+  Future<void> _refreshCosmosWaves() async {
+    final waves = await PoketCosmosAllocationService.instance.getActiveWaveIndex();
+    if (mounted) {
+      setState(() {
+        _planets = _buildCosmosPlanets(activeWaves: waves);
+        if (_selectedPlanet != null) {
+          _selectedPlanet = _planets.firstWhere(
+            (p) => p.id == _selectedPlanet!.id,
+            orElse: () => _selectedPlanet!,
+          );
+        }
+      });
+    }
+  }
+
   // =========================================================================
   // 👥 FETCH REAL USERS FOR THE PLOTS ON THE ACTIVE ISLAND
   // =========================================================================
@@ -156,6 +171,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
             postOffice: 'Presidential Citadel',
             countryName: 'Presidential Citadel',
             planetName: 'Earth Prime 🌍',
+            coordinates: Offset(0.5, 0.5),
             isPresident: true,
             tier: PlotDeedTier.presidential,
             postalPinCode: 'PK-PRES-01',
@@ -165,11 +181,11 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         return;
       }
 
-      final plots = await PoketCosmosAllocationService.instance.getWavePlotsCatalog(
-        islandId: island.id,
-        islandName: island.name,
-        planetName: _selectedPlanet?.name ?? 'Earth Prime 🌍',
-      );
+      final colony = PoketCosmosAllocationService.instance
+          .getColonyByPlanetName(_selectedPlanet?.name ?? island.name);
+      final targetWave = (island.id % 100 > 0) ? (island.id % 100) : 1;
+      final plots = await PoketCosmosAllocationService.instance
+          .getOccupiedPlotsForColony(colony, wave: targetWave);
 
       if (mounted) {
         setState(() {
@@ -181,69 +197,114 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
     }
   }
 
+  static List<PoketCountryMap> _buildPlanetIslands({
+    required int planetId,
+    required String planetCode,
+    required String baseIslandName,
+    required String baseTag,
+    required Color landColor,
+    required Color waterColor,
+    required String climate,
+    required IconData climateIcon,
+    required String islandEmoji,
+    required IslandShapeStyle shapeStyle,
+    int activeWaves = 1,
+  }) {
+    final List<PoketCountryMap> list = [];
+    // Wave 1 primary island
+    list.add(PoketCountryMap(
+      id: planetId * 100 + 1,
+      name: baseIslandName,
+      tag: baseTag,
+      landColor: landColor,
+      waterColor: waterColor,
+      totalSlots: 25,
+      filledSlots: 25,
+      climate: climate,
+      climateIcon: climateIcon,
+      islandEmoji: islandEmoji,
+      shapeStyle: shapeStyle,
+    ));
+
+    // Waves 2..activeWaves expansions
+    for (int w = 2; w <= activeWaves; w++) {
+      final islandName = PoketCosmosAllocationService.generateInfiniteIslandName(planetCode, w, w);
+      list.add(PoketCountryMap(
+        id: planetId * 100 + w,
+        name: islandName,
+        tag: 'Living Colony (Wave $w)',
+        landColor: landColor,
+        waterColor: waterColor,
+        totalSlots: 25,
+        filledSlots: w == 2 ? 15 : 0,
+        climate: climate,
+        climateIcon: climateIcon,
+        islandEmoji: islandEmoji,
+        shapeStyle: shapeStyle,
+      ));
+    }
+    return list;
+  }
+
   // =========================================================================
   // 🌍 SCIENTIFIC SOLAR SYSTEM: 8 MAJOR PLANETS, KUIPER DWARF, INTERSTELLAR EXOPLANET & MOONS
   // =========================================================================
-  static List<PoketPlanet> _buildCosmosPlanets() {
+  static List<PoketPlanet> _buildCosmosPlanets({int activeWaves = 1}) {
     return [
       // 1. Mercury ⚪ (Innermost Scorched World)
-      const PoketPlanet(
+      PoketPlanet(
         id: 1,
         name: 'Mercury ⚪',
         theme: 'Innermost Scorched Iron World',
         tagLine: 'High Velocity Orbit • Caloris Basin',
-        primaryColor: Color(0xFFCBD5E1),
-        glowColor: Color(0xFF94A3B8),
+        primaryColor: const Color(0xFFCBD5E1),
+        glowColor: const Color(0xFF94A3B8),
         radius: 10,
         orbitDistance: 85,
         orbitSpeed: 2.1,
-        totalPlots: 50,
-        occupiedPlots: 32,
-        countryMaps: [
-          PoketCountryMap(
-            id: 101,
-            name: 'Caloris Basin',
-            tag: 'Crater Ridge',
-            landColor: const Color(0xFF64748B),
-            waterColor: const Color(0xFF1E293B),
-            totalSlots: 35,
-            filledSlots: 32,
-            climate: 'High Heat 🔥',
-            climateIcon: Icons.local_fire_department_rounded,
-            islandEmoji: '🌋',
-            shapeStyle: IslandShapeStyle.fortressPlateau,
-          ),
-        ],
+        totalPlots: activeWaves * 25,
+        occupiedPlots: activeWaves >= 2 ? 50 : 25,
+        countryMaps: _buildPlanetIslands(
+          planetId: 1,
+          planetCode: 'MER',
+          baseIslandName: 'Caloris Basin',
+          baseTag: 'Crater Ridge',
+          landColor: const Color(0xFF64748B),
+          waterColor: const Color(0xFF1E293B),
+          climate: 'High Heat 🔥',
+          climateIcon: Icons.local_fire_department_rounded,
+          islandEmoji: '🌋',
+          shapeStyle: IslandShapeStyle.fortressPlateau,
+          activeWaves: activeWaves,
+        ),
       ),
 
       // 2. Venus 🟡 (Amber Cloud Greenhouse)
-      const PoketPlanet(
+      PoketPlanet(
         id: 2,
         name: 'Venus 🟡',
         theme: 'Golden Veil Greenhouse',
         tagLine: 'Dense Amber Clouds & Sulfuric Highlands',
-        primaryColor: Color(0xFFFDE047),
-        glowColor: Color(0xFFD97706),
+        primaryColor: const Color(0xFFFDE047),
+        glowColor: const Color(0xFFD97706),
         radius: 14,
         orbitDistance: 130,
         orbitSpeed: 1.5,
-        totalPlots: 50,
-        occupiedPlots: 40,
-        countryMaps: [
-          PoketCountryMap(
-            id: 201,
-            name: 'Aphrodite Terra',
-            tag: 'Golden Highlands',
-            landColor: Color(0xFFB45309),
-            waterColor: Color(0xFF78350F),
-            totalSlots: 35,
-            filledSlots: 40,
-            climate: 'Gold Cloud ⛅',
-            climateIcon: Icons.wb_cloudy_rounded,
-            islandEmoji: '🏺',
-            shapeStyle: IslandShapeStyle.crescentLagoon,
-          ),
-        ],
+        totalPlots: activeWaves * 25,
+        occupiedPlots: activeWaves >= 2 ? 27 : 25,
+        countryMaps: _buildPlanetIslands(
+          planetId: 2,
+          planetCode: 'VEN',
+          baseIslandName: 'Aphrodite Terra',
+          baseTag: 'Golden Highlands',
+          landColor: const Color(0xFFB45309),
+          waterColor: const Color(0xFF78350F),
+          climate: 'Gold Cloud ⛅',
+          climateIcon: Icons.wb_cloudy_rounded,
+          islandEmoji: '🏺',
+          shapeStyle: IslandShapeStyle.crescentLagoon,
+          activeWaves: activeWaves,
+        ),
       ),
 
       // 3. Earth Prime 🌍 (Cradle of Habit Learning + Natural Satellite: The Moon 🌕)
@@ -251,15 +312,15 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         id: 3,
         name: 'Earth Prime 🌍',
         theme: 'Cradle of Habit Learning & Capital World',
-        tagLine: 'Day 1-90 Habit Pioneers • 30 English Learning Islands',
+        tagLine: 'Day 1-90 Habit Pioneers • Living Archipelago',
         primaryColor: const Color(0xFF38BDF8),
         glowColor: const Color(0xFF0284C7),
         radius: 17,
         orbitDistance: 180,
         orbitSpeed: 1.0,
-        totalPlots: 1451,
-        occupiedPlots: 950,
-        countryMaps: _buildEarth30EnglishIslands(),
+        totalPlots: activeWaves * 25 + 1,
+        occupiedPlots: activeWaves * 25,
+        countryMaps: _buildEarth30EnglishIslands(activeWaves: activeWaves),
         satellites: const [
           PoketSatellite(
             id: 30,
@@ -296,64 +357,60 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
       ),
 
       // 4. Mars 🔴 (The Red Planet)
-      const PoketPlanet(
+      PoketPlanet(
         id: 4,
         name: 'Mars 🔴',
         theme: 'Red Dunes Bastion',
         tagLine: 'Iron Oxide Canyons & Olympus Mons',
-        primaryColor: Color(0xFFF97316),
-        glowColor: Color(0xFFEA580C),
+        primaryColor: const Color(0xFFF97316),
+        glowColor: const Color(0xFFEA580C),
         radius: 13,
         orbitDistance: 240,
         orbitSpeed: 0.82,
-        totalPlots: 50,
-        occupiedPlots: 38,
-        countryMaps: [
-          PoketCountryMap(
-            id: 401,
-            name: 'Olympus Haven',
-            tag: 'Volcano Oasis',
-            landColor: Color(0xFF9A3412),
-            waterColor: Color(0xFF881337),
-            totalSlots: 35,
-            filledSlots: 38,
-            climate: 'Rusty Breeze 🌪️',
-            climateIcon: Icons.air_rounded,
-            islandEmoji: '🏜️',
-            shapeStyle: IslandShapeStyle.starAtoll,
-          ),
-        ],
+        totalPlots: activeWaves * 25,
+        occupiedPlots: 25,
+        countryMaps: _buildPlanetIslands(
+          planetId: 4,
+          planetCode: 'MAR',
+          baseIslandName: 'Olympus Haven',
+          baseTag: 'Volcano Oasis',
+          landColor: const Color(0xFF9A3412),
+          waterColor: const Color(0xFF881337),
+          climate: 'Rusty Breeze 🌪️',
+          climateIcon: Icons.air_rounded,
+          islandEmoji: '🏜️',
+          shapeStyle: IslandShapeStyle.starAtoll,
+          activeWaves: activeWaves,
+        ),
       ),
 
       // 5. Jupiter 🟠 (The Gas Giant + Satellites: Europa 🧊 & Ganymede 🛡️)
-      const PoketPlanet(
+      PoketPlanet(
         id: 5,
         name: 'Jupiter 🟠',
         theme: 'Great Storm Giant',
         tagLine: 'Colossal Gas Bands & Galilean Satellites',
-        primaryColor: Color(0xFFFDBA74),
-        glowColor: Color(0xFFC2410C),
+        primaryColor: const Color(0xFFFDBA74),
+        glowColor: const Color(0xFFC2410C),
         radius: 26,
         orbitDistance: 315,
         orbitSpeed: 0.55,
-        totalPlots: 50,
-        occupiedPlots: 42,
-        countryMaps: [
-          PoketCountryMap(
-            id: 501,
-            name: 'Red Spot Atoll',
-            tag: 'Storm Center',
-            landColor: Color(0xFF7C2D12),
-            waterColor: Color(0xFF451A03),
-            totalSlots: 35,
-            filledSlots: 42,
-            climate: 'Thunder Storm ⚡',
-            climateIcon: Icons.bolt_rounded,
-            islandEmoji: '🌪️',
-            shapeStyle: IslandShapeStyle.ringAtoll,
-          ),
-        ],
-        satellites: [
+        totalPlots: activeWaves * 25,
+        occupiedPlots: 25,
+        countryMaps: _buildPlanetIslands(
+          planetId: 5,
+          planetCode: 'JUP',
+          baseIslandName: 'Red Spot Atoll',
+          baseTag: 'Storm Center',
+          landColor: const Color(0xFF7C2D12),
+          waterColor: const Color(0xFF451A03),
+          climate: 'Thunder Storm ⚡',
+          climateIcon: Icons.bolt_rounded,
+          islandEmoji: '🌪️',
+          shapeStyle: IslandShapeStyle.ringAtoll,
+          activeWaves: activeWaves,
+        ),
+        satellites: const [
           PoketSatellite(
             id: 51,
             name: 'Europa 🧊',
@@ -418,34 +475,32 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
       ),
 
       // 6. Saturn 🪐 (The Ringed Giant + Satellite: Titan 🪐)
-      const PoketPlanet(
+      PoketPlanet(
         id: 6,
         name: 'Saturn 🪐',
         theme: 'Ringed Majesty',
         tagLine: 'Golden Ice Dust Rings & Methane Satellites',
-        primaryColor: Color(0xFFFEF08A),
-        glowColor: Color(0xFFCA8A04),
+        primaryColor: const Color(0xFFFEF08A),
+        glowColor: const Color(0xFFCA8A04),
         radius: 22,
         orbitDistance: 405,
         orbitSpeed: 0.42,
-        totalPlots: 50,
-        occupiedPlots: 35,
-        countryMaps: [
-          PoketCountryMap(
-            id: 601,
-            name: 'Cassini Glade',
-            tag: 'Golden Ring Plateau',
-            landColor: const Color(0xFF854D0E),
-            waterColor: const Color(0xFF3B0764),
-            totalSlots: 35,
-            filledSlots: 35,
-            climate: 'Cold Gold Mists ❄️',
-            climateIcon: Icons.ac_unit_rounded,
-            islandEmoji: '👑',
-            shapeStyle: IslandShapeStyle.dualIsletBridge,
-          ),
-        ],
-        satellites: [
+        totalPlots: activeWaves * 25,
+        occupiedPlots: 25,
+        countryMaps: _buildPlanetIslands(
+          planetId: 6,
+          planetCode: 'SAT',
+          baseIslandName: 'Cassini Glade',
+          baseTag: 'Golden Ring Plateau',
+          landColor: const Color(0xFF854D0E),
+          waterColor: const Color(0xFF3B0764),
+          climate: 'Cold Gold Mists ❄️',
+          climateIcon: Icons.ac_unit_rounded,
+          islandEmoji: '👑',
+          shapeStyle: IslandShapeStyle.dualIsletBridge,
+          activeWaves: activeWaves,
+        ),
+        satellites: const [
           PoketSatellite(
             id: 61,
             name: 'Titan 🪐',
@@ -480,64 +535,60 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
       ),
 
       // 7. Uranus 💎 (Cyan Ice Giant)
-      const PoketPlanet(
+      PoketPlanet(
         id: 7,
         name: 'Uranus 💎',
         theme: 'Cyan Ice Vault',
         tagLine: 'Tilt 98° Orbit • Diamond Rain Cryo',
-        primaryColor: Color(0xFF67E8F9),
-        glowColor: Color(0xFF06B6D4),
+        primaryColor: const Color(0xFF67E8F9),
+        glowColor: const Color(0xFF06B6D4),
         radius: 18,
         orbitDistance: 490,
         orbitSpeed: 0.32,
-        totalPlots: 50,
-        occupiedPlots: 28,
-        countryMaps: [
-          PoketCountryMap(
-            id: 701,
-            name: 'Miranda Glade',
-            tag: 'Cyan Ice Cliffs',
-            landColor: Color(0xFF0E7490),
-            waterColor: Color(0xFF0891B2),
-            totalSlots: 35,
-            filledSlots: 28,
-            climate: 'Cryo Chill 🧊',
-            climateIcon: Icons.severe_cold_rounded,
-            islandEmoji: '🧊',
-            shapeStyle: IslandShapeStyle.hookPeninsula,
-          ),
-        ],
+        totalPlots: activeWaves * 25,
+        occupiedPlots: 25,
+        countryMaps: _buildPlanetIslands(
+          planetId: 7,
+          planetCode: 'URA',
+          baseIslandName: 'Miranda Glade',
+          baseTag: 'Cyan Ice Cliffs',
+          landColor: const Color(0xFF0E7490),
+          waterColor: const Color(0xFF0891B2),
+          climate: 'Cryo Chill 🧊',
+          climateIcon: Icons.severe_cold_rounded,
+          islandEmoji: '🧊',
+          shapeStyle: IslandShapeStyle.hookPeninsula,
+          activeWaves: activeWaves,
+        ),
       ),
 
       // 8. Neptune 🌊 (Supersonic Blue Giant + Satellite: Triton 🔱)
-      const PoketPlanet(
+      PoketPlanet(
         id: 8,
         name: 'Neptune 🌊',
         theme: 'Abyssal Trident Giant',
         tagLine: 'Supersonic Winds & Cryo Geyser Satellites',
-        primaryColor: Color(0xFF60A5FA),
-        glowColor: Color(0xFF2563EB),
+        primaryColor: const Color(0xFF60A5FA),
+        glowColor: const Color(0xFF2563EB),
         radius: 17,
         orbitDistance: 575,
         orbitSpeed: 0.22,
-        totalPlots: 50,
-        occupiedPlots: 30,
-        countryMaps: [
-          PoketCountryMap(
-            id: 801,
-            name: 'Great Dark Haven',
-            tag: 'Deep Ultramarine Rim',
-            landColor: Color(0xFF1E3A8A),
-            waterColor: Color(0xFF1D4ED8),
-            totalSlots: 35,
-            filledSlots: 30,
-            climate: 'Deep Gale 💨',
-            climateIcon: Icons.cyclone_rounded,
-            islandEmoji: '🔱',
-            shapeStyle: IslandShapeStyle.heartSanctuary,
-          ),
-        ],
-        satellites: [
+        totalPlots: activeWaves * 25,
+        occupiedPlots: 25,
+        countryMaps: _buildPlanetIslands(
+          planetId: 8,
+          planetCode: 'NEP',
+          baseIslandName: 'Great Dark Haven',
+          baseTag: 'Deep Ultramarine Rim',
+          landColor: const Color(0xFF1E3A8A),
+          waterColor: const Color(0xFF1D4ED8),
+          climate: 'Deep Gale 💨',
+          climateIcon: Icons.cyclone_rounded,
+          islandEmoji: '🔱',
+          shapeStyle: IslandShapeStyle.heartSanctuary,
+          activeWaves: activeWaves,
+        ),
+        satellites: const [
           PoketSatellite(
             id: 81,
             name: 'Triton 🔱',
@@ -572,72 +623,68 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
       ),
 
       // 9. Pluto ❄️ (Dwarf Planet • Kuiper Belt Outer Rim)
-      const PoketPlanet(
+      PoketPlanet(
         id: 9,
         name: 'Pluto ❄️',
         theme: 'Kuiper Belt Outer Rim (Dwarf Planet)',
         tagLine: 'Nitrogen Ice Dunes & Heart of Sputnik Planitia',
-        primaryColor: Color(0xFFE2E8F0),
-        glowColor: Color(0xFF94A3B8),
+        primaryColor: const Color(0xFFE2E8F0),
+        glowColor: const Color(0xFF94A3B8),
         radius: 9,
         orbitDistance: 660,
         orbitSpeed: 0.16,
-        totalPlots: 50,
+        totalPlots: activeWaves * 25,
         occupiedPlots: 22,
         isDwarfPlanet: true,
-        countryMaps: [
-          PoketCountryMap(
-            id: 901,
-            name: 'Sputnik Planitia',
-            tag: 'Heart of Pluto',
-            landColor: const Color(0xFF475569),
-            waterColor: const Color(0xFF0F172A),
-            totalSlots: 35,
-            filledSlots: 22,
-            climate: 'Glacial Calm ❄️',
-            climateIcon: Icons.ac_unit_rounded,
-            islandEmoji: '🤍',
-            shapeStyle: IslandShapeStyle.heartSanctuary,
-          ),
-        ],
+        countryMaps: _buildPlanetIslands(
+          planetId: 9,
+          planetCode: 'PLU',
+          baseIslandName: 'Sputnik Planitia',
+          baseTag: 'Heart of Pluto',
+          landColor: const Color(0xFF475569),
+          waterColor: const Color(0xFF0F172A),
+          climate: 'Glacial Calm ❄️',
+          climateIcon: Icons.ac_unit_rounded,
+          islandEmoji: '🤍',
+          shapeStyle: IslandShapeStyle.heartSanctuary,
+          activeWaves: activeWaves,
+        ),
       ),
 
       // 10. Kepler-452b 🌿 (Interstellar Earth 2.0 • Cygnus Constellation)
-      const PoketPlanet(
+      PoketPlanet(
         id: 452,
         name: 'Kepler-452b 🌿',
         theme: 'Interstellar Habitable Frontier (Earth 2.0)',
         tagLine: '1,400 Light-Years Away in Cygnus • Super-Earth Biosphere',
-        primaryColor: Color(0xFF10B981),
-        glowColor: Color(0xFF059669),
+        primaryColor: const Color(0xFF10B981),
+        glowColor: const Color(0xFF059669),
         radius: 20,
         orbitDistance: 765,
         orbitSpeed: 0.11,
         isExoplanet: true,
-        totalPlots: 50,
+        totalPlots: activeWaves * 25,
         occupiedPlots: 15,
-        countryMaps: [
-          PoketCountryMap(
-            id: 45201,
-            name: 'Cygnus Haven',
-            tag: 'Interstellar Earth 2.0',
-            landColor: Color(0xFF15803D),
-            waterColor: Color(0xFF0D9488),
-            totalSlots: 35,
-            filledSlots: 15,
-            climate: 'Eternal Spring 🌸',
-            climateIcon: Icons.eco_rounded,
-            islandEmoji: '🌿',
-            shapeStyle: IslandShapeStyle.crescentLagoon,
-          ),
-        ],
+        countryMaps: _buildPlanetIslands(
+          planetId: 452,
+          planetCode: 'KEP',
+          baseIslandName: 'Cygnus Haven',
+          baseTag: 'Interstellar Earth 2.0',
+          landColor: const Color(0xFF15803D),
+          waterColor: const Color(0xFF0D9488),
+          climate: 'Eternal Spring 🌸',
+          climateIcon: Icons.eco_rounded,
+          islandEmoji: '🌿',
+          shapeStyle: IslandShapeStyle.crescentLagoon,
+          activeWaves: activeWaves,
+        ),
       ),
     ];
   }
 
   /// 🏝️ Earth Prime Sovereign & Citizen Colony Islands
-  static List<PoketCountryMap> _buildEarth30EnglishIslands() {
-    return [
+  static List<PoketCountryMap> _buildEarth30EnglishIslands({int activeWaves = 1}) {
+    final list = <PoketCountryMap>[
       // 👑 Island #0: Presidential Citadel (President Mus'ab's Exclusive Sovereign Sanctuary)
       const PoketCountryMap(
         id: 1,
@@ -672,24 +719,30 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         islandEmoji: '🏝️',
         shapeStyle: IslandShapeStyle.crescentLagoon,
       ),
+    ];
 
-      // 🌴 Wave 2 Expansion Colony: Serenity Atoll (Plots 251..275)
-      const PoketCountryMap(
-        id: 302,
-        name: 'Serenity Atoll',
-        tag: 'Wave 2 Expansion Island',
-        landColor: Color(0xFF0D9488),
-        waterColor: Color(0xFF0EA5E9), // Aquamarine
+    // Additional Waves
+    for (int w = 2; w <= activeWaves; w++) {
+      final name = (w == 2)
+          ? 'Serenity Atoll'
+          : PoketCosmosAllocationService.generateInfiniteIslandName('EP', w, w);
+      list.add(PoketCountryMap(
+        id: 300 + w,
+        name: name,
+        tag: 'Wave $w Expansion Island',
+        landColor: const Color(0xFF0D9488),
+        waterColor: const Color(0xFF0EA5E9),
         totalSlots: 25,
-        filledSlots: 25,
+        filledSlots: w == 2 ? 15 : 0,
         climate: 'Ocean Horizon 🍃',
         climateIcon: Icons.air_rounded,
-        description:
-            'Wave 2 expansion island expanding the frontier of Earth Prime.',
+        description: 'Wave $w expansion island expanding the frontier of Earth Prime.',
         islandEmoji: '🌴',
         shapeStyle: IslandShapeStyle.sCurveArchipelago,
-      ),
-    ];
+      ));
+    }
+
+    return list;
   }
 
   void _navigateToPlanetArchipelago(PoketPlanet planet) {

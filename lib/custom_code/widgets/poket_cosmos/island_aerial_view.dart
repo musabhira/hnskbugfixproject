@@ -2952,12 +2952,12 @@ class IslandAerialPainter extends CustomPainter {
       final parcelRect = Rect.fromCenter(center: housePos, width: 48.0, height: 38.0);
 
       if (citizenPlot != null) {
-        // 🏡 Render full architectural compound (scaled up to 0.62 so homes, cars, pools are clearly visible!)
+        // 🏡 Render full architectural compound (scaled up to 1.05 so homes, cars, pools are large, prominent & clearly visible!)
         final day = citizenPlot.day;
         canvas.save();
         canvas.translate(housePos.dx, housePos.dy);
         canvas.rotate(plotRot);
-        canvas.scale(0.62);
+        canvas.scale(1.05);
         canvas.translate(-housePos.dx, -housePos.dy);
 
         _drawYardTreeClusters(canvas, parcelRect, plotNumber);
@@ -2977,10 +2977,10 @@ class IslandAerialPainter extends CustomPainter {
         canvas.restore();
 
         // 🌟 Minimal Green Tick (Checkmark) Badge indicating plot is claimed/bought!
-        final tickCenter = housePos + const Offset(10.0, -10.0);
-        const tickR = 5.0;
+        final tickCenter = housePos + const Offset(15.0, -15.0);
+        const tickR = 5.8;
         // Soft drop shadow
-        canvas.drawCircle(tickCenter.translate(0.4, 0.5), tickR, Paint()..color = Colors.black45);
+        canvas.drawCircle(tickCenter.translate(0.5, 0.6), tickR, Paint()..color = Colors.black45);
         // Emerald background
         canvas.drawCircle(tickCenter, tickR, Paint()..color = const Color(0xFF10B981));
         // Subtle white border
@@ -2990,19 +2990,19 @@ class IslandAerialPainter extends CustomPainter {
           Paint()
             ..color = Colors.white
             ..style = PaintingStyle.stroke
-            ..strokeWidth = 0.8,
+            ..strokeWidth = 0.9,
         );
         // White checkmark tick (✓)
         final tickP = Path()
-          ..moveTo(tickCenter.dx - 2.2, tickCenter.dy)
-          ..lineTo(tickCenter.dx - 0.6, tickCenter.dy + 1.8)
-          ..lineTo(tickCenter.dx + 2.2, tickCenter.dy - 1.8);
+          ..moveTo(tickCenter.dx - 2.5, tickCenter.dy)
+          ..lineTo(tickCenter.dx - 0.7, tickCenter.dy + 2.0)
+          ..lineTo(tickCenter.dx + 2.5, tickCenter.dy - 2.0);
         canvas.drawPath(
           tickP,
           Paint()
             ..color = Colors.white
             ..style = PaintingStyle.stroke
-            ..strokeWidth = 1.2
+            ..strokeWidth = 1.3
             ..strokeCap = StrokeCap.round
             ..strokeJoin = StrokeJoin.round,
         );
@@ -3089,34 +3089,34 @@ class IslandAerialPainter extends CustomPainter {
     }
 
     final turfRRect = RRect.fromRectAndRadius(
-      Rect.fromCenter(center: Offset.zero, width: 34.0, height: 26.0),
-      const Radius.circular(6.0),
+      Rect.fromCenter(center: Offset.zero, width: 44.0, height: 34.0),
+      const Radius.circular(8.0),
     );
     final turfPaint = Paint()
-      ..color = turfColor.withValues(alpha: 0.32)
+      ..color = turfColor.withValues(alpha: 0.35)
       ..style = PaintingStyle.fill;
     canvas.drawRRect(turfRRect, turfPaint);
 
     final borderPaint = Paint()
-      ..color = borderColor.withValues(alpha: 0.50)
+      ..color = borderColor.withValues(alpha: 0.55)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.85;
+      ..strokeWidth = 1.0;
     canvas.drawRRect(turfRRect, borderPaint);
 
     // 2. Small stone path leading into center
     final pathPaint = Paint()
       ..color = const Color(0xFFCBD5E1).withValues(alpha: 0.35)
-      ..strokeWidth = 1.6;
-    canvas.drawLine(const Offset(0, 11), const Offset(0, 3.5), pathPaint);
+      ..strokeWidth = 1.8;
+    canvas.drawLine(const Offset(0, 14), const Offset(0, 4.0), pathPaint);
 
     // 3. Center Glowing PLUS Button (Coral Crimson Red with +)
     final pulse = math.sin(timeSeconds * 3.5 + plotNumber) * 0.12 + 1.0;
-    final btnRadius = 5.2 * pulse;
+    final btnRadius = 6.4 * pulse;
 
     // Glowing aura
     canvas.drawCircle(
       Offset.zero,
-      btnRadius + 2.5,
+      btnRadius + 3.0,
       Paint()..color = const Color(0xFFE11D48).withValues(alpha: 0.28),
     );
 
