@@ -81,7 +81,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   List<AppReleaseRecord> _allReleases = [];
   String _releaseSearchQuery = '';
   String _releasePlatformFilter = 'all'; // 'all', 'android', 'ios'
-  String _releaseStatusFilter = 'all'; // 'all', 'active', 'testing', 'production'
+  String _releaseStatusFilter =
+      'all'; // 'all', 'active', 'testing', 'production'
   AppReleaseRecord? _activeAndroidRelease;
   AppReleaseRecord? _activeIosRelease;
 
@@ -161,24 +162,32 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   bool _isLoadingAdminMedia = true;
 
   // President Desk State
-  int _presidentSubTab = 0; // 0: Inquiries, 1: Post Vibe, 2: Announcements, 3: Protection
+  int _presidentSubTab =
+      0; // 0: Inquiries, 1: Post Vibe, 2: Announcements, 3: Protection
   List<Map<String, dynamic>> _presidentInquiries = [];
   bool _isLoadingPresidentInquiries = false;
   String _presidentInquirySearchQuery = '';
   int _presidentInquiryStatusFilter = 0; // 0: All, 1: Pending, 2: Replied
-  final TextEditingController _presidentVibeCaptionController = TextEditingController();
-  final TextEditingController _presidentVibeMediaUrlController = TextEditingController();
+  final TextEditingController _presidentVibeCaptionController =
+      TextEditingController();
+  final TextEditingController _presidentVibeMediaUrlController =
+      TextEditingController();
   final int _presidentVibeDuration = 10;
-  final TextEditingController _presidentAnnouncementTitleController = TextEditingController();
-  final TextEditingController _presidentAnnouncementContentController = TextEditingController();
-  final TextEditingController _presidentAnnouncementMediaUrlController = TextEditingController();
+  final TextEditingController _presidentAnnouncementTitleController =
+      TextEditingController();
+  final TextEditingController _presidentAnnouncementContentController =
+      TextEditingController();
+  final TextEditingController _presidentAnnouncementMediaUrlController =
+      TextEditingController();
   String _presidentAnnouncementPriority = 'high';
-  final TextEditingController _presidentProtectionTargetController = TextEditingController();
+  final TextEditingController _presidentProtectionTargetController =
+      TextEditingController();
   int _presidentProtectionHours = 24;
 
   // 🎯 Targets & Homes Curriculum State (User Audio Directive!)
   int _curriculumSelectedDay = 1;
-  final TextEditingController _curriculumJsonController = TextEditingController();
+  final TextEditingController _curriculumJsonController =
+      TextEditingController();
   final TextEditingController _topicEnController = TextEditingController();
   final TextEditingController _topicMlController = TextEditingController();
   final TextEditingController _formulaController = TextEditingController();
@@ -191,21 +200,33 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   String _curriculumFilterText = '';
 
   // 🦁 Kids Panel (Lion Desk) State
-  int _lionKidsSubTab = 0; // 0: Chats, 1: 100-Day Progress, 2: Safety Shield, 3: Royal Broadcast, 4: Homies
+  int _lionKidsSubTab =
+      0; // 0: Chats, 1: 100-Day Progress, 2: Safety Shield, 3: Royal Broadcast, 4: Homies
   List<Map<String, dynamic>> _lionKidsInquiries = [];
   bool _isLoadingLionKidsInquiries = false;
   String _lionKidsInquirySearchQuery = '';
-  final TextEditingController _lionBroadcastTitleController = TextEditingController();
-  final TextEditingController _lionBroadcastContentController = TextEditingController();
-  final TextEditingController _lionBroadcastMediaUrlController = TextEditingController();
-  final TextEditingController _lionSafetyBannedWordController = TextEditingController();
-  final List<String> _lionBannedWords = ['abuse', 'badword', 'hate', 'stupid', 'kill'];
+  final TextEditingController _lionBroadcastTitleController =
+      TextEditingController();
+  final TextEditingController _lionBroadcastContentController =
+      TextEditingController();
+  final TextEditingController _lionBroadcastMediaUrlController =
+      TextEditingController();
+  final TextEditingController _lionSafetyBannedWordController =
+      TextEditingController();
+  final List<String> _lionBannedWords = [
+    'abuse',
+    'badword',
+    'hate',
+    'stupid',
+    'kill'
+  ];
 
   // 🛡️ App Store & Play Store Review Mode State
   bool _reviewHideOnAndroid = false;
   bool _reviewHideOnIos = false;
   bool _reviewHideForEmail = true;
-  final TextEditingController _reviewEmailController = TextEditingController(text: 'hira@gmail.com');
+  final TextEditingController _reviewEmailController =
+      TextEditingController(text: 'hira@gmail.com');
   bool _isSavingReviewConfig = false;
 
   @override
@@ -227,7 +248,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   }
 
   Future<void> _loadCosmosAdminStats() async {
-    final wave = await PoketCosmosAllocationService.instance.getActiveWaveIndex();
+    final wave =
+        await PoketCosmosAllocationService.instance.getActiveWaveIndex();
     if (mounted) {
       setState(() {
         _cosmosActiveWave = wave;
@@ -295,13 +317,19 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       _promoCtaController.text = campaign.ctaText;
       _promoWebUrlController.text = campaign.webCheckoutUrl;
       _promoMonthlyPriceController.text = campaign.inAppMonthlyPrice.toString();
-      _promoMonthlyRetailPriceController.text = campaign.inAppMonthlyRetailPrice.toString();
-      _promoQuarterlyPriceController.text = campaign.inAppQuarterlyPrice.toString();
-      _promoQuarterlyRetailPriceController.text = campaign.inAppQuarterlyRetailPrice.toString();
+      _promoMonthlyRetailPriceController.text =
+          campaign.inAppMonthlyRetailPrice.toString();
+      _promoQuarterlyPriceController.text =
+          campaign.inAppQuarterlyPrice.toString();
+      _promoQuarterlyRetailPriceController.text =
+          campaign.inAppQuarterlyRetailPrice.toString();
       _promoYearlyPriceController.text = campaign.inAppYearlyPrice.toString();
-      _promoYearlyRetailPriceController.text = campaign.inAppYearlyRetailPrice.toString();
-      _promoCertPriceController.text = campaign.certificateUnlockPrice.toString();
-      _promoCertRetailPriceController.text = campaign.certificateRetailPrice.toString();
+      _promoYearlyRetailPriceController.text =
+          campaign.inAppYearlyRetailPrice.toString();
+      _promoCertPriceController.text =
+          campaign.certificateUnlockPrice.toString();
+      _promoCertRetailPriceController.text =
+          campaign.certificateRetailPrice.toString();
       _promoUpiIdController.text = campaign.upiId;
       _promoTargetPlatform = campaign.targetPlatform;
       _promoIsActive = campaign.isActive;
@@ -330,7 +358,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       inAppQuarterlyPrice:
           int.tryParse(_promoQuarterlyPriceController.text.trim()) ?? 799,
       inAppQuarterlyRetailPrice:
-          int.tryParse(_promoQuarterlyRetailPriceController.text.trim()) ?? 4999,
+          int.tryParse(_promoQuarterlyRetailPriceController.text.trim()) ??
+              4999,
       inAppYearlyPrice:
           int.tryParse(_promoYearlyPriceController.text.trim()) ?? 1699,
       inAppYearlyRetailPrice:
@@ -517,7 +546,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       // 1. Fetch profiles with created_at, day, pocket_score
       final res = await supabase
           .from('profile')
-          .select('id, user_id, name, shop_name, phone_no, profile_image_url, verified, is_vip, is_premium, is_subscribed, subscription_tier, created_at, bio, country, day, learning_day, pocket_score')
+          .select('*')
           .order('created_at', ascending: false);
 
       // 2. Fetch users email mappings to cross-reference
@@ -638,7 +667,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         setState(() {
           reportsList = List<Map<String, dynamic>>.from(res);
           _defenseReportsList = dReports;
-          pendingDefenseReports = dReports.where((r) => r.status == 'pending').length;
+          pendingDefenseReports =
+              dReports.where((r) => r.status == 'pending').length;
           isLoadingReports = false;
           _isLoadingDefenseReports = false;
         });
@@ -666,11 +696,14 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
 
       // Fetch profiles (names)
       final profilesRes =
-          await supabase.from('profile').select('user_id, name');
+          await supabase.from('profile').select('id, user_id, name');
 
-      final profileMap = {
-        for (var p in profilesRes) p['user_id'].toString(): p['name']
-      };
+      final profileMap = <String, String>{};
+      for (var p in profilesRes) {
+        final name = (p['name'] ?? '').toString();
+        if (p['user_id'] != null) profileMap[p['user_id'].toString()] = name;
+        if (p['id'] != null) profileMap[p['id'].toString()] = name;
+      }
 
       if (mounted) {
         setState(() {
@@ -711,7 +744,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   }
 
   /// 👑 Manual VIP Toggle (User Audio Directive: Manual VIP access in Admin Panel)
-  Future<void> _toggleUserVip(Map<String, dynamic> user, bool currentStatus) async {
+  Future<void> _toggleUserVip(
+      Map<String, dynamic> user, bool currentStatus) async {
     final newStatus = !currentStatus;
     final uid = user['user_id']?.toString();
     final profileId = user['id'];
@@ -755,7 +789,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                   ? '👑 Full VIP Gold access GRANTED to ${user['name'] ?? "User"}!'
                   : 'VIP access removed for ${user['name'] ?? "User"}.',
             ),
-            backgroundColor: newStatus ? const Color(0xFFFFD700) : Colors.orange,
+            backgroundColor:
+                newStatus ? const Color(0xFFFFD700) : Colors.orange,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -791,11 +826,15 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
 
     try {
       if (uid != null && uid.isNotEmpty) {
-        await supabase.from('profile').update({'verified': newStatus}).eq('user_id', uid);
+        await supabase
+            .from('profile')
+            .update({'verified': newStatus}).eq('user_id', uid);
       }
       if (profileId != null) {
         try {
-          await supabase.from('profile').update({'verified': newStatus}).eq('id', profileId);
+          await supabase
+              .from('profile')
+              .update({'verified': newStatus}).eq('id', profileId);
         } catch (_) {}
       }
       _loadStats();
@@ -923,26 +962,35 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
               Container(
                 height: 42,
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: const BoxDecoration(
                   color: Color(0xFF0F172A),
-                  border: Border(bottom: BorderSide(color: Colors.white12, width: 0.6)),
+                  border: Border(
+                      bottom: BorderSide(color: Colors.white12, width: 0.6)),
                 ),
                 child: AnimatedBuilder(
                   animation: _tabController,
                   builder: (context, _) {
-                    final activeCat = _getCategoryForTabIndex(_tabController.index);
+                    final activeCat =
+                        _getCategoryForTabIndex(_tabController.index);
                     return SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       physics: const BouncingScrollPhysics(),
                       child: Row(
                         children: [
-                          _buildCategoryPill('🏛️ Desks', 1, activeCat, () => _tabController.animateTo(0)),
-                          _buildCategoryPill('👥 Citizens', 2, activeCat, () => _tabController.animateTo(3)),
-                          _buildCategoryPill('🌌 Cosmos', 3, activeCat, () => _tabController.animateTo(20)),
-                          _buildCategoryPill('📚 Learning', 4, activeCat, () => _tabController.animateTo(9)),
-                          _buildCategoryPill('⚙️ Ads & Controls', 5, activeCat, () => _tabController.animateTo(19)),
-                          _buildCategoryPill('⭐ All Tools (21)', 0, activeCat, () => _showHubsQuickLauncher(context)),
+                          _buildCategoryPill('🏛️ Desks', 1, activeCat,
+                              () => _tabController.animateTo(0)),
+                          _buildCategoryPill('👥 Citizens', 2, activeCat,
+                              () => _tabController.animateTo(3)),
+                          _buildCategoryPill('🌌 Cosmos', 3, activeCat,
+                              () => _tabController.animateTo(20)),
+                          _buildCategoryPill('📚 Learning', 4, activeCat,
+                              () => _tabController.animateTo(9)),
+                          _buildCategoryPill('⚙️ Ads & Controls', 5, activeCat,
+                              () => _tabController.animateTo(19)),
+                          _buildCategoryPill('⭐ All Tools (21)', 0, activeCat,
+                              () => _showHubsQuickLauncher(context)),
                         ],
                       ),
                     );
@@ -963,32 +1011,79 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                     borderRadius: BorderRadius.circular(10),
                     color: const Color(0xFFFFD700),
                   ),
-                  indicatorPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                  indicatorPadding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                   dividerColor: Colors.transparent,
-                  labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
-                  unselectedLabelStyle: GoogleFonts.outfit(fontWeight: FontWeight.w500, fontSize: 11.5),
+                  labelStyle: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold, fontSize: 12),
+                  unselectedLabelStyle: GoogleFonts.outfit(
+                      fontWeight: FontWeight.w500, fontSize: 11.5),
                   tabs: const [
-                    Tab(icon: Icon(Icons.account_balance_rounded, size: 16), text: 'President Desk 🏛️'),
-                    Tab(icon: Icon(Icons.pets_rounded, size: 16), text: 'Lion Desk 🦁'),
-                    Tab(icon: Icon(Icons.dashboard_outlined, size: 16), text: 'Insight 📊'),
-                    Tab(icon: Icon(Icons.people_outline, size: 16), text: 'Users 👥'),
-                    Tab(icon: Icon(Icons.school_outlined, size: 16), text: 'Requests 📬'),
-                    Tab(icon: Icon(Icons.report_problem_outlined, size: 16), text: 'Reports 🚨'),
-                    Tab(icon: Icon(Icons.security_outlined, size: 16), text: 'Auth 🛡️'),
-                    Tab(icon: Icon(Icons.system_update_outlined, size: 16), text: 'Update 🚀'),
-                    Tab(icon: Icon(Icons.build_circle_outlined, size: 16), text: 'Tools 🛠️'),
-                    Tab(icon: Icon(Icons.collections_bookmark_outlined, size: 16), text: 'E-Learning 📖'),
-                    Tab(icon: Icon(Icons.forum_outlined, size: 16), text: 'English Hub 💬'),
-                    Tab(icon: Icon(Icons.ondemand_video_rounded, size: 16), text: 'Media Tasks 📺'),
-                    Tab(icon: Icon(Icons.smart_toy_outlined, size: 16), text: 'Robots 🤖'),
-                    Tab(icon: Icon(Icons.monetization_on_outlined, size: 16), text: 'Monetization 💰'),
-                    Tab(icon: Icon(Icons.track_changes_rounded, size: 16), text: 'Targets 🎯'),
-                    Tab(icon: Icon(Icons.sports_esports_rounded, size: 16), text: 'Games Hub 🎮'),
-                    Tab(icon: Icon(Icons.published_with_changes_rounded, size: 16), text: 'Store Review 🛡️'),
-                    Tab(icon: Icon(Icons.workspace_premium_rounded, size: 16), text: 'Certificates 📜'),
-                    Tab(icon: Icon(Icons.stars_rounded, size: 16), text: 'VIP Users 👑'),
-                    Tab(icon: Icon(Icons.ads_click_rounded, size: 16), text: 'AdMob & Ads 📺'),
-                    Tab(icon: Icon(Icons.public_rounded, size: 16), text: 'Cosmos 🌌'),
+                    Tab(
+                        icon: Icon(Icons.account_balance_rounded, size: 16),
+                        text: 'President Desk 🏛️'),
+                    Tab(
+                        icon: Icon(Icons.pets_rounded, size: 16),
+                        text: 'Lion Desk 🦁'),
+                    Tab(
+                        icon: Icon(Icons.dashboard_outlined, size: 16),
+                        text: 'Insight 📊'),
+                    Tab(
+                        icon: Icon(Icons.people_outline, size: 16),
+                        text: 'Users 👥'),
+                    Tab(
+                        icon: Icon(Icons.school_outlined, size: 16),
+                        text: 'Requests 📬'),
+                    Tab(
+                        icon: Icon(Icons.report_problem_outlined, size: 16),
+                        text: 'Reports 🚨'),
+                    Tab(
+                        icon: Icon(Icons.security_outlined, size: 16),
+                        text: 'Auth 🛡️'),
+                    Tab(
+                        icon: Icon(Icons.system_update_outlined, size: 16),
+                        text: 'Update 🚀'),
+                    Tab(
+                        icon: Icon(Icons.build_circle_outlined, size: 16),
+                        text: 'Tools 🛠️'),
+                    Tab(
+                        icon:
+                            Icon(Icons.collections_bookmark_outlined, size: 16),
+                        text: 'E-Learning 📖'),
+                    Tab(
+                        icon: Icon(Icons.forum_outlined, size: 16),
+                        text: 'English Hub 💬'),
+                    Tab(
+                        icon: Icon(Icons.ondemand_video_rounded, size: 16),
+                        text: 'Media Tasks 📺'),
+                    Tab(
+                        icon: Icon(Icons.smart_toy_outlined, size: 16),
+                        text: 'Robots 🤖'),
+                    Tab(
+                        icon: Icon(Icons.monetization_on_outlined, size: 16),
+                        text: 'Monetization 💰'),
+                    Tab(
+                        icon: Icon(Icons.track_changes_rounded, size: 16),
+                        text: 'Targets 🎯'),
+                    Tab(
+                        icon: Icon(Icons.sports_esports_rounded, size: 16),
+                        text: 'Games Hub 🎮'),
+                    Tab(
+                        icon: Icon(Icons.published_with_changes_rounded,
+                            size: 16),
+                        text: 'Store Review 🛡️'),
+                    Tab(
+                        icon: Icon(Icons.workspace_premium_rounded, size: 16),
+                        text: 'Certificates 📜'),
+                    Tab(
+                        icon: Icon(Icons.stars_rounded, size: 16),
+                        text: 'VIP Users 👑'),
+                    Tab(
+                        icon: Icon(Icons.ads_click_rounded, size: 16),
+                        text: 'AdMob & Ads 📺'),
+                    Tab(
+                        icon: Icon(Icons.public_rounded, size: 16),
+                        text: 'Cosmos 🌌'),
                   ],
                 ),
               ),
@@ -1025,7 +1120,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
     );
   }
 
-  Widget _buildCategoryPill(String label, int catId, int activeCat, VoidCallback onTap) {
+  Widget _buildCategoryPill(
+      String label, int catId, int activeCat, VoidCallback onTap) {
     final isSelected = activeCat == catId;
     return GestureDetector(
       onTap: onTap,
@@ -1056,9 +1152,15 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
 
   int _getCategoryForTabIndex(int index) {
     if (index == 0 || index == 1) return 1; // Desks
-    if (index == 3 || index == 4 || index == 5 || index == 6 || index == 18) return 2; // Citizens
+    if (index == 3 || index == 4 || index == 5 || index == 6 || index == 18)
+      return 2; // Citizens
     if (index == 20) return 3; // Cosmos
-    if (index == 9 || index == 10 || index == 11 || index == 14 || index == 15 || index == 17) return 4; // Learning
+    if (index == 9 ||
+        index == 10 ||
+        index == 11 ||
+        index == 14 ||
+        index == 15 ||
+        index == 17) return 4; // Learning
     return 5; // Ads & Controls (2, 7, 8, 12, 13, 16, 19)
   }
 
@@ -1144,7 +1246,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    const Icon(Icons.hub_rounded, color: Color(0xFFFFFC00), size: 22),
+                    const Icon(Icons.hub_rounded,
+                        color: Color(0xFFFFFC00), size: 22),
                     const SizedBox(width: 8),
                     Text(
                       'Admin Command Hubs',
@@ -1180,7 +1283,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const PoketCosmosNavigatorPage(),
+                                builder: (_) =>
+                                    const PoketCosmosNavigatorPage(),
                               ),
                             );
                           } else {
@@ -1206,7 +1310,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                   color: color.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: Icon(h['icon'] as IconData, color: color, size: 22),
+                                child: Icon(h['icon'] as IconData,
+                                    color: color, size: 22),
                               ),
                               const SizedBox(width: 14),
                               Expanded(
@@ -1224,12 +1329,14 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                     const SizedBox(height: 3),
                                     Text(
                                       h['subtitle'] as String,
-                                      style: const TextStyle(color: Colors.white54, fontSize: 11),
+                                      style: const TextStyle(
+                                          color: Colors.white54, fontSize: 11),
                                     ),
                                   ],
                                 ),
                               ),
-                              const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white30, size: 14),
+                              const Icon(Icons.arrow_forward_ios_rounded,
+                                  color: Colors.white30, size: 14),
                             ],
                           ),
                         ),
@@ -2018,24 +2125,30 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                               children: [
                                 CircleAvatar(
                                   radius: 24,
-                                  backgroundImage: (user['profile_image_url'] != null)
-                                      ? CachedNetworkImageProvider(user['profile_image_url'])
-                                      : null,
+                                  backgroundImage:
+                                      (user['profile_image_url'] != null)
+                                          ? CachedNetworkImageProvider(
+                                              user['profile_image_url'])
+                                          : null,
                                   backgroundColor: isVip
-                                      ? const Color(0xFFFFD700).withValues(alpha: 0.2)
+                                      ? const Color(0xFFFFD700)
+                                          .withValues(alpha: 0.2)
                                       : Colors.blue[100],
                                   child: (user['profile_image_url'] == null)
                                       ? Text(user['name']?[0] ?? "?",
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
-                                            color: isVip ? const Color(0xFFFFD700) : Colors.black,
+                                            color: isVip
+                                                ? const Color(0xFFFFD700)
+                                                : Colors.black,
                                           ))
                                       : null,
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         children: [
@@ -2053,25 +2166,35 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                           if (isVerified) ...[
                                             const SizedBox(width: 5),
                                             const Icon(Icons.verified,
-                                                color: Color(0xFF38BDF8), size: 16),
+                                                color: Color(0xFF38BDF8),
+                                                size: 16),
                                           ],
                                         ],
                                       ),
                                       const SizedBox(height: 3),
                                       Text(
-                                        user['phone_no'] ?? user['shop_name'] ?? 'No phone / shop',
-                                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                        user['phone_no'] ??
+                                            user['shop_name'] ??
+                                            'No phone / shop',
+                                        style: const TextStyle(
+                                            fontSize: 12, color: Colors.grey),
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                       const SizedBox(height: 4),
                                       Row(
                                         children: [
                                           Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 6, vertical: 2),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFF6366F1).withValues(alpha: 0.25),
-                                              borderRadius: BorderRadius.circular(6),
-                                              border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.5), width: 0.8),
+                                              color: const Color(0xFF6366F1)
+                                                  .withValues(alpha: 0.25),
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                              border: Border.all(
+                                                  color: const Color(0xFF6366F1)
+                                                      .withValues(alpha: 0.5),
+                                                  width: 0.8),
                                             ),
                                             child: Text(
                                               'Day ${user['day'] ?? user['learning_day'] ?? 1} 🏠',
@@ -2084,11 +2207,17 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                           ),
                                           const SizedBox(width: 6),
                                           Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 6, vertical: 2),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
-                                              borderRadius: BorderRadius.circular(6),
-                                              border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.5), width: 0.8),
+                                              color: const Color(0xFFF59E0B)
+                                                  .withValues(alpha: 0.2),
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                              border: Border.all(
+                                                  color: const Color(0xFFF59E0B)
+                                                      .withValues(alpha: 0.5),
+                                                  width: 0.8),
                                             ),
                                             child: Text(
                                               '⚡ ${user['pocket_score'] ?? 0} PS',
@@ -2102,8 +2231,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                           if (user['created_at'] != null) ...[
                                             const SizedBox(width: 6),
                                             Text(
-                                              user['created_at'].toString().split('T').first,
-                                              style: const TextStyle(fontSize: 10.5, color: Colors.white38),
+                                              user['created_at']
+                                                  .toString()
+                                                  .split('T')
+                                                  .first,
+                                              style: const TextStyle(
+                                                  fontSize: 10.5,
+                                                  color: Colors.white38),
                                             ),
                                           ],
                                         ],
@@ -2113,16 +2247,21 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                 ),
                                 if (isVip)
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 3),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFFFD700).withValues(alpha: 0.18),
+                                      color: const Color(0xFFFFD700)
+                                          .withValues(alpha: 0.18),
                                       borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: const Color(0xFFFFD700), width: 1.0),
+                                      border: Border.all(
+                                          color: const Color(0xFFFFD700),
+                                          width: 1.0),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: const [
-                                        Text('👑', style: TextStyle(fontSize: 11)),
+                                        Text('👑',
+                                            style: TextStyle(fontSize: 11)),
                                         SizedBox(width: 3),
                                         Text(
                                           'VIP GOLD',
@@ -2156,8 +2295,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                     Switch(
                                       value: isVip,
                                       activeColor: const Color(0xFFFFD700),
-                                      activeTrackColor: const Color(0xFFFFD700).withValues(alpha: 0.4),
-                                      onChanged: (val) => _toggleUserVip(user, isVip),
+                                      activeTrackColor: const Color(0xFFFFD700)
+                                          .withValues(alpha: 0.4),
+                                      onChanged: (val) =>
+                                          _toggleUserVip(user, isVip),
                                     ),
                                   ],
                                 ),
@@ -2166,12 +2307,16 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                 Row(
                                   children: [
                                     const Text('Verified',
-                                        style: TextStyle(color: Colors.white70, fontSize: 12)),
+                                        style: TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 12)),
                                     const SizedBox(width: 4),
                                     Switch(
                                       value: isVerified,
                                       activeColor: const Color(0xFF38BDF8),
-                                      onChanged: (val) => _toggleUserVerification(user, isVerified),
+                                      onChanged: (val) =>
+                                          _toggleUserVerification(
+                                              user, isVerified),
                                     ),
                                   ],
                                 ),
@@ -2214,18 +2359,29 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                     final req = pendingAccessList[index];
                     final profile = req['profile'] ?? {};
                     final course = req['courses'] ?? {};
-                    final date = DateTime.parse(req['created_at']);
+                    final date = DateTime.tryParse(
+                            req['created_at']?.toString() ?? '') ??
+                        DateTime.now();
+                    final targetUid = (profile['id'] ??
+                            profile['user_id'] ??
+                            req['user_id'] ??
+                            '')
+                        .toString();
+                    final citizenPlanet =
+                        (profile['country'] ?? 'Earth').toString();
+                    final citizenDay =
+                        profile['day'] ?? profile['learning_day'] ?? 1;
 
                     return Container(
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
-                        color: Colors.grey[900],
+                        color: const Color(0xFF1E293B),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.05)),
+                            color: Colors.white.withValues(alpha: 0.08)),
                         boxShadow: [
                           BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
+                              color: Colors.black.withValues(alpha: 0.2),
                               blurRadius: 10,
                               offset: const Offset(0, 4))
                         ],
@@ -2240,7 +2396,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
                                       color:
-                                          Colors.orange.withValues(alpha: 0.1),
+                                          Colors.orange.withValues(alpha: 0.15),
                                       borderRadius: BorderRadius.circular(12)),
                                   child: const Icon(Icons.school,
                                       color: Colors.orange, size: 24),
@@ -2256,11 +2412,35 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                               fontWeight: FontWeight.bold,
                                               fontSize: 16,
                                               color: Colors.white)),
-                                      Text(
-                                          'Request by: ${profile['name'] ?? "User"}',
-                                          style: TextStyle(
-                                              color: Colors.grey[400],
-                                              fontSize: 13)),
+                                      const SizedBox(height: 3),
+                                      Row(
+                                        children: [
+                                          Text(
+                                              'Request by: ${profile['name'] ?? "User"}',
+                                              style: TextStyle(
+                                                  color: Colors.grey[300],
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w600)),
+                                          const SizedBox(width: 6),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 6, vertical: 1.5),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF38BDF8)
+                                                  .withValues(alpha: 0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                            ),
+                                            child: Text(
+                                              '🪐 $citizenPlanet • Day $citizenDay',
+                                              style: const TextStyle(
+                                                  color: Color(0xFF38BDF8),
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -2283,7 +2463,40 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                 const SizedBox(width: 4),
                                 Text(profile['phone_no'] ?? "No Phone",
                                     style: TextStyle(
-                                        color: Colors.grey[500], fontSize: 12)),
+                                        color: Colors.grey[400], fontSize: 12)),
+                                if (targetUid.isNotEmpty) ...[
+                                  const SizedBox(width: 8),
+                                  ElevatedButton.icon(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => VerfiedSwitchPage(
+                                              userId: targetUid),
+                                        ),
+                                      );
+                                    },
+                                    icon: const Icon(
+                                        Icons.person_search_rounded,
+                                        size: 13,
+                                        color: Colors.black),
+                                    label: const Text(
+                                      'Inspect',
+                                      style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFFFFD700),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 4),
+                                      minimumSize: Size.zero,
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                  ),
+                                ],
                                 const Spacer(),
                                 ElevatedButton(
                                   style: ElevatedButton.styleFrom(
@@ -2292,7 +2505,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                     shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(8)),
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 20),
+                                        horizontal: 18, vertical: 8),
                                   ),
                                   onPressed: () =>
                                       _approveCourseAccess(req['id']),
@@ -2326,14 +2539,18 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     decoration: BoxDecoration(
-                      color: _selectedReportsSubTab == 0 ? const Color(0xFFFFFC00) : Colors.white10,
+                      color: _selectedReportsSubTab == 0
+                          ? const Color(0xFFFFFC00)
+                          : Colors.white10,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Center(
                       child: Text(
                         'General Reports (${reportsList.length})',
                         style: GoogleFonts.outfit(
-                          color: _selectedReportsSubTab == 0 ? Colors.black : Colors.white70,
+                          color: _selectedReportsSubTab == 0
+                              ? Colors.black
+                              : Colors.white70,
                           fontWeight: FontWeight.bold,
                           fontSize: 12.5,
                         ),
@@ -2349,10 +2566,14 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     decoration: BoxDecoration(
-                      color: _selectedReportsSubTab == 1 ? const Color(0xFFDC2626) : Colors.white10,
+                      color: _selectedReportsSubTab == 1
+                          ? const Color(0xFFDC2626)
+                          : Colors.white10,
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                        color: pendingDefenseReports > 0 ? Colors.redAccent : Colors.transparent,
+                        color: pendingDefenseReports > 0
+                            ? Colors.redAccent
+                            : Colors.transparent,
                         width: 1,
                       ),
                     ),
@@ -2360,7 +2581,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                       child: Text(
                         '🏛️ Presidential Court ($pendingDefenseReports)',
                         style: GoogleFonts.outfit(
-                          color: _selectedReportsSubTab == 1 ? Colors.white : Colors.white70,
+                          color: _selectedReportsSubTab == 1
+                              ? Colors.white
+                              : Colors.white70,
                           fontWeight: FontWeight.bold,
                           fontSize: 12.5,
                         ),
@@ -2392,10 +2615,21 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.check_circle_outline,
-                          size: 64, color: Colors.grey[300]),
+                          size: 64, color: Colors.grey[600]),
                       const SizedBox(height: 16),
-                      const Text('No reports to review!',
-                          style: TextStyle(color: Colors.grey)),
+                      Text(
+                        'No Citizen Reports Found',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Citadel and content reports will appear here.',
+                        style: TextStyle(color: Colors.white54, fontSize: 12),
+                      ),
                     ],
                   ),
                 )
@@ -2404,76 +2638,413 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                   itemCount: reportsList.length,
                   itemBuilder: (context, index) {
                     final report = reportsList[index];
-                    final status = report['status'] ?? 'pending';
+                    final status = (report['status'] ?? 'pending')
+                        .toString()
+                        .toLowerCase();
                     final type = report['report_type'] ?? 'other';
-                    final date = DateTime.tryParse(report['created_at']?.toString() ?? '') ?? DateTime.now();
+                    final contentType = report['content_type'] ?? 'content';
+                    final contentId = report['content_id']?.toString() ?? '';
+                    final date = DateTime.tryParse(
+                            report['created_at']?.toString() ?? '') ??
+                        DateTime.now();
+                    final reporterId = report['reporter_id']?.toString() ?? '';
+
+                    final reporterProf = allProfiles.firstWhere(
+                      (p) =>
+                          p['id']?.toString() == reporterId ||
+                          p['user_id']?.toString() == reporterId,
+                      orElse: () => <String, dynamic>{},
+                    );
+                    final rawName = reporterProf['name'] ??
+                        reporterProf['display_name'] ??
+                        reporterProf['username'];
+                    final reporterName = (rawName != null &&
+                            rawName.toString().trim().isNotEmpty)
+                        ? rawName.toString().trim()
+                        : (reporterId.isNotEmpty
+                            ? ContactsNameService().getDisplayName(
+                                userId: reporterId,
+                                fallbackName:
+                                    'Citizen ${reporterId.length > 6 ? reporterId.substring(0, 6) : reporterId}',
+                              )
+                            : 'Anonymous Citizen');
+                    final reporterPlanet =
+                        (reporterProf['country'] ?? 'Earth').toString();
+                    final reporterDay = reporterProf['day'] ??
+                        reporterProf['learning_day'] ??
+                        1;
+                    final reporterBio = reporterProf['bio']?.toString() ?? '';
+                    final reporterPlot =
+                        reporterBio.contains('Plot') ? reporterBio : '';
+                    final reporterAvatar = reporterProf['profile_pic'] ??
+                        reporterProf['image'] ??
+                        reporterProf['profile_image_url'];
+
+                    final isPending = status == 'pending';
+                    final isResolved = status == 'resolved';
 
                     return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
+                      margin: const EdgeInsets.only(bottom: 14),
                       decoration: BoxDecoration(
-                        color: Colors.grey[900],
+                        color: const Color(0xFF1E293B),
                         borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isPending
+                              ? const Color(0xFFFF9100).withValues(alpha: 0.6)
+                              : isResolved
+                                  ? Colors.green.withValues(alpha: 0.4)
+                                  : Colors.white12,
+                          width: isPending ? 1.5 : 1,
+                        ),
                         boxShadow: [
                           BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
-                              blurRadius: 4)
+                            color: Colors.black.withValues(alpha: 0.25),
+                            blurRadius: 6,
+                            offset: const Offset(0, 3),
+                          ),
                         ],
                       ),
                       child: ExpansionTile(
-                        leading: Icon(
-                          status == 'resolved'
-                              ? Icons.check_circle
-                              : Icons.warning_amber_rounded,
-                          color: status == 'resolved'
-                              ? Colors.green
-                              : Colors.orange,
+                        tilePadding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 6),
+                        leading: CircleAvatar(
+                          radius: 20,
+                          backgroundColor: const Color(0xFF334155),
+                          backgroundImage: (reporterAvatar != null &&
+                                  reporterAvatar.toString().startsWith('http'))
+                              ? CachedNetworkImageProvider(
+                                  reporterAvatar.toString())
+                              : null,
+                          child: (reporterAvatar == null ||
+                                  !reporterAvatar.toString().startsWith('http'))
+                              ? Text(
+                                  reporterName.isNotEmpty
+                                      ? reporterName[0].toUpperCase()
+                                      : '?',
+                                  style: const TextStyle(
+                                      color: Color(0xFFFFD700),
+                                      fontWeight: FontWeight.bold),
+                                )
+                              : null,
                         ),
-                        title: Text(
-                            '${type.toString().toUpperCase()} - ${report['content_type']}',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                                color: Colors.white)),
-                        subtitle: Text(
-                            'Status: $status • ${date.day}/${date.month}',
-                            style: TextStyle(
-                                color: Colors.grey[400], fontSize: 12)),
+                        title: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                reporterName,
+                                style: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14.5,
+                                  color: Colors.white,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 7, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: isResolved
+                                    ? Colors.green.withValues(alpha: 0.2)
+                                    : isPending
+                                        ? Colors.orange.withValues(alpha: 0.2)
+                                        : Colors.grey.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: isResolved
+                                      ? Colors.green
+                                      : isPending
+                                          ? Colors.orange
+                                          : Colors.grey,
+                                  width: 0.8,
+                                ),
+                              ),
+                              child: Text(
+                                status.toUpperCase(),
+                                style: TextStyle(
+                                  color: isResolved
+                                      ? Colors.green
+                                      : isPending
+                                          ? Colors.orange
+                                          : Colors.grey,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Wrap(
+                            spacing: 6,
+                            runSpacing: 4,
+                            children: [
+                              Text(
+                                '🪐 $reporterPlanet',
+                                style: const TextStyle(
+                                    color: Color(0xFF38BDF8),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600),
+                              ),
+                              Text(
+                                '• Day $reporterDay',
+                                style: const TextStyle(
+                                    color: Colors.white60, fontSize: 11),
+                              ),
+                              if (reporterPlot.isNotEmpty)
+                                Text(
+                                  '• $reporterPlot',
+                                  style: const TextStyle(
+                                      color: Color(0xFFFFD700), fontSize: 11),
+                                ),
+                              Text(
+                                '• ${date.day}/${date.month} ${date.hour}:${date.minute.toString().padLeft(2, '0')}',
+                                style: const TextStyle(
+                                    color: Colors.white38, fontSize: 11),
+                              ),
+                            ],
+                          ),
+                        ),
                         children: [
                           Padding(
-                            padding: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('Description:',
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white)),
-                                Text(
+                                const Divider(
+                                    color: Colors.white12, height: 16),
+
+                                // Reporter Identification Strip
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF0F172A),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(color: Colors.white10),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.badge_rounded,
+                                              size: 14,
+                                              color: Color(0xFFFFD700)),
+                                          const SizedBox(width: 6),
+                                          const Text(
+                                            'Citizen Details:',
+                                            style: TextStyle(
+                                                color: Color(0xFFFFD700),
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          const Spacer(),
+                                          if (reporterId.isNotEmpty)
+                                            ElevatedButton.icon(
+                                              onPressed: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (_) =>
+                                                        VerfiedSwitchPage(
+                                                            userId: reporterId),
+                                                  ),
+                                                );
+                                              },
+                                              icon: const Icon(
+                                                  Icons.person_search_rounded,
+                                                  size: 13,
+                                                  color: Colors.black),
+                                              label: const Text(
+                                                'Inspect Profile',
+                                                style: TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 10.5,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor:
+                                                    const Color(0xFFFFD700),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 4),
+                                                minimumSize: Size.zero,
+                                                tapTargetSize:
+                                                    MaterialTapTargetSize
+                                                        .shrinkWrap,
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Row(
+                                        children: [
+                                          Text(
+                                            'Citizen ID: ${reporterId.length > 14 ? "${reporterId.substring(0, 14)}..." : reporterId}',
+                                            style: const TextStyle(
+                                                color: Colors.white54,
+                                                fontSize: 11),
+                                          ),
+                                          if (reporterId.isNotEmpty)
+                                            InkWell(
+                                              onTap: () {
+                                                Clipboard.setData(ClipboardData(
+                                                    text: reporterId));
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  const SnackBar(
+                                                      content: Text(
+                                                          'Citizen ID copied! 📋'),
+                                                      duration: Duration(
+                                                          milliseconds: 900)),
+                                                );
+                                              },
+                                              child: const Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                    horizontal: 4),
+                                                child: Icon(Icons.copy_rounded,
+                                                    color: Colors.white38,
+                                                    size: 12),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+
+                                // Target Item Strip
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF0F172A),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(color: Colors.white10),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                              Icons.report_problem_rounded,
+                                              size: 14,
+                                              color: Color(0xFFEF4444)),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            'Reported ${contentType.toString().toUpperCase()} • Type: ${type.toString().toUpperCase()}',
+                                            style: const TextStyle(
+                                                color: Color(0xFFF87171),
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      ),
+                                      if (contentId.isNotEmpty) ...[
+                                        const SizedBox(height: 4),
+                                        Row(
+                                          children: [
+                                            Text(
+                                              'Content ID: ${contentId.length > 14 ? "${contentId.substring(0, 14)}..." : contentId}',
+                                              style: const TextStyle(
+                                                  color: Colors.white54,
+                                                  fontSize: 11),
+                                            ),
+                                            InkWell(
+                                              onTap: () {
+                                                Clipboard.setData(ClipboardData(
+                                                    text: contentId));
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  const SnackBar(
+                                                      content: Text(
+                                                          'Content ID copied! 📋'),
+                                                      duration: Duration(
+                                                          milliseconds: 900)),
+                                                );
+                                              },
+                                              child: const Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                    horizontal: 4),
+                                                child: Icon(Icons.copy_rounded,
+                                                    color: Colors.white38,
+                                                    size: 12),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+
+                                // Description
+                                const Text(
+                                  'Description / Evidence:',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      fontSize: 12),
+                                ),
+                                const SizedBox(height: 4),
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black38,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
                                     report['description'] ??
                                         'No description provided.',
-                                    style:
-                                        const TextStyle(color: Colors.white70)),
+                                    style: const TextStyle(
+                                        color: Colors.white70, fontSize: 12.5),
+                                  ),
+                                ),
+
                                 const SizedBox(height: 12),
                                 if (status == 'pending' || status == 'reviewed')
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
-                                      TextButton(
+                                      TextButton.icon(
                                         onPressed: () => _updateReportStatus(
                                             report['id'], 'dismissed'),
-                                        child: const Text('Dismiss',
-                                            style:
-                                                TextStyle(color: Colors.grey)),
+                                        icon: const Icon(Icons.close_rounded,
+                                            size: 14, color: Colors.grey),
+                                        label: const Text('Dismiss',
+                                            style: TextStyle(
+                                                color: Colors.grey,
+                                                fontSize: 12)),
                                       ),
                                       const SizedBox(width: 8),
-                                      ElevatedButton(
+                                      ElevatedButton.icon(
                                         onPressed: () => _updateReportStatus(
                                             report['id'], 'resolved'),
+                                        icon: const Icon(
+                                            Icons.check_circle_rounded,
+                                            size: 14,
+                                            color: Colors.white),
+                                        label: const Text('Mark Resolved',
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold)),
                                         style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.blue),
-                                        child: const Text('Mark Resolved',
-                                            style:
-                                                TextStyle(color: Colors.white)),
+                                          backgroundColor: Colors.blueAccent,
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 14, vertical: 8),
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8)),
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -2502,7 +3073,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                       const SizedBox(height: 12),
                       Text(
                         'Presidential Supreme Court is in recess',
-                        style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                        style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4),
                       const Text(
@@ -2532,7 +3106,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                         color: const Color(0xFF1E293B),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: isPending ? Colors.redAccent.withValues(alpha: 0.6) : Colors.white12,
+                          color: isPending
+                              ? Colors.redAccent.withValues(alpha: 0.6)
+                              : Colors.white12,
                           width: isPending ? 1.5 : 1,
                         ),
                       ),
@@ -2544,7 +3120,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                             Row(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 3),
                                   decoration: BoxDecoration(
                                     color: statusColor.withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(6),
@@ -2552,13 +3129,17 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                   ),
                                   child: Text(
                                     '${report.status.toUpperCase()} ⚖️',
-                                    style: TextStyle(color: statusColor, fontSize: 10.5, fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                        color: statusColor,
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.bold),
                                   ),
                                 ),
                                 const Spacer(),
                                 Text(
                                   '${report.reportedAt.day}/${report.reportedAt.month} ${report.reportedAt.hour}:${report.reportedAt.minute.toString().padLeft(2, '0')}',
-                                  style: const TextStyle(color: Colors.white38, fontSize: 11),
+                                  style: const TextStyle(
+                                      color: Colors.white38, fontSize: 11),
                                 ),
                               ],
                             ),
@@ -2573,7 +3154,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                             ),
                             Text(
                               'House ID: ${report.houseId} • Reported by: ${report.reporterName}',
-                              style: const TextStyle(color: Colors.white54, fontSize: 11),
+                              style: const TextStyle(
+                                  color: Colors.white54, fontSize: 11),
                             ),
                             const SizedBox(height: 8),
                             Container(
@@ -2588,30 +3170,42 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                 children: [
                                   Row(
                                     children: [
-                                      const Icon(Icons.shield_outlined, size: 14, color: Color(0xFF38BDF8)),
+                                      const Icon(Icons.shield_outlined,
+                                          size: 14, color: Color(0xFF38BDF8)),
                                       const SizedBox(width: 6),
                                       Text(
                                         'Violation: ${report.reason.toUpperCase()}',
-                                        style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 11, fontWeight: FontWeight.bold),
+                                        style: const TextStyle(
+                                            color: Color(0xFF38BDF8),
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold),
                                       ),
                                     ],
                                   ),
                                   const SizedBox(height: 6),
                                   Text(
                                     'Q: ${report.questionText}',
-                                    style: const TextStyle(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.w600),
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.w600),
                                   ),
                                   const SizedBox(height: 6),
-                                  ...List.generate(report.options.length, (optIdx) {
+                                  ...List.generate(report.options.length,
+                                      (optIdx) {
                                     final isKey = optIdx == report.correctIndex;
                                     return Padding(
                                       padding: const EdgeInsets.only(bottom: 2),
                                       child: Text(
                                         '${String.fromCharCode(65 + optIdx)}. ${report.options[optIdx]} ${isKey ? "👈 (Marked Key)" : ""}',
                                         style: TextStyle(
-                                          color: isKey ? const Color(0xFFF87171) : Colors.white60,
+                                          color: isKey
+                                              ? const Color(0xFFF87171)
+                                              : Colors.white60,
                                           fontSize: 11,
-                                          fontWeight: isKey ? FontWeight.bold : FontWeight.normal,
+                                          fontWeight: isKey
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
                                         ),
                                       ),
                                     );
@@ -2621,50 +3215,64 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                             ),
                             Builder(
                               builder: (context) {
-                                final aiVerdict = PocketFortressDefenseService.validateQuestion(
+                                final aiVerdict = PocketFortressDefenseService
+                                    .validateQuestion(
                                   report.questionText,
                                   report.options,
                                   report.correctIndex,
                                 );
                                 return Container(
                                   margin: const EdgeInsets.only(top: 8),
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 6),
                                   decoration: BoxDecoration(
                                     color: aiVerdict.isApproved
-                                        ? const Color(0xFF10B981).withValues(alpha: 0.15)
+                                        ? const Color(0xFF10B981)
+                                            .withValues(alpha: 0.15)
                                         : (aiVerdict.isBanThreat
-                                            ? Colors.redAccent.withValues(alpha: 0.2)
-                                            : Colors.amber.withValues(alpha: 0.2)),
+                                            ? Colors.redAccent
+                                                .withValues(alpha: 0.2)
+                                            : Colors.amber
+                                                .withValues(alpha: 0.2)),
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
                                       color: aiVerdict.isApproved
                                           ? const Color(0xFF10B981)
-                                          : (aiVerdict.isBanThreat ? Colors.redAccent : Colors.amber),
+                                          : (aiVerdict.isBanThreat
+                                              ? Colors.redAccent
+                                              : Colors.amber),
                                       width: 0.8,
                                     ),
                                   ),
                                   child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Text(aiVerdict.sealIcon, style: const TextStyle(fontSize: 14)),
+                                      Text(aiVerdict.sealIcon,
+                                          style: const TextStyle(fontSize: 14)),
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               '🤖 AI SCAN: ${aiVerdict.title}',
                                               style: TextStyle(
                                                 color: aiVerdict.isApproved
                                                     ? const Color(0xFF34D399)
-                                                    : (aiVerdict.isBanThreat ? Colors.redAccent : Colors.amber),
+                                                    : (aiVerdict.isBanThreat
+                                                        ? Colors.redAccent
+                                                        : Colors.amber),
                                                 fontSize: 10.5,
                                                 fontWeight: FontWeight.bold,
                                               ),
                                             ),
                                             Text(
                                               aiVerdict.feedback,
-                                              style: const TextStyle(color: Colors.white70, fontSize: 10.5),
+                                              style: const TextStyle(
+                                                  color: Colors.white70,
+                                                  fontSize: 10.5),
                                             ),
                                           ],
                                         ),
@@ -2678,7 +3286,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                               const SizedBox(height: 6),
                               Text(
                                 'Note: ${report.details}',
-                                style: const TextStyle(color: Colors.white70, fontSize: 11.5, fontStyle: FontStyle.italic),
+                                style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 11.5,
+                                    fontStyle: FontStyle.italic),
                               ),
                             ],
                             if (isPending) ...[
@@ -2693,41 +3304,66 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFFDC2626),
                                       foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 8),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8)),
                                     ),
-                                    icon: const Icon(Icons.gavel_rounded, size: 16),
-                                    label: const Text('Deduct Score 📉', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                                    onPressed: () => _showSanctionScoreDialog(report),
+                                    icon: const Icon(Icons.gavel_rounded,
+                                        size: 16),
+                                    label: const Text('Deduct Score 📉',
+                                        style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold)),
+                                    onPressed: () =>
+                                        _showSanctionScoreDialog(report),
                                   ),
                                   ElevatedButton.icon(
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFF7F1D1D),
                                       foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 8),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8)),
                                     ),
-                                    icon: const Icon(Icons.restart_alt_rounded, size: 16),
-                                    label: const Text('Wipe to Level 1 ⚡', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                                    onPressed: () => _confirmResetToLevelOne(report),
+                                    icon: const Icon(Icons.restart_alt_rounded,
+                                        size: 16),
+                                    label: const Text('Wipe to Level 1 ⚡',
+                                        style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold)),
+                                    onPressed: () =>
+                                        _confirmResetToLevelOne(report),
                                   ),
                                   OutlinedButton(
                                     style: OutlinedButton.styleFrom(
                                       foregroundColor: Colors.white60,
-                                      side: const BorderSide(color: Colors.white24),
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      side: const BorderSide(
+                                          color: Colors.white24),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 8),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8)),
                                     ),
                                     onPressed: () async {
-                                      await PocketFortressDefenseService.dismissReport(report.reportId);
+                                      await PocketFortressDefenseService
+                                          .dismissReport(report.reportId);
                                       _loadReports();
                                       if (mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text('Report dismissed.')),
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                              content:
+                                                  Text('Report dismissed.')),
                                         );
                                       }
                                     },
-                                    child: const Text('Dismiss', style: TextStyle(fontSize: 12)),
+                                    child: const Text('Dismiss',
+                                        style: TextStyle(fontSize: 12)),
                                   ),
                                 ],
                               ),
@@ -2761,7 +3397,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
               Expanded(
                 child: Text(
                   'Presidential Score Sanction',
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -2810,7 +3449,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                   labelStyle: const TextStyle(color: Colors.white60),
                   filled: true,
                   fillColor: const Color(0xFF1E293B),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10)),
                 ),
                 onChanged: (val) {
                   final parsed = int.tryParse(val);
@@ -2824,17 +3464,21 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel', style: TextStyle(color: Colors.white60)),
+              child:
+                  const Text('Cancel', style: TextStyle(color: Colors.white60)),
             ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFDC2626)),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFDC2626)),
               onPressed: () async {
                 Navigator.pop(ctx);
-                final res = await PocketFortressDefenseService.executePresidentialSanction(
+                final res = await PocketFortressDefenseService
+                    .executePresidentialSanction(
                   reportId: report.reportId,
                   houseId: report.houseId,
                   scoreDeduction: selectedDeduction,
-                  verdictNote: 'Penalized -$selectedDeduction Pocket Score by Presidential Court.',
+                  verdictNote:
+                      'Penalized -$selectedDeduction Pocket Score by Presidential Court.',
                 );
                 _loadReports();
                 if (mounted) {
@@ -2848,7 +3492,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                   );
                 }
               },
-              child: const Text('Execute Sanction ⚖️', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              child: const Text('Execute Sanction ⚖️',
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -2869,7 +3515,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           children: const [
             Text('🚨', style: TextStyle(fontSize: 22)),
             SizedBox(width: 8),
-            Text('Level 1 Demotion Decree', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+            Text('Level 1 Demotion Decree',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold)),
           ],
         ),
         content: Text(
@@ -2879,29 +3529,35 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white60)),
+            child:
+                const Text('Cancel', style: TextStyle(color: Colors.white60)),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7F1D1D)),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF7F1D1D)),
             onPressed: () async {
               Navigator.pop(ctx);
               await PocketFortressDefenseService.executePresidentialSanction(
                 reportId: report.reportId,
                 houseId: report.houseId,
                 resetToZero: true,
-                verdictNote: 'Supreme Presidential Wipeout: Reset to 0 score and demoted to Level 1.',
+                verdictNote:
+                    'Supreme Presidential Wipeout: Reset to 0 score and demoted to Level 1.',
               );
               _loadReports();
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('⚡ Decreed! ${report.houseOwnerName} was wiped to 0 score and demoted to Level 1.'),
+                    content: Text(
+                        '⚡ Decreed! ${report.houseOwnerName} was wiped to 0 score and demoted to Level 1.'),
                     backgroundColor: const Color(0xFF7F1D1D),
                   ),
                 );
               }
             },
-            child: const Text('Wipe to Level 1 ⚡', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text('Wipe to Level 1 ⚡',
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -3054,16 +3710,19 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
 
     // Filter releases
     final filteredReleases = _allReleases.where((r) {
-      if (_releasePlatformFilter != 'all' && r.platform.toLowerCase() != _releasePlatformFilter.toLowerCase()) {
+      if (_releasePlatformFilter != 'all' &&
+          r.platform.toLowerCase() != _releasePlatformFilter.toLowerCase()) {
         return false;
       }
       if (_releaseStatusFilter == 'active' && !r.isActiveProduction) {
         return false;
       }
-      if (_releaseStatusFilter == 'testing' && (r.isActiveProduction || r.buildType.toLowerCase() == 'production')) {
+      if (_releaseStatusFilter == 'testing' &&
+          (r.isActiveProduction || r.buildType.toLowerCase() == 'production')) {
         return false;
       }
-      if (_releaseStatusFilter == 'production' && r.buildType.toLowerCase() != 'production') {
+      if (_releaseStatusFilter == 'production' &&
+          r.buildType.toLowerCase() != 'production') {
         return false;
       }
       if (_releaseSearchQuery.isNotEmpty) {
@@ -3112,8 +3771,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFFFC00),
                   foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
                 icon: const Icon(Icons.add_rounded, size: 20),
                 label: Text(
@@ -3164,12 +3825,16 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
               children: [
                 Expanded(
                   child: TextField(
-                    onChanged: (v) => setState(() => _releaseSearchQuery = v.trim()),
+                    onChanged: (v) =>
+                        setState(() => _releaseSearchQuery = v.trim()),
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.search, color: Colors.white54),
-                      hintText: 'Search by version, build #, title, or notes...',
-                      hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
+                      prefixIcon:
+                          const Icon(Icons.search, color: Colors.white54),
+                      hintText:
+                          'Search by version, build #, title, or notes...',
+                      hintStyle:
+                          const TextStyle(color: Colors.white38, fontSize: 13),
                       filled: true,
                       fillColor: Colors.black26,
                       border: OutlineInputBorder(
@@ -3188,12 +3853,15 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                   style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
                   underline: const SizedBox(),
                   items: const [
-                    DropdownMenuItem(value: 'all', child: Text('All Platforms')),
-                    DropdownMenuItem(value: 'android', child: Text('Android Only')),
+                    DropdownMenuItem(
+                        value: 'all', child: Text('All Platforms')),
+                    DropdownMenuItem(
+                        value: 'android', child: Text('Android Only')),
                     DropdownMenuItem(value: 'ios', child: Text('iOS Only')),
                   ],
                   onChanged: (val) {
-                    if (val != null) setState(() => _releasePlatformFilter = val);
+                    if (val != null)
+                      setState(() => _releasePlatformFilter = val);
                   },
                 ),
                 const SizedBox(width: 14),
@@ -3205,9 +3873,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                   underline: const SizedBox(),
                   items: const [
                     DropdownMenuItem(value: 'all', child: Text('All Statuses')),
-                    DropdownMenuItem(value: 'active', child: Text('Active Live Only')),
-                    DropdownMenuItem(value: 'testing', child: Text('Testing / Shorebird')),
-                    DropdownMenuItem(value: 'production', child: Text('Production Builds')),
+                    DropdownMenuItem(
+                        value: 'active', child: Text('Active Live Only')),
+                    DropdownMenuItem(
+                        value: 'testing', child: Text('Testing / Shorebird')),
+                    DropdownMenuItem(
+                        value: 'production', child: Text('Production Builds')),
                   ],
                   onChanged: (val) {
                     if (val != null) setState(() => _releaseStatusFilter = val);
@@ -3236,11 +3907,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
               ),
               child: Column(
                 children: [
-                  const Icon(Icons.layers_clear_rounded, size: 48, color: Colors.white38),
+                  const Icon(Icons.layers_clear_rounded,
+                      size: 48, color: Colors.white38),
                   const SizedBox(height: 12),
                   Text(
                     'No releases found matching current filters',
-                    style: GoogleFonts.inter(color: Colors.white70, fontSize: 14),
+                    style:
+                        GoogleFonts.inter(color: Colors.white70, fontSize: 14),
                   ),
                 ],
               ),
@@ -3282,7 +3955,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         color: const Color(0xFF131B26),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: hasActive ? accentColor.withValues(alpha: 0.5) : Colors.white10,
+          color:
+              hasActive ? accentColor.withValues(alpha: 0.5) : Colors.white10,
           width: 1.5,
         ),
       ),
@@ -3303,9 +3977,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
               ),
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: hasActive ? Colors.green.withValues(alpha: 0.2) : Colors.orange.withValues(alpha: 0.2),
+                  color: hasActive
+                      ? Colors.green.withValues(alpha: 0.2)
+                      : Colors.orange.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -3331,7 +4008,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             ),
             const SizedBox(height: 4),
             Text(
-              activeRelease.releaseTitle.isNotEmpty ? activeRelease.releaseTitle : 'Production Store Release',
+              activeRelease.releaseTitle.isNotEmpty
+                  ? activeRelease.releaseTitle
+                  : 'Production Store Release',
               style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -3341,12 +4020,15 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
               children: [
                 if (activeRelease.isMandatory) ...[
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: Colors.red.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: Text('Mandatory Update', style: GoogleFonts.inter(color: Colors.redAccent, fontSize: 11)),
+                    child: Text('Mandatory Update',
+                        style: GoogleFonts.inter(
+                            color: Colors.redAccent, fontSize: 11)),
                   ),
                   const SizedBox(width: 8),
                 ],
@@ -3369,12 +4051,16 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             child: OutlinedButton(
               style: OutlinedButton.styleFrom(
                 side: BorderSide(color: accentColor.withValues(alpha: 0.5)),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
               onPressed: onActivate,
               child: Text(
                 hasActive ? 'Change Active Release' : 'Select Active Release',
-                style: GoogleFonts.outfit(color: accentColor, fontWeight: FontWeight.w600, fontSize: 12),
+                style: GoogleFonts.outfit(
+                    color: accentColor,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12),
               ),
             ),
           ),
@@ -3404,7 +4090,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         children: [
           Row(
             children: [
-              Icon(isIos ? Icons.apple : Icons.android, color: isIos ? Colors.white : Colors.green, size: 20),
+              Icon(isIos ? Icons.apple : Icons.android,
+                  color: isIos ? Colors.white : Colors.green, size: 20),
               const SizedBox(width: 8),
               Text(
                 '${rel.version} (${rel.buildNumber})',
@@ -3419,13 +4106,16 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: isProd ? Colors.purple.withValues(alpha: 0.2) : Colors.blue.withValues(alpha: 0.2),
+                  color: isProd
+                      ? Colors.purple.withValues(alpha: 0.2)
+                      : Colors.blue.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   rel.buildType.toUpperCase(),
                   style: GoogleFonts.inter(
-                    color: isProd ? Colors.purpleAccent : Colors.lightBlueAccent,
+                    color:
+                        isProd ? Colors.purpleAccent : Colors.lightBlueAccent,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
@@ -3451,7 +4141,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
               const Spacer(),
               if (rel.isActiveProduction) ...[
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFFC00),
                     borderRadius: BorderRadius.circular(20),
@@ -3459,7 +4150,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.check_circle, size: 14, color: Colors.black),
+                      const Icon(Icons.check_circle,
+                          size: 14, color: Colors.black),
                       const SizedBox(width: 4),
                       Text(
                         'ACTIVE PRODUCTION',
@@ -3476,23 +4168,32 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
               ],
               // Edit button
               IconButton(
-                icon: const Icon(Icons.edit_outlined, color: Colors.white70, size: 18),
+                icon: const Icon(Icons.edit_outlined,
+                    color: Colors.white70, size: 18),
                 tooltip: 'Edit Release',
                 onPressed: () => _showCreateEditReleaseDialog(existing: rel),
               ),
               // Delete button (blocked if active)
               IconButton(
                 icon: Icon(Icons.delete_outline,
-                    color: rel.isActiveProduction ? Colors.white24 : Colors.redAccent, size: 18),
-                tooltip: rel.isActiveProduction ? 'Cannot delete active production release' : 'Delete Release',
-                onPressed: rel.isActiveProduction ? null : () => _confirmDeleteRelease(rel),
+                    color: rel.isActiveProduction
+                        ? Colors.white24
+                        : Colors.redAccent,
+                    size: 18),
+                tooltip: rel.isActiveProduction
+                    ? 'Cannot delete active production release'
+                    : 'Delete Release',
+                onPressed: rel.isActiveProduction
+                    ? null
+                    : () => _confirmDeleteRelease(rel),
               ),
             ],
           ),
           const SizedBox(height: 8),
           Text(
             rel.releaseTitle,
-            style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
+            style: GoogleFonts.inter(
+                color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
           ),
           if (rel.releaseNotes.isNotEmpty) ...[
             const SizedBox(height: 4),
@@ -3507,7 +4208,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           // Actions footer
           Row(
             children: [
-              if (rel.shorebirdReleaseId != null && rel.shorebirdReleaseId!.isNotEmpty) ...[
+              if (rel.shorebirdReleaseId != null &&
+                  rel.shorebirdReleaseId!.isNotEmpty) ...[
                 Text(
                   'Shorebird ID: ${rel.shorebirdReleaseId}',
                   style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
@@ -3525,11 +4227,14 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                     backgroundColor: const Color(0xFF1E293B),
                     foregroundColor: const Color(0xFFFFFC00),
                     elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
                     side: const BorderSide(color: Color(0xFFFFFC00), width: 1),
                   ),
                   icon: const Icon(Icons.verified_rounded, size: 16),
-                  label: Text('Set as Active Production', style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold)),
+                  label: Text('Set as Active Production',
+                      style: GoogleFonts.outfit(
+                          fontSize: 11, fontWeight: FontWeight.bold)),
                   onPressed: () => _confirmSetActiveProduction(rel),
                 ),
             ],
@@ -3540,11 +4245,14 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   }
 
   Future<void> _pickAndActivateRelease(String platform) async {
-    final matching = _allReleases.where((r) => r.platform.toLowerCase() == platform.toLowerCase()).toList();
+    final matching = _allReleases
+        .where((r) => r.platform.toLowerCase() == platform.toLowerCase())
+        .toList();
     if (matching.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('No $platform releases found! Please create a release first.'),
+          content: Text(
+              'No $platform releases found! Please create a release first.'),
           backgroundColor: Colors.orange,
         ),
       );
@@ -3557,7 +4265,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         backgroundColor: const Color(0xFF131B26),
         title: Text(
           'Select Active ${platform.toUpperCase()} Release',
-          style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+          style: GoogleFonts.outfit(
+              color: Colors.white, fontWeight: FontWeight.bold),
         ),
         content: SizedBox(
           width: 400,
@@ -3570,7 +4279,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
               return ListTile(
                 title: Text(
                   '${r.version} (${r.buildNumber}) - ${r.buildType}',
-                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.outfit(
+                      color: Colors.white, fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
                   r.releaseTitle,
@@ -3590,7 +4300,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            child:
+                const Text('Cancel', style: TextStyle(color: Colors.white54)),
           ),
         ],
       ),
@@ -3608,7 +4319,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             const SizedBox(width: 8),
             Text(
               'Activate Production Release?',
-              style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+              style: GoogleFonts.outfit(
+                  color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -3632,13 +4344,17 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('• Version: ${rel.version} (Build ${rel.buildNumber})',
-                      style: GoogleFonts.inter(color: Colors.white, fontSize: 12)),
+                      style:
+                          GoogleFonts.inter(color: Colors.white, fontSize: 12)),
                   Text('• Title: ${rel.releaseTitle}',
-                      style: GoogleFonts.inter(color: Colors.white, fontSize: 12)),
+                      style:
+                          GoogleFonts.inter(color: Colors.white, fontSize: 12)),
                   Text('• Platform: ${rel.platform.toUpperCase()}',
-                      style: GoogleFonts.inter(color: Colors.white, fontSize: 12)),
+                      style:
+                          GoogleFonts.inter(color: Colors.white, fontSize: 12)),
                   Text('• Mandatory: ${rel.isMandatory ? 'YES' : 'NO'}',
-                      style: GoogleFonts.inter(color: Colors.white, fontSize: 12)),
+                      style:
+                          GoogleFonts.inter(color: Colors.white, fontSize: 12)),
                 ],
               ),
             ),
@@ -3652,7 +4368,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            child:
+                const Text('Cancel', style: TextStyle(color: Colors.white54)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -3660,7 +4377,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
               foregroundColor: Colors.black,
             ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text('Confirm Activation', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+            child: Text('Confirm Activation',
+                style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -3674,7 +4392,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Successfully activated ${rel.platform.toUpperCase()} version ${rel.version} for production!'),
+              content: Text(
+                  'Successfully activated ${rel.platform.toUpperCase()} version ${rel.version} for production!'),
               backgroundColor: Colors.green,
             ),
           );
@@ -3682,7 +4401,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error activating release: $e'), backgroundColor: Colors.red),
+            SnackBar(
+                content: Text('Error activating release: $e'),
+                backgroundColor: Colors.red),
           );
         }
       } finally {
@@ -3696,13 +4417,16 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF131B26),
-        title: const Text('Delete Release Record?', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: const Text('Delete Release Record?',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         content: Text(
           'Are you sure you want to permanently delete release ${rel.version} (${rel.buildNumber})? This cannot be undone.',
           style: const TextStyle(color: Colors.white70),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel')),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () => Navigator.pop(ctx, true),
@@ -3718,7 +4442,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         await _loadAppUpdateData();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Release deleted successfully'), backgroundColor: Colors.green),
+            const SnackBar(
+                content: Text('Release deleted successfully'),
+                backgroundColor: Colors.green),
           );
         }
       } catch (e) {
@@ -3731,19 +4457,30 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
     }
   }
 
-  Future<void> _showCreateEditReleaseDialog({AppReleaseRecord? existing}) async {
+  Future<void> _showCreateEditReleaseDialog(
+      {AppReleaseRecord? existing}) async {
     final isEditing = existing != null;
     String selectedPlatform = existing?.platform ?? 'android';
-    final versionController = TextEditingController(text: existing?.version ?? '1.0.155');
-    final buildController = TextEditingController(text: existing?.buildNumber.toString() ?? '330');
-    final shorebirdController = TextEditingController(text: existing?.shorebirdReleaseId ?? '');
-    final titleController = TextEditingController(text: existing?.releaseTitle ?? 'POKET Update');
-    final notesController = TextEditingController(text: existing?.releaseNotes ?? '');
-    final featuresController = TextEditingController(text: existing?.features.join('\n') ?? '');
-    final improvementsController = TextEditingController(text: existing?.improvements.join('\n') ?? '');
-    final bugFixesController = TextEditingController(text: existing?.bugFixes.join('\n') ?? '');
-    final announcementController = TextEditingController(text: existing?.announcementMessage ?? '');
-    final storeUrlController = TextEditingController(text: existing?.storeUrl ?? '');
+    final versionController =
+        TextEditingController(text: existing?.version ?? '1.0.155');
+    final buildController =
+        TextEditingController(text: existing?.buildNumber.toString() ?? '330');
+    final shorebirdController =
+        TextEditingController(text: existing?.shorebirdReleaseId ?? '');
+    final titleController =
+        TextEditingController(text: existing?.releaseTitle ?? 'POKET Update');
+    final notesController =
+        TextEditingController(text: existing?.releaseNotes ?? '');
+    final featuresController =
+        TextEditingController(text: existing?.features.join('\n') ?? '');
+    final improvementsController =
+        TextEditingController(text: existing?.improvements.join('\n') ?? '');
+    final bugFixesController =
+        TextEditingController(text: existing?.bugFixes.join('\n') ?? '');
+    final announcementController =
+        TextEditingController(text: existing?.announcementMessage ?? '');
+    final storeUrlController =
+        TextEditingController(text: existing?.storeUrl ?? '');
     String selectedBuildType = existing?.buildType ?? 'Testing';
     String selectedStoreStatus = existing?.storeStatus ?? 'draft';
     bool isMandatory = existing?.isMandatory ?? false;
@@ -3755,7 +4492,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           backgroundColor: const Color(0xFF131B26),
           title: Text(
             isEditing ? 'Edit Release Record' : 'Create New Release Record',
-            style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+            style: GoogleFonts.outfit(
+                color: Colors.white, fontWeight: FontWeight.bold),
           ),
           content: SizedBox(
             width: 500,
@@ -3767,18 +4505,21 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                   // Platform selection
                   Row(
                     children: [
-                      const Text('Platform:', style: TextStyle(color: Colors.white70)),
+                      const Text('Platform:',
+                          style: TextStyle(color: Colors.white70)),
                       const SizedBox(width: 12),
                       ChoiceChip(
                         label: const Text('Android'),
                         selected: selectedPlatform == 'android',
-                        onSelected: (s) => setDlgState(() => selectedPlatform = 'android'),
+                        onSelected: (s) =>
+                            setDlgState(() => selectedPlatform = 'android'),
                       ),
                       const SizedBox(width: 8),
                       ChoiceChip(
                         label: const Text('iOS'),
                         selected: selectedPlatform == 'ios',
-                        onSelected: (s) => setDlgState(() => selectedPlatform = 'ios'),
+                        onSelected: (s) =>
+                            setDlgState(() => selectedPlatform = 'ios'),
                       ),
                     ],
                   ),
@@ -3904,13 +4645,18 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                             fillColor: Colors.black26,
                           ),
                           items: const [
-                            DropdownMenuItem(value: 'Testing', child: Text('Testing')),
-                            DropdownMenuItem(value: 'Internal', child: Text('Internal')),
-                            DropdownMenuItem(value: 'TestFlight', child: Text('TestFlight')),
-                            DropdownMenuItem(value: 'Production', child: Text('Production')),
+                            DropdownMenuItem(
+                                value: 'Testing', child: Text('Testing')),
+                            DropdownMenuItem(
+                                value: 'Internal', child: Text('Internal')),
+                            DropdownMenuItem(
+                                value: 'TestFlight', child: Text('TestFlight')),
+                            DropdownMenuItem(
+                                value: 'Production', child: Text('Production')),
                           ],
                           onChanged: (v) {
-                            if (v != null) setDlgState(() => selectedBuildType = v);
+                            if (v != null)
+                              setDlgState(() => selectedBuildType = v);
                           },
                         ),
                       ),
@@ -3925,14 +4671,20 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                             fillColor: Colors.black26,
                           ),
                           items: const [
-                            DropdownMenuItem(value: 'draft', child: Text('Draft')),
-                            DropdownMenuItem(value: 'submitted', child: Text('Submitted')),
-                            DropdownMenuItem(value: 'in_review', child: Text('In Review')),
-                            DropdownMenuItem(value: 'approved', child: Text('Approved')),
-                            DropdownMenuItem(value: 'live', child: Text('Live')),
+                            DropdownMenuItem(
+                                value: 'draft', child: Text('Draft')),
+                            DropdownMenuItem(
+                                value: 'submitted', child: Text('Submitted')),
+                            DropdownMenuItem(
+                                value: 'in_review', child: Text('In Review')),
+                            DropdownMenuItem(
+                                value: 'approved', child: Text('Approved')),
+                            DropdownMenuItem(
+                                value: 'live', child: Text('Live')),
                           ],
                           onChanged: (v) {
-                            if (v != null) setDlgState(() => selectedStoreStatus = v);
+                            if (v != null)
+                              setDlgState(() => selectedStoreStatus = v);
                           },
                         ),
                       ),
@@ -3953,8 +4705,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                   const SizedBox(height: 12),
                   // Mandatory Toggle
                   SwitchListTile(
-                    title: const Text('Mandatory Force Update', style: TextStyle(color: Colors.white)),
-                    subtitle: const Text('Users cannot dismiss without updating', style: TextStyle(color: Colors.white54, fontSize: 11)),
+                    title: const Text('Mandatory Force Update',
+                        style: TextStyle(color: Colors.white)),
+                    subtitle: const Text(
+                        'Users cannot dismiss without updating',
+                        style: TextStyle(color: Colors.white54, fontSize: 11)),
                     value: isMandatory,
                     onChanged: (v) => setDlgState(() => isMandatory = v),
                   ),
@@ -3965,7 +4720,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+              child:
+                  const Text('Cancel', style: TextStyle(color: Colors.white54)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -3977,7 +4733,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                 final b = int.tryParse(buildController.text.trim()) ?? 0;
                 if (v.isEmpty || b <= 0) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please enter valid Version and Build Number'), backgroundColor: Colors.orange),
+                    const SnackBar(
+                        content:
+                            Text('Please enter valid Version and Build Number'),
+                        backgroundColor: Colors.orange),
                   );
                   return;
                 }
@@ -3995,8 +4754,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                   platform: selectedPlatform,
                   version: v,
                   buildNumber: b,
-                  shorebirdReleaseId: shorebirdController.text.trim().isNotEmpty ? shorebirdController.text.trim() : null,
-                  releaseTitle: titleController.text.trim().isNotEmpty ? titleController.text.trim() : 'POKET Update',
+                  shorebirdReleaseId: shorebirdController.text.trim().isNotEmpty
+                      ? shorebirdController.text.trim()
+                      : null,
+                  releaseTitle: titleController.text.trim().isNotEmpty
+                      ? titleController.text.trim()
+                      : 'POKET Update',
                   releaseNotes: notesController.text.trim(),
                   features: splitLines(featuresController.text),
                   improvements: splitLines(improvementsController.text),
@@ -4007,7 +4770,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                   isActiveProduction: existing?.isActiveProduction ?? false,
                   productionActivatedAt: existing?.productionActivatedAt,
                   isMandatory: isMandatory,
-                  storeUrl: storeUrlController.text.trim().isNotEmpty ? storeUrlController.text.trim() : null,
+                  storeUrl: storeUrlController.text.trim().isNotEmpty
+                      ? storeUrlController.text.trim()
+                      : null,
                   createdAt: existing?.createdAt ?? DateTime.now(),
                   updatedAt: DateTime.now(),
                 );
@@ -4028,14 +4793,17 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                 } catch (e) {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error saving release: $e'), backgroundColor: Colors.red),
+                      SnackBar(
+                          content: Text('Error saving release: $e'),
+                          backgroundColor: Colors.red),
                     );
                   }
                 } finally {
                   if (mounted) setState(() => isLoadingUpdate = false);
                 }
               },
-              child: Text(isEditing ? 'Save Changes' : 'Create Release', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+              child: Text(isEditing ? 'Save Changes' : 'Create Release',
+                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -4049,7 +4817,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       decoration: BoxDecoration(
         color: const Color(0xFF131B26),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3), width: 1.5),
+        border: Border.all(
+            color: const Color(0xFF38BDF8).withValues(alpha: 0.3), width: 1.5),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF0284C7).withValues(alpha: 0.15),
@@ -4069,7 +4838,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                   color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.vpn_key_rounded, color: Color(0xFF38BDF8), size: 24),
+                child: const Icon(Icons.vpn_key_rounded,
+                    color: Color(0xFF38BDF8), size: 24),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -4095,7 +4865,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFF10B981).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),
@@ -4104,7 +4875,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 12),
+                    const Icon(Icons.check_circle_rounded,
+                        color: Color(0xFF10B981), size: 12),
                     const SizedBox(width: 4),
                     Text(
                       'ACTIVE',
@@ -4122,17 +4894,23 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           const SizedBox(height: 16),
           const Divider(color: Colors.white12),
           const SizedBox(height: 12),
-
-          _buildVaultRow('Keystore File', 'upload-keystore.jks', Icons.folder_zip_rounded),
+          _buildVaultRow(
+              'Keystore File', 'upload-keystore.jks', Icons.folder_zip_rounded),
           _buildVaultRow('Alias Name', 'upload', Icons.label_rounded),
-          _buildVaultRow('Keystore Password', 'pocket123', Icons.lock_outline_rounded),
+          _buildVaultRow(
+              'Keystore Password', 'pocket123', Icons.lock_outline_rounded),
           _buildVaultRow('Key Password', 'pocket123', Icons.lock_rounded),
-          _buildVaultRow('Valid Until', 'Year 2053 (27+ Years Active)', Icons.calendar_today_rounded),
-          _buildVaultRow('SHA-1 Fingerprint', '28:6F:CA:9E:14:18:8A:FF:90:FE:23:34:54:06:B1:D3:AA:54:65:9D', Icons.fingerprint_rounded),
-          _buildVaultRow('SHA-256 Fingerprint', '1A:29:BF:0D:98:36:2C:D0:42:D1:30:FE:9C:E5:6D:C7:13:41:70:8C:B8:1E:80:92:C4:8D:0E:53:20:90:FA:2F', Icons.security_rounded),
-
+          _buildVaultRow('Valid Until', 'Year 2053 (27+ Years Active)',
+              Icons.calendar_today_rounded),
+          _buildVaultRow(
+              'SHA-1 Fingerprint',
+              '28:6F:CA:9E:14:18:8A:FF:90:FE:23:34:54:06:B1:D3:AA:54:65:9D',
+              Icons.fingerprint_rounded),
+          _buildVaultRow(
+              'SHA-256 Fingerprint',
+              '1A:29:BF:0D:98:36:2C:D0:42:D1:30:FE:9C:E5:6D:C7:13:41:70:8C:B8:1E:80:92:C4:8D:0E:53:20:90:FA:2F',
+              Icons.security_rounded),
           const SizedBox(height: 20),
-
           Wrap(
             spacing: 10,
             runSpacing: 10,
@@ -4141,30 +4919,37 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0284C7),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                 ),
                 onPressed: () {
                   Clipboard.setData(const ClipboardData(
-                    text: 'MIIKdAIBAzCCCh4GCSqGSIb3DQEHAaCCCg8EggoLMIIKBzCCBa4GCSqGSIb3DQEHAaCCBZ8EggWbMIIFlzCCBZMGCyqGSIb3DQEMCgECoIIFQDCCBTwwZgYJKoZIhvcNAQUNMFkwOAYJKoZIhvcNAQUMMCsEFFwNFaIxGpCG/+ejZJY8HvbBemURAgInEAIBIDAMBggqhkiG9w0CCQUAMB0GCWCGSAFlAwQBKgQQX+YwOcaellyjueBO4EbPIwSCBNA0Ru/U6J5q9VpHKJZn5ACFN4Y9xGVFwRe0sGeyvq/nSFU0VG1BHfWrPiGbarxNGerCG2ZLR2nU5W089tuZ8Os3LKHztsov8qX8f7dg1X7qcWdjfPD2v6eZUnV5blaVFMT2zxjL7VdPbAU1a2pYzu3gelIewiUhMa6DjGb3lXUpvDFsTX1r10ulPcv1DfP8mylRXsLu6Eg2d9+A6U0bc+pWeAlbsSf9BJ7KgzyI1vzR2GpYEGuqTgvRUNX8VCZ3ca0gZEB1NtN44PzX1QT86v47RM4Yavuo2xFqn2S99/D/GXlh55NBrv5IMVoIoaozHFQwcIh0IA9CpolaFWNBwnE3KjbqLGrgZ3OyQ/xfRdlI4I+O0N7qtaNBueobZsK9omUR92zyvVJWU8eEsEqH4fBzXDPV//PD3qzKPNGczTqtjOmDSJmW2UfM+d8Md70Bkce01NYFCKxWD4mi72if+zpCgjpW8DzfjVN5uWNQRf6mpM1Hkq6+M5JA4v2Gy0CeQUNYxquP3I011mTa6qF5RYGPJvfSoRcuOXH5+h+dAzuK62I32QHh/tzVlBEoBQiPyIA3bu5v0thNS7O2QBoHHHRcwB/u+GYxNpD+1rDBSB+8PU6ffkI6JC+2yCe/oeuyRD5zHoNBrJYceHO0iOvFXRLdgxu2Yi9sgGPDOQJzrIphVJI5axPbyAh7nj49bZkpEYNl1KhGLO6aLuLKJnSV981yxB34SuEdtnZsqUZHdt5ETkgmG4lLJIRJaLbg8yCRWEY7elph0MxUAJPtTIIsjnHxdPH+W788uDPSyGLWkJIc5M9Bzrnj7/0cbNTtyShqD9/o5xI62HFtiQ2M1gkxY2yvf5ycCop1qhTWyHt0rkQhRIndYtL7+car4Y71GNWekojeGxqX1dQ9tU83fxZd5P/++f4M1QZWEhCy0AXfWBZC4f7BHBffzmeZMpkGuShsamuV+Hvr5Y9T4ngvD72Z2Ol4BDQMMNlU3z21Jm0dKD8i+/Bs2EydfWI3VpgmigNpLptZYVW2dxdtEWdGf6wCXLBZnO5w2MTr4+g0yDPfCBpI+va1W47bPOELO/yUZA51qNWbzqgiprE8CMXSTGPjcEiz+W7jH2sGp9VRSqn6jFzEeMSq56AmSrhopN+JX5KIGkT0KV0P3B43Xg97OzFEdI7YVjQ3GoZpGmkbj4cLOS4EAxYrkp1kVAQW/W/SQSMA/RZBO7Dw3Bf/qfhI4UcMnxWMQqwWnnpbEwkF629alnxIOXxTooBlU3daRyRoHhit9Ni7MRCvoGrV2IdVzBBhYVc36ykH0A6VrrGrGyUdlq1/iu1H5BeliJTovFMNoGG4WLhUZlp4Nh48tRL+DoE0dxE1N567ClqbcojpOG7Yne9Lu+lfbWKpSWKi0vPmK7X0a31vQcSGnyHy2cw9C0w/uoDQxhVtNufYKJnIkvE54XS43TAqCQWv4y3JMR1+999LuYVUm0YSbo69jIjTlczqMd1UsVKkgRyM/oiw/e0/P+n6bFBT4mWUaVbgC2UdN0lUt01iLpWVRW/dzZo+4GuDT5ideKuSL9adkwpNJrLLACh5AGpDq7+MRKCZf9oo8evmNACXFF0t+If/cRid+WgnwxQQQ7PjGDnO1HKop3gTotn85zFAMBsGCSqGSIb3DQEJFDEOHgwAdQBwAGwAbwBhAGQwIQYJKoZIhvcNAQkVMRQEElRpbWUgMTc3NDE3NTEwNTk5OTCCBFEGCSqGSIb3DQEHBqCCBEIwggQ+AgEAMIIENwYJKoZIhvcNAQcBMGYGCSqGSIb3DQEFDTBZMDgGCSqGSIb3DQEFDDArBBRI9CsishKtn8lSIsvhHbyl2pLxzgICJxACASAwDAYIKoZIhvcNAgkFADAdBglghkgBZQMEASoEEJ83lZ0/a6OzLejHMhP/iEuAggPAaiuBlnPJu4soKk66x7CN5XmF8ZDDp4GYXAKjuLvjZMhkgQqBk6KUwsakA5NwYb/9jIvSeK4FsvhNXqEOpErsJ/TSMPZX73fYRvj2r72S/uNzA+tHYvg2kd77SExgDzpog+p0AFX6upOQvmnXpTyag/HdD54uxm1ojms5Mk4b/6p+VEQJ6Ox9SipnqGStI09PAyeAChDPtmaraSCiLVGU7fIgMwLHOv9GFyZ/8gsqLAZIStx/UUxeiKYab0tqg5Pse8af2aPyGfprk1IcpEVnmv4St4juHfUS21EmitEPsb+8ad2CX/M9Lpl5hu4WzhbbW9HvfMCynp/WzTilbG96XilPEiXPL/oYlD5jsVnfQGIf6S+GuALoO+IzG4l/VjqnTmCzCPUvw6xrbJJLV1PUonY95f/+dcye9rAyprEiZJ4iFZNhZ8yYECaPqOjubJkH3u268JR+QtjC5JLI71EEqFgQpCDEdZja88p/H9kr08oqm0FJsB2RmV9Himx7M2h642JcVoT3ipqHphXBQz/Y5KU8afkw9ueshh/LE7ls4M0nLLNHn603kTNeg4rJkaU710sB3z54dRBNE4s6WRHvDYACep7Og6g1yeD8o6PEblCRQlvwFBsIElqIaWqYU58BCQ9vvD8r7VGibCclEbXRtSMCeZfhKkt21a8i6zR/sbMqxUTFdFbW6lyTOaoSU+Az/0nQMRlp+tTmOm3OQZOrpAfB+spN3efTqQOzDE1wX8eEFqvrYXIhL25mEfAvyl2cOD79AeB6NXvN4wopZAjvn6NUQ6EPH0PDruKKbqoF9S/hD3eNRILxMWPgSmWcxU2qrkZfXGT0GifqTx/4XQuGgIsKk0xsuhJQQymOVRyMJYiXU1lEB5PcBcvH+EHutU86LqD86LhGG33CN4e3AZYOLe4QXSVdwyTP0h36D+fWzgFXy50VMEqWqkDt5PC4pr2EkbZF92JalOidSCkywZvu1cZWMtV2U5mpuVwAc0oeR2y/ZCWNdYJgjrrfFturPH5PVXdIIpgkpet8kS8XSX8fW9swP2j7/6DwjAJxxPM3XnICDZeQ3zZp0a3Uo+fMrHZLJFwn98RX49PSnksPSpVUMnIizqM1GlmDslKPtXsnTJklOVjJoUwZE4EUOMQ7+48iBw9vy86HOCx8qC9N1eEQK7xgRkZ8rnvJoLkEct/B/1QHVynNdDZ3Rfae2B4yIlVS4RgQ3FR47idhqWTfMnTIu3ywvmq0qIrJBB6AD9W0tCnsPE3c5h6SeGlKNbb8r2soME0wMTANBglghkgBZQMEAgEFAAQgn4WW4pprqJq2uhtnlmHabWnwIVjTOxITPg5pb1GDrqoEFMNPDa4arI97Ag6x5q8rzSqx0ffzAgInEA==',
+                    text:
+                        'MIIKdAIBAzCCCh4GCSqGSIb3DQEHAaCCCg8EggoLMIIKBzCCBa4GCSqGSIb3DQEHAaCCBZ8EggWbMIIFlzCCBZMGCyqGSIb3DQEMCgECoIIFQDCCBTwwZgYJKoZIhvcNAQUNMFkwOAYJKoZIhvcNAQUMMCsEFFwNFaIxGpCG/+ejZJY8HvbBemURAgInEAIBIDAMBggqhkiG9w0CCQUAMB0GCWCGSAFlAwQBKgQQX+YwOcaellyjueBO4EbPIwSCBNA0Ru/U6J5q9VpHKJZn5ACFN4Y9xGVFwRe0sGeyvq/nSFU0VG1BHfWrPiGbarxNGerCG2ZLR2nU5W089tuZ8Os3LKHztsov8qX8f7dg1X7qcWdjfPD2v6eZUnV5blaVFMT2zxjL7VdPbAU1a2pYzu3gelIewiUhMa6DjGb3lXUpvDFsTX1r10ulPcv1DfP8mylRXsLu6Eg2d9+A6U0bc+pWeAlbsSf9BJ7KgzyI1vzR2GpYEGuqTgvRUNX8VCZ3ca0gZEB1NtN44PzX1QT86v47RM4Yavuo2xFqn2S99/D/GXlh55NBrv5IMVoIoaozHFQwcIh0IA9CpolaFWNBwnE3KjbqLGrgZ3OyQ/xfRdlI4I+O0N7qtaNBueobZsK9omUR92zyvVJWU8eEsEqH4fBzXDPV//PD3qzKPNGczTqtjOmDSJmW2UfM+d8Md70Bkce01NYFCKxWD4mi72if+zpCgjpW8DzfjVN5uWNQRf6mpM1Hkq6+M5JA4v2Gy0CeQUNYxquP3I011mTa6qF5RYGPJvfSoRcuOXH5+h+dAzuK62I32QHh/tzVlBEoBQiPyIA3bu5v0thNS7O2QBoHHHRcwB/u+GYxNpD+1rDBSB+8PU6ffkI6JC+2yCe/oeuyRD5zHoNBrJYceHO0iOvFXRLdgxu2Yi9sgGPDOQJzrIphVJI5axPbyAh7nj49bZkpEYNl1KhGLO6aLuLKJnSV981yxB34SuEdtnZsqUZHdt5ETkgmG4lLJIRJaLbg8yCRWEY7elph0MxUAJPtTIIsjnHxdPH+W788uDPSyGLWkJIc5M9Bzrnj7/0cbNTtyShqD9/o5xI62HFtiQ2M1gkxY2yvf5ycCop1qhTWyHt0rkQhRIndYtL7+car4Y71GNWekojeGxqX1dQ9tU83fxZd5P/++f4M1QZWEhCy0AXfWBZC4f7BHBffzmeZMpkGuShsamuV+Hvr5Y9T4ngvD72Z2Ol4BDQMMNlU3z21Jm0dKD8i+/Bs2EydfWI3VpgmigNpLptZYVW2dxdtEWdGf6wCXLBZnO5w2MTr4+g0yDPfCBpI+va1W47bPOELO/yUZA51qNWbzqgiprE8CMXSTGPjcEiz+W7jH2sGp9VRSqn6jFzEeMSq56AmSrhopN+JX5KIGkT0KV0P3B43Xg97OzFEdI7YVjQ3GoZpGmkbj4cLOS4EAxYrkp1kVAQW/W/SQSMA/RZBO7Dw3Bf/qfhI4UcMnxWMQqwWnnpbEwkF629alnxIOXxTooBlU3daRyRoHhit9Ni7MRCvoGrV2IdVzBBhYVc36ykH0A6VrrGrGyUdlq1/iu1H5BeliJTovFMNoGG4WLhUZlp4Nh48tRL+DoE0dxE1N567ClqbcojpOG7Yne9Lu+lfbWKpSWKi0vPmK7X0a31vQcSGnyHy2cw9C0w/uoDQxhVtNufYKJnIkvE54XS43TAqCQWv4y3JMR1+999LuYVUm0YSbo69jIjTlczqMd1UsVKkgRyM/oiw/e0/P+n6bFBT4mWUaVbgC2UdN0lUt01iLpWVRW/dzZo+4GuDT5ideKuSL9adkwpNJrLLACh5AGpDq7+MRKCZf9oo8evmNACXFF0t+If/cRid+WgnwxQQQ7PjGDnO1HKop3gTotn85zFAMBsGCSqGSIb3DQEJFDEOHgwAdQBwAGwAbwBhAGQwIQYJKoZIhvcNAQkVMRQEElRpbWUgMTc3NDE3NTEwNTk5OTCCBFEGCSqGSIb3DQEHBqCCBEIwggQ+AgEAMIIENwYJKoZIhvcNAQcBMGYGCSqGSIb3DQEFDTBZMDgGCSqGSIb3DQEFDDArBBRI9CsishKtn8lSIsvhHbyl2pLxzgICJxACASAwDAYIKoZIhvcNAgkFADAdBglghkgBZQMEASoEEJ83lZ0/a6OzLejHMhP/iEuAggPAaiuBlnPJu4soKk66x7CN5XmF8ZDDp4GYXAKjuLvjZMhkgQqBk6KUwsakA5NwYb/9jIvSeK4FsvhNXqEOpErsJ/TSMPZX73fYRvj2r72S/uNzA+tHYvg2kd77SExgDzpog+p0AFX6upOQvmnXpTyag/HdD54uxm1ojms5Mk4b/6p+VEQJ6Ox9SipnqGStI09PAyeAChDPtmaraSCiLVGU7fIgMwLHOv9GFyZ/8gsqLAZIStx/UUxeiKYab0tqg5Pse8af2aPyGfprk1IcpEVnmv4St4juHfUS21EmitEPsb+8ad2CX/M9Lpl5hu4WzhbbW9HvfMCynp/WzTilbG96XilPEiXPL/oYlD5jsVnfQGIf6S+GuALoO+IzG4l/VjqnTmCzCPUvw6xrbJJLV1PUonY95f/+dcye9rAyprEiZJ4iFZNhZ8yYECaPqOjubJkH3u268JR+QtjC5JLI71EEqFgQpCDEdZja88p/H9kr08oqm0FJsB2RmV9Himx7M2h642JcVoT3ipqHphXBQz/Y5KU8afkw9ueshh/LE7ls4M0nLLNHn603kTNeg4rJkaU710sB3z54dRBNE4s6WRHvDYACep7Og6g1yeD8o6PEblCRQlvwFBsIElqIaWqYU58BCQ9vvD8r7VGibCclEbXRtSMCeZfhKkt21a8i6zR/sbMqxUTFdFbW6lyTOaoSU+Az/0nQMRlp+tTmOm3OQZOrpAfB+spN3efTqQOzDE1wX8eEFqvrYXIhL25mEfAvyl2cOD79AeB6NXvN4wopZAjvn6NUQ6EPH0PDruKKbqoF9S/hD3eNRILxMWPgSmWcxU2qrkZfXGT0GifqTx/4XQuGgIsKk0xsuhJQQymOVRyMJYiXU1lEB5PcBcvH+EHutU86LqD86LhGG33CN4e3AZYOLe4QXSVdwyTP0h36D+fWzgFXy50VMEqWqkDt5PC4pr2EkbZF92JalOidSCkywZvu1cZWMtV2U5mpuVwAc0oeR2y/ZCWNdYJgjrrfFturPH5PVXdIIpgkpet8kS8XSX8fW9swP2j7/6DwjAJxxPM3XnICDZeQ3zZp0a3Uo+fMrHZLJFwn98RX49PSnksPSpVUMnIizqM1GlmDslKPtXsnTJklOVjJoUwZE4EUOMQ7+48iBw9vy86HOCx8qC9N1eEQK7xgRkZ8rnvJoLkEct/B/1QHVynNdDZ3Rfae2B4yIlVS4RgQ3FR47idhqWTfMnTIu3ywvmq0qIrJBB6AD9W0tCnsPE3c5h6SeGlKNbb8r2soME0wMTANBglghkgBZQMEAgEFAAQgn4WW4pprqJq2uhtnlmHabWnwIVjTOxITPg5pb1GDrqoEFMNPDa4arI97Ag6x5q8rzSqx0ffzAgInEA==',
                   ));
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('✅ Full Keystore (.jks) Base64 copied! Save it to your notes/email.'),
+                      content: Text(
+                          '✅ Full Keystore (.jks) Base64 copied! Save it to your notes/email.'),
                       backgroundColor: Color(0xFF0284C7),
                     ),
                   );
                 },
                 icon: const Icon(Icons.copy_rounded, size: 16),
-                label: const Text('Copy Keystore Base64', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                label: const Text('Copy Keystore Base64',
+                    style:
+                        TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
               ),
-
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF059669),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                 ),
                 onPressed: () {
                   Clipboard.setData(const ClipboardData(
@@ -4191,25 +4976,31 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                   ));
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('✅ Play Console Recovery Certificate (.pem) copied!'),
+                      content: Text(
+                          '✅ Play Console Recovery Certificate (.pem) copied!'),
                       backgroundColor: Color(0xFF059669),
                     ),
                   );
                 },
                 icon: const Icon(Icons.file_download_outlined, size: 16),
-                label: const Text('Copy Play Console .pem', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                label: const Text('Copy Play Console .pem',
+                    style:
+                        TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
               ),
-
               OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFFFFD700),
                   side: const BorderSide(color: Color(0xFFFFD700), width: 1.2),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                 ),
                 onPressed: () => _showPlayConsoleRecoveryDialog(context),
                 icon: const Icon(Icons.help_outline_rounded, size: 16),
-                label: const Text('How to Recover if Lost?', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                label: const Text('How to Recover if Lost?',
+                    style:
+                        TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -4230,13 +5021,19 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
             width: 120,
             child: Text(
               label,
-              style: GoogleFonts.inter(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600),
+              style: GoogleFonts.inter(
+                  color: Colors.white70,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600),
             ),
           ),
           Expanded(
             child: SelectableText(
               value,
-              style: const TextStyle(fontFamily: 'monospace', color: Color(0xFFFFD700), fontSize: 10.5),
+              style: const TextStyle(
+                  fontFamily: 'monospace',
+                  color: Color(0xFFFFD700),
+                  fontSize: 10.5),
             ),
           ),
           IconButton(
@@ -4247,7 +5044,9 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
             onPressed: () {
               Clipboard.setData(ClipboardData(text: value));
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Copied $label: $value'), duration: const Duration(seconds: 1)),
+                SnackBar(
+                    content: Text('Copied $label: $value'),
+                    duration: const Duration(seconds: 1)),
               );
             },
           ),
@@ -4261,12 +5060,19 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF0F172A),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: const BorderSide(color: Color(0xFF38BDF8), width: 1.5)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: const BorderSide(color: Color(0xFF38BDF8), width: 1.5)),
         title: Row(
           children: [
-            const Icon(Icons.shield_rounded, color: Color(0xFF38BDF8), size: 24),
+            const Icon(Icons.shield_rounded,
+                color: Color(0xFF38BDF8), size: 24),
             const SizedBox(width: 8),
-            Text('Google Play Key Recovery', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+            Text('Google Play Key Recovery',
+                style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16)),
           ],
         ),
         content: SingleChildScrollView(
@@ -4276,23 +5082,33 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
             children: [
               Text(
                 'കീസ്റ്റോർ നഷ്ടപ്പെട്ടാലും പേടിക്കേണ്ടതില്ല! Google Play App Signing ഉള്ളതിനാൽ താഴെ പറയുന്ന സ്റ്റെപ്പുകൾ വഴി എപ്പോൾ വേണമെങ്കിലും റീസെറ്റ് ചെയ്യാം:',
-                style: GoogleFonts.inter(color: Colors.white70, fontSize: 13, height: 1.5),
+                style: GoogleFonts.inter(
+                    color: Colors.white70, fontSize: 13, height: 1.5),
               ),
               const SizedBox(height: 12),
-              _buildRecoveryStep('1', 'Google Play Console തുറക്കുക (play.google.com/console).'),
+              _buildRecoveryStep('1',
+                  'Google Play Console തുറക്കുക (play.google.com/console).'),
               _buildRecoveryStep('2', 'Pocket Mates ആപ്പ് തിരഞ്ഞെടുക്കുക.'),
-              _buildRecoveryStep('3', 'ഇടതുവശത്തെ മെനുവിൽ Release -> Setup -> App integrity ക്ലിക്ക് ചെയ്യുക.'),
-              _buildRecoveryStep('4', 'App Signing tab-ൽ താഴേക്ക് സ്ക്രോൾ ചെയ്ത് "Request upload key reset" ക്ലിക്ക് ചെയ്യുക.'),
-              _buildRecoveryStep('5', 'റീസൺ ആയി "I lost my upload key" തിരഞ്ഞെടുക്കുക.'),
-              _buildRecoveryStep('6', 'മുകളിൽ നൽകിയിട്ടുള്ള "Copy Play Console .pem" ക്ലിക്ക് ചെയ്തു ലഭിക്കുന്ന upload_certificate.pem ഫയൽ അവിടെ അപ്‌ലോഡ് ചെയ്യുക.'),
-              _buildRecoveryStep('7', '24 മുതൽ 48 മണിക്കൂറിനുള്ളിൽ ഗൂഗിൾ നിങ്ങളുടെ കീ അപ്ഡേറ്റ് ചെയ്യും. അതിനുശേഷം പുതിയ അപ്ഡേറ്റുകൾ തടസ്സമില്ലാതെ അപ്‌ലോഡ് ചെയ്യാം!'),
+              _buildRecoveryStep('3',
+                  'ഇടതുവശത്തെ മെനുവിൽ Release -> Setup -> App integrity ക്ലിക്ക് ചെയ്യുക.'),
+              _buildRecoveryStep('4',
+                  'App Signing tab-ൽ താഴേക്ക് സ്ക്രോൾ ചെയ്ത് "Request upload key reset" ക്ലിക്ക് ചെയ്യുക.'),
+              _buildRecoveryStep(
+                  '5', 'റീസൺ ആയി "I lost my upload key" തിരഞ്ഞെടുക്കുക.'),
+              _buildRecoveryStep('6',
+                  'മുകളിൽ നൽകിയിട്ടുള്ള "Copy Play Console .pem" ക്ലിക്ക് ചെയ്തു ലഭിക്കുന്ന upload_certificate.pem ഫയൽ അവിടെ അപ്‌ലോഡ് ചെയ്യുക.'),
+              _buildRecoveryStep('7',
+                  '24 മുതൽ 48 മണിക്കൂറിനുള്ളിൽ ഗൂഗിൾ നിങ്ങളുടെ കീ അപ്ഡേറ്റ് ചെയ്യും. അതിനുശേഷം പുതിയ അപ്ഡേറ്റുകൾ തടസ്സമില്ലാതെ അപ്‌ലോഡ് ചെയ്യാം!'),
             ],
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('മനസ്സിലായി (Close)', style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontWeight: FontWeight.bold)),
+            child: Text('മനസ്സിലായി (Close)',
+                style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFD700),
+                    fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -4311,11 +5127,17 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
               color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(6),
             ),
-            child: Text(num, style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontSize: 11, fontWeight: FontWeight.bold)),
+            child: Text(num,
+                style: GoogleFonts.outfit(
+                    color: const Color(0xFF38BDF8),
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold)),
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(text, style: GoogleFonts.inter(color: Colors.white, fontSize: 12, height: 1.4)),
+            child: Text(text,
+                style: GoogleFonts.inter(
+                    color: Colors.white, fontSize: 12, height: 1.4)),
           ),
         ],
       ),
@@ -4392,14 +5214,16 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+                      icon: const Icon(Icons.refresh_rounded,
+                          color: Colors.white),
                       tooltip: 'Reload from Supabase',
                       onPressed: () async {
                         await _loadReviewModeConfig();
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Synced latest settings from Supabase!'),
+                              content:
+                                  Text('Synced latest settings from Supabase!'),
                               duration: Duration(seconds: 1),
                             ),
                           );
@@ -4444,7 +5268,9 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
           // Platform Switches Card
           Text('Platform Wide Mode Visibility',
               style: GoogleFonts.outfit(
-                  color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
 
           Container(
@@ -4475,7 +5301,9 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                 ? '🔴 Kids & Student entry is HIDDEN on all Android devices'
                                 : '🟢 Kids & Student entry is VISIBLE on Android',
                             style: GoogleFonts.inter(
-                              color: _reviewHideOnAndroid ? Colors.orange : Colors.greenAccent,
+                              color: _reviewHideOnAndroid
+                                  ? Colors.orange
+                                  : Colors.greenAccent,
                               fontSize: 11,
                             ),
                           ),
@@ -4513,7 +5341,9 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                 ? '🔴 Kids & Student entry is HIDDEN on all iOS devices'
                                 : '🟢 Kids & Student entry is VISIBLE on iOS',
                             style: GoogleFonts.inter(
-                              color: _reviewHideOnIos ? Colors.orange : Colors.greenAccent,
+                              color: _reviewHideOnIos
+                                  ? Colors.orange
+                                  : Colors.greenAccent,
                               fontSize: 11,
                             ),
                           ),
@@ -4538,7 +5368,9 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
           // Reviewer Account Override Card (User Audio Requirement!)
           Text('Reviewer / Test Account Override',
               style: GoogleFonts.outfit(
-                  color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold)),
           const SizedBox(height: 6),
           Text(
             'Keep public platforms active, but specifically hide Kids & Student modes for the review test credentials you submit to Google Play / Apple.',
@@ -4592,7 +5424,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                   decoration: InputDecoration(
                     hintText: 'e.g. hira@gmail.com',
                     hintStyle: GoogleFonts.inter(color: Colors.white30),
-                    prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFFFFD700), size: 20),
+                    prefixIcon: const Icon(Icons.email_outlined,
+                        color: Color(0xFFFFD700), size: 20),
                     filled: true,
                     fillColor: Colors.black.withValues(alpha: 0.4),
                     border: OutlineInputBorder(
@@ -4601,7 +5434,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFFFFD700), width: 1.5),
+                      borderSide: const BorderSide(
+                          color: Color(0xFFFFD700), width: 1.5),
                     ),
                   ),
                 ),
@@ -4611,7 +5445,9 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                       ? '🔒 "${_reviewEmailController.text.trim()}" will NOT see Kids or Student world switch buttons anywhere.'
                       : '🔓 Review account sees all modes normally.',
                   style: GoogleFonts.inter(
-                    color: _reviewHideForEmail ? const Color(0xFFFFD700) : Colors.white54,
+                    color: _reviewHideForEmail
+                        ? const Color(0xFFFFD700)
+                        : Colors.white54,
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                   ),
@@ -4630,19 +5466,24 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFFFC00),
                 foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
                 elevation: 4,
               ),
               icon: _isSavingReviewConfig
                   ? const SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2.5),
+                      child: CircularProgressIndicator(
+                          color: Colors.black, strokeWidth: 2.5),
                     )
                   : const Icon(Icons.cloud_done_rounded, color: Colors.black),
               label: Text(
-                _isSavingReviewConfig ? 'Syncing Config...' : 'Save & Publish Store Review Rules',
-                style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.bold),
+                _isSavingReviewConfig
+                    ? 'Syncing Config...'
+                    : 'Save & Publish Store Review Rules',
+                style: GoogleFonts.outfit(
+                    fontSize: 15, fontWeight: FontWeight.bold),
               ),
               onPressed: _isSavingReviewConfig
                   ? null
@@ -4660,17 +5501,20 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                           SnackBar(
                             content: Row(
                               children: [
-                                const Icon(Icons.check_circle_rounded, color: Colors.white),
+                                const Icon(Icons.check_circle_rounded,
+                                    color: Colors.white),
                                 const SizedBox(width: 8),
                                 Text(
                                   'Review Mode Rules Updated in Supabase & Local Cache!',
-                                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                                  style: GoogleFonts.outfit(
+                                      fontWeight: FontWeight.bold),
                                 ),
                               ],
                             ),
                             backgroundColor: Colors.green,
                             behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
                           ),
                         );
                       }
@@ -4683,14 +5527,14 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
     );
   }
 
-
-
   Future<void> _loadAppUpdateData() async {
     setState(() => isLoadingUpdate = true);
     try {
       final releases = await PocketReleaseService.fetchAllReleases();
-      final activeAndroid = await PocketReleaseService.fetchActiveProductionRelease('android');
-      final activeIos = await PocketReleaseService.fetchActiveProductionRelease('ios');
+      final activeAndroid =
+          await PocketReleaseService.fetchActiveProductionRelease('android');
+      final activeIos =
+          await PocketReleaseService.fetchActiveProductionRelease('ios');
 
       final res = await supabase
           .from('app_updates')
@@ -8809,14 +9653,16 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                           style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                     FutureBuilder<bool>(
-                      future: PocketRankingService.isRobotsEnabledInWorldRanking(),
+                      future:
+                          PocketRankingService.isRobotsEnabledInWorldRanking(),
                       builder: (ctx, snap) {
                         final isBotsOn = snap.data ?? true;
                         return ElevatedButton.icon(
                           onPressed: () async {
-                            final current =
-                                await PocketRankingService.isRobotsEnabledInWorldRanking();
-                            await PocketRankingService.setRobotsEnabledInWorldRanking(!current);
+                            final current = await PocketRankingService
+                                .isRobotsEnabledInWorldRanking();
+                            await PocketRankingService
+                                .setRobotsEnabledInWorldRanking(!current);
                             if (!mounted) return;
                             setState(() {});
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -8824,28 +9670,34 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                 content: Text(!current
                                     ? '🤖 World Mountain Ranking: AI BOTS ENABLED (Mixed in dynamically)'
                                     : '👤 World Mountain Ranking: HUMANS ONLY (AI Bots Excluded from Rank 1..N)'),
-                                backgroundColor:
-                                    !current ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                                backgroundColor: !current
+                                    ? const Color(0xFF10B981)
+                                    : const Color(0xFFEF4444),
                                 behavior: SnackBarBehavior.floating,
                               ),
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                isBotsOn ? const Color(0xFF059669) : const Color(0xFFDC2626),
+                            backgroundColor: isBotsOn
+                                ? const Color(0xFF059669)
+                                : const Color(0xFFDC2626),
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 10),
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10)),
                             elevation: 3,
                           ),
                           icon: Icon(
-                            isBotsOn ? Icons.smart_toy_rounded : Icons.person_off_rounded,
+                            isBotsOn
+                                ? Icons.smart_toy_rounded
+                                : Icons.person_off_rounded,
                             size: 18,
                           ),
                           label: Text(
                             'Global Rank Bots: ${isBotsOn ? "ON (Mixed)" : "OFF (Humans Only)"}',
-                            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w900, fontSize: 13),
                           ),
                         );
                       },
@@ -9006,7 +9858,10 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                     horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
-                                    colors: [Color(0xFFFFB300), Color(0xFFFF5252)],
+                                    colors: [
+                                      Color(0xFFFFB300),
+                                      Color(0xFFFF5252)
+                                    ],
                                   ),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
@@ -9209,7 +10064,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
       decoration: BoxDecoration(
         color: const Color(0xFF1E293B),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3), width: 1.2),
+        border: Border.all(
+            color: const Color(0xFF38BDF8).withValues(alpha: 0.3), width: 1.2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.35),
@@ -9231,7 +10087,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                   color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.ads_click_rounded, color: Color(0xFF38BDF8), size: 22),
+                child: const Icon(Icons.ads_click_rounded,
+                    color: Color(0xFF38BDF8), size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -9250,19 +10107,26 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                         ),
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: isInitialized ? const Color(0xFF10B981).withValues(alpha: 0.2) : Colors.red.withValues(alpha: 0.2),
+                            color: isInitialized
+                                ? const Color(0xFF10B981).withValues(alpha: 0.2)
+                                : Colors.red.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(
-                              color: isInitialized ? const Color(0xFF10B981) : Colors.red,
+                              color: isInitialized
+                                  ? const Color(0xFF10B981)
+                                  : Colors.red,
                               width: 0.8,
                             ),
                           ),
                           child: Text(
                             isInitialized ? 'ONLINE / INITIALIZED' : 'STANDBY',
                             style: TextStyle(
-                              color: isInitialized ? const Color(0xFF34D399) : Colors.redAccent,
+                              color: isInitialized
+                                  ? const Color(0xFF34D399)
+                                  : Colors.redAccent,
                               fontSize: 9.5,
                               fontWeight: FontWeight.bold,
                             ),
@@ -9272,13 +10136,15 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                     ),
                     Text(
                       'Real production telemetry, fill rates & policy diagnostics',
-                      style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
+                      style: GoogleFonts.inter(
+                          color: Colors.white54, fontSize: 11),
                     ),
                   ],
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.refresh_rounded, color: Color(0xFF38BDF8), size: 20),
+                icon: const Icon(Icons.refresh_rounded,
+                    color: Color(0xFF38BDF8), size: 20),
                 tooltip: 'Refresh Telemetry',
                 onPressed: () => setState(() {}),
               ),
@@ -9295,7 +10161,9 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
             runSpacing: 8,
             children: [
               _buildAdMobChip(
-                icon: Platform.isAndroid ? Icons.android_rounded : Icons.apple_rounded,
+                icon: Platform.isAndroid
+                    ? Icons.android_rounded
+                    : Icons.apple_rounded,
                 label: Platform.isAndroid ? 'Android OS' : 'iOS / Other',
                 color: const Color(0xFF10B981),
               ),
@@ -9356,7 +10224,9 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                   icon: Icons.pie_chart_rounded,
                   color: telemetry.fillRatePercent > 50
                       ? const Color(0xFF34D399)
-                      : (telemetry.totalRequests == 0 ? Colors.white54 : const Color(0xFFFB7185)),
+                      : (telemetry.totalRequests == 0
+                          ? Colors.white54
+                          : const Color(0xFFFB7185)),
                 ),
               ),
             ],
@@ -9369,18 +10239,27 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
             children: [
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   decoration: BoxDecoration(
                     color: Colors.red.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.red.withValues(alpha: 0.2)),
+                    border:
+                        Border.all(color: Colors.red.withValues(alpha: 0.2)),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline_rounded, color: Color(0xFFFB7185), size: 18),
+                      const Icon(Icons.error_outline_rounded,
+                          color: Color(0xFFFB7185), size: 18),
                       const SizedBox(width: 8),
-                      Text('Failed Loads: ', style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5)),
-                      Text('${telemetry.totalFails}', style: GoogleFonts.inter(color: const Color(0xFFFB7185), fontSize: 12, fontWeight: FontWeight.bold)),
+                      Text('Failed Loads: ',
+                          style: GoogleFonts.inter(
+                              color: Colors.white70, fontSize: 11.5)),
+                      Text('${telemetry.totalFails}',
+                          style: GoogleFonts.inter(
+                              color: const Color(0xFFFB7185),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
@@ -9388,18 +10267,27 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
               const SizedBox(width: 10),
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   decoration: BoxDecoration(
                     color: Colors.amber.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.amber.withValues(alpha: 0.2)),
+                    border:
+                        Border.all(color: Colors.amber.withValues(alpha: 0.2)),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.hourglass_empty_rounded, color: Color(0xFFFBBF24), size: 18),
+                      const Icon(Icons.hourglass_empty_rounded,
+                          color: Color(0xFFFBBF24), size: 18),
                       const SizedBox(width: 8),
-                      Text('No-Fill (Code 3): ', style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5)),
-                      Text('${telemetry.totalNoFills}', style: GoogleFonts.inter(color: const Color(0xFFFBBF24), fontSize: 12, fontWeight: FontWeight.bold)),
+                      Text('No-Fill (Code 3): ',
+                          style: GoogleFonts.inter(
+                              color: Colors.white70, fontSize: 11.5)),
+                      Text('${telemetry.totalNoFills}',
+                          style: GoogleFonts.inter(
+                              color: const Color(0xFFFBBF24),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
@@ -9408,7 +10296,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
           ),
 
           // Real Diagnostics Message Banner
-          if (telemetry.latestErrorMessage != null || telemetry.latestErrorCode != null) ...[
+          if (telemetry.latestErrorMessage != null ||
+              telemetry.latestErrorCode != null) ...[
             const SizedBox(height: 14),
             Container(
               padding: const EdgeInsets.all(12),
@@ -9416,7 +10305,9 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                 color: const Color(0xFF0F172A),
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                  color: telemetry.latestErrorCode == '3' ? const Color(0xFFF59E0B).withValues(alpha: 0.5) : Colors.red.withValues(alpha: 0.4),
+                  color: telemetry.latestErrorCode == '3'
+                      ? const Color(0xFFF59E0B).withValues(alpha: 0.5)
+                      : Colors.red.withValues(alpha: 0.4),
                 ),
               ),
               child: Column(
@@ -9425,8 +10316,12 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                   Row(
                     children: [
                       Icon(
-                        telemetry.latestErrorCode == '3' ? Icons.info_outline_rounded : Icons.warning_amber_rounded,
-                        color: telemetry.latestErrorCode == '3' ? const Color(0xFFF59E0B) : const Color(0xFFFB7185),
+                        telemetry.latestErrorCode == '3'
+                            ? Icons.info_outline_rounded
+                            : Icons.warning_amber_rounded,
+                        color: telemetry.latestErrorCode == '3'
+                            ? const Color(0xFFF59E0B)
+                            : const Color(0xFFFB7185),
                         size: 16,
                       ),
                       const SizedBox(width: 6),
@@ -9435,7 +10330,9 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                             ? 'AdMob Status: ERROR_CODE_NO_FILL (Code 3)'
                             : 'Latest Error [Code: ${telemetry.latestErrorCode ?? "N/A"}]',
                         style: GoogleFonts.inter(
-                          color: telemetry.latestErrorCode == '3' ? const Color(0xFFF59E0B) : const Color(0xFFFB7185),
+                          color: telemetry.latestErrorCode == '3'
+                              ? const Color(0xFFF59E0B)
+                              : const Color(0xFFFB7185),
                           fontWeight: FontWeight.bold,
                           fontSize: 11.5,
                         ),
@@ -9446,15 +10343,18 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                   Text(
                     telemetry.latestErrorCode == '3'
                         ? 'Google AdMob servers had no inventory for this request right now. Common reasons: (1) Ad unit is newly created (takes up to 24-48 hrs to ramp up), (2) App-ads.txt / Play Store link pending verification, (3) Account payment profile incomplete.'
-                        : (telemetry.latestErrorMessage ?? 'Unknown error occurred while fetching ad.'),
-                    style: GoogleFonts.inter(color: Colors.white70, fontSize: 11, height: 1.35),
+                        : (telemetry.latestErrorMessage ??
+                            'Unknown error occurred while fetching ad.'),
+                    style: GoogleFonts.inter(
+                        color: Colors.white70, fontSize: 11, height: 1.35),
                   ),
                   if (telemetry.lastFailureTime != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: Text(
                         'Time: ${telemetry.lastFailureTime!.toLocal().toString().split(".")[0]}',
-                        style: const TextStyle(color: Colors.white38, fontSize: 10),
+                        style: const TextStyle(
+                            color: Colors.white38, fontSize: 10),
                       ),
                     ),
                 ],
@@ -9467,7 +10367,10 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
           // Placement Inventory List
           Text(
             'Placement Health & Ad Units',
-            style: GoogleFonts.outfit(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.bold),
+            style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontSize: 13.5,
+                fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
 
@@ -9505,7 +10408,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
             title: 'Store Rewarded Coins Ad',
             type: 'Rewarded Video (+50 PS)',
             unitId: PocketAdMobService.prodStoreCoinsRewardedId,
-            metric: telemetry.placementMetrics['storeCoins'] ?? telemetry.placementMetrics['rewarded_coins'],
+            metric: telemetry.placementMetrics['storeCoins'] ??
+                telemetry.placementMetrics['rewarded_coins'],
           ),
 
           const SizedBox(height: 16),
@@ -9517,12 +10421,16 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                 child: OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFF38BDF8),
-                    side: const BorderSide(color: Color(0xFF38BDF8), width: 0.9),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    side:
+                        const BorderSide(color: Color(0xFF38BDF8), width: 0.9),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                     padding: const EdgeInsets.symmetric(vertical: 10),
                   ),
                   icon: const Icon(Icons.bolt_rounded, size: 16),
-                  label: const Text('Test Ranking Ad Request', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
+                  label: const Text('Test Ranking Ad Request',
+                      style: TextStyle(
+                          fontSize: 11.5, fontWeight: FontWeight.bold)),
                   onPressed: () async {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -9531,22 +10439,31 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                         duration: Duration(seconds: 1),
                       ),
                     );
-                    final diag = await admob.runAdDiagnostics(PocketAdPlacement.ranking);
+                    final diag =
+                        await admob.runAdDiagnostics(PocketAdPlacement.ranking);
                     if (mounted) {
                       setState(() {});
                       showDialog(
                         context: context,
                         builder: (ctx) => AlertDialog(
                           backgroundColor: const Color(0xFF0F172A),
-                          title: const Text('Ad Diagnostics Result', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+                          title: const Text('Ad Diagnostics Result',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold)),
                           content: Text(
                             jsonEncode(diag),
-                            style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace'),
+                            style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 11,
+                                fontFamily: 'monospace'),
                           ),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(ctx),
-                              child: const Text('OK', style: TextStyle(color: Color(0xFFFFFC00))),
+                              child: const Text('OK',
+                                  style: TextStyle(color: Color(0xFFFFFC00))),
                             ),
                           ],
                         ),
@@ -9557,7 +10474,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
               ),
               const SizedBox(width: 8),
               IconButton(
-                icon: const Icon(Icons.delete_sweep_rounded, color: Colors.white54, size: 20),
+                icon: const Icon(Icons.delete_sweep_rounded,
+                    color: Colors.white54, size: 20),
                 tooltip: 'Reset Counters',
                 onPressed: () {
                   admob.resetTelemetry();
@@ -9586,7 +10504,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
             ),
             child: Row(
               children: [
-                const Icon(Icons.developer_mode_rounded, color: Color(0xFFFFFC00), size: 18),
+                const Icon(Icons.developer_mode_rounded,
+                    color: Color(0xFFFFFC00), size: 18),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Column(
@@ -9594,11 +10513,16 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                     children: [
                       const Text(
                         'Admin Device Ad Preview',
-                        style: TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.bold),
                       ),
                       Text(
                         'Allows ads to load on this admin session (regular VIPs still 100% ad-free)',
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 9.5),
+                        style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.5),
+                            fontSize: 9.5),
                       ),
                     ],
                   ),
@@ -9620,7 +10544,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
     );
   }
 
-  Widget _buildAdMobChip({required IconData icon, required String label, required Color color}) {
+  Widget _buildAdMobChip(
+      {required IconData icon, required String label, required Color color}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -9633,7 +10558,9 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
         children: [
           Icon(icon, color: color, size: 13),
           const SizedBox(width: 5),
-          Text(label, style: TextStyle(color: color, fontSize: 10.5, fontWeight: FontWeight.w600)),
+          Text(label,
+              style: TextStyle(
+                  color: color, fontSize: 10.5, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -9662,8 +10589,16 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
             ],
           ),
           const SizedBox(height: 6),
-          Text(value, style: GoogleFonts.outfit(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
-          Text(label, style: const TextStyle(color: Colors.white54, fontSize: 8.5, fontWeight: FontWeight.w600)),
+          Text(value,
+              style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold)),
+          Text(label,
+              style: const TextStyle(
+                  color: Colors.white54,
+                  fontSize: 8.5,
+                  fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -9694,11 +10629,21 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                Text(title,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold)),
                 const SizedBox(height: 2),
-                Text(type, style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 10)),
+                Text(type,
+                    style: const TextStyle(
+                        color: Color(0xFF38BDF8), fontSize: 10)),
                 const SizedBox(height: 2),
-                Text(unitId, style: const TextStyle(color: Colors.white38, fontSize: 9.5, fontFamily: 'monospace')),
+                Text(unitId,
+                    style: const TextStyle(
+                        color: Colors.white38,
+                        fontSize: 9.5,
+                        fontFamily: 'monospace')),
               ],
             ),
           ),
@@ -9708,17 +10653,27 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('Req: $req', style: const TextStyle(color: Colors.white70, fontSize: 10)),
+                  Text('Req: $req',
+                      style:
+                          const TextStyle(color: Colors.white70, fontSize: 10)),
                   const SizedBox(width: 6),
-                  Text('Load: $load', style: const TextStyle(color: Color(0xFF34D399), fontSize: 10, fontWeight: FontWeight.bold)),
+                  Text('Load: $load',
+                      style: const TextStyle(
+                          color: Color(0xFF34D399),
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold)),
                   const SizedBox(width: 6),
-                  Text('Imp: $imp', style: const TextStyle(color: Color(0xFFFBBF24), fontSize: 10)),
+                  Text('Imp: $imp',
+                      style: const TextStyle(
+                          color: Color(0xFFFBBF24), fontSize: 10)),
                 ],
               ),
               if (fails > 0)
                 Padding(
                   padding: const EdgeInsets.only(top: 2),
-                  child: Text('Fails: $fails', style: const TextStyle(color: Color(0xFFFB7185), fontSize: 9.5)),
+                  child: Text('Fails: $fails',
+                      style: const TextStyle(
+                          color: Color(0xFFFB7185), fontSize: 9.5)),
                 ),
             ],
           ),
@@ -10133,7 +11088,10 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                     SizedBox(width: 8),
                     Text(
                       'Poket VIP Subscription Pricing (Offer vs Strikethrough Retail)',
-                      style: TextStyle(color: Color(0xFFFFFC00), fontWeight: FontWeight.bold, fontSize: 13),
+                      style: TextStyle(
+                          color: Color(0xFFFFFC00),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13),
                     ),
                   ],
                 ),
@@ -10143,13 +11101,17 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                 Row(
                   children: [
                     Expanded(
-                      child: _buildMonetizationInput('1 Month Offer (₹)',
-                          _promoMonthlyPriceController, Icons.currency_rupee_rounded),
+                      child: _buildMonetizationInput(
+                          '1 Month Offer (₹)',
+                          _promoMonthlyPriceController,
+                          Icons.currency_rupee_rounded),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: _buildMonetizationInput('1 Month Retail Strike (₹)',
-                          _promoMonthlyRetailPriceController, Icons.price_change_outlined),
+                      child: _buildMonetizationInput(
+                          '1 Month Retail Strike (₹)',
+                          _promoMonthlyRetailPriceController,
+                          Icons.price_change_outlined),
                     ),
                   ],
                 ),
@@ -10164,8 +11126,10 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: _buildMonetizationInput('90-Day Retail Strike (₹)',
-                          _promoQuarterlyRetailPriceController, Icons.price_change_outlined),
+                      child: _buildMonetizationInput(
+                          '90-Day Retail Strike (₹)',
+                          _promoQuarterlyRetailPriceController,
+                          Icons.price_change_outlined),
                     ),
                   ],
                 ),
@@ -10175,13 +11139,17 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                 Row(
                   children: [
                     Expanded(
-                      child: _buildMonetizationInput('1 Year Offer (₹)',
-                          _promoYearlyPriceController, Icons.calendar_today_rounded),
+                      child: _buildMonetizationInput(
+                          '1 Year Offer (₹)',
+                          _promoYearlyPriceController,
+                          Icons.calendar_today_rounded),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: _buildMonetizationInput('1 Year Retail Strike (₹)',
-                          _promoYearlyRetailPriceController, Icons.price_change_outlined),
+                      child: _buildMonetizationInput(
+                          '1 Year Retail Strike (₹)',
+                          _promoYearlyRetailPriceController,
+                          Icons.price_change_outlined),
                     ),
                   ],
                 ),
@@ -10191,13 +11159,17 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                 Row(
                   children: [
                     Expanded(
-                      child: _buildMonetizationInput('Certificate Offer (₹)',
-                          _promoCertPriceController, Icons.workspace_premium_rounded),
+                      child: _buildMonetizationInput(
+                          'Certificate Offer (₹)',
+                          _promoCertPriceController,
+                          Icons.workspace_premium_rounded),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: _buildMonetizationInput('Cert Retail Strike (₹)',
-                          _promoCertRetailPriceController, Icons.price_change_outlined),
+                      child: _buildMonetizationInput(
+                          'Cert Retail Strike (₹)',
+                          _promoCertRetailPriceController,
+                          Icons.price_change_outlined),
                     ),
                   ],
                 ),
@@ -10513,8 +11485,7 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                     TextField(
                       onChanged: (v) =>
                           setState(() => _mediaTaskSearchQuery = v),
-                      style:
-                          const TextStyle(color: Colors.white, fontSize: 13),
+                      style: const TextStyle(color: Colors.white, fontSize: 13),
                       decoration: InputDecoration(
                         hintText: 'Search stages, movies, topics...',
                         hintStyle: const TextStyle(
@@ -10628,8 +11599,7 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                               IconButton(
                                 icon: const Icon(Icons.edit_note_rounded,
                                     color: Color(0xFFFFFC00)),
-                                onPressed: () =>
-                                    _openMediaTaskEditDialog(day),
+                                onPressed: () => _openMediaTaskEditDialog(day),
                                 tooltip: 'Edit Media',
                               ),
                             ],
@@ -10677,8 +11647,7 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                               const SizedBox(width: 6),
                               Expanded(
                                 child: Text(
-                                  media['movie'] ??
-                                      'No movie recommendation',
+                                  media['movie'] ?? 'No movie recommendation',
                                   style: GoogleFonts.inter(
                                     color: Colors.white54,
                                     fontSize: 11.5,
@@ -10707,9 +11676,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 6),
           decoration: BoxDecoration(
-            color: isSelected
-                ? const Color(0xFFFFFC00)
-                : const Color(0xFF1D2230),
+            color:
+                isSelected ? const Color(0xFFFFFC00) : const Color(0xFF1D2230),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Center(
@@ -10923,8 +11891,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
               ),
               const SizedBox(width: 8),
               IconButton(
-                icon: const Icon(Icons.refresh_rounded,
-                    color: Color(0xFFFFD700)),
+                icon:
+                    const Icon(Icons.refresh_rounded, color: Color(0xFFFFD700)),
                 onPressed: _loadPresidentInquiries,
                 tooltip: 'Refresh Inquiries',
               ),
@@ -10940,7 +11908,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _buildInquiryFilterChip('All (${_presidentInquiries.length})', 0),
+                _buildInquiryFilterChip(
+                    'All (${_presidentInquiries.length})', 0),
                 const SizedBox(width: 8),
                 _buildInquiryFilterChip(
                     'Pending ⏳ (${_presidentInquiries.where((i) => i['status'] == 'pending').length})',
@@ -10951,8 +11920,7 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                     2),
                 const SizedBox(width: 8),
                 _buildInquiryFilterChip(
-                    '🚨 Fake Questions ($reportedQuestionsCount)',
-                    3),
+                    '🚨 Fake Questions ($reportedQuestionsCount)', 3),
               ],
             ),
           ),
@@ -10992,9 +11960,13 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                     final inq = filtered[index];
                     final isPending = inq['status'] == 'pending';
                     final type = inq['report_type'] ?? 'inquiry';
-                    final citizenName = (inq['user_name'] != null && inq['user_name'].toString().isNotEmpty && inq['user_name'] != 'Citizen')
+                    final citizenName = (inq['user_name'] != null &&
+                            inq['user_name'].toString().isNotEmpty &&
+                            inq['user_name'] != 'Citizen')
                         ? inq['user_name']
-                        : ContactsNameService().getDisplayName(userId: inq['user_id']?.toString() ?? '', fallbackName: 'Learner');
+                        : ContactsNameService().getDisplayName(
+                            userId: inq['user_id']?.toString() ?? '',
+                            fallbackName: 'Learner');
                     final avatarUrl = inq['user_avatar'];
                     final day = inq['learning_day'] ?? 1;
                     final level = inq['english_level'];
@@ -11003,7 +11975,9 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                     final planet = (inq['planet'] ?? 'Earth').toString().trim();
                     final plot = (inq['plot'] ?? '').toString().trim();
                     final uid = (inq['user_id'] ?? '').toString();
-                    final createdAt = inq['created_at'] != null ? inq['created_at'].toString().split('T').first : '';
+                    final createdAt = inq['created_at'] != null
+                        ? inq['created_at'].toString().split('T').first
+                        : '';
 
                     return InkWell(
                       onTap: () => _openPresidentChatModal(inq),
@@ -11041,7 +12015,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => VerfiedSwitchPage(userId: uid),
+                                          builder: (context) =>
+                                              VerfiedSwitchPage(userId: uid),
                                         ),
                                       );
                                     }
@@ -11051,7 +12026,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                     children: [
                                       CircleAvatar(
                                         radius: 22,
-                                        backgroundColor: const Color(0xFF1E293B),
+                                        backgroundColor:
+                                            const Color(0xFF1E293B),
                                         backgroundImage: (avatarUrl != null &&
                                                 avatarUrl.toString().isNotEmpty)
                                             ? NetworkImage(avatarUrl.toString())
@@ -11060,7 +12036,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                                 avatarUrl.toString().isEmpty)
                                             ? Text(
                                                 citizenName.isNotEmpty
-                                                    ? citizenName[0].toUpperCase()
+                                                    ? citizenName[0]
+                                                        .toUpperCase()
                                                     : 'C',
                                                 style: const TextStyle(
                                                   color: Color(0xFFFFD700),
@@ -11076,7 +12053,10 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                           color: Color(0xFF0F172A),
                                           shape: BoxShape.circle,
                                         ),
-                                        child: const Icon(Icons.open_in_new_rounded, size: 9, color: Color(0xFFFFD700)),
+                                        child: const Icon(
+                                            Icons.open_in_new_rounded,
+                                            size: 9,
+                                            color: Color(0xFFFFD700)),
                                       ),
                                     ],
                                   ),
@@ -11084,13 +12064,15 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       // Citizen Name & Planet Badge
                                       Wrap(
                                         spacing: 6,
                                         runSpacing: 4,
-                                        crossAxisAlignment: WrapCrossAlignment.center,
+                                        crossAxisAlignment:
+                                            WrapCrossAlignment.center,
                                         children: [
                                           Text(
                                             citizenName,
@@ -11102,12 +12084,16 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                           ),
                                           // Planet Badge
                                           Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 6, vertical: 2),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
-                                              borderRadius: BorderRadius.circular(6),
+                                              color: const Color(0xFF38BDF8)
+                                                  .withValues(alpha: 0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
                                               border: Border.all(
-                                                color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
+                                                color: const Color(0xFF38BDF8)
+                                                    .withValues(alpha: 0.35),
                                                 width: 0.8,
                                               ),
                                             ),
@@ -11122,10 +12108,13 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                           ),
                                           // Learning Day
                                           Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 6, vertical: 2),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFFFFD700).withValues(alpha: 0.15),
-                                              borderRadius: BorderRadius.circular(6),
+                                              color: const Color(0xFFFFD700)
+                                                  .withValues(alpha: 0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
                                             ),
                                             child: Text(
                                               'Day $day',
@@ -11138,10 +12127,15 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                           ),
                                           if (level != null)
                                             Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 5,
+                                                      vertical: 1.5),
                                               decoration: BoxDecoration(
-                                                color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
-                                                borderRadius: BorderRadius.circular(6),
+                                                color: const Color(0xFF3B82F6)
+                                                    .withValues(alpha: 0.15),
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
                                               ),
                                               child: Text(
                                                 '$level',
@@ -11160,12 +12154,16 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                       if (email.isNotEmpty)
                                         Row(
                                           children: [
-                                            const Icon(Icons.email_outlined, color: Colors.white54, size: 11),
+                                            const Icon(Icons.email_outlined,
+                                                color: Colors.white54,
+                                                size: 11),
                                             const SizedBox(width: 4),
                                             Flexible(
                                               child: Text(
                                                 email,
-                                                style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                                                style: GoogleFonts.inter(
+                                                    color: Colors.white70,
+                                                    fontSize: 11),
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
@@ -11174,11 +12172,15 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                       if (phone.isNotEmpty)
                                         Row(
                                           children: [
-                                            const Icon(Icons.phone_outlined, color: Colors.white54, size: 11),
+                                            const Icon(Icons.phone_outlined,
+                                                color: Colors.white54,
+                                                size: 11),
                                             const SizedBox(width: 4),
                                             Text(
                                               phone,
-                                              style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                                              style: GoogleFonts.inter(
+                                                  color: Colors.white70,
+                                                  fontSize: 11),
                                             ),
                                           ],
                                         ),
@@ -11195,17 +12197,24 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                           ),
                                           InkWell(
                                             onTap: () {
-                                              Clipboard.setData(ClipboardData(text: uid));
-                                              ScaffoldMessenger.of(context).showSnackBar(
+                                              Clipboard.setData(
+                                                  ClipboardData(text: uid));
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
                                                 const SnackBar(
-                                                  content: Text('Citizen ID copied! 📋'),
-                                                  duration: Duration(milliseconds: 1000),
+                                                  content: Text(
+                                                      'Citizen ID copied! 📋'),
+                                                  duration: Duration(
+                                                      milliseconds: 1000),
                                                 ),
                                               );
                                             },
                                             child: const Padding(
-                                              padding: EdgeInsets.symmetric(horizontal: 5),
-                                              child: Icon(Icons.copy_rounded, color: Colors.white38, size: 11),
+                                              padding: EdgeInsets.symmetric(
+                                                  horizontal: 5),
+                                              child: Icon(Icons.copy_rounded,
+                                                  color: Colors.white38,
+                                                  size: 11),
                                             ),
                                           ),
                                         ],
@@ -11218,11 +12227,14 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 3),
                                       decoration: BoxDecoration(
                                         color: isPending
-                                            ? const Color(0xFFFF9100).withValues(alpha: 0.15)
-                                            : const Color(0xFF10B981).withValues(alpha: 0.15),
+                                            ? const Color(0xFFFF9100)
+                                                .withValues(alpha: 0.15)
+                                            : const Color(0xFF10B981)
+                                                .withValues(alpha: 0.15),
                                         borderRadius: BorderRadius.circular(6),
                                         border: Border.all(
                                           color: isPending
@@ -11246,7 +12258,9 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                       const SizedBox(height: 3),
                                       Text(
                                         createdAt,
-                                        style: GoogleFonts.inter(color: Colors.white38, fontSize: 9.5),
+                                        style: GoogleFonts.inter(
+                                            color: Colors.white38,
+                                            fontSize: 9.5),
                                       ),
                                     ],
                                   ],
@@ -11261,17 +12275,20 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                               decoration: BoxDecoration(
                                 color: Colors.black.withValues(alpha: 0.4),
                                 borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: Colors.white10, width: 0.6),
+                                border: Border.all(
+                                    color: Colors.white10, width: 0.6),
                               ),
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('💬 ', style: TextStyle(fontSize: 12)),
+                                  const Text('💬 ',
+                                      style: TextStyle(fontSize: 12)),
                                   Expanded(
                                     child: Text(
                                       inq['last_message'] ?? '',
                                       style: GoogleFonts.inter(
-                                        color: Colors.white.withValues(alpha: 0.92),
+                                        color: Colors.white
+                                            .withValues(alpha: 0.92),
                                         fontSize: 12.5,
                                         height: 1.35,
                                       ),
@@ -11287,9 +12304,11 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 7, vertical: 3),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFFFD700).withValues(alpha: 0.1),
+                                    color: const Color(0xFFFFD700)
+                                        .withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
@@ -11305,19 +12324,28 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                   children: [
                                     OutlinedButton.icon(
                                       style: OutlinedButton.styleFrom(
-                                        side: const BorderSide(color: Colors.white24, width: 1),
+                                        side: const BorderSide(
+                                            color: Colors.white24, width: 1),
                                         foregroundColor: Colors.white70,
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 10, vertical: 6),
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8)),
                                       ),
-                                      icon: const Icon(Icons.person_search_rounded, size: 13),
-                                      label: const Text('Profile 👤', style: TextStyle(fontSize: 10.5)),
+                                      icon: const Icon(
+                                          Icons.person_search_rounded,
+                                          size: 13),
+                                      label: const Text('Profile 👤',
+                                          style: TextStyle(fontSize: 10.5)),
                                       onPressed: () {
                                         if (uid.isNotEmpty) {
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
-                                              builder: (context) => VerfiedSwitchPage(userId: uid),
+                                              builder: (context) =>
+                                                  VerfiedSwitchPage(
+                                                      userId: uid),
                                             ),
                                           );
                                         }
@@ -11326,17 +12354,25 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                     const SizedBox(width: 8),
                                     ElevatedButton.icon(
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFFFFD700),
+                                        backgroundColor:
+                                            const Color(0xFFFFD700),
                                         foregroundColor: Colors.black,
-                                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 14, vertical: 7),
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8)),
                                       ),
-                                      icon: const Icon(Icons.forum_rounded, size: 14),
+                                      icon: const Icon(Icons.forum_rounded,
+                                          size: 14),
                                       label: const Text(
                                         'Chat as President 👑',
-                                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                        style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold),
                                       ),
-                                      onPressed: () => _openPresidentChatModal(inq),
+                                      onPressed: () =>
+                                          _openPresidentChatModal(inq),
                                     ),
                                   ],
                                 ),
@@ -11360,9 +12396,7 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFFFFD700)
-              : const Color(0xFF1E293B),
+          color: isSelected ? const Color(0xFFFFD700) : const Color(0xFF1E293B),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
@@ -11380,10 +12414,15 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
   /// Live Two-Way Chat Sheet with Citizen
   void _openPresidentChatModal(Map<String, dynamic> inquiry) {
     final targetId = inquiry['user_id']?.toString() ?? '';
-    final name = inquiry['user_name'] != null && inquiry['user_name'].toString().isNotEmpty && inquiry['user_name'] != 'Citizen'
+    final name = inquiry['user_name'] != null &&
+            inquiry['user_name'].toString().isNotEmpty &&
+            inquiry['user_name'] != 'Citizen'
         ? inquiry['user_name']
-        : (ContactsNameService().getDisplayName(userId: targetId, fallbackName: 'Learner').isNotEmpty
-            ? ContactsNameService().getDisplayName(userId: targetId, fallbackName: 'Learner')
+        : (ContactsNameService()
+                .getDisplayName(userId: targetId, fallbackName: 'Learner')
+                .isNotEmpty
+            ? ContactsNameService()
+                .getDisplayName(userId: targetId, fallbackName: 'Learner')
             : 'Learner');
     final avatar = inquiry['user_avatar'];
     final day = inquiry['learning_day'] ?? 1;
@@ -11397,7 +12436,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
 
     // Initialize messages list
     List<Map<String, dynamic>> messages = [];
-    if (inquiry['messages'] is List && (inquiry['messages'] as List).isNotEmpty) {
+    if (inquiry['messages'] is List &&
+        (inquiry['messages'] as List).isNotEmpty) {
       messages = List<Map<String, dynamic>>.from(
         (inquiry['messages'] as List).map((m) => Map<String, dynamic>.from(m)),
       );
@@ -11411,7 +12451,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
           'sender_avatar': avatar,
           'is_president': false,
           'text': lastMsg,
-          'created_at': inquiry['created_at'] ?? DateTime.now().toIso8601String(),
+          'created_at':
+              inquiry['created_at'] ?? DateTime.now().toIso8601String(),
         });
       }
     }
@@ -11509,10 +12550,10 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                       CircleAvatar(
                         radius: 22,
                         backgroundColor: const Color(0xFF1E293B),
-                        backgroundImage: (avatar != null &&
-                                avatar.toString().isNotEmpty)
-                            ? NetworkImage(avatar.toString())
-                            : null,
+                        backgroundImage:
+                            (avatar != null && avatar.toString().isNotEmpty)
+                                ? NetworkImage(avatar.toString())
+                                : null,
                         child: (avatar == null || avatar.toString().isEmpty)
                             ? Text(
                                 name.isNotEmpty ? name[0].toUpperCase() : 'C',
@@ -11598,12 +12639,14 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                 if (email.isNotEmpty)
                                   Text(
                                     '📧 $email',
-                                    style: GoogleFonts.inter(color: Colors.white70, fontSize: 10.5),
+                                    style: GoogleFonts.inter(
+                                        color: Colors.white70, fontSize: 10.5),
                                   ),
                                 if (phone.isNotEmpty)
                                   Text(
                                     '📞 $phone',
-                                    style: GoogleFonts.inter(color: Colors.white70, fontSize: 10.5),
+                                    style: GoogleFonts.inter(
+                                        color: Colors.white70, fontSize: 10.5),
                                   ),
                                 Text(
                                   'ID: ${targetId.length > 8 ? '${targetId.substring(0, 8)}...' : targetId}',
@@ -11626,7 +12669,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => VerfiedSwitchPage(userId: targetId),
+                                builder: (context) =>
+                                    VerfiedSwitchPage(userId: targetId),
                               ),
                             );
                           }
@@ -11661,9 +12705,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                             final isPres = msg['is_president'] == true ||
                                 msg['sender_id'] ==
                                     PocketPresidentService.presidentId;
-                            final text = msg['text'] ??
-                                msg['message_text'] ??
-                                '';
+                            final text =
+                                msg['text'] ?? msg['message_text'] ?? '';
                             final time = msg['created_at'] != null
                                 ? DateTime.tryParse(msg['created_at'])
                                 : null;
@@ -11687,7 +12730,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                   color: isPres
                                       ? const Color(0xFF2C2205)
                                       : const Color(0xFF1E293B),
-                                  borderRadius: BorderRadius.circular(16).copyWith(
+                                  borderRadius:
+                                      BorderRadius.circular(16).copyWith(
                                     bottomRight: isPres
                                         ? const Radius.circular(2)
                                         : null,
@@ -11763,5 +12807,3987 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                 ),
 
                 // Quick Presidential Template Chips
-       
-... [truncated for diff preview]
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  color: const Color(0xFF0B101B),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildQuickReplyChip(
+                          label: '🤖 AI Robot Auto-Reply',
+                          onTap: () async {
+                            final citizenMsg = messages.reversed.firstWhere(
+                                  (m) =>
+                                      m['is_president'] != true &&
+                                      m['sender_id'] !=
+                                          PocketPresidentService.presidentId,
+                                  orElse: () => {
+                                    'text': inquiry['last_message'] ?? 'Hello'
+                                  },
+                                )['text'] ??
+                                '';
+                            final draft = await PocketPresidentService
+                                .generatePresidentRobotReply(
+                              userMessage: citizenMsg.toString(),
+                              userName: name,
+                              currentUserId: targetId,
+                            );
+                            setModalState(() {
+                              replyController.text = draft;
+                            });
+                          },
+                        ),
+                        const SizedBox(width: 8),
+                        _buildQuickReplyChip(
+                          label: '🚨 Fake Question Sanctioned',
+                          onTap: () => sendReply(
+                            'CITADEL SANCTION NOTICE ⚖️: The defense question reported from this Citadel has been officially audited by Presidential Court and found non-compliant. Citadel score deductions applied. Fair-play restored!',
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildQuickReplyChip(
+                          label: '🛡️ 24h Guard Shield',
+                          onTap: () => sendReply(
+                            '🛡️ PRESIDENTIAL PROTECTION GRANTED: Your Citadel is now under 24-Hour Presidential Guard protection! Attacks are blocked. Keep practicing your English tasks!',
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildQuickReplyChip(
+                          label: '🏛️ Under Review',
+                          onTap: () => sendReply(
+                            'Thank you for bringing this to the Presidential Desk. Our administration is reviewing your inquiry right away.',
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildQuickReplyChip(
+                          label: '🌟 Commended',
+                          onTap: () => sendReply(
+                            'The President of Pocket World commends your dedication! Keep learning and speaking English every day 🌟',
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildQuickReplyChip(
+                          label: '✅ Resolved',
+                          onTap: () => sendReply(
+                            'Your request has been officially reviewed and resolved by the Presidential Office.',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Bottom Input Row
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  color: const Color(0xFF111827),
+                  child: Row(
+                    children: [
+                      // 🤖 Instant Robot Draft Icon Button
+                      IconButton(
+                        icon: const Icon(Icons.smart_toy_rounded,
+                            color: Color(0xFFFFD700), size: 22),
+                        tooltip: 'Draft AI Robot Reply',
+                        onPressed: () async {
+                          final citizenMsg = messages.reversed.firstWhere(
+                                (m) =>
+                                    m['is_president'] != true &&
+                                    m['sender_id'] !=
+                                        PocketPresidentService.presidentId,
+                                orElse: () => {
+                                  'text': inquiry['last_message'] ?? 'Hello'
+                                },
+                              )['text'] ??
+                              '';
+                          final draft = await PocketPresidentService
+                              .generatePresidentRobotReply(
+                            userMessage: citizenMsg.toString(),
+                            userName: name,
+                            currentUserId: targetId,
+                          );
+                          setModalState(() {
+                            replyController.text = draft;
+                          });
+                        },
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: TextField(
+                          controller: replyController,
+                          maxLines: 3,
+                          minLines: 1,
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 13.5),
+                          decoration: InputDecoration(
+                            hintText: 'Type response to $name...',
+                            hintStyle: const TextStyle(
+                                color: Colors.white38, fontSize: 12.5),
+                            filled: true,
+                            fillColor: const Color(0xFF1E293B),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 10),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Color(0xFFFFD700), Color(0xFFFF9100)],
+                          ),
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          icon: isSending
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.black,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.send_rounded,
+                                  color: Colors.black, size: 20),
+                          onPressed: isSending ? null : () => sendReply(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    ).then((_) {
+      _loadPresidentInquiries();
+    });
+  }
+
+  Widget _buildQuickReplyChip({
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+            width: 0.8,
+          ),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.outfit(
+            color: const Color(0xFFFFD700),
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 2. PRESIDENT VIBE / STORY SUB-TAB
+  Widget _buildPresidentVibeSubTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1E1B4B), Color(0xFF0F172A)],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.auto_awesome_rounded,
+                        color: Color(0xFFFFD700), size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Post Official President Vibe 👑',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Presidential vibes appear in all citizens\' status feeds with an animated Golden Crown Aura.',
+                  style:
+                      GoogleFonts.inter(color: Colors.white60, fontSize: 11.5),
+                ),
+                const SizedBox(height: 14),
+
+                // Caption
+                Text(
+                  'Vibe Message / Caption:',
+                  style:
+                      GoogleFonts.outfit(color: Colors.white70, fontSize: 12),
+                ),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: _presidentVibeCaptionController,
+                  maxLines: 3,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText:
+                        'e.g., "Good morning Pocket World! 🌟 Today\'s English idiom is..."',
+                    hintStyle:
+                        const TextStyle(color: Colors.white38, fontSize: 12),
+                    filled: true,
+                    fillColor: const Color(0xFF0F172A),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Colors.white.withValues(alpha: 0.1),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Media URL (optional)
+                Text(
+                  'Media Image URL (Optional):',
+                  style:
+                      GoogleFonts.outfit(color: Colors.white70, fontSize: 12),
+                ),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: _presidentVibeMediaUrlController,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'https://images.unsplash.com/...',
+                    hintStyle:
+                        const TextStyle(color: Colors.white38, fontSize: 12),
+                    filled: true,
+                    fillColor: const Color(0xFF0F172A),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Colors.white.withValues(alpha: 0.1),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFD700),
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: const Icon(Icons.rocket_launch_rounded, size: 16),
+                  label: const Text(
+                    'Publish President Vibe to Feed 🚀',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                  onPressed: () async {
+                    final caption = _presidentVibeCaptionController.text.trim();
+                    if (caption.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Please enter a caption for the vibe.'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+
+                    final media = _presidentVibeMediaUrlController.text.trim();
+                    await PocketPresidentService.postPresidentVibe(
+                      caption: caption,
+                      mediaUrl: media.isNotEmpty ? media : null,
+                      mediaType: media.isNotEmpty ? 'image' : 'text',
+                      duration: _presidentVibeDuration,
+                    );
+
+                    _presidentVibeCaptionController.clear();
+                    _presidentVibeMediaUrlController.clear();
+
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                            'Official President Vibe posted to all feeds! 🌟'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                    setState(() {});
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Active Vibes Preview
+          FutureBuilder<List<Map<String, dynamic>>>(
+            future: PocketPresidentService.getActivePresidentVibes(),
+            builder: (context, snapshot) {
+              final vibes = snapshot.data ?? [];
+              if (vibes.isEmpty) return const SizedBox.shrink();
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Currently Active President Vibes (${vibes.length})',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ...vibes.map((v) => Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF131B26),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.08),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            const Text('🌟', style: TextStyle(fontSize: 18)),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                v['caption']?.toString() ?? '',
+                                style: GoogleFonts.inter(
+                                    color: Colors.white70, fontSize: 12),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '👀 ${v['views_count'] ?? 0}',
+                              style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFFD700), fontSize: 11),
+                            ),
+                          ],
+                        ),
+                      )),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 3. PRESIDENTIAL ANNOUNCEMENTS & ADS SUB-TAB
+  Widget _buildPresidentAnnouncementsSubTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF111827),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.campaign_rounded,
+                        color: Color(0xFFFFD700), size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Broadcast Presidential Announcement / Ad',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15.5,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Dispatches an official presidential alert or house promotional message to all Pocket World citizens.',
+                  style:
+                      GoogleFonts.inter(color: Colors.white60, fontSize: 11.5),
+                ),
+                const SizedBox(height: 14),
+                Text('Announcement Title:',
+                    style: GoogleFonts.outfit(
+                        color: Colors.white70, fontSize: 12)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: _presidentAnnouncementTitleController,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'e.g., Grand English League Tournament 🏆',
+                    hintStyle:
+                        const TextStyle(color: Colors.white38, fontSize: 12),
+                    filled: true,
+                    fillColor: const Color(0xFF1E293B),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text('Announcement Content / Body:',
+                    style: GoogleFonts.outfit(
+                        color: Colors.white70, fontSize: 12)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: _presidentAnnouncementContentController,
+                  maxLines: 4,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText:
+                        'Type official decree, new features, or promotional campaign details...',
+                    hintStyle:
+                        const TextStyle(color: Colors.white38, fontSize: 12),
+                    filled: true,
+                    fillColor: const Color(0xFF1E293B),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text('Poster / Banner Image URL (Optional):',
+                    style: GoogleFonts.outfit(
+                        color: Colors.white70, fontSize: 12)),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _presidentAnnouncementMediaUrlController,
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 13),
+                        decoration: InputDecoration(
+                          hintText: 'Poster URL or tap Gallery button',
+                          hintStyle: const TextStyle(
+                              color: Colors.white38, fontSize: 12),
+                          filled: true,
+                          fillColor: const Color(0xFF1E293B),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    InkWell(
+                      onTap: () async {
+                        final picker = ImagePicker();
+                        final picked = await picker.pickImage(
+                          source: ImageSource.gallery,
+                          imageQuality: 85,
+                        );
+                        if (picked != null) {
+                          try {
+                            final bytes = await picked.readAsBytes();
+                            final fileName =
+                                'broadcast_${DateTime.now().millisecondsSinceEpoch}.jpg';
+                            await Supabase.instance.client.storage
+                                .from('announcements')
+                                .uploadBinary(fileName, bytes);
+                            final url = Supabase.instance.client.storage
+                                .from('announcements')
+                                .getPublicUrl(fileName);
+                            _presidentAnnouncementMediaUrlController.text = url;
+                          } catch (_) {
+                            _presidentAnnouncementMediaUrlController.text =
+                                picked.path;
+                          }
+                          if (mounted) setState(() {});
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color:
+                                const Color(0xFFFFD700).withValues(alpha: 0.5),
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.add_photo_alternate_rounded,
+                          color: Color(0xFFFFD700),
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Text('Priority: ',
+                        style: GoogleFonts.outfit(
+                            color: Colors.white70, fontSize: 12)),
+                    const SizedBox(width: 10),
+                    DropdownButton<String>(
+                      value: _presidentAnnouncementPriority,
+                      dropdownColor: const Color(0xFF1E293B),
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                      items: const [
+                        DropdownMenuItem(
+                            value: 'normal', child: Text('Normal')),
+                        DropdownMenuItem(value: 'high', child: Text('High ⭐')),
+                        DropdownMenuItem(
+                            value: 'urgent', child: Text('Urgent 🚨')),
+                      ],
+                      onChanged: (val) {
+                        if (val != null) {
+                          setState(() => _presidentAnnouncementPriority = val);
+                        }
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFD700),
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon:
+                      const Icon(Icons.broadcast_on_personal_rounded, size: 16),
+                  label: const Text(
+                    'Broadcast to All Citizens 📢',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                  onPressed: () async {
+                    final title =
+                        _presidentAnnouncementTitleController.text.trim();
+                    final content =
+                        _presidentAnnouncementContentController.text.trim();
+                    final mediaUrl =
+                        _presidentAnnouncementMediaUrlController.text.trim();
+
+                    if (title.isEmpty || content.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Please enter both title and content.'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+
+                    await PocketPresidentService.broadcastAnnouncement(
+                      title: title,
+                      content: content,
+                      mediaUrl: mediaUrl.isNotEmpty ? mediaUrl : null,
+                      priority: _presidentAnnouncementPriority,
+                    );
+
+                    _presidentAnnouncementTitleController.clear();
+                    _presidentAnnouncementContentController.clear();
+                    _presidentAnnouncementMediaUrlController.clear();
+
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content:
+                            Text('Presidential Announcement broadcasted! 📢'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          // 📱 Official Instagram Community Card for President Campaigns
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xFF833AB4),
+                  Color(0xFFFD1D1D),
+                  Color(0xFFFCB045)
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFE1306C).withValues(alpha: 0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.camera_alt_rounded,
+                        color: Colors.white, size: 24),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Official Instagram Channel 📸',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.white24,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        'Verified',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Handle: @poketmates.app\nPromote official daily stories, reels, community tips, and mates leaderboards.',
+                  style: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.9), fontSize: 12),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: const Color(0xFF833AB4),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                        ),
+                        icon: const Icon(Icons.open_in_new_rounded, size: 16),
+                        label: const Text('Open Instagram',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        onPressed: () async {
+                          const url =
+                              'https://www.instagram.com/poketmates.app?vrfl=NTc2MWhma2p1NzF2&utm_source=qr';
+                          final uri = Uri.parse(url);
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri,
+                                mode: LaunchMode.externalApplication);
+                          }
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black.withValues(alpha: 0.35),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                      icon: const Icon(Icons.copy_rounded, size: 16),
+                      label: const Text('Copy Link'),
+                      onPressed: () {
+                        Clipboard.setData(const ClipboardData(
+                            text:
+                                'https://www.instagram.com/poketmates.app?vrfl=NTc2MWhma2p1NzF2&utm_source=qr'));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content:
+                                  Text('Instagram link copied to clipboard!')),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 4. CITADEL 24-HOUR PRESIDENTIAL RESIDENCY PROTECTION
+  Widget _buildPresidentProtectionSubTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF111827),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFF22C55E).withValues(alpha: 0.3),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.shield_rounded,
+                        color: Color(0xFF22C55E), size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Presidential Citadel Residency Guard 🛡️',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15.5,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'As per audio decree, citadels placed under Presidential Protection are sheltered for 24 hours from combat raids, and an automated alert is sent to the citizen.',
+                  style:
+                      GoogleFonts.inter(color: Colors.white60, fontSize: 11.5),
+                ),
+                const SizedBox(height: 16),
+                Text('Citizen User ID to Protect:',
+                    style: GoogleFonts.outfit(
+                        color: Colors.white70, fontSize: 12)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: _presidentProtectionTargetController,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'Enter target user_id (UUID or robot ID)...',
+                    hintStyle:
+                        const TextStyle(color: Colors.white38, fontSize: 12),
+                    filled: true,
+                    fillColor: const Color(0xFF1E293B),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Text('Protection Duration: ',
+                        style: GoogleFonts.outfit(
+                            color: Colors.white70, fontSize: 12)),
+                    const SizedBox(width: 10),
+                    DropdownButton<int>(
+                      value: _presidentProtectionHours,
+                      dropdownColor: const Color(0xFF1E293B),
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                      items: const [
+                        DropdownMenuItem(value: 12, child: Text('12 Hours')),
+                        DropdownMenuItem(
+                            value: 24, child: Text('24 Hours (Standard)')),
+                        DropdownMenuItem(value: 48, child: Text('48 Hours')),
+                      ],
+                      onChanged: (val) {
+                        if (val != null) {
+                          setState(() => _presidentProtectionHours = val);
+                        }
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF22C55E),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: const Icon(Icons.security_rounded, size: 16),
+                  label: const Text(
+                    'Authorize Presidential Protection & Send Alert 🛡️',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                  onPressed: () async {
+                    final targetId =
+                        _presidentProtectionTargetController.text.trim();
+                    if (targetId.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Please enter a target User ID.'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+
+                    await PocketFortressDefenseService
+                        .placeUnderPresidentialProtection(
+                      targetId,
+                      hours: _presidentProtectionHours,
+                    );
+                    await PocketPresidentService.notifyPresidentialProtection(
+                      targetId,
+                      hours: _presidentProtectionHours,
+                    );
+
+                    _presidentProtectionTargetController.clear();
+
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                            'User $targetId placed under Presidential Guard for $_presidentProtectionHours hours! 🛡️'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // =============================================================
+  // 🎯 CURRICULUM TARGETS & HOMES LIVE JSON STUDIO (User Audio Directive!)
+  // =============================================================
+  Future<void> _loadCurriculumDayData(int day) async {
+    setState(() {
+      _curriculumSelectedDay = day;
+      _curriculumLoading = true;
+      _curriculumStatusMsg = '';
+    });
+
+    try {
+      final rawJson = await PocketDayCurriculumService.getDayRawJson(day);
+      final hasOverride = await PocketDayCurriculumService.hasDayOverride(day);
+      Map<String, dynamic> decoded = {};
+      try {
+        decoded = json.decode(rawJson) as Map<String, dynamic>;
+      } catch (_) {}
+
+      final topicEn = PocketDayCurriculumService.getLocalizedText(
+          decoded['course']?['topic'],
+          lang: 'en');
+      final topicMl = PocketDayCurriculumService.getLocalizedText(
+          decoded['course']?['topic'],
+          lang: 'ml');
+      final grammar = decoded['grammarRule'] as Map<String, dynamic>? ?? {};
+      final formula = grammar['formula']?.toString() ?? '';
+      final goldenTipEn = PocketDayCurriculumService.getLocalizedText(
+          grammar['goldenTip'],
+          lang: 'en');
+      final goldenTipMl = PocketDayCurriculumService.getLocalizedText(
+          grammar['goldenTip'],
+          lang: 'ml');
+
+      // Prettify JSON
+      String formattedJson = rawJson;
+      try {
+        const encoder = JsonEncoder.withIndent('  ');
+        formattedJson = encoder.convert(decoded);
+      } catch (_) {}
+
+      if (mounted) {
+        setState(() {
+          _curriculumJsonController.text = formattedJson;
+          _topicEnController.text = topicEn;
+          _topicMlController.text = topicMl;
+          _formulaController.text = formula;
+          _goldenTipEnController.text = goldenTipEn;
+          _goldenTipMlController.text = goldenTipMl;
+          _curriculumHasOverride = hasOverride;
+          _curriculumLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _curriculumLoading = false;
+          _curriculumStatusMsg = 'Error loading day $day: $e';
+        });
+      }
+    }
+  }
+
+  Future<void> _saveCurriculumOverride() async {
+    final text = _curriculumJsonController.text.trim();
+    if (text.isEmpty) return;
+
+    try {
+      final decoded = json.decode(text);
+      if (decoded is! Map<String, dynamic>) {
+        throw const FormatException('Curriculum root must be a JSON object.');
+      }
+
+      await PocketDayCurriculumService.saveDayOverride(
+          _curriculumSelectedDay, text);
+
+      if (mounted) {
+        setState(() {
+          _curriculumHasOverride = true;
+          _curriculumStatusMsg =
+              '✅ Day $_curriculumSelectedDay curriculum live override saved & active!';
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                '🎉 Day $_curriculumSelectedDay curriculum live override saved & active!'),
+            backgroundColor: const Color(0xFF10B981),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _curriculumStatusMsg = '❌ Invalid JSON: $e';
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ JSON syntax error: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _applyQuickFormToCurriculumJson() async {
+    try {
+      final currentText = _curriculumJsonController.text.trim();
+      Map<String, dynamic> data = {};
+      if (currentText.isNotEmpty) {
+        data = json.decode(currentText) as Map<String, dynamic>;
+      }
+
+      // Update topic
+      final course = Map<String, dynamic>.from(
+          data['course'] as Map<String, dynamic>? ?? {});
+      final topicMap = Map<String, dynamic>.from(
+          course['topic'] is Map ? course['topic'] : {});
+      topicMap['en'] = _topicEnController.text.trim();
+      topicMap['ml'] = _topicMlController.text.trim();
+      course['topic'] = topicMap;
+      data['course'] = course;
+
+      // Update grammar rule
+      final grammar = Map<String, dynamic>.from(
+          data['grammarRule'] as Map<String, dynamic>? ?? {});
+      grammar['formula'] = _formulaController.text.trim();
+      final tipMap = Map<String, dynamic>.from(
+          grammar['goldenTip'] is Map ? grammar['goldenTip'] : {});
+      tipMap['en'] = _goldenTipEnController.text.trim();
+      tipMap['ml'] = _goldenTipMlController.text.trim();
+      grammar['goldenTip'] = tipMap;
+      data['grammarRule'] = grammar;
+
+      const encoder = JsonEncoder.withIndent('  ');
+      final formatted = encoder.convert(data);
+      _curriculumJsonController.text = formatted;
+      await _saveCurriculumOverride();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to apply quick form: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _resetCurriculumOverride() async {
+    await PocketDayCurriculumService.resetDayToAsset(_curriculumSelectedDay);
+    await _loadCurriculumDayData(_curriculumSelectedDay);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              '🔄 Reset Day $_curriculumSelectedDay to bundled asset JSON.'),
+          backgroundColor: const Color(0xFF0284C7),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  void _formatCurriculumJson() {
+    try {
+      final text = _curriculumJsonController.text.trim();
+      final decoded = json.decode(text);
+      const encoder = JsonEncoder.withIndent('  ');
+      _curriculumJsonController.text = encoder.convert(decoded);
+      setState(() => _curriculumStatusMsg = '✨ JSON beautified successfully!');
+    } catch (e) {
+      setState(() => _curriculumStatusMsg = '❌ Syntax error: $e');
+    }
+  }
+
+  Widget _buildCurriculumTargetsTab() {
+    return Container(
+      color: const Color(0xFF0F172A),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Top Header Card
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text('🎯', style: TextStyle(fontSize: 26)),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Curriculum & Targets Studio',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          'Inspect & live-edit Days 1–90 JSONs on the fly. Corrections apply immediately in-app without waiting for store releases!',
+                          style: GoogleFonts.inter(
+                            color: Colors.white70,
+                            fontSize: 11.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Search / Filter Input
+            TextField(
+              style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
+              decoration: InputDecoration(
+                hintText: 'Filter by day number (e.g. 1, 2, 15)...',
+                hintStyle:
+                    GoogleFonts.outfit(color: Colors.white38, fontSize: 13),
+                prefixIcon: const Icon(Icons.search_rounded,
+                    color: Color(0xFFFFD700), size: 18),
+                filled: true,
+                fillColor: const Color(0xFF1E293B),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(vertical: 10),
+              ),
+              onChanged: (val) {
+                setState(() => _curriculumFilterText = val.trim());
+              },
+            ),
+            const SizedBox(height: 12),
+
+            // Horizontal Day Selector Chips
+            SizedBox(
+              height: 44,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: 90,
+                itemBuilder: (ctx, index) {
+                  final day = index + 1;
+                  if (_curriculumFilterText.isNotEmpty &&
+                      !'$day'.contains(_curriculumFilterText)) {
+                    return const SizedBox.shrink();
+                  }
+                  final isSelected = day == _curriculumSelectedDay;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text(
+                        'Day $day',
+                        style: GoogleFonts.outfit(
+                          color: isSelected ? Colors.black : Colors.white70,
+                          fontWeight:
+                              isSelected ? FontWeight.w900 : FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      ),
+                      selected: isSelected,
+                      selectedColor: const Color(0xFFFFD700),
+                      backgroundColor: const Color(0xFF1E293B),
+                      side: BorderSide(
+                        color: isSelected
+                            ? const Color(0xFFFFD700)
+                            : Colors.white12,
+                      ),
+                      onSelected: (_) => _loadCurriculumDayData(day),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Current Day Status Card
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: _curriculumHasOverride
+                      ? const Color(0xFF10B981)
+                      : Colors.white12,
+                  width: _curriculumHasOverride ? 1.5 : 1.0,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    _curriculumHasOverride
+                        ? Icons.bolt_rounded
+                        : Icons.inventory_2_outlined,
+                    color: _curriculumHasOverride
+                        ? const Color(0xFF10B981)
+                        : Colors.white54,
+                    size: 22,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Editing Day $_curriculumSelectedDay • House $_curriculumSelectedDay',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          _curriculumHasOverride
+                              ? '🟢 Live In-App Override Active'
+                              : '⚪ Using Bundled App Asset',
+                          style: GoogleFonts.inter(
+                            color: _curriculumHasOverride
+                                ? const Color(0xFF10B981)
+                                : Colors.white54,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Editor mode switch
+                  SegmentedButton<int>(
+                    segments: const [
+                      ButtonSegment(
+                          value: 0,
+                          label: Text('JSON Code',
+                              style: TextStyle(fontSize: 10.5))),
+                      ButtonSegment(
+                          value: 1,
+                          label: Text('Quick Form',
+                              style: TextStyle(fontSize: 10.5))),
+                    ],
+                    selected: {_curriculumEditorMode},
+                    onSelectionChanged: (val) {
+                      setState(() => _curriculumEditorMode = val.first);
+                    },
+                    style: SegmentedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0F172A),
+                      selectedBackgroundColor: const Color(0xFFFFD700),
+                      selectedForegroundColor: Colors.black,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (_curriculumStatusMsg.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                _curriculumStatusMsg,
+                style: GoogleFonts.inter(
+                  color: _curriculumStatusMsg.startsWith('✅')
+                      ? const Color(0xFF10B981)
+                      : (_curriculumStatusMsg.startsWith('✨')
+                          ? const Color(0xFFFFD700)
+                          : Colors.redAccent),
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+            const SizedBox(height: 16),
+
+            if (_curriculumLoading)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(40),
+                  child: CircularProgressIndicator(color: Color(0xFFFFD700)),
+                ),
+              )
+            else if (_curriculumEditorMode == 0) ...[
+              // JSON Code Editor View
+              Row(
+                children: [
+                  Text(
+                    'day_${_curriculumSelectedDay}_curriculum.json',
+                    style: GoogleFonts.robotoMono(
+                        color: const Color(0xFF38BDF8),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    tooltip: 'Beautify JSON',
+                    icon: const Icon(Icons.auto_fix_high_rounded,
+                        color: Color(0xFFFFD700), size: 18),
+                    onPressed: _formatCurriculumJson,
+                  ),
+                  IconButton(
+                    tooltip: 'Copy JSON',
+                    icon: const Icon(Icons.copy_rounded,
+                        color: Colors.white70, size: 18),
+                    onPressed: () {
+                      Clipboard.setData(
+                          ClipboardData(text: _curriculumJsonController.text));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('📋 JSON copied to clipboard!'),
+                            duration: Duration(seconds: 1)),
+                      );
+                    },
+                  ),
+                  if (_curriculumHasOverride)
+                    IconButton(
+                      tooltip: 'Reset to default asset',
+                      icon: const Icon(Icons.refresh_rounded,
+                          color: Colors.orangeAccent, size: 18),
+                      onPressed: _resetCurriculumOverride,
+                    ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF020617),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: TextField(
+                  controller: _curriculumJsonController,
+                  maxLines: 22,
+                  style: GoogleFonts.robotoMono(
+                    color: const Color(0xFFE2E8F0),
+                    fontSize: 11.5,
+                    height: 1.45,
+                  ),
+                  decoration: const InputDecoration(
+                    contentPadding: EdgeInsets.all(14),
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFFFD700),
+                      side: const BorderSide(color: Color(0xFFFFD700)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: _formatCurriculumJson,
+                    icon: const Icon(Icons.check_circle_outline_rounded,
+                        size: 18),
+                    label: const Text('Format & Validate'),
+                  ),
+                  const Spacer(),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      elevation: 4,
+                    ),
+                    onPressed: _saveCurriculumOverride,
+                    icon: const Icon(Icons.save_rounded, size: 20),
+                    label: Text(
+                      'SAVE & APPLY LIVE OVERRIDE',
+                      style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.w900, fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
+            ] else ...[
+              // Quick Form Editor View
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Topic Title (English)',
+                        style: GoogleFonts.outfit(
+                            color: Colors.white70, fontSize: 12)),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: _topicEnController,
+                      style:
+                          GoogleFonts.outfit(color: Colors.white, fontSize: 14),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFF0F172A),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text('Topic Title (Malayalam)',
+                        style: GoogleFonts.outfit(
+                            color: Colors.white70, fontSize: 12)),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: _topicMlController,
+                      style:
+                          GoogleFonts.outfit(color: Colors.white, fontSize: 14),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFF0F172A),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text('Grammar Formula / Rule',
+                        style: GoogleFonts.outfit(
+                            color: Colors.white70, fontSize: 12)),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: _formulaController,
+                      style: GoogleFonts.robotoMono(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFF0F172A),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text('Golden Tip (English)',
+                        style: GoogleFonts.outfit(
+                            color: Colors.white70, fontSize: 12)),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: _goldenTipEnController,
+                      style:
+                          GoogleFonts.outfit(color: Colors.white, fontSize: 13),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFF0F172A),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text('Golden Tip (Malayalam)',
+                        style: GoogleFonts.outfit(
+                            color: Colors.white70, fontSize: 12)),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: _goldenTipMlController,
+                      style:
+                          GoogleFonts.outfit(color: Colors.white, fontSize: 13),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFF0F172A),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF10B981),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: _applyQuickFormToCurriculumJson,
+                        icon: const Icon(Icons.check_circle_rounded, size: 20),
+                        label: Text(
+                          'UPDATE JSON & SAVE LIVE OVERRIDE',
+                          style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.w900, fontSize: 13),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            const SizedBox(height: 30),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ==========================================
+  // 🦁 KIDS PANEL (LION DESK) - SUPREME AUTHORITY FOR STUDENTS
+  // ==========================================
+
+  Future<void> _loadLionKidsInquiries() async {
+    if (!mounted) return;
+    setState(() => _isLoadingLionKidsInquiries = true);
+    try {
+      final res = await supabase
+          .from('kids_messages')
+          .select(
+              'id, sender_id, receiver_id, message_text, message_type, created_at, is_read')
+          .eq('receiver_id', 'mentor_animal_king_lion')
+          .order('created_at', ascending: false)
+          .limit(50);
+
+      final list =
+          (res as List).map((m) => Map<String, dynamic>.from(m)).toList();
+      if (mounted) {
+        setState(() {
+          _lionKidsInquiries = list;
+          _isLoadingLionKidsInquiries = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading Lion kids inquiries: $e');
+      if (mounted) setState(() => _isLoadingLionKidsInquiries = false);
+    }
+  }
+
+  Widget _buildLionKidsDeskTab() {
+    final pendingCount =
+        _lionKidsInquiries.where((i) => i['is_read'] != true).length;
+    return Column(
+      children: [
+        // Lion Sovereign Royal Sub-navigation Bar
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E1B4B),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+              width: 1.2,
+            ),
+          ),
+          child: Row(
+            children: [
+              _buildLionKidsSubNavButton(
+                label: 'Chats ${pendingCount > 0 ? '($pendingCount)' : ''}',
+                icon: Icons.forum_rounded,
+                index: 0,
+              ),
+              _buildLionKidsSubNavButton(
+                label: '100 Days',
+                icon: Icons.military_tech_rounded,
+                index: 1,
+              ),
+              _buildLionKidsSubNavButton(
+                label: 'Safety',
+                icon: Icons.shield_rounded,
+                index: 2,
+              ),
+              _buildLionKidsSubNavButton(
+                label: 'Broadcast',
+                icon: Icons.campaign_rounded,
+                index: 3,
+              ),
+              _buildLionKidsSubNavButton(
+                label: 'Homies (100)',
+                icon: Icons.pets_rounded,
+                index: 4,
+              ),
+            ],
+          ),
+        ),
+
+        Expanded(
+          child: _lionKidsSubTab == 0
+              ? _buildLionKidsInquiriesSubTab()
+              : _lionKidsSubTab == 1
+                  ? _buildLionKids100DaySubTab()
+                  : _lionKidsSubTab == 2
+                      ? _buildLionKidsSafetyShieldSubTab()
+                      : _lionKidsSubTab == 3
+                          ? _buildLionKidsBroadcastSubTab()
+                          : _buildLionKidsHomiesSubTab(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLionKidsSubNavButton({
+    required String label,
+    required IconData icon,
+    required int index,
+  }) {
+    final isSelected = _lionKidsSubTab == index;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _lionKidsSubTab = index),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            gradient: isSelected
+                ? const LinearGradient(
+                    colors: [Color(0xFFFFD700), Color(0xFFF59E0B)],
+                  )
+                : null,
+            color: isSelected ? null : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 13,
+                color: isSelected ? Colors.black : Colors.white70,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: GoogleFonts.outfit(
+                  color: isSelected ? Colors.black : Colors.white70,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  fontSize: 10.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 1. LION KIDS CHATS & INQUIRIES SUB-TAB
+  Widget _buildLionKidsInquiriesSubTab() {
+    if (_isLoadingLionKidsInquiries) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFFFFD700)),
+      );
+    }
+
+    final filtered = _lionKidsInquiries.where((inq) {
+      final text = (inq['message_text'] ?? '').toString().toLowerCase();
+      final sender = (inq['sender_id'] ?? '').toString().toLowerCase();
+      final q = _lionKidsInquirySearchQuery.toLowerCase();
+      if (q.isNotEmpty && !text.contains(q) && !sender.contains(q)) {
+        return false;
+      }
+      return true;
+    }).toList();
+
+    return Column(
+      children: [
+        // Search & Refresh Row
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  onChanged: (val) =>
+                      setState(() => _lionKidsInquirySearchQuery = val),
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'Search student chats, questions, IDs...',
+                    hintStyle:
+                        const TextStyle(color: Colors.white38, fontSize: 12),
+                    prefixIcon: const Icon(Icons.search,
+                        color: Color(0xFFFFD700), size: 18),
+                    filled: true,
+                    fillColor: const Color(0xFF1E293B),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                icon:
+                    const Icon(Icons.refresh_rounded, color: Color(0xFFFFD700)),
+                onPressed: _loadLionKidsInquiries,
+                tooltip: 'Refresh Student Chats',
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+
+        Expanded(
+          child: filtered.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('🦁', style: TextStyle(fontSize: 48)),
+                      const SizedBox(height: 10),
+                      Text(
+                        'All student chats handled with royal pride!',
+                        style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'No pending questions from students to King Lion.',
+                        style: GoogleFonts.inter(
+                            color: Colors.white54, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: filtered.length,
+                  itemBuilder: (context, idx) {
+                    final item = filtered[idx];
+                    final msg = item['message_text']?.toString() ?? '';
+                    final senderId = item['sender_id']?.toString() ?? 'Student';
+                    final isRead = item['is_read'] == true;
+
+                    final studentProf = allProfiles.firstWhere(
+                      (p) =>
+                          p['id']?.toString() == senderId ||
+                          p['user_id']?.toString() == senderId,
+                      orElse: () => <String, dynamic>{},
+                    );
+                    final studentName = (studentProf['display_name'] ??
+                            studentProf['name'] ??
+                            studentProf['username'] ??
+                            ContactsNameService().getDisplayName(
+                                userId: senderId,
+                                fallbackName: 'Young Learner'))
+                        .toString();
+                    final studentDay =
+                        studentProf['learning_day'] ?? studentProf['day'] ?? 1;
+                    final studentPlanet =
+                        (studentProf['country'] ?? 'Earth').toString();
+
+                    return Card(
+                      color: const Color(0xFF1E293B),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: BorderSide(
+                          color:
+                              isRead ? Colors.white12 : const Color(0xFFFFD700),
+                          width: isRead ? 0.8 : 1.5,
+                        ),
+                      ),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF334155),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Text('🎒',
+                                      style: TextStyle(fontSize: 18)),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Wrap(
+                                        spacing: 6,
+                                        runSpacing: 4,
+                                        crossAxisAlignment:
+                                            WrapCrossAlignment.center,
+                                        children: [
+                                          Text(
+                                            studentName,
+                                            style: GoogleFonts.outfit(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14.5,
+                                            ),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 6, vertical: 1.5),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF38BDF8)
+                                                  .withValues(alpha: 0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                              border: Border.all(
+                                                  color: const Color(0xFF38BDF8)
+                                                      .withValues(alpha: 0.3),
+                                                  width: 0.8),
+                                            ),
+                                            child: Text(
+                                              '🪐 $studentPlanet • Day $studentDay',
+                                              style: const TextStyle(
+                                                color: Color(0xFF38BDF8),
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 3),
+                                      Row(
+                                        children: [
+                                          Text(
+                                            'ID: ${senderId.length > 10 ? '${senderId.substring(0, 10)}...' : senderId}',
+                                            style: GoogleFonts.inter(
+                                              color: Colors.white38,
+                                              fontSize: 10,
+                                            ),
+                                          ),
+                                          InkWell(
+                                            onTap: () {
+                                              Clipboard.setData(ClipboardData(
+                                                  text: senderId));
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                const SnackBar(
+                                                    content: Text(
+                                                        'Student ID copied! 📋'),
+                                                    duration: Duration(
+                                                        milliseconds: 900)),
+                                              );
+                                            },
+                                            child: const Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                  horizontal: 4),
+                                              child: Icon(Icons.copy_rounded,
+                                                  color: Colors.white38,
+                                                  size: 11),
+                                            ),
+                                          ),
+                                          if (item['created_at'] != null) ...[
+                                            const Text(' • ',
+                                                style: TextStyle(
+                                                    color: Colors.white24,
+                                                    fontSize: 10)),
+                                            Text(
+                                              item['created_at']
+                                                  .toString()
+                                                  .split('T')
+                                                  .first,
+                                              style: GoogleFonts.inter(
+                                                  color: Colors.white38,
+                                                  fontSize: 10),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (!isRead)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFD700)
+                                          .withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                          color: const Color(0xFFFFD700)),
+                                    ),
+                                    child: Text(
+                                      'NEW',
+                                      style: GoogleFonts.outfit(
+                                        color: const Color(0xFFFFD700),
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(11),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF0F172A),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                    color: Colors.white10, width: 0.6),
+                              ),
+                              child: Text(
+                                msg,
+                                style: GoogleFonts.inter(
+                                    color: Colors.white, fontSize: 13),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                OutlinedButton.icon(
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(
+                                        color: Colors.white24, width: 1),
+                                    foregroundColor: Colors.white70,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 6),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8)),
+                                  ),
+                                  icon: const Icon(Icons.person_search_rounded,
+                                      size: 13),
+                                  label: const Text('Profile 👤',
+                                      style: TextStyle(fontSize: 10.5)),
+                                  onPressed: () {
+                                    if (senderId.isNotEmpty &&
+                                        senderId != 'Student') {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              VerfiedSwitchPage(
+                                                  userId: senderId),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),
+                                const SizedBox(width: 8),
+                                ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFFFD700),
+                                    foregroundColor: Colors.black,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 14, vertical: 8),
+                                  ),
+                                  icon:
+                                      const Icon(Icons.reply_rounded, size: 16),
+                                  label: Text(
+                                    'Reply as King Lion 🦁',
+                                    style: GoogleFonts.outfit(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12),
+                                  ),
+                                  onPressed: () => _showLionReplyModal(item),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+        ),
+      ],
+    );
+  }
+
+  void _showLionReplyModal(Map<String, dynamic> item) {
+    final replyController = TextEditingController();
+    final senderId = item['sender_id']?.toString() ?? '';
+    bool isSending = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF0F172A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (bContext) => StatefulBuilder(
+        builder: (modalContext, setModalState) {
+          final bottomInset = MediaQuery.of(modalContext).viewInsets.bottom;
+          return Padding(
+            padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 20,
+              bottom: bottomInset + 20,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Text('🦁', style: TextStyle(fontSize: 28)),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Reply as Sovereign King Lion',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'Sending to Student ID: $senderId',
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFFFFD700),
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Quick reply chips
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  children: [
+                    _buildLionQuickReplyChip(
+                      label: 'Roar! Keep shining! 🦁',
+                      controller: replyController,
+                    ),
+                    _buildLionQuickReplyChip(
+                      label: 'Great English practice! ⭐',
+                      controller: replyController,
+                    ),
+                    _buildLionQuickReplyChip(
+                      label: 'Day 100 Sovereign awaits you! 🏰',
+                      controller: replyController,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                TextField(
+                  controller: replyController,
+                  maxLines: 3,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'Type royal mentor advice...',
+                    hintStyle: const TextStyle(color: Colors.white38),
+                    filled: true,
+                    fillColor: const Color(0xFF1E293B),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                SizedBox(
+                  width: double.infinity,
+                  height: 46,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFFD700),
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: isSending
+                        ? null
+                        : () async {
+                            final text = replyController.text.trim();
+                            if (text.isEmpty) return;
+                            setModalState(() => isSending = true);
+                            try {
+                              await supabase.from('kids_messages').insert({
+                                'sender_id': 'mentor_animal_king_lion',
+                                'receiver_id': senderId,
+                                'message_text': text,
+                                'message_type': 'text',
+                                'created_at': DateTime.now().toIso8601String(),
+                                'is_read': false,
+                              });
+                              if (item['id'] != null) {
+                                await supabase.from('kids_messages').update(
+                                    {'is_read': true}).eq('id', item['id']);
+                              }
+                              Navigator.pop(modalContext);
+                              _loadLionKidsInquiries();
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        'King Lion reply sent to student! 🦁'),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                              }
+                            } catch (e) {
+                              setModalState(() => isSending = false);
+                              debugPrint('Error sending Lion reply: $e');
+                            }
+                          },
+                    child: isSending
+                        ? const CircularProgressIndicator(color: Colors.black)
+                        : Text(
+                            'Send Royal Advice 🦁',
+                            style: GoogleFonts.outfit(
+                                fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildLionQuickReplyChip({
+    required String label,
+    required TextEditingController controller,
+  }) {
+    return ActionChip(
+      backgroundColor: const Color(0xFF1E293B),
+      label: Text(label,
+          style:
+              GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 11)),
+      onPressed: () {
+        controller.text = label;
+      },
+    );
+  }
+
+  // 2. 100-DAY PROGRESS & ARCHITECTURAL TIERS SUB-TAB
+  Widget _buildLionKids100DaySubTab() {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        // Stats Overview
+        Row(
+          children: [
+            _buildLionStatCard(
+                'Total Days', '100', '🎒', const Color(0xFF38BDF8)),
+            const SizedBox(width: 8),
+            _buildLionStatCard(
+                'Houses', '10 Tiers', '🏰', const Color(0xFFFFD700)),
+            const SizedBox(width: 8),
+            _buildLionStatCard(
+                'Companions', '100 BOTS', '🐾', const Color(0xFF10B981)),
+          ],
+        ),
+        const SizedBox(height: 16),
+
+        Text(
+          'Architectural Homestead Tiers (Days 1–100)',
+          style: GoogleFonts.outfit(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 10),
+
+        ...PocketKidsService.houses.map((house) {
+          final isLionPalace = house.tier == 10;
+          return Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isLionPalace
+                    ? const Color(0xFFFFD700)
+                    : house.themeColor.withValues(alpha: 0.4),
+                width: isLionPalace ? 2 : 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: house.themeColor.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child:
+                        Text(house.emoji, style: const TextStyle(fontSize: 22)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Tier ${house.tier}: ${house.title}',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                          if (isLionPalace) ...[
+                            const SizedBox(width: 6),
+                            const Text('👑', style: TextStyle(fontSize: 14)),
+                          ],
+                        ],
+                      ),
+                      Text(
+                        house.description,
+                        style: GoogleFonts.inter(
+                          color: Colors.white70,
+                          fontSize: 11.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: Text(
+                    'Day ${house.unlockedAtDay}+',
+                    style: GoogleFonts.outfit(
+                      color: house.themeColor,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildLionStatCard(
+      String label, String value, String icon, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Column(
+          children: [
+            Text(icon, style: const TextStyle(fontSize: 20)),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 16,
+              ),
+            ),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                color: Colors.white54,
+                fontSize: 10,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 3. SAFETY SHIELD & CONTENT FILTERS SUB-TAB
+  Widget _buildLionKidsSafetyShieldSubTab() {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF064E3B), Color(0xFF0F172A)],
+            ),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+                color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.verified_user_rounded,
+                      color: Color(0xFF10B981), size: 24),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Child Safety & Protection Shield',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Kids Mode is strictly walled off from adult interactions. Content filters, parental math challenges, and isolated chat databases ensure 100% child safety.',
+                style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  _buildLionSafetyPill('Parental Gate Active',
+                      Icons.lock_rounded, const Color(0xFF10B981)),
+                  const SizedBox(width: 8),
+                  _buildLionSafetyPill('Chat Partitioned', Icons.shield_rounded,
+                      const Color(0xFF38BDF8)),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 18),
+        Text(
+          'Banned Words & Moderation Filter',
+          style: GoogleFonts.outfit(
+            color: Colors.white,
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _lionSafetyBannedWordController,
+                style: const TextStyle(color: Colors.white, fontSize: 13),
+                decoration: InputDecoration(
+                  hintText: 'Add inappropriate word to ban...',
+                  hintStyle:
+                      const TextStyle(color: Colors.white38, fontSize: 12),
+                  filled: true,
+                  fillColor: const Color(0xFF1E293B),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFEF4444),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () {
+                final w =
+                    _lionSafetyBannedWordController.text.trim().toLowerCase();
+                if (w.isNotEmpty && !_lionBannedWords.contains(w)) {
+                  setState(() {
+                    _lionBannedWords.add(w);
+                    _lionSafetyBannedWordController.clear();
+                  });
+                }
+              },
+              child:
+                  const Text('Add Ban', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _lionBannedWords.map((word) {
+            return Chip(
+              backgroundColor: const Color(0xFF1E293B),
+              side: const BorderSide(color: Color(0xFFEF4444)),
+              label: Text(word,
+                  style: const TextStyle(color: Colors.white, fontSize: 12)),
+              deleteIcon: const Icon(Icons.close_rounded,
+                  size: 14, color: Colors.white70),
+              onDeleted: () {
+                setState(() => _lionBannedWords.remove(word));
+              },
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLionSafetyPill(String text, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 14),
+          const SizedBox(width: 4),
+          Text(
+            text,
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 4. ROYAL BROADCAST SUB-TAB
+  Widget _buildLionKidsBroadcastSubTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF78350F), Color(0xFF0F172A)],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Text('👑', style: TextStyle(fontSize: 22)),
+                    const SizedBox(width: 8),
+                    Text(
+                      'King Lion Royal Broadcast 📢',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Send announcements to all students in Kids Mode. Appears with golden lion badge and audio greeting.',
+                  style:
+                      GoogleFonts.inter(color: Colors.white70, fontSize: 11.5),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text('Announcement Title:',
+              style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12)),
+          const SizedBox(height: 6),
+          TextField(
+            controller: _lionBroadcastTitleController,
+            style: const TextStyle(color: Colors.white, fontSize: 13),
+            decoration: InputDecoration(
+              hintText: 'e.g., Weekend English Safari Challenge!',
+              hintStyle: const TextStyle(color: Colors.white38),
+              filled: true,
+              fillColor: const Color(0xFF1E293B),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+          Text('Announcement Message:',
+              style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12)),
+          const SizedBox(height: 6),
+          TextField(
+            controller: _lionBroadcastContentController,
+            maxLines: 4,
+            style: const TextStyle(color: Colors.white, fontSize: 13),
+            decoration: InputDecoration(
+              hintText:
+                  'Roar! Today we practice 10 animal names and collect 50 gold stars...',
+              hintStyle: const TextStyle(color: Colors.white38),
+              filled: true,
+              fillColor: const Color(0xFF1E293B),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFFD700),
+              foregroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14)),
+            ),
+            icon: const Icon(Icons.campaign_rounded),
+            label: Text(
+              'Broadcast to All Kids 🦁',
+              style:
+                  GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14),
+            ),
+            onPressed: () async {
+              final title = _lionBroadcastTitleController.text.trim();
+              final content = _lionBroadcastContentController.text.trim();
+              if (title.isEmpty || content.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Please enter both title and message.'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                return;
+              }
+
+              try {
+                await supabase.from('announcements').insert({
+                  'title': title,
+                  'content': content,
+                  'priority': 'high',
+                  'target_audience': 'kids',
+                  'created_at': DateTime.now().toIso8601String(),
+                  'is_active': true,
+                });
+                _lionBroadcastTitleController.clear();
+                _lionBroadcastContentController.clear();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                          'Royal Broadcast published to Student Realm! 🦁'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              } catch (e) {
+                debugPrint('Broadcast error: $e');
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        content: Text('Error: $e'),
+                        backgroundColor: Colors.red),
+                  );
+                }
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 5. 100 ANIMAL HOMIES & ROBOTS SUB-TAB
+  Widget _buildLionKidsHomiesSubTab() {
+    final allBots = PocketKidsRobotsData.robotsAndHomies;
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: allBots.length,
+      itemBuilder: (context, idx) {
+        final bot = allBots[idx];
+        return Card(
+          color: const Color(0xFF1E293B),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          margin: const EdgeInsets.only(bottom: 8),
+          child: ListTile(
+            leading: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A),
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+              ),
+              child: Center(
+                child: Text(bot.avatar, style: const TextStyle(fontSize: 20)),
+              ),
+            ),
+            title: Text(
+              bot.name,
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+            subtitle: Text(
+              'Day ${bot.dayLevel} • Age ${bot.ageGroup} • ${bot.bio}',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+            ),
+            trailing: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                '${bot.stars} ⭐',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFFFFD700),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _loadCertificatesData() async {
+    setState(() => _isLoadingCerts = true);
+    try {
+      final leaderboard = await PocketRankingService.fetchHumansOnlyLeaderboard(
+        limit: 500,
+        forceRefresh: true,
+      );
+      if (mounted) {
+        setState(() {
+          _certUsers = leaderboard;
+          _isLoadingCerts = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading certificate candidates: $e');
+      if (mounted) setState(() => _isLoadingCerts = false);
+    }
+  }
+
+  /// 📜 Tab 18: Authentic Day 90 Master Certificates & Verification Cards
+  Widget _buildCertificatesTab() {
+    final filtered = _certUsers.where((u) {
+      if (_filterDay90Only && u.level < 90) return false;
+      if (_certSearchQuery.trim().isEmpty) return true;
+      final q = _certSearchQuery.toLowerCase().trim();
+      return u.name.toLowerCase().contains(q) ||
+          u.userId.toLowerCase().contains(q);
+    }).toList();
+
+    final day90Count = _certUsers.where((u) => u.level >= 90).length;
+
+    return RefreshIndicator(
+      onRefresh: _loadCertificatesData,
+      color: const Color(0xFFFFD700),
+      backgroundColor: const Color(0xFF0F172A),
+      child: Column(
+        children: [
+          // Header / Filter Bar
+          Container(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+            decoration: const BoxDecoration(
+              color: Color(0xFF0F172A),
+              border: Border(bottom: BorderSide(color: Colors.white10)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                          width: 1,
+                        ),
+                      ),
+                      child: const Text('📜', style: TextStyle(fontSize: 22)),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Master Diplomas & Verification',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Inspect Pocket Scores & launch Day 90 Master Certificates',
+                            style: GoogleFonts.inter(
+                              color: Colors.white60,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                // Search Bar
+                TextField(
+                  onChanged: (v) => setState(() => _certSearchQuery = v),
+                  style:
+                      GoogleFonts.outfit(color: Colors.white, fontSize: 13.5),
+                  decoration: InputDecoration(
+                    hintText: 'Search learners by name or user ID...',
+                    hintStyle:
+                        GoogleFonts.outfit(color: Colors.white38, fontSize: 13),
+                    prefixIcon: const Icon(Icons.search_rounded,
+                        color: Color(0xFFFFD700), size: 20),
+                    suffixIcon: _certSearchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.close_rounded,
+                                color: Colors.white60, size: 18),
+                            onPressed: () =>
+                                setState(() => _certSearchQuery = ''),
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: const Color(0xFF1E293B),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 10),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.white12),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.white12),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                          color: Color(0xFFFFD700), width: 1.2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                // Filter Tabs (All vs Day 90 Master Graduates)
+                Row(
+                  children: [
+                    ChoiceChip(
+                      label: Text('All Learners (${_certUsers.length})'),
+                      selected: !_filterDay90Only,
+                      onSelected: (val) {
+                        if (val) setState(() => _filterDay90Only = false);
+                      },
+                      labelStyle: GoogleFonts.outfit(
+                        color:
+                            !_filterDay90Only ? Colors.black : Colors.white70,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11.5,
+                      ),
+                      selectedColor: const Color(0xFFFFD700),
+                      backgroundColor: const Color(0xFF1E293B),
+                      side: BorderSide(
+                        color: !_filterDay90Only
+                            ? const Color(0xFFFFD700)
+                            : Colors.white12,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ChoiceChip(
+                      label: Text('🎓 Day 90 Masters ($day90Count)'),
+                      selected: _filterDay90Only,
+                      onSelected: (val) {
+                        if (val) setState(() => _filterDay90Only = true);
+                      },
+                      labelStyle: GoogleFonts.outfit(
+                        color: _filterDay90Only
+                            ? Colors.black
+                            : const Color(0xFFFFD700),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11.5,
+                      ),
+                      selectedColor: const Color(0xFFFFD700),
+                      backgroundColor: const Color(0xFF1E293B),
+                      side: BorderSide(
+                        color: _filterDay90Only
+                            ? const Color(0xFFFFD700)
+                            : const Color(0xFFFFD700).withValues(alpha: 0.3),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // User Certificate Cards List
+          Expanded(
+            child: _isLoadingCerts
+                ? const Center(
+                    child: CircularProgressIndicator(color: Color(0xFFFFD700)),
+                  )
+                : filtered.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('📜', style: TextStyle(fontSize: 40)),
+                            const SizedBox(height: 10),
+                            Text(
+                              'No learners found',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Try adjusting your search filter',
+                              style: GoogleFonts.inter(
+                                color: Colors.white54,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: filtered.length,
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
+                        itemBuilder: (context, index) {
+                          final user = filtered[index];
+                          final isGrad = user.level >= 90;
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1E293B),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isGrad
+                                    ? const Color(0xFFFFD700)
+                                        .withValues(alpha: 0.6)
+                                    : Colors.white10,
+                                width: isGrad ? 1.4 : 1.0,
+                              ),
+                              boxShadow: [
+                                if (isGrad)
+                                  BoxShadow(
+                                    color: const Color(0xFFFFD700)
+                                        .withValues(alpha: 0.15),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 2),
+                                  ),
+                              ],
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Row(
+                                children: [
+                                  // Avatar
+                                  CircleAvatar(
+                                    radius: 22,
+                                    backgroundColor: isGrad
+                                        ? const Color(0xFFFFD700)
+                                        : const Color(0xFF334155),
+                                    child: CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor: const Color(0xFF0F172A),
+                                      backgroundImage: (user.profileImageUrl !=
+                                                  null &&
+                                              user.profileImageUrl!.isNotEmpty)
+                                          ? CachedNetworkImageProvider(
+                                              user.profileImageUrl!)
+                                          : null,
+                                      child: (user.profileImageUrl == null ||
+                                              user.profileImageUrl!.isEmpty)
+                                          ? Text(
+                                              user.name.isNotEmpty
+                                                  ? user.name[0].toUpperCase()
+                                                  : 'U',
+                                              style: GoogleFonts.outfit(
+                                                color: isGrad
+                                                    ? const Color(0xFFFFD700)
+                                                    : Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                              ),
+                                            )
+                                          : null,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+
+                                  // Name, Rank, Level & PS
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Flexible(
+                                              child: Text(
+                                                user.name,
+                                                style: GoogleFonts.outfit(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            if (user.isVerified) ...[
+                                              const SizedBox(width: 4),
+                                              const Icon(Icons.verified,
+                                                  color: Color(0xFF38BDF8),
+                                                  size: 14),
+                                            ],
+                                          ],
+                                        ),
+                                        const SizedBox(height: 5),
+                                        Wrap(
+                                          spacing: 6,
+                                          runSpacing: 4,
+                                          children: [
+                                            // Level Pill
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 6,
+                                                      vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: isGrad
+                                                    ? const Color(0xFFFFD700)
+                                                        .withValues(alpha: 0.2)
+                                                    : const Color(0xFF38BDF8)
+                                                        .withValues(
+                                                            alpha: 0.15),
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                                border: Border.all(
+                                                  color: isGrad
+                                                      ? const Color(0xFFFFD700)
+                                                      : const Color(0xFF38BDF8),
+                                                  width: 0.8,
+                                                ),
+                                              ),
+                                              child: Text(
+                                                isGrad
+                                                    ? '👑 Lvl 90 Master'
+                                                    : 'Lvl ${user.level}',
+                                                style: GoogleFonts.outfit(
+                                                  color: isGrad
+                                                      ? const Color(0xFFFFD700)
+                                                      : const Color(0xFF38BDF8),
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 10,
+                                                ),
+                                              ),
+                                            ),
+
+                                            // Pocket Score Pill
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 6,
+                                                      vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFF10B981)
+                                                    .withValues(alpha: 0.15),
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                                border: Border.all(
+                                                  color: const Color(0xFF10B981)
+                                                      .withValues(alpha: 0.6),
+                                                  width: 0.8,
+                                                ),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  const Text('🪙',
+                                                      style: TextStyle(
+                                                          fontSize: 10)),
+                                                  const SizedBox(width: 3),
+                                                  Text(
+                                                    '${user.pocketScore} PS',
+                                                    style: GoogleFonts.outfit(
+                                                      color: const Color(
+                                                          0xFF10B981),
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 10,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+
+                                            // Rank Pill
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 5,
+                                                      vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: Colors.white
+                                                    .withValues(alpha: 0.08),
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                              ),
+                                              child: Text(
+                                                '#${user.globalRank}',
+                                                style: GoogleFonts.outfit(
+                                                  color: Colors.white70,
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 10,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  // Launch Certificate Dialog Button
+                                  GestureDetector(
+                                    onTap: () {
+                                      Day90MasterCertificateDialog.show(
+                                        context,
+                                        userName: user.name,
+                                        userDay:
+                                            user.level > 0 ? user.level : 90,
+                                      );
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 7),
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: isGrad
+                                              ? const [
+                                                  Color(0xFFFFD700),
+                                                  Color(0xFFD97706)
+                                                ]
+                                              : const [
+                                                  Color(0xFF2563EB),
+                                                  Color(0xFF1D4ED8)
+                                                ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        borderRadius: BorderRadius.circular(10),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: (isGrad
+                                                    ? const Color(0xFFFFD700)
+                                                    : const Color(0xFF2563EB))
+                                                .withValues(alpha: 0.4),
+                                            blurRadius: 6,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            isGrad ? '🎓' : '📜',
+                                            style:
+                                                const TextStyle(fontSize: 13),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Certificate',
+                                            style: GoogleFonts.outfit(
+                                              color: isGrad
+                                                  ? Colors.black
+                                                  : Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 11.5,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 👑 Tab 19: Dedicated Premium & VIP Users Management
+  Widget _buildPremiumUsersTab() {
+    final filteredUsers = allProfiles.where((u) {
+      final name = (u['name'] ?? '').toString().toLowerCase();
+      final phone = (u['phone_no'] ?? '').toString().toLowerCase();
+      final uid = (u['user_id'] ?? '').toString().toLowerCase();
+      final query = _premiumSearchQuery.toLowerCase().trim();
+
+      final matchesQuery = query.isEmpty ||
+          name.contains(query) ||
+          phone.contains(query) ||
+          uid.contains(query);
+
+      if (!matchesQuery) return false;
+
+      final isVip = u['is_vip'] == true ||
+          u['is_premium'] == true ||
+          u['is_subscribed'] == true;
+
+      if (_premiumFilter == 'vip_only') return isVip;
+      if (_premiumFilter == 'free_only') return !isVip;
+      return true;
+    }).toList();
+
+    final totalVipCount = allProfiles
+        .where((u) =>
+            u['is_vip'] == true ||
+            u['is_premium'] == true ||
+            u['is_subscribed'] == true)
+        .length;
+
+    return RefreshIndicator(
+      onRefresh: _loadProfiles,
+      color: const Color(0xFFFFD700),
+      backgroundColor: const Color(0xFF0F172A),
+      child: Column(
+        children: [
+          // Stat Summary Cards
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: const BoxDecoration(
+              color: Color(0xFF0F172A),
+              border: Border(bottom: BorderSide(color: Colors.white10)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                            color:
+                                const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                      ),
+                      child: const Text('👑', style: TextStyle(fontSize: 24)),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'POKET VIP & Premium Management',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Grant 1-Click VIP passes, manage subscriptions, & inspect ad-free access',
+                            style: GoogleFonts.inter(
+                                color: Colors.white60, fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFFFD700)),
+                      ),
+                      child: Text(
+                        '$totalVipCount VIPs',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                // Search field
+                TextField(
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'Search by name, phone or user ID...',
+                    hintStyle:
+                        const TextStyle(color: Colors.white38, fontSize: 13),
+                    prefixIcon: const Icon(Icons.search_rounded,
+                        color: Colors.white54, size: 18),
+                    filled: true,
+                    fillColor: const Color(0xFF1E293B),
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 12),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: Colors.white12),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: Colors.white12),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: Color(0xFFFFD700)),
+                    ),
+                  ),
+                  onChanged: (val) => setState(() => _premiumSearchQuery = val),
+                ),
+                const SizedBox(height: 10),
+                // Filter chips
+                Row(
+                  children: [
+                    _buildFilterChip('All (${allProfiles.length})', 'all'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip(
+                        'Active VIPs ($totalVipCount)', 'vip_only'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip(
+                        'Free Users (${allProfiles.length - totalVipCount})',
+                        'free_only'),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // User list
+          Expanded(
+            child: isLoadingUsers
+                ? const Center(
+                    child: CircularProgressIndicator(color: Color(0xFFFFD700)))
+                : filteredUsers.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No users match your filter',
+                          style: GoogleFonts.inter(
+                              color: Colors.white54, fontSize: 13),
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: filteredUsers.length,
+                        itemBuilder: (context, index) {
+                          final user = filteredUsers[index];
+                          final isVip = user['is_vip'] == true ||
+                              user['is_premium'] == true ||
+                              user['is_subscribed'] == true;
+                          final name = user['name']?.toString() ?? 'Unnamed';
+                          final phone =
+                              user['phone_no']?.toString() ?? 'No phone';
+                          final tier = user['subscription_tier']?.toString() ??
+                              (isVip ? 'VIP Gold' : 'Free Tier');
+                          final imgUrl = user['profile_image_url']?.toString();
+
+                          return Container(
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 6),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: isVip
+                                  ? const Color(0xFF1E293B)
+                                      .withValues(alpha: 0.9)
+                                  : const Color(0xFF111827),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isVip
+                                    ? const Color(0xFFFFD700)
+                                        .withValues(alpha: 0.5)
+                                    : Colors.white10,
+                                width: isVip ? 1.2 : 0.8,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 20,
+                                  backgroundColor: const Color(0xFF334155),
+                                  backgroundImage:
+                                      imgUrl != null && imgUrl.isNotEmpty
+                                          ? NetworkImage(imgUrl)
+                                          : null,
+                                  child: imgUrl == null || imgUrl.isEmpty
+                                      ? Text(
+                                          name.isNotEmpty
+                                              ? name[0].toUpperCase()
+                                              : '?',
+                                          style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold),
+                                        )
+                                      : null,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Flexible(
+                                            child: Text(
+                                              name,
+                                              style: GoogleFonts.outfit(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          if (isVip) ...[
+                                            const SizedBox(width: 6),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 6,
+                                                      vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFFFFD700),
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
+                                              ),
+                                              child: const Text(
+                                                'VIP',
+                                                style: TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 10,
+                                                    fontWeight:
+                                                        FontWeight.w900),
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        phone,
+                                        style: GoogleFonts.inter(
+                                            color: Colors.white60,
+                                            fontSize: 11),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        'Tier: $tier • ${isVip ? "100% Ad-Free ✨" : "Standard Ads"}',
+                                        style: TextStyle(
+                                          color: isVip
+                                              ? const Color(0xFF6EE7B7)
+                                              : Colors.white38,
+                                          fontSize: 10.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Switch(
+                                  value: isVip,
+                                  activeThumbColor: const Color(0xFFFFD700),
+                                  activeTrackColor: const Color(0xFFFFD700)
+                                      .withValues(alpha: 0.3),
+                                  inactiveThumbColor: Colors.grey,
+                                  inactiveTrackColor: Colors.white10,
+                                  onChanged: (val) =>
+                                      _toggleUserVip(user, isVip),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String label, String value) {
+    final selected = _premiumFilter == value;
+    return GestureDetector(
+      onTap: () => setState(() => _premiumFilter = value),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFFFFD700) : const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: selected ? const Color(0xFFFFD700) : Colors.white12,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? Colors.black : Colors.white70,
+            fontSize: 11,
+            fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // =========================================================================
+  // 🌌 POKET COSMOS WAVE & ISLAND CONTROL TAB (ADMIN)
+  // =========================================================================
+  Widget _buildCosmosAdminTab() {
+    final totalPlots = _cosmosActiveWave * 250;
+    final totalIslands = _cosmosActiveWave * 10;
+    final occupiedPlots =
+        math.min(totalUsers > 0 ? totalUsers : 277, totalPlots);
+    final availablePlots = math.max(0, totalPlots - occupiedPlots);
+    final occupancyPct = (occupiedPlots / totalPlots * 100).toStringAsFixed(1);
+    final currentBasePrice =
+        PoketCosmosAllocationService.calculatePlotMarketPrice(
+      wave: _cosmosActiveWave,
+      planetCode: 'EP',
+      localPlotNumber: 10,
+      totalOccupiedInWave: occupiedPlots % 250,
+    );
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header Card
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFF38BDF8), width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF0284C7).withValues(alpha: 0.25),
+                  blurRadius: 18,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0284C7).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                            color: const Color(0xFF38BDF8), width: 1.2),
+                      ),
+                      child: const Text('🌌', style: TextStyle(fontSize: 28)),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Poket Cosmos Wave Engine',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            '10 Planets • 25 Plots Per Island • 250 Plots Per Wave',
+                            style: GoogleFonts.plusJakartaSans(
+                              color: const Color(0xFF94A3B8),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                // Stats Grid
+                Row(
+                  children: [
+                    _buildCosmosMetric(
+                        'Current Wave',
+                        'Wave $_cosmosActiveWave',
+                        const Color(0xFF38BDF8),
+                        Icons.waves_rounded),
+                    const SizedBox(width: 10),
+                    _buildCosmosMetric('Total Planets', '10 Worlds',
+                        const Color(0xFFA855F7), Icons.public_rounded),
+                    const SizedBox(width: 10),
+                    _buildCosmosMetric('Total Islands', '$totalIslands Islands',
+                        const Color(0xFF10B981), Icons.terrain_rounded),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    _buildCosmosMetric('Total Plots', '$totalPlots Plots',
+                        const Color(0xFFFBBF24), Icons.home_work_rounded),
+                    const SizedBox(width: 10),
+                    _buildCosmosMetric(
+                        'Occupied',
+                        '$occupiedPlots ($occupancyPct%)',
+                        const Color(0xFFEC4899),
+                        Icons.people_alt_rounded),
+                    const SizedBox(width: 10),
+                    _buildCosmosMetric(
+                        'Available (+)',
+                        '$availablePlots Free',
+                        const Color(0xFF34D399),
+                        Icons.add_circle_outline_rounded),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Action 1: Add 10 Islands (+250 Plots) Button
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: const Color(0xFF334155)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.add_business_rounded,
+                        color: Color(0xFF38BDF8), size: 22),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Manual Wave & Island Expansion',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Instantly adds 10 new islands (1 new island to each of the 10 planets) and releases 250 new citizen plots. Syncs globally to Supabase for all users.',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: const Color(0xFF94A3B8),
+                    fontSize: 12.5,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isUnlockingCosmosWave
+                        ? null
+                        : _handleAdminUnlockNextWave,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0284C7),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14)),
+                      elevation: 4,
+                    ),
+                    child: _isUnlockingCosmosWave
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white))
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.add_circle_rounded, size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                '➕ ADD 10 ISLANDS (+250 PLOTS) 🏝️',
+                                style: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+
+          // Action 2: Real Estate Economics & Price Card
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: const Color(0xFF334155)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.trending_up_rounded,
+                        color: Color(0xFFFBBF24), size: 22),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Real Estate Market Valuation Dynamics',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Current Base Price: $currentBasePrice PS. Land value dynamically calculates from supply vs demand ($occupancyPct% occupied). When you add 10 islands, total supply expands, lowering prices for new users; as plots fill up, prices rise.',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: const Color(0xFF94A3B8),
+                    fontSize: 12.5,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () async {
+                          PoketCosmosAllocationService.instance
+                              .clearPlotCaches();
+                          await _loadCosmosAdminStats();
+                          if (!mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text(
+                                    'Cosmos plot caches cleared & refreshed!')),
+                          );
+                        },
+                        icon: const Icon(Icons.refresh_rounded, size: 18),
+                        label: const Text('Refresh Caches'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF38BDF8),
+                          side: const BorderSide(color: Color(0xFF38BDF8)),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const PoketCosmosNavigatorPage(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.rocket_launch_rounded, size: 18),
+                        label: const Text('Launch Cosmos Map'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF10B981),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          backgroundColor: const Color(0xFF0F172A),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
+                          title: const Text('Sync All Citizen Plots?',
+                              style: TextStyle(color: Colors.white)),
+                          content: const Text(
+                            'This will verify all registered users in Supabase profile table and ensure every citizen has an assigned unique cosmic PIN across the 10 planets.',
+                            style: TextStyle(color: Colors.white70),
+                          ),
+                          actions: [
+                            TextButton(
+                                onPressed: () => Navigator.pop(ctx, false),
+                                child: const Text('Cancel')),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF0284C7)),
+                              onPressed: () => Navigator.pop(ctx, true),
+                              child: const Text('Sync Now'),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirm != true) return;
+                      final res = await PoketCosmosAllocationService.instance
+                          .syncAndAllocateExistingUsers();
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                              'Sync complete! Total: ${res['total']}, Newly Assigned: ${res['newlyAllocated']}'),
+                          backgroundColor: const Color(0xFF10B981),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.sync_rounded, size: 18),
+                    label: const Text('Sync All Citizen Plots (10 Planets)'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFA855F7),
+                      side: const BorderSide(color: Color(0xFFA855F7)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleAdminUnlockNextWave() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            const Text('🏝️', style: TextStyle(fontSize: 24)),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Add 10 Islands (+250 Plots)?',
+                style: GoogleFonts.outfit(color: Colors.white, fontSize: 18),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'This will unlock Wave ${_cosmosActiveWave + 1}, adding 1 island to each of the 10 planets and expanding the universe to ${(_cosmosActiveWave + 1) * 250} total plots globally.',
+          style: GoogleFonts.plusJakartaSans(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child:
+                const Text('Cancel', style: TextStyle(color: Colors.white54)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0284C7),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Confirm Unlock'),
+          ),
+        ],
+      ),
+    );
+
+    if (ok != true) return;
+
+    setState(() => _isUnlockingCosmosWave = true);
+    try {
+      final newWave =
+          await PoketCosmosAllocationService.instance.unlockNextWave();
+      setState(() {
+        _cosmosActiveWave = newWave;
+        _isUnlockingCosmosWave = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                '🎉 Successfully unlocked Wave $newWave! 10 new islands & 250 plots added globally!'),
+            backgroundColor: const Color(0xFF10B981),
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() => _isUnlockingCosmosWave = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Error unlocking wave: $e'),
+              backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Widget _buildCosmosMetric(
+      String title, String value, Color color, IconData icon) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B).withValues(alpha: 0.9),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: color, size: 14),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    title,
+                    style: GoogleFonts.plusJakartaSans(
+                      color: Colors.white60,
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              value,
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontSize: 13.5,
+                fontWeight: FontWeight.bold,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/*
+[KEY.PROPERTIES BACKUP - SECURE STORAGE]
+storePassword=pocket123
+keyPassword=pocket123
+keyAlias=upload
+storeFile=upload-keystore.jks
+*/

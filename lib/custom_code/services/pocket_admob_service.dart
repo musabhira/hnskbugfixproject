@@ -463,10 +463,76 @@ class PocketAdMobService {
     return newScore;
   }
 
+  /// ⏱️ Returns remaining seconds in the 60-second cooldown period (0 if ready)
+  Future<int> getRewardedCooldownRemainingSeconds() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (_lastRewardedShownTime == null) {
+      final storedTime = prefs.getString('admob_last_rewarded_time');
+      if (storedTime != null) {
+        _lastRewardedShownTime = DateTime.tryParse(storedTime);
+      }
+    }
+    if (_lastRewardedShownTime == null) return 0;
+    final elapsed = DateTime.now().difference(_lastRewardedShownTime!);
+    if (elapsed < minRewardedInterval) {
+      return (minRewardedInterval.inSeconds - elapsed.inSeconds)
+          .clamp(0, minRewardedInterval.inSeconds);
+    }
+    return 0;
+  }
+
+  /// 🔋 Returns daily completed rewarded ad count for today (0 to 5)
+  Future<int> getRewardedDailyCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    final today = DateTime.now().toIso8601String().split('T')[0];
+    final storedDate = prefs.getString('admob_rewarded_date') ?? '';
+    int count = prefs.getInt('admob_rewarded_daily_count') ?? 0;
+    if (storedDate != today) {
+      count = 0;
+      await prefs.setString('admob_rewarded_date', today);
+      await prefs.setInt('admob_rewarded_daily_count', 0);
+    }
+    return count.clamp(0, kMaxRewardedAdsPerDay);
+  }
+
+  /// 🔋 Returns daily remaining rewarded ad count for today (5 to 0)
+  Future<int> getRewardedDailyRemaining() async {
+    final count = await getRewardedDailyCount();
+    return (kMaxRewardedAdsPerDay - count).clamp(0, kMaxRewardedAdsPerDay);
+  }
+
+  /// 🎁 Atomically grants +50 Pocket Score to the user across SharedPreferences and Supabase
+  Future<int> grantRewardedPocketScore() async {
+    final prefs = await SharedPreferences.getInstance();
+    final currentScore = prefs.getInt('user_pocket_score') ??
+        prefs.getInt('pocket_score') ??
+        150;
+    final newScore = currentScore + 50;
+    await prefs.setInt('user_pocket_score', newScore);
+    await prefs.setInt('pocket_score', newScore);
+
+    final uid = SupaFlow.client.auth.currentUser?.id;
+    if (uid != null && uid.isNotEmpty) {
+      try {
+        await SupaFlow.client
+            .from('users')
+            .update({'pocket_score': newScore}).eq('id', uid);
+      } catch (_) {}
+      try {
+        await SupaFlow.client
+            .from('profile')
+            .update({'pocket_score': newScore}).eq('user_id', uid);
+      } catch (_) {}
+    }
+    return newScore;
+  }
+
   /// Records successful rewarded ad completion for daily quota
   Future<void> _recordRewardedAdCompletion() async {
     _lastRewardedShownTime = DateTime.now();
     final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+        'admob_last_rewarded_time', _lastRewardedShownTime!.toIso8601String());
     await prefs.setString(
         'admob_last_rewarded_time', _lastRewardedShownTime!.toIso8601String());
     final today = DateTime.now().toIso8601String().split('T')[0];
