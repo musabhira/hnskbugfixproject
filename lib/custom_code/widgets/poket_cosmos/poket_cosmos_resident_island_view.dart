@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/island_aerial_view.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_models.dart';
@@ -21,8 +22,9 @@ class PoketCosmosResidentIslandView extends StatefulWidget {
   final String? userName;
   final String? userAvatar;
   final String? targetPlanetCode; // 'EP', 'MAR', 'JUP', 'SAT', 'LUN', etc.
-  final int? targetPlotNumber; // 1 to 25
+  final int? targetPlotNumber; // Unique global plot number or local slot
   final int? targetWave; // 1, 2, ... infinite loop
+  final bool isPresidential; // Dedicated Presidential Citadel Island on Earth
   final VoidCallback? onBack;
 
   const PoketCosmosResidentIslandView({
@@ -33,6 +35,7 @@ class PoketCosmosResidentIslandView extends StatefulWidget {
     this.targetPlanetCode,
     this.targetPlotNumber,
     this.targetWave,
+    this.isPresidential = false,
     this.onBack,
   });
 
@@ -70,6 +73,54 @@ class _PoketCosmosResidentIslandViewState
   Future<void> _loadResidentIsland() async {
     setState(() => _isLoading = true);
 
+    final bool isPres = widget.isPresidential ||
+        (widget.userId != null &&
+            PocketPresidentService.isPresidentId(widget.userId!)) ||
+        widget.userId == 'pocket_president';
+
+    if (isPres) {
+      final colony =
+          PoketCosmosAllocationService.instance.getColonyByCode('EP');
+      final plot = CitizenPlot(
+        plotNumber: 1,
+        userId: widget.userId ?? 'pocket_president',
+        userName: widget.userName ?? "Mus'ab (President)",
+        userAvatar: widget.userAvatar ?? '👑',
+        day: 100,
+        pocketScore: 99999,
+        streetName: "The King's Coastal Apex Highway",
+        postOffice: 'Presidential Citadel',
+        countryName: 'Presidential Citadel',
+        planetName: colony.planetName,
+        postalPinCode: 'PKT-W01-EP-PRES-01',
+        coordinates: Offset.zero,
+        isVip: true,
+        isPresident: true,
+        tier: PlotDeedTier.presidential,
+        status: PlotStatus.occupied,
+      );
+
+      _colony = colony;
+      _myPlot = plot;
+      _island = const PoketCountryMap(
+        id: 300,
+        name: 'The Presidential Citadel 👑',
+        tag: 'Crown Sovereign Sanctuary • Earth Prime 🌍',
+        landColor: Color(0xFF16A34A),
+        waterColor: Color(0xFF0284C7),
+        totalSlots: 1,
+        filledSlots: 1,
+        climate: 'Sovereign Coastal Sanctuary 👑',
+        climateIcon: Icons.shield_rounded,
+        isPresidential: true,
+        shapeStyle: IslandShapeStyle.citadelApex,
+      );
+      _islandPlots = [plot];
+      _reservations = {};
+      setState(() => _isLoading = false);
+      return;
+    }
+
     final CelestialColonyInfo colony;
     final CitizenPlot plot;
     final int wave = math.max(1, widget.targetWave ?? 1);
@@ -79,8 +130,21 @@ class _PoketCosmosResidentIslandViewState
         widget.targetPlanetCode!.isNotEmpty) {
       colony = PoketCosmosAllocationService.instance
           .getColonyByCode(widget.targetPlanetCode!);
-      final int pNum = (widget.targetPlotNumber ?? 1)
-          .clamp(1, PoketCosmosAllocationService.maxPlotsPerIsland);
+      final int rawPlot = widget.targetPlotNumber ?? 1;
+      final int gNum;
+      final int lNum;
+      if (rawPlot > PoketCosmosAllocationService.maxPlotsPerIsland) {
+        gNum = rawPlot;
+        final parsed = PoketCosmosAllocationService.parseGlobalPlotNumber(gNum);
+        lNum = parsed['localPlotNumber'] as int;
+      } else {
+        lNum = rawPlot.clamp(1, PoketCosmosAllocationService.maxPlotsPerIsland);
+        gNum = PoketCosmosAllocationService.calculateGlobalPlotNumber(
+          wave: wave,
+          planetCode: colony.code,
+          localPlotNumber: lNum,
+        );
+      }
       final String effectiveIslandName = (wave == 1)
           ? colony.islandName
           : PoketCosmosAllocationService.generateInfiniteIslandName(
@@ -89,9 +153,9 @@ class _PoketCosmosResidentIslandViewState
           (wave == 1) ? colony.streetName : 'Wave $wave ${colony.streetName}';
 
       plot = CitizenPlot(
-        plotNumber: pNum,
-        userId: widget.userId ?? 'plot_citizen_$pNum',
-        userName: widget.userName ?? 'Citizen #$pNum',
+        plotNumber: gNum,
+        userId: widget.userId ?? 'plot_citizen_$gNum',
+        userName: widget.userName ?? 'Citizen #$gNum',
         userAvatar: widget.userAvatar ?? '🏡',
         day: 1,
         pocketScore: 100,
@@ -100,11 +164,11 @@ class _PoketCosmosResidentIslandViewState
         countryName: effectiveIslandName,
         planetName: colony.planetName,
         postalPinCode:
-            'PKT-W${wave.toString().padLeft(2, '0')}-${colony.code}-I${wave.toString().padLeft(2, '0')}-P${pNum.toString().padLeft(2, '0')}',
+            'PKT-W${wave.toString().padLeft(2, '0')}-${colony.code}-I${wave.toString().padLeft(2, '0')}-P${gNum.toString().padLeft(3, '0')}',
         coordinates: Offset.zero,
         isVip: false,
         isPresident: false,
-        tier: (pNum <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+        tier: (lNum <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
         status: PlotStatus.occupied,
       );
     } else {
@@ -144,9 +208,14 @@ class _PoketCosmosResidentIslandViewState
     );
 
     // 4. Compute plot coordinates
+    final int lNum = (plot.plotNumber >
+            PoketCosmosAllocationService.maxPlotsPerIsland)
+        ? (PoketCosmosAllocationService.parseGlobalPlotNumber(plot.plotNumber)[
+            'localPlotNumber'] as int)
+        : plot.plotNumber;
     final coords = IslandAerialPainter.get35PlotCoordinates(island.shapeStyle);
-    final targetPos = (plot.plotNumber >= 1 && plot.plotNumber <= coords.length)
-        ? coords[plot.plotNumber - 1]
+    final targetPos = (lNum >= 1 && lNum <= coords.length)
+        ? coords[lNum - 1]
         : Offset.zero;
 
     final updatedPlot = plot.copyWith(coordinates: targetPos);
@@ -734,7 +803,9 @@ class _PoketCosmosResidentIslandViewState
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          '${_colony.planetName} • Plot #${widget.targetPlotNumber ?? _myPlot.plotNumber}',
+                          _island.isPresidential
+                              ? 'Earth Prime 🌍 • Sovereign Presidential Citadel 👑'
+                              : '${_colony.planetName} • Plot #${widget.targetPlotNumber ?? _myPlot.plotNumber}',
                           style: GoogleFonts.jetBrainsMono(
                             color: const Color(0xFF38BDF8),
                             fontSize: 11,

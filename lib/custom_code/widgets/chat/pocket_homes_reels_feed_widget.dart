@@ -1243,18 +1243,20 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
 
     // If deep linking to a specific game, insert it right at top
     if (widget.initialGameId != null) {
-      final specificGame = games.firstWhere(
-        (g) => g.id == widget.initialGameId,
-        orElse: () => games.isNotEmpty
-            ? games.first
-            : (isKid
-                ? PocketReelsGameEngine.getKidsCommunicationGames(count: 1)
-                    .first
-                : PocketReelsGameEngine.getSpokenCommunicationGames(
-                        userLevel: widget.userLevel, count: 1)
-                    .first),
-      );
-      combinedFeed.add(ReelFeedItem.game(specificGame));
+      final found = PocketReelsGameEngine.findGameById(widget.initialGameId!);
+      final specificGame = found ??
+          games.firstWhere(
+            (g) => g.id == widget.initialGameId,
+            orElse: () => games.isNotEmpty
+                ? games.first
+                : (isKid
+                    ? PocketReelsGameEngine.getKidsCommunicationGames(count: 1)
+                        .first
+                    : PocketReelsGameEngine.getSpokenCommunicationGames(
+                            userLevel: widget.userLevel, count: 1)
+                        .first),
+          );
+      combinedFeed.insert(0, ReelFeedItem.game(specificGame));
     }
 
     int itemsSinceLastAd = 0;

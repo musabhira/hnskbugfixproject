@@ -49,6 +49,8 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_wid
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/pocket_homes_reels_feed_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/pocket_thought_game_card.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/pocket_reels_game_engine.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/president/presidential_security_forces.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/flame_english_house_game.dart';
@@ -3551,6 +3553,137 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     }
   }
 
+  void _openInteractiveVibeChallenge({
+    required Map<String, dynamic>? meta,
+    required String? gameId,
+    required String prompt,
+    required String category,
+    required List<String> options,
+  }) {
+    if (!_isPaused) {
+      _togglePause();
+    }
+    // 1. Try to find existing curated card
+    ReelGameCard? card = (gameId != null && gameId.isNotEmpty)
+        ? PocketReelsGameEngine.findGameById(gameId)
+        : null;
+
+    // 2. If not found in curated list, construct a real ReelGameCard from meta
+    card ??= ReelGameCard(
+      id: gameId ?? 'vibe_challenge_${DateTime.now().millisecondsSinceEpoch}',
+      gameType: ReelGameType.gapFill,
+      category: category,
+      prompt: prompt,
+      options: options.isNotEmpty ? options : ['Yes', 'No'],
+      correctOptionIndex: (meta?['correct_option_index'] is int)
+          ? (meta!['correct_option_index'] as int)
+          : 0,
+      nativeExplanations: {
+        'Malayalam': meta?['explanation']?.toString() ??
+            'Master spoken English with daily practice!',
+        'English': meta?['explanation']?.toString() ??
+            'Master spoken English with daily practice!',
+      },
+      contextHint: meta?['context_hint']?.toString() ?? 'Spoken English Practice',
+    );
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (modalCtx) {
+        return Container(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+          decoration: const BoxDecoration(
+            color: Color(0xFF0F172A),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+            border: Border(
+              top: BorderSide(color: Color(0xFFFFFC00), width: 1.5),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 44,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.sports_esports_rounded,
+                          color: Color(0xFFFFFC00), size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        'English Challenge 🎯',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, color: Colors.white60),
+                    onPressed: () => Navigator.pop(modalCtx),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              PocketThoughtGameCard(
+                card: card!,
+                authorName: widget.statusGroup['name']?.toString() ??
+                    widget.statusGroup['profile']?['name']?.toString() ??
+                    'Robot Mate',
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton.icon(
+                    onPressed: () {
+                      Navigator.pop(modalCtx);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PocketHomesReelsFeedWidget(
+                            initialGameId: card!.id,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.video_library_rounded,
+                        size: 16, color: Color(0xFFFFFC00)),
+                    label: Text(
+                      'Open in Homes Reel ➔',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFFC00),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    ).then((_) {
+      if (mounted && _isPaused) {
+        _togglePause();
+      }
+    });
+  }
+
   void _openAuthorCitadel(Map<String, dynamic>? authorProfile) {
     final statuses = widget.statusGroup['statuses'] as List;
     final curStatus = _currentIndex < statuses.length ? statuses[_currentIndex] : null;
@@ -5231,15 +5364,13 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                         GestureDetector(
                           behavior: HitTestBehavior.opaque,
                           onTap: () {
-                            _togglePause();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => PocketHomesReelsFeedWidget(
-                                  initialGameId: gameId,
-                                ),
-                              ),
-                            ).then((_) => _togglePause());
+                            _openInteractiveVibeChallenge(
+                              meta: meta,
+                              gameId: gameId,
+                              prompt: prompt,
+                              category: category,
+                              options: options,
+                            );
                           },
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
@@ -5332,15 +5463,13 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                         GestureDetector(
                           behavior: HitTestBehavior.opaque,
                           onTap: () {
-                            _togglePause();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => PocketHomesReelsFeedWidget(
-                                  initialGameId: gameId,
-                                ),
-                              ),
-                            ).then((_) => _togglePause());
+                            _openInteractiveVibeChallenge(
+                              meta: meta,
+                              gameId: gameId,
+                              prompt: prompt,
+                              category: category,
+                              options: options,
+                            );
                           },
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 11),

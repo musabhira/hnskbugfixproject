@@ -1092,7 +1092,7 @@ class _SearchPageState extends State<SearchPage> {
                           MaterialPageRoute(
                             builder: (_) => PoketCosmosResidentIslandView(
                               targetPlanetCode: code,
-                              targetPlotNumber: lNum,
+                              targetPlotNumber: gNum,
                               targetWave: wave,
                               userId: isOccupied
                                   ? (plot['userId']?.toString())
@@ -1174,12 +1174,12 @@ class _SearchPageState extends State<SearchPage> {
                               ],
                             ),
 
-                            // Center: Single, Clean, Prominent Plot Number
+                            // Center: Single, Clean, Prominent Unique Global Plot Number
                             Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  '#$lNum',
+                                  '#$gNum',
                                   style: GoogleFonts.orbitron(
                                     color: Colors.white,
                                     fontSize: 17,
@@ -1507,7 +1507,7 @@ class _SearchPageState extends State<SearchPage> {
                           MaterialPageRoute(
                             builder: (_) => PoketCosmosResidentIslandView(
                               targetPlanetCode: code,
-                              targetPlotNumber: localNum,
+                              targetPlotNumber: globalNum,
                             ),
                           ),
                         );

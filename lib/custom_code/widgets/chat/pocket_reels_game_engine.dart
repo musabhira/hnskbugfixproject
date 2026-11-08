@@ -922,6 +922,17 @@ class PocketReelsGameEngine {
     );
   }
 
+  /// Find a specific game card across curated collections by ID
+  static ReelGameCard? findGameById(String id) {
+    for (final card in _curatedSpokenCommunicationGames) {
+      if (card.id == id) return card;
+    }
+    for (final card in _curatedKidsCommunicationGames) {
+      if (card.id == id) return card;
+    }
+    return null;
+  }
+
   /// 🗣️ Level-Matched Spoken English Communication & Dialogue Games for Adults (User Audio Directive)
   /// Matches the learner's day/level:
   /// - Beginner (Day 1-15): Basic introductions, greetings, everyday courtesies, simple questions

@@ -1748,7 +1748,7 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Sponsored · Google AdMob',
+                  'Pocket Mates Ads',
                   style:
                       GoogleFonts.outfit(color: Colors.white60, fontSize: 11),
                 ),
@@ -2190,7 +2190,7 @@ class _PocketChatBubbleAdWidgetState extends State<PocketChatBubbleAdWidget> {
               ),
               const SizedBox(width: 6),
               Text(
-                'Sponsored Partner',
+                'Sponsored Ad',
                 style: GoogleFonts.outfit(
                   color: Colors.white70,
                   fontSize: 11,

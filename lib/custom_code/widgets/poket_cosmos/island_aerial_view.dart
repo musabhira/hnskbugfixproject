@@ -372,9 +372,15 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
     HapticFeedback.mediumImpact();
     final colony = PoketCosmosAllocationService.instance
         .getColonyByPlanetName(widget.planetName ?? widget.island.name);
-    final minimalPin = 'PKT-${colony.code}-$plotNumber';
     final targetWave =
         (widget.island.id ~/ 100) > 0 ? (widget.island.id ~/ 100) : 1;
+    final globalPlotNumber =
+        PoketCosmosAllocationService.calculateGlobalPlotNumber(
+      wave: targetWave,
+      planetCode: colony.code,
+      localPlotNumber: plotNumber,
+    );
+    final minimalPin = 'PKT-${colony.code}-$globalPlotNumber';
     final marketPrice = PoketCosmosAllocationService.calculatePlotMarketPrice(
       wave: targetWave,
       planetCode: colony.code,
@@ -432,7 +438,7 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Parcel #$plotNumber Real Estate',
+                        'Plot #$globalPlotNumber (Real Estate)',
                         style: GoogleFonts.outfit(
                           color: Colors.white,
                           fontSize: 17,
@@ -569,7 +575,7 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
                         const Text('🏡 ', style: TextStyle(fontSize: 22)),
                         Expanded(
                           child: Text(
-                            'Acquire Plot #$plotNumber?',
+                            'Acquire Plot #$globalPlotNumber?',
                             style: GoogleFonts.outfit(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -580,7 +586,7 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
                       ],
                     ),
                     content: Text(
-                      'Are you sure you want to purchase and relocate your permanent residence to Plot #$plotNumber on ${colony.planetName} (${widget.island.name}) for $marketPrice Pocket Score?\n\nYour address and profile deed will be permanently updated.',
+                      'Are you sure you want to purchase and relocate your permanent residence to Plot #$globalPlotNumber on ${colony.planetName} (${widget.island.name}) for $marketPrice Pocket Score?\n\nYour address and profile deed will be permanently updated.',
                       style: GoogleFonts.plusJakartaSans(
                         color: Colors.white70,
                         fontSize: 13,
@@ -674,7 +680,7 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
                 await _loadReservations();
 
                 final shareText =
-                    '🏡 Become my neighbor in Pocket Mates!\nI reserved Plot #$plotNumber on ${colony.planetName} (${widget.island.name}) for you (4-Hour Pass).\nEnter invite code: ${pass.code}';
+                    '🏡 Become my neighbor in Pocket Mates!\nI reserved Plot #$globalPlotNumber on ${colony.planetName} (${widget.island.name}) for you (4-Hour Pass).\nEnter invite code: ${pass.code}';
                 try {
                   await Share.share(shareText);
                 } catch (_) {
@@ -850,6 +856,45 @@ class IslandAerialPainter extends CustomPainter {
       return CelestialColonyType.neptune;
     }
     return CelestialColonyType.earth;
+  }
+
+  String get colonyPlanetCode {
+    switch (colonyType) {
+      case CelestialColonyType.mars:
+        return 'MAR';
+      case CelestialColonyType.jupiter:
+        return 'JUP';
+      case CelestialColonyType.saturn:
+        return 'SAT';
+      case CelestialColonyType.moon:
+        return 'LUN';
+      case CelestialColonyType.europa:
+        return 'EUR';
+      case CelestialColonyType.venus:
+        return 'VEN';
+      case CelestialColonyType.titan:
+        return 'TTN';
+      case CelestialColonyType.pluto:
+        return 'PLT';
+      case CelestialColonyType.neptune:
+        return 'NEP';
+      case CelestialColonyType.earth:
+        return 'EP';
+    }
+  }
+
+  int get islandWave {
+    final w = island.id % 100;
+    return w > 0 ? w : 1;
+  }
+
+  int getGlobalPlotNumber(int localPlotNumber) {
+    if (island.isPresidential) return 1;
+    return PoketCosmosAllocationService.calculateGlobalPlotNumber(
+      wave: islandWave,
+      planetCode: colonyPlanetCode,
+      localPlotNumber: localPlotNumber,
+    );
   }
 
   bool get isMoon => colonyType == CelestialColonyType.moon;
@@ -3162,19 +3207,22 @@ class IslandAerialPainter extends CustomPainter {
     for (int i = 0; i < count; i++) {
       final pos = positions[i];
       final plotNumber = i + 1;
-      final isSel = selectedPlotNumber == plotNumber;
+      final globalPlotNumber = getGlobalPlotNumber(plotNumber);
+      final isSel = selectedPlotNumber == plotNumber ||
+          selectedPlotNumber == globalPlotNumber;
 
       // 1. Check if occupied by a citizen
       CitizenPlot? citizenPlot;
       for (final p in plots) {
-        if (p.plotNumber == plotNumber) {
+        if (p.plotNumber == plotNumber || p.plotNumber == globalPlotNumber) {
           citizenPlot = p;
           break;
         }
       }
 
       // 2. Check if pre-booked for 4 hours
-      final reservation = reservations[plotNumber];
+      final reservation =
+          reservations[plotNumber] ?? reservations[globalPlotNumber];
       final isPreBooked = reservation != null && !reservation.isExpired;
 
       final plotRot = getPlotFacingAngle(island.shapeStyle, i);
@@ -3213,8 +3261,8 @@ class IslandAerialPainter extends CustomPainter {
         _drawArchitecturalRoof(canvas, housePos, day, isSel, plotNumber);
         _drawPrivateYardAnimalsAndItems(canvas, parcelRect, day, plotNumber);
 
-        // 4. Clean minimal Plot Number Badge strictly inside parcel (#plotNumber only, no username)
-        _drawPlotNumberBadge(canvas, parcelRect, plotNumber, isSel);
+        // 4. Clean minimal Unique Global Plot Number Badge strictly inside parcel (#globalPlotNumber only, no username)
+        _drawPlotNumberBadge(canvas, parcelRect, globalPlotNumber, isSel);
 
         canvas.restore();
 
@@ -3255,9 +3303,9 @@ class IslandAerialPainter extends CustomPainter {
         _drawPreBookedParcel(
             canvas, housePos, parcelRect, plotRot, reservation, isSel);
       } else {
-        // ➕ Render Vacant Plot with center pulsing Plus (+) icon
+        // ➕ Render Vacant Plot with center pulsing Plus (+) icon and global plot number
         _drawVacantParcelWithPlus(
-            canvas, housePos, parcelRect, plotRot, plotNumber, isSel);
+            canvas, housePos, parcelRect, plotRot, globalPlotNumber, isSel);
       }
 
       // Golden Selection Beacon Aura

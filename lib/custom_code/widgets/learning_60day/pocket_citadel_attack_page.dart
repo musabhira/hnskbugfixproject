@@ -769,15 +769,19 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
   void _navigateToDefenderPlotOnIsland() {
     HapticFeedback.lightImpact();
+    final bool isPres = widget.neighbor.isPresident ||
+        PocketPresidentService.isPresidentId(widget.neighbor.id) ||
+        widget.neighbor.id == 'pocket_president';
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => PoketCosmosResidentIslandView(
           userId: widget.neighbor.id,
           userName: widget.neighbor.name,
-          targetPlanetCode: widget.neighbor.effectivePlanetCode,
-          targetPlotNumber: widget.neighbor.effectivePlotNumber,
-          targetWave: widget.neighbor.effectiveWave,
+          targetPlanetCode: isPres ? 'EP' : widget.neighbor.effectivePlanetCode,
+          targetPlotNumber: isPres ? 1 : widget.neighbor.effectivePlotNumber,
+          targetWave: 1,
+          isPresidential: isPres,
         ),
       ),
     );

@@ -657,7 +657,7 @@ class _PocketVibesStoryAdWidgetState extends State<PocketVibesStoryAdWidget>
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Google AdMob Partner',
+                          'Pocket Mates Ads',
                           style: GoogleFonts.outfit(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,

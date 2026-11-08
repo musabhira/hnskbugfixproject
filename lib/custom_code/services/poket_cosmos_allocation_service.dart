@@ -108,7 +108,7 @@ class PoketCosmosAllocationService {
     if (cycle == 0) {
       return '$rootWord $landform';
     } else {
-      return '$rootWord $cycle $landform';
+      return '$rootWord Island Wave $cycle';
     }
   }
 
@@ -118,7 +118,7 @@ class PoketCosmosAllocationService {
       planetId: 3,
       planetName: 'Earth Prime 🌍',
       code: 'EP',
-      islandName: 'Ocean Whisper Atoll',
+      islandName: 'Serenity Atoll',
       streetName: 'Reefway Avenue',
       landColor: Color(0xFF16A34A),
       waterColor: Color(0xFF0284C7),
@@ -129,7 +129,7 @@ class PoketCosmosAllocationService {
       planetId: 4,
       planetName: 'Mars 🔴',
       code: 'MAR',
-      islandName: 'Ares Crater Haven',
+      islandName: 'Courage Haven',
       streetName: 'Olympus Ridge Trail',
       landColor: Color(0xFFDC2626),
       waterColor: Color(0xFF7C2D12),
@@ -140,7 +140,7 @@ class PoketCosmosAllocationService {
       planetId: 5,
       planetName: 'Jupiter 🪐',
       code: 'JUP',
-      islandName: 'Solaria Crest Atoll',
+      islandName: 'Zenith Crest',
       streetName: 'Great Red Spot Promenade',
       landColor: Color(0xFF059669),
       waterColor: Color(0xFF0369A1),
@@ -151,7 +151,7 @@ class PoketCosmosAllocationService {
       planetId: 6,
       planetName: 'Saturn 🪐',
       code: 'SAT',
-      islandName: 'Ringside Haven',
+      islandName: 'Harmony Shores',
       streetName: 'Titan View Parkway',
       landColor: Color(0xFFD97706),
       waterColor: Color(0xFF92400E),
@@ -162,7 +162,7 @@ class PoketCosmosAllocationService {
       planetId: 30,
       planetName: 'The Moon 🌕',
       code: 'LUN',
-      islandName: 'Mare Tranquillitatis Isle',
+      islandName: 'Tranquility Isle',
       streetName: 'Apollo Lunar Boulevard',
       landColor: Color(0xFF94A3B8),
       waterColor: Color(0xFF334155),
@@ -173,7 +173,7 @@ class PoketCosmosAllocationService {
       planetId: 51,
       planetName: 'Europa 🧊',
       code: 'EUR',
-      islandName: 'Glacier Rift Sanctuary',
+      islandName: 'Resilience Sanctuary',
       streetName: 'Subsurface Ocean Way',
       landColor: Color(0xFF38BDF8),
       waterColor: Color(0xFF0369A1),
@@ -184,7 +184,7 @@ class PoketCosmosAllocationService {
       planetId: 2,
       planetName: 'Venus ☀️',
       code: 'VEN',
-      islandName: 'Aphrodite Highland Atoll',
+      islandName: 'Radiance Atoll',
       streetName: 'Sulfur Dawn Expressway',
       landColor: Color(0xFFF59E0B),
       waterColor: Color(0xFFB45309),
@@ -195,7 +195,7 @@ class PoketCosmosAllocationService {
       planetId: 61,
       planetName: 'Titan 🪐',
       code: 'TTN',
-      islandName: 'Kraken Mare Shore',
+      islandName: 'Ambition Shore',
       streetName: 'Methane Dunes Parkway',
       landColor: Color(0xFF10B981),
       waterColor: Color(0xFF065F46),
@@ -206,7 +206,7 @@ class PoketCosmosAllocationService {
       planetId: 9,
       planetName: 'Pluto 🌌',
       code: 'PLT',
-      islandName: 'Tombaugh Heart Outpost',
+      islandName: 'Solitude Outpost',
       streetName: 'Cryo Frost Path',
       landColor: Color(0xFFA855F7),
       waterColor: Color(0xFF581C87),
@@ -217,7 +217,7 @@ class PoketCosmosAllocationService {
       planetId: 8,
       planetName: 'Neptune 🌊',
       code: 'NEP',
-      islandName: 'Triton Deep Bay',
+      islandName: 'Odyssey Bay',
       streetName: 'Azure Tempest Causeway',
       landColor: Color(0xFF2563EB),
       waterColor: Color(0xFF1E3A8A),

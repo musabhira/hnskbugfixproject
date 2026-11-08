@@ -1348,35 +1348,27 @@ class PocketRobotService {
           },
         };
       } else {
-        // Mini-Game challenge share
-        final challenges = [
-          {
-            'category': 'COLLOCATION CLASH ⚡',
-            'prompt': 'Which verb pairs naturally with "a mistake"?',
-            'options': ['Make a mistake', 'Do a mistake', 'Create a mistake'],
-          },
-          {
-            'category': 'IDIOM DECRYPTER 🗝️',
-            'prompt': 'What does "hit the nail on the head" mean?',
-            'options': [
-              'Describe something accurately',
-              'Build a wooden table',
-              'Make a loud sound'
-            ],
-          },
-          {
-            'category': 'PREPOSITION DRILL 🎯',
-            'prompt': 'She is brilliant ______ speaking English with confidence.',
-            'options': ['at', 'in', 'on'],
-          },
-        ];
-        final ch = challenges[rand.nextInt(challenges.length)];
+        // Mini-Game challenge share from real curated game engine
+        final realGames = PocketReelsGameEngine.getSpokenCommunicationGames(
+          userLevel: dynLvl,
+          count: 5,
+        );
+        final realGame = realGames.isNotEmpty
+            ? realGames[rand.nextInt(realGames.length)]
+            : null;
+
+        final chCategory = realGame?.category ?? 'COLLOCATION CLASH ⚡';
+        final chPrompt = realGame?.prompt ?? 'Which verb pairs naturally with "a mistake"?';
+        final chOptions = realGame?.options ?? ['Make a mistake', 'Do a mistake', 'Create a mistake'];
+        final chCorrectIdx = realGame?.correctOptionIndex ?? 0;
+        final chGameId = realGame?.id ?? 'game_${robot.id}_${now.millisecondsSinceEpoch}';
+
         vibeItem = {
           'id': 'vibe_${robot.id}_${now.millisecondsSinceEpoch}',
           'media_type': 'thought',
           'media_url': '',
           'caption':
-              '🎯 English Challenge of the Day!\n${ch['category']}: ${ch['prompt']}',
+              '🎯 English Challenge of the Day!\n$chCategory: $chPrompt',
           'created_at': now.toIso8601String(),
           'expires_at': now.add(const Duration(hours: 12)).toIso8601String(),
           'profile_id': robot.id,
@@ -1386,10 +1378,14 @@ class PocketRobotService {
             'source': 'homes_reels_feed',
             'is_shared_vibe': true,
             'item_type': 'game_challenge',
-            'game_id': 'game_${robot.id}_${now.millisecondsSinceEpoch}',
-            'category': ch['category'],
-            'prompt': ch['prompt'],
-            'options': ch['options'],
+            'game_id': chGameId,
+            'category': chCategory,
+            'prompt': chPrompt,
+            'options': chOptions,
+            'correct_option_index': chCorrectIdx,
+            'game_type': realGame?.gameType.name ?? 'gapFill',
+            'context_hint': realGame?.contextHint ?? 'Spoken English Practice',
+            'explanation': realGame?.getExplanation('Malayalam') ?? 'Master natural English through practice!',
             'hide_caption': true,
           },
           'profile': {
