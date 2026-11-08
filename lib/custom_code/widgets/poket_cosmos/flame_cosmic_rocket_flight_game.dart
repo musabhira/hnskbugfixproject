@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 import 'package:pocket_mates_app/custom_code/services/poket_cosmos_distance_service.dart';
+import 'poket_cosmos_transit_models.dart';
 
 /// 🌟 Dynamic Engine Exhaust / Contrail Particle
 class PlasmaThrustParticle {
@@ -92,11 +93,13 @@ class FlameCosmicRocketFlightGame extends FlameGame {
   final CosmosFlightManifest manifest;
   final void Function(double currentKm, double progressFraction) onDistanceProgress;
   final VoidCallback onArrival;
+  final CosmosVehicle? vehicle;
 
   FlameCosmicRocketFlightGame({
     required this.manifest,
     required this.onDistanceProgress,
     required this.onArrival,
+    this.vehicle,
   });
 
   // Flight State
@@ -296,10 +299,9 @@ class FlameCosmicRocketFlightGame extends FlameGame {
       }
     }
 
-    // Flight forward speed
-    // Same planet plane: ~8-10s base
-    // Space rocket: ~10-12s base
-    final double baseSpeed = manifest.isSamePlanet ? 0.13 : 0.088;
+    // Flight forward speed factoring selected vehicle multiplier
+    final double vehicleMultiplier = vehicle?.speedMultiplier ?? 1.0;
+    final double baseSpeed = (manifest.isSamePlanet ? 0.13 : 0.088) * vehicleMultiplier;
     final double step = baseSpeed * _currentSpeedMultiplier * dt;
 
     if (!manifest.isSamePlanet) {
@@ -461,8 +463,14 @@ class FlameCosmicRocketFlightGame extends FlameGame {
       );
     }
 
-    // Draw Sleek Atmospheric Passenger Jet
-    _drawAeroplane(canvas, isBoosting: _boostTimer > 0 || _isHoldingThrust);
+    // Draw Selected Island Vehicle (Speedboat / Cruise Ship / Aeroplane)
+    if (vehicle?.id == 'speedboat') {
+      _drawSpeedboat(canvas, isBoosting: _boostTimer > 0 || _isHoldingThrust);
+    } else if (vehicle?.id == 'cruise_ship') {
+      _drawCruiseShip(canvas, isBoosting: _boostTimer > 0 || _isHoldingThrust);
+    } else {
+      _drawAeroplane(canvas, isBoosting: _boostTimer > 0 || _isHoldingThrust);
+    }
     canvas.restore();
 
     // 6. Drifting Upper Atmospheric Clouds (Above the airplane)
@@ -805,6 +813,131 @@ class FlameCosmicRocketFlightGame extends FlameGame {
     }
   }
 
+  /// 🚤 Hydrofoil Speedboat with dynamic foaming water wake
+  void _drawSpeedboat(Canvas canvas, {bool isBoosting = false}) {
+    // 1. Water spray & foaming V-wake
+    final wakePaint = Paint()
+      ..color = Colors.white.withValues(alpha: isBoosting ? 0.85 : 0.6)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = isBoosting ? 3.5 : 2.5;
+
+    final wake = Path()
+      ..moveTo(-6, 22)
+      ..lineTo(-32, 60)
+      ..moveTo(6, 22)
+      ..lineTo(32, 60);
+    canvas.drawPath(wake, wakePaint);
+
+    // Frothing water splash bubbles
+    final bubblePaint = Paint()..color = Colors.white.withValues(alpha: 0.7);
+    for (int i = 0; i < (isBoosting ? 6 : 4); i++) {
+      final yOff = 26.0 + (i * 8.0);
+      canvas.drawCircle(Offset(-8.0 - (i * 4.5), yOff), 2.2 + (i * 0.4), bubblePaint);
+      canvas.drawCircle(Offset(8.0 + (i * 4.5), yOff), 2.2 + (i * 0.4), bubblePaint);
+    }
+
+    // 2. Speedboat Hull (Wedge Shape)
+    final hullPath = Path()
+      ..moveTo(0, -32) // Pointed bow
+      ..lineTo(12, 10)
+      ..lineTo(11, 24)
+      ..lineTo(-11, 24)
+      ..lineTo(-12, 10)
+      ..close();
+
+    final hullPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFF00E5FF), Color(0xFF0284C7), Color(0xFF0F172A)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(const Rect.fromLTWH(-12, -32, 24, 56));
+    canvas.drawPath(hullPath, hullPaint);
+
+    // Deck Teak Floor
+    final deckPaint = Paint()..color = const Color(0xFFFED7AA);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(const Rect.fromLTWH(-7, -10, 14, 26), const Radius.circular(3)),
+      deckPaint,
+    );
+
+    // Windshield
+    final glassPaint = Paint()..color = const Color(0xFF38BDF8);
+    final glassPath = Path()
+      ..moveTo(0, -18)
+      ..lineTo(8, -10)
+      ..lineTo(-8, -10)
+      ..close();
+    canvas.drawPath(glassPath, glassPaint);
+
+    // Twin Outboard Motors at Stern
+    final motorPaint = Paint()..color = const Color(0xFF1E293B);
+    canvas.drawRect(const Rect.fromLTWH(-8, 22, 5, 8), motorPaint);
+    canvas.drawRect(const Rect.fromLTWH(3, 22, 5, 8), motorPaint);
+  }
+
+  /// 🚢 Oceanic Cruise Ship with multi-deck windows and rolling ocean waves
+  void _drawCruiseShip(Canvas canvas, {bool isBoosting = false}) {
+    // 1. Broad rolling ocean wave wakes
+    final wavePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.35)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+
+    for (int i = 0; i < 3; i++) {
+      final yOff = 34.0 + (i * 12.0);
+      final r = 24.0 + (i * 14.0);
+      canvas.drawOval(
+        Rect.fromCenter(center: Offset(0, yOff), width: r * 2.2, height: r * 0.9),
+        wavePaint,
+      );
+    }
+
+    // 2. Main Ship Hull (Elongated ocean liner profile)
+    final hullPath = Path()
+      ..moveTo(0, -42) // Bulbous bow
+      ..cubicTo(14, -28, 15, 12, 13, 34)
+      ..lineTo(-13, 34)
+      ..cubicTo(-15, 12, -14, -28, 0, -42)
+      ..close();
+
+    final hullPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF090D16)],
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+      ).createShader(const Rect.fromLTWH(-15, -42, 30, 76));
+    canvas.drawPath(hullPath, hullPaint);
+
+    // Red Waterline Stripe
+    final redStripe = Paint()..color = const Color(0xFFEF4444);
+    canvas.drawRect(const Rect.fromLTWH(-12.5, 30, 25, 3.5), redStripe);
+
+    // 3. Superstructure Decks (Crisp White)
+    final deckPaint = Paint()..color = const Color(0xFFF8FAFC);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(const Rect.fromLTWH(-9, -24, 18, 50), const Radius.circular(4)),
+      deckPaint,
+    );
+
+    // Cabin Windows
+    final windowPaint = Paint()..color = const Color(0xFFFFD700);
+    for (int i = 0; i < 5; i++) {
+      final wy = -18.0 + (i * 7.5);
+      canvas.drawCircle(Offset(-6, wy), 1.2, windowPaint);
+      canvas.drawCircle(Offset(6, wy), 1.2, windowPaint);
+    }
+
+    // 4. Twin Iconic Red/Black Funnels (Smokestacks)
+    final funnelPaint = Paint()..color = const Color(0xFFDC2626);
+    final funnelTop = Paint()..color = const Color(0xFF0F172A);
+
+    canvas.drawRRect(RRect.fromRectAndRadius(const Rect.fromLTWH(-4, -6, 8, 8), const Radius.circular(2)), funnelPaint);
+    canvas.drawRect(const Rect.fromLTWH(-4, -6, 8, 2.5), funnelTop);
+
+    canvas.drawRRect(RRect.fromRectAndRadius(const Rect.fromLTWH(-4, 8, 8, 8), const Radius.circular(2)), funnelPaint);
+    canvas.drawRect(const Rect.fromLTWH(-4, 8, 8, 2.5), funnelTop);
+  }
+
   /// ☁️ Drifting clouds with soft billows
   void _drawDriftingClouds(Canvas canvas, double cx, double cy, {required bool isUpper}) {
     canvas.save();
@@ -933,8 +1066,14 @@ class FlameCosmicRocketFlightGame extends FlameGame {
       );
     }
 
-    // Draw Sleek Cosmic Rocket Body
-    _drawRocketShip(canvas, isBoosting: _boostTimer > 0 || _isHoldingThrust);
+    // Draw Selected Interplanetary Spaceship (Starship / Hyper Warp Shuttle / Ion Cruiser)
+    if (vehicle?.id == 'warp_shuttle') {
+      _drawWarpShuttle(canvas, isBoosting: _boostTimer > 0 || _isHoldingThrust);
+    } else if (vehicle?.id == 'ion_cruiser') {
+      _drawIonCruiser(canvas, isBoosting: _boostTimer > 0 || _isHoldingThrust);
+    } else {
+      _drawRocketShip(canvas, isBoosting: _boostTimer > 0 || _isHoldingThrust);
+    }
     canvas.restore();
   }
 
@@ -989,6 +1128,111 @@ class FlameCosmicRocketFlightGame extends FlameGame {
     // 5. Golden Solar Accent Stripes
     final goldStripe = Paint()..color = const Color(0xFFFFD700);
     canvas.drawRect(const Rect.fromLTWH(-7, 2, 14, 2.5), goldStripe);
+  }
+
+  /// ⚡ Hyper Warp Shuttle (Aggressive forward-swept golden interceptor)
+  void _drawWarpShuttle(Canvas canvas, {bool isBoosting = false}) {
+    // 1. Warp Core Glow
+    final glowPaint = Paint()
+      ..color = const Color(0xFFFFD700).withValues(alpha: isBoosting ? 0.7 : 0.45)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, isBoosting ? 16 : 10);
+    canvas.drawCircle(const Offset(0, 24), isBoosting ? 22 : 14, glowPaint);
+
+    // 2. Swept Delta Wings (Golden yellow with amber edges)
+    final wingPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFFEF08A), Color(0xFFF59E0B), Color(0xFFD97706)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(const Rect.fromLTWH(-32, -16, 64, 48));
+
+    final wings = Path()
+      ..moveTo(0, -32)
+      ..lineTo(30, 18)
+      ..lineTo(18, 26)
+      ..lineTo(0, 16)
+      ..lineTo(-18, 26)
+      ..lineTo(-30, 18)
+      ..close();
+    canvas.drawPath(wings, wingPaint);
+
+    // 3. Main Hull Fuselage
+    final hullPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFFFFFFF), Color(0xFFFEF08A), Color(0xFFB45309)],
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+      ).createShader(const Rect.fromLTWH(-9, -36, 18, 64));
+
+    final hull = Path()
+      ..moveTo(0, -40)
+      ..lineTo(8, 0)
+      ..lineTo(7, 26)
+      ..lineTo(-7, 26)
+      ..lineTo(-8, 0)
+      ..close();
+    canvas.drawPath(hull, hullPaint);
+
+    // Cockpit Visor (Orange/Amber Shield Glass)
+    final visorPaint = Paint()..color = const Color(0xFFFF9100);
+    canvas.drawOval(const Rect.fromLTWH(-4.5, -20, 9, 14), visorPaint);
+
+    // Triple Afterburners
+    final thrusterPaint = Paint()..color = const Color(0xFF0F172A);
+    canvas.drawRect(const Rect.fromLTWH(-6, 26, 3, 4), thrusterPaint);
+    canvas.drawRect(const Rect.fromLTWH(-1.5, 26, 3, 5), thrusterPaint);
+    canvas.drawRect(const Rect.fromLTWH(3, 26, 3, 4), thrusterPaint);
+  }
+
+  /// 🛰️ Ion Deep-Space Cruiser (Heavy modular vessel with pulsating ion ring engines)
+  void _drawIonCruiser(Canvas canvas, {bool isBoosting = false}) {
+    // 1. Pulsating Ion Thruster Rings
+    final ionRingPaint = Paint()
+      ..color = const Color(0xFFA855F7).withValues(alpha: isBoosting ? 0.75 : 0.45)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
+    canvas.drawCircle(const Offset(-16, 24), 8, ionRingPaint);
+    canvas.drawCircle(const Offset(16, 24), 8, ionRingPaint);
+
+    // 2. Solar Collector / Outrigger Wings
+    final wingPaint = Paint()..color = const Color(0xFF334155);
+    canvas.drawRect(const Rect.fromLTWH(-28, 4, 14, 18), wingPaint);
+    canvas.drawRect(const Rect.fromLTWH(14, 4, 14, 18), wingPaint);
+
+    // Solar Panel Grid Lines
+    final gridPaint = Paint()..color = const Color(0xFF38BDF8)..strokeWidth = 1.0;
+    canvas.drawLine(const Offset(-28, 13), const Offset(-14, 13), gridPaint);
+    canvas.drawLine(const Offset(14, 13), const Offset(28, 13), gridPaint);
+
+    // 3. Heavy Modular Fuselage
+    final hullPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFE2E8F0), Color(0xFF94A3B8), Color(0xFF475569)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(const Rect.fromLTWH(-12, -34, 24, 60));
+
+    final hull = Path()
+      ..moveTo(-8, -34)
+      ..lineTo(8, -34)
+      ..lineTo(11, -10)
+      ..lineTo(10, 24)
+      ..lineTo(-10, 24)
+      ..lineTo(-11, -10)
+      ..close();
+    canvas.drawPath(hull, hullPaint);
+
+    // Central Command Dome
+    final domePaint = Paint()..color = const Color(0xFF00E5FF);
+    canvas.drawCircle(const Offset(0, -14), 5, domePaint);
+
+    // Front Radar Dish Array
+    final dishPaint = Paint()
+      ..color = const Color(0xFFFFD700)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+    canvas.drawArc(const Rect.fromLTWH(-6, -38, 12, 10), math.pi, math.pi, false, dishPaint);
   }
 
   /// 🪐 3D Planet Sphere Renderer

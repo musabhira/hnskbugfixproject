@@ -27,6 +27,8 @@ import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_se
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmic_flight_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_resident_island_view.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/planet_sphere_icon_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_transit_models.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_transit_planner_sheet.dart';
 import 'package:flutter/services.dart';
 
 class SearchPage extends StatefulWidget {
@@ -1360,16 +1362,37 @@ class _SearchPageState extends State<SearchPage> {
                           originPlot: myPlot,
                           destinationPlot: localNum,
                         );
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => PoketCosmicFlightPage(
-                              manifest: flightManifest,
-                              targetUserId: '',
-                              targetName: '$planetName Plot #$localNum',
-                            ),
-                          ),
+
+                        final myColony = PoketCosmosAllocationService.instance.getColonyByCode(myOriginCode);
+                        final targetColony = PoketCosmosAllocationService.instance.getColonyByCode(code);
+                        final myIslandName = PoketCosmosAllocationService.instance.currentBirthPlot?.postOffice ?? myColony.islandName;
+
+                        final CosmosTravelTier tier;
+                        if (myOriginCode != code) {
+                          tier = CosmosTravelTier.interplanetary;
+                        } else if ((myPlot - localNum).abs() > 15 || myIslandName != targetColony.islandName) {
+                          tier = CosmosTravelTier.islandToIsland;
+                        } else {
+                          tier = CosmosTravelTier.plotToPlot;
+                        }
+
+                        final transitRoute = CosmosTransitRoute(
+                          tier: tier,
+                          originPlanetCode: myOriginCode,
+                          originPlanetName: myColony.planetName,
+                          originIslandName: myIslandName,
+                          originPlotNumber: myPlot,
+                          destPlanetCode: code,
+                          destPlanetName: planetName,
+                          destIslandName: targetColony.islandName,
+                          destPlotNumber: localNum,
+                          distanceKm: flightManifest.distanceKm,
+                          formattedDistance: flightManifest.formattedDistance,
+                          targetUserId: '',
+                          targetName: '$planetName Plot #$localNum',
                         );
+
+                        PoketCosmosTransitPlannerSheet.show(context, transitRoute);
                       },
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Color(0xFF38BDF8)),
@@ -1496,6 +1519,261 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
+  void _showCosmosRouteLabModal() {
+    HapticFeedback.mediumImpact();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Color(0xFF0B132B),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+            border: Border(top: BorderSide(color: Color(0xFF00E5FF), width: 1.5)),
+          ),
+          padding: EdgeInsets.fromLTRB(20, 16, 20, MediaQuery.of(ctx).padding.bottom + 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFF00E5FF), width: 1.2),
+                    ),
+                    child: const Icon(Icons.explore_rounded, color: Color(0xFF00E5FF), size: 20),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '🧭 COSMOS ROUTE LAB',
+                          style: GoogleFonts.orbitron(
+                            color: const Color(0xFF00E5FF),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                        Text(
+                          'Google Maps 3-Tier Transit Testing Suite',
+                          style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, color: Colors.white54, size: 20),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // Option 1: Interplanetary (Planet to Planet)
+              _buildRouteLabCard(
+                ctx,
+                tier: CosmosTravelTier.interplanetary,
+                iconEmoji: '🪐',
+                title: 'Tier 1: Planet to Planet (Interplanetary)',
+                routeText: 'Earth Prime (Plot #01) ➔ Mars Ares Haven (Plot #14)',
+                distanceText: '78.3M km',
+                vehiclesText: '🚀 Starship • ⚡ Warp Shuttle • 🛰️ Ion Cruiser',
+                accentColor: const Color(0xFF38BDF8),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  final route = CosmosTransitRoute(
+                    tier: CosmosTravelTier.interplanetary,
+                    originPlanetCode: 'EP',
+                    originPlanetName: 'Earth Prime 🌍',
+                    originIslandName: 'Ocean Whisper Atoll',
+                    originPlotNumber: 1,
+                    destPlanetCode: 'MAR',
+                    destPlanetName: 'Mars Ares 🔴',
+                    destIslandName: 'Ares Red Dunes Atoll',
+                    destPlotNumber: 14,
+                    distanceKm: 78340000.0,
+                    formattedDistance: '78.3M km',
+                    targetUserId: 'mars_resident_14',
+                    targetName: 'Commander Alex (Mars Resident)',
+                  );
+                  PoketCosmosTransitPlannerSheet.show(context, route);
+                },
+              ),
+              const SizedBox(height: 10),
+              // Option 2: Island to Island (Same Planet)
+              _buildRouteLabCard(
+                ctx,
+                tier: CosmosTravelTier.islandToIsland,
+                iconEmoji: '🏝️',
+                title: 'Tier 2: Island to Island (Intra-Planetary)',
+                routeText: 'Mars Atoll (Plot #05) ➔ Mars Dunes Island (Plot #22)',
+                distanceText: '12,400 km',
+                vehiclesText: '✈️ Aeroplane • 🚤 Speedboat • 🚢 Cruise Ship',
+                accentColor: const Color(0xFF34D399),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  final route = CosmosTransitRoute(
+                    tier: CosmosTravelTier.islandToIsland,
+                    originPlanetCode: 'MAR',
+                    originPlanetName: 'Mars Ares 🔴',
+                    originIslandName: 'Ares Haven Atoll',
+                    originPlotNumber: 5,
+                    destPlanetCode: 'MAR',
+                    destPlanetName: 'Mars Ares 🔴',
+                    destIslandName: 'Ares Southern Dunes',
+                    destPlotNumber: 22,
+                    distanceKm: 12400.0,
+                    formattedDistance: '12,400 km',
+                    targetUserId: 'mars_island_neighbor',
+                    targetName: 'Dr. Sarah (Coastal Island)',
+                  );
+                  PoketCosmosTransitPlannerSheet.show(context, route);
+                },
+              ),
+              const SizedBox(height: 10),
+              // Option 3: Plot to Plot (Same Island Street Drive)
+              _buildRouteLabCard(
+                ctx,
+                tier: CosmosTravelTier.plotToPlot,
+                iconEmoji: '🏡',
+                title: 'Tier 3: Plot to Plot (Same Island Streets)',
+                routeText: 'Ocean Whisper Atoll Plot #02 ➔ Plot #19',
+                distanceText: '2.8 km',
+                vehiclesText: '🏍️ Cyber Motorbike • 🚗 Buggy Rover • 🚲 Bicycle',
+                accentColor: const Color(0xFFFFD700),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  final route = CosmosTransitRoute(
+                    tier: CosmosTravelTier.plotToPlot,
+                    originPlanetCode: 'EP',
+                    originPlanetName: 'Earth Prime 🌍',
+                    originIslandName: 'Ocean Whisper Atoll',
+                    originPlotNumber: 2,
+                    destPlanetCode: 'EP',
+                    destPlanetName: 'Earth Prime 🌍',
+                    destIslandName: 'Ocean Whisper Atoll',
+                    destPlotNumber: 19,
+                    distanceKm: 2.8,
+                    formattedDistance: '2.8 km',
+                    targetUserId: 'atoll_neighbor_19',
+                    targetName: 'Maya (Next Avenue Resident)',
+                  );
+                  PoketCosmosTransitPlannerSheet.show(context, route);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildRouteLabCard(
+    BuildContext context, {
+    required CosmosTravelTier tier,
+    required String iconEmoji,
+    required String title,
+    required String routeText,
+    required String distanceText,
+    required String vehiclesText,
+    required Color accentColor,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F172A),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: accentColor.withValues(alpha: 0.4), width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: accentColor.withValues(alpha: 0.15),
+              blurRadius: 10,
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: accentColor.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(iconEmoji, style: const TextStyle(fontSize: 22)),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          title,
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Text(
+                        distanceText,
+                        style: GoogleFonts.orbitron(
+                          color: accentColor,
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    routeText,
+                    style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    vehiclesText,
+                    style: GoogleFonts.inter(color: Colors.white38, fontSize: 9.5),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 6),
+            Icon(Icons.arrow_forward_ios_rounded, color: accentColor, size: 14),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1504,6 +1782,32 @@ class _SearchPageState extends State<SearchPage> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
+          // 🧭 Button -2: Cosmos Route Lab (Google Maps 3-Tier Transit Testing)
+          FloatingActionButton.extended(
+            heroTag: 'fab_search_cosmos_route_lab',
+            backgroundColor: const Color(0xFF0F172A),
+            foregroundColor: const Color(0xFF00E5FF),
+            elevation: 8,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: Color(0xFF00E5FF), width: 1.8),
+            ),
+            icon: const Text('🧭', style: TextStyle(fontSize: 18)),
+            label: const Text(
+              'COSMOS ROUTE LAB 🧭',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                letterSpacing: 0.5,
+              ),
+            ),
+            onPressed: () {
+              HapticFeedback.mediumImpact();
+              _showCosmosRouteLabModal();
+            },
+          ),
+          const SizedBox(height: 10),
+
           // 🏡 Button -1: All Homes Inspector (10-Planet "This is Your Home" Atmospheric Test Modal)
           FloatingActionButton.extended(
             heroTag: 'fab_search_cosmos_all_homes_inspector',
@@ -2383,26 +2687,28 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
 
         return GestureDetector(
           onTap: () {
-            if (isPresident) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => PoketCosmicFlightPage(
-                    manifest: flightManifest,
-                    targetUserId: PocketPresidentService.presidentId,
-                    targetName: 'The Sovereign President',
-                  ),
-                ),
-              );
-              return;
+            final myColony = PoketCosmosAllocationService.instance.getColonyByCode(myPlanetCode);
+            final targetColony = PoketCosmosAllocationService.instance.getColonyByCode(targetPlanetCode);
+            final myIslandName = PoketCosmosAllocationService.instance.currentBirthPlot?.postOffice ?? myColony.islandName;
+            final targetIslandName = targetColony.islandName;
+
+            final CosmosTravelTier tier;
+            if (myPlanetCode != targetPlanetCode) {
+              tier = CosmosTravelTier.interplanetary;
+            } else if ((myPlotNumber - targetPlotNumber).abs() > 15 || myIslandName != targetIslandName) {
+              tier = CosmosTravelTier.islandToIsland;
+            } else {
+              tier = CosmosTravelTier.plotToPlot;
             }
+
+            PocketNeighbor? robotNeighbor;
             if (isRobot) {
               final robotLvl = (profile['robot_level'] as num?)?.toInt() ?? 1;
               final cosmosMeta = PocketRobotService.getCosmosAddressForRobotId(
                 profile['user_id'] ?? 'robot_1',
                 level: robotLvl,
               );
-              final robotNeighbor = PocketNeighbor(
+              robotNeighbor = PocketNeighbor(
                 id: profile['user_id'] ?? 'robot_1',
                 name: profile['name'] ?? 'Pocket Robot',
                 day: robotLvl,
@@ -2421,32 +2727,29 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                 plotNumber: cosmosMeta['plotNumber'],
                 cosmosPin: cosmosMeta['cosmosPin'],
               );
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => PoketCosmicFlightPage(
-                    manifest: flightManifest,
-                    targetUserId: profile['user_id'] ?? 'robot_1',
-                    targetName: profile['name'] ?? 'Pocket Robot',
-                    neighbor: robotNeighbor,
-                    isRobot: true,
-                    robotData: profile,
-                  ),
-                ),
-              );
-              return;
             }
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => PoketCosmicFlightPage(
-                  manifest: flightManifest,
-                  targetUserId: profile['user_id'] ?? '',
-                  targetName: name,
-                  preloadedProfile: profile,
-                ),
-              ),
+
+            final transitRoute = CosmosTransitRoute(
+              tier: tier,
+              originPlanetCode: myPlanetCode,
+              originPlanetName: myColony.planetName,
+              originIslandName: myIslandName,
+              originPlotNumber: myPlotNumber,
+              destPlanetCode: targetPlanetCode,
+              destPlanetName: targetPlanetName,
+              destIslandName: targetIslandName,
+              destPlotNumber: targetPlotNumber,
+              distanceKm: flightManifest.distanceKm,
+              formattedDistance: flightManifest.formattedDistance,
+              targetUserId: isPresident ? PocketPresidentService.presidentId : (profile['user_id'] ?? ''),
+              targetName: isPresident ? 'The Sovereign President' : name,
+              preloadedProfile: profile,
+              neighbor: robotNeighbor,
+              isRobot: isRobot,
+              robotData: isRobot ? profile : null,
             );
+
+            PoketCosmosTransitPlannerSheet.show(context, transitRoute);
           },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
@@ -3032,34 +3335,40 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                       cosmosPin: cosmosMeta['cosmosPin'],
                     );
 
-                    final myPlanetCode = PoketCosmosDistanceService.instance
-                        .resolvePlanetCode(
-                      PoketCosmosAllocationService
-                          .instance.currentBirthPlot?.planetName,
-                    );
-                    final targetPlanetCode = PoketCosmosDistanceService.instance
-                        .resolvePlanetCode(
+                    final myOriginCode = PoketCosmosAllocationService.instance.getCurrentViewerPlanetCode();
+                    final myPlot = PoketCosmosAllocationService.instance.currentBirthPlot?.plotNumber ?? 1;
+                    final targetPlanetCode = PoketCosmosDistanceService.instance.resolvePlanetCode(
                       cosmosMeta['planetCode'] ?? cosmosMeta['planetName'],
                     );
-                    final flightManifest = PoketCosmosDistanceService.instance
-                        .calculateFlightManifest(
-                      originCode: myPlanetCode,
+                    final flightManifest = PoketCosmosDistanceService.instance.calculateFlightManifest(
+                      originCode: myOriginCode,
                       destinationCode: targetPlanetCode,
+                      originPlot: myPlot,
+                      destinationPlot: cosmosMeta['plotNumber'] as int? ?? 1,
+                    );
+                    final myColony = PoketCosmosAllocationService.instance.getColonyByCode(myOriginCode);
+                    final targetColony = PoketCosmosAllocationService.instance.getColonyByCode(targetPlanetCode);
+
+                    final transitRoute = CosmosTransitRoute(
+                      tier: (myOriginCode != targetPlanetCode) ? CosmosTravelTier.interplanetary : CosmosTravelTier.islandToIsland,
+                      originPlanetCode: myOriginCode,
+                      originPlanetName: myColony.planetName,
+                      originIslandName: myColony.islandName,
+                      originPlotNumber: myPlot,
+                      destPlanetCode: targetPlanetCode,
+                      destPlanetName: targetColony.planetName,
+                      destIslandName: cosmosMeta['islandName'] ?? targetColony.islandName,
+                      destPlotNumber: cosmosMeta['plotNumber'] as int? ?? 1,
+                      distanceKm: flightManifest.distanceKm,
+                      formattedDistance: flightManifest.formattedDistance,
+                      targetUserId: robotNeighbor.id,
+                      targetName: robotNeighbor.name,
+                      neighbor: robotNeighbor,
+                      isRobot: true,
+                      robotData: robotData,
                     );
 
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PoketCosmicFlightPage(
-                          manifest: flightManifest,
-                          targetUserId: robotNeighbor.id,
-                          targetName: robotNeighbor.name,
-                          neighbor: robotNeighbor,
-                          isRobot: true,
-                          robotData: robotData,
-                        ),
-                      ),
-                    );
+                    PoketCosmosTransitPlannerSheet.show(context, transitRoute);
                   },
                   icon: const Icon(Icons.person_outline_rounded,
                       color: Colors.white, size: 18),

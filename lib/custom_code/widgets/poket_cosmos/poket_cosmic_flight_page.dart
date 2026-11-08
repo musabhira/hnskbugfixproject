@@ -8,6 +8,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/flame_cosmic_rocket_flight_game.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_resident_island_view.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_transit_models.dart';
 
 /// 🚀 / ✈️ Full-Screen Cosmic & Atmospheric Flight Simulation Page
 /// Provides dual-mode travel:
@@ -24,6 +25,7 @@ class PoketCosmicFlightPage extends StatefulWidget {
   final String? destinationPlanetCode;
   final int? destinationPlotNumber;
   final int? destinationWave;
+  final CosmosVehicle? selectedVehicle;
 
   const PoketCosmicFlightPage({
     super.key,
@@ -37,6 +39,7 @@ class PoketCosmicFlightPage extends StatefulWidget {
     this.destinationPlanetCode,
     this.destinationPlotNumber,
     this.destinationWave,
+    this.selectedVehicle,
   });
 
   @override
@@ -95,6 +98,7 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
 
     _game = FlameCosmicRocketFlightGame(
       manifest: widget.manifest,
+      vehicle: widget.selectedVehicle,
       onDistanceProgress: (km, progress) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
@@ -712,20 +716,24 @@ class _PoketCosmicFlightPageState extends State<PoketCosmicFlightPage>
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          _isBoosting
-                              ? Icons.local_fire_department_rounded
-                              : (isSamePlanet
-                                  ? Icons.airplanemode_active_rounded
-                                  : Icons.rocket_launch_rounded),
-                          color: Colors.white,
-                          size: 24,
-                        ),
+                        if (widget.selectedVehicle != null)
+                          Text(widget.selectedVehicle!.emoji, style: const TextStyle(fontSize: 22))
+                        else
+                          Icon(
+                            _isBoosting
+                                ? Icons.local_fire_department_rounded
+                                : (isSamePlanet
+                                    ? Icons.airplanemode_active_rounded
+                                    : Icons.rocket_launch_rounded),
+                            color: Colors.white,
+                            size: 24,
+                          ),
                         const SizedBox(height: 1),
                         Text(
                           _isBoosting
-                              ? (isSamePlanet ? 'AFTERBURN' : 'WARP')
-                              : (isSamePlanet ? 'JET' : 'BOOST'),
+                              ? 'BOOST'
+                              : (widget.selectedVehicle?.name.split(' ').first.toUpperCase() ??
+                                  (isSamePlanet ? 'JET' : 'BOOST')),
                           style: GoogleFonts.outfit(
                             color: Colors.white,
                             fontSize: 9.5,
