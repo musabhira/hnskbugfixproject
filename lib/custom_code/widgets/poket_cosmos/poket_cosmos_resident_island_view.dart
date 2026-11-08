@@ -75,44 +75,33 @@ class _PoketCosmosResidentIslandViewState
     final int wave = math.max(1, widget.targetWave ?? 1);
 
     // Direct planet colony & plot routing (fixes bug where all plots showed the same default island)
-    if (widget.targetPlanetCode != null &&
-        widget.targetPlanetCode!.isNotEmpty) {
-      colony = PoketCosmosAllocationService.instance
-          .getColonyByCode(widget.targetPlanetCode!);
-      final int pNum = (widget.targetPlotNumber ?? 1)
-          .clamp(1, PoketCosmosAllocationService.maxPlotsPerIsland);
+    if (widget.targetPlanetCode != null && widget.targetPlanetCode!.isNotEmpty) {
+      colony = PoketCosmosAllocationService.instance.getColonyByCode(widget.targetPlanetCode!);
+      final int pNum = (widget.targetPlotNumber ?? 1).clamp(1, PoketCosmosAllocationService.maxPlotsPerIsland);
       final String effectiveIslandName = (wave == 1)
           ? colony.islandName
-          : PoketCosmosAllocationService.generateInfiniteIslandName(
-              colony.code, wave, wave);
-      final String effectiveStreetName =
-          (wave == 1) ? colony.streetName : 'Wave $wave ${colony.streetName}';
-
-      final bool hasRealUser = (widget.userId != null &&
-          widget.userId!.isNotEmpty &&
-          widget.userId != 'guest_user' &&
-          widget.userName != null &&
-          widget.userName!.trim().isNotEmpty &&
-          widget.userName!.trim().toLowerCase() != 'available');
+          : PoketCosmosAllocationService.generateInfiniteIslandName(colony.code, wave, wave);
+      final String effectiveStreetName = (wave == 1)
+          ? colony.streetName
+          : 'Wave $wave ${colony.streetName}';
 
       plot = CitizenPlot(
         plotNumber: pNum,
-        userId: hasRealUser ? widget.userId! : '',
-        userName: hasRealUser ? widget.userName! : 'Vacant Plot #$pNum',
-        userAvatar: widget.userAvatar ?? (hasRealUser ? '🏡' : '➕'),
-        day: hasRealUser ? 1 : 0,
-        pocketScore: hasRealUser ? 100 : 0,
+        userId: widget.userId ?? 'plot_citizen_$pNum',
+        userName: widget.userName ?? 'Citizen #$pNum',
+        userAvatar: widget.userAvatar ?? '🏡',
+        day: 1,
+        pocketScore: 100,
         streetName: effectiveStreetName,
         postOffice: effectiveIslandName,
         countryName: effectiveIslandName,
         planetName: colony.planetName,
-        postalPinCode:
-            'PKT-W${wave.toString().padLeft(2, '0')}-${colony.code}-I${wave.toString().padLeft(2, '0')}-P${pNum.toString().padLeft(2, '0')}',
+        postalPinCode: 'PKT-W${wave.toString().padLeft(2, '0')}-${colony.code}-I${wave.toString().padLeft(2, '0')}-P${pNum.toString().padLeft(2, '0')}',
         coordinates: Offset.zero,
         isVip: false,
         isPresident: false,
         tier: (pNum <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
-        status: hasRealUser ? PlotStatus.occupied : PlotStatus.vacant,
+        status: PlotStatus.occupied,
       );
     } else {
       // Load user-specific permanent plot
@@ -133,8 +122,7 @@ class _PoketCosmosResidentIslandViewState
     // 3. Build Island Model with subtle procedural variation per wave
     final effectiveIslandTitle = (wave == 1)
         ? plot.countryName
-        : PoketCosmosAllocationService.generateInfiniteIslandName(
-            colony.code, wave, wave);
+        : PoketCosmosAllocationService.generateInfiniteIslandName(colony.code, wave, wave);
 
     final island = PoketCountryMap(
       id: colony.planetId * 100 + wave,
@@ -174,27 +162,9 @@ class _PoketCosmosResidentIslandViewState
       final existing = plotsMap[updatedPlot.plotNumber]!;
       plotsMap[updatedPlot.plotNumber] = existing.copyWith(
         coordinates: targetPos,
-        userName: (widget.userName != null &&
-                widget.userName!.isNotEmpty &&
-                widget.userName!.toLowerCase() != 'available')
-            ? widget.userName
-            : existing.userName,
-        userAvatar: (widget.userAvatar != null && widget.userAvatar!.isNotEmpty)
-            ? widget.userAvatar
-            : existing.userAvatar,
+        userName: (widget.userName != null && widget.userName!.isNotEmpty) ? widget.userName : existing.userName,
+        userAvatar: (widget.userAvatar != null && widget.userAvatar!.isNotEmpty) ? widget.userAvatar : existing.userAvatar,
       );
-    } else if (widget.targetPlanetCode != null &&
-        widget.targetPlanetCode!.isNotEmpty) {
-      final bool hasRealUser = (widget.userId != null &&
-          widget.userId!.isNotEmpty &&
-          widget.userId != 'guest_user' &&
-          widget.userName != null &&
-          widget.userName!.trim().isNotEmpty &&
-          widget.userName!.trim().toLowerCase() != 'available');
-      if (hasRealUser) {
-        plotsMap[updatedPlot.plotNumber] = updatedPlot;
-      }
-      // If it is a VACANT / FREE plot, do NOT add to plotsMap! It remains vacant!
     } else {
       plotsMap[updatedPlot.plotNumber] = updatedPlot;
     }
@@ -217,25 +187,16 @@ class _PoketCosmosResidentIslandViewState
     }
   }
 
-  void _centerOnUserPlot(Size screenSize, {bool zoomIn = false}) {
+  void _centerOnUserPlot(Size screenSize) {
     final sW = screenSize.width;
     final sH = screenSize.height;
     final worldHeight = sH;
-    final worldWidth = math.max(
-        sW,
-        sH *
-            (IslandAerialPainter.kIslandArtWidth /
-                IslandAerialPainter.kIslandArtHeight));
-    final painterScale = worldHeight / IslandAerialPainter.kIslandArtHeight;
+    final worldWidth = math.max(sW * 2.6, sH * 1.8);
+    const targetScale = 2.4;
 
-    final targetWorldX = (_myPlot.coordinates != Offset.zero)
-        ? (worldWidth / 2 + _myPlot.coordinates.dx * painterScale)
-        : (worldWidth / 2);
-    final targetWorldY = (_myPlot.coordinates != Offset.zero)
-        ? (worldHeight / 2 + _myPlot.coordinates.dy * painterScale)
-        : (worldHeight / 2);
-
-    final targetScale = zoomIn ? 2.2 : 1.0;
+    final painterScale = ((worldHeight / 850.0) * 1.15).clamp(0.95, 1.50);
+    final targetWorldX = worldWidth / 2 + _myPlot.coordinates.dx * painterScale;
+    final targetWorldY = worldHeight / 2 + _myPlot.coordinates.dy * painterScale;
 
     final minTx = sW - (worldWidth * targetScale);
     final minTy = sH - (worldHeight * targetScale);
@@ -298,10 +259,7 @@ class _PoketCosmosResidentIslandViewState
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
           border: Border(top: BorderSide(color: Color(0xFF38BDF8), width: 1.5)),
           boxShadow: [
-            BoxShadow(
-                color: Color(0x66000000),
-                blurRadius: 24,
-                offset: Offset(0, -6)),
+            BoxShadow(color: Color(0x66000000), blurRadius: 24, offset: Offset(0, -6)),
           ],
         ),
         child: Column(
@@ -338,8 +296,7 @@ class _PoketCosmosResidentIslandViewState
             const SizedBox(height: 6),
             Text(
               'Select any of the 10 celestial colonies to inspect its 20-plot island, landscape, and registered community members.',
-              style: GoogleFonts.outfit(
-                  color: const Color(0xFF94A3B8), fontSize: 12),
+              style: GoogleFonts.outfit(color: const Color(0xFF94A3B8), fontSize: 12),
             ),
             const SizedBox(height: 14),
             Expanded(
@@ -394,22 +351,15 @@ class _PoketCosmosResidentIslandViewState
                                             ? '🌕'
                                             : c.planetName.contains('Jupiter')
                                                 ? '🟠'
-                                                : c.planetName
-                                                        .contains('Saturn')
+                                                : c.planetName.contains('Saturn')
                                                     ? '🪐'
-                                                    : c.planetName
-                                                            .contains('Europa')
+                                                    : c.planetName.contains('Europa')
                                                         ? '🧊'
-                                                        : c.planetName.contains(
-                                                                'Venus')
+                                                        : c.planetName.contains('Venus')
                                                             ? '✨'
-                                                            : c.planetName
-                                                                    .contains(
-                                                                        'Titan')
+                                                            : c.planetName.contains('Titan')
                                                                 ? '🟢'
-                                                                : c.planetName
-                                                                        .contains(
-                                                                            'Neptune')
+                                                                : c.planetName.contains('Neptune')
                                                                     ? '🔵'
                                                                     : '🟣',
                                 style: const TextStyle(fontSize: 22),
@@ -438,8 +388,7 @@ class _PoketCosmosResidentIslandViewState
                                             horizontal: 6, vertical: 2),
                                         decoration: BoxDecoration(
                                           color: const Color(0xFF16A34A),
-                                          borderRadius:
-                                              BorderRadius.circular(6),
+                                          borderRadius: BorderRadius.circular(6),
                                         ),
                                         child: Text(
                                           'YOUR RESIDENCE',
@@ -520,16 +469,14 @@ class _PoketCosmosResidentIslandViewState
               ctx,
               id: 'all',
               title: 'All 20 Island Parcels',
-              subtitle:
-                  'Show all houses, pre-booked countdowns, and vacant plots',
+              subtitle: 'Show all houses, pre-booked countdowns, and vacant plots',
               icon: Icons.grid_view_rounded,
             ),
             _buildFilterOption(
               ctx,
               id: 'occupied',
               title: 'Occupied Citizens Only',
-              subtitle:
-                  'Focus on settled community homes and architectural compounds',
+              subtitle: 'Focus on settled community homes and architectural compounds',
               icon: Icons.home_rounded,
             ),
             _buildFilterOption(
@@ -563,9 +510,7 @@ class _PoketCosmosResidentIslandViewState
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isSel
-              ? const Color(0xFF16A34A).withValues(alpha: 0.18)
-              : Colors.transparent,
+          color: isSel ? const Color(0xFF16A34A).withValues(alpha: 0.18) : Colors.transparent,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isSel ? const Color(0xFF4ADE80) : const Color(0xFF334155),
@@ -574,10 +519,7 @@ class _PoketCosmosResidentIslandViewState
         ),
         child: Row(
           children: [
-            Icon(icon,
-                color:
-                    isSel ? const Color(0xFF4ADE80) : const Color(0xFF94A3B8),
-                size: 20),
+            Icon(icon, color: isSel ? const Color(0xFF4ADE80) : const Color(0xFF94A3B8), size: 20),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -593,15 +535,13 @@ class _PoketCosmosResidentIslandViewState
                   ),
                   Text(
                     subtitle,
-                    style: GoogleFonts.outfit(
-                        color: const Color(0xFF94A3B8), fontSize: 11),
+                    style: GoogleFonts.outfit(color: const Color(0xFF94A3B8), fontSize: 11),
                   ),
                 ],
               ),
             ),
             if (isSel)
-              const Icon(Icons.check_circle_rounded,
-                  color: Color(0xFF4ADE80), size: 18),
+              const Icon(Icons.check_circle_rounded, color: Color(0xFF4ADE80), size: 18),
           ],
         ),
       ),
@@ -636,11 +576,7 @@ class _PoketCosmosResidentIslandViewState
               final sW = constraints.maxWidth;
               final sH = constraints.maxHeight;
               final worldHeight = sH;
-              final worldWidth = math.max(
-                  sW,
-                  sH *
-                      (IslandAerialPainter.kIslandArtWidth /
-                          IslandAerialPainter.kIslandArtHeight));
+              final worldWidth = math.max(sW * 2.6, sH * 1.8);
 
               if (!_transformInitialized) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -653,8 +589,8 @@ class _PoketCosmosResidentIslandViewState
 
               return InteractiveViewer(
                 transformationController: _transformController,
-                minScale: 1.0,
-                maxScale: 6.0,
+                minScale: 0.55,
+                maxScale: 12.0,
                 boundaryMargin: EdgeInsets.zero,
                 constrained: false,
                 child: SizedBox(
@@ -663,7 +599,7 @@ class _PoketCosmosResidentIslandViewState
                   child: IslandAerialViewWidget(
                     island: _island,
                     isInteractive: true,
-                    zoomScale: 1.8,
+                    zoomScale: 2.4,
                     plots: _islandPlots,
                     selectedPlotNumber: widget.targetPlotNumber ??
                         ((_colony.planetName == _myPlot.planetName)
@@ -841,24 +777,12 @@ class _PoketCosmosResidentIslandViewState
                   flex: 3,
                   child: Builder(
                     builder: (context) {
-                      final isHomeColony =
-                          (_colony.planetName == _myPlot.planetName);
-                      final isVacantPlot =
-                          (_myPlot.status == PlotStatus.vacant);
+                      final isHomeColony = (_colony.planetName == _myPlot.planetName);
                       return ElevatedButton.icon(
                         onPressed: () {
                           HapticFeedback.mediumImpact();
-                          if (isVacantPlot) {
-                            IslandAerialViewWidget.showNeighborInviteSheet(
-                              context,
-                              island: _island,
-                              plotNumber: _myPlot.plotNumber,
-                              planetName: _colony.planetName,
-                              onPlotPurchased: () => _loadResidentIsland(),
-                            );
-                          } else if (isHomeColony) {
-                            _centerOnUserPlot(MediaQuery.of(context).size,
-                                zoomIn: true);
+                          if (isHomeColony) {
+                            _centerOnUserPlot(MediaQuery.of(context).size);
                           } else {
                             _switchToColony(
                               PoketCosmosAllocationService.instance
@@ -866,16 +790,11 @@ class _PoketCosmosResidentIslandViewState
                             );
                           }
                         },
-                        icon: Text(
-                          isVacantPlot ? '✨' : (isHomeColony ? '🏡' : '🚀'),
-                          style: const TextStyle(fontSize: 16),
-                        ),
+                        icon: Text(isHomeColony ? '🏡' : '🚀', style: const TextStyle(fontSize: 16)),
                         label: Text(
-                          isVacantPlot
-                              ? 'CLAIM / BUY PARCEL #${_myPlot.plotNumber} 🏡'
-                              : (isHomeColony
-                                  ? 'FOCUS TO MY PLOT (#${_myPlot.plotNumber})'
-                                  : 'FLY TO MY PLOT (${_myPlot.planetName.split(" ").first}) 🚀'),
+                          isHomeColony
+                              ? 'FOCUS TO MY PLOT (#${_myPlot.plotNumber})'
+                              : 'FLY TO MY PLOT (${_myPlot.planetName.split(" ").first}) 🚀',
                           style: GoogleFonts.outfit(
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
@@ -885,21 +804,13 @@ class _PoketCosmosResidentIslandViewState
                           overflow: TextOverflow.ellipsis,
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: isVacantPlot
-                              ? const Color(0xFF10B981)
-                              : (isHomeColony
-                                  ? const Color(0xFF16A34A)
-                                  : const Color(0xFF2563EB)),
+                          backgroundColor: isHomeColony ? const Color(0xFF16A34A) : const Color(0xFF2563EB),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                             side: BorderSide(
-                              color: isVacantPlot
-                                  ? const Color(0xFF34D399)
-                                  : (isHomeColony
-                                      ? const Color(0xFF4ADE80)
-                                      : const Color(0xFF60A5FA)),
+                              color: isHomeColony ? const Color(0xFF4ADE80) : const Color(0xFF60A5FA),
                               width: 1.2,
                             ),
                           ),
@@ -952,3 +863,4 @@ class _PoketCosmosResidentIslandViewState
     );
   }
 }
+

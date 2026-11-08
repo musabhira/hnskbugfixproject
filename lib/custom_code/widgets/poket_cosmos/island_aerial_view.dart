@@ -38,19 +38,321 @@ class IslandAerialViewWidget extends StatefulWidget {
     this.initialReservations,
   });
 
-  static void showNeighborInviteSheet(
-    BuildContext context, {
-    required PoketCountryMap island,
-    required int plotNumber,
-    String? planetName,
-    VoidCallback? onPlotPurchased,
-    Future<void> Function()? onReservationUpdated,
-  }) {
+  @override
+  State<IslandAerialViewWidget> createState() => _IslandAerialViewWidgetState();
+}
+
+class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animController;
+  Map<int, NeighborReservationPass> _activeReservations = {};
+  Offset? _tapDownPos;
+  DateTime? _tapDownTime;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 40),
+    )..repeat();
+
+    if (widget.initialReservations != null) {
+      _activeReservations = Map.from(widget.initialReservations!);
+    }
+    _loadReservations();
+  }
+
+  Future<void> _loadReservations() async {
+    final map = await PoketCosmosAllocationService.instance
+        .getActiveReservationsMap(widget.island.id);
+    if (mounted) {
+      setState(() {
+        _activeReservations = map;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = Size(constraints.maxWidth, constraints.maxHeight);
+
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapDown: widget.isInteractive
+              ? (details) {
+                  _tapDownPos = details.localPosition;
+                  _tapDownTime = DateTime.now();
+                }
+              : null,
+          onTapUp: widget.isInteractive
+              ? (details) {
+                  if (_tapDownPos != null) {
+                    final moved = (details.localPosition - _tapDownPos!).distance;
+                    final dur = DateTime.now().difference(_tapDownTime ?? DateTime.now());
+                    if (moved > 10.0 || dur.inMilliseconds > 450) {
+                      // Drag, pan, or pinch-zoom in progress - ignore plot tap!
+                      return;
+                    }
+                  }
+                  _handleTap(details, size);
+                }
+              : null,
+          onTapCancel: () {
+            _tapDownPos = null;
+          },
+          child: CustomPaint(
+            size: size,
+            painter: IslandAerialPainter(
+              island: widget.island,
+              isInteractive: widget.isInteractive,
+              zoomScale: widget.zoomScale,
+              plots: widget.plots,
+              reservations: _activeReservations,
+              selectedPlotNumber: widget.selectedPlotNumber,
+              animation: _animController,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _handleTap(TapUpDetails details, Size size) {
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+    final scale = widget.isInteractive
+        ? ((size.height / 850.0) * 1.15).clamp(0.95, 1.50)
+        : (math.min(size.width, size.height) / 540.0);
+
+    final islandX = (details.localPosition.dx - cx) / scale;
+    final islandY = (details.localPosition.dy - cy) / scale;
+    final tapPoint = Offset(islandX, islandY);
+
+    // 1. Check if occupied citizen plot tapped
+    CitizenPlot? hitPlot;
+    double minDistance = 30.0 * scale;
+
+    for (final plot in widget.plots) {
+      final d = (plot.coordinates - tapPoint).distance;
+      if (d < minDistance) {
+        minDistance = d;
+        hitPlot = plot;
+      }
+    }
+
+    if (hitPlot != null) {
+      if (widget.onPlotTapped != null) {
+        widget.onPlotTapped!(hitPlot);
+      } else {
+        HapticFeedback.mediumImpact();
+        PocketCitadelAttackPage.openForUser(
+          context,
+          userId: hitPlot.userId,
+          targetName: hitPlot.userName,
+        );
+      }
+      return;
+    }
+
+    // 2. Check if a pre-booked or vacant parcel was tapped (1..18 plots)
+    final allCoords = IslandAerialPainter.get35PlotCoordinates(widget.island.shapeStyle);
+    final maxPlots = math.min(PoketCosmosAllocationService.maxPlotsPerIsland, allCoords.length);
+
+    for (int i = 0; i < maxPlots; i++) {
+      final plotNum = i + 1;
+      final isOccupied = widget.plots.any((p) => p.plotNumber == plotNum);
+      if (isOccupied) continue;
+
+      final d = (allCoords[i] - tapPoint).distance;
+      if (d < 30.0) {
+        if (_activeReservations.containsKey(plotNum)) {
+          // Pre-booked parcel tapped
+          _showPreBookedStatusSheet(context, _activeReservations[plotNum]!);
+        } else {
+          // Vacant parcel tapped with [+] sign
+          _showNeighborInviteSheet(context, plotNum);
+        }
+        return;
+      }
+    }
+  }
+
+  void _showPreBookedStatusSheet(BuildContext context, NeighborReservationPass pass) {
     HapticFeedback.mediumImpact();
-    final colony = PoketCosmosAllocationService.instance
-        .getColonyByPlanetName(planetName ?? island.name);
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Color(0xFF0F172A),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          border: Border(top: BorderSide(color: Color(0xFFFFD700), width: 1.8)),
+          boxShadow: [
+            BoxShadow(color: Color(0x66F59E0B), blurRadius: 24, offset: Offset(0, -6)),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFB45309).withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+                  ),
+                  child: const Text('⏳', style: TextStyle(fontSize: 26)),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Plot #${pass.plotNumber} is Pre-Booked!',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Reserved for a friend',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.timer_outlined, color: Color(0xFF38BDF8), size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Time Remaining: ${pass.minutesRemaining} minutes (${pass.minutesRemaining ~/ 60}h ${pass.minutesRemaining % 60}m)',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0284C7).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.key_rounded, color: Color(0xFF38BDF8), size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Born PIN: ${pass.cosmosPin}',
+                      style: GoogleFonts.jetBrainsMono(
+                        color: const Color(0xFFBAE6FD),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      Navigator.pop(ctx);
+                      try {
+                        await Share.share(pass.shareMessage);
+                      } catch (_) {
+                        Clipboard.setData(ClipboardData(text: pass.shareMessage));
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF16A34A),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.share_rounded, size: 18),
+                        const SizedBox(width: 6),
+                        Text('Share WhatsApp', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13)),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  flex: 2,
+                  child: OutlinedButton(
+                    onPressed: () async {
+                      Navigator.pop(ctx);
+                      await PoketCosmosAllocationService.instance.cancelReservation(pass.code);
+                      await _loadReservations();
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFF87171),
+                      side: const BorderSide(color: Color(0xFFF87171)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    child: Text('Cancel Lock', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showNeighborInviteSheet(BuildContext context, int plotNumber) {
+    HapticFeedback.mediumImpact();
+    final colony = PoketCosmosAllocationService.instance.getColonyByPlanetName(widget.planetName ?? widget.island.name);
     final minimalPin = 'PKT-${colony.code}-$plotNumber';
-    final targetWave = (island.id ~/ 100) > 0 ? (island.id ~/ 100) : 1;
+    final targetWave = (widget.island.id ~/ 100) > 0 ? (widget.island.id ~/ 100) : 1;
     final marketPrice = PoketCosmosAllocationService.calculatePlotMarketPrice(
       wave: targetWave,
       planetCode: colony.code,
@@ -68,10 +370,7 @@ class IslandAerialViewWidget extends StatefulWidget {
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           border: Border(top: BorderSide(color: Color(0xFF38BDF8), width: 1.5)),
           boxShadow: [
-            BoxShadow(
-                color: Color(0x660284C7),
-                blurRadius: 25,
-                offset: Offset(0, -4)),
+            BoxShadow(color: Color(0x660284C7), blurRadius: 25, offset: Offset(0, -4)),
           ],
         ),
         child: Column(
@@ -97,8 +396,7 @@ class IslandAerialViewWidget extends StatefulWidget {
                   decoration: BoxDecoration(
                     color: const Color(0xFF0284C7).withValues(alpha: 0.25),
                     borderRadius: BorderRadius.circular(12),
-                    border:
-                        Border.all(color: const Color(0xFF38BDF8), width: 1.2),
+                    border: Border.all(color: const Color(0xFF38BDF8), width: 1.2),
                   ),
                   child: const Text('🏝️', style: TextStyle(fontSize: 22)),
                 ),
@@ -116,7 +414,7 @@ class IslandAerialViewWidget extends StatefulWidget {
                         ),
                       ),
                       Text(
-                        '${island.name} • ${colony.planetName}',
+                        '${widget.island.name} • ${colony.planetName}',
                         style: GoogleFonts.plusJakartaSans(
                           color: const Color(0xFF7DD3FC),
                           fontSize: 12,
@@ -128,8 +426,7 @@ class IslandAerialViewWidget extends StatefulWidget {
                 ),
                 // Minimal PIN Pill
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1E293B),
                     borderRadius: BorderRadius.circular(10),
@@ -204,14 +501,11 @@ class IslandAerialViewWidget extends StatefulWidget {
                     ),
                   ),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: const Color(0xFF10B981).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                          color:
-                              const Color(0xFF10B981).withValues(alpha: 0.5)),
+                      border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.5)),
                     ),
                     child: Text(
                       plotNumber <= 5 ? 'Beachfront' : 'Prime In-land',
@@ -237,8 +531,7 @@ class IslandAerialViewWidget extends StatefulWidget {
                     backgroundColor: const Color(0xFF0F172A),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
-                      side: const BorderSide(
-                          color: Color(0xFF38BDF8), width: 1.5),
+                      side: const BorderSide(color: Color(0xFF38BDF8), width: 1.5),
                     ),
                     title: Row(
                       children: [
@@ -256,7 +549,7 @@ class IslandAerialViewWidget extends StatefulWidget {
                       ],
                     ),
                     content: Text(
-                      'Are you sure you want to purchase and relocate your permanent residence to Plot #$plotNumber on ${colony.planetName} (${island.name}) for $marketPrice Pocket Score?\n\nYour address and profile deed will be permanently updated.',
+                      'Are you sure you want to purchase and relocate your permanent residence to Plot #$plotNumber on ${colony.planetName} (${widget.island.name}) for $marketPrice Pocket Score?\n\nYour address and profile deed will be permanently updated.',
                       style: GoogleFonts.plusJakartaSans(
                         color: Colors.white70,
                         fontSize: 13,
@@ -275,8 +568,7 @@ class IslandAerialViewWidget extends StatefulWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF10B981),
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -284,8 +576,7 @@ class IslandAerialViewWidget extends StatefulWidget {
                         onPressed: () => Navigator.pop(dCtx, true),
                         child: Text(
                           'Confirm ($marketPrice PS)',
-                          style:
-                              GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -294,16 +585,16 @@ class IslandAerialViewWidget extends StatefulWidget {
 
                 if (confirm != true) return;
 
-                final ok = await PoketCosmosAllocationService.instance
-                    .buyAndSwitchPlot(
+                final ok = await PoketCosmosAllocationService.instance.buyAndSwitchPlot(
                   context: context,
                   targetPlanetCode: colony.code,
                   targetPlotNumber: plotNumber,
                   targetWave: targetWave,
                 );
-                if (ok && context.mounted) {
-                  await onReservationUpdated?.call();
-                  onPlotPurchased?.call();
+                if (ok && mounted) {
+                  await _loadReservations();
+                  widget.onPlotPurchased?.call();
+                  setState(() {});
                 }
               },
               style: ElevatedButton.styleFrom(
@@ -338,18 +629,18 @@ class IslandAerialViewWidget extends StatefulWidget {
                 Navigator.pop(ctx);
                 final pass = await PoketCosmosAllocationService.instance
                     .createNeighborInvitePass(
-                  islandId: island.id,
-                  islandName: island.name,
+                  islandId: widget.island.id,
+                  islandName: widget.island.name,
                   planetName: colony.planetName,
                   streetName: colony.streetName,
                   plotNumber: plotNumber,
                   hostUserName: 'Neighbor',
                 );
 
-                await onReservationUpdated?.call();
+                await _loadReservations();
 
                 final shareText =
-                    '🏡 Become my neighbor in Pocket Mates!\nI reserved Plot #$plotNumber on ${colony.planetName} (${island.name}) for you (4-Hour Pass).\nEnter invite code: ${pass.code}';
+                    '🏡 Become my neighbor in Pocket Mates!\nI reserved Plot #$plotNumber on ${colony.planetName} (${widget.island.name}) for you (4-Hour Pass).\nEnter invite code: ${pass.code}';
                 try {
                   await Share.share(shareText);
                 } catch (_) {
@@ -393,350 +684,6 @@ class IslandAerialViewWidget extends StatefulWidget {
       ),
     );
   }
-
-  @override
-  State<IslandAerialViewWidget> createState() => _IslandAerialViewWidgetState();
-}
-
-class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animController;
-  Map<int, NeighborReservationPass> _activeReservations = {};
-  Offset? _tapDownPos;
-  DateTime? _tapDownTime;
-
-  @override
-  void initState() {
-    super.initState();
-    _animController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 40),
-    )..repeat();
-
-    if (widget.initialReservations != null) {
-      _activeReservations = Map.from(widget.initialReservations!);
-    }
-    _loadReservations();
-  }
-
-  Future<void> _loadReservations() async {
-    final map = await PoketCosmosAllocationService.instance
-        .getActiveReservationsMap(widget.island.id);
-    if (mounted) {
-      setState(() {
-        _activeReservations = map;
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _animController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final size = Size(constraints.maxWidth, constraints.maxHeight);
-
-        return GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTapDown: widget.isInteractive
-              ? (details) {
-                  _tapDownPos = details.localPosition;
-                  _tapDownTime = DateTime.now();
-                }
-              : null,
-          onTapUp: widget.isInteractive
-              ? (details) {
-                  if (_tapDownPos != null) {
-                    final moved =
-                        (details.localPosition - _tapDownPos!).distance;
-                    final dur = DateTime.now()
-                        .difference(_tapDownTime ?? DateTime.now());
-                    if (moved > 10.0 || dur.inMilliseconds > 450) {
-                      // Drag, pan, or pinch-zoom in progress - ignore plot tap!
-                      return;
-                    }
-                  }
-                  _handleTap(details, size);
-                }
-              : null,
-          onTapCancel: () {
-            _tapDownPos = null;
-          },
-          child: CustomPaint(
-            size: size,
-            painter: IslandAerialPainter(
-              island: widget.island,
-              isInteractive: widget.isInteractive,
-              zoomScale: widget.zoomScale,
-              plots: widget.plots,
-              reservations: _activeReservations,
-              selectedPlotNumber: widget.selectedPlotNumber,
-              animation: _animController,
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void _handleTap(TapUpDetails details, Size size) {
-    final cx = size.width / 2;
-    final cy = size.height / 2;
-    final scale = widget.isInteractive
-        ? (size.height / IslandAerialPainter.kIslandArtHeight)
-        : (math.min(size.width, size.height) / 540.0);
-
-    final islandX = (details.localPosition.dx - cx) / scale;
-    final islandY = (details.localPosition.dy - cy) / scale;
-    final tapPoint = Offset(islandX, islandY);
-
-    // 1. Check if occupied citizen plot tapped
-    CitizenPlot? hitPlot;
-    double minDistance = 30.0 * scale;
-
-    for (final plot in widget.plots) {
-      final d = (plot.coordinates - tapPoint).distance;
-      if (d < minDistance) {
-        minDistance = d;
-        hitPlot = plot;
-      }
-    }
-
-    if (hitPlot != null) {
-      if (widget.onPlotTapped != null) {
-        widget.onPlotTapped!(hitPlot);
-      } else {
-        HapticFeedback.mediumImpact();
-        PocketCitadelAttackPage.openForUser(
-          context,
-          userId: hitPlot.userId,
-          targetName: hitPlot.userName,
-        );
-      }
-      return;
-    }
-
-    // 2. Check if a pre-booked or vacant parcel was tapped (1..18 plots)
-    final allCoords =
-        IslandAerialPainter.get35PlotCoordinates(widget.island.shapeStyle);
-    final maxPlots = math.min(
-        PoketCosmosAllocationService.maxPlotsPerIsland, allCoords.length);
-
-    for (int i = 0; i < maxPlots; i++) {
-      final plotNum = i + 1;
-      final isOccupied = widget.plots.any((p) => p.plotNumber == plotNum);
-      if (isOccupied) continue;
-
-      final d = (allCoords[i] - tapPoint).distance;
-      if (d < 30.0) {
-        if (_activeReservations.containsKey(plotNum)) {
-          // Pre-booked parcel tapped
-          _showPreBookedStatusSheet(context, _activeReservations[plotNum]!);
-        } else {
-          // Vacant parcel tapped with [+] sign
-          _showNeighborInviteSheet(context, plotNum);
-        }
-        return;
-      }
-    }
-  }
-
-  void _showPreBookedStatusSheet(
-      BuildContext context, NeighborReservationPass pass) {
-    HapticFeedback.mediumImpact();
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.all(24),
-        decoration: const BoxDecoration(
-          color: Color(0xFF0F172A),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-          border: Border(top: BorderSide(color: Color(0xFFFFD700), width: 1.8)),
-          boxShadow: [
-            BoxShadow(
-                color: Color(0x66F59E0B),
-                blurRadius: 24,
-                offset: Offset(0, -6)),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFB45309).withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(14),
-                    border:
-                        Border.all(color: const Color(0xFFFFD700), width: 1.2),
-                  ),
-                  child: const Text('⏳', style: TextStyle(fontSize: 26)),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Plot #${pass.plotNumber} is Pre-Booked!',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        'Reserved for a friend',
-                        style: GoogleFonts.plusJakartaSans(
-                          color: const Color(0xFFFFD700),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E293B),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.white12),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.timer_outlined,
-                      color: Color(0xFF38BDF8), size: 20),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Time Remaining: ${pass.minutesRemaining} minutes (${pass.minutesRemaining ~/ 60}h ${pass.minutesRemaining % 60}m)',
-                      style: GoogleFonts.plusJakartaSans(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0284C7).withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                    color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.key_rounded,
-                      color: Color(0xFF38BDF8), size: 18),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Born PIN: ${pass.cosmosPin}',
-                      style: GoogleFonts.jetBrainsMono(
-                        color: const Color(0xFFBAE6FD),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      Navigator.pop(ctx);
-                      try {
-                        await Share.share(pass.shareMessage);
-                      } catch (_) {
-                        Clipboard.setData(
-                            ClipboardData(text: pass.shareMessage));
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF16A34A),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14)),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.share_rounded, size: 18),
-                        const SizedBox(width: 6),
-                        Text('Share WhatsApp',
-                            style: GoogleFonts.outfit(
-                                fontWeight: FontWeight.bold, fontSize: 13)),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  flex: 2,
-                  child: OutlinedButton(
-                    onPressed: () async {
-                      Navigator.pop(ctx);
-                      await PoketCosmosAllocationService.instance
-                          .cancelReservation(pass.code);
-                      await _loadReservations();
-                    },
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFFF87171),
-                      side: const BorderSide(color: Color(0xFFF87171)),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14)),
-                    ),
-                    child: Text('Cancel Lock',
-                        style: GoogleFonts.outfit(
-                            fontWeight: FontWeight.bold, fontSize: 12)),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showNeighborInviteSheet(BuildContext context, int plotNumber) {
-    IslandAerialViewWidget.showNeighborInviteSheet(
-      context,
-      island: widget.island,
-      plotNumber: plotNumber,
-      planetName: widget.planetName,
-      onPlotPurchased: widget.onPlotPurchased,
-      onReservationUpdated: () async {
-        await _loadReservations();
-        if (mounted) setState(() {});
-      },
-    );
-  }
 }
 
 // =============================================================================
@@ -744,10 +691,10 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
 // Zero thin necks, zero houses falling into the ocean!
 // =============================================================================
 enum IslandArchetype {
-  naturalOval, // 1. Broad Continental Oval with natural coastal coves
-  capePeninsula, // 2. Wide Northern Mainland tapering to expansive Southern Cape
-  horseshoeBay, // 3. Thick U-shaped Horseshoe Island around calm turquoise bay
-  twinSanctuary, // 4. Two broad circular highlands joined by massive central bridge
+  naturalOval,    // 1. Broad Continental Oval with natural coastal coves
+  capePeninsula,  // 2. Wide Northern Mainland tapering to expansive Southern Cape
+  horseshoeBay,   // 3. Thick U-shaped Horseshoe Island around calm turquoise bay
+  twinSanctuary,  // 4. Two broad circular highlands joined by massive central bridge
   citadelPlateau, // 5. Royal Hexagonal Bastion Citadel
 }
 
@@ -789,12 +736,6 @@ enum CelestialColonyType {
 
 /// 🎨 Island Aerial CustomPainter with Expansive Green Terrains & Safe In-Land Habit Plots
 class IslandAerialPainter extends CustomPainter {
-  /// Canonical design bounding dimensions for the rendered island art
-  /// Terrain ry=198 + reef=18 + southern islet=222 -> total height fits seamlessly inside 440px.
-  /// Main landmass rx=237 + reef=18 + marina pier=245 -> total width fits seamlessly inside 600px.
-  static const double kIslandArtHeight = 440.0;
-  static const double kIslandArtWidth = 600.0;
-
   final PoketCountryMap island;
   final bool isInteractive;
   final double zoomScale;
@@ -895,9 +836,9 @@ class IslandAerialPainter extends CustomPainter {
 
     final cx = size.width / 2;
     final cy = size.height / 2;
-    // Responsive island scale: in interactive mode, art touches the screen top and bottom exactly!
+    // Responsive island scale: proportional to screen height in fullscreen mode, scaled to fit in carousel cards
     final double scale = isInteractive
-        ? (size.height / kIslandArtHeight)
+        ? ((size.height / 850.0) * 1.15).clamp(0.95, 1.50)
         : (math.min(size.width, size.height) / 540.0);
 
     canvas.save();
@@ -1123,9 +1064,7 @@ class IslandAerialPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 24.0;
       for (int b = -2; b <= 2; b++) {
-        final yPos = (size.height / 2) +
-            (b * 90.0) +
-            math.sin(timeSeconds * 0.4 + b) * 12.0;
+        final yPos = (size.height / 2) + (b * 90.0) + math.sin(timeSeconds * 0.4 + b) * 12.0;
         canvas.drawLine(Offset(0, yPos), Offset(size.width, yPos), stormPaint);
       }
     }
@@ -1156,10 +1095,7 @@ class IslandAerialPainter extends CustomPainter {
     canvas.drawRect(fullRect, sunGlintPaint);
 
     // 5. Living Wave Crest Arcs across the open sea (or atmospheric currents)
-    final waveAlpha = (colonyType == CelestialColonyType.moon ||
-            colonyType == CelestialColonyType.pluto)
-        ? 0.08
-        : 0.16;
+    final waveAlpha = (colonyType == CelestialColonyType.moon || colonyType == CelestialColonyType.pluto) ? 0.08 : 0.16;
     final wavePaint = Paint()
       ..color = Colors.white.withValues(alpha: waveAlpha)
       ..style = PaintingStyle.stroke
@@ -1195,8 +1131,7 @@ class IslandAerialPainter extends CustomPainter {
   // Replaces narrow/broken S-curves. Seed-based gentle harmonics make each island unique!
   // =========================================================================
   Path _getIslandPath() {
-    if (island.isPresidential ||
-        island.shapeStyle == IslandShapeStyle.citadelApex) {
+    if (island.isPresidential || island.shapeStyle == IslandShapeStyle.citadelApex) {
       return _buildCitadelPlateauPath(island.id);
     }
 
@@ -1223,8 +1158,7 @@ class IslandAerialPainter extends CustomPainter {
     const count = 36;
     for (int i = 0; i <= count; i++) {
       final a = (i / count) * 2 * math.pi;
-      final delta = math.sin(a * 3.0 + seed * 1.5) * 7.5 +
-          math.cos(a * 5.0 + seed * 0.8) * 4.5;
+      final delta = math.sin(a * 3.0 + seed * 1.5) * 7.5 + math.cos(a * 5.0 + seed * 0.8) * 4.5;
       final rx = 225.0 + delta;
       final ry = 192.0 + delta * 0.8;
       final x = rx * math.cos(a);
@@ -1248,8 +1182,7 @@ class IslandAerialPainter extends CustomPainter {
       final taper = (math.sin(a) + 1.0) * 0.5; // 0 north, 1 south
       final baseRx = 215.0 - taper * 60.0; // 215 down to 155px
       final baseRy = 194.0;
-      final delta = math.sin(a * 4.0 + seed * 1.2) * 6.5 +
-          math.cos(a * 2.0 + seed * 0.9) * 4.5;
+      final delta = math.sin(a * 4.0 + seed * 1.2) * 6.5 + math.cos(a * 2.0 + seed * 0.9) * 4.5;
       final x = (baseRx + delta) * math.cos(a);
       final y = (baseRy + delta * 0.7) * math.sin(a);
       if (i == 0) {
@@ -1268,8 +1201,7 @@ class IslandAerialPainter extends CustomPainter {
     const count = 36;
     for (int i = 0; i <= count; i++) {
       final a = (i / count) * 2 * math.pi;
-      final delta = math.sin(a * 4.0 + seed * 1.3) * 7.0 +
-          math.cos(a * 2.0 + seed * 0.7) * 5.0;
+      final delta = math.sin(a * 4.0 + seed * 1.3) * 7.0 + math.cos(a * 2.0 + seed * 0.7) * 5.0;
       final rx = 220.0 + delta;
       final ry = 192.0 + delta * 0.75;
       final x = rx * math.cos(a);
@@ -1291,8 +1223,7 @@ class IslandAerialPainter extends CustomPainter {
     for (int i = 0; i <= count; i++) {
       final a = (i / count) * 2 * math.pi;
       // Gentle natural coves on 4 corners
-      final delta = math.sin(a * 4.0 + seed * 1.1) * 8.0 +
-          math.cos(a * 6.0 + seed * 0.5) * 4.0;
+      final delta = math.sin(a * 4.0 + seed * 1.1) * 8.0 + math.cos(a * 6.0 + seed * 0.5) * 4.0;
       final rx = 220.0 + delta;
       final ry = 192.0 + delta * 0.8;
       final x = rx * math.cos(a);
@@ -1431,13 +1362,11 @@ class IslandAerialPainter extends CustomPainter {
         wetSandColor = const Color(0xFFEA580C).withValues(alpha: 0.60);
         break;
       case CelestialColonyType.jupiter:
-        beachSandColor =
-            const Color(0xFFFDE047); // Golden brass & pyrite shoreline
+        beachSandColor = const Color(0xFFFDE047); // Golden brass & pyrite shoreline
         wetSandColor = const Color(0xFFD97706).withValues(alpha: 0.60);
         break;
       case CelestialColonyType.saturn:
-        beachSandColor =
-            const Color(0xFFFEF08A); // Pale rose-gold ring particle sand
+        beachSandColor = const Color(0xFFFEF08A); // Pale rose-gold ring particle sand
         wetSandColor = const Color(0xFFCA8A04).withValues(alpha: 0.60);
         break;
       case CelestialColonyType.moon:
@@ -1445,8 +1374,7 @@ class IslandAerialPainter extends CustomPainter {
         wetSandColor = const Color(0xFF94A3B8).withValues(alpha: 0.60);
         break;
       case CelestialColonyType.europa:
-        beachSandColor =
-            const Color(0xFFF0F9FF); // Glacial pure ice crystal shore
+        beachSandColor = const Color(0xFFF0F9FF); // Glacial pure ice crystal shore
         wetSandColor = const Color(0xFF7DD3FC).withValues(alpha: 0.60);
         break;
       case CelestialColonyType.venus:
@@ -1458,8 +1386,7 @@ class IslandAerialPainter extends CustomPainter {
         wetSandColor = const Color(0xFF059669).withValues(alpha: 0.60);
         break;
       case CelestialColonyType.pluto:
-        beachSandColor = const Color(
-            0xFFF5F3FF); // Crystalline nitrogen frost shore (lavender-white)
+        beachSandColor = const Color(0xFFF5F3FF); // Crystalline nitrogen frost shore (lavender-white)
         wetSandColor = const Color(0xFFC084FC).withValues(alpha: 0.60);
         break;
       case CelestialColonyType.neptune:
@@ -1561,8 +1488,7 @@ class IslandAerialPainter extends CustomPainter {
     );
 
     final landPaint = Paint()
-      ..shader = landGradient
-          .createShader(Rect.fromCircle(center: Offset.zero, radius: 230))
+      ..shader = landGradient.createShader(Rect.fromCircle(center: Offset.zero, radius: 230))
       ..style = PaintingStyle.fill;
 
     canvas.drawPath(islandPath, landPaint);
@@ -1664,10 +1590,8 @@ class IslandAerialPainter extends CustomPainter {
 
     // Great Red Spot Eye vortex
     final spotCenter = const Offset(65, -35);
-    final spotPaint = Paint()
-      ..color = const Color(0xFF991B1B).withValues(alpha: 0.45);
-    canvas.drawOval(
-        Rect.fromCenter(center: spotCenter, width: 44, height: 26), spotPaint);
+    final spotPaint = Paint()..color = const Color(0xFF991B1B).withValues(alpha: 0.45);
+    canvas.drawOval(Rect.fromCenter(center: spotCenter, width: 44, height: 26), spotPaint);
 
     canvas.restore();
   }
@@ -1822,8 +1746,7 @@ class IslandAerialPainter extends CustomPainter {
     for (int s = -3; s <= 3; s++) {
       final y = s * 34.0;
       final speedX = ((timeSeconds * 40.0 + s * 90.0) % 500.0) - 250.0;
-      canvas.drawLine(
-          Offset(speedX - 60, y), Offset(speedX + 60, y), streakPaint);
+      canvas.drawLine(Offset(speedX - 60, y), Offset(speedX + 60, y), streakPaint);
     }
 
     canvas.restore();
@@ -1834,8 +1757,7 @@ class IslandAerialPainter extends CustomPainter {
     canvas.save();
     canvas.clipPath(islandPath);
 
-    final craterPaint = Paint()
-      ..color = const Color(0xFF1E293B).withValues(alpha: 0.45);
+    final craterPaint = Paint()..color = const Color(0xFF1E293B).withValues(alpha: 0.45);
     final craterRim = Paint()
       ..color = const Color(0xFF94A3B8).withValues(alpha: 0.55)
       ..style = PaintingStyle.stroke
@@ -1853,8 +1775,7 @@ class IslandAerialPainter extends CustomPainter {
     for (final c in craters) {
       canvas.drawCircle(c.$1, c.$2, craterPaint);
       canvas.drawCircle(c.$1, c.$2, craterRim);
-      canvas.drawCircle(c.$1.translate(-1.0, -1.0), c.$2 * 0.28,
-          Paint()..color = const Color(0xFF64748B));
+      canvas.drawCircle(c.$1.translate(-1.0, -1.0), c.$2 * 0.28, Paint()..color = const Color(0xFF64748B));
     }
 
     canvas.restore();
@@ -1927,14 +1848,11 @@ class IslandAerialPainter extends CustomPainter {
 
     final lagoonPath = Path();
     if (archetype == IslandArchetype.naturalOval) {
-      lagoonPath
-          .addOval(Rect.fromCenter(center: Offset.zero, width: 75, height: 55));
+      lagoonPath.addOval(Rect.fromCenter(center: Offset.zero, width: 75, height: 55));
     } else if (archetype == IslandArchetype.horseshoeBay) {
-      lagoonPath.addOval(
-          Rect.fromCenter(center: const Offset(0, 50), width: 85, height: 65));
+      lagoonPath.addOval(Rect.fromCenter(center: const Offset(0, 50), width: 85, height: 65));
     } else if (archetype == IslandArchetype.twinSanctuary) {
-      lagoonPath
-          .addOval(Rect.fromCenter(center: Offset.zero, width: 50, height: 40));
+      lagoonPath.addOval(Rect.fromCenter(center: Offset.zero, width: 50, height: 40));
     }
 
     if (!lagoonPath.getBounds().isEmpty) {
@@ -2052,12 +1970,9 @@ class IslandAerialPainter extends CustomPainter {
       ..strokeWidth = 1.2
       ..strokeCap = StrokeCap.round;
 
-    canvas.drawLine(Offset(68.0 + rippleOffset, -70.0),
-        Offset(78.0 + rippleOffset, -62.0), rPaint);
-    canvas.drawLine(Offset(32.0 - rippleOffset, -8.0),
-        Offset(40.0 - rippleOffset, 2.0), rPaint);
-    canvas.drawLine(Offset(-42.0 + rippleOffset, 55.0),
-        Offset(-32.0 + rippleOffset, 63.0), rPaint);
+    canvas.drawLine(Offset(68.0 + rippleOffset, -70.0), Offset(78.0 + rippleOffset, -62.0), rPaint);
+    canvas.drawLine(Offset(32.0 - rippleOffset, -8.0), Offset(40.0 - rippleOffset, 2.0), rPaint);
+    canvas.drawLine(Offset(-42.0 + rippleOffset, 55.0), Offset(-32.0 + rippleOffset, 63.0), rPaint);
 
     // 4. Miniature Stone Arched Footbridge
     const bridgeCenter = Offset(25.0, 15.0);
@@ -2066,18 +1981,14 @@ class IslandAerialPainter extends CustomPainter {
     canvas.rotate(-math.pi / 4);
 
     canvas.drawRRect(
-      RRect.fromRectAndRadius(
-          const Rect.fromLTWH(-6, 3, 14, 12), const Radius.circular(2.5)),
+      RRect.fromRectAndRadius(const Rect.fromLTWH(-6, 3, 14, 12), const Radius.circular(2.5)),
       Paint()..color = Colors.black.withValues(alpha: 0.35),
     );
     canvas.drawRRect(
-      RRect.fromRectAndRadius(
-          const Rect.fromLTWH(-7, -1, 14, 12), const Radius.circular(2.5)),
+      RRect.fromRectAndRadius(const Rect.fromLTWH(-7, -1, 14, 12), const Radius.circular(2.5)),
       Paint()..color = const Color(0xFFE2E8F0),
     );
-    final railPaint = Paint()
-      ..color = const Color(0xFF64748B)
-      ..strokeWidth = 1.2;
+    final railPaint = Paint()..color = const Color(0xFF64748B)..strokeWidth = 1.2;
     canvas.drawLine(const Offset(-7, -1), const Offset(-7, 11), railPaint);
     canvas.drawLine(const Offset(7, -1), const Offset(7, 11), railPaint);
 
@@ -2126,10 +2037,8 @@ class IslandAerialPainter extends CustomPainter {
     canvas.drawCircle(Offset.zero, 8.5, roofPaint);
 
     // Center pivot cap
-    canvas.drawCircle(
-        Offset.zero, 3.2, Paint()..color = const Color(0xFF1E293B));
-    canvas.drawCircle(
-        Offset.zero, 1.4, Paint()..color = const Color(0xFFF1F5F9));
+    canvas.drawCircle(Offset.zero, 3.2, Paint()..color = const Color(0xFF1E293B));
+    canvas.drawCircle(Offset.zero, 1.4, Paint()..color = const Color(0xFFF1F5F9));
 
     // Rotating 4 Lattice Sails
     canvas.save();
@@ -2179,8 +2088,7 @@ class IslandAerialPainter extends CustomPainter {
   void _drawRoadways(Canvas canvas) {
     final archetype = getIslandArchetype(island.shapeStyle);
     final roadPaint = Paint()
-      ..color =
-          const Color(0xFFE2E8F0).withValues(alpha: 0.85) // Crisp light pathway
+      ..color = const Color(0xFFE2E8F0).withValues(alpha: 0.85) // Crisp light pathway
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.6
       ..strokeCap = StrokeCap.round;
@@ -2199,8 +2107,7 @@ class IslandAerialPainter extends CustomPainter {
       rPath.lineTo(0, 95);
     } else if (archetype == IslandArchetype.naturalOval) {
       // Loop avenue between inner and outer ring
-      rPath.addOval(
-          Rect.fromCenter(center: Offset.zero, width: 205, height: 160));
+      rPath.addOval(Rect.fromCenter(center: Offset.zero, width: 205, height: 160));
     } else if (archetype == IslandArchetype.capePeninsula) {
       // North-South spine boulevard with cross avenues
       rPath.moveTo(0, -145);
@@ -2266,17 +2173,14 @@ class IslandAerialPainter extends CustomPainter {
 
     // Dark turf green base
     final turfBase = Paint()..color = const Color(0xFF15803D);
-    canvas.drawRRect(
-        RRect.fromRectAndRadius(pitchRect, const Radius.circular(3)), turfBase);
+    canvas.drawRRect(RRect.fromRectAndRadius(pitchRect, const Radius.circular(3)), turfBase);
 
     // Subtle turf lawn mowing stripes
-    final stripePaint = Paint()
-      ..color = const Color(0xFF16A34A).withValues(alpha: 0.55);
+    final stripePaint = Paint()..color = const Color(0xFF16A34A).withValues(alpha: 0.55);
     for (int s = 0; s < 5; s++) {
       if (s % 2 == 0) {
         final sx = pitchRect.left + s * (w / 5);
-        canvas.drawRect(
-            Rect.fromLTWH(sx, pitchRect.top, w / 5, h), stripePaint);
+        canvas.drawRect(Rect.fromLTWH(sx, pitchRect.top, w / 5, h), stripePaint);
       }
     }
 
@@ -2289,21 +2193,16 @@ class IslandAerialPainter extends CustomPainter {
     // Outer boundary
     canvas.drawRect(pitchRect, linePaint);
     // Half-way line
-    canvas.drawLine(Offset(pitchCenter.dx, pitchRect.top),
-        Offset(pitchCenter.dx, pitchRect.bottom), linePaint);
+    canvas.drawLine(Offset(pitchCenter.dx, pitchRect.top), Offset(pitchCenter.dx, pitchRect.bottom), linePaint);
     // Center circle
     canvas.drawCircle(pitchCenter, 3.8, linePaint);
     // Center spot
     canvas.drawCircle(pitchCenter, 0.8, Paint()..color = Colors.white);
 
     // Left Goal Penalty Box
-    canvas.drawRect(
-        Rect.fromLTWH(pitchRect.left, pitchCenter.dy - 5.5, 6.0, 11.0),
-        linePaint);
+    canvas.drawRect(Rect.fromLTWH(pitchRect.left, pitchCenter.dy - 5.5, 6.0, 11.0), linePaint);
     // Right Goal Penalty Box
-    canvas.drawRect(
-        Rect.fromLTWH(pitchRect.right - 6.0, pitchCenter.dy - 5.5, 6.0, 11.0),
-        linePaint);
+    canvas.drawRect(Rect.fromLTWH(pitchRect.right - 6.0, pitchCenter.dy - 5.5, 6.0, 11.0), linePaint);
   }
 
   // =========================================================================
@@ -2315,7 +2214,7 @@ class IslandAerialPainter extends CustomPainter {
 
     // 1. Moving Offshore Speedboat cruising in wide deep blue waters (gentle, relaxing glide)
     final t1 = (timeSeconds * 0.02) % (2 * math.pi);
-    final pos1 = Offset(270.0 * math.cos(t1), 195.0 * math.sin(t1));
+    final pos1 = Offset(330.0 * math.cos(t1), 275.0 * math.sin(t1));
     final angle1 = t1 + math.pi / 2;
     _drawBoatWithWake(
       canvas,
@@ -2328,7 +2227,7 @@ class IslandAerialPainter extends CustomPainter {
 
     // 2. Luxury Cruising Yacht traveling along outer southern deep sea
     final t2 = (-timeSeconds * 0.014) % (2 * math.pi);
-    final pos2 = Offset(280.0 * math.cos(t2), 205.0 * math.sin(t2));
+    final pos2 = Offset(380.0 * math.cos(t2), 320.0 * math.sin(t2));
     final angle2 = t2 - math.pi / 2;
     _drawBoatWithWake(
       canvas,
@@ -2341,8 +2240,7 @@ class IslandAerialPainter extends CustomPainter {
 
     // 3. Open Ocean Horizon Tender Boat
     final t3 = (timeSeconds * 0.016) % (2 * math.pi);
-    final pos3 =
-        Offset(-260.0 + math.cos(t3) * 20.0, 185.0 + math.sin(t3) * 15.0);
+    final pos3 = Offset(-340.0 + math.cos(t3) * 40.0, 260.0 + math.sin(t3) * 30.0);
     _drawBoatWithWake(
       canvas,
       pos: pos3,
@@ -2396,16 +2294,12 @@ class IslandAerialPainter extends CustomPainter {
     hull.close();
 
     // Boat shadow in water
-    canvas.drawPath(
-        hull.shift(const Offset(1.5, 2.0)), Paint()..color = Colors.black38);
+    canvas.drawPath(hull.shift(const Offset(1.5, 2.0)), Paint()..color = Colors.black38);
     // Crisp white boat deck
     canvas.drawPath(hull, Paint()..color = Colors.white);
     // Cockpit windshield
     canvas.drawRect(
-      Rect.fromCenter(
-          center: Offset(boatLength * 0.05, 0),
-          width: boatLength * 0.35,
-          height: boatWidth * 0.65),
+      Rect.fromCenter(center: Offset(boatLength * 0.05, 0), width: boatLength * 0.35, height: boatWidth * 0.65),
       Paint()..color = const Color(0xFF0284C7),
     );
 
@@ -2430,25 +2324,18 @@ class IslandAerialPainter extends CustomPainter {
     if (island.isPresidential) {
       // Royal Pier
       canvas.drawLine(const Offset(-125, 0), const Offset(-185, 0), pierPaint);
-      canvas.drawLine(
-          const Offset(-125, 0), const Offset(-185, 0), pierDeckLight);
-      canvas.drawLine(
-          const Offset(-185, -30), const Offset(-185, 30), pierPaint);
-      _drawYacht(canvas, const Offset(-202, 0),
-          angle: -math.pi / 2, isGold: true);
+      canvas.drawLine(const Offset(-125, 0), const Offset(-185, 0), pierDeckLight);
+      canvas.drawLine(const Offset(-185, -30), const Offset(-185, 30), pierPaint);
+      _drawYacht(canvas, const Offset(-202, 0), angle: -math.pi / 2, isGold: true);
     } else {
       // East Side Marina Pier extending into clear turquoise water
       canvas.drawLine(const Offset(150, 20), const Offset(218, 20), pierPaint);
-      canvas.drawLine(
-          const Offset(150, 20), const Offset(218, 20), pierDeckLight);
+      canvas.drawLine(const Offset(150, 20), const Offset(218, 20), pierDeckLight);
       canvas.drawLine(const Offset(218, -14), const Offset(218, 56), pierPaint);
-      canvas.drawLine(
-          const Offset(218, -14), const Offset(218, 56), pierDeckLight);
+      canvas.drawLine(const Offset(218, -14), const Offset(218, 56), pierDeckLight);
 
       // Wooden plank cross-lines for boardwalk authenticity
-      final plankLine = Paint()
-        ..color = const Color(0xFF713F12)
-        ..strokeWidth = 1.0;
+      final plankLine = Paint()..color = const Color(0xFF713F12)..strokeWidth = 1.0;
       for (double px = 155; px <= 215; px += 8) {
         canvas.drawLine(Offset(px, 15), Offset(px, 25), plankLine);
       }
@@ -2462,8 +2349,7 @@ class IslandAerialPainter extends CustomPainter {
     }
   }
 
-  void _drawYacht(Canvas canvas, Offset pos,
-      {double angle = 0, bool isGold = false}) {
+  void _drawYacht(Canvas canvas, Offset pos, {double angle = 0, bool isGold = false}) {
     canvas.save();
     canvas.translate(pos.dx, pos.dy);
     canvas.rotate(angle);
@@ -2477,15 +2363,12 @@ class IslandAerialPainter extends CustomPainter {
     hullPath.close();
 
     // Shadow
-    canvas.drawPath(hullPath.shift(const Offset(1.5, 2.0)),
-        Paint()..color = Colors.black38);
+    canvas.drawPath(hullPath.shift(const Offset(1.5, 2.0)), Paint()..color = Colors.black38);
 
-    final hullPaint = Paint()
-      ..color = isGold ? const Color(0xFFFFD700) : Colors.white;
+    final hullPaint = Paint()..color = isGold ? const Color(0xFFFFD700) : Colors.white;
     canvas.drawPath(hullPath, hullPaint);
 
-    final deckPaint = Paint()
-      ..color = isGold ? Colors.black87 : const Color(0xFF0284C7);
+    final deckPaint = Paint()..color = isGold ? Colors.black87 : const Color(0xFF0284C7);
     canvas.drawRect(const Rect.fromLTWH(-4.5, -3.2, 9, 6.4), deckPaint);
 
     canvas.restore();
@@ -2496,8 +2379,7 @@ class IslandAerialPainter extends CustomPainter {
   // =========================================================================
   void _drawAtmosphericClouds(Canvas canvas) {
     final clouds = [
-      const _CloudClusterDef(
-          center: Offset(-140, -120), scale: 1.15, speed: 1.2),
+      const _CloudClusterDef(center: Offset(-140, -120), scale: 1.15, speed: 1.2),
       const _CloudClusterDef(center: Offset(130, -90), scale: 1.30, speed: 0.9),
       const _CloudClusterDef(center: Offset(-90, 140), scale: 1.25, speed: 1.4),
       const _CloudClusterDef(center: Offset(150, 110), scale: 1.05, speed: 1.1),
@@ -2505,22 +2387,19 @@ class IslandAerialPainter extends CustomPainter {
 
     for (int i = 0; i < clouds.length; i++) {
       final c = clouds[i];
-      final driftX =
-          ((timeSeconds * c.speed * 8.0) + i * 160.0) % 700.0 - 350.0;
+      final driftX = ((timeSeconds * c.speed * 8.0) + i * 160.0) % 700.0 - 350.0;
       final driftY = math.sin(timeSeconds * 0.25 + i) * 6.0;
       final center = c.center.translate(driftX, driftY);
 
       // 1. Soft Shadow cast onto the ground/water below (offset by +18, +24)
-      _drawCloudPuffs(canvas, center.translate(18, 24), c.scale,
-          isShadow: true);
+      _drawCloudPuffs(canvas, center.translate(18, 24), c.scale, isShadow: true);
 
       // 2. High-Altitude White Volumetric Cloud Cluster
       _drawCloudPuffs(canvas, center, c.scale, isShadow: false);
     }
   }
 
-  void _drawCloudPuffs(Canvas canvas, Offset center, double scale,
-      {required bool isShadow}) {
+  void _drawCloudPuffs(Canvas canvas, Offset center, double scale, {required bool isShadow}) {
     final puffOffsets = [
       Offset.zero,
       const Offset(-22, -4),
@@ -2593,10 +2472,8 @@ class IslandAerialPainter extends CustomPainter {
     // Shadow
     final sp = Path();
     sp.moveTo(pt.dx - 5.5 + 4, wingY - 1.5 + 6);
-    sp.quadraticBezierTo(
-        pt.dx - 2.5 + 4, wingY + 1.8 + 6, pt.dx + 4, pt.dy - 0.5 + 6);
-    sp.quadraticBezierTo(
-        pt.dx + 2.5 + 4, wingY + 1.8 + 6, pt.dx + 5.5 + 4, wingY - 1.5 + 6);
+    sp.quadraticBezierTo(pt.dx - 2.5 + 4, wingY + 1.8 + 6, pt.dx + 4, pt.dy - 0.5 + 6);
+    sp.quadraticBezierTo(pt.dx + 2.5 + 4, wingY + 1.8 + 6, pt.dx + 5.5 + 4, wingY - 1.5 + 6);
     canvas.drawPath(sp, shadowPaint);
 
     // White wings
@@ -2629,8 +2506,7 @@ class IslandAerialPainter extends CustomPainter {
 
       // Ground shadow
       canvas.drawOval(
-        Rect.fromCenter(
-            center: pos.translate(0.5, 0.7), width: 4.2, height: 2.4),
+        Rect.fromCenter(center: pos.translate(0.5, 0.7), width: 4.2, height: 2.4),
         Paint()..color = Colors.black26,
       );
       // Fluffy woolly sheep body
@@ -2639,8 +2515,7 @@ class IslandAerialPainter extends CustomPainter {
         Paint()..color = Colors.white.withValues(alpha: 0.95),
       );
       // Dark head & face
-      canvas.drawCircle(pos.translate(1.4, -0.4), 0.9,
-          Paint()..color = const Color(0xFF1E293B));
+      canvas.drawCircle(pos.translate(1.4, -0.4), 0.9, Paint()..color = const Color(0xFF1E293B));
     }
 
     // Majestic grazing horses on open grass
@@ -2655,20 +2530,17 @@ class IslandAerialPainter extends CustomPainter {
 
       // Horse shadow
       canvas.drawOval(
-        Rect.fromCenter(
-            center: pos.translate(0.6, 1.0), width: 5.6, height: 2.8),
+        Rect.fromCenter(center: pos.translate(0.6, 1.0), width: 5.6, height: 2.8),
         Paint()..color = Colors.black26,
       );
       // Horse body (chestnut brown / dark stallion)
-      final horseColor =
-          i == 0 ? const Color(0xFF854D0E) : const Color(0xFF1C1917);
+      final horseColor = i == 0 ? const Color(0xFF854D0E) : const Color(0xFF1C1917);
       canvas.drawOval(
         Rect.fromCenter(center: pos, width: 5.0, height: 2.6),
         Paint()..color = horseColor,
       );
       // Horse neck and head
-      canvas.drawCircle(
-          pos.translate(2.3, -0.9), 1.2, Paint()..color = horseColor);
+      canvas.drawCircle(pos.translate(2.3, -0.9), 1.2, Paint()..color = horseColor);
     }
   }
 
@@ -2727,8 +2599,7 @@ class IslandAerialPainter extends CustomPainter {
       ..color = strobePhase ? const Color(0xFFEF4444) : const Color(0xFF10B981);
     for (int i = 0; i < 4; i++) {
       final a = (i * math.pi / 2) + math.pi / 4;
-      final strobePos =
-          padCenter.translate(12.5 * math.cos(a), 12.5 * math.sin(a));
+      final strobePos = padCenter.translate(12.5 * math.cos(a), 12.5 * math.sin(a));
       canvas.drawCircle(strobePos, 1.2, strobePaint);
     }
 
@@ -2737,8 +2608,7 @@ class IslandAerialPainter extends CustomPainter {
 
     // Shadow
     canvas.drawOval(
-      Rect.fromCenter(
-          center: heliCenter.translate(0.8, 1.4), width: 9.0, height: 16.0),
+      Rect.fromCenter(center: heliCenter.translate(0.8, 1.4), width: 9.0, height: 16.0),
       Paint()..color = Colors.black38,
     );
 
@@ -2754,8 +2624,7 @@ class IslandAerialPainter extends CustomPainter {
 
     // Cockpit windshield (Glass cyan reflection)
     canvas.drawOval(
-      Rect.fromCenter(
-          center: heliCenter.translate(0, -3.2), width: 4.8, height: 4.2),
+      Rect.fromCenter(center: heliCenter.translate(0, -3.2), width: 4.8, height: 4.2),
       Paint()..color = const Color(0xFF38BDF8),
     );
 
@@ -2764,20 +2633,13 @@ class IslandAerialPainter extends CustomPainter {
       ..color = const Color(0xFF1E293B)
       ..strokeWidth = 2.0
       ..strokeCap = StrokeCap.round;
-    canvas.drawLine(
-        heliCenter.translate(0, 5.0), heliCenter.translate(0, 11.5), tailPaint);
+    canvas.drawLine(heliCenter.translate(0, 5.0), heliCenter.translate(0, 11.5), tailPaint);
 
     // Tail rotor
-    canvas.drawLine(
-        heliCenter.translate(-1.8, 11.5),
-        heliCenter.translate(1.8, 11.5),
-        Paint()
-          ..color = Colors.white70
-          ..strokeWidth = 1.0);
+    canvas.drawLine(heliCenter.translate(-1.8, 11.5), heliCenter.translate(1.8, 11.5), Paint()..color = Colors.white70..strokeWidth = 1.0);
 
     // Rotor hub
-    canvas.drawCircle(
-        heliCenter, 1.4, Paint()..color = const Color(0xFFF59E0B));
+    canvas.drawCircle(heliCenter, 1.4, Paint()..color = const Color(0xFFF59E0B));
 
     // Spinning Main Rotor Blades (4 sleek carbon blades)
     final rotorAngle = (timeSeconds * 3.5) % (2 * math.pi);
@@ -2803,14 +2665,12 @@ class IslandAerialPainter extends CustomPainter {
     // 1. Autonomous 6-Wheeled Exploration Rover cruising between research plots
     final roverBase = const Offset(-45.0, 35.0);
     final roverDrift = math.sin(timeSeconds * 0.35) * 6.0;
-    final roverPos =
-        roverBase.translate(roverDrift, math.cos(timeSeconds * 0.35) * 2.0);
+    final roverPos = roverBase.translate(roverDrift, math.cos(timeSeconds * 0.35) * 2.0);
 
     // Rover ground shadow
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromCenter(
-            center: roverPos.translate(0.6, 0.8), width: 8.5, height: 6.0),
+        Rect.fromCenter(center: roverPos.translate(0.6, 0.8), width: 8.5, height: 6.0),
         const Radius.circular(1.5),
       ),
       Paint()..color = Colors.black26,
@@ -2827,44 +2687,28 @@ class IslandAerialPainter extends CustomPainter {
 
     // Solar panel array on top
     canvas.drawRect(
-      Rect.fromCenter(
-          center: roverPos.translate(0, -0.4), width: 5.6, height: 3.0),
+      Rect.fromCenter(center: roverPos.translate(0, -0.4), width: 5.6, height: 3.0),
       Paint()..color = const Color(0xFF1E3A8A),
     );
 
     // 6 Rugged All-Terrain Wheels
     final wheelPaint = Paint()..color = const Color(0xFF0F172A);
     for (double wx in [-3.0, 0.0, 3.0]) {
-      canvas.drawRRect(
-          RRect.fromRectAndRadius(
-              Rect.fromCenter(
-                  center: roverPos.translate(wx, -2.8),
-                  width: 1.8,
-                  height: 1.0),
-              const Radius.circular(0.4)),
-          wheelPaint);
-      canvas.drawRRect(
-          RRect.fromRectAndRadius(
-              Rect.fromCenter(
-                  center: roverPos.translate(wx, 2.8), width: 1.8, height: 1.0),
-              const Radius.circular(0.4)),
-          wheelPaint);
+      canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromCenter(center: roverPos.translate(wx, -2.8), width: 1.8, height: 1.0), const Radius.circular(0.4)), wheelPaint);
+      canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromCenter(center: roverPos.translate(wx, 2.8), width: 1.8, height: 1.0), const Radius.circular(0.4)), wheelPaint);
     }
 
     // Articulated sensor mast camera
-    canvas.drawCircle(roverPos.translate(2.5, -0.2), 0.9,
-        Paint()..color = const Color(0xFF0284C7));
+    canvas.drawCircle(roverPos.translate(2.5, -0.2), 0.9, Paint()..color = const Color(0xFF0284C7));
 
     // 2. High-Tech Atmospheric Hovering Survey Drone (Like Martian Ingenuity)
     final droneBase = const Offset(48.0, -32.0);
     final droneHover = math.cos(timeSeconds * 0.8) * 3.5;
-    final dronePos =
-        droneBase.translate(droneHover, math.sin(timeSeconds * 0.6) * 2.5);
+    final dronePos = droneBase.translate(droneHover, math.sin(timeSeconds * 0.6) * 2.5);
 
     // Drone soft ground shadow
     canvas.drawOval(
-      Rect.fromCenter(
-          center: droneBase.translate(0.8, 1.2), width: 4.5, height: 2.8),
+      Rect.fromCenter(center: droneBase.translate(0.8, 1.2), width: 4.5, height: 2.8),
       Paint()..color = Colors.black12,
     );
 
@@ -2877,17 +2721,13 @@ class IslandAerialPainter extends CustomPainter {
       ..color = Colors.white.withValues(alpha: 0.75)
       ..strokeWidth = 0.9;
     canvas.drawLine(
-      dronePos.translate(
-          -4.5 * math.cos(droneAngle), -4.5 * math.sin(droneAngle)),
-      dronePos.translate(
-          4.5 * math.cos(droneAngle), 4.5 * math.sin(droneAngle)),
+      dronePos.translate(-4.5 * math.cos(droneAngle), -4.5 * math.sin(droneAngle)),
+      dronePos.translate(4.5 * math.cos(droneAngle), 4.5 * math.sin(droneAngle)),
       droneBlade,
     );
     canvas.drawLine(
-      dronePos.translate(
-          -4.5 * math.sin(droneAngle), 4.5 * math.cos(droneAngle)),
-      dronePos.translate(
-          4.5 * math.sin(droneAngle), -4.5 * math.cos(droneAngle)),
+      dronePos.translate(-4.5 * math.sin(droneAngle), 4.5 * math.cos(droneAngle)),
+      dronePos.translate(4.5 * math.sin(droneAngle), -4.5 * math.cos(droneAngle)),
       droneBlade,
     );
   }
@@ -3031,16 +2871,13 @@ class IslandAerialPainter extends CustomPainter {
   }
 
   static List<Path> _getOrComputeDistrictCells(IslandShapeStyle style) {
-    final key =
-        '${style.name}_${PoketCosmosAllocationService.maxPlotsPerIsland}';
+    final key = '${style.name}_${PoketCosmosAllocationService.maxPlotsPerIsland}';
     if (_cachedDistrictCells.containsKey(key)) {
       return _cachedDistrictCells[key]!;
     }
 
     // Generate exactly 20 territorial district cells (or maxPlotsPerIsland)
-    final coords = get35PlotCoordinates(style)
-        .take(PoketCosmosAllocationService.maxPlotsPerIsland)
-        .toList();
+    final coords = get35PlotCoordinates(style).take(PoketCosmosAllocationService.maxPlotsPerIsland).toList();
     final count = coords.length;
     final List<Path> paths = [];
 
@@ -3073,8 +2910,7 @@ class IslandAerialPainter extends CustomPainter {
     return paths;
   }
 
-  static List<Offset> _clipPolyHalfPlane(
-      List<Offset> poly, Offset p1, Offset p2) {
+  static List<Offset> _clipPolyHalfPlane(List<Offset> poly, Offset p1, Offset p2) {
     final midX = (p1.dx + p2.dx) / 2;
     final midY = (p1.dy + p2.dy) / 2;
     final dirX = p2.dx - p1.dx;
@@ -3122,41 +2958,13 @@ class IslandAerialPainter extends CustomPainter {
   // 👥 AUTHENTIC CITIZEN NAMES (NO "#Plot 7", REAL HUMAN NAMES ON SIGNBOARDS)
   // =========================================================================
   static const List<String> fallbackCitizenNames = [
-    'Anas',
-    'Sneha',
-    'Rahul',
-    'Fathima',
-    'Arjun',
-    'Diya',
-    'Nihal',
-    'Ananya',
-    'Rohan',
-    'Meera',
-    'Aadithya',
-    'Farhan',
-    'Kavya',
-    'Gokul',
-    'Hiba',
-    'Vishnu',
-    'Devika',
-    'Adil',
-    'Pooja',
-    'Aswin',
-    'Riya',
-    'Salman',
-    'Malavika',
-    'Sanjay',
-    'Shahana',
-    'Akshay',
-    'Archana',
-    'Naveen',
-    'Keerthi',
-    'Bilal',
-    'Gopika',
-    'Sreerag',
-    'Amina',
-    'Midhun',
-    'Haritha',
+    'Anas', 'Sneha', 'Rahul', 'Fathima', 'Arjun',
+    'Diya', 'Nihal', 'Ananya', 'Rohan', 'Meera',
+    'Aadithya', 'Farhan', 'Kavya', 'Gokul', 'Hiba',
+    'Vishnu', 'Devika', 'Adil', 'Pooja', 'Aswin',
+    'Riya', 'Salman', 'Malavika', 'Sanjay', 'Shahana',
+    'Akshay', 'Archana', 'Naveen', 'Keerthi', 'Bilal',
+    'Gopika', 'Sreerag', 'Amina', 'Midhun', 'Haritha',
   ];
 
   static String getCitizenDisplayName(CitizenPlot plot) {
@@ -3181,8 +2989,7 @@ class IslandAerialPainter extends CustomPainter {
   // =========================================================================
   void _drawCitizenPlots(Canvas canvas) {
     final List<Offset> positions = get35PlotCoordinates(island.shapeStyle);
-    final int count = math.min(
-        PoketCosmosAllocationService.maxPlotsPerIsland, positions.length);
+    final int count = math.min(PoketCosmosAllocationService.maxPlotsPerIsland, positions.length);
 
     for (int i = 0; i < count; i++) {
       final pos = positions[i];
@@ -3205,16 +3012,15 @@ class IslandAerialPainter extends CustomPainter {
       final plotRot = getPlotFacingAngle(island.shapeStyle, i);
       final houseOffset = getHousePlacementOffset(plotNumber);
       final housePos = pos + houseOffset;
-      final parcelRect =
-          Rect.fromCenter(center: housePos, width: 60.0, height: 48.0);
+      final parcelRect = Rect.fromCenter(center: housePos, width: 60.0, height: 48.0);
 
       if (citizenPlot != null) {
-        // 🏡 Render full architectural compound (scaled up to 1.68 so villas, cars, pools, gazebos are grand, prominent & clearly visible!)
+        // 🏡 Render full architectural compound (scaled up to 1.42 so villas, cars, pools, gazebos are grand, prominent & clearly visible!)
         final day = citizenPlot.day;
         canvas.save();
         canvas.translate(housePos.dx, housePos.dy);
         canvas.rotate(plotRot);
-        canvas.scale(1.68);
+        canvas.scale(1.42);
         canvas.translate(-housePos.dx, -housePos.dy);
 
         _drawYardTreeClusters(canvas, parcelRect, plotNumber);
@@ -3229,19 +3035,17 @@ class IslandAerialPainter extends CustomPainter {
         _drawWalkwayPaths(canvas, parcelRect, housePos, day);
         _drawArchitecturalRoof(canvas, housePos, day, isSel, plotNumber);
         _drawPrivateYardAnimalsAndItems(canvas, parcelRect, day, plotNumber);
-        _drawParcelNumberBadge(canvas, parcelRect, plotNumber, isSel);
+        _drawEstateNameBoard(canvas, parcelRect, citizenPlot, isSel);
 
         canvas.restore();
 
         // 🌟 Minimal Green Tick (Checkmark) Badge indicating plot is claimed/bought!
-        final tickCenter = housePos + const Offset(19.0, -19.0);
-        const tickR = 6.8;
+        final tickCenter = housePos + const Offset(15.0, -15.0);
+        const tickR = 5.8;
         // Soft drop shadow
-        canvas.drawCircle(tickCenter.translate(0.5, 0.6), tickR,
-            Paint()..color = Colors.black45);
+        canvas.drawCircle(tickCenter.translate(0.5, 0.6), tickR, Paint()..color = Colors.black45);
         // Emerald background
-        canvas.drawCircle(
-            tickCenter, tickR, Paint()..color = const Color(0xFF10B981));
+        canvas.drawCircle(tickCenter, tickR, Paint()..color = const Color(0xFF10B981));
         // Subtle white border
         canvas.drawCircle(
           tickCenter,
@@ -3267,12 +3071,10 @@ class IslandAerialPainter extends CustomPainter {
         );
       } else if (isPreBooked) {
         // ⏳ Render 4-Hour Animated Rotating Countdown Timer Ring
-        _drawPreBookedParcel(canvas, housePos, parcelRect, plotRot, reservation,
-            plotNumber, isSel);
+        _drawPreBookedParcel(canvas, housePos, parcelRect, plotRot, reservation, isSel);
       } else {
         // ➕ Render Vacant Plot with center pulsing Plus (+) icon
-        _drawVacantParcelWithPlus(
-            canvas, housePos, parcelRect, plotRot, plotNumber, isSel);
+        _drawVacantParcelWithPlus(canvas, housePos, parcelRect, plotRot, plotNumber, isSel);
       }
 
       // Golden Selection Beacon Aura
@@ -3297,12 +3099,10 @@ class IslandAerialPainter extends CustomPainter {
   }
 
   // ➕ Vacant Parcel with Pulsing Center PLUS Button
-  void _drawVacantParcelWithPlus(Canvas canvas, Offset housePos,
-      Rect parcelRect, double plotRot, int plotNumber, bool isSel) {
+  void _drawVacantParcelWithPlus(Canvas canvas, Offset housePos, Rect parcelRect, double plotRot, int plotNumber, bool isSel) {
     canvas.save();
     canvas.translate(housePos.dx, housePos.dy);
     canvas.rotate(plotRot);
-    canvas.scale(1.65);
 
     // 1. Soft turf base harmonized with the planetary biome
     Color turfColor;
@@ -3405,67 +3205,32 @@ class IslandAerialPainter extends CustomPainter {
       ..strokeWidth = 1.4
       ..strokeCap = StrokeCap.round;
     const plusSize = 2.6;
-    canvas.drawLine(
-        const Offset(-plusSize, 0), const Offset(plusSize, 0), plusPaint);
-    canvas.drawLine(
-        const Offset(0, -plusSize), const Offset(0, plusSize), plusPaint);
+    canvas.drawLine(const Offset(-plusSize, 0), const Offset(plusSize, 0), plusPaint);
+    canvas.drawLine(const Offset(0, -plusSize), const Offset(0, plusSize), plusPaint);
 
-    // 4. Clean centered "#$plotNumber" badge inside the vacant parcel
-    final label = '#$plotNumber';
-    final tp = TextPainter(
+    // 4. Subtle "PLOT #{plotNumber}" label
+    final textPainter = TextPainter(
       text: TextSpan(
-        text: label,
-        style: TextStyle(
-          color: isSel ? const Color(0xFFFFD700) : const Color(0xFFFDA4AF),
-          fontSize: 3.1,
+        text: 'PLOT #$plotNumber',
+        style: const TextStyle(
+          color: Color(0xFFFDA4AF),
+          fontSize: 3.3,
           fontWeight: FontWeight.bold,
-          letterSpacing: 0.2,
+          letterSpacing: 0.3,
         ),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-
-    final badgeWidth = math.max(10.5, tp.width + 3.4);
-    const badgeHeight = 4.8;
-    final badgeRect = Rect.fromCenter(
-        center: const Offset(0, -9.5), width: badgeWidth, height: badgeHeight);
-
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-          badgeRect.translate(0.25, 0.35), const Radius.circular(1.2)),
-      Paint()..color = Colors.black38,
-    );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(badgeRect, const Radius.circular(1.2)),
-      Paint()..color = const Color(0xFF0F172A).withValues(alpha: 0.85),
-    );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(badgeRect, const Radius.circular(1.2)),
-      Paint()
-        ..color = isSel
-            ? const Color(0xFFFFD700)
-            : const Color(0xFFE11D48).withValues(alpha: 0.7)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = isSel ? 0.8 : 0.5,
-    );
-    tp.paint(canvas, Offset(-tp.width / 2, -9.5 - tp.height / 2));
+    textPainter.paint(canvas, Offset(-textPainter.width / 2, -8.5));
 
     canvas.restore();
   }
 
   // ⏳ Pre-Booked Parcel with Animated Rotating Countdown Timer Ring
-  void _drawPreBookedParcel(
-      Canvas canvas,
-      Offset housePos,
-      Rect parcelRect,
-      double plotRot,
-      NeighborReservationPass pass,
-      int plotNumber,
-      bool isSel) {
+  void _drawPreBookedParcel(Canvas canvas, Offset housePos, Rect parcelRect, double plotRot, NeighborReservationPass pass, bool isSel) {
     canvas.save();
     canvas.translate(housePos.dx, housePos.dy);
     canvas.rotate(plotRot);
-    canvas.scale(1.65);
 
     // 1. Gold/Amber reserved parcel base
     final turfRRect = RRect.fromRectAndRadius(
@@ -3531,13 +3296,11 @@ class IslandAerialPainter extends CustomPainter {
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    iconPainter.paint(
-        canvas, Offset(-iconPainter.width / 2, -iconPainter.height / 2));
+    iconPainter.paint(canvas, Offset(-iconPainter.width / 2, -iconPainter.height / 2));
 
     // Remaining time label (e.g. "4h 32m")
     final int mins = pass.minutesRemaining;
-    final String timeStr =
-        mins >= 60 ? '${mins ~/ 60}h ${mins % 60}m' : '${mins}m';
+    final String timeStr = mins >= 60 ? '${mins ~/ 60}h ${mins % 60}m' : '${mins}m';
     final timePainter = TextPainter(
       text: TextSpan(
         text: timeStr,
@@ -3552,54 +3315,11 @@ class IslandAerialPainter extends CustomPainter {
     )..layout();
     timePainter.paint(canvas, Offset(-timePainter.width / 2, 7.5));
 
-    // 4. Centered "#$plotNumber" badge inside pre-booked parcel
-    final preLabel = '#$plotNumber';
-    final preTp = TextPainter(
-      text: TextSpan(
-        text: preLabel,
-        style: TextStyle(
-          color: isSel ? const Color(0xFFFFD700) : const Color(0xFFFDE68A),
-          fontSize: 2.9,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 0.2,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-
-    final preBadgeWidth = math.max(10.5, preTp.width + 3.4);
-    const preBadgeHeight = 4.8;
-    final preBadgeRect = Rect.fromCenter(
-        center: const Offset(0, -8.2),
-        width: preBadgeWidth,
-        height: preBadgeHeight);
-
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-          preBadgeRect.translate(0.25, 0.35), const Radius.circular(1.2)),
-      Paint()..color = Colors.black38,
-    );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(preBadgeRect, const Radius.circular(1.2)),
-      Paint()..color = const Color(0xFF0F172A).withValues(alpha: 0.85),
-    );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(preBadgeRect, const Radius.circular(1.2)),
-      Paint()
-        ..color = isSel
-            ? const Color(0xFFFFD700)
-            : const Color(0xFFF59E0B).withValues(alpha: 0.7)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = isSel ? 0.8 : 0.5,
-    );
-    preTp.paint(canvas, Offset(-preTp.width / 2, -8.2 - preTp.height / 2));
-
     canvas.restore();
   }
 
   // 5. Private Yard Animals & Outdoor Items (Sheep, horses, pets & garden benches)
-  void _drawPrivateYardAnimalsAndItems(
-      Canvas canvas, Rect parcelRect, int day, int plotNumber) {
+  void _drawPrivateYardAnimalsAndItems(Canvas canvas, Rect parcelRect, int day, int plotNumber) {
     // Private Yard Animal (Drifts peacefully in their private garden)
     final animT = timeSeconds * 0.7 + plotNumber;
     final driftX = math.cos(animT) * 1.5;
@@ -3608,15 +3328,11 @@ class IslandAerialPainter extends CustomPainter {
     if (day >= 65) {
       // 🐑 / 🐴 Grand Meadow Animal: Private Grazing Sheep or Pony
       final isHorse = (plotNumber % 2 == 0);
-      final animalCenter = Offset(
-          parcelRect.left + 6.0 + driftX, parcelRect.bottom - 7.0 + driftY);
+      final animalCenter = Offset(parcelRect.left + 6.0 + driftX, parcelRect.bottom - 7.0 + driftY);
 
       // Animal shadow
       canvas.drawOval(
-        Rect.fromCenter(
-            center: animalCenter.translate(0.3, 0.5),
-            width: isHorse ? 4.8 : 3.6,
-            height: 2.2),
+        Rect.fromCenter(center: animalCenter.translate(0.3, 0.5), width: isHorse ? 4.8 : 3.6, height: 2.2),
         Paint()..color = Colors.black26,
       );
 
@@ -3633,42 +3349,34 @@ class IslandAerialPainter extends CustomPainter {
         // Head / Neck
         canvas.drawCircle(animalCenter.translate(-1.8, -1.0), 1.1, horseBody);
         // Mane
-        canvas.drawCircle(animalCenter.translate(-1.3, -1.2), 0.6,
-            Paint()..color = const Color(0xFF451A03));
+        canvas.drawCircle(animalCenter.translate(-1.3, -1.2), 0.6, Paint()..color = const Color(0xFF451A03));
       } else {
         // Fluffy White Meadow Sheep
         final sheepWool = Paint()..color = const Color(0xFFF8FAFC);
         canvas.drawCircle(animalCenter, 1.8, sheepWool);
         canvas.drawCircle(animalCenter.translate(-1.2, 0.2), 1.2, sheepWool);
         // Dark head & ears
-        canvas.drawCircle(animalCenter.translate(-2.0, -0.4), 0.85,
-            Paint()..color = const Color(0xFF334155));
+        canvas.drawCircle(animalCenter.translate(-2.0, -0.4), 0.85, Paint()..color = const Color(0xFF334155));
       }
     } else {
       // 🐕 / 🐈 Friendly Yard Pet: Dog or Cat lounging in lawn
-      final petPos = Offset(
-          parcelRect.left + 6.0 + driftX, parcelRect.bottom - 7.0 + driftY);
+      final petPos = Offset(parcelRect.left + 6.0 + driftX, parcelRect.bottom - 7.0 + driftY);
       final isDog = (plotNumber % 2 == 0);
-      final petColor =
-          isDog ? const Color(0xFFD97706) : const Color(0xFFE2E8F0);
+      final petColor = isDog ? const Color(0xFFD97706) : const Color(0xFFE2E8F0);
 
       // Pet shadow
-      canvas.drawCircle(
-          petPos.translate(0.3, 0.4), 1.3, Paint()..color = Colors.black26);
+      canvas.drawCircle(petPos.translate(0.3, 0.4), 1.3, Paint()..color = Colors.black26);
       // Pet body
       canvas.drawCircle(petPos, 1.2, Paint()..color = petColor);
       // Pet head
-      canvas.drawCircle(
-          petPos.translate(0.6, -0.4), 0.8, Paint()..color = petColor);
+      canvas.drawCircle(petPos.translate(0.6, -0.4), 0.8, Paint()..color = petColor);
     }
 
     // Garden Bench / Patio Dining Table (for day >= 15)
     if (day >= 15) {
       final benchPos = Offset(parcelRect.right - 5.5, parcelRect.top + 5.5);
-      final benchRect =
-          Rect.fromCenter(center: benchPos, width: 5.2, height: 2.4);
-      canvas.drawRect(benchRect.shift(const Offset(0.3, 0.4)),
-          Paint()..color = Colors.black12);
+      final benchRect = Rect.fromCenter(center: benchPos, width: 5.2, height: 2.4);
+      canvas.drawRect(benchRect.shift(const Offset(0.3, 0.4)), Paint()..color = Colors.black12);
       canvas.drawRRect(
         RRect.fromRectAndRadius(benchRect, const Radius.circular(0.6)),
         Paint()..color = const Color(0xFFB45309),
@@ -3676,30 +3384,23 @@ class IslandAerialPainter extends CustomPainter {
     }
   }
 
+
   // 2. Driveway & Parked Vehicle (കാർപോർച്ചും വാഹനങ്ങളും - വ്യത്യസ്ത കാറുകൾ)
-  void _drawDrivewayAndCar(
-      Canvas canvas, Rect parcelRect, int day, int plotNumber) {
+  void _drawDrivewayAndCar(Canvas canvas, Rect parcelRect, int day, int plotNumber) {
     // Driveway on the left side of parcel
-    final drivewayRect =
-        Rect.fromLTWH(parcelRect.left + 2.0, parcelRect.top + 3.0, 9.5, 22.0);
+    final drivewayRect = Rect.fromLTWH(parcelRect.left + 2.0, parcelRect.top + 3.0, 9.5, 22.0);
 
     // Paved cobblestone driveway base
-    final drivewayPaint = Paint()
-      ..color = const Color(0xFF94A3B8).withValues(alpha: 0.85);
-    canvas.drawRRect(
-        RRect.fromRectAndRadius(drivewayRect, const Radius.circular(1.5)),
-        drivewayPaint);
+    final drivewayPaint = Paint()..color = const Color(0xFF94A3B8).withValues(alpha: 0.85);
+    canvas.drawRRect(RRect.fromRectAndRadius(drivewayRect, const Radius.circular(1.5)), drivewayPaint);
 
     // Cobblestone / paving joints
     final cobblePaint = Paint()
       ..color = const Color(0xFF64748B).withValues(alpha: 0.45)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.5;
-    for (double dy = drivewayRect.top + 2.8;
-        dy < drivewayRect.bottom;
-        dy += 2.8) {
-      canvas.drawLine(Offset(drivewayRect.left, dy),
-          Offset(drivewayRect.right, dy), cobblePaint);
+    for (double dy = drivewayRect.top + 2.8; dy < drivewayRect.bottom; dy += 2.8) {
+      canvas.drawLine(Offset(drivewayRect.left, dy), Offset(drivewayRect.right, dy), cobblePaint);
     }
 
     // Parked Car on Driveway (For Day >= 25)
@@ -3709,8 +3410,7 @@ class IslandAerialPainter extends CustomPainter {
       // Car undercarriage shadow
       canvas.drawRRect(
         RRect.fromRectAndRadius(
-          Rect.fromCenter(
-              center: carCenter.translate(0.5, 0.6), width: 6.8, height: 11.2),
+          Rect.fromCenter(center: carCenter.translate(0.5, 0.6), width: 6.8, height: 11.2),
           const Radius.circular(1.8),
         ),
         Paint()..color = Colors.black45,
@@ -3740,31 +3440,22 @@ class IslandAerialPainter extends CustomPainter {
       // Windshield & Rear Window (Dark glass with blue reflection)
       final glassPaint = Paint()..color = const Color(0xFF0F172A);
       // Front windshield
-      canvas.drawRect(
-          Rect.fromCenter(
-              center: carCenter.translate(0, -1.8), width: 4.6, height: 1.4),
-          glassPaint);
+      canvas.drawRect(Rect.fromCenter(center: carCenter.translate(0, -1.8), width: 4.6, height: 1.4), glassPaint);
       // Rear window
-      canvas.drawRect(
-          Rect.fromCenter(
-              center: carCenter.translate(0, 2.2), width: 4.6, height: 1.2),
-          glassPaint);
+      canvas.drawRect(Rect.fromCenter(center: carCenter.translate(0, 2.2), width: 4.6, height: 1.2), glassPaint);
 
       // Car Roof Block
       canvas.drawRRect(
         RRect.fromRectAndRadius(
-          Rect.fromCenter(
-              center: carCenter.translate(0, 0.2), width: 4.6, height: 3.2),
+          Rect.fromCenter(center: carCenter.translate(0, 0.2), width: 4.6, height: 3.2),
           const Radius.circular(0.8),
         ),
         Paint()..color = carColor,
       );
 
       // Side mirrors
-      canvas.drawCircle(
-          carCenter.translate(-2.9, -1.8), 0.5, Paint()..color = carColor);
-      canvas.drawCircle(
-          carCenter.translate(2.9, -1.8), 0.5, Paint()..color = carColor);
+      canvas.drawCircle(carCenter.translate(-2.9, -1.8), 0.5, Paint()..color = carColor);
+      canvas.drawCircle(carCenter.translate(2.9, -1.8), 0.5, Paint()..color = carColor);
 
       // Headlights
       final lightPaint = Paint()..color = const Color(0xFFFEF08A);
@@ -3774,11 +3465,9 @@ class IslandAerialPainter extends CustomPainter {
   }
 
   // 3. Swimming Pool with Sun Deck & Beach Umbrella (സ്വിമ്മിംഗ് പൂളും ഡെക്കും)
-  void _drawSwimmingPoolAndDeck(
-      Canvas canvas, Rect parcelRect, int day, int plotNumber) {
+  void _drawSwimmingPoolAndDeck(Canvas canvas, Rect parcelRect, int day, int plotNumber) {
     final poolCenter = Offset(parcelRect.right - 8.5, parcelRect.bottom - 8.5);
-    final deckRect =
-        Rect.fromCenter(center: poolCenter, width: 13.5, height: 11.5);
+    final deckRect = Rect.fromCenter(center: poolCenter, width: 13.5, height: 11.5);
 
     // Warm sandstone / teak wood sun deck
     final deckColors = [
@@ -3794,8 +3483,7 @@ class IslandAerialPainter extends CustomPainter {
     );
 
     // Pool Basin (Kidney or rounded rectangle)
-    final poolRect = Rect.fromCenter(
-        center: poolCenter.translate(-1.8, 0), width: 8.5, height: 7.5);
+    final poolRect = Rect.fromCenter(center: poolCenter.translate(-1.8, 0), width: 8.5, height: 7.5);
     // Deep blue bottom gradient
     canvas.drawRRect(
       RRect.fromRectAndRadius(poolRect, const Radius.circular(2.5)),
@@ -3804,8 +3492,7 @@ class IslandAerialPainter extends CustomPainter {
     // Azure water surface
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromCenter(
-            center: poolCenter.translate(-1.8, 0), width: 7.5, height: 6.5),
+        Rect.fromCenter(center: poolCenter.translate(-1.8, 0), width: 7.5, height: 6.5),
         const Radius.circular(2.0),
       ),
       Paint()..color = const Color(0xFF38BDF8),
@@ -3816,8 +3503,7 @@ class IslandAerialPainter extends CustomPainter {
       ..color = Colors.white.withValues(alpha: 0.75)
       ..strokeWidth = 0.65
       ..style = PaintingStyle.stroke;
-    canvas.drawLine(poolRect.topLeft.translate(1.8, 2.2),
-        poolRect.topLeft.translate(3.8, 2.2), ripplePaint);
+    canvas.drawLine(poolRect.topLeft.translate(1.8, 2.2), poolRect.topLeft.translate(3.8, 2.2), ripplePaint);
 
     // 🐟 LIVING SWIMMING KOI FISH (Visible upon Deep Zoom!)
     // Calico orange & golden Koi with tail wiggle, fins, and micro eye dots!
@@ -3828,8 +3514,7 @@ class IslandAerialPainter extends CustomPainter {
       math.cos(fishAngle1) * 1.8,
       math.sin(fishAngle1) * 1.3,
     );
-    _drawDetailedKoiFish(canvas, fish1Pos, fishAngle1 + math.pi / 2,
-        const Color(0xFFEA580C), const Color(0xFFFED7AA));
+    _drawDetailedKoiFish(canvas, fish1Pos, fishAngle1 + math.pi / 2, const Color(0xFFEA580C), const Color(0xFFFED7AA));
 
     // Fish 2: Golden / Platinum Koi swimming in counter-arc (for higher tiers)
     if (day >= 65) {
@@ -3838,26 +3523,20 @@ class IslandAerialPainter extends CustomPainter {
         math.cos(fishAngle2) * 1.4,
         math.sin(fishAngle2) * 1.1,
       );
-      _drawDetailedKoiFish(canvas, fish2Pos, fishAngle2 - math.pi / 2,
-          const Color(0xFFEAB308), Colors.white);
+      _drawDetailedKoiFish(canvas, fish2Pos, fishAngle2 - math.pi / 2, const Color(0xFFEAB308), Colors.white);
     }
 
     // White Sun Loungers (2 side-by-side sunbeds)
     final bedPaint = Paint()..color = Colors.white;
-    final bed1 =
-        Rect.fromLTWH(poolCenter.dx + 3.2, poolCenter.dy - 3.8, 1.8, 3.2);
-    final bed2 =
-        Rect.fromLTWH(poolCenter.dx + 3.2, poolCenter.dy + 0.6, 1.8, 3.2);
-    canvas.drawRRect(
-        RRect.fromRectAndRadius(bed1, const Radius.circular(0.4)), bedPaint);
-    canvas.drawRRect(
-        RRect.fromRectAndRadius(bed2, const Radius.circular(0.4)), bedPaint);
+    final bed1 = Rect.fromLTWH(poolCenter.dx + 3.2, poolCenter.dy - 3.8, 1.8, 3.2);
+    final bed2 = Rect.fromLTWH(poolCenter.dx + 3.2, poolCenter.dy + 0.6, 1.8, 3.2);
+    canvas.drawRRect(RRect.fromRectAndRadius(bed1, const Radius.circular(0.4)), bedPaint);
+    canvas.drawRRect(RRect.fromRectAndRadius(bed2, const Radius.circular(0.4)), bedPaint);
 
     // Striped Beach Umbrella (Red & White, Yellow & White, or Aqua & White segments)
     final umbrellaCenter = Offset(poolCenter.dx + 4.2, poolCenter.dy + 4.4);
     // Umbrella shadow
-    canvas.drawCircle(umbrellaCenter.translate(0.5, 0.7), 2.4,
-        Paint()..color = Colors.black26);
+    canvas.drawCircle(umbrellaCenter.translate(0.5, 0.7), 2.4, Paint()..color = Colors.black26);
 
     // Alternating stripe colors
     final umbrellaThemes = [
@@ -3884,8 +3563,7 @@ class IslandAerialPainter extends CustomPainter {
   }
 
   // 🐟 Detailed Animated Swimming Koi Fish with Eyes, Fins & Wagging Tail (Deep Zoom!)
-  void _drawDetailedKoiFish(Canvas canvas, Offset pos, double heading,
-      Color primaryColor, Color patternColor) {
+  void _drawDetailedKoiFish(Canvas canvas, Offset pos, double heading, Color primaryColor, Color patternColor) {
     canvas.save();
     canvas.translate(pos.dx, pos.dy);
     canvas.rotate(heading);
@@ -3902,8 +3580,7 @@ class IslandAerialPainter extends CustomPainter {
     canvas.drawPath(fishBodyPath, Paint()..color = primaryColor);
 
     // Calico dorsal pattern patch
-    canvas.drawCircle(const Offset(0.08, -0.15), 0.35,
-        Paint()..color = patternColor.withValues(alpha: 0.9));
+    canvas.drawCircle(const Offset(0.08, -0.15), 0.35, Paint()..color = patternColor.withValues(alpha: 0.9));
 
     // Tail fin (gently wagging with high-frequency sine wave)
     final wag = math.sin(timeSeconds * 7.5 + pos.dx * 8.0) * 0.35;
@@ -3912,19 +3589,12 @@ class IslandAerialPainter extends CustomPainter {
     tailPath.lineTo(-0.45 + wag, 1.75);
     tailPath.quadraticBezierTo(wag, 1.45, 0.45 + wag, 1.75);
     tailPath.close();
-    canvas.drawPath(
-        tailPath, Paint()..color = primaryColor.withValues(alpha: 0.8));
+    canvas.drawPath(tailPath, Paint()..color = primaryColor.withValues(alpha: 0.8));
 
     // Pectoral side fins (translucent fans)
     final finPaint = Paint()..color = Colors.white.withValues(alpha: 0.65);
-    canvas.drawOval(
-        Rect.fromCenter(
-            center: const Offset(-0.6, -0.2), width: 0.5, height: 0.25),
-        finPaint);
-    canvas.drawOval(
-        Rect.fromCenter(
-            center: const Offset(0.6, -0.2), width: 0.5, height: 0.25),
-        finPaint);
+    canvas.drawOval(Rect.fromCenter(center: const Offset(-0.6, -0.2), width: 0.5, height: 0.25), finPaint);
+    canvas.drawOval(Rect.fromCenter(center: const Offset(0.6, -0.2), width: 0.5, height: 0.25), finPaint);
 
     // Micro-detailed Koi Eye Dots (Clearly visible when user pinches to zoom in!)
     final eyeWhite = Paint()..color = Colors.white;
@@ -3943,22 +3613,19 @@ class IslandAerialPainter extends CustomPainter {
 
   // 4. Garden Gazebo (Yellow pitched roof like Image 2)
   void _drawGardenGazebo(Canvas canvas, Rect parcelRect, int day) {
-    final gazeboCenter =
-        Offset(parcelRect.right - 6.5, parcelRect.bottom - 6.5);
+    final gazeboCenter = Offset(parcelRect.right - 6.5, parcelRect.bottom - 6.5);
 
     // Gazebo shadow
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromCenter(
-            center: gazeboCenter.translate(0.5, 0.6), width: 6.8, height: 6.8),
+        Rect.fromCenter(center: gazeboCenter.translate(0.5, 0.6), width: 6.8, height: 6.8),
         const Radius.circular(1.0),
       ),
       Paint()..color = Colors.black38,
     );
 
     // Yellow pitched roof body (Image 2)
-    final gazeboRect =
-        Rect.fromCenter(center: gazeboCenter, width: 6.2, height: 6.2);
+    final gazeboRect = Rect.fromCenter(center: gazeboCenter, width: 6.2, height: 6.2);
     canvas.drawRRect(
       RRect.fromRectAndRadius(gazeboRect, const Radius.circular(0.8)),
       Paint()..color = const Color(0xFFEAB308),
@@ -3974,11 +3641,9 @@ class IslandAerialPainter extends CustomPainter {
   }
 
   // 5. Connecting Paved Footpaths (നടപ്പാതകൾ)
-  void _drawWalkwayPaths(
-      Canvas canvas, Rect parcelRect, Offset housePos, int day) {
+  void _drawWalkwayPaths(Canvas canvas, Rect parcelRect, Offset housePos, int day) {
     final pathPaint = Paint()
-      ..color =
-          const Color(0xFFFEF08A).withValues(alpha: 0.85) // Warm sandstone path
+      ..color = const Color(0xFFFEF08A).withValues(alpha: 0.85) // Warm sandstone path
       ..strokeWidth = 1.2
       ..style = PaintingStyle.stroke;
 
@@ -3999,10 +3664,39 @@ class IslandAerialPainter extends CustomPainter {
     }
   }
 
-  // 6. Minimal Parcel Number Badge strictly inside the property boundary
-  void _drawParcelNumberBadge(
-      Canvas canvas, Rect parcelRect, int plotNumber, bool isSel) {
-    final label = '#$plotNumber';
+  // 6. Estate Entrance Nameplate Signboard on the side (യൂസർ നെയിം ഒരു സൈഡിൽ കൊണ്ട് ഇടാം)
+  void _drawEstateNameBoard(Canvas canvas, Rect parcelRect, CitizenPlot plot, bool isSel) {
+    // Placed neatly on the side of the property entrance
+    final boardCenter = Offset(parcelRect.left + 6.0, parcelRect.bottom + 1.2);
+    final boardRect = Rect.fromCenter(center: boardCenter, width: 25.0, height: 5.8);
+
+    // Signpost wooden/slate legs
+    final postPaint = Paint()..color = const Color(0xFF334155)..strokeWidth = 0.8;
+    canvas.drawLine(Offset(boardRect.left + 2.0, boardRect.bottom), Offset(boardRect.left + 2.0, boardRect.bottom + 2.4), postPaint);
+    canvas.drawLine(Offset(boardRect.right - 2.0, boardRect.bottom), Offset(boardRect.right - 2.0, boardRect.bottom + 2.4), postPaint);
+
+    // Signboard shadow & body
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(boardRect.translate(0.3, 0.4), const Radius.circular(1.0)),
+      Paint()..color = Colors.black38,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(boardRect, const Radius.circular(1.0)),
+      Paint()..color = isSel ? const Color(0xFF1E293B) : const Color(0xFF0F172A),
+    );
+    // Gold/White border
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(boardRect, const Radius.circular(1.0)),
+      Paint()
+        ..color = isSel ? const Color(0xFFFFD700) : const Color(0xFF94A3B8).withValues(alpha: 0.8)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = isSel ? 0.9 : 0.55,
+    );
+
+    // Identifiable Plot Number & Citizen Name Text on Estate Board (#1 Musab)
+    final displayName = getCitizenDisplayName(plot);
+    final shortName = displayName.length > 8 ? '${displayName.substring(0, 8)}..' : displayName;
+    final label = '#${plot.plotNumber} · $shortName';
     final tp = TextPainter(
       text: TextSpan(
         text: label,
@@ -4016,38 +3710,7 @@ class IslandAerialPainter extends CustomPainter {
       textDirection: TextDirection.ltr,
     )..layout();
 
-    final badgeWidth = math.max(10.5, tp.width + 3.4);
-    const badgeHeight = 4.8;
-    // Positioned strictly inside the parcel near the front entrance (safe from fences & walls)
-    final badgeCenter = Offset(parcelRect.left + 7.5, parcelRect.bottom - 4.2);
-    final badgeRect = Rect.fromCenter(
-        center: badgeCenter, width: badgeWidth, height: badgeHeight);
-
-    // Subtle drop shadow
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-          badgeRect.translate(0.25, 0.35), const Radius.circular(1.2)),
-      Paint()..color = Colors.black45,
-    );
-    // Dark slate badge body
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(badgeRect, const Radius.circular(1.2)),
-      Paint()
-        ..color = isSel ? const Color(0xFF1E293B) : const Color(0xFF0F172A),
-    );
-    // Gold or cyan border
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(badgeRect, const Radius.circular(1.2)),
-      Paint()
-        ..color = isSel
-            ? const Color(0xFFFFD700)
-            : const Color(0xFF38BDF8).withValues(alpha: 0.75)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = isSel ? 0.8 : 0.5,
-    );
-
-    tp.paint(canvas,
-        Offset(badgeCenter.dx - tp.width / 2, badgeCenter.dy - tp.height / 2));
+    tp.paint(canvas, Offset(boardCenter.dx - tp.width / 2, boardCenter.dy - tp.height / 2));
   }
 
   // 1. Clustered Round Trees on Yard Corners (Images 1 & 3)
@@ -4083,21 +3746,17 @@ class IslandAerialPainter extends CustomPainter {
     _drawLayeredTreeCircle(canvas, swBase.translate(1.8, -1.5), 2.2, theme2);
   }
 
-  void _drawLayeredTreeCircle(Canvas canvas, Offset center, double radius,
-      ({Color shadow, Color body, Color highlight}) theme) {
+  void _drawLayeredTreeCircle(Canvas canvas, Offset center, double radius, ({Color shadow, Color body, Color highlight}) theme) {
     // Tree drop shadow
-    canvas.drawCircle(
-        center.translate(0.6, 0.8), radius, Paint()..color = theme.shadow);
+    canvas.drawCircle(center.translate(0.6, 0.8), radius, Paint()..color = theme.shadow);
     // Tree canopy body
     canvas.drawCircle(center, radius, Paint()..color = theme.body);
     // Tree sunlit inner highlight circle
-    canvas.drawCircle(center.translate(-radius * 0.25, -radius * 0.25),
-        radius * 0.60, Paint()..color = theme.highlight);
+    canvas.drawCircle(center.translate(-radius * 0.25, -radius * 0.25), radius * 0.60, Paint()..color = theme.highlight);
   }
 
   // 8. Architectural Top-Down Villa Roof with 90-Day Progression & Diverse Colors
-  void _drawArchitecturalRoof(
-      Canvas canvas, Offset pos, int day, bool isSel, int plotNumber) {
+  void _drawArchitecturalRoof(Canvas canvas, Offset pos, int day, bool isSel, int plotNumber) {
     // 5 Distinct Roof Tile Palettes across the 35 houses so adjacent houses never look identical!
     final colorVariant = (plotNumber * 7 + day) % 5;
     Color roofBase;
@@ -4109,34 +3768,24 @@ class IslandAerialPainter extends CustomPainter {
     } else {
       switch (colorVariant) {
         case 0: // Classic Terracotta Orange (Images 1, 2, 3)
-          roofBase = day >= 90
-              ? const Color(0xFFEA580C)
-              : (day >= 60 ? const Color(0xFFF97316) : const Color(0xFFFB923C));
+          roofBase = day >= 90 ? const Color(0xFFEA580C) : (day >= 60 ? const Color(0xFFF97316) : const Color(0xFFFB923C));
           ridgeHighlight = const Color(0xFFFFEDD5);
           break;
         case 1: // Coastal Slate Teal
-          roofBase = day >= 90
-              ? const Color(0xFF0F766E)
-              : (day >= 60 ? const Color(0xFF0D9488) : const Color(0xFF14B8A6));
+          roofBase = day >= 90 ? const Color(0xFF0F766E) : (day >= 60 ? const Color(0xFF0D9488) : const Color(0xFF14B8A6));
           ridgeHighlight = const Color(0xFFCCFBF1);
           break;
         case 2: // Spanish Burgundy / Crimson
-          roofBase = day >= 90
-              ? const Color(0xFF991B1B)
-              : (day >= 60 ? const Color(0xFFB91C1C) : const Color(0xFFDC2626));
+          roofBase = day >= 90 ? const Color(0xFF991B1B) : (day >= 60 ? const Color(0xFFB91C1C) : const Color(0xFFDC2626));
           ridgeHighlight = const Color(0xFFFEE2E2);
           break;
         case 3: // Alpine Cobalt Blue
-          roofBase = day >= 90
-              ? const Color(0xFF1E3A8A)
-              : (day >= 60 ? const Color(0xFF1D4ED8) : const Color(0xFF2563EB));
+          roofBase = day >= 90 ? const Color(0xFF1E3A8A) : (day >= 60 ? const Color(0xFF1D4ED8) : const Color(0xFF2563EB));
           ridgeHighlight = const Color(0xFFDBEAFE);
           break;
         case 4: // Amber Gold Manor
         default:
-          roofBase = day >= 90
-              ? const Color(0xFFB45309)
-              : (day >= 60 ? const Color(0xFFD97706) : const Color(0xFFF59E0B));
+          roofBase = day >= 90 ? const Color(0xFFB45309) : (day >= 60 ? const Color(0xFFD97706) : const Color(0xFFF59E0B));
           ridgeHighlight = const Color(0xFFFEF3C7);
           break;
       }
@@ -4151,6 +3800,7 @@ class IslandAerialPainter extends CustomPainter {
 
       // Single Chimney with subtle smoke
       _drawChimney(canvas, pos.translate(2.4, -1.8));
+
     } else if (day <= 25) {
       // -------------------------------------------------------------
       // LEVEL 2 (Day 11 - 25): Suburban Ranch House with Skylight (Image 2)
@@ -4163,13 +3813,13 @@ class IslandAerialPainter extends CustomPainter {
 
       // Chimney
       _drawChimney(canvas, pos.translate(3.6, -2.0));
+
     } else if (day <= 50) {
       // -------------------------------------------------------------
       // LEVEL 3 (Day 26 - 50): L-Shaped Executive Villa (Images 1 & 2 Iconic Shape!)
       // -------------------------------------------------------------
       final isLeftWing = (plotNumber % 2 == 0);
-      final mainRect = Rect.fromCenter(
-          center: pos.translate(1.0, -1.5), width: 15.0, height: 8.0);
+      final mainRect = Rect.fromCenter(center: pos.translate(1.0, -1.5), width: 15.0, height: 8.0);
       final wingRect = Rect.fromCenter(
         center: pos.translate(isLeftWing ? -3.0 : 5.0, 3.2),
         width: 7.0,
@@ -4186,16 +3836,14 @@ class IslandAerialPainter extends CustomPainter {
 
       // Chimney
       _drawChimney(canvas, mainRect.center.translate(4.8, 1.8));
+
     } else if (day <= 85) {
       // -------------------------------------------------------------
       // LEVEL 4 (Day 51 - 85): Luxury Multi-Wing Estate Compound (Images 1 & 2)
       // -------------------------------------------------------------
-      final mainRect = Rect.fromCenter(
-          center: pos.translate(0.0, -2.0), width: 17.0, height: 8.5);
-      final westWing = Rect.fromCenter(
-          center: pos.translate(-4.5, 3.2), width: 8.0, height: 10.5);
-      final eastPorch = Rect.fromCenter(
-          center: pos.translate(5.0, 1.8), width: 6.5, height: 6.5);
+      final mainRect = Rect.fromCenter(center: pos.translate(0.0, -2.0), width: 17.0, height: 8.5);
+      final westWing = Rect.fromCenter(center: pos.translate(-4.5, 3.2), width: 8.0, height: 10.5);
+      final eastPorch = Rect.fromCenter(center: pos.translate(5.0, 1.8), width: 6.5, height: 6.5);
 
       _drawFacetedHippedRoof(canvas, mainRect, roofBase, ridgeHighlight);
       _drawFacetedHippedRoof(canvas, westWing, roofBase, ridgeHighlight);
@@ -4209,16 +3857,14 @@ class IslandAerialPainter extends CustomPainter {
       // Dual Chimneys
       _drawChimney(canvas, mainRect.center.translate(-5.5, 1.8));
       _drawChimney(canvas, mainRect.center.translate(6.0, 1.8));
+
     } else {
       // -------------------------------------------------------------
       // LEVEL 5 (Day 86 - 90 / Max Streak): Sovereign Grand Palace Manor (U-Shape)
       // -------------------------------------------------------------
-      final centerHall = Rect.fromCenter(
-          center: pos.translate(0, -3.5), width: 19.0, height: 9.0);
-      final leftWing = Rect.fromCenter(
-          center: pos.translate(-6.0, 2.5), width: 7.5, height: 12.5);
-      final rightWing = Rect.fromCenter(
-          center: pos.translate(6.0, 2.5), width: 7.5, height: 12.5);
+      final centerHall = Rect.fromCenter(center: pos.translate(0, -3.5), width: 19.0, height: 9.0);
+      final leftWing = Rect.fromCenter(center: pos.translate(-6.0, 2.5), width: 7.5, height: 12.5);
+      final rightWing = Rect.fromCenter(center: pos.translate(6.0, 2.5), width: 7.5, height: 12.5);
 
       _drawFacetedHippedRoof(canvas, centerHall, roofBase, ridgeHighlight);
       _drawFacetedHippedRoof(canvas, leftWing, roofBase, ridgeHighlight);
@@ -4235,8 +3881,7 @@ class IslandAerialPainter extends CustomPainter {
       _drawChimney(canvas, centerHall.center.translate(6.5, -2.2));
 
       // Golden Sovereign Prestige Crest atop central ridge
-      canvas.drawCircle(
-          centerHall.center, 1.2, Paint()..color = const Color(0xFFFFD700));
+      canvas.drawCircle(centerHall.center, 1.2, Paint()..color = const Color(0xFFFFD700));
     }
   }
 
@@ -4259,16 +3904,13 @@ class IslandAerialPainter extends CustomPainter {
 
     // 2. Soft Drop Shadow Underneath
     canvas.drawRRect(
-      RRect.fromRectAndRadius(
-          rect.translate(0.9, 1.1), const Radius.circular(1.2)),
+      RRect.fromRectAndRadius(rect.translate(0.9, 1.1), const Radius.circular(1.2)),
       Paint()..color = Colors.black38,
     );
 
     // 3. Faceted Slopes & Hip Ridges
-    final northSlopeColor =
-        Color.lerp(roofBase, Colors.white, 0.20)!; // Sunlit facet
-    final southSlopeColor =
-        Color.lerp(roofBase, Colors.black, 0.20)!; // Shadowed facet
+    final northSlopeColor = Color.lerp(roofBase, Colors.white, 0.20)!; // Sunlit facet
+    final southSlopeColor = Color.lerp(roofBase, Colors.black, 0.20)!; // Shadowed facet
     final eastSlopeColor = Color.lerp(roofBase, Colors.black, 0.10)!;
     final westSlopeColor = roofBase;
 
@@ -4279,8 +3921,7 @@ class IslandAerialPainter extends CustomPainter {
 
     if (rect.width >= rect.height) {
       // Horizontal Ridge Hipped Roof
-      final double ridgeLength =
-          (rect.width - rect.height * 0.70).clamp(1.5, rect.width * 0.75);
+      final double ridgeLength = (rect.width - rect.height * 0.70).clamp(1.5, rect.width * 0.75);
       final pLeft = Offset(rect.center.dx - ridgeLength / 2, rect.center.dy);
       final pRight = Offset(rect.center.dx + ridgeLength / 2, rect.center.dy);
 
@@ -4324,10 +3965,10 @@ class IslandAerialPainter extends CustomPainter {
       canvas.drawLine(pLeft, pRight, ridgePaint);
       canvas.drawLine(rect.topRight, pRight, ridgePaint);
       canvas.drawLine(rect.bottomRight, pRight, ridgePaint);
+
     } else {
       // Vertical Ridge Hipped Roof
-      final double ridgeLength =
-          (rect.height - rect.width * 0.70).clamp(1.5, rect.height * 0.75);
+      final double ridgeLength = (rect.height - rect.width * 0.70).clamp(1.5, rect.height * 0.75);
       final pTop = Offset(rect.center.dx, rect.center.dy - ridgeLength / 2);
       final pBottom = Offset(rect.center.dx, rect.center.dy + ridgeLength / 2);
 
@@ -4417,30 +4058,16 @@ class IslandAerialPainter extends CustomPainter {
     // 2. Marble Quad Courtyard
     final courtyardPaint = Paint()..color = const Color(0xFFF1F5F9);
     canvas.drawRRect(
-      RRect.fromRectAndRadius(
-          Rect.fromCenter(center: Offset.zero, width: 120, height: 120),
-          const Radius.circular(18)),
+      RRect.fromRectAndRadius(Rect.fromCenter(center: Offset.zero, width: 120, height: 120), const Radius.circular(18)),
       courtyardPaint,
     );
 
     // 3. Formal Palace Gardens (4 Green Quads)
     final gardenPaint = Paint()..color = const Color(0xFF15803D);
-    canvas.drawRRect(
-        RRect.fromRectAndRadius(
-            const Rect.fromLTWH(-50, -50, 42, 42), const Radius.circular(8)),
-        gardenPaint);
-    canvas.drawRRect(
-        RRect.fromRectAndRadius(
-            const Rect.fromLTWH(8, -50, 42, 42), const Radius.circular(8)),
-        gardenPaint);
-    canvas.drawRRect(
-        RRect.fromRectAndRadius(
-            const Rect.fromLTWH(-50, 8, 42, 42), const Radius.circular(8)),
-        gardenPaint);
-    canvas.drawRRect(
-        RRect.fromRectAndRadius(
-            const Rect.fromLTWH(8, 8, 42, 42), const Radius.circular(8)),
-        gardenPaint);
+    canvas.drawRRect(RRect.fromRectAndRadius(const Rect.fromLTWH(-50, -50, 42, 42), const Radius.circular(8)), gardenPaint);
+    canvas.drawRRect(RRect.fromRectAndRadius(const Rect.fromLTWH(8, -50, 42, 42), const Radius.circular(8)), gardenPaint);
+    canvas.drawRRect(RRect.fromRectAndRadius(const Rect.fromLTWH(-50, 8, 42, 42), const Radius.circular(8)), gardenPaint);
+    canvas.drawRRect(RRect.fromRectAndRadius(const Rect.fromLTWH(8, 8, 42, 42), const Radius.circular(8)), gardenPaint);
 
     // 4. Central Royal Grand Palace with 5 Golden Domes
     final palaceBase = Paint()..color = const Color(0xFFE2E8F0);
@@ -4456,29 +4083,20 @@ class IslandAerialPainter extends CustomPainter {
     // Grand Central Golden Dome
     final grandDome = Paint()..color = const Color(0xFFFFD700);
     canvas.drawCircle(Offset.zero, 19.0, grandDome);
-    canvas.drawCircle(
-        const Offset(-4, -4), 6.0, Paint()..color = Colors.white70);
+    canvas.drawCircle(const Offset(-4, -4), 6.0, Paint()..color = Colors.white70);
 
     // 5. Helipad [H] on North Terrace
     final helipadPaint = Paint()..color = const Color(0xFF334155);
     canvas.drawCircle(const Offset(0, -88), 16.0, helipadPaint);
-    canvas.drawCircle(
-        const Offset(0, -88),
-        14.0,
-        Paint()
-          ..color = Colors.white
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.0);
+    canvas.drawCircle(const Offset(0, -88), 14.0, Paint()..color = Colors.white..style = PaintingStyle.stroke..strokeWidth = 2.0);
     final hPainter = TextPainter(
       text: const TextSpan(
         text: 'H',
-        style: TextStyle(
-            color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+        style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    hPainter.paint(
-        canvas, Offset(-hPainter.width / 2, -88 - hPainter.height / 2));
+    hPainter.paint(canvas, Offset(-hPainter.width / 2, -88 - hPainter.height / 2));
 
     // 6. Presidential Crown Crest Badge
     final crownPainter = TextPainter(
@@ -4494,37 +4112,23 @@ class IslandAerialPainter extends CustomPainter {
   void _drawPalmTreeCanopies(Canvas canvas) {
     final List<Offset> trees = island.isPresidential
         ? [
-            const Offset(-80, -65),
-            const Offset(80, -65),
-            const Offset(-80, 65),
-            const Offset(80, 65),
-            const Offset(0, 95),
-            const Offset(-105, 0),
-            const Offset(-45, -75),
-            const Offset(45, -75),
+            const Offset(-80, -65), const Offset(80, -65),
+            const Offset(-80, 65), const Offset(80, 65),
+            const Offset(0, 95), const Offset(-105, 0),
+            const Offset(-45, -75), const Offset(45, -75),
           ]
         : [
             // Groves along pathways, shoreline perimeters, and between plots
-            const Offset(-155, -55), const Offset(-145, -15),
-            const Offset(-150, 25), const Offset(-140, 65),
-            const Offset(-125, -95), const Offset(-115, -60),
-            const Offset(-110, 50), const Offset(-105, 95),
-            const Offset(-85, -125), const Offset(-75, -80),
-            const Offset(-80, 75), const Offset(-70, 125),
-            const Offset(-45, -145), const Offset(-35, -45),
-            const Offset(-40, 45), const Offset(-30, 135),
-            const Offset(-5, -150), const Offset(5, -65), const Offset(0, 70),
-            const Offset(0, 140),
-            const Offset(35, -140), const Offset(45, -75), const Offset(40, 60),
-            const Offset(35, 130),
-            const Offset(75, -120), const Offset(70, -45), const Offset(75, 45),
-            const Offset(70, 115),
-            const Offset(115, -95), const Offset(110, -55),
-            const Offset(115, 55), const Offset(105, 95),
-            const Offset(145, -60), const Offset(140, -20),
-            const Offset(135, 20), const Offset(135, 65),
-            const Offset(-15, -20), const Offset(-10, 15), const Offset(10, 18),
-            const Offset(48, -12),
+            const Offset(-155, -55), const Offset(-145, -15), const Offset(-150, 25), const Offset(-140, 65),
+            const Offset(-125, -95), const Offset(-115, -60), const Offset(-110, 50), const Offset(-105, 95),
+            const Offset(-85, -125), const Offset(-75, -80), const Offset(-80, 75), const Offset(-70, 125),
+            const Offset(-45, -145), const Offset(-35, -45), const Offset(-40, 45), const Offset(-30, 135),
+            const Offset(-5, -150), const Offset(5, -65), const Offset(0, 70), const Offset(0, 140),
+            const Offset(35, -140), const Offset(45, -75), const Offset(40, 60), const Offset(35, 130),
+            const Offset(75, -120), const Offset(70, -45), const Offset(75, 45), const Offset(70, 115),
+            const Offset(115, -95), const Offset(110, -55), const Offset(115, 55), const Offset(105, 95),
+            const Offset(145, -60), const Offset(140, -20), const Offset(135, 20), const Offset(135, 65),
+            const Offset(-15, -20), const Offset(-10, 15), const Offset(10, 18), const Offset(48, -12),
           ];
 
     for (int idx = 0; idx < trees.length; idx++) {
@@ -4540,82 +4144,52 @@ class IslandAerialPainter extends CustomPainter {
 
       if (isEarth) {
         // 🌴 Earth Tropical Palm Canopies
-        canvas.drawCircle(
-            pos, treeSize, Paint()..color = const Color(0xFF14532D));
-        final leafPaint = Paint()
-          ..color = const Color(0xFF16A34A)
-          ..strokeWidth = 2.2
-          ..strokeCap = StrokeCap.round;
+        canvas.drawCircle(pos, treeSize, Paint()..color = const Color(0xFF14532D));
+        final leafPaint = Paint()..color = const Color(0xFF16A34A)..strokeWidth = 2.2..strokeCap = StrokeCap.round;
         for (int f = 0; f < 6; f++) {
           final fa = (f * math.pi / 3) + (idx * 0.4);
           final lx = pos.dx + (treeSize * 1.1) * math.cos(fa);
           final ly = pos.dy + (treeSize * 1.1) * math.sin(fa);
           canvas.drawLine(pos, Offset(lx, ly), leafPaint);
         }
-        canvas.drawCircle(pos.translate(-0.8, -1.0), treeSize * 0.72,
-            Paint()..color = const Color(0xFF22C55E));
-        canvas.drawCircle(pos.translate(-1.4, -1.6), treeSize * 0.38,
-            Paint()..color = const Color(0xFF86EFAC));
+        canvas.drawCircle(pos.translate(-0.8, -1.0), treeSize * 0.72, Paint()..color = const Color(0xFF22C55E));
+        canvas.drawCircle(pos.translate(-1.4, -1.6), treeSize * 0.38, Paint()..color = const Color(0xFF86EFAC));
       } else if (isTitan) {
         // 🌿 Titan Bioluminescent Alien Ferns
-        canvas.drawCircle(
-            pos, treeSize, Paint()..color = const Color(0xFF064E3B));
-        canvas.drawCircle(pos.translate(-0.8, -1.0), treeSize * 0.70,
-            Paint()..color = const Color(0xFF059669));
-        canvas.drawCircle(pos.translate(-1.4, -1.6), treeSize * 0.35,
-            Paint()..color = const Color(0xFF34D399));
+        canvas.drawCircle(pos, treeSize, Paint()..color = const Color(0xFF064E3B));
+        canvas.drawCircle(pos.translate(-0.8, -1.0), treeSize * 0.70, Paint()..color = const Color(0xFF059669));
+        canvas.drawCircle(pos.translate(-1.4, -1.6), treeSize * 0.35, Paint()..color = const Color(0xFF34D399));
       } else if (isMoon) {
         // 📡 Lunar Solar Arrays & Comms Dishes
-        final panelRect = Rect.fromCenter(
-            center: pos, width: treeSize * 1.6, height: treeSize * 0.9);
+        final panelRect = Rect.fromCenter(center: pos, width: treeSize * 1.6, height: treeSize * 0.9);
         canvas.drawRect(panelRect, Paint()..color = const Color(0xFF1E293B));
-        canvas.drawRect(
-            panelRect,
-            Paint()
-              ..color = const Color(0xFF38BDF8)
-              ..style = PaintingStyle.stroke
-              ..strokeWidth = 0.8);
-        canvas.drawCircle(
-            pos.translate(1, -1), 1.4, Paint()..color = Colors.white);
+        canvas.drawRect(panelRect, Paint()..color = const Color(0xFF38BDF8)..style = PaintingStyle.stroke..strokeWidth = 0.8);
+        canvas.drawCircle(pos.translate(1, -1), 1.4, Paint()..color = Colors.white);
       } else if (isMars) {
         // 🔴 Mars Pressurized Bio-Domes
-        canvas.drawCircle(
-            pos, treeSize * 0.9, Paint()..color = const Color(0xFF7C2D12));
-        canvas.drawCircle(pos.translate(-0.6, -0.8), treeSize * 0.65,
-            Paint()..color = const Color(0xFFEA580C));
-        canvas.drawCircle(pos.translate(-1.2, -1.4), treeSize * 0.30,
-            Paint()..color = const Color(0xFFFDBA74));
+        canvas.drawCircle(pos, treeSize * 0.9, Paint()..color = const Color(0xFF7C2D12));
+        canvas.drawCircle(pos.translate(-0.6, -0.8), treeSize * 0.65, Paint()..color = const Color(0xFFEA580C));
+        canvas.drawCircle(pos.translate(-1.2, -1.4), treeSize * 0.30, Paint()..color = const Color(0xFFFDBA74));
       } else if (isEuropa) {
         // 🧊 Europa Cryo-Crystal Spires
-        canvas.drawCircle(
-            pos, treeSize * 0.85, Paint()..color = const Color(0xFF0284C7));
-        canvas.drawCircle(pos.translate(-0.8, -0.8), treeSize * 0.60,
-            Paint()..color = const Color(0xFF7DD3FC));
-        canvas.drawCircle(pos.translate(-1.4, -1.4), treeSize * 0.30,
-            Paint()..color = Colors.white);
+        canvas.drawCircle(pos, treeSize * 0.85, Paint()..color = const Color(0xFF0284C7));
+        canvas.drawCircle(pos.translate(-0.8, -0.8), treeSize * 0.60, Paint()..color = const Color(0xFF7DD3FC));
+        canvas.drawCircle(pos.translate(-1.4, -1.4), treeSize * 0.30, Paint()..color = Colors.white);
       } else if (isPluto) {
         // ❄️ Pluto Cryogenic Nitrogen Crystal Pinnacles (Lavender/Violet)
-        canvas.drawCircle(
-            pos, treeSize * 0.85, Paint()..color = const Color(0xFF581C87));
-        canvas.drawCircle(pos.translate(-0.8, -0.8), treeSize * 0.60,
-            Paint()..color = const Color(0xFFA855F7));
-        canvas.drawCircle(pos.translate(-1.4, -1.4), treeSize * 0.30,
-            Paint()..color = const Color(0xFFF3E8FF));
+        canvas.drawCircle(pos, treeSize * 0.85, Paint()..color = const Color(0xFF581C87));
+        canvas.drawCircle(pos.translate(-0.8, -0.8), treeSize * 0.60, Paint()..color = const Color(0xFFA855F7));
+        canvas.drawCircle(pos.translate(-1.4, -1.4), treeSize * 0.30, Paint()..color = const Color(0xFFF3E8FF));
       } else {
         // 🪐 Gas Giant / Volcanic Beacon Stations (Jupiter, Saturn, Venus, Neptune)
         final pylonColor = isJupiter
             ? const Color(0xFFF59E0B)
             : (isSaturn
                 ? const Color(0xFFCA8A04)
-                : (isVenus
-                    ? const Color(0xFFF59E0B)
-                    : const Color(0xFF38BDF8)));
-        canvas.drawCircle(
-            pos, treeSize * 0.80, Paint()..color = const Color(0xFF0F172A));
-        canvas.drawCircle(pos.translate(-0.6, -0.8), treeSize * 0.55,
-            Paint()..color = pylonColor);
-        canvas.drawCircle(pos.translate(-1.2, -1.2), treeSize * 0.25,
-            Paint()..color = Colors.white);
+                : (isVenus ? const Color(0xFFF59E0B) : const Color(0xFF38BDF8)));
+        canvas.drawCircle(pos, treeSize * 0.80, Paint()..color = const Color(0xFF0F172A));
+        canvas.drawCircle(pos.translate(-0.6, -0.8), treeSize * 0.55, Paint()..color = pylonColor);
+        canvas.drawCircle(pos.translate(-1.2, -1.2), treeSize * 0.25, Paint()..color = Colors.white);
       }
     }
   }
@@ -4628,12 +4202,9 @@ class IslandAerialPainter extends CustomPainter {
         ? [const Offset(105, -15), const Offset(105, 15)]
         : [
             // Beach umbrellas dotted along the golden sands facing the sea
-            const Offset(-175, -85), const Offset(-172, -45),
-            const Offset(-170, 45), const Offset(-165, 95),
-            const Offset(-115, -170), const Offset(-65, -185),
-            const Offset(65, -185), const Offset(120, -165),
-            const Offset(168, -85), const Offset(165, 80),
-            const Offset(115, 175), const Offset(-65, 190),
+            const Offset(-175, -85), const Offset(-172, -45), const Offset(-170, 45), const Offset(-165, 95),
+            const Offset(-115, -170), const Offset(-65, -185), const Offset(65, -185), const Offset(120, -165),
+            const Offset(168, -85), const Offset(165, 80), const Offset(115, 175), const Offset(-65, 190),
           ];
 
     for (int i = 0; i < umbrellas.length; i++) {
@@ -4641,16 +4212,13 @@ class IslandAerialPainter extends CustomPainter {
       final isRed = i % 2 == 0;
 
       // 1. Parasol Drop Shadow
-      canvas.drawCircle(
-          pos.translate(2.2, 2.5), 5.5, Paint()..color = Colors.black26);
+      canvas.drawCircle(pos.translate(2.2, 2.5), 5.5, Paint()..color = Colors.black26);
 
       // 2. White Sunbed Lounger next to Umbrella
       final loungerOffset = pos.translate(7.5, (i % 3 == 0) ? -2.0 : 2.0);
-      final loungerRect =
-          Rect.fromCenter(center: loungerOffset, width: 4.2, height: 8.5);
+      final loungerRect = Rect.fromCenter(center: loungerOffset, width: 4.2, height: 8.5);
       // Lounger shadow
-      canvas.drawRect(loungerRect.shift(const Offset(1.0, 1.2)),
-          Paint()..color = Colors.black12);
+      canvas.drawRect(loungerRect.shift(const Offset(1.0, 1.2)), Paint()..color = Colors.black12);
       // Lounger mattress
       canvas.drawRRect(
         RRect.fromRectAndRadius(loungerRect, const Radius.circular(1.0)),
@@ -4660,14 +4228,11 @@ class IslandAerialPainter extends CustomPainter {
       canvas.drawLine(
         Offset(loungerRect.left, loungerRect.top + 2.5),
         Offset(loungerRect.right, loungerRect.top + 2.5),
-        Paint()
-          ..color = const Color(0xFFCBD5E1)
-          ..strokeWidth = 0.8,
+        Paint()..color = const Color(0xFFCBD5E1)..strokeWidth = 0.8,
       );
 
       // 3. Striped Parasol Canopy
-      final canopyColor =
-          isRed ? const Color(0xFFEF4444) : const Color(0xFF0284C7);
+      final canopyColor = isRed ? const Color(0xFFEF4444) : const Color(0xFF0284C7);
       canvas.drawCircle(pos, 5.8, Paint()..color = canopyColor);
 
       // Alternating 4 White Radial Stripes (Safe Line Primitives - No Path Tessellation)
@@ -4675,14 +4240,10 @@ class IslandAerialPainter extends CustomPainter {
         ..color = Colors.white
         ..strokeWidth = 1.3
         ..strokeCap = StrokeCap.round;
-      canvas.drawLine(Offset(pos.dx - 4.6, pos.dy),
-          Offset(pos.dx + 4.6, pos.dy), stripePaint);
-      canvas.drawLine(Offset(pos.dx, pos.dy - 4.6),
-          Offset(pos.dx, pos.dy + 4.6), stripePaint);
-      canvas.drawLine(Offset(pos.dx - 3.2, pos.dy - 3.2),
-          Offset(pos.dx + 3.2, pos.dy + 3.2), stripePaint);
-      canvas.drawLine(Offset(pos.dx - 3.2, pos.dy + 3.2),
-          Offset(pos.dx + 3.2, pos.dy - 3.2), stripePaint);
+      canvas.drawLine(Offset(pos.dx - 4.6, pos.dy), Offset(pos.dx + 4.6, pos.dy), stripePaint);
+      canvas.drawLine(Offset(pos.dx, pos.dy - 4.6), Offset(pos.dx, pos.dy + 4.6), stripePaint);
+      canvas.drawLine(Offset(pos.dx - 3.2, pos.dy - 3.2), Offset(pos.dx + 3.2, pos.dy + 3.2), stripePaint);
+      canvas.drawLine(Offset(pos.dx - 3.2, pos.dy + 3.2), Offset(pos.dx + 3.2, pos.dy - 3.2), stripePaint);
 
       // Center umbrella pole cap
       canvas.drawCircle(pos, 1.4, Paint()..color = Colors.white);
@@ -4692,22 +4253,11 @@ class IslandAerialPainter extends CustomPainter {
 
   void _drawSatelliteIslets(Canvas canvas) {
     final isletPath = Path();
-    isletPath.addOval(Rect.fromCenter(
-        center: const Offset(-115, 205), width: 48, height: 26));
+    isletPath.addOval(Rect.fromCenter(center: const Offset(-115, 205), width: 48, height: 26));
 
-    canvas.drawPath(
-        isletPath,
-        Paint()
-          ..color = const Color(0xFFFDE68A)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 8);
-    canvas.drawPath(
-        isletPath,
-        Paint()
-          ..color = const Color(0xFF16A34A)
-          ..style = PaintingStyle.fill);
-    canvas.drawCircle(
-        const Offset(-115, 205), 8.0, Paint()..color = const Color(0xFF15803D));
+    canvas.drawPath(isletPath, Paint()..color = const Color(0xFFFDE68A)..style = PaintingStyle.stroke..strokeWidth = 8);
+    canvas.drawPath(isletPath, Paint()..color = const Color(0xFF16A34A)..style = PaintingStyle.fill);
+    canvas.drawCircle(const Offset(-115, 205), 8.0, Paint()..color = const Color(0xFF15803D));
   }
 
   @override
@@ -4831,8 +4381,7 @@ class IslandAerialPainter extends CustomPainter {
   }
 
   /// Backward-compatible alias
-  static List<Offset> get50PlotCoordinates(IslandShapeStyle style) =>
-      get35PlotCoordinates(style);
+  static List<Offset> get50PlotCoordinates(IslandShapeStyle style) => get35PlotCoordinates(style);
 }
 
 class _CloudClusterDef {

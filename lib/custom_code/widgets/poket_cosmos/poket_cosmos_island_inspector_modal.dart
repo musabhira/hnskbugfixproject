@@ -49,13 +49,11 @@ class _PoketCosmosIslandInspectorModalState
     with SingleTickerProviderStateMixin {
   late ScrollController _chipScrollController;
   late AnimationController _waveAnimController;
-  final TransformationController _transformController =
-      TransformationController();
+  final TransformationController _transformController = TransformationController();
 
   int _currentIndex = 0;
   bool _transformInitialized = false;
-  final List<CelestialColonyInfo> _colonies =
-      PoketCosmosAllocationService.colonies;
+  final List<CelestialColonyInfo> _colonies = PoketCosmosAllocationService.colonies;
 
   late PoketCountryMap _currentIsland;
   List<CitizenPlot> _currentPlots = [];
@@ -185,11 +183,7 @@ class _PoketCosmosIslandInspectorModalState
               final screenWidth = constraints.maxWidth;
               final screenHeight = constraints.maxHeight;
               final worldHeight = screenHeight;
-              final worldWidth = math.max(
-                  screenWidth,
-                  screenHeight *
-                      (IslandAerialPainter.kIslandArtWidth /
-                          IslandAerialPainter.kIslandArtHeight));
+              final worldWidth = math.max(screenWidth * 2.6, screenHeight * 1.8);
               const minScale = 1.0;
               const maxScale = 25.0;
               final focusX = (screenWidth - worldWidth) / 2;
@@ -214,12 +208,9 @@ class _PoketCosmosIslandInspectorModalState
                     child: InteractiveViewer(
                       transformationController: _transformController,
                       constrained: false,
-                      boundaryMargin: EdgeInsets
-                          .zero, // Zero boundary margin: Locks edges cleanly, no black void!
-                      minScale:
-                          minScale, // Locked to 1.0: top & bottom touch screen edges!
-                      maxScale:
-                          maxScale, // Peak level zoom down to individual house & pool
+                      boundaryMargin: EdgeInsets.zero, // Zero boundary margin: Locks edges cleanly, no black void!
+                      minScale: minScale, // Locked to 1.0: top & bottom touch screen edges!
+                      maxScale: maxScale, // Peak level zoom down to individual house & pool
                       clipBehavior: Clip.hardEdge,
                       panEnabled: true,
                       scaleEnabled: true,
@@ -266,14 +257,10 @@ class _PoketCosmosIslandInspectorModalState
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white24, width: 1.2),
                     boxShadow: const [
-                      BoxShadow(
-                          color: Colors.black45,
-                          blurRadius: 10,
-                          offset: Offset(0, 2)),
+                      BoxShadow(color: Colors.black45, blurRadius: 10, offset: Offset(0, 2)),
                     ],
                   ),
-                  child: const Icon(Icons.chevron_left_rounded,
-                      color: Colors.white, size: 28),
+                  child: const Icon(Icons.chevron_left_rounded, color: Colors.white, size: 28),
                 ),
               ),
             ),
@@ -296,14 +283,10 @@ class _PoketCosmosIslandInspectorModalState
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white24, width: 1.2),
                     boxShadow: const [
-                      BoxShadow(
-                          color: Colors.black45,
-                          blurRadius: 10,
-                          offset: Offset(0, 2)),
+                      BoxShadow(color: Colors.black45, blurRadius: 10, offset: Offset(0, 2)),
                     ],
                   ),
-                  child: const Icon(Icons.chevron_right_rounded,
-                      color: Colors.white, size: 28),
+                  child: const Icon(Icons.chevron_right_rounded, color: Colors.white, size: 28),
                 ),
               ),
             ),
@@ -329,14 +312,11 @@ class _PoketCosmosIslandInspectorModalState
     );
   }
 
-  Widget _buildTopHeaderAndCarousel(
-      BuildContext context, CelestialColonyInfo colony) {
+  Widget _buildTopHeaderAndCarousel(BuildContext context, CelestialColonyInfo colony) {
     final topPadding = MediaQuery.of(context).padding.top;
     final userPlot = PoketCosmosAllocationService.instance.currentBirthPlot;
     final isUserHomeIsland = userPlot != null &&
-        colony.planetName
-            .toLowerCase()
-            .contains(userPlot.planetName.toLowerCase().split(' ').first);
+        colony.planetName.toLowerCase().contains(userPlot.planetName.toLowerCase().split(' ').first);
 
     return Container(
       padding: EdgeInsets.only(top: topPadding + 6, bottom: 12),
@@ -365,8 +345,7 @@ class _PoketCosmosIslandInspectorModalState
                     HapticFeedback.lightImpact();
                     Navigator.pop(context);
                   },
-                  icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                      color: Colors.white, size: 20),
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
                   style: IconButton.styleFrom(
                     backgroundColor: Colors.white.withValues(alpha: 0.12),
                     padding: const EdgeInsets.all(8),
@@ -380,30 +359,21 @@ class _PoketCosmosIslandInspectorModalState
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 7, vertical: 2),
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                             decoration: BoxDecoration(
                               color: isUserHomeIsland
-                                  ? const Color(0xFF10B981)
-                                      .withValues(alpha: 0.3)
-                                  : const Color(0xFF0284C7)
-                                      .withValues(alpha: 0.25),
+                                  ? const Color(0xFF10B981).withValues(alpha: 0.3)
+                                  : const Color(0xFF0284C7).withValues(alpha: 0.25),
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                color: isUserHomeIsland
-                                    ? const Color(0xFF34D399)
-                                    : const Color(0xFF38BDF8),
+                                color: isUserHomeIsland ? const Color(0xFF34D399) : const Color(0xFF38BDF8),
                                 width: 0.9,
                               ),
                             ),
                             child: Text(
-                              isUserHomeIsland
-                                  ? '🏡 THIS IS YOUR ISLAND'
-                                  : 'PLANETARY ISLAND',
+                              isUserHomeIsland ? '🏡 THIS IS YOUR ISLAND' : 'PLANETARY ISLAND',
                               style: GoogleFonts.outfit(
-                                color: isUserHomeIsland
-                                    ? const Color(0xFF6EE7B7)
-                                    : const Color(0xFF38BDF8),
+                                color: isUserHomeIsland ? const Color(0xFF6EE7B7) : const Color(0xFF38BDF8),
                                 fontSize: 11,
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: 1.2,
@@ -412,13 +382,11 @@ class _PoketCosmosIslandInspectorModalState
                           ),
                           const SizedBox(width: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                               color: Colors.white10,
                               borderRadius: BorderRadius.circular(6),
-                              border:
-                                  Border.all(color: Colors.white24, width: 0.8),
+                              border: Border.all(color: Colors.white24, width: 0.8),
                             ),
                             child: Text(
                               '${_currentIndex + 1}/10',
@@ -460,8 +428,7 @@ class _PoketCosmosIslandInspectorModalState
                     HapticFeedback.lightImpact();
                     Navigator.pop(context);
                   },
-                  icon: const Icon(Icons.close_rounded,
-                      color: Colors.white70, size: 22),
+                  icon: const Icon(Icons.close_rounded, color: Colors.white70, size: 22),
                   style: IconButton.styleFrom(
                     backgroundColor: Colors.white.withValues(alpha: 0.10),
                     padding: const EdgeInsets.all(8),
@@ -490,8 +457,7 @@ class _PoketCosmosIslandInspectorModalState
                   borderRadius: BorderRadius.circular(22),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 240),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? col.landColor.withValues(alpha: 0.35)
@@ -523,15 +489,13 @@ class _PoketCosmosIslandInspectorModalState
                           col.planetName.split(' ').first,
                           style: GoogleFonts.outfit(
                             color: isSelected ? Colors.white : Colors.white70,
-                            fontWeight:
-                                isSelected ? FontWeight.bold : FontWeight.w500,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                             fontSize: 12.5,
                           ),
                         ),
                         const SizedBox(width: 4),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 5, vertical: 1.5),
+                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                           decoration: BoxDecoration(
                             color: Colors.black38,
                             borderRadius: BorderRadius.circular(6),
@@ -539,9 +503,7 @@ class _PoketCosmosIslandInspectorModalState
                           child: Text(
                             col.code,
                             style: GoogleFonts.jetBrainsMono(
-                              color: isSelected
-                                  ? const Color(0xFF86EFAC)
-                                  : Colors.white54,
+                              color: isSelected ? const Color(0xFF86EFAC) : Colors.white54,
                               fontSize: 9.5,
                               fontWeight: FontWeight.bold,
                             ),
@@ -559,15 +521,13 @@ class _PoketCosmosIslandInspectorModalState
     );
   }
 
-  Widget _buildBottomColonyCard(
-      BuildContext context, CelestialColonyInfo colony) {
+  Widget _buildBottomColonyCard(BuildContext context, CelestialColonyInfo colony) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: const Color(0xFF0F172A).withValues(alpha: 0.90),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-            color: colony.landColor.withValues(alpha: 0.60), width: 1.2),
+        border: Border.all(color: colony.landColor.withValues(alpha: 0.60), width: 1.2),
         boxShadow: [
           BoxShadow(
             color: colony.landColor.withValues(alpha: 0.25),
@@ -625,13 +585,11 @@ class _PoketCosmosIslandInspectorModalState
                 ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
                   color: const Color(0xFF10B981).withValues(alpha: 0.20),
                   borderRadius: BorderRadius.circular(10),
-                  border:
-                      Border.all(color: const Color(0xFF10B981), width: 1.0),
+                  border: Border.all(color: const Color(0xFF10B981), width: 1.0),
                 ),
                 child: Text(
                   '25 PLOTS',
@@ -656,8 +614,7 @@ class _PoketCosmosIslandInspectorModalState
             ),
             child: Row(
               children: [
-                const Icon(Icons.wb_sunny_rounded,
-                    color: Color(0xFFFBBF24), size: 15),
+                const Icon(Icons.wb_sunny_rounded, color: Color(0xFFFBBF24), size: 15),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
