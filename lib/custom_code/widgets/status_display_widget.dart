@@ -3649,25 +3649,15 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton.icon(
-                    onPressed: () {
-                      Navigator.pop(modalCtx);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => PocketHomesReelsFeedWidget(
-                            initialGameId: card!.id,
-                          ),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.video_library_rounded,
-                        size: 16, color: Color(0xFFFFFC00)),
+                    onPressed: () => Navigator.pop(modalCtx),
+                    icon: const Icon(Icons.check_circle_outline_rounded,
+                        size: 18, color: Color(0xFFFFFC00)),
                     label: Text(
-                      'Open in Homes Reel ➔',
+                      'Done',
                       style: GoogleFonts.outfit(
                         color: const Color(0xFFFFFC00),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
