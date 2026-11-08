@@ -55,11 +55,9 @@ import 'pocket_negative_sentence_builder_page.dart';
 import 'pocket_mini_speech_practice_page.dart';
 import 'pocket_day1_review_card_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
-import 'package:pocket_mates_app/custom_code/services/pocket_ad_preload_manager.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocket_native_ad_card.dart';
 
 /// 🎮 Dedicated Day 1 Interactive Learning & Game Flow Page
-/// 
+///
 /// User Audio Directive:
 /// 1. Single Unified Track with Diagnostic Pre-Check:
 ///    - Step 1: Meet Letters & Phonics (can be skipped)
@@ -125,8 +123,7 @@ class PocketDay1InteractiveFlowPage extends StatefulWidget {
 }
 
 class _PocketDay1InteractiveFlowPageState
-    extends State<PocketDay1InteractiveFlowPage>
-    with TickerProviderStateMixin {
+    extends State<PocketDay1InteractiveFlowPage> with TickerProviderStateMixin {
   final _supabase = SupaFlow.client;
   late final FlutterTts _tts;
   late final stt.SpeechToText _speech;
@@ -185,7 +182,8 @@ class _PocketDay1InteractiveFlowPageState
   void initState() {
     super.initState();
     // 🚀 Upfront Preload Step Review Native Ad
-    PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.review);
+    PocketAdPreloadManager.instance
+        .preloadForPlacement(PocketAdPlacement.review);
 
     _currentTrack = widget.initialTrack ?? Day1Track.middle;
     _activeStep = widget.initialStep.clamp(1, 12);
@@ -196,7 +194,8 @@ class _PocketDay1InteractiveFlowPageState
     )..repeat(reverse: true);
 
     _speech = stt.SpeechToText();
-    PocketLanguageService.activeLanguageNotifier.addListener(_onActiveLanguageChanged);
+    PocketLanguageService.activeLanguageNotifier
+        .addListener(_onActiveLanguageChanged);
     _loadRuntimeCurriculum();
     _initAudioAndSpeech();
     _loadState();
@@ -228,11 +227,16 @@ class _PocketDay1InteractiveFlowPageState
       if (!mounted || !_autoSpeechEnabled) return;
       if (step == 1) {
         if (widget.day == 1) {
-          final currentLetter = Day1AlphabetData.lettersAtoZ[_letterIndex % Day1AlphabetData.lettersAtoZ.length];
+          final currentLetter = Day1AlphabetData
+              .lettersAtoZ[_letterIndex % Day1AlphabetData.lettersAtoZ.length];
           _speak('${currentLetter['letter']} for ${currentLetter['word']}.');
         } else {
           final cached = PocketDayCurriculumService.getCachedDay(widget.day);
-          final topic = cached != null ? PocketDayCurriculumService.getLocalizedText(cached['course']?['topic'], lang: 'en') : 'Daily Lesson';
+          final topic = cached != null
+              ? PocketDayCurriculumService.getLocalizedText(
+                  cached['course']?['topic'],
+                  lang: 'en')
+              : 'Daily Lesson';
           final grammar = cached?['grammarRule'] as Map<String, dynamic>? ?? {};
           final formula = grammar['formula']?.toString() ?? '';
           if (formula.isNotEmpty) {
@@ -243,7 +247,8 @@ class _PocketDay1InteractiveFlowPageState
         }
       } else if (step == 2) {
         if (widget.day == 1) {
-          final currentWord = Day1VocabBankData.words300[_vocabIndex % Day1VocabBankData.words300.length];
+          final currentWord = Day1VocabBankData
+              .words300[_vocabIndex % Day1VocabBankData.words300.length];
           _speak('${currentWord['word']}.');
         } else {
           final words = _getVocabWords();
@@ -283,7 +288,8 @@ class _PocketDay1InteractiveFlowPageState
     _pulseController.dispose();
     _tts.stop();
     _speech.stop();
-    PocketLanguageService.activeLanguageNotifier.removeListener(_onActiveLanguageChanged);
+    PocketLanguageService.activeLanguageNotifier
+        .removeListener(_onActiveLanguageChanged);
     super.dispose();
   }
 
@@ -331,7 +337,9 @@ class _PocketDay1InteractiveFlowPageState
       }
     }
 
-    final trackKey = uid.isNotEmpty ? 'pocket_day1_selected_track_$uid' : 'pocket_day1_selected_track';
+    final trackKey = uid.isNotEmpty
+        ? 'pocket_day1_selected_track_$uid'
+        : 'pocket_day1_selected_track';
     final savedTrackStr = prefs.getString(trackKey);
     Day1Track resolved = widget.initialTrack ?? Day1Track.middle;
     if (savedTrackStr != null && widget.initialTrack == null) {
@@ -438,7 +446,8 @@ class _PocketDay1InteractiveFlowPageState
             const SizedBox(width: 8),
             Text(
               'Step $stepIndex Completed! +$xp XP 🪙',
-              style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+              style: GoogleFonts.outfit(
+                  color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -458,14 +467,16 @@ class _PocketDay1InteractiveFlowPageState
             barrierDismissible: false,
             builder: (ctx) => AlertDialog(
               backgroundColor: const Color(0xFF1E293B),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
               title: Row(
                 children: [
                   const Text('🎉', style: TextStyle(fontSize: 24)),
                   const SizedBox(width: 8),
                   Text(
                     'Step $stepIndex Done!',
-                    style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                    style: GoogleFonts.outfit(
+                        color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -474,7 +485,8 @@ class _PocketDay1InteractiveFlowPageState
                 children: [
                   Text(
                     'Great job! +$xp XP earned. Return to map to see your vehicle drive to Step ${stepIndex + 1}! 🚗',
-                    style: GoogleFonts.inter(color: Colors.white70, fontSize: 13.5),
+                    style: GoogleFonts.inter(
+                        color: Colors.white70, fontSize: 13.5),
                   ),
                   const SizedBox(height: 12),
                   // 🚀 Zero-lag Preloaded Native Ad inside Step Completion Modal
@@ -486,14 +498,17 @@ class _PocketDay1InteractiveFlowPageState
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF10B981),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: () {
-                    PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.review);
+                    PocketAdPreloadManager.instance
+                        .preloadForPlacement(PocketAdPlacement.review);
                     Navigator.pop(ctx);
                     Navigator.pop(context);
                   },
-                  child: Text('PROCEED ON MAP ➔', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+                  child: Text('PROCEED ON MAP ➔',
+                      style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
@@ -515,8 +530,8 @@ class _PocketDay1InteractiveFlowPageState
       await prefs.setBool('pocket_day_${uid}_${widget.day}_completed', true);
       await prefs.setInt('learning_last_completed_day_$uid', widget.day);
       final now = DateTime.now();
-      await prefs.setString(
-          'learning_day_${uid}_${widget.day}_completed_date', '${now.year}-${now.month}-${now.day}');
+      await prefs.setString('learning_day_${uid}_${widget.day}_completed_date',
+          '${now.year}-${now.month}-${now.day}');
       await PocketFortressDefenseService.recordTrainingPoints(150, uid);
     }
 
@@ -577,7 +592,8 @@ class _PocketDay1InteractiveFlowPageState
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFFD700),
                     foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: () {
                     Navigator.pop(ctx);
@@ -598,7 +614,6 @@ class _PocketDay1InteractiveFlowPageState
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -835,8 +850,7 @@ class _PocketDay1InteractiveFlowPageState
             _buildTopBar(),
 
             // Ribbon
-            if (!widget.singleStepOnly)
-              _buildStepRibbon(steps),
+            if (!widget.singleStepOnly) _buildStepRibbon(steps),
 
             // Active Step Playground
             Expanded(
@@ -865,10 +879,14 @@ class _PocketDay1InteractiveFlowPageState
   Widget _buildTopBar() {
     final cached = PocketDayCurriculumService.getCachedDay(widget.day);
     final topicEn = cached != null
-        ? PocketDayCurriculumService.getLocalizedText(cached['course']?['topic'], lang: 'en')
+        ? PocketDayCurriculumService.getLocalizedText(
+            cached['course']?['topic'],
+            lang: 'en')
         : 'BASIC ENGLISH';
     final topicMl = cached != null
-        ? PocketDayCurriculumService.getLocalizedText(cached['course']?['topic'], lang: _nativeLanguage)
+        ? PocketDayCurriculumService.getLocalizedText(
+            cached['course']?['topic'],
+            lang: _nativeLanguage)
         : 'അടിസ്ഥാന ഇംഗ്ലീഷ്';
 
     return Container(
@@ -880,7 +898,8 @@ class _PocketDay1InteractiveFlowPageState
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
+            icon: const Icon(Icons.arrow_back_rounded,
+                color: Colors.white, size: 22),
             onPressed: () => Navigator.pop(context),
             visualDensity: VisualDensity.compact,
             padding: EdgeInsets.zero,
@@ -903,10 +922,9 @@ class _PocketDay1InteractiveFlowPageState
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  _nativeLanguage == 'Malayalam'
-                      ? topicMl
-                      : topicEn,
-                  style: GoogleFonts.inter(color: Colors.white60, fontSize: 10.5),
+                  _nativeLanguage == 'Malayalam' ? topicMl : topicEn,
+                  style:
+                      GoogleFonts.inter(color: Colors.white60, fontSize: 10.5),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -974,22 +992,30 @@ class _PocketDay1InteractiveFlowPageState
                     : Colors.white.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                  color: _autoSpeechEnabled ? const Color(0xFF10B981) : Colors.white24,
+                  color: _autoSpeechEnabled
+                      ? const Color(0xFF10B981)
+                      : Colors.white24,
                 ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    _autoSpeechEnabled ? Icons.volume_up_rounded : Icons.volume_off_rounded,
-                    color: _autoSpeechEnabled ? const Color(0xFF10B981) : Colors.white60,
+                    _autoSpeechEnabled
+                        ? Icons.volume_up_rounded
+                        : Icons.volume_off_rounded,
+                    color: _autoSpeechEnabled
+                        ? const Color(0xFF10B981)
+                        : Colors.white60,
                     size: 14,
                   ),
                   const SizedBox(width: 3),
                   Text(
                     _autoSpeechEnabled ? 'ON' : 'OFF',
                     style: GoogleFonts.outfit(
-                      color: _autoSpeechEnabled ? const Color(0xFF10B981) : Colors.white60,
+                      color: _autoSpeechEnabled
+                          ? const Color(0xFF10B981)
+                          : Colors.white60,
                       fontSize: 10,
                       fontWeight: FontWeight.w900,
                     ),
@@ -1058,7 +1084,8 @@ class _PocketDay1InteractiveFlowPageState
                   ),
                   if (isDone) ...[
                     const SizedBox(width: 4),
-                    const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 12),
+                    const Icon(Icons.check_circle_rounded,
+                        color: Color(0xFF10B981), size: 12),
                   ],
                 ],
               ),
@@ -1117,14 +1144,18 @@ class _PocketDay1InteractiveFlowPageState
                     ),
                     if (_completedSteps[_activeStep] == true)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
                           color: const Color(0xFF10B981),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           'COMPLETED ✓',
-                          style: GoogleFonts.outfit(color: Colors.white, fontSize: 9.5, fontWeight: FontWeight.w900),
+                          style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w900),
                         ),
                       ),
                   ],
@@ -1132,13 +1163,20 @@ class _PocketDay1InteractiveFlowPageState
                 const SizedBox(height: 2),
                 Text(
                   step.titleEn,
-                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900),
+                  style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900),
                 ),
               ],
             ),
           ),
           IconButton(
-            icon: Icon(_isSpeaking ? Icons.volume_up_rounded : Icons.volume_up_outlined, color: const Color(0xFFFFD700)),
+            icon: Icon(
+                _isSpeaking
+                    ? Icons.volume_up_rounded
+                    : Icons.volume_up_outlined,
+                color: const Color(0xFFFFD700)),
             onPressed: () => _speak('${step.titleEn}. ${step.descriptionEn}'),
           ),
         ],
@@ -1150,7 +1188,9 @@ class _PocketDay1InteractiveFlowPageState
   // ACTIVE STEP CONTENT ROUTER
   // -------------------------------------------------------------
   Widget _buildActiveStepContent(Day1StepModel step) {
-    if (step.type == 'house_attack_quest' || step.type == 'citadel_attack_raid' || step.data['id'] == 'step_9_citadel_attack') {
+    if (step.type == 'house_attack_quest' ||
+        step.type == 'citadel_attack_raid' ||
+        step.data['id'] == 'step_9_citadel_attack') {
       return _buildHouseAttackStep(step);
     }
 
@@ -1171,11 +1211,14 @@ class _PocketDay1InteractiveFlowPageState
         case 7:
           return _buildStep5ReadingRoom(step);
         case 8:
-          return _buildStep8VerbTimeline(step); // Step 8: 3-Tier Time Machine Builder (Past, Present & Future)
+          return _buildStep8VerbTimeline(
+              step); // Step 8: 3-Tier Time Machine Builder (Past, Present & Future)
         case 9:
-          return _buildStep9GroupChat(step); // Step 9: English Hub Community Chat
+          return _buildStep9GroupChat(
+              step); // Step 9: English Hub Community Chat
         case 10:
-          return _buildStep10HouseDefense(step); // Step 10: House Defense Shield
+          return _buildStep10HouseDefense(
+              step); // Step 10: House Defense Shield
         case 11:
           return _buildStep8PocketTalk(step); // Step 11: PocketTalk 4-Day Pact
         case 12:
@@ -1235,12 +1278,15 @@ class _PocketDay1InteractiveFlowPageState
           const SizedBox(height: 12),
           Text(
             step.titleEn,
-            style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+            style: GoogleFonts.outfit(
+                color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 6),
           Text(
-            _nativeLanguage == 'Malayalam' ? step.descriptionMl : step.descriptionEn,
+            _nativeLanguage == 'Malayalam'
+                ? step.descriptionMl
+                : step.descriptionEn,
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(color: Colors.white70, fontSize: 12.5),
           ),
@@ -1252,7 +1298,8 @@ class _PocketDay1InteractiveFlowPageState
                 backgroundColor: const Color(0xFFF43F5E),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
               ),
               onPressed: () async {
                 HapticFeedback.mediumImpact();
@@ -1268,7 +1315,8 @@ class _PocketDay1InteractiveFlowPageState
               icon: const Icon(Icons.flash_on_rounded, size: 20),
               label: Text(
                 'LAUNCH CITADEL ATTACK QUEST ➔',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13.5),
+                style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w900, fontSize: 13.5),
               ),
             ),
           ),
@@ -1284,11 +1332,23 @@ class _PocketDay1InteractiveFlowPageState
     final cached = PocketDayCurriculumService.getCachedDay(widget.day);
     final grammar = cached?['grammarRule'] as Map<String, dynamic>? ?? {};
     final formula = grammar['formula']?.toString() ?? step.titleEn;
-    final expEn = PocketDayCurriculumService.getLocalizedText(grammar['explanation'], lang: 'en', fallback: step.descriptionEn);
-    final expMl = PocketDayCurriculumService.getLocalizedText(grammar['explanation'], lang: _nativeLanguage, fallback: step.descriptionMl);
-    final goldenTipEn = PocketDayCurriculumService.getLocalizedText(grammar['goldenTip'], lang: 'en');
-    final goldenTipMl = PocketDayCurriculumService.getLocalizedText(grammar['goldenTip'], lang: _nativeLanguage);
-    final topicEn = PocketDayCurriculumService.getLocalizedText(cached?['course']?['topic'], lang: 'en');
+    final expEn = PocketDayCurriculumService.getLocalizedText(
+        grammar['explanation'],
+        lang: 'en',
+        fallback: step.descriptionEn);
+    final expMl = PocketDayCurriculumService.getLocalizedText(
+        grammar['explanation'],
+        lang: _nativeLanguage,
+        fallback: step.descriptionMl);
+    final goldenTipEn = PocketDayCurriculumService.getLocalizedText(
+        grammar['goldenTip'],
+        lang: 'en');
+    final goldenTipMl = PocketDayCurriculumService.getLocalizedText(
+        grammar['goldenTip'],
+        lang: _nativeLanguage);
+    final topicEn = PocketDayCurriculumService.getLocalizedText(
+        cached?['course']?['topic'],
+        lang: 'en');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1310,7 +1370,8 @@ class _PocketDay1InteractiveFlowPageState
           ),
           child: Row(
             children: [
-              VectorAvatarWidget(config: VectorAvatarConfig.defaultConfig, size: 38),
+              VectorAvatarWidget(
+                  config: VectorAvatarConfig.defaultConfig, size: 38),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
@@ -1323,13 +1384,15 @@ class _PocketDay1InteractiveFlowPageState
                             fontSize: 12.5)),
                     Text(
                       'Day ${widget.day} Concept Room: $topicEn',
-                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                      style: GoogleFonts.inter(
+                          color: Colors.white70, fontSize: 11),
                     ),
                   ],
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFD700), size: 20),
+                icon: const Icon(Icons.volume_up_rounded,
+                    color: Color(0xFFFFD700), size: 20),
                 onPressed: () => _speak('$topicEn. $formula. $goldenTipEn'),
               ),
             ],
@@ -1361,14 +1424,18 @@ class _PocketDay1InteractiveFlowPageState
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(color: const Color(0xFF38BDF8)),
                     ),
                     child: Text('RULE & FORMULA',
-                        style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontSize: 11, fontWeight: FontWeight.w900)),
+                        style: GoogleFonts.outfit(
+                            color: const Color(0xFF38BDF8),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900)),
                   ),
                   const Spacer(),
                   const Text('🏛️', style: TextStyle(fontSize: 22)),
@@ -1377,18 +1444,26 @@ class _PocketDay1InteractiveFlowPageState
               const SizedBox(height: 12),
               Text(
                 formula,
-                style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 20, fontWeight: FontWeight.w900),
+                style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFD700),
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900),
               ),
               const SizedBox(height: 14),
               Text(
                 expMl,
-                style: GoogleFonts.inter(color: Colors.white, fontSize: 14, height: 1.5, fontWeight: FontWeight.w600),
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 14,
+                    height: 1.5,
+                    fontWeight: FontWeight.w600),
               ),
               if (expEn.isNotEmpty && expEn != expMl) ...[
                 const SizedBox(height: 8),
                 Text(
                   expEn,
-                  style: GoogleFonts.inter(color: Colors.white60, fontSize: 12, height: 1.4),
+                  style: GoogleFonts.inter(
+                      color: Colors.white60, fontSize: 12, height: 1.4),
                 ),
               ],
               if (goldenTipMl.isNotEmpty || goldenTipEn.isNotEmpty) ...[
@@ -1398,7 +1473,8 @@ class _PocketDay1InteractiveFlowPageState
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFD700).withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                    border: Border.all(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1410,20 +1486,29 @@ class _PocketDay1InteractiveFlowPageState
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              goldenTipMl.isNotEmpty ? goldenTipMl : goldenTipEn,
-                              style: GoogleFonts.inter(color: const Color(0xFFFFE066), fontSize: 12.5, fontWeight: FontWeight.bold),
+                              goldenTipMl.isNotEmpty
+                                  ? goldenTipMl
+                                  : goldenTipEn,
+                              style: GoogleFonts.inter(
+                                  color: const Color(0xFFFFE066),
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.bold),
                             ),
-                            if (goldenTipEn.isNotEmpty && goldenTipMl.isNotEmpty)
+                            if (goldenTipEn.isNotEmpty &&
+                                goldenTipMl.isNotEmpty)
                               Text(
                                 goldenTipEn,
-                                style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                                style: GoogleFonts.inter(
+                                    color: Colors.white70, fontSize: 11),
                               ),
                           ],
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFD700), size: 18),
-                        onPressed: () => _speak(goldenTipEn.isNotEmpty ? goldenTipEn : formula),
+                        icon: const Icon(Icons.volume_up_rounded,
+                            color: Color(0xFFFFD700), size: 18),
+                        onPressed: () => _speak(
+                            goldenTipEn.isNotEmpty ? goldenTipEn : formula),
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
                       ),
@@ -1442,7 +1527,8 @@ class _PocketDay1InteractiveFlowPageState
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF10B981),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14)),
               elevation: 4,
             ),
             onPressed: () {
@@ -1453,7 +1539,8 @@ class _PocketDay1InteractiveFlowPageState
             icon: const Icon(Icons.check_circle_rounded, size: 20),
             label: Text(
               'CONCEPT MASTERED • NEXT STEP ➔',
-              style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
+              style:
+                  GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
             ),
           ),
         ),
@@ -1463,8 +1550,11 @@ class _PocketDay1InteractiveFlowPageState
 
   /// 🎯 High-Visibility Day Topic Billboard (User Audio Directive!)
   /// "Title-il oru board kodukkanam, valiya reethiyil ketto. Spaced out and tappable for deep theory."
-  Widget _buildTodayTopicBillboard(Map<String, dynamic>? cached, String topicEn, String formula) {
-    final topicMl = PocketDayCurriculumService.getLocalizedText(cached?['course']?['topic'], lang: _nativeLanguage);
+  Widget _buildTodayTopicBillboard(
+      Map<String, dynamic>? cached, String topicEn, String formula) {
+    final topicMl = PocketDayCurriculumService.getLocalizedText(
+        cached?['course']?['topic'],
+        lang: _nativeLanguage);
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
@@ -1496,7 +1586,8 @@ class _PocketDay1InteractiveFlowPageState
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFD700),
                     borderRadius: BorderRadius.circular(8),
@@ -1513,7 +1604,8 @@ class _PocketDay1InteractiveFlowPageState
                 ),
                 const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFF0284C7),
                     borderRadius: BorderRadius.circular(8),
@@ -1561,11 +1653,16 @@ class _PocketDay1InteractiveFlowPageState
               decoration: BoxDecoration(
                 color: const Color(0xFF1E1B4B),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF818CF8).withValues(alpha: 0.6)),
+                border: Border.all(
+                    color: const Color(0xFF818CF8).withValues(alpha: 0.6)),
               ),
               child: Row(
                 children: [
-                  const Text('⚡ RULE: ', style: TextStyle(color: Color(0xFF818CF8), fontSize: 11, fontWeight: FontWeight.bold)),
+                  const Text('⚡ RULE: ',
+                      style: TextStyle(
+                          color: Color(0xFF818CF8),
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold)),
                   Expanded(
                     child: Text(
                       formula,
@@ -1599,7 +1696,8 @@ class _PocketDay1InteractiveFlowPageState
     final word = current['word']?.toString() ?? '';
     final emoji = current['emoji']?.toString() ?? '🍎';
     final meaning = current['meaning'] is Map
-        ? Day1CurriculumJsonData.getLocalizedString(current['meaning'], lang: _nativeLanguage)
+        ? Day1CurriculumJsonData.getLocalizedString(current['meaning'],
+            lang: _nativeLanguage)
         : current['meaning']?.toString() ?? '';
     final exEn = current['exampleEn']?.toString() ?? '';
     final exMl = current['exampleMl']?.toString() ?? '';
@@ -1608,7 +1706,8 @@ class _PocketDay1InteractiveFlowPageState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // 🎯 High-Visibility Day 1 Lesson Board (User Audio Directive!)
-        _buildTodayTopicBillboard(null, 'English Alphabet & 44 Phonics Sounds', '26 Letters • 44 Sounds • 300 Everyday Words'),
+        _buildTodayTopicBillboard(null, 'English Alphabet & 44 Phonics Sounds',
+            '26 Letters • 44 Sounds • 300 Everyday Words'),
         // Skip Banner
         _buildSkipOptionBanner(
           text: 'Already know ABCD (Alphabet)?',
@@ -1627,7 +1726,8 @@ class _PocketDay1InteractiveFlowPageState
           ),
           child: Row(
             children: [
-              VectorAvatarWidget(config: VectorAvatarConfig.defaultConfig, size: 38),
+              VectorAvatarWidget(
+                  config: VectorAvatarConfig.defaultConfig, size: 38),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
@@ -1642,14 +1742,17 @@ class _PocketDay1InteractiveFlowPageState
                       _step1GridView
                           ? 'Tap any letter in the grid to jump and listen!'
                           : 'Press NEXT to learn each letter and sound!',
-                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                      style: GoogleFonts.inter(
+                          color: Colors.white70, fontSize: 11),
                     ),
                   ],
                 ),
               ),
               IconButton(
                 icon: Icon(
-                  _step1GridView ? Icons.view_carousel_rounded : Icons.grid_view_rounded,
+                  _step1GridView
+                      ? Icons.view_carousel_rounded
+                      : Icons.grid_view_rounded,
                   color: const Color(0xFF38BDF8),
                   size: 22,
                 ),
@@ -1668,7 +1771,8 @@ class _PocketDay1InteractiveFlowPageState
           _buildStep1GridView(letters)
         else
           // 📇 Interactive Card Carousel Mode (1 by 1 with Next / Prev)
-          _buildStep1CardView(letters, current, letter, sound, word, emoji, meaning, exEn, exMl),
+          _buildStep1CardView(letters, current, letter, sound, word, emoji,
+              meaning, exEn, exMl),
       ],
     );
   }
@@ -1692,7 +1796,8 @@ class _PocketDay1InteractiveFlowPageState
           colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
         ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3), width: 1.5),
+        border: Border.all(
+            color: const Color(0xFF38BDF8).withValues(alpha: 0.3), width: 1.5),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.4),
@@ -1709,11 +1814,13 @@ class _PocketDay1InteractiveFlowPageState
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+                  border: Border.all(
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
                 ),
                 child: Text(
                   'LETTER ${_letterIndex + 1} OF ${letters.length}',
@@ -1726,7 +1833,8 @@ class _PocketDay1InteractiveFlowPageState
               ),
               // Pronounce Speaker Button
               IconButton(
-                icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFD700), size: 28),
+                icon: const Icon(Icons.volume_up_rounded,
+                    color: Color(0xFFFFD700), size: 28),
                 onPressed: () => _speak('$letter for $word. $sound.'),
               ),
             ],
@@ -1740,7 +1848,8 @@ class _PocketDay1InteractiveFlowPageState
               value: (_letterIndex + 1) / letters.length,
               minHeight: 5,
               backgroundColor: Colors.white12,
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF38BDF8)),
+              valueColor:
+                  const AlwaysStoppedAnimation<Color>(Color(0xFF38BDF8)),
             ),
           ),
           const SizedBox(height: 20),
@@ -1781,7 +1890,8 @@ class _PocketDay1InteractiveFlowPageState
             decoration: BoxDecoration(
               color: const Color(0xFFFFD700).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
+              border: Border.all(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
             ),
             child: Text(
               'Sound: $sound',
@@ -1883,10 +1993,12 @@ class _PocketDay1InteractiveFlowPageState
                     foregroundColor: Colors.white,
                     side: const BorderSide(color: Colors.white24),
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                   ),
                   icon: const Icon(Icons.arrow_back_rounded, size: 16),
-                  label: Text('PREV', style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
+                  label: Text('PREV',
+                      style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
                 ),
               ),
               const SizedBox(width: 12),
@@ -1917,7 +2029,8 @@ class _PocketDay1InteractiveFlowPageState
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     elevation: 4,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                   ),
                   icon: Icon(
                     _letterIndex == letters.length - 1
@@ -1926,7 +2039,9 @@ class _PocketDay1InteractiveFlowPageState
                     size: 18,
                   ),
                   label: Text(
-                    _letterIndex == letters.length - 1 ? 'FINISH LETTERS ✓' : 'NEXT LETTER ➔',
+                    _letterIndex == letters.length - 1
+                        ? 'FINISH LETTERS ✓'
+                        : 'NEXT LETTER ➔',
                     style: GoogleFonts.outfit(
                       fontWeight: FontWeight.w900,
                       fontSize: 14,
@@ -1978,7 +2093,8 @@ class _PocketDay1InteractiveFlowPageState
                       : const Color(0xFF1E293B),
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color: isSelected ? const Color(0xFFFFD700) : Colors.white12,
+                    color:
+                        isSelected ? const Color(0xFFFFD700) : Colors.white12,
                     width: isSelected ? 2 : 1,
                   ),
                 ),
@@ -1986,13 +2102,20 @@ class _PocketDay1InteractiveFlowPageState
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(l, style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontSize: 20, fontWeight: FontWeight.w900)),
+                    Text(l,
+                        style: GoogleFonts.outfit(
+                            color: const Color(0xFF38BDF8),
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900)),
                     const SizedBox(height: 2),
                     Text(em, style: const TextStyle(fontSize: 16)),
                     const SizedBox(height: 2),
                     Text(
                       w,
-                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 9.5, fontWeight: FontWeight.bold),
+                      style: GoogleFonts.inter(
+                          color: Colors.white70,
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.bold),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -2027,7 +2150,9 @@ class _PocketDay1InteractiveFlowPageState
         for (final v in verbs) {
           if (v is Map<String, dynamic>) {
             final word = v['v1']?.toString() ?? '';
-            final meaning = PocketDayCurriculumService.getLocalizedText(v['meaning'], lang: _nativeLanguage);
+            final meaning = PocketDayCurriculumService.getLocalizedText(
+                v['meaning'],
+                lang: _nativeLanguage);
             final forms = 'V1: ${v['v1']} • V2: ${v['v2']} • V3: ${v['v3']}';
             list.add({
               'word': word,
@@ -2043,7 +2168,9 @@ class _PocketDay1InteractiveFlowPageState
         for (final n in nouns) {
           if (n is Map<String, dynamic>) {
             final word = n['word']?.toString() ?? '';
-            final meaning = PocketDayCurriculumService.getLocalizedText(n['meaning'], lang: _nativeLanguage);
+            final meaning = PocketDayCurriculumService.getLocalizedText(
+                n['meaning'],
+                lang: _nativeLanguage);
             list.add({
               'word': word,
               'phonetic': 'Noun',
@@ -2070,7 +2197,8 @@ class _PocketDay1InteractiveFlowPageState
     final allWords = _getVocabWords();
     final filtered = allWords.where((w) {
       final matchesCat = _selectedVocabCategory == 'All' ||
-          (w['category']?.toString().toLowerCase() == _selectedVocabCategory.toLowerCase());
+          (w['category']?.toString().toLowerCase() ==
+              _selectedVocabCategory.toLowerCase());
       if (!matchesCat) return false;
       if (_vocabSearchQuery.isEmpty) return true;
       final q = _vocabSearchQuery.toLowerCase();
@@ -2085,7 +2213,8 @@ class _PocketDay1InteractiveFlowPageState
         // Skip Banner
         _buildSkipOptionBanner(
           text: 'Already know basic vocabulary?',
-          subtext: '300+ everyday words! Skip anytime to jump to 2D Arcade Games!',
+          subtext:
+              '300+ everyday words! Skip anytime to jump to 2D Arcade Games!',
           onSkip: () => _markStepCompleted(2),
         ),
         const SizedBox(height: 12),
@@ -2105,8 +2234,10 @@ class _PocketDay1InteractiveFlowPageState
                   style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
                   decoration: InputDecoration(
                     hintText: 'Search 300+ words (Water, Food, Bed)...',
-                    hintStyle: GoogleFonts.outfit(color: Colors.white38, fontSize: 13),
-                    prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF38BDF8), size: 18),
+                    hintStyle:
+                        GoogleFonts.outfit(color: Colors.white38, fontSize: 13),
+                    prefixIcon: const Icon(Icons.search_rounded,
+                        color: Color(0xFF38BDF8), size: 18),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(vertical: 11),
                   ),
@@ -2123,7 +2254,9 @@ class _PocketDay1InteractiveFlowPageState
             // Toggle Card vs List View
             IconButton(
               icon: Icon(
-                _step2GridView ? Icons.view_carousel_rounded : Icons.list_alt_rounded,
+                _step2GridView
+                    ? Icons.view_carousel_rounded
+                    : Icons.list_alt_rounded,
                 color: const Color(0xFF38BDF8),
                 size: 24,
               ),
@@ -2211,7 +2344,8 @@ class _PocketDay1InteractiveFlowPageState
           colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
         ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3), width: 1.5),
+        border: Border.all(
+            color: const Color(0xFF38BDF8).withValues(alpha: 0.3), width: 1.5),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.4),
@@ -2228,11 +2362,13 @@ class _PocketDay1InteractiveFlowPageState
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+                  border: Border.all(
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
                 ),
                 child: Text(
                   'WORD ${curIdx + 1} OF ${words.length}',
@@ -2244,7 +2380,8 @@ class _PocketDay1InteractiveFlowPageState
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFD700), size: 28),
+                icon: const Icon(Icons.volume_up_rounded,
+                    color: Color(0xFFFFD700), size: 28),
                 onPressed: () => _speak('$word. $example'),
               ),
             ],
@@ -2258,7 +2395,8 @@ class _PocketDay1InteractiveFlowPageState
               value: (curIdx + 1) / words.length,
               minHeight: 5,
               backgroundColor: Colors.white12,
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF38BDF8)),
+              valueColor:
+                  const AlwaysStoppedAnimation<Color>(Color(0xFF38BDF8)),
             ),
           ),
           const SizedBox(height: 20),
@@ -2274,7 +2412,10 @@ class _PocketDay1InteractiveFlowPageState
             ),
             child: Text(
               category,
-              style: GoogleFonts.outfit(color: Colors.white60, fontSize: 10.5, fontWeight: FontWeight.bold),
+              style: GoogleFonts.outfit(
+                  color: Colors.white60,
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.bold),
             ),
           ),
           const SizedBox(height: 12),
@@ -2357,10 +2498,12 @@ class _PocketDay1InteractiveFlowPageState
                     foregroundColor: Colors.white,
                     side: const BorderSide(color: Colors.white24),
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                   ),
                   icon: const Icon(Icons.arrow_back_rounded, size: 16),
-                  label: Text('PREV', style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
+                  label: Text('PREV',
+                      style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
                 ),
               ),
               const SizedBox(width: 12),
@@ -2391,7 +2534,8 @@ class _PocketDay1InteractiveFlowPageState
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     elevation: 4,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                   ),
                   icon: Icon(
                     curIdx == words.length - 1
@@ -2400,7 +2544,9 @@ class _PocketDay1InteractiveFlowPageState
                     size: 18,
                   ),
                   label: Text(
-                    curIdx == words.length - 1 ? 'FINISH VOCABULARY ✓' : 'NEXT WORD ➔',
+                    curIdx == words.length - 1
+                        ? 'FINISH VOCABULARY ✓'
+                        : 'NEXT WORD ➔',
                     style: GoogleFonts.outfit(
                       fontWeight: FontWeight.w900,
                       fontSize: 14,
@@ -2444,19 +2590,31 @@ class _PocketDay1InteractiveFlowPageState
                     children: [
                       Row(
                         children: [
-                          Text(word, style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                          Text(word,
+                              style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15)),
                           const SizedBox(width: 6),
-                          Text(phonetic, style: GoogleFonts.inter(color: const Color(0xFFFFD700), fontSize: 11)),
+                          Text(phonetic,
+                              style: GoogleFonts.inter(
+                                  color: const Color(0xFFFFD700),
+                                  fontSize: 11)),
                         ],
                       ),
-                      Text(meaning, style: GoogleFonts.inter(color: Colors.white70, fontSize: 12)),
+                      Text(meaning,
+                          style: GoogleFonts.inter(
+                              color: Colors.white70, fontSize: 12)),
                       if (example.isNotEmpty)
-                        Text(example, style: GoogleFonts.inter(color: const Color(0xFF38BDF8), fontSize: 11)),
+                        Text(example,
+                            style: GoogleFonts.inter(
+                                color: const Color(0xFF38BDF8), fontSize: 11)),
                     ],
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFD700), size: 20),
+                  icon: const Icon(Icons.volume_up_rounded,
+                      color: Color(0xFFFFD700), size: 20),
                   onPressed: () => _speak('$word. $example'),
                 ),
               ],
@@ -2488,7 +2646,8 @@ class _PocketDay1InteractiveFlowPageState
       }
     }
 
-    final rounds = (step.data['rounds'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final rounds =
+        (step.data['rounds'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     if (rounds.isEmpty) return const SizedBox.shrink();
 
     final screenH = MediaQuery.of(context).size.height;
@@ -2525,12 +2684,14 @@ class _PocketDay1InteractiveFlowPageState
       }
     }
 
-    final rounds = (step.data['rounds'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final rounds =
+        (step.data['rounds'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     if (rounds.isEmpty) return const SizedBox.shrink();
 
     final rData = rounds[_matchBuildRound % rounds.length];
     final type = rData['type']?.toString() ?? 'match';
-    final prompt = Day1CurriculumJsonData.getLocalizedString(rData['prompt'], lang: _nativeLanguage);
+    final prompt = Day1CurriculumJsonData.getLocalizedString(rData['prompt'],
+        lang: _nativeLanguage);
 
     return Column(
       children: [
@@ -2603,10 +2764,12 @@ class _PocketDay1InteractiveFlowPageState
                     backgroundColor: const Color(0xFFFFD700),
                     foregroundColor: const Color(0xFF0F172A),
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                     elevation: 4,
                   ),
-                  icon: const Icon(Icons.play_circle_fill_rounded, size: 22, color: Color(0xFF0F172A)),
+                  icon: const Icon(Icons.play_circle_fill_rounded,
+                      size: 22, color: Color(0xFF0F172A)),
                   label: Text(
                     'PLAY FULLSCREEN 2D ARCADE ➔',
                     style: GoogleFonts.outfit(
@@ -2651,7 +2814,10 @@ class _PocketDay1InteractiveFlowPageState
           ),
           child: Text(
             '🧩 CHALLENGE ${_matchBuildRound + 1} OF ${rounds.length} ($type)',
-            style: GoogleFonts.outfit(color: const Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 12),
+            style: GoogleFonts.outfit(
+                color: const Color(0xFF10B981),
+                fontWeight: FontWeight.bold,
+                fontSize: 12),
           ),
         ),
         const SizedBox(height: 14),
@@ -2659,7 +2825,8 @@ class _PocketDay1InteractiveFlowPageState
         Text(
           prompt,
           textAlign: TextAlign.center,
-          style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+          style: GoogleFonts.outfit(
+              color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 18),
 
@@ -2696,7 +2863,9 @@ class _PocketDay1InteractiveFlowPageState
                     _speak('Incorrect! Try again.');
                   }
                 },
-                child: Text(optStr, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
+                child: Text(optStr,
+                    style: GoogleFonts.outfit(
+                        fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             );
           }),
@@ -2708,12 +2877,18 @@ class _PocketDay1InteractiveFlowPageState
             decoration: BoxDecoration(
               color: const Color(0xFF1E293B),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.6)),
+              border: Border.all(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.6)),
             ),
             child: Text(
-              _assembledWords.isEmpty ? 'Tap words below in order...' : _assembledWords.join(' '),
+              _assembledWords.isEmpty
+                  ? 'Tap words below in order...'
+                  : _assembledWords.join(' '),
               textAlign: TextAlign.center,
-              style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 18, fontWeight: FontWeight.bold),
+              style: GoogleFonts.outfit(
+                  color: const Color(0xFFFFD700),
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold),
             ),
           ),
           const SizedBox(height: 14),
@@ -2757,9 +2932,11 @@ class _PocketDay1InteractiveFlowPageState
           ),
           const SizedBox(height: 10),
           TextButton.icon(
-            icon: const Icon(Icons.refresh_rounded, color: Colors.white60, size: 16),
+            icon: const Icon(Icons.refresh_rounded,
+                color: Colors.white60, size: 16),
             onPressed: () => setState(() => _assembledWords.clear()),
-            label: const Text('Reset Words ↺', style: TextStyle(color: Colors.white60)),
+            label: const Text('Reset Words ↺',
+                style: TextStyle(color: Colors.white60)),
           ),
         ],
       ],
@@ -2771,10 +2948,12 @@ class _PocketDay1InteractiveFlowPageState
   // -------------------------------------------------------------
   Widget _buildRealmGameCardInFlow(RealmGameSpec game, int stepIndex) {
     final isDone = _completedSteps[stepIndex] == true;
-    final archetypeLabel = game.archetype.name.replaceAllMapped(
-      RegExp(r'([A-Z])'),
-      (m) => ' ${m.group(0)}',
-    ).toUpperCase();
+    final archetypeLabel = game.archetype.name
+        .replaceAllMapped(
+          RegExp(r'([A-Z])'),
+          (m) => ' ${m.group(0)}',
+        )
+        .toUpperCase();
     final locDesc = game.getLocalizedDescription(_nativeLanguage);
 
     return Container(
@@ -2791,12 +2970,15 @@ class _PocketDay1InteractiveFlowPageState
         ),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: isDone ? const Color(0xFF10B981) : game.accentColor.withValues(alpha: 0.6),
+          color: isDone
+              ? const Color(0xFF10B981)
+              : game.accentColor.withValues(alpha: 0.6),
           width: 2,
         ),
         boxShadow: [
           BoxShadow(
-            color: (isDone ? const Color(0xFF10B981) : game.accentColor).withValues(alpha: 0.25),
+            color: (isDone ? const Color(0xFF10B981) : game.accentColor)
+                .withValues(alpha: 0.25),
             blurRadius: 18,
             offset: const Offset(0, 6),
           ),
@@ -2809,7 +2991,8 @@ class _PocketDay1InteractiveFlowPageState
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
                   color: game.accentColor.withValues(alpha: 0.25),
                   borderRadius: BorderRadius.circular(10),
@@ -2834,7 +3017,8 @@ class _PocketDay1InteractiveFlowPageState
               ),
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1E293B),
                   borderRadius: BorderRadius.circular(10),
@@ -2852,7 +3036,8 @@ class _PocketDay1InteractiveFlowPageState
               if (isDone) ...[
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                   decoration: BoxDecoration(
                     color: const Color(0xFF10B981),
                     borderRadius: BorderRadius.circular(10),
@@ -2860,7 +3045,8 @@ class _PocketDay1InteractiveFlowPageState
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.check_circle_rounded, color: Colors.white, size: 14),
+                      Icon(Icons.check_circle_rounded,
+                          color: Colors.white, size: 14),
                       SizedBox(width: 4),
                       Text(
                         'CLEARED',
@@ -2998,7 +3184,8 @@ class _PocketDay1InteractiveFlowPageState
             width: double.infinity,
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                backgroundColor: isDone ? const Color(0xFF10B981) : game.accentColor,
+                backgroundColor:
+                    isDone ? const Color(0xFF10B981) : game.accentColor,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
@@ -3087,10 +3274,13 @@ class _PocketDay1InteractiveFlowPageState
     if (widget.day > 1) {
       final cached = PocketDayCurriculumService.getCachedDay(widget.day);
       final topic = cached?['course']?['topic'];
-      storyTitleEn = PocketDayCurriculumService.getLocalizedText(topic, lang: 'en', fallback: step.titleEn);
-      storyTitleMl = PocketDayCurriculumService.getLocalizedText(topic, lang: _nativeLanguage, fallback: step.titleMl);
+      storyTitleEn = PocketDayCurriculumService.getLocalizedText(topic,
+          lang: 'en', fallback: step.titleEn);
+      storyTitleMl = PocketDayCurriculumService.getLocalizedText(topic,
+          lang: _nativeLanguage, fallback: step.titleMl);
 
-      final sentences = (step.data['sentences'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      final sentences =
+          (step.data['sentences'] as List?)?.cast<Map<String, dynamic>>() ?? [];
       paragraphs = sentences.map((s) {
         final en = s['text']?.toString() ?? '';
         final ml = s['meaningMl']?.toString() ?? '';
@@ -3135,23 +3325,31 @@ class _PocketDay1InteractiveFlowPageState
 
       paragraphs = [
         {
-          'en': 'Once upon a time, in a peaceful green meadow, lived a small, friendly fox named Oliver. Every night, the bright silver moon illuminated the sleepy valley. Oliver loved watching the peaceful night sky while resting near the ancient oak tree.',
-          'ml': 'ഒരിക്കൽ, ശാന്തമായ ഒരു പച്ചപ്പുൽമേട്ടിൽ ഒലിവർ എന്ന കൊച്ചു കുറുക്കൻ താമസിച്ചിരുന്നു. എല്ലാ രാത്രിയിലും വെള്ളിച്ചന്ദ്രൻ താഴ്വരയെ പ്രകാശിപ്പിച്ചു. പുരാതനമായ ഓക്ക് മരത്തിനടുത്ത് ഇരുന്ന് രാത്രിയിലെ ആകാശം കാണാൻ ഒലിവറിന് വളരെ ഇഷ്ടമായിരുന്നു.',
+          'en':
+              'Once upon a time, in a peaceful green meadow, lived a small, friendly fox named Oliver. Every night, the bright silver moon illuminated the sleepy valley. Oliver loved watching the peaceful night sky while resting near the ancient oak tree.',
+          'ml':
+              'ഒരിക്കൽ, ശാന്തമായ ഒരു പച്ചപ്പുൽമേട്ടിൽ ഒലിവർ എന്ന കൊച്ചു കുറുക്കൻ താമസിച്ചിരുന്നു. എല്ലാ രാത്രിയിലും വെള്ളിച്ചന്ദ്രൻ താഴ്വരയെ പ്രകാശിപ്പിച്ചു. പുരാതനമായ ഓക്ക് മരത്തിനടുത്ത് ഇരുന്ന് രാത്രിയിലെ ആകാശം കാണാൻ ഒലിവറിന് വളരെ ഇഷ്ടമായിരുന്നു.',
           'focus': ['Fox', 'Meadow', 'Moon', 'Night'],
         },
         {
-          'en': 'One warm evening, Oliver walked toward the crystal river to drink fresh, cold water. While drinking, he noticed a magical golden glow dancing between the green leaves of the oak tree. It was not a red apple, and it was not a lamp—it was a twinkling golden star that had fallen softly from the sky!',
-          'ml': 'ഒരു ദിവസം വൈകുന്നേരം, ഒലിവർ തെളിഞ്ഞ നദിയിലേക്ക് തണുത്ത വെള്ളം കുടിക്കാൻ നടന്നു. വെള്ളം കുടിക്കുന്നതിനിടയിൽ, ഓക്ക് മരത്തിന്റെ ഇലകൾക്കിടയിൽ ഒരു മാന്ത്രിക സുവർണ്ണ വെളിച്ചം അവൻ കണ്ടു. അതൊരു ചുവന്ന ആപ്പിളോ വിളക്കോ അല്ലായിരുന്നു—ആകാശത്തുനിന്ന് പതിയെ താഴേക്ക് വീണ മിന്നുന്ന ഒരു സുവർണ്ണ നക്ഷത്രമായിരുന്നു അത്!',
+          'en':
+              'One warm evening, Oliver walked toward the crystal river to drink fresh, cold water. While drinking, he noticed a magical golden glow dancing between the green leaves of the oak tree. It was not a red apple, and it was not a lamp—it was a twinkling golden star that had fallen softly from the sky!',
+          'ml':
+              'ഒരു ദിവസം വൈകുന്നേരം, ഒലിവർ തെളിഞ്ഞ നദിയിലേക്ക് തണുത്ത വെള്ളം കുടിക്കാൻ നടന്നു. വെള്ളം കുടിക്കുന്നതിനിടയിൽ, ഓക്ക് മരത്തിന്റെ ഇലകൾക്കിടയിൽ ഒരു മാന്ത്രിക സുവർണ്ണ വെളിച്ചം അവൻ കണ്ടു. അതൊരു ചുവന്ന ആപ്പിളോ വിളക്കോ അല്ലായിരുന്നു—ആകാശത്തുനിന്ന് പതിയെ താഴേക്ക് വീണ മിന്നുന്ന ഒരു സുവർണ്ണ നക്ഷത്രമായിരുന്നു അത്!',
           'focus': ['Water', 'Apple', 'Star', 'Tree'],
         },
         {
-          'en': "Oliver gently climbed the strong tree branch. 'Hello, little star! Are you hurt?' Oliver asked with a kind smile. The star chimed softly: 'I slipped from the clouds. Can you help me find my way back home?' Oliver smiled warmly: 'Do not worry, my new friend! Together, we will climb to the mountain top where the gentle breeze can lift you back to the sky.'",
-          'ml': "ഒലിവർ പതുക്കെ മരത്തിന്റെ കൊമ്പിലേക്ക് കയറി. 'ഹലോ, കൊച്ചു നക്ഷത്രമേ! നിനക്ക് വല്ലതും പറ്റിയോ?' ഒലിവർ സ്നേഹത്തോടെ ചോദിച്ചു. നക്ഷത്രം മണിനാദം പോലെ പറഞ്ഞു: 'ഞാൻ മേഘങ്ങളിൽ നിന്ന് വീണുപോയി. എനിക്ക് തിരികെ വീട്ടിലെത്താൻ സഹായിക്കാമോ?' ഒലിവർ പുഞ്ചിരിച്ചു: 'പേടിക്കണ്ട എന്റെ പുതിയ കൂട്ടുകാരാ! കാറ്റ് നിന്നെ ആകാശത്തേക്ക് ഉയർത്തുന്ന മലമുകളിലേക്ക് നമുക്ക് ഒരുമിച്ച് പോകാം.'",
+          'en':
+              "Oliver gently climbed the strong tree branch. 'Hello, little star! Are you hurt?' Oliver asked with a kind smile. The star chimed softly: 'I slipped from the clouds. Can you help me find my way back home?' Oliver smiled warmly: 'Do not worry, my new friend! Together, we will climb to the mountain top where the gentle breeze can lift you back to the sky.'",
+          'ml':
+              "ഒലിവർ പതുക്കെ മരത്തിന്റെ കൊമ്പിലേക്ക് കയറി. 'ഹലോ, കൊച്ചു നക്ഷത്രമേ! നിനക്ക് വല്ലതും പറ്റിയോ?' ഒലിവർ സ്നേഹത്തോടെ ചോദിച്ചു. നക്ഷത്രം മണിനാദം പോലെ പറഞ്ഞു: 'ഞാൻ മേഘങ്ങളിൽ നിന്ന് വീണുപോയി. എനിക്ക് തിരികെ വീട്ടിലെത്താൻ സഹായിക്കാമോ?' ഒലിവർ പുഞ്ചിരിച്ചു: 'പേടിക്കണ്ട എന്റെ പുതിയ കൂട്ടുകാരാ! കാറ്റ് നിന്നെ ആകാശത്തേക്ക് ഉയർത്തുന്ന മലമുകളിലേക്ക് നമുക്ക് ഒരുമിച്ച് പോകാം.'",
           'focus': ['Smile', 'Friend', 'Mountain', 'Sky'],
         },
         {
-          'en': 'With brave and steady steps, Oliver carried the little star to the windy peak. A soft night breeze embraced them, and the golden star floated gracefully back into the deep blue sky, shining brighter than ever before. Oliver walked back to his warm bed feeling immensely proud and happy, knowing that kindness always lights up the darkest night.',
-          'ml': 'ധീരമായ ചുവടുകളോടെ ഒലിവർ കൊച്ചു നക്ഷത്രത്തെ മലമുകളിലെത്തിച്ചു. രാത്രിയിലെ ഇളംകാറ്റ് അവരെ തഴുകി, സുവർണ്ണ നക്ഷത്രം നീലാകാശത്തേക്ക് ഭംഗിയായി ഉയർന്നുപൊങ്ങി. ഒലിവർ തന്റെ കിടക്കയിലേക്ക് മടങ്ങിയെത്തി, കാരുണ്യവും സൗഹൃദവുമാണ് ഏറ്റവും വലിയ വെളിച്ചമെന്ന് മനസ്സിലാക്കി അവൻ സമാധാനമായി ഉറങ്ങി.',
+          'en':
+              'With brave and steady steps, Oliver carried the little star to the windy peak. A soft night breeze embraced them, and the golden star floated gracefully back into the deep blue sky, shining brighter than ever before. Oliver walked back to his warm bed feeling immensely proud and happy, knowing that kindness always lights up the darkest night.',
+          'ml':
+              'ധീരമായ ചുവടുകളോടെ ഒലിവർ കൊച്ചു നക്ഷത്രത്തെ മലമുകളിലെത്തിച്ചു. രാത്രിയിലെ ഇളംകാറ്റ് അവരെ തഴുകി, സുവർണ്ണ നക്ഷത്രം നീലാകാശത്തേക്ക് ഭംഗിയായി ഉയർന്നുപൊങ്ങി. ഒലിവർ തന്റെ കിടക്കയിലേക്ക് മടങ്ങിയെത്തി, കാരുണ്യവും സൗഹൃദവുമാണ് ഏറ്റവും വലിയ വെളിച്ചമെന്ന് മനസ്സിലാക്കി അവൻ സമാധാനമായി ഉറങ്ങി.',
           'focus': ['Bed', 'Happy', 'Kindness', 'Blue'],
         },
       ];
@@ -3163,19 +3361,32 @@ class _PocketDay1InteractiveFlowPageState
             'en': 'Who is the main hero in the story?',
             'ml': 'കഥയിലെ പ്രധാന കഥാപാത്രം ആരാണ്?',
           },
-          'options': ['Oliver the friendly fox 🦊', 'A sleeping giant 🧌', 'A fierce tiger 🐅', 'A noisy crow 🐦‍⬛'],
+          'options': [
+            'Oliver the friendly fox 🦊',
+            'A sleeping giant 🧌',
+            'A fierce tiger 🐅',
+            'A noisy crow 🐦‍⬛'
+          ],
           'correctIndex': 0,
-          'explanation': 'Oliver is the kind, friendly fox living in the meadow.',
+          'explanation':
+              'Oliver is the kind, friendly fox living in the meadow.',
         },
         {
           'id': 2,
           'question': {
             'en': 'What was shining between the leaves of the oak tree?',
-            'ml': 'ഓക്ക് മരത്തിന്റെ ഇലകൾക്കിടയിൽ തിളങ്ങി നിന്നത് എന്തായിരുന്നു?',
+            'ml':
+                'ഓക്ക് മരത്തിന്റെ ഇലകൾക്കിടയിൽ തിളങ്ങി നിന്നത് എന്തായിരുന്നു?',
           },
-          'options': ['A red apple 🍎', 'A twinkling golden star ⭐', 'A gold pocket watch ⏰', 'A street lamp 💡'],
+          'options': [
+            'A red apple 🍎',
+            'A twinkling golden star ⭐',
+            'A gold pocket watch ⏰',
+            'A street lamp 💡'
+          ],
           'correctIndex': 1,
-          'explanation': 'A twinkling golden star that had fallen softly from the sky.',
+          'explanation':
+              'A twinkling golden star that had fallen softly from the sky.',
         },
         {
           'id': 3,
@@ -3190,7 +3401,8 @@ class _PocketDay1InteractiveFlowPageState
             'Left it in the river water 💧',
           ],
           'correctIndex': 2,
-          'explanation': 'Oliver guided the star up the mountain peak where the breeze lifted it back to the sky.',
+          'explanation':
+              'Oliver guided the star up the mountain peak where the breeze lifted it back to the sky.',
         },
       ];
     }
@@ -3208,7 +3420,9 @@ class _PocketDay1InteractiveFlowPageState
               colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF0B192C)],
             ),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.65), width: 1.8),
+            border: Border.all(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.65),
+                width: 1.8),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFFFFD700).withValues(alpha: 0.22),
@@ -3222,7 +3436,8 @@ class _PocketDay1InteractiveFlowPageState
             children: [
               // Beautiful Custom Painted Night Sky & Starlit Oak Tree Scene
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(22)),
                 child: Container(
                   height: 155,
                   width: double.infinity,
@@ -3230,17 +3445,36 @@ class _PocketDay1InteractiveFlowPageState
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Color(0xFF0A1128), Color(0xFF1C2541), Color(0xFF283655)],
+                      colors: [
+                        Color(0xFF0A1128),
+                        Color(0xFF1C2541),
+                        Color(0xFF283655)
+                      ],
                     ),
                   ),
                   child: Stack(
                     children: [
                       // Twinkling Stars
-                      Positioned(top: 20, left: 40, child: _buildStarDot(size: 6, opacity: 0.8)),
-                      Positioned(top: 45, left: 110, child: _buildStarDot(size: 4, opacity: 0.6)),
-                      Positioned(top: 25, right: 70, child: _buildStarDot(size: 5, opacity: 0.7)),
-                      Positioned(top: 70, right: 140, child: _buildStarDot(size: 4, opacity: 0.5)),
-                      Positioned(top: 85, left: 60, child: _buildStarDot(size: 5, opacity: 0.75)),
+                      Positioned(
+                          top: 20,
+                          left: 40,
+                          child: _buildStarDot(size: 6, opacity: 0.8)),
+                      Positioned(
+                          top: 45,
+                          left: 110,
+                          child: _buildStarDot(size: 4, opacity: 0.6)),
+                      Positioned(
+                          top: 25,
+                          right: 70,
+                          child: _buildStarDot(size: 5, opacity: 0.7)),
+                      Positioned(
+                          top: 70,
+                          right: 140,
+                          child: _buildStarDot(size: 4, opacity: 0.5)),
+                      Positioned(
+                          top: 85,
+                          left: 60,
+                          child: _buildStarDot(size: 5, opacity: 0.75)),
 
                       // Glowing Moon
                       Positioned(
@@ -3252,12 +3486,17 @@ class _PocketDay1InteractiveFlowPageState
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             gradient: const RadialGradient(
-                              colors: [Color(0xFFFFFBEB), Color(0xFFFEF08A), Colors.transparent],
+                              colors: [
+                                Color(0xFFFFFBEB),
+                                Color(0xFFFEF08A),
+                                Colors.transparent
+                              ],
                               stops: [0.35, 0.7, 1.0],
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFFFEF08A).withValues(alpha: 0.5),
+                                color: const Color(0xFFFEF08A)
+                                    .withValues(alpha: 0.5),
                                 blurRadius: 20,
                                 spreadRadius: 4,
                               ),
@@ -3285,13 +3524,15 @@ class _PocketDay1InteractiveFlowPageState
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const Color(0xFFFFD700).withValues(alpha: 0.8),
+                                      color: const Color(0xFFFFD700)
+                                          .withValues(alpha: 0.8),
                                       blurRadius: 18,
                                       spreadRadius: 4,
                                     ),
                                   ],
                                 ),
-                                child: const Text('⭐', style: TextStyle(fontSize: 28)),
+                                child: const Text('⭐',
+                                    style: TextStyle(fontSize: 28)),
                               ),
                             ),
                           ],
@@ -3308,7 +3549,8 @@ class _PocketDay1InteractiveFlowPageState
                             color: Colors.black.withValues(alpha: 0.35),
                             shape: BoxShape.circle,
                           ),
-                          child: const Text('🦊', style: TextStyle(fontSize: 42)),
+                          child:
+                              const Text('🦊', style: TextStyle(fontSize: 42)),
                         ),
                       ),
 
@@ -3317,11 +3559,14 @@ class _PocketDay1InteractiveFlowPageState
                         top: 14,
                         left: 14,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF0F172A).withValues(alpha: 0.88),
+                            color:
+                                const Color(0xFF0F172A).withValues(alpha: 0.88),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+                            border: Border.all(
+                                color: const Color(0xFFFFD700), width: 1.2),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -3363,7 +3608,9 @@ class _PocketDay1InteractiveFlowPageState
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      _nativeLanguage == 'Malayalam' ? storyTitleMl : 'A magical story of friendship and kindness',
+                      _nativeLanguage == 'Malayalam'
+                          ? storyTitleMl
+                          : 'A magical story of friendship and kindness',
                       style: GoogleFonts.inter(
                         color: const Color(0xFFFFD700),
                         fontSize: 12.5,
@@ -3374,7 +3621,8 @@ class _PocketDay1InteractiveFlowPageState
 
                     // Audio Controls & Font Size Toolbar
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
                         color: const Color(0xFF0F172A),
                         borderRadius: BorderRadius.circular(16),
@@ -3385,16 +3633,25 @@ class _PocketDay1InteractiveFlowPageState
                           // Narration Play / Stop Button
                           ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: _isStoryNarrating ? const Color(0xFFEF4444) : const Color(0xFF10B981),
+                              backgroundColor: _isStoryNarrating
+                                  ? const Color(0xFFEF4444)
+                                  : const Color(0xFF10B981),
                               foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
                               elevation: 2,
                             ),
-                            icon: Icon(_isStoryNarrating ? Icons.stop_rounded : Icons.volume_up_rounded, size: 18),
+                            icon: Icon(
+                                _isStoryNarrating
+                                    ? Icons.stop_rounded
+                                    : Icons.volume_up_rounded,
+                                size: 18),
                             label: Text(
                               _isStoryNarrating ? 'STOP' : 'READ ALOUD 🎙️',
-                              style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 11),
+                              style: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.w900, fontSize: 11),
                             ),
                             onPressed: () {
                               HapticFeedback.mediumImpact();
@@ -3403,10 +3660,13 @@ class _PocketDay1InteractiveFlowPageState
                                 setState(() => _isStoryNarrating = false);
                               } else {
                                 setState(() => _isStoryNarrating = true);
-                                final fullStoryText = paragraphs.map((p) => p['en'] as String).join(' \n\n');
+                                final fullStoryText = paragraphs
+                                    .map((p) => p['en'] as String)
+                                    .join(' \n\n');
                                 _tts.stop();
                                 _tts.speak(fullStoryText).then((_) {
-                                  if (mounted) setState(() => _isStoryNarrating = false);
+                                  if (mounted)
+                                    setState(() => _isStoryNarrating = false);
                                 });
                               }
                             },
@@ -3417,36 +3677,49 @@ class _PocketDay1InteractiveFlowPageState
                           // Font Sizing Controls (A- / A+)
                           Text(
                             'Font:',
-                            style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
+                            style: GoogleFonts.inter(
+                                color: Colors.white54, fontSize: 11),
                           ),
                           const SizedBox(width: 4),
                           InkWell(
                             onTap: () {
-                              if (_storyFontSize > 12) setState(() => _storyFontSize -= 1.5);
+                              if (_storyFontSize > 12)
+                                setState(() => _storyFontSize -= 1.5);
                             },
                             borderRadius: BorderRadius.circular(8),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 7, vertical: 3),
                               decoration: BoxDecoration(
                                 color: Colors.white10,
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Text('A-', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                              child: const Text('A-',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold)),
                             ),
                           ),
                           const SizedBox(width: 4),
                           InkWell(
                             onTap: () {
-                              if (_storyFontSize < 20) setState(() => _storyFontSize += 1.5);
+                              if (_storyFontSize < 20)
+                                setState(() => _storyFontSize += 1.5);
                             },
                             borderRadius: BorderRadius.circular(8),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 7, vertical: 3),
                               decoration: BoxDecoration(
                                 color: Colors.white10,
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Text('A+', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                              child: const Text('A+',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold)),
                             ),
                           ),
                         ],
@@ -3482,7 +3755,8 @@ class _PocketDay1InteractiveFlowPageState
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('✦ ═══ ', style: TextStyle(color: Color(0xFFFFD700), fontSize: 12)),
+                  const Text('✦ ═══ ',
+                      style: TextStyle(color: Color(0xFFFFD700), fontSize: 12)),
                   Text(
                     'READ THE STORY',
                     style: GoogleFonts.outfit(
@@ -3492,7 +3766,8 @@ class _PocketDay1InteractiveFlowPageState
                       letterSpacing: 1.5,
                     ),
                   ),
-                  const Text(' ═══ ✦', style: TextStyle(color: Color(0xFFFFD700), fontSize: 12)),
+                  const Text(' ═══ ✦',
+                      style: TextStyle(color: Color(0xFFFFD700), fontSize: 12)),
                 ],
               ),
               const SizedBox(height: 14),
@@ -3520,9 +3795,11 @@ class _PocketDay1InteractiveFlowPageState
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+                              color: const Color(0xFF38BDF8)
+                                  .withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -3536,7 +3813,8 @@ class _PocketDay1InteractiveFlowPageState
                           ),
                           const Spacer(),
                           IconButton(
-                            icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFD700), size: 20),
+                            icon: const Icon(Icons.volume_up_rounded,
+                                color: Color(0xFFFFD700), size: 20),
                             onPressed: () {
                               HapticFeedback.selectionClick();
                               _tts.stop();
@@ -3544,7 +3822,8 @@ class _PocketDay1InteractiveFlowPageState
                             },
                             visualDensity: VisualDensity.compact,
                             padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                            constraints: const BoxConstraints(
+                                minWidth: 32, minHeight: 32),
                             tooltip: 'Listen to Part ${idx + 1}',
                           ),
                         ],
@@ -3587,11 +3866,15 @@ class _PocketDay1InteractiveFlowPageState
                             },
                             borderRadius: BorderRadius.circular(8),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 3),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                                color: const Color(0xFFFFD700)
+                                    .withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                                border: Border.all(
+                                    color: const Color(0xFFFFD700)
+                                        .withValues(alpha: 0.4)),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -3605,7 +3888,8 @@ class _PocketDay1InteractiveFlowPageState
                                     ),
                                   ),
                                   const SizedBox(width: 3),
-                                  const Icon(Icons.volume_up_rounded, color: Color(0xFFFFD700), size: 11),
+                                  const Icon(Icons.volume_up_rounded,
+                                      color: Color(0xFFFFD700), size: 11),
                                 ],
                               ),
                             ),
@@ -3628,7 +3912,9 @@ class _PocketDay1InteractiveFlowPageState
           decoration: BoxDecoration(
             color: const Color(0xFF1E293B),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.5), width: 1.5),
+            border: Border.all(
+                color: const Color(0xFF10B981).withValues(alpha: 0.5),
+                width: 1.5),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -3684,10 +3970,10 @@ class _PocketDay1InteractiveFlowPageState
                       ),
                       Text(
                         qMl,
-                        style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+                        style: GoogleFonts.inter(
+                            color: Colors.white60, fontSize: 11),
                       ),
                       const SizedBox(height: 10),
-
                       ...opts.asMap().entries.map((optEntry) {
                         final optIdx = optEntry.key;
                         final optText = optEntry.value;
@@ -3714,7 +4000,8 @@ class _PocketDay1InteractiveFlowPageState
                             style: ElevatedButton.styleFrom(
                               backgroundColor: btnBg,
                               foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 side: BorderSide(color: borderCol, width: 1.2),
@@ -3728,8 +4015,10 @@ class _PocketDay1InteractiveFlowPageState
                               });
                               if (isCorrect) {
                                 _speak('Correct!');
-                                if (_readingQuizAnswers.length >= comprehensionQuestions.length &&
-                                    _readingQuizAnswers.values.every((v) => true)) {
+                                if (_readingQuizAnswers.length >=
+                                        comprehensionQuestions.length &&
+                                    _readingQuizAnswers.values
+                                        .every((v) => true)) {
                                   _markStepCompleted(5);
                                 }
                               } else {
@@ -3783,16 +4072,19 @@ class _PocketDay1InteractiveFlowPageState
   // STEP 6: SPOKEN LAB (6 Challenges with Mic)
   // -------------------------------------------------------------
   Widget _buildStep6SpokenLab(Day1StepModel step) {
-    final challenges = (step.data['challenges'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final challenges =
+        (step.data['challenges'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     if (challenges.isEmpty) return const SizedBox.shrink();
 
     final c = challenges[_spokenChallengeIndex % challenges.length];
     final phrase = c['phrase']?.toString() ?? '';
     final phonetic = c['phonetic']?.toString() ?? '';
-    final meaning = Day1CurriculumJsonData.getLocalizedString(c['meaning'], lang: _nativeLanguage);
+    final meaning = Day1CurriculumJsonData.getLocalizedString(c['meaning'],
+        lang: _nativeLanguage);
 
     final tag = c['tag']?.toString() ?? '🎙️ Spoken English Drill';
-    final avatarPrompt = c['avatarPrompt']?.toString() ?? "Tutor Maya: 'Listen carefully, then speak your reply!'";
+    final avatarPrompt = c['avatarPrompt']?.toString() ??
+        "Tutor Maya: 'Listen carefully, then speak your reply!'";
     final avatarPromptMl = c['avatarPromptMl']?.toString() ?? '';
 
     return SingleChildScrollView(
@@ -3807,7 +4099,8 @@ class _PocketDay1InteractiveFlowPageState
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
                     color: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
@@ -3815,23 +4108,32 @@ class _PocketDay1InteractiveFlowPageState
                   ),
                   child: Text(
                     '🎙️ DRILL ${_spokenChallengeIndex + 1} OF ${challenges.length}',
-                    style: GoogleFonts.outfit(color: const Color(0xFF8B5CF6), fontWeight: FontWeight.bold, fontSize: 12),
+                    style: GoogleFonts.outfit(
+                        color: const Color(0xFF8B5CF6),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Flexible(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
                       color: const Color(0xFF10B981).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                      border: Border.all(
+                          color:
+                              const Color(0xFF10B981).withValues(alpha: 0.4)),
                     ),
                     child: Text(
                       tag,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(color: const Color(0xFF34D399), fontWeight: FontWeight.w600, fontSize: 11),
+                      style: GoogleFonts.inter(
+                          color: const Color(0xFF34D399),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 11),
                     ),
                   ),
                 ),
@@ -3849,7 +4151,8 @@ class _PocketDay1InteractiveFlowPageState
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+                border: Border.all(
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
                 boxShadow: [
                   BoxShadow(
                     color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
@@ -3873,7 +4176,8 @@ class _PocketDay1InteractiveFlowPageState
                           padding: const EdgeInsets.all(2.5),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(color: const Color(0xFF38BDF8), width: 1.8),
+                            border: Border.all(
+                                color: const Color(0xFF38BDF8), width: 1.8),
                           ),
                           child: const ClipOval(
                             child: VectorAvatarWidget(
@@ -3892,7 +4196,8 @@ class _PocketDay1InteractiveFlowPageState
                               color: Color(0xFF10B981),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.volume_up_rounded, size: 10, color: Colors.white),
+                            child: const Icon(Icons.volume_up_rounded,
+                                size: 10, color: Colors.white),
                           ),
                         ),
                       ],
@@ -3909,24 +4214,35 @@ class _PocketDay1InteractiveFlowPageState
                           children: [
                             Text(
                               'AI TUTOR DIALOGUE',
-                              style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontSize: 10.5, fontWeight: FontWeight.w800, letterSpacing: 0.8),
+                              style: GoogleFonts.outfit(
+                                  color: const Color(0xFF38BDF8),
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.8),
                             ),
                             const Spacer(),
                             InkWell(
                               onTap: () => _speak(avatarPrompt),
                               borderRadius: BorderRadius.circular(10),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                                  color: const Color(0xFF38BDF8)
+                                      .withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Icon(Icons.play_arrow_rounded, color: Color(0xFF38BDF8), size: 14),
+                                    const Icon(Icons.play_arrow_rounded,
+                                        color: Color(0xFF38BDF8), size: 14),
                                     const SizedBox(width: 3),
-                                    Text('Listen', style: GoogleFonts.inter(color: const Color(0xFF38BDF8), fontSize: 11, fontWeight: FontWeight.w600)),
+                                    Text('Listen',
+                                        style: GoogleFonts.inter(
+                                            color: const Color(0xFF38BDF8),
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600)),
                                   ],
                                 ),
                               ),
@@ -3936,13 +4252,18 @@ class _PocketDay1InteractiveFlowPageState
                         const SizedBox(height: 6),
                         Text(
                           avatarPrompt,
-                          style: GoogleFonts.outfit(color: Colors.white, fontSize: 14.5, fontWeight: FontWeight.w600, height: 1.3),
+                          style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w600,
+                              height: 1.3),
                         ),
                         if (avatarPromptMl.isNotEmpty) ...[
                           const SizedBox(height: 4),
                           Text(
                             avatarPromptMl,
-                            style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 11.5),
+                            style: GoogleFonts.inter(
+                                color: const Color(0xFF94A3B8), fontSize: 11.5),
                           ),
                         ],
                       ],
@@ -3959,7 +4280,8 @@ class _PocketDay1InteractiveFlowPageState
               decoration: BoxDecoration(
                 color: const Color(0xFF1E293B),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.5)),
+                border: Border.all(
+                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.5)),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.35),
@@ -3971,33 +4293,46 @@ class _PocketDay1InteractiveFlowPageState
               child: Column(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 3.5),
                     decoration: BoxDecoration(
                       color: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       'YOUR TURN TO REPLY 🗣️',
-                      style: GoogleFonts.outfit(color: const Color(0xFFA78BFA), fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.7),
+                      style: GoogleFonts.outfit(
+                          color: const Color(0xFFA78BFA),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.7),
                     ),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     phrase,
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 22, fontWeight: FontWeight.w900, height: 1.3),
+                    style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        height: 1.3),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     phonetic,
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(color: Colors.white70, fontSize: 13, fontStyle: FontStyle.italic),
+                    style: GoogleFonts.inter(
+                        color: Colors.white70,
+                        fontSize: 13,
+                        fontStyle: FontStyle.italic),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     meaning,
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 12.5),
+                    style: GoogleFonts.inter(
+                        color: const Color(0xFF94A3B8), fontSize: 12.5),
                   ),
                   const SizedBox(height: 14),
 
@@ -4006,18 +4341,25 @@ class _PocketDay1InteractiveFlowPageState
                     onTap: () => _speak(phrase),
                     borderRadius: BorderRadius.circular(20),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 6),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.2)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.volume_up_rounded, color: Color(0xFF38BDF8), size: 16),
+                          const Icon(Icons.volume_up_rounded,
+                              color: Color(0xFF38BDF8), size: 16),
                           const SizedBox(width: 6),
-                          Text('Listen Your Line', style: GoogleFonts.inter(color: const Color(0xFF38BDF8), fontSize: 12, fontWeight: FontWeight.w600)),
+                          Text('Listen Your Line',
+                              style: GoogleFonts.inter(
+                                  color: const Color(0xFF38BDF8),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600)),
                         ],
                       ),
                     ),
@@ -4051,7 +4393,9 @@ class _PocketDay1InteractiveFlowPageState
                   height: 78,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: _isListening ? Colors.redAccent : const Color(0xFF8B5CF6),
+                    color: _isListening
+                        ? Colors.redAccent
+                        : const Color(0xFF8B5CF6),
                     boxShadow: [
                       BoxShadow(
                         color: const Color(0xFF8B5CF6).withValues(alpha: 0.45),
@@ -4060,15 +4404,21 @@ class _PocketDay1InteractiveFlowPageState
                       ),
                     ],
                   ),
-                  child: Icon(_isListening ? Icons.mic : Icons.mic_none_rounded, color: Colors.white, size: 38),
+                  child: Icon(_isListening ? Icons.mic : Icons.mic_none_rounded,
+                      color: Colors.white, size: 38),
                 ),
               ),
             ),
             const SizedBox(height: 12),
             Center(
               child: Text(
-                _isListening ? '🎙️ Listening... Speak your reply now!' : 'Tap mic and speak your reply aloud',
-                style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500),
+                _isListening
+                    ? '🎙️ Listening... Speak your reply now!'
+                    : 'Tap mic and speak your reply aloud',
+                style: GoogleFonts.outfit(
+                    color: Colors.white70,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500),
               ),
             ),
             const SizedBox(height: 12),
@@ -4086,7 +4436,9 @@ class _PocketDay1InteractiveFlowPageState
                   }
                 },
                 child: Text(
-                  _spokenChallengeIndex < challenges.length - 1 ? 'Next Dialogue Drill ➡️' : 'Complete Speaking Workout ✅',
+                  _spokenChallengeIndex < challenges.length - 1
+                      ? 'Next Dialogue Drill ➡️'
+                      : 'Complete Speaking Workout ✅',
                   style: GoogleFonts.inter(color: Colors.white38, fontSize: 12),
                 ),
               ),
@@ -4118,7 +4470,10 @@ class _PocketDay1InteractiveFlowPageState
                 const SizedBox(height: 12),
                 Text(
                   'Tutor Robot Voice Practice',
-                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 6),
                 Text(
@@ -4136,11 +4491,15 @@ class _PocketDay1InteractiveFlowPageState
                   spacing: 8,
                   runSpacing: 8,
                   alignment: WrapAlignment.center,
-                  children: ['Apple 🍎', 'Water 💧', 'Ball ⚽', 'Book 📖'].map((w) {
+                  children:
+                      ['Apple 🍎', 'Water 💧', 'Ball ⚽', 'Book 📖'].map((w) {
                     return ActionChip(
                       backgroundColor: const Color(0xFF0F172A),
                       side: const BorderSide(color: Color(0xFF10B981)),
-                      label: Text(w, style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
+                      label: Text(w,
+                          style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold)),
                       onPressed: () => _speak(w.split(' ').first),
                     );
                   }).toList(),
@@ -4150,15 +4509,19 @@ class _PocketDay1InteractiveFlowPageState
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF10B981),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                   ),
                   onPressed: () {
-                    _speak('Great job! You spoke wonderful English with the robot!');
+                    _speak(
+                        'Great job! You spoke wonderful English with the robot!');
                     _markStepCompleted(7);
                   },
                   icon: const Icon(Icons.check_circle_rounded),
-                  label: Text('COMPLETE ROBOT PRACTICE ✓', style: GoogleFonts.outfit(fontWeight: FontWeight.w900)),
+                  label: Text('COMPLETE ROBOT PRACTICE ✓',
+                      style: GoogleFonts.outfit(fontWeight: FontWeight.w900)),
                 ),
               ],
             ),
@@ -4182,7 +4545,10 @@ class _PocketDay1InteractiveFlowPageState
               const SizedBox(height: 12),
               Text(
                 'Live Random Partner Call',
-                style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 6),
               Text(
@@ -4195,18 +4561,22 @@ class _PocketDay1InteractiveFlowPageState
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF38BDF8),
                   foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
                 ),
                 onPressed: () async {
                   await Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const AnonymousEnglishChatPage()),
+                    MaterialPageRoute(
+                        builder: (_) => const AnonymousEnglishChatPage()),
                   );
                   _markStepCompleted(7);
                 },
                 icon: const Icon(Icons.phone_in_talk_rounded),
-                label: Text('START CALL NOW ➔', style: GoogleFonts.outfit(fontWeight: FontWeight.w900)),
+                label: Text('START CALL NOW ➔',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.w900)),
               ),
             ],
           ),
@@ -4239,7 +4609,10 @@ class _PocketDay1InteractiveFlowPageState
               const SizedBox(height: 12),
               Text(
                 'Poketalk: 4-Day Spoken Pact',
-                style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 6),
               Text(
@@ -4260,7 +4633,8 @@ class _PocketDay1InteractiveFlowPageState
                     backgroundColor: const Color(0xFFF59E0B),
                     foregroundColor: Colors.black,
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                   ),
                   onPressed: () async {
                     HapticFeedback.mediumImpact();
@@ -4268,7 +4642,9 @@ class _PocketDay1InteractiveFlowPageState
                     _markStepCompleted(8);
                   },
                   icon: const Icon(Icons.swipe_rounded, size: 18),
-                  label: Text('OPEN POKET TALK SWIPER ➔', style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13)),
+                  label: Text('OPEN POKET TALK SWIPER ➔',
+                      style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.w900, fontSize: 13)),
                 ),
               ),
             ],
@@ -4289,8 +4665,16 @@ class _PocketDay1InteractiveFlowPageState
     ];
     final deck = <Map<String, dynamic>>[];
     for (int i = 0; i < base.length; i++) {
-      deck.add({'id': base[i]['id'], 'label': base[i]['text'], 'sound': base[i]['sound']});
-      deck.add({'id': base[i]['id'], 'label': base[i]['text'], 'sound': base[i]['sound']});
+      deck.add({
+        'id': base[i]['id'],
+        'label': base[i]['text'],
+        'sound': base[i]['sound']
+      });
+      deck.add({
+        'id': base[i]['id'],
+        'label': base[i]['text'],
+        'sound': base[i]['sound']
+      });
     }
     deck.shuffle();
     _memoryCards = deck;
@@ -4301,7 +4685,8 @@ class _PocketDay1InteractiveFlowPageState
 
   Widget _buildStep8ZeroMemoryMatch(Day1StepModel step) {
     _initZeroMemoryMatch();
-    final allMatched = _memoryCards.isNotEmpty && _memoryMatchedIndices.length == _memoryCards.length;
+    final allMatched = _memoryCards.isNotEmpty &&
+        _memoryMatchedIndices.length == _memoryCards.length;
 
     return Column(
       children: [
@@ -4318,7 +4703,10 @@ class _PocketDay1InteractiveFlowPageState
               const SizedBox(height: 8),
               Text(
                 'Phonics & Word Memory Match',
-                style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 4),
               Text(
@@ -4345,11 +4733,15 @@ class _PocketDay1InteractiveFlowPageState
                 itemBuilder: (context, index) {
                   final card = _memoryCards[index];
                   final isMatched = _memoryMatchedIndices.contains(index);
-                  final isFlipped = isMatched || _memoryFlippedFirst == index || _memoryFlippedSecond == index;
+                  final isFlipped = isMatched ||
+                      _memoryFlippedFirst == index ||
+                      _memoryFlippedSecond == index;
 
                   return GestureDetector(
                     onTap: () {
-                      if (isMatched || _memoryFlippedFirst == index || _memoryFlippedSecond != null) return;
+                      if (isMatched ||
+                          _memoryFlippedFirst == index ||
+                          _memoryFlippedSecond != null) return;
                       HapticFeedback.selectionClick();
                       _speak(card['sound'].toString());
                       setState(() {
@@ -4363,11 +4755,13 @@ class _PocketDay1InteractiveFlowPageState
                             _memoryMatchedIndices.add(index);
                             _memoryFlippedFirst = null;
                             _memoryFlippedSecond = null;
-                            if (_memoryMatchedIndices.length == _memoryCards.length) {
+                            if (_memoryMatchedIndices.length ==
+                                _memoryCards.length) {
                               _speak('Awesome! All pairs matched!');
                             }
                           } else {
-                            Future.delayed(const Duration(milliseconds: 750), () {
+                            Future.delayed(const Duration(milliseconds: 750),
+                                () {
                               if (mounted) {
                                 setState(() {
                                   _memoryFlippedFirst = null;
@@ -4383,12 +4777,16 @@ class _PocketDay1InteractiveFlowPageState
                       decoration: BoxDecoration(
                         color: isMatched
                             ? const Color(0xFF10B981).withValues(alpha: 0.25)
-                            : (isFlipped ? const Color(0xFF0284C7) : const Color(0xFF0F172A)),
+                            : (isFlipped
+                                ? const Color(0xFF0284C7)
+                                : const Color(0xFF0F172A)),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: isMatched
                               ? const Color(0xFF10B981)
-                              : (isFlipped ? const Color(0xFFFFD700) : Colors.white24),
+                              : (isFlipped
+                                  ? const Color(0xFFFFD700)
+                                  : Colors.white24),
                           width: isMatched || isFlipped ? 2 : 1,
                         ),
                       ),
@@ -4413,15 +4811,18 @@ class _PocketDay1InteractiveFlowPageState
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF10B981),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                   ),
                   onPressed: () {
                     HapticFeedback.mediumImpact();
                     _markStepCompleted(8);
                   },
                   icon: const Icon(Icons.check_circle_rounded),
-                  label: Text('COMPLETE STEP 8 ✓', style: GoogleFonts.outfit(fontWeight: FontWeight.w900)),
+                  label: Text('COMPLETE STEP 8 ✓',
+                      style: GoogleFonts.outfit(fontWeight: FontWeight.w900)),
                 )
               else
                 OutlinedButton.icon(
@@ -4451,24 +4852,29 @@ class _PocketDay1InteractiveFlowPageState
   Widget _buildStep8VerbTimeline(Day1StepModel step) {
     final lang = _nativeLanguage.toLowerCase();
     String title = '3-Tier Time Machine Verb Builder';
-    String desc = 'Master action verbs across Yesterday (Past), Today (Present), and Tomorrow (Future) with 3-tier interactive word tiles and speech audio!';
+    String desc =
+        'Master action verbs across Yesterday (Past), Today (Present), and Tomorrow (Future) with 3-tier interactive word tiles and speech audio!';
     String btnText = 'LAUNCH VERB ARCADE ➔';
 
     if (lang.contains('malay') || lang.startsWith('ml')) {
       title = '3-തട്ട് ടൈം മെഷീൻ സെന്റൻസ് ബിൽഡർ ⏳';
-      desc = 'മേലെ കഴിഞ്ഞത് (Past), ഇടയിൽ ഇപ്പോൾ (Present), താഴെ നാളെ (Future) — മൂന്ന് തട്ടുകളിൽ വാക്കുകൾ ക്രമീകരിച്ച് ആക്ഷൻ വെർബുകൾ പഠിക്കുക!';
+      desc =
+          'മേലെ കഴിഞ്ഞത് (Past), ഇടയിൽ ഇപ്പോൾ (Present), താഴെ നാളെ (Future) — മൂന്ന് തട്ടുകളിൽ വാക്കുകൾ ക്രമീകരിച്ച് ആക്ഷൻ വെർബുകൾ പഠിക്കുക!';
       btnText = 'ടൈം മെഷീൻ ഗെയിം തുടങ്ങുക ➔';
     } else if (lang.contains('hind') || lang.startsWith('hi')) {
       title = '3-स्तरीय टाइम मशीन क्रिया बिल्डर ⏳';
-      desc = 'भूतकाल (Past), वर्तमान (Present) और भविष्य (Future) काल के वाक्यों को 3 स्तरों में सीखें!';
+      desc =
+          'भूतकाल (Past), वर्तमान (Present) और भविष्य (Future) काल के वाक्यों को 3 स्तरों में सीखें!';
       btnText = 'टाइम मशीन गेम शुरू करें ➔';
     } else if (lang.contains('tamil') || lang.startsWith('ta')) {
       title = '3-அடுக்கு நேர இயந்திர வினைச்சொல் உருவாக்குநர் ⏳';
-      desc = 'கடந்த (Past), நிகழ்கால (Present) மற்றும் எதிர்கால (Future) வாக்கியங்களை 3 அடுக்குகளில் கற்றுக் கொள்ளுங்கள்!';
+      desc =
+          'கடந்த (Past), நிகழ்கால (Present) மற்றும் எதிர்கால (Future) வாக்கியங்களை 3 அடுக்குகளில் கற்றுக் கொள்ளுங்கள்!';
       btnText = 'நேர இயந்திர விளையாட்டைத் தொடங்கவும் ➔';
     } else if (lang.contains('telug') || lang.startsWith('te')) {
       title = '3-అంచెల టైమ్ మెషిన్ వెర్బ్ బిల్డర్ ⏳';
-      desc = 'గత (Past), వర్తమాన (Present) మరియు భవిష్యత్ (Future) కాల వాక్యాలను 3 అంచెల్లో నేర్చుకోండి!';
+      desc =
+          'గత (Past), వర్తమాన (Present) మరియు భవిష్యత్ (Future) కాల వాక్యాలను 3 అంచెల్లో నేర్చుకోండి!';
       btnText = 'టైమ్ మెషిన్ గేమ్‌ను ప్రారంభించండి ➔';
     }
 
@@ -4525,7 +4931,8 @@ class _PocketDay1InteractiveFlowPageState
               backgroundColor: const Color(0xFFFF9100),
               foregroundColor: Colors.black,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
               elevation: 4,
             ),
             onPressed: () async {
@@ -4539,7 +4946,8 @@ class _PocketDay1InteractiveFlowPageState
                 _markStepCompleted(8);
               }
             },
-            icon: const Icon(Icons.play_arrow_rounded, color: Colors.black, size: 22),
+            icon: const Icon(Icons.play_arrow_rounded,
+                color: Colors.black, size: 22),
             label: Text(
               btnText,
               style: PocketVerbLocalizationService.getNativeTextStyle(
@@ -4578,7 +4986,10 @@ class _PocketDay1InteractiveFlowPageState
                 const SizedBox(height: 12),
                 Text(
                   'AI Tutor Private Practice Lab',
-                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 6),
                 Text(
@@ -4589,7 +5000,8 @@ class _PocketDay1InteractiveFlowPageState
                     hi: 'सुरक्षित वातावरण में अपने निजी एआई रोबोट ट्यूटर के साथ बुनियादी शब्दों को बोलने का अभ्यास करें।',
                   ),
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 12.5),
+                  style:
+                      GoogleFonts.inter(color: Colors.white70, fontSize: 12.5),
                 ),
                 const SizedBox(height: 16),
                 SizedBox(
@@ -4599,15 +5011,19 @@ class _PocketDay1InteractiveFlowPageState
                       backgroundColor: const Color(0xFF10B981),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14)),
                     ),
                     onPressed: () {
                       HapticFeedback.mediumImpact();
-                      _speak('Welcome to the private AI speaking lab! Great job practicing today.');
+                      _speak(
+                          'Welcome to the private AI speaking lab! Great job practicing today.');
                       _markStepCompleted(9);
                     },
                     icon: const Icon(Icons.record_voice_over_rounded, size: 18),
-                    label: Text('START PRIVATE PRACTICE ➔', style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13)),
+                    label: Text('START PRIVATE PRACTICE ➔',
+                        style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.w900, fontSize: 13)),
                   ),
                 ),
               ],
@@ -4632,7 +5048,10 @@ class _PocketDay1InteractiveFlowPageState
               const SizedBox(height: 12),
               Text(
                 'English Hub Level Group Chat',
-                style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 6),
               Text(
@@ -4653,7 +5072,8 @@ class _PocketDay1InteractiveFlowPageState
                     backgroundColor: const Color(0xFF6366F1),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                   ),
                   onPressed: () async {
                     HapticFeedback.mediumImpact();
@@ -4671,7 +5091,9 @@ class _PocketDay1InteractiveFlowPageState
                     _markStepCompleted(9);
                   },
                   icon: const Icon(Icons.forum_rounded, size: 18),
-                  label: Text('ENTER ENGLISH HUB GROUP ➔', style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13)),
+                  label: Text('ENTER ENGLISH HUB GROUP ➔',
+                      style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.w900, fontSize: 13)),
                 ),
               ),
             ],
@@ -4752,7 +5174,8 @@ class _PocketDay1InteractiveFlowPageState
                   backgroundColor: const Color(0xFFFFD700),
                   foregroundColor: Colors.black,
                   elevation: 6,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
                 ),
                 onPressed: () async {
                   HapticFeedback.heavyImpact();
@@ -4767,7 +5190,8 @@ class _PocketDay1InteractiveFlowPageState
                     _markStepCompleted(10);
                   }
                 },
-                icon: const Icon(Icons.shield_rounded, color: Colors.black, size: 22),
+                icon: const Icon(Icons.shield_rounded,
+                    color: Colors.black, size: 22),
                 label: Text(
                   'ENTER DEFENSE SYSTEM ➔',
                   style: GoogleFonts.outfit(
@@ -4795,7 +5219,8 @@ class _PocketDay1InteractiveFlowPageState
       decoration: BoxDecoration(
         color: const Color(0xFF1E293B),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.5)),
+        border:
+            Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.5)),
       ),
       child: Row(
         children: [
@@ -4805,8 +5230,14 @@ class _PocketDay1InteractiveFlowPageState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(text, style: GoogleFonts.outfit(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.bold)),
-                Text(subtext, style: GoogleFonts.inter(color: Colors.white60, fontSize: 11)),
+                Text(text,
+                    style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.bold)),
+                Text(subtext,
+                    style:
+                        GoogleFonts.inter(color: Colors.white60, fontSize: 11)),
               ],
             ),
           ),
@@ -4815,10 +5246,12 @@ class _PocketDay1InteractiveFlowPageState
               backgroundColor: const Color(0xFF38BDF8),
               foregroundColor: Colors.black,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
             onPressed: onSkip,
-            child: const Text('SKIP ➔', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+            child: const Text('SKIP ➔',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
           ),
         ],
       ),
@@ -4838,31 +5271,39 @@ class _PocketDay1InteractiveFlowPageState
         children: [
           if (!widget.singleStepOnly && _activeStep > 1)
             IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white70),
+              icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white70),
               onPressed: () => setState(() => _activeStep--),
             ),
           Expanded(
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                backgroundColor: isDone ? const Color(0xFF10B981) : const Color(0xFF38BDF8),
+                backgroundColor:
+                    isDone ? const Color(0xFF10B981) : const Color(0xFF38BDF8),
                 foregroundColor: Colors.black,
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
               ),
               onPressed: () => _markStepCompleted(_activeStep),
-              icon: Icon(isDone ? Icons.check_circle_rounded : Icons.star_rounded),
+              icon: Icon(
+                  isDone ? Icons.check_circle_rounded : Icons.star_rounded),
               label: Text(
                 isDone
-                    ? (_activeStep < totalSteps ? 'PROCEED ON MAP 🚗 ➔' : 'DAY ${widget.day} COMPLETED ✓')
+                    ? (_activeStep < totalSteps
+                        ? 'PROCEED ON MAP 🚗 ➔'
+                        : 'DAY ${widget.day} COMPLETED ✓')
                     : 'COMPLETE STEP $_activeStep (+30 XP)',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 14),
+                style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w900, fontSize: 14),
               ),
             ),
           ),
           if (!widget.singleStepOnly && _activeStep < totalSteps) ...[
             const SizedBox(width: 8),
             IconButton(
-              icon: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70),
+              icon: const Icon(Icons.arrow_forward_ios_rounded,
+                  color: Colors.white70),
               onPressed: () => setState(() => _activeStep++),
             ),
           ],

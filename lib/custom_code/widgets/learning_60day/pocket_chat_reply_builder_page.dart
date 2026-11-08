@@ -10,9 +10,6 @@ import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
-import 'package:pocket_mates_app/custom_code/services/pocket_ad_preload_manager.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocket_native_ad_card.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocket_banner_ad_widget.dart';
 
 import 'curriculum_data/pocket_90day_chat_reply_data.dart';
 
@@ -89,7 +86,8 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
   late AnimationController _shakeAnimController;
 
   int _currentScenarioIndex = 0;
-  final List<Map<String, dynamic>> _chatHistory = []; // {'isUser': bool, 'text': String, 'ml': String}
+  final List<Map<String, dynamic>> _chatHistory =
+      []; // {'isUser': bool, 'text': String, 'ml': String}
   final List<String> _selectedWords = [];
   List<String> _shuffledWordBank = [];
   bool _isSpeaking = false;
@@ -101,7 +99,8 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
   void initState() {
     super.initState();
     // 🚀 Upfront Preloading of Step Native Ad for instant zero-lag display
-    PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.review);
+    PocketAdPreloadManager.instance
+        .preloadForPlacement(PocketAdPlacement.review);
 
     _scenarios = Pocket90DayChatReplyData.getScenariosForDay(widget.day);
     _initTts();
@@ -237,7 +236,8 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
     final prefs = await SharedPreferences.getInstance();
 
     // Record Step 9 completed in prefs
-    final userKey = uid != null ? 'pocket_day_${uid}_${widget.day}_step_9_done' : null;
+    final userKey =
+        uid != null ? 'pocket_day_${uid}_${widget.day}_step_9_done' : null;
     if (userKey != null) await prefs.setBool(userKey, true);
     await prefs.setBool('pocket_day_guest_${widget.day}_step_9_done', true);
 
@@ -288,11 +288,13 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
               ),
               const SizedBox(height: 16),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
                   color: const Color(0xFF132238),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+                  border:
+                      Border.all(color: const Color(0xFFFFD700), width: 1.2),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -320,7 +322,8 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF10B981),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                   ),
                   onPressed: () {
                     Navigator.pop(ctx);
@@ -363,7 +366,8 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
         backgroundColor: const Color(0xFF0F172A),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white70),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: Colors.white70),
           onPressed: () => Navigator.pop(context),
         ),
         title: Column(
@@ -396,7 +400,8 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
             decoration: BoxDecoration(
               color: const Color(0xFF1E293B),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFF00E676).withValues(alpha: 0.5)),
+              border: Border.all(
+                  color: const Color(0xFF00E676).withValues(alpha: 0.5)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -424,7 +429,8 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
               value: (_currentScenarioIndex + 1) / _scenarios.length,
               minHeight: 4,
               backgroundColor: Colors.white12,
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF00E676)),
+              valueColor:
+                  const AlwaysStoppedAnimation<Color>(Color(0xFF00E676)),
             ),
 
             // Scrollable Chat Message Feed
@@ -555,7 +561,9 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
                     Text(
                       ml,
                       style: GoogleFonts.outfit(
-                        color: isUser ? const Color(0xFFD1FAE5) : const Color(0xFFFDE047),
+                        color: isUser
+                            ? const Color(0xFFD1FAE5)
+                            : const Color(0xFFFDE047),
                         fontSize: 13.5,
                         fontWeight: FontWeight.w600,
                       ),
@@ -610,11 +618,13 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.undo_rounded, size: 14, color: Colors.white60),
+                      const Icon(Icons.undo_rounded,
+                          size: 14, color: Colors.white60),
                       const SizedBox(width: 3),
                       Text(
                         'Undo',
-                        style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+                        style: GoogleFonts.inter(
+                            color: Colors.white60, fontSize: 11),
                       ),
                     ],
                   ),
@@ -629,7 +639,9 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
             decoration: BoxDecoration(
               color: const Color(0xFF1E293B),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.5), width: 1.0),
+              border: Border.all(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.5),
+                  width: 1.0),
             ),
             child: Row(
               children: [
@@ -689,17 +701,20 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
                     padding: const EdgeInsets.symmetric(vertical: 6),
                     child: Text(
                       'Tap the first word below to start typing...',
-                      style: GoogleFonts.inter(color: Colors.white30, fontSize: 12),
+                      style: GoogleFonts.inter(
+                          color: Colors.white30, fontSize: 12),
                     ),
                   )
                 else
                   for (final word in _selectedWords)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
                         color: const Color(0xFF065F46),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFF34D399), width: 1.0),
+                        border: Border.all(
+                            color: const Color(0xFF34D399), width: 1.0),
                       ),
                       child: Text(
                         word,
@@ -736,7 +751,9 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
               decoration: BoxDecoration(
-                color: isShaking ? const Color(0xFF7F1D1D) : const Color(0xFF1E293B),
+                color: isShaking
+                    ? const Color(0xFF7F1D1D)
+                    : const Color(0xFF1E293B),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: isShaking
@@ -768,7 +785,8 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
             chip = AnimatedBuilder(
               animation: _shakeAnimController,
               builder: (context, child) {
-                final offset = math.sin(_shakeAnimController.value * math.pi * 5) * 8.0;
+                final offset =
+                    math.sin(_shakeAnimController.value * math.pi * 5) * 8.0;
                 return Transform.translate(
                   offset: Offset(offset, 0),
                   child: child,

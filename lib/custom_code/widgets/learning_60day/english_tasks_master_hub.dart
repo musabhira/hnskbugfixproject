@@ -37,6 +37,7 @@ import 'zero_foundation_curriculum_db.dart';
 import 'pocket_mission_curriculum_registry.dart';
 import 'pocket_daily_battery_reward_widget.dart';
 import 'pocket_rewarded_score_alert_modal.dart';
+import 'pocket_citadel_store_sheet.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 import 'package:flame/components.dart' show Vector2;
 import 'flame_english_house_game.dart';
@@ -3118,6 +3119,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                           // 📜 Special "Rule" Level Node (Audio Directive: Before Level 1, show Rule level)
                           _buildRuleLevelNode(screenWidth),
 
+                          // 🌿 Grassy Ground Syllabus Notice (Under Rules on green ground)
+                          _buildGroundEnglishSyllabusNotice(screenWidth),
+
                           // Bouncing Animated Character Avatar at Current Level or Rules Node
                           _buildAnimatedAvatar(screenWidth, targetActiveDay),
                         ],
@@ -3195,6 +3199,20 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                     streak: prog.streakDays,
                                   ),
                                 ),
+                              );
+                            },
+                          ),
+                          const SizedBox(width: 8),
+                          _buildMinimalFloatingPill(
+                            icon: '🛒',
+                            label: 'Store',
+                            onTap: () {
+                              HapticFeedback.mediumImpact();
+                              PocketCitadelStoreSheet.show(
+                                context,
+                                onPurchased: () {
+                                  _loadData();
+                                },
                               );
                             },
                           ),
@@ -4811,6 +4829,55 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       ),
                     ),
                   ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 🌿 Grassy Ground Syllabus Notice (User Directive: Under Rules on the green ground)
+  Widget _buildGroundEnglishSyllabusNotice(double screenWidth) {
+    final x = screenWidth / 2;
+    final y = _ruleNodeY + 68.0;
+    const pillWidth = 260.0;
+
+    return Positioned(
+      left: x - (pillWidth / 2),
+      top: y,
+      width: pillWidth,
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+          decoration: BoxDecoration(
+            color: const Color(0xFF064E3B).withValues(alpha: 0.70),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: const Color(0xFF34D399).withValues(alpha: 0.5),
+              width: 1.1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.25),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('🌱', style: TextStyle(fontSize: 12)),
+              const SizedBox(width: 6),
+              Text(
+                'Daily update the English syllabus',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFFA7F3D0),
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11,
+                  letterSpacing: 0.2,
                 ),
               ),
             ],

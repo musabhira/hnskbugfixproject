@@ -91,7 +91,8 @@ class PassingIsland {
 /// 🚀 / ✈️ Full-Screen Flame Cosmic & Atmospheric Flight Simulation
 class FlameCosmicRocketFlightGame extends FlameGame {
   final CosmosFlightManifest manifest;
-  final void Function(double currentKm, double progressFraction) onDistanceProgress;
+  final void Function(double currentKm, double progressFraction)
+      onDistanceProgress;
   final VoidCallback onArrival;
   final CosmosVehicle? vehicle;
 
@@ -270,7 +271,9 @@ class FlameCosmicRocketFlightGame extends FlameGame {
             vx: (_rng.nextDouble() - 0.5) * 75,
             vy: 85.0 + _rng.nextDouble() * 140,
             maxLife: 0.35 + _rng.nextDouble() * 0.25,
-            color: (i % 2 == 0) ? const Color(0xFFFFD700) : const Color(0xFF00E5FF),
+            color: (i % 2 == 0)
+                ? const Color(0xFFFFD700)
+                : const Color(0xFF00E5FF),
             radius: 2.5 + _rng.nextDouble() * 2.5,
           ),
         );
@@ -301,7 +304,8 @@ class FlameCosmicRocketFlightGame extends FlameGame {
 
     // Flight forward speed factoring selected vehicle multiplier
     final double vehicleMultiplier = vehicle?.speedMultiplier ?? 1.0;
-    final double baseSpeed = (manifest.isSamePlanet ? 0.13 : 0.088) * vehicleMultiplier;
+    final double baseSpeed =
+        (manifest.isSamePlanet ? 0.13 : 0.088) * vehicleMultiplier;
     final double step = baseSpeed * _currentSpeedMultiplier * dt;
 
     if (!manifest.isSamePlanet) {
@@ -348,7 +352,9 @@ class FlameCosmicRocketFlightGame extends FlameGame {
             vx: (_rng.nextDouble() - 0.5) * 24.0,
             vy: 45.0 + _rng.nextDouble() * 75.0,
             maxLife: 0.22 + _rng.nextDouble() * 0.18,
-            color: (_rng.nextBool()) ? const Color(0xFF38BDF8) : const Color(0xFFFFD700),
+            color: (_rng.nextBool())
+                ? const Color(0xFF38BDF8)
+                : const Color(0xFFFFD700),
             radius: 1.5 + _rng.nextDouble() * 1.5,
           ),
         );
@@ -577,7 +583,8 @@ class FlameCosmicRocketFlightGame extends FlameGame {
   }
 
   /// 🏝️ Archipelago islands passing underneath the plane
-  void _drawPassingArchipelagoMap(Canvas canvas, double w, double h, double cx) {
+  void _drawPassingArchipelagoMap(
+      Canvas canvas, double w, double h, double cx) {
     for (final island in _passingIslands) {
       // Island scrolls downwards as flight progresses
       final islandProgress = (_flightProgress - island.appearProgress) / 0.40;
@@ -592,14 +599,16 @@ class FlameCosmicRocketFlightGame extends FlameGame {
         ..color = island.sandColor.withValues(alpha: 0.85)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
       canvas.drawOval(
-        Rect.fromCenter(center: Offset(islandX, islandY), width: r * 2.3, height: r * 1.8),
+        Rect.fromCenter(
+            center: Offset(islandX, islandY), width: r * 2.3, height: r * 1.8),
         shorePaint,
       );
 
       // Inner Lush Landform
       final landPaint = Paint()..color = island.vegetationColor;
       canvas.drawOval(
-        Rect.fromCenter(center: Offset(islandX, islandY), width: r * 1.8, height: r * 1.3),
+        Rect.fromCenter(
+            center: Offset(islandX, islandY), width: r * 1.8, height: r * 1.3),
         landPaint,
       );
 
@@ -609,7 +618,8 @@ class FlameCosmicRocketFlightGame extends FlameGame {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.5;
       canvas.drawOval(
-        Rect.fromCenter(center: Offset(islandX, islandY), width: r * 2.5, height: r * 2.0),
+        Rect.fromCenter(
+            center: Offset(islandX, islandY), width: r * 2.5, height: r * 2.0),
         foamPaint,
       );
     }
@@ -617,7 +627,8 @@ class FlameCosmicRocketFlightGame extends FlameGame {
 
   /// 🏝️ Approaching Destination Island at Top
   /// "ഒരു ചെറുതായിട്ട് മേലെ ഇങ്ങനെ പകുതിയായിട്ട് ഒരു ചെറിയ ദ്വീപ് പോലെ കാണിക്കുക"
-  void _drawApproachingDestinationIsland(Canvas canvas, double w, double h, double cx) {
+  void _drawApproachingDestinationIsland(
+      Canvas canvas, double w, double h, double cx) {
     final destProgress = ((_flightProgress - 0.48) / 0.52).clamp(0.0, 1.0);
 
     // Island emerges from top horizon
@@ -633,7 +644,10 @@ class FlameCosmicRocketFlightGame extends FlameGame {
       ..color = const Color(0xFF38BDF8).withValues(alpha: 0.45 * destProgress)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18);
     canvas.drawOval(
-      Rect.fromCenter(center: Offset.zero, width: islandWidth * 1.25, height: islandHeight * 1.25),
+      Rect.fromCenter(
+          center: Offset.zero,
+          width: islandWidth * 1.25,
+          height: islandHeight * 1.25),
       lagoonGlow,
     );
 
@@ -643,9 +657,11 @@ class FlameCosmicRocketFlightGame extends FlameGame {
         colors: [Color(0xFFFEF08A), Color(0xFFFDE68A), Color(0xFFF59E0B)],
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-      ).createShader(Rect.fromCenter(center: Offset.zero, width: islandWidth, height: islandHeight));
+      ).createShader(Rect.fromCenter(
+          center: Offset.zero, width: islandWidth, height: islandHeight));
     canvas.drawOval(
-      Rect.fromCenter(center: Offset.zero, width: islandWidth, height: islandHeight),
+      Rect.fromCenter(
+          center: Offset.zero, width: islandWidth, height: islandHeight),
       sandPaint,
     );
 
@@ -655,16 +671,25 @@ class FlameCosmicRocketFlightGame extends FlameGame {
         colors: [Color(0xFF22C55E), Color(0xFF16A34A), Color(0xFF15803D)],
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-      ).createShader(Rect.fromCenter(center: Offset.zero, width: islandWidth * 0.82, height: islandHeight * 0.78));
+      ).createShader(Rect.fromCenter(
+          center: Offset.zero,
+          width: islandWidth * 0.82,
+          height: islandHeight * 0.78));
     canvas.drawOval(
-      Rect.fromCenter(center: Offset.zero, width: islandWidth * 0.82, height: islandHeight * 0.78),
+      Rect.fromCenter(
+          center: Offset.zero,
+          width: islandWidth * 0.82,
+          height: islandHeight * 0.78),
       greenPaint,
     );
 
     // 4. Island Landing Strip / Runway
     final runwayPaint = Paint()..color = const Color(0xFF1E293B);
-    final runwayRect = Rect.fromCenter(center: Offset.zero, width: islandWidth * 0.38, height: 20);
-    canvas.drawRRect(RRect.fromRectAndRadius(runwayRect, const Radius.circular(4)), runwayPaint);
+    final runwayRect = Rect.fromCenter(
+        center: Offset.zero, width: islandWidth * 0.38, height: 20);
+    canvas.drawRRect(
+        RRect.fromRectAndRadius(runwayRect, const Radius.circular(4)),
+        runwayPaint);
 
     // Runway Centerline & Lights
     final linePaint = Paint()
@@ -726,8 +751,10 @@ class FlameCosmicRocketFlightGame extends FlameGame {
 
     // Wing Leading Edge Accents
     final cyanTrim = Paint()..color = const Color(0xFF0284C7);
-    canvas.drawLine(const Offset(0, -10), const Offset(52, 16), cyanTrim..strokeWidth = 1.8);
-    canvas.drawLine(const Offset(0, -10), const Offset(-52, 16), cyanTrim..strokeWidth = 1.8);
+    canvas.drawLine(const Offset(0, -10), const Offset(52, 16),
+        cyanTrim..strokeWidth = 1.8);
+    canvas.drawLine(const Offset(0, -10), const Offset(-52, 16),
+        cyanTrim..strokeWidth = 1.8);
 
     // Wingtip Strobe Lights (Blinking port red, starboard green)
     final blink = (math.sin(_gameTime * 8.0) > 0.0);
@@ -802,7 +829,8 @@ class FlameCosmicRocketFlightGame extends FlameGame {
     canvas.drawPath(cockpitPath, visorPaint);
 
     // Glass glare reflection
-    canvas.drawCircle(const Offset(-1.5, -20), 1.6, Paint()..color = Colors.white.withValues(alpha: 0.9));
+    canvas.drawCircle(const Offset(-1.5, -20), 1.6,
+        Paint()..color = Colors.white.withValues(alpha: 0.9));
 
     // 7. Passenger Windows Row
     final windowPaint = Paint()..color = const Color(0xFF38BDF8);
@@ -832,8 +860,10 @@ class FlameCosmicRocketFlightGame extends FlameGame {
     final bubblePaint = Paint()..color = Colors.white.withValues(alpha: 0.7);
     for (int i = 0; i < (isBoosting ? 6 : 4); i++) {
       final yOff = 26.0 + (i * 8.0);
-      canvas.drawCircle(Offset(-8.0 - (i * 4.5), yOff), 2.2 + (i * 0.4), bubblePaint);
-      canvas.drawCircle(Offset(8.0 + (i * 4.5), yOff), 2.2 + (i * 0.4), bubblePaint);
+      canvas.drawCircle(
+          Offset(-8.0 - (i * 4.5), yOff), 2.2 + (i * 0.4), bubblePaint);
+      canvas.drawCircle(
+          Offset(8.0 + (i * 4.5), yOff), 2.2 + (i * 0.4), bubblePaint);
     }
 
     // 2. Speedboat Hull (Wedge Shape)
@@ -856,7 +886,8 @@ class FlameCosmicRocketFlightGame extends FlameGame {
     // Deck Teak Floor
     final deckPaint = Paint()..color = const Color(0xFFFED7AA);
     canvas.drawRRect(
-      RRect.fromRectAndRadius(const Rect.fromLTWH(-7, -10, 14, 26), const Radius.circular(3)),
+      RRect.fromRectAndRadius(
+          const Rect.fromLTWH(-7, -10, 14, 26), const Radius.circular(3)),
       deckPaint,
     );
 
@@ -887,7 +918,8 @@ class FlameCosmicRocketFlightGame extends FlameGame {
       final yOff = 34.0 + (i * 12.0);
       final r = 24.0 + (i * 14.0);
       canvas.drawOval(
-        Rect.fromCenter(center: Offset(0, yOff), width: r * 2.2, height: r * 0.9),
+        Rect.fromCenter(
+            center: Offset(0, yOff), width: r * 2.2, height: r * 0.9),
         wavePaint,
       );
     }
@@ -915,7 +947,8 @@ class FlameCosmicRocketFlightGame extends FlameGame {
     // 3. Superstructure Decks (Crisp White)
     final deckPaint = Paint()..color = const Color(0xFFF8FAFC);
     canvas.drawRRect(
-      RRect.fromRectAndRadius(const Rect.fromLTWH(-9, -24, 18, 50), const Radius.circular(4)),
+      RRect.fromRectAndRadius(
+          const Rect.fromLTWH(-9, -24, 18, 50), const Radius.circular(4)),
       deckPaint,
     );
 
@@ -931,15 +964,22 @@ class FlameCosmicRocketFlightGame extends FlameGame {
     final funnelPaint = Paint()..color = const Color(0xFFDC2626);
     final funnelTop = Paint()..color = const Color(0xFF0F172A);
 
-    canvas.drawRRect(RRect.fromRectAndRadius(const Rect.fromLTWH(-4, -6, 8, 8), const Radius.circular(2)), funnelPaint);
+    canvas.drawRRect(
+        RRect.fromRectAndRadius(
+            const Rect.fromLTWH(-4, -6, 8, 8), const Radius.circular(2)),
+        funnelPaint);
     canvas.drawRect(const Rect.fromLTWH(-4, -6, 8, 2.5), funnelTop);
 
-    canvas.drawRRect(RRect.fromRectAndRadius(const Rect.fromLTWH(-4, 8, 8, 8), const Radius.circular(2)), funnelPaint);
+    canvas.drawRRect(
+        RRect.fromRectAndRadius(
+            const Rect.fromLTWH(-4, 8, 8, 8), const Radius.circular(2)),
+        funnelPaint);
     canvas.drawRect(const Rect.fromLTWH(-4, 8, 8, 2.5), funnelTop);
   }
 
   /// ☁️ Drifting clouds with soft billows
-  void _drawDriftingClouds(Canvas canvas, double cx, double cy, {required bool isUpper}) {
+  void _drawDriftingClouds(Canvas canvas, double cx, double cy,
+      {required bool isUpper}) {
     canvas.save();
     canvas.translate(cx, cy);
 
@@ -947,7 +987,8 @@ class FlameCosmicRocketFlightGame extends FlameGame {
     final filterClouds = isUpper ? _clouds.sublist(9) : _clouds.sublist(0, 9);
 
     for (final cloud in filterClouds) {
-      cloudPaint.color = Colors.white.withValues(alpha: cloud.opacity * (isUpper ? 0.35 : 0.65));
+      cloudPaint.color = Colors.white
+          .withValues(alpha: cloud.opacity * (isUpper ? 0.35 : 0.65));
       final rect = Rect.fromCenter(
         center: Offset(cloud.x, cloud.y),
         width: cloud.width,
@@ -1016,10 +1057,13 @@ class FlameCosmicRocketFlightGame extends FlameGame {
         ..strokeWidth = 1.2;
       canvas.drawCircle(Offset(cx, planetCenterY), 95.0, orbitRingPaint);
 
-      _drawPlanetSphere(canvas, cx, planetCenterY, planetRadius, activeCode, alpha: 1.0);
+      _drawPlanetSphere(canvas, cx, planetCenterY, planetRadius, activeCode,
+          alpha: 1.0);
 
-      final name = PoketCosmosDistanceService.instance.getCleanPlanetName(activeCode);
-      _drawText(canvas, '$name Gravity Assist', cx, planetCenterY + planetRadius + 14,
+      final name =
+          PoketCosmosDistanceService.instance.getCleanPlanetName(activeCode);
+      _drawText(
+          canvas, '$name Gravity Assist', cx, planetCenterY + planetRadius + 14,
           color: const Color(0xFFFFD700));
     }
 
@@ -1028,7 +1072,8 @@ class FlameCosmicRocketFlightGame extends FlameGame {
       final destProgress = ((_flightProgress - 0.58) / 0.42).clamp(0.0, 1.0);
       final destRadius = 35.0 + (destProgress * 85.0);
       final destY = -30.0 + (destProgress * (h * 0.38));
-      _drawPlanetSphere(canvas, cx, destY, destRadius, manifest.destinationCode, alpha: destProgress);
+      _drawPlanetSphere(canvas, cx, destY, destRadius, manifest.destinationCode,
+          alpha: destProgress);
     }
 
     // 6. Rocket Ship (Positioned in center, tilts gracefully into orbital ascent curve)
@@ -1081,7 +1126,8 @@ class FlameCosmicRocketFlightGame extends FlameGame {
   void _drawRocketShip(Canvas canvas, {bool isBoosting = false}) {
     // 1. Engine Core Glow
     final glowPaint = Paint()
-      ..color = (isBoosting ? const Color(0xFFFF9100) : const Color(0xFF00E5FF)).withValues(alpha: 0.5)
+      ..color = (isBoosting ? const Color(0xFFFF9100) : const Color(0xFF00E5FF))
+          .withValues(alpha: 0.5)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
     canvas.drawCircle(const Offset(0, 28), isBoosting ? 18 : 10, glowPaint);
 
@@ -1134,8 +1180,9 @@ class FlameCosmicRocketFlightGame extends FlameGame {
   void _drawWarpShuttle(Canvas canvas, {bool isBoosting = false}) {
     // 1. Warp Core Glow
     final glowPaint = Paint()
-      ..color = const Color(0xFFFFD700).withValues(alpha: isBoosting ? 0.7 : 0.45)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, isBoosting ? 16 : 10);
+      ..color =
+          const Color(0xFFFFD700).withValues(alpha: isBoosting ? 0.7 : 0.45)
+      ..maskFilter = MaskFilter.blur(BlurStyle.normal, isBoosting ? 16 : 10);
     canvas.drawCircle(const Offset(0, 24), isBoosting ? 22 : 14, glowPaint);
 
     // 2. Swept Delta Wings (Golden yellow with amber edges)
@@ -1188,7 +1235,8 @@ class FlameCosmicRocketFlightGame extends FlameGame {
   void _drawIonCruiser(Canvas canvas, {bool isBoosting = false}) {
     // 1. Pulsating Ion Thruster Rings
     final ionRingPaint = Paint()
-      ..color = const Color(0xFFA855F7).withValues(alpha: isBoosting ? 0.75 : 0.45)
+      ..color =
+          const Color(0xFFA855F7).withValues(alpha: isBoosting ? 0.75 : 0.45)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.5
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
@@ -1201,7 +1249,9 @@ class FlameCosmicRocketFlightGame extends FlameGame {
     canvas.drawRect(const Rect.fromLTWH(14, 4, 14, 18), wingPaint);
 
     // Solar Panel Grid Lines
-    final gridPaint = Paint()..color = const Color(0xFF38BDF8)..strokeWidth = 1.0;
+    final gridPaint = Paint()
+      ..color = const Color(0xFF38BDF8)
+      ..strokeWidth = 1.0;
     canvas.drawLine(const Offset(-28, 13), const Offset(-14, 13), gridPaint);
     canvas.drawLine(const Offset(14, 13), const Offset(28, 13), gridPaint);
 
@@ -1232,11 +1282,14 @@ class FlameCosmicRocketFlightGame extends FlameGame {
       ..color = const Color(0xFFFFD700)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
-    canvas.drawArc(const Rect.fromLTWH(-6, -38, 12, 10), math.pi, math.pi, false, dishPaint);
+    canvas.drawArc(const Rect.fromLTWH(-6, -38, 12, 10), math.pi, math.pi,
+        false, dishPaint);
   }
 
   /// 🪐 3D Planet Sphere Renderer
-  void _drawPlanetSphere(Canvas canvas, double x, double y, double radius, String planetCode, {double alpha = 1.0}) {
+  void _drawPlanetSphere(
+      Canvas canvas, double x, double y, double radius, String planetCode,
+      {double alpha = 1.0}) {
     canvas.save();
     canvas.translate(x, y);
 
@@ -1308,7 +1361,10 @@ class FlameCosmicRocketFlightGame extends FlameGame {
       ..shader = RadialGradient(
         center: const Alignment(-0.35, -0.35),
         radius: 0.9,
-        colors: [primary.withValues(alpha: alpha), secondary.withValues(alpha: alpha)],
+        colors: [
+          primary.withValues(alpha: alpha),
+          secondary.withValues(alpha: alpha)
+        ],
       ).createShader(Rect.fromCircle(center: Offset.zero, radius: radius));
     canvas.drawCircle(Offset.zero, radius, spherePaint);
 
@@ -1329,7 +1385,8 @@ class FlameCosmicRocketFlightGame extends FlameGame {
 
   /// 🌍 Origin Planetary Atmosphere Ceiling & Ground Base
   /// "ബോട്ടം ഫില്ലഡ് ആയി കിടക്കണം... ആ ലിമിറ്റേഷൻ കഴിഞ്ഞാൽ ഈ സ്ഥലം ഇങ്ങനെ ഗ്രേഡിയന്റ് ബ്ലാക്ക് ആയാൽ മതി"
-  void _drawOriginAtmosphereAndSurface(Canvas canvas, double w, double h, double alpha) {
+  void _drawOriginAtmosphereAndSurface(
+      Canvas canvas, double w, double h, double alpha) {
     final cx = w / 2;
     final code = manifest.originCode.toUpperCase();
 
@@ -1479,16 +1536,20 @@ class FlameCosmicRocketFlightGame extends FlameGame {
       ..color = Colors.white.withValues(alpha: 0.4 * alpha)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
-    canvas.drawLine(Offset(cx + 40, houseY), Offset(cx + 40, houseY - 45), gantryPaint);
-    canvas.drawLine(Offset(cx + 34, houseY - 30), Offset(cx + 40, houseY - 20), gantryPaint);
+    canvas.drawLine(
+        Offset(cx + 40, houseY), Offset(cx + 40, houseY - 45), gantryPaint);
+    canvas.drawLine(Offset(cx + 34, houseY - 30), Offset(cx + 40, houseY - 20),
+        gantryPaint);
 
     // Launchpad Lights
-    final lightPaint = Paint()..color = const Color(0xFFFFD700).withValues(alpha: 0.85 * alpha);
+    final lightPaint = Paint()
+      ..color = const Color(0xFFFFD700).withValues(alpha: 0.85 * alpha);
     canvas.drawCircle(Offset(cx - 30, houseY + 6), 3, lightPaint);
     canvas.drawCircle(Offset(cx + 30, houseY + 6), 3, lightPaint);
 
     // Citizen House Base
-    final housePaint = Paint()..color = const Color(0xFF1E293B).withValues(alpha: 0.95 * alpha);
+    final housePaint = Paint()
+      ..color = const Color(0xFF1E293B).withValues(alpha: 0.95 * alpha);
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         Rect.fromCenter(center: Offset(houseX, houseY), width: 34, height: 22),
@@ -1497,7 +1558,8 @@ class FlameCosmicRocketFlightGame extends FlameGame {
       housePaint,
     );
     // House Roof
-    final roofPaint = Paint()..color = const Color(0xFFE2E8F0).withValues(alpha: 0.95 * alpha);
+    final roofPaint = Paint()
+      ..color = const Color(0xFFE2E8F0).withValues(alpha: 0.95 * alpha);
     final roofPath = Path()
       ..moveTo(houseX - 20, houseY - 11)
       ..lineTo(houseX, houseY - 24)
@@ -1515,7 +1577,8 @@ class FlameCosmicRocketFlightGame extends FlameGame {
     );
   }
 
-  void _drawText(Canvas canvas, String text, double x, double y, {Color color = Colors.white}) {
+  void _drawText(Canvas canvas, String text, double x, double y,
+      {Color color = Colors.white}) {
     final textPainter = TextPainter(
       text: TextSpan(
         text: text,

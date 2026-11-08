@@ -24,11 +24,11 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_navigator_page.dart';
 import 'package:pocket_mates_app/custom_code/services/poket_cosmos_distance_service.dart';
 import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmic_flight_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_resident_island_view.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/planet_sphere_icon_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_transit_models.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_transit_planner_sheet.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:flutter/services.dart';
 
 class SearchPage extends StatefulWidget {
@@ -59,14 +59,17 @@ class _SearchPageState extends State<SearchPage> {
   int _displayedPlotsLimit = 40;
   final ScrollController _plotsScrollController = ScrollController();
   String _plotStatusFilter = 'all'; // 'all', 'booked', 'available'
-  String _plotPlanetFilter = 'all'; // 'all', 'EP', 'MAR', 'JUP', 'SAT', 'LUN', 'EUR', 'VEN', 'TTN', 'PLT', 'NEP'
+  String _plotPlanetFilter =
+      'all'; // 'all', 'EP', 'MAR', 'JUP', 'SAT', 'LUN', 'EUR', 'VEN', 'TTN', 'PLT', 'NEP'
 
   @override
   void initState() {
     super.initState();
     _selectedTab = 'people';
     _plotsScrollController.addListener(_onPlotsScroll);
-    PoketCosmosAllocationService.instance.ensureUserHasAllocatedPlot().then((_) {
+    PoketCosmosAllocationService.instance
+        .ensureUserHasAllocatedPlot()
+        .then((_) {
       if (mounted) setState(() {});
     });
     PoketCosmosAllocationService.instance.loadAllRegisteredProfiles().then((_) {
@@ -184,7 +187,9 @@ class _SearchPageState extends State<SearchPage> {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFFFFFC00) : Colors.transparent,
+                    color: isSelected
+                        ? const Color(0xFFFFFC00)
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(9),
                   ),
                   alignment: Alignment.center,
@@ -229,7 +234,8 @@ class _SearchPageState extends State<SearchPage> {
       if (query.isEmpty) return true;
       final q = query.toLowerCase();
       final hasSatMatch = p.satellites.any((s) =>
-          s.name.toLowerCase().contains(q) || s.tagLine.toLowerCase().contains(q));
+          s.name.toLowerCase().contains(q) ||
+          s.tagLine.toLowerCase().contains(q));
       return p.name.toLowerCase().contains(q) ||
           p.tagLine.toLowerCase().contains(q) ||
           hasSatMatch;
@@ -244,7 +250,8 @@ class _SearchPageState extends State<SearchPage> {
             HapticFeedback.mediumImpact();
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const PoketCosmosNavigatorPage()),
+              MaterialPageRoute(
+                  builder: (_) => const PoketCosmosNavigatorPage()),
             );
           },
           child: Container(
@@ -256,7 +263,9 @@ class _SearchPageState extends State<SearchPage> {
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.35), width: 1.0),
+              border: Border.all(
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
+                  width: 1.0),
               boxShadow: [
                 BoxShadow(
                   color: const Color(0xFF38BDF8).withValues(alpha: 0.12),
@@ -272,7 +281,8 @@ class _SearchPageState extends State<SearchPage> {
                     color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.public_rounded, color: Color(0xFF38BDF8), size: 22),
+                  child: const Icon(Icons.public_rounded,
+                      color: Color(0xFF38BDF8), size: 22),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -301,7 +311,8 @@ class _SearchPageState extends State<SearchPage> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFFC00),
                     borderRadius: BorderRadius.circular(12),
@@ -318,7 +329,8 @@ class _SearchPageState extends State<SearchPage> {
                         ),
                       ),
                       const SizedBox(width: 3),
-                      const Icon(Icons.arrow_forward_rounded, color: Colors.black, size: 12),
+                      const Icon(Icons.arrow_forward_rounded,
+                          color: Colors.black, size: 12),
                     ],
                   ),
                 ),
@@ -358,7 +370,8 @@ class _SearchPageState extends State<SearchPage> {
         // 🪐 Celestial Directory List with 3D Spheres & Natural Moons
         ...filteredPlanets.map((p) {
           final isApex = p.id == 3;
-          final code = PoketCosmosDistanceService.instance.resolvePlanetCode(p.name);
+          final code =
+              PoketCosmosDistanceService.instance.resolvePlanetCode(p.name);
           final manifest = PoketCosmosDistanceService.instance
               .calculateFlightManifest(originCode: 'EP', destinationCode: code);
 
@@ -395,7 +408,8 @@ class _SearchPageState extends State<SearchPage> {
                       );
                     },
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
                       child: Row(
                         children: [
                           PlanetSphereIconWidget(
@@ -422,10 +436,12 @@ class _SearchPageState extends State<SearchPage> {
                                     if (isApex) ...[
                                       const SizedBox(width: 6),
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 2),
                                         decoration: BoxDecoration(
                                           color: const Color(0xFFFFD700),
-                                          borderRadius: BorderRadius.circular(4),
+                                          borderRadius:
+                                              BorderRadius.circular(4),
                                         ),
                                         child: const Text(
                                           'APEX',
@@ -439,10 +455,12 @@ class _SearchPageState extends State<SearchPage> {
                                     ] else if (p.isExoplanet) ...[
                                       const SizedBox(width: 6),
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 2),
                                         decoration: BoxDecoration(
                                           color: const Color(0xFF10B981),
-                                          borderRadius: BorderRadius.circular(4),
+                                          borderRadius:
+                                              BorderRadius.circular(4),
                                         ),
                                         child: const Text(
                                           'EARTH 2.0',
@@ -456,10 +474,12 @@ class _SearchPageState extends State<SearchPage> {
                                     ] else if (p.isDwarfPlanet) ...[
                                       const SizedBox(width: 6),
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 2),
                                         decoration: BoxDecoration(
                                           color: const Color(0xFF94A3B8),
-                                          borderRadius: BorderRadius.circular(4),
+                                          borderRadius:
+                                              BorderRadius.circular(4),
                                         ),
                                         child: const Text(
                                           'DWARF',
@@ -476,7 +496,8 @@ class _SearchPageState extends State<SearchPage> {
                                 const SizedBox(height: 2),
                                 Text(
                                   p.tagLine,
-                                  style: const TextStyle(color: Colors.white60, fontSize: 11),
+                                  style: const TextStyle(
+                                      color: Colors.white60, fontSize: 11),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -484,11 +505,15 @@ class _SearchPageState extends State<SearchPage> {
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF0284C7).withValues(alpha: 0.2),
+                              color: const Color(0xFF0284C7)
+                                  .withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3)),
+                              border: Border.all(
+                                  color: const Color(0xFF38BDF8)
+                                      .withValues(alpha: 0.3)),
                             ),
                             child: Text(
                               manifest.formattedDistance,
@@ -500,7 +525,8 @@ class _SearchPageState extends State<SearchPage> {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white30, size: 14),
+                          const Icon(Icons.arrow_forward_ios_rounded,
+                              color: Colors.white30, size: 14),
                         ],
                       ),
                     ),
@@ -511,7 +537,8 @@ class _SearchPageState extends State<SearchPage> {
               // Dedicated Moon / Natural Satellite Sub-Tiles
               if (p.satellites.isNotEmpty)
                 ...p.satellites.map((sat) {
-                  final satCode = PoketCosmosDistanceService.instance.resolvePlanetCode(sat.name);
+                  final satCode = PoketCosmosDistanceService.instance
+                      .resolvePlanetCode(sat.name);
                   return Container(
                     margin: const EdgeInsets.only(left: 24, bottom: 8),
                     decoration: BoxDecoration(
@@ -539,7 +566,8 @@ class _SearchPageState extends State<SearchPage> {
                           );
                         },
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 9),
                           child: Row(
                             children: [
                               PlanetSphereIconWidget(
@@ -566,12 +594,16 @@ class _SearchPageState extends State<SearchPage> {
                                         ),
                                         const SizedBox(width: 6),
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 5, vertical: 1.5),
                                           decoration: BoxDecoration(
-                                            color: sat.primaryColor.withValues(alpha: 0.22),
-                                            borderRadius: BorderRadius.circular(4),
+                                            color: sat.primaryColor
+                                                .withValues(alpha: 0.22),
+                                            borderRadius:
+                                                BorderRadius.circular(4),
                                             border: Border.all(
-                                              color: sat.primaryColor.withValues(alpha: 0.5),
+                                              color: sat.primaryColor
+                                                  .withValues(alpha: 0.5),
                                               width: 0.6,
                                             ),
                                           ),
@@ -589,14 +621,17 @@ class _SearchPageState extends State<SearchPage> {
                                     const SizedBox(height: 2),
                                     Text(
                                       sat.tagLine,
-                                      style: const TextStyle(color: Colors.white54, fontSize: 10.5),
+                                      style: const TextStyle(
+                                          color: Colors.white54,
+                                          fontSize: 10.5),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
                                 ),
                               ),
-                              const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white24, size: 12),
+                              const Icon(Icons.arrow_forward_ios_rounded,
+                                  color: Colors.white24, size: 12),
                             ],
                           ),
                         ),
@@ -688,7 +723,8 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
-  Widget _buildPlotStatusFilterChip(String filterKey, String label, {Color activeColor = const Color(0xFFFFD700)}) {
+  Widget _buildPlotStatusFilterChip(String filterKey, String label,
+      {Color activeColor = const Color(0xFFFFD700)}) {
     final bool isSelected = _plotStatusFilter == filterKey;
     return GestureDetector(
       onTap: () {
@@ -702,7 +738,9 @@ class _SearchPageState extends State<SearchPage> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-          color: isSelected ? activeColor.withValues(alpha: 0.18) : const Color(0xFF1E293B).withValues(alpha: 0.6),
+          color: isSelected
+              ? activeColor.withValues(alpha: 0.18)
+              : const Color(0xFF1E293B).withValues(alpha: 0.6),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: isSelected ? activeColor : Colors.white12,
@@ -735,7 +773,9 @@ class _SearchPageState extends State<SearchPage> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF38BDF8).withValues(alpha: 0.20) : const Color(0xFF0F172A).withValues(alpha: 0.7),
+          color: isSelected
+              ? const Color(0xFF38BDF8).withValues(alpha: 0.20)
+              : const Color(0xFF0F172A).withValues(alpha: 0.7),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isSelected ? const Color(0xFF38BDF8) : Colors.white12,
@@ -745,7 +785,8 @@ class _SearchPageState extends State<SearchPage> {
         child: Text(
           label,
           style: GoogleFonts.outfit(
-            color: isSelected ? const Color(0xFF38BDF8) : const Color(0xFF94A3B8),
+            color:
+                isSelected ? const Color(0xFF38BDF8) : const Color(0xFF94A3B8),
             fontSize: 10.5,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
           ),
@@ -758,14 +799,16 @@ class _SearchPageState extends State<SearchPage> {
   Widget _buildPlotsTab() {
     final query = _currentSearchQuery.trim().toLowerCase();
     // Wave catalog supports infinite loops (Wave 1: 1..250, Wave 2: 251..500, etc.)
-    final allPlots = PoketCosmosAllocationService.getWavePlotsCatalog(maxWaves: 2);
+    final allPlots =
+        PoketCosmosAllocationService.getWavePlotsCatalog(maxWaves: 2);
 
     // Dashboard metrics
     final int totalPlotsCount = allPlots.length;
     int bookedCount = 0;
     for (final p in allPlots) {
       final owner = (p['ownerName']?.toString() ?? 'Available').trim();
-      final bool isOcc = p['isOccupied'] == true || (owner.isNotEmpty && owner.toLowerCase() != 'available');
+      final bool isOcc = p['isOccupied'] == true ||
+          (owner.isNotEmpty && owner.toLowerCase() != 'available');
       if (isOcc) bookedCount++;
     }
     final int availableCount = totalPlotsCount - bookedCount;
@@ -802,9 +845,11 @@ class _SearchPageState extends State<SearchPage> {
     }).toList();
 
     // 🌟 User Requirement: Reverse order! Highest plot at top, Plot #1 at the very bottom!
-    filteredPlots.sort((a, b) => (b['globalPlotNumber'] as int).compareTo(a['globalPlotNumber'] as int));
+    filteredPlots.sort((a, b) =>
+        (b['globalPlotNumber'] as int).compareTo(a['globalPlotNumber'] as int));
 
-    final int countToDisplay = math.min(filteredPlots.length, _displayedPlotsLimit);
+    final int countToDisplay =
+        math.min(filteredPlots.length, _displayedPlotsLimit);
 
     return Column(
       children: [
@@ -823,7 +868,8 @@ class _SearchPageState extends State<SearchPage> {
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.12), width: 0.8),
+              border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.12), width: 0.8),
             ),
             child: Row(
               children: [
@@ -834,7 +880,8 @@ class _SearchPageState extends State<SearchPage> {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.grid_view_rounded, size: 12, color: Color(0xFFFFD700)),
+                          const Icon(Icons.grid_view_rounded,
+                              size: 12, color: Color(0xFFFFD700)),
                           const SizedBox(width: 4),
                           Text(
                             'TOTAL',
@@ -869,7 +916,8 @@ class _SearchPageState extends State<SearchPage> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.check_circle_rounded, size: 12, color: Color(0xFF10B981)),
+                            const Icon(Icons.check_circle_rounded,
+                                size: 12, color: Color(0xFF10B981)),
                             const SizedBox(width: 4),
                             Text(
                               'CLAIMED',
@@ -905,7 +953,8 @@ class _SearchPageState extends State<SearchPage> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.add_location_alt_rounded, size: 12, color: Color(0xFF38BDF8)),
+                            const Icon(Icons.add_location_alt_rounded,
+                                size: 12, color: Color(0xFF38BDF8)),
                             const SizedBox(width: 4),
                             Text(
                               'AVAILABLE',
@@ -943,9 +992,11 @@ class _SearchPageState extends State<SearchPage> {
             children: [
               _buildPlotStatusFilterChip('all', 'All ($totalPlotsCount)'),
               const SizedBox(width: 6),
-              _buildPlotStatusFilterChip('booked', 'Claimed ($bookedCount)', activeColor: const Color(0xFF10B981)),
+              _buildPlotStatusFilterChip('booked', 'Claimed ($bookedCount)',
+                  activeColor: const Color(0xFF10B981)),
               const SizedBox(width: 6),
-              _buildPlotStatusFilterChip('available', 'Free ($availableCount)', activeColor: const Color(0xFF0284C7)),
+              _buildPlotStatusFilterChip('available', 'Free ($availableCount)',
+                  activeColor: const Color(0xFF0284C7)),
             ],
           ),
         ),
@@ -991,205 +1042,224 @@ class _SearchPageState extends State<SearchPage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.filter_list_off_rounded, color: Colors.white38, size: 40),
+                      const Icon(Icons.filter_list_off_rounded,
+                          color: Colors.white38, size: 40),
                       const SizedBox(height: 8),
                       Text(
                         'No plots match the selected filter',
-                        style: GoogleFonts.outfit(color: Colors.white60, fontSize: 13),
+                        style: GoogleFonts.outfit(
+                            color: Colors.white60, fontSize: 13),
                       ),
                     ],
                   ),
                 )
               : GridView.builder(
-        controller: _plotsScrollController,
-        padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
-        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-          maxCrossAxisExtent: 105,
-          childAspectRatio: 0.78,
-          crossAxisSpacing: 8,
-          mainAxisSpacing: 8,
+                  controller: _plotsScrollController,
+                  padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 105,
+                    childAspectRatio: 0.78,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                  ),
+                  itemCount: countToDisplay,
+                  itemBuilder: (context, idx) {
+                    final plot = filteredPlots[idx];
+                    final int gNum = plot['globalPlotNumber'] as int;
+                    final int lNum = plot['localPlotNumber'] as int;
+                    final int wave = plot['wave'] as int? ?? 1;
+                    final String code = plot['planetCode'] as String;
+                    final String ownerName =
+                        (plot['ownerName']?.toString() ?? 'Available').trim();
+                    final bool isOccupied = plot['isOccupied'] == true ||
+                        (ownerName.isNotEmpty &&
+                            ownerName.toLowerCase() != 'available');
+
+                    final colors = _getPlanetPlotColors(code);
+                    final primaryColor = colors['primary']!;
+                    final accentColor = colors['accent']!;
+                    final surfaceColor = colors['surface']!;
+                    final borderColor = colors['border']!;
+
+                    const isCrown = false;
+                    final isBeachfront = (lNum <= 6);
+
+                    return GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        // Direct navigation to that exact island, colony, and plot (no rocket flight on plots)
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PoketCosmosResidentIslandView(
+                              targetPlanetCode: code,
+                              targetPlotNumber: lNum,
+                              targetWave: wave,
+                            ),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 6),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              surfaceColor.withValues(alpha: 0.95),
+                              const Color(0xFF0F172A).withValues(alpha: 0.90),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isOccupied
+                                ? borderColor.withValues(alpha: 0.85)
+                                : primaryColor.withValues(alpha: 0.45),
+                            width: 0.9,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: primaryColor.withValues(alpha: 0.18),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // Top: Planet Emoji + Global Plot #
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  PoketCosmosDistanceService.instance
+                                      .getPlanetEmoji(code),
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                                Text(
+                                  '#$gNum',
+                                  style: GoogleFonts.orbitron(
+                                    color: accentColor,
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            // Plot Tier Subtitle
+                            Text(
+                              isBeachfront ? '🏖️ Beach' : '🏡 Plot $lNum',
+                              style: GoogleFonts.inter(
+                                color: isBeachfront
+                                    ? const Color(0xFF38BDF8)
+                                    : Colors.white70,
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            // Owner Badge: Green Checkmark if Occupied, FREE tag if Available
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                if (isOccupied) ...[
+                                  Container(
+                                    padding: const EdgeInsets.all(2),
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFF10B981),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.check,
+                                        size: 8, color: Colors.black),
+                                  ),
+                                  const SizedBox(width: 3.5),
+                                  Flexible(
+                                    child: Text(
+                                      ownerName,
+                                      style: GoogleFonts.inter(
+                                        color: const Color(0xFF10B981),
+                                        fontSize: 8.5,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ] else ...[
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 5, vertical: 1.5),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.08),
+                                      borderRadius: BorderRadius.circular(4),
+                                      border: Border.all(
+                                          color: accentColor.withValues(
+                                              alpha: 0.35),
+                                          width: 0.6),
+                                    ),
+                                    child: Text(
+                                      'FREE',
+                                      style: GoogleFonts.orbitron(
+                                        color: accentColor,
+                                        fontSize: 7.5,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 0.6,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                            // Bottom: Planet Code Badge
+                            Container(
+                              width: double.infinity,
+                              alignment: Alignment.center,
+                              padding: const EdgeInsets.symmetric(vertical: 2),
+                              decoration: BoxDecoration(
+                                color: primaryColor.withValues(alpha: 0.16),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                    color: primaryColor.withValues(alpha: 0.32),
+                                    width: 0.5),
+                              ),
+                              child: Text(
+                                (wave > 1) ? '$code • W$wave' : code,
+                                style: GoogleFonts.outfit(
+                                  color: accentColor,
+                                  fontSize: 8.5,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
         ),
-        itemCount: countToDisplay,
-        itemBuilder: (context, idx) {
-          final plot = filteredPlots[idx];
-          final int gNum = plot['globalPlotNumber'] as int;
-          final int lNum = plot['localPlotNumber'] as int;
-          final int wave = plot['wave'] as int? ?? 1;
-          final String code = plot['planetCode'] as String;
-          final String ownerName = (plot['ownerName']?.toString() ?? 'Available').trim();
-          final bool isOccupied = plot['isOccupied'] == true ||
-              (ownerName.isNotEmpty && ownerName.toLowerCase() != 'available');
-
-          final colors = _getPlanetPlotColors(code);
-          final primaryColor = colors['primary']!;
-          final accentColor = colors['accent']!;
-          final surfaceColor = colors['surface']!;
-          final borderColor = colors['border']!;
-
-          const isCrown = false;
-          final isBeachfront = (lNum <= 6);
-
-          return GestureDetector(
-            onTap: () {
-              HapticFeedback.lightImpact();
-              // Direct navigation to that exact island, colony, and plot (no rocket flight on plots)
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => PoketCosmosResidentIslandView(
-                    targetPlanetCode: code,
-                    targetPlotNumber: lNum,
-                    targetWave: wave,
-                  ),
-                ),
-              );
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    surfaceColor.withValues(alpha: 0.95),
-                    const Color(0xFF0F172A).withValues(alpha: 0.90),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: isOccupied
-                      ? borderColor.withValues(alpha: 0.85)
-                      : primaryColor.withValues(alpha: 0.45),
-                  width: 0.9,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: primaryColor.withValues(alpha: 0.18),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Top: Planet Emoji + Global Plot #
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        PoketCosmosDistanceService.instance.getPlanetEmoji(code),
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      Text(
-                        '#$gNum',
-                        style: GoogleFonts.orbitron(
-                          color: accentColor,
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  // Plot Tier Subtitle
-                  Text(
-                    isBeachfront ? '🏖️ Beach' : '🏡 Plot $lNum',
-                    style: GoogleFonts.inter(
-                      color: isBeachfront ? const Color(0xFF38BDF8) : Colors.white70,
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  // Owner Badge: Green Checkmark if Occupied, FREE tag if Available
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (isOccupied) ...[
-                        Container(
-                          padding: const EdgeInsets.all(2),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF10B981),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.check, size: 8, color: Colors.black),
-                        ),
-                        const SizedBox(width: 3.5),
-                        Flexible(
-                          child: Text(
-                            ownerName,
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFF10B981),
-                              fontSize: 8.5,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ] else ...[
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(color: accentColor.withValues(alpha: 0.35), width: 0.6),
-                          ),
-                          child: Text(
-                            'FREE',
-                            style: GoogleFonts.orbitron(
-                              color: accentColor,
-                              fontSize: 7.5,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.6,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                  // Bottom: Planet Code Badge
-                  Container(
-                    width: double.infinity,
-                    alignment: Alignment.center,
-                    padding: const EdgeInsets.symmetric(vertical: 2),
-                    decoration: BoxDecoration(
-                      color: primaryColor.withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: primaryColor.withValues(alpha: 0.32), width: 0.5),
-                    ),
-                    child: Text(
-                      (wave > 1) ? '$code • W$wave' : code,
-                      style: GoogleFonts.outfit(
-                        color: accentColor,
-                        fontSize: 8.5,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    ),
-    ],
-  );
-}
+      ],
+    );
+  }
 
   /// 🏝️ Dedicated Islands Tab: Container Tile List of Celestial Living Islands
   Widget _buildIslandsTab() {
     final query = _currentSearchQuery.trim().toLowerCase();
-    final allIslands = PoketCosmosAllocationService.getAllIslandsCatalog(maxWaves: 2);
+    final allIslands =
+        PoketCosmosAllocationService.getAllIslandsCatalog(maxWaves: 2);
 
     final filteredIslands = allIslands.where((isl) {
       if (query.isEmpty) return true;
       final name = isl['islandName']?.toString().toLowerCase() ?? '';
       final planet = isl['planetName']?.toString().toLowerCase() ?? '';
       final code = isl['planetCode']?.toString().toLowerCase() ?? '';
-      return name.contains(query) || planet.contains(query) || code.contains(query);
+      return name.contains(query) ||
+          planet.contains(query) ||
+          code.contains(query);
     }).toList();
 
     return ListView.builder(
@@ -1209,7 +1279,8 @@ class _SearchPageState extends State<SearchPage> {
           decoration: BoxDecoration(
             color: const Color(0xFF0F172A).withValues(alpha: 0.85),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: colony.landColor.withValues(alpha: 0.35), width: 1.0),
+            border: Border.all(
+                color: colony.landColor.withValues(alpha: 0.35), width: 1.0),
           ),
           child: Row(
             children: [
@@ -1226,7 +1297,8 @@ class _SearchPageState extends State<SearchPage> {
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  PoketCosmosDistanceService.instance.getPlanetEmoji(colony.code),
+                  PoketCosmosDistanceService.instance
+                      .getPlanetEmoji(colony.code),
                   style: const TextStyle(fontSize: 22),
                 ),
               ),
@@ -1279,7 +1351,8 @@ class _SearchPageState extends State<SearchPage> {
                   );
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFFC00),
                     borderRadius: BorderRadius.circular(10),
@@ -1302,7 +1375,8 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  void _showPlotDetailSheet(BuildContext context, int globalNum, int localNum, String code, String planetName) {
+  void _showPlotDetailSheet(BuildContext context, int globalNum, int localNum,
+      String code, String planetName) {
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF0F172A),
@@ -1335,7 +1409,8 @@ class _SearchPageState extends State<SearchPage> {
                       ),
                       Text(
                         '$planetName • Local Plot #$localNum',
-                        style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                        style: GoogleFonts.inter(
+                            color: Colors.white70, fontSize: 12),
                       ),
                     ],
                   ),
@@ -1344,7 +1419,8 @@ class _SearchPageState extends State<SearchPage> {
               const SizedBox(height: 16),
               Text(
                 'This exclusive deed parcel is allocated within Wave 1 on $planetName. You can launch an interplanetary rocket journey to inspect this sector or explore neighboring citadel defenses.',
-                style: GoogleFonts.inter(color: const Color(0xFFCBD5E1), fontSize: 13, height: 1.4),
+                style: GoogleFonts.inter(
+                    color: const Color(0xFFCBD5E1), fontSize: 13, height: 1.4),
               ),
               const SizedBox(height: 20),
               Row(
@@ -1353,9 +1429,14 @@ class _SearchPageState extends State<SearchPage> {
                     child: OutlinedButton(
                       onPressed: () {
                         Navigator.pop(ctx);
-                        final myOriginCode = PoketCosmosAllocationService.instance.getCurrentViewerPlanetCode();
-                        final myPlot = PoketCosmosAllocationService.instance.currentBirthPlot?.plotNumber ?? 1;
-                        final flightManifest = PoketCosmosDistanceService.instance
+                        final myOriginCode = PoketCosmosAllocationService
+                            .instance
+                            .getCurrentViewerPlanetCode();
+                        final myPlot = PoketCosmosAllocationService
+                                .instance.currentBirthPlot?.plotNumber ??
+                            1;
+                        final flightManifest = PoketCosmosDistanceService
+                            .instance
                             .calculateFlightManifest(
                           originCode: myOriginCode,
                           destinationCode: code,
@@ -1363,45 +1444,25 @@ class _SearchPageState extends State<SearchPage> {
                           destinationPlot: localNum,
                         );
 
-                        final myColony = PoketCosmosAllocationService.instance.getColonyByCode(myOriginCode);
-                        final targetColony = PoketCosmosAllocationService.instance.getColonyByCode(code);
-                        final myIslandName = PoketCosmosAllocationService.instance.currentBirthPlot?.postOffice ?? myColony.islandName;
-
-                        final CosmosTravelTier tier;
-                        if (myOriginCode != code) {
-                          tier = CosmosTravelTier.interplanetary;
-                        } else if ((myPlot - localNum).abs() > 15 || myIslandName != targetColony.islandName) {
-                          tier = CosmosTravelTier.islandToIsland;
-                        } else {
-                          tier = CosmosTravelTier.plotToPlot;
-                        }
-
-                        final transitRoute = CosmosTransitRoute(
-                          tier: tier,
-                          originPlanetCode: myOriginCode,
-                          originPlanetName: myColony.planetName,
-                          originIslandName: myIslandName,
-                          originPlotNumber: myPlot,
-                          destPlanetCode: code,
-                          destPlanetName: planetName,
-                          destIslandName: targetColony.islandName,
-                          destPlotNumber: localNum,
-                          distanceKm: flightManifest.distanceKm,
-                          formattedDistance: flightManifest.formattedDistance,
-                          targetUserId: '',
+                        Navigator.pop(ctx);
+                        PocketCitadelAttackPage.openForUser(
+                          context,
+                          userId: '',
                           targetName: '$planetName Plot #$localNum',
                         );
-
-                        PoketCosmosTransitPlannerSheet.show(context, transitRoute);
                       },
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Color(0xFF38BDF8)),
                         padding: const EdgeInsets.symmetric(vertical: 13),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                       ),
                       child: Text(
                         'FLY TO PLOT 🚀',
-                        style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontSize: 12.5, fontWeight: FontWeight.bold),
+                        style: GoogleFonts.outfit(
+                            color: const Color(0xFF38BDF8),
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
@@ -1423,11 +1484,15 @@ class _SearchPageState extends State<SearchPage> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFFFFC00),
                         padding: const EdgeInsets.symmetric(vertical: 13),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                       ),
                       child: Text(
                         'ISLAND MAP 🏝️',
-                        style: GoogleFonts.outfit(color: Colors.black, fontSize: 12.5, fontWeight: FontWeight.bold),
+                        style: GoogleFonts.outfit(
+                            color: Colors.black,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
@@ -1530,9 +1595,11 @@ class _SearchPageState extends State<SearchPage> {
           decoration: const BoxDecoration(
             color: Color(0xFF0B132B),
             borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-            border: Border(top: BorderSide(color: Color(0xFF00E5FF), width: 1.5)),
+            border:
+                Border(top: BorderSide(color: Color(0xFF00E5FF), width: 1.5)),
           ),
-          padding: EdgeInsets.fromLTRB(20, 16, 20, MediaQuery.of(ctx).padding.bottom + 20),
+          padding: EdgeInsets.fromLTRB(
+              20, 16, 20, MediaQuery.of(ctx).padding.bottom + 20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1541,7 +1608,9 @@ class _SearchPageState extends State<SearchPage> {
                 child: Container(
                   width: 44,
                   height: 4,
-                  decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(10)),
+                  decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(10)),
                 ),
               ),
               const SizedBox(height: 14),
@@ -1552,9 +1621,11 @@ class _SearchPageState extends State<SearchPage> {
                     decoration: BoxDecoration(
                       color: const Color(0xFF0F172A),
                       shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFF00E5FF), width: 1.2),
+                      border: Border.all(
+                          color: const Color(0xFF00E5FF), width: 1.2),
                     ),
-                    child: const Icon(Icons.explore_rounded, color: Color(0xFF00E5FF), size: 20),
+                    child: const Icon(Icons.explore_rounded,
+                        color: Color(0xFF00E5FF), size: 20),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -1572,13 +1643,15 @@ class _SearchPageState extends State<SearchPage> {
                         ),
                         Text(
                           'Google Maps 3-Tier Transit Testing Suite',
-                          style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                          style: GoogleFonts.inter(
+                              color: Colors.white70, fontSize: 11),
                         ),
                       ],
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded, color: Colors.white54, size: 20),
+                    icon: const Icon(Icons.close_rounded,
+                        color: Colors.white54, size: 20),
                     onPressed: () => Navigator.pop(ctx),
                   ),
                 ],
@@ -1590,7 +1663,8 @@ class _SearchPageState extends State<SearchPage> {
                 tier: CosmosTravelTier.interplanetary,
                 iconEmoji: '🪐',
                 title: 'Tier 1: Planet to Planet (Interplanetary)',
-                routeText: 'Earth Prime (Plot #01) ➔ Mars Ares Haven (Plot #14)',
+                routeText:
+                    'Earth Prime (Plot #01) ➔ Mars Ares Haven (Plot #14)',
                 distanceText: '78.3M km',
                 vehiclesText: '🚀 Starship • ⚡ Warp Shuttle • 🛰️ Ion Cruiser',
                 accentColor: const Color(0xFF38BDF8),
@@ -1621,7 +1695,8 @@ class _SearchPageState extends State<SearchPage> {
                 tier: CosmosTravelTier.islandToIsland,
                 iconEmoji: '🏝️',
                 title: 'Tier 2: Island to Island (Intra-Planetary)',
-                routeText: 'Mars Atoll (Plot #05) ➔ Mars Dunes Island (Plot #22)',
+                routeText:
+                    'Mars Atoll (Plot #05) ➔ Mars Dunes Island (Plot #22)',
                 distanceText: '12,400 km',
                 vehiclesText: '✈️ Aeroplane • 🚤 Speedboat • 🚢 Cruise Ship',
                 accentColor: const Color(0xFF34D399),
@@ -1654,7 +1729,8 @@ class _SearchPageState extends State<SearchPage> {
                 title: 'Tier 3: Plot to Plot (Same Island Streets)',
                 routeText: 'Ocean Whisper Atoll Plot #02 ➔ Plot #19',
                 distanceText: '2.8 km',
-                vehiclesText: '🏍️ Cyber Motorbike • 🚗 Buggy Rover • 🚲 Bicycle',
+                vehiclesText:
+                    '🏍️ Cyber Motorbike • 🚗 Buggy Rover • 🚲 Bicycle',
                 accentColor: const Color(0xFFFFD700),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -1701,7 +1777,8 @@ class _SearchPageState extends State<SearchPage> {
         decoration: BoxDecoration(
           color: const Color(0xFF0F172A),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: accentColor.withValues(alpha: 0.4), width: 1.2),
+          border:
+              Border.all(color: accentColor.withValues(alpha: 0.4), width: 1.2),
           boxShadow: [
             BoxShadow(
               color: accentColor.withValues(alpha: 0.15),
@@ -1752,14 +1829,16 @@ class _SearchPageState extends State<SearchPage> {
                   const SizedBox(height: 3),
                   Text(
                     routeText,
-                    style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                    style:
+                        GoogleFonts.inter(color: Colors.white70, fontSize: 11),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 2),
                   Text(
                     vehiclesText,
-                    style: GoogleFonts.inter(color: Colors.white38, fontSize: 9.5),
+                    style:
+                        GoogleFonts.inter(color: Colors.white38, fontSize: 9.5),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -1782,32 +1861,6 @@ class _SearchPageState extends State<SearchPage> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          // 🧭 Button -2: Cosmos Route Lab (Google Maps 3-Tier Transit Testing)
-          FloatingActionButton.extended(
-            heroTag: 'fab_search_cosmos_route_lab',
-            backgroundColor: const Color(0xFF0F172A),
-            foregroundColor: const Color(0xFF00E5FF),
-            elevation: 8,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: const BorderSide(color: Color(0xFF00E5FF), width: 1.8),
-            ),
-            icon: const Text('🧭', style: TextStyle(fontSize: 18)),
-            label: const Text(
-              'COSMOS ROUTE LAB 🧭',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                letterSpacing: 0.5,
-              ),
-            ),
-            onPressed: () {
-              HapticFeedback.mediumImpact();
-              _showCosmosRouteLabModal();
-            },
-          ),
-          const SizedBox(height: 10),
-
           // 🏡 Button -1: All Homes Inspector (10-Planet "This is Your Home" Atmospheric Test Modal)
           FloatingActionButton.extended(
             heroTag: 'fab_search_cosmos_all_homes_inspector',
@@ -2625,8 +2678,11 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
             : LearningMilestoneStage.getStageForDay(userDay);
 
         // 🌌 Resolve Scientific Interplanetary Flight Manifest & Exact Plot Address
-        final myPlanetCode = PoketCosmosAllocationService.instance.getCurrentViewerPlanetCode();
-        final myPlotNumber = PoketCosmosAllocationService.instance.currentBirthPlot?.plotNumber ?? 1;
+        final myPlanetCode =
+            PoketCosmosAllocationService.instance.getCurrentViewerPlanetCode();
+        final myPlotNumber = PoketCosmosAllocationService
+                .instance.currentBirthPlot?.plotNumber ??
+            1;
         String targetPlanetCode = 'EP';
         String targetPlanetName = 'Earth';
         int targetPlotNumber = 1;
@@ -2641,39 +2697,54 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
             profile['user_id'] ?? 'robot_1',
             level: robotLvl,
           );
-          targetPlanetCode = PoketCosmosDistanceService.instance.resolvePlanetCode(
+          targetPlanetCode =
+              PoketCosmosDistanceService.instance.resolvePlanetCode(
             cosmosMeta['planetCode'] ?? cosmosMeta['planetName'],
           );
-          targetPlanetName = PoketCosmosDistanceService.instance.getCleanPlanetName(targetPlanetCode);
+          targetPlanetName = PoketCosmosDistanceService.instance
+              .getCleanPlanetName(targetPlanetCode);
           targetPlotNumber = cosmosMeta['plotNumber'] as int? ?? 1;
         } else {
-          final targetUserId = (profile['user_id'] ?? profile['id'] ?? '').toString();
-          final cachedPlot = PoketCosmosAllocationService.instance.getCachedUserPlot(targetUserId);
+          final targetUserId =
+              (profile['user_id'] ?? profile['id'] ?? '').toString();
+          final cachedPlot = PoketCosmosAllocationService.instance
+              .getCachedUserPlot(targetUserId);
           if (cachedPlot != null) {
-            targetPlanetCode = PoketCosmosDistanceService.instance.resolvePlanetCode(cachedPlot.planetName);
-            targetPlanetName = PoketCosmosDistanceService.instance.getCleanPlanetName(targetPlanetCode);
+            targetPlanetCode = PoketCosmosDistanceService.instance
+                .resolvePlanetCode(cachedPlot.planetName);
+            targetPlanetName = PoketCosmosDistanceService.instance
+                .getCleanPlanetName(targetPlanetCode);
             targetPlotNumber = cachedPlot.plotNumber;
           } else {
             // Bio check for standard Cosmos PIN
             final bio = profile['bio']?.toString() ?? '';
-            final match = RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(bio);
+            final match =
+                RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(bio);
             if (match != null) {
               targetPlanetCode = match.group(2) ?? 'EP';
-              targetPlanetName = PoketCosmosDistanceService.instance.getCleanPlanetName(targetPlanetCode);
+              targetPlanetName = PoketCosmosDistanceService.instance
+                  .getCleanPlanetName(targetPlanetCode);
               targetPlotNumber = int.tryParse(match.group(4) ?? '1') ?? 1;
-            } else if (profile['planet_name'] != null || profile['planet_code'] != null) {
-              targetPlanetCode = PoketCosmosDistanceService.instance.resolvePlanetCode(
+            } else if (profile['planet_name'] != null ||
+                profile['planet_code'] != null) {
+              targetPlanetCode =
+                  PoketCosmosDistanceService.instance.resolvePlanetCode(
                 profile['planet_name'] ?? profile['planet_code'],
               );
-              targetPlanetName = PoketCosmosDistanceService.instance.getCleanPlanetName(targetPlanetCode);
+              targetPlanetName = PoketCosmosDistanceService.instance
+                  .getCleanPlanetName(targetPlanetCode);
               targetPlotNumber = (profile['plot_number'] as num?)?.toInt() ?? 1;
             } else {
               // Deterministic cosmic fallback based on target user ID
-              final colIndex = targetUserId.hashCode.abs() % PoketCosmosAllocationService.colonies.length;
+              final colIndex = targetUserId.hashCode.abs() %
+                  PoketCosmosAllocationService.colonies.length;
               final col = PoketCosmosAllocationService.colonies[colIndex];
               targetPlanetCode = col.code;
-              targetPlanetName = PoketCosmosDistanceService.instance.getCleanPlanetName(col.code);
-              targetPlotNumber = ((targetUserId.hashCode.abs() ~/ 10) % PoketCosmosAllocationService.maxPlotsPerIsland) + 1;
+              targetPlanetName = PoketCosmosDistanceService.instance
+                  .getCleanPlanetName(col.code);
+              targetPlotNumber = ((targetUserId.hashCode.abs() ~/ 10) %
+                      PoketCosmosAllocationService.maxPlotsPerIsland) +
+                  1;
             }
           }
         }
@@ -2687,20 +2758,6 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
 
         return GestureDetector(
           onTap: () {
-            final myColony = PoketCosmosAllocationService.instance.getColonyByCode(myPlanetCode);
-            final targetColony = PoketCosmosAllocationService.instance.getColonyByCode(targetPlanetCode);
-            final myIslandName = PoketCosmosAllocationService.instance.currentBirthPlot?.postOffice ?? myColony.islandName;
-            final targetIslandName = targetColony.islandName;
-
-            final CosmosTravelTier tier;
-            if (myPlanetCode != targetPlanetCode) {
-              tier = CosmosTravelTier.interplanetary;
-            } else if ((myPlotNumber - targetPlotNumber).abs() > 15 || myIslandName != targetIslandName) {
-              tier = CosmosTravelTier.islandToIsland;
-            } else {
-              tier = CosmosTravelTier.plotToPlot;
-            }
-
             PocketNeighbor? robotNeighbor;
             if (isRobot) {
               final robotLvl = (profile['robot_level'] as num?)?.toInt() ?? 1;
@@ -2729,27 +2786,15 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
               );
             }
 
-            final transitRoute = CosmosTransitRoute(
-              tier: tier,
-              originPlanetCode: myPlanetCode,
-              originPlanetName: myColony.planetName,
-              originIslandName: myIslandName,
-              originPlotNumber: myPlotNumber,
-              destPlanetCode: targetPlanetCode,
-              destPlanetName: targetPlanetName,
-              destIslandName: targetIslandName,
-              destPlotNumber: targetPlotNumber,
-              distanceKm: flightManifest.distanceKm,
-              formattedDistance: flightManifest.formattedDistance,
-              targetUserId: isPresident ? PocketPresidentService.presidentId : (profile['user_id'] ?? ''),
+            PocketCitadelAttackPage.openForUser(
+              context,
+              userId: isPresident
+                  ? PocketPresidentService.presidentId
+                  : (profile['user_id'] ?? ''),
               targetName: isPresident ? 'The Sovereign President' : name,
-              preloadedProfile: profile,
               neighbor: robotNeighbor,
-              isRobot: isRobot,
-              robotData: isRobot ? profile : null,
+              preloadedProfile: profile,
             );
-
-            PoketCosmosTransitPlannerSheet.show(context, transitRoute);
           },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
@@ -3193,7 +3238,8 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
 
               // 🪐 Robot Permanent Cosmos Address Chip
               Builder(builder: (context) {
-                final cosmosMeta = PocketRobotService.getCosmosAddressForRobotId(
+                final cosmosMeta =
+                    PocketRobotService.getCosmosAddressForRobotId(
                   robotData['user_id'] ?? 'robot_1',
                   level: (robotData['robot_level'] as num?)?.toInt() ?? 1,
                 );
@@ -3335,40 +3381,14 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                       cosmosPin: cosmosMeta['cosmosPin'],
                     );
 
-                    final myOriginCode = PoketCosmosAllocationService.instance.getCurrentViewerPlanetCode();
-                    final myPlot = PoketCosmosAllocationService.instance.currentBirthPlot?.plotNumber ?? 1;
-                    final targetPlanetCode = PoketCosmosDistanceService.instance.resolvePlanetCode(
-                      cosmosMeta['planetCode'] ?? cosmosMeta['planetName'],
-                    );
-                    final flightManifest = PoketCosmosDistanceService.instance.calculateFlightManifest(
-                      originCode: myOriginCode,
-                      destinationCode: targetPlanetCode,
-                      originPlot: myPlot,
-                      destinationPlot: cosmosMeta['plotNumber'] as int? ?? 1,
-                    );
-                    final myColony = PoketCosmosAllocationService.instance.getColonyByCode(myOriginCode);
-                    final targetColony = PoketCosmosAllocationService.instance.getColonyByCode(targetPlanetCode);
-
-                    final transitRoute = CosmosTransitRoute(
-                      tier: (myOriginCode != targetPlanetCode) ? CosmosTravelTier.interplanetary : CosmosTravelTier.islandToIsland,
-                      originPlanetCode: myOriginCode,
-                      originPlanetName: myColony.planetName,
-                      originIslandName: myColony.islandName,
-                      originPlotNumber: myPlot,
-                      destPlanetCode: targetPlanetCode,
-                      destPlanetName: targetColony.planetName,
-                      destIslandName: cosmosMeta['islandName'] ?? targetColony.islandName,
-                      destPlotNumber: cosmosMeta['plotNumber'] as int? ?? 1,
-                      distanceKm: flightManifest.distanceKm,
-                      formattedDistance: flightManifest.formattedDistance,
-                      targetUserId: robotNeighbor.id,
+                    Navigator.pop(ctx);
+                    PocketCitadelAttackPage.openForUser(
+                      context,
+                      userId: robotNeighbor.id,
                       targetName: robotNeighbor.name,
                       neighbor: robotNeighbor,
-                      isRobot: true,
-                      robotData: robotData,
+                      preloadedProfile: robotData,
                     );
-
-                    PoketCosmosTransitPlannerSheet.show(context, transitRoute);
                   },
                   icon: const Icon(Icons.person_outline_rounded,
                       color: Colors.white, size: 18),

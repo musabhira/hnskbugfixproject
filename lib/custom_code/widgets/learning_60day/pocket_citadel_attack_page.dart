@@ -317,7 +317,8 @@ class PocketCitadelAttackPage extends StatefulWidget {
       }
     } else {
       // 🌌 Deterministic & Database-backed Cosmos Born Address Synchronization
-      final resolvedPlot = await PoketCosmosAllocationService.instance.getUserPlot(
+      final resolvedPlot =
+          await PoketCosmosAllocationService.instance.getUserPlot(
         userId: userId,
         fallbackName: p['first_name'] ?? p['name'] ?? targetName,
       );
@@ -5470,7 +5471,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         if (lower.contains('neptune')) return 'Neptune';
         if (lower.contains('pluto')) return 'Pluto';
         String clean = fullName.replaceAll(RegExp(r'[^\w\s]'), '').trim();
-        clean = clean.replaceFirst(RegExp(r'^The\s+', caseSensitive: false), '');
+        clean =
+            clean.replaceFirst(RegExp(r'^The\s+', caseSensitive: false), '');
         return clean.split(' ').first;
     }
   }
@@ -5564,8 +5566,10 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 ),
                 child: Column(
                   children: [
-                    _buildAddressRow('🪐 Planet',
-                        _getCleanPlanetName(n.effectivePlanetCode, n.effectivePlanetName)),
+                    _buildAddressRow(
+                        '🪐 Planet',
+                        _getCleanPlanetName(
+                            n.effectivePlanetCode, n.effectivePlanetName)),
                     const Divider(color: Colors.white12, height: 16),
                     _buildAddressRow('🏝️ Island', n.effectiveIslandName),
                     const Divider(color: Colors.white12, height: 16),
@@ -5604,6 +5608,27 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           color: Colors.white, fontWeight: FontWeight.bold)),
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Color(0xFF38BDF8)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(vertical: 11),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    _navigateToDefenderPlotOnIsland();
+                  },
+                  icon: const Icon(Icons.map_rounded, size: 16),
+                  label: Text('View Island Plot On Map 🏝️',
+                      style: GoogleFonts.outfit(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0284C7),
+                    foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                     padding: const EdgeInsets.symmetric(vertical: 11),
@@ -6675,6 +6700,42 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                             : const Color(0xFFDDD6FE),
                                         fontWeight: FontWeight.w700,
                                         fontSize: 9.5,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 5),
+                                  InkWell(
+                                    onTap: _navigateToDefenderPlotOnIsland,
+                                    borderRadius: BorderRadius.circular(6),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 5, vertical: 1.5),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF38BDF8)
+                                            .withValues(alpha: 0.25),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(
+                                          color: const Color(0xFF38BDF8)
+                                              .withValues(alpha: 0.6),
+                                          width: 0.8,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(Icons.location_on_rounded,
+                                              color: Color(0xFF38BDF8),
+                                              size: 10),
+                                          const SizedBox(width: 2),
+                                          Text(
+                                            'Plot #',
+                                            style: GoogleFonts.outfit(
+                                              color: const Color(0xFFBAE6FD),
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: 9.5,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),

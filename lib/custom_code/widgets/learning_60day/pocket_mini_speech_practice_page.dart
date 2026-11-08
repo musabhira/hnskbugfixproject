@@ -13,9 +13,6 @@ import 'pocket_fortress_defense_service.dart';
 import 'curriculum_data/pocket_90day_speech_practice_data.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
-import 'package:pocket_mates_app/custom_code/services/pocket_ad_preload_manager.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocket_native_ad_card.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocket_banner_ad_widget.dart';
 
 /// 📢 Model for Mini Speech Exercise
 class MiniSpeechTopic {
@@ -99,7 +96,8 @@ class _PocketMiniSpeechPracticePageState
   void initState() {
     super.initState();
     // 🚀 Upfront Preloading of Step Native Ad for instant zero-lag display
-    PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.review);
+    PocketAdPreloadManager.instance
+        .preloadForPlacement(PocketAdPlacement.review);
 
     _topics = Pocket90DaySpeechPracticeData.getTopicsForDay(widget.day);
     _initTts();
@@ -211,7 +209,8 @@ class _PocketMiniSpeechPracticePageState
     final uid = widget.userId ?? SupaFlow.client.auth.currentUser?.id;
     final prefs = await SharedPreferences.getInstance();
 
-    final userKey = uid != null ? 'pocket_day_${uid}_${widget.day}_step_11_done' : null;
+    final userKey =
+        uid != null ? 'pocket_day_${uid}_${widget.day}_step_11_done' : null;
     if (userKey != null) await prefs.setBool(userKey, true);
     await prefs.setBool('pocket_day_guest_${widget.day}_step_11_done', true);
 
@@ -264,11 +263,13 @@ class _PocketMiniSpeechPracticePageState
               ),
               const SizedBox(height: 16),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
                   color: const Color(0xFF132238),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+                  border:
+                      Border.all(color: const Color(0xFFFFD700), width: 1.2),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -296,7 +297,8 @@ class _PocketMiniSpeechPracticePageState
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFE11D48),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                   ),
                   onPressed: () {
                     Navigator.pop(ctx);
@@ -336,12 +338,15 @@ class _PocketMiniSpeechPracticePageState
     final isKid = PocketKidsService.isKidAccount;
 
     return Scaffold(
-      backgroundColor: isKid ? const Color(0xFF1E1035) : const Color(0xFF090D16),
+      backgroundColor:
+          isKid ? const Color(0xFF1E1035) : const Color(0xFF090D16),
       appBar: AppBar(
-        backgroundColor: isKid ? const Color(0xFF2E1065) : const Color(0xFF0F172A),
+        backgroundColor:
+            isKid ? const Color(0xFF2E1065) : const Color(0xFF0F172A),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white70),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: Colors.white70),
           onPressed: () => Navigator.pop(context),
         ),
         title: Column(
@@ -374,7 +379,8 @@ class _PocketMiniSpeechPracticePageState
             decoration: BoxDecoration(
               color: const Color(0xFF1E293B),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFE11D48).withValues(alpha: 0.6)),
+              border: Border.all(
+                  color: const Color(0xFFE11D48).withValues(alpha: 0.6)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -414,255 +420,259 @@ class _PocketMiniSpeechPracticePageState
             ),
           SafeArea(
             child: Column(
-          children: [
-            // Top Progress bar
-            LinearProgressIndicator(
-              value: (_currentTopicIndex + 1) / _topics.length,
-              minHeight: 4,
-              backgroundColor: Colors.white12,
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFE11D48)),
-            ),
+              children: [
+                // Top Progress bar
+                LinearProgressIndicator(
+                  value: (_currentTopicIndex + 1) / _topics.length,
+                  minHeight: 4,
+                  backgroundColor: Colors.white12,
+                  valueColor:
+                      const AlwaysStoppedAnimation<Color>(Color(0xFFE11D48)),
+                ),
 
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Speech Title & Topic Pill
-                    Row(
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(topic.emoji, style: const TextStyle(fontSize: 22)),
-                        const SizedBox(width: 8),
-                        Text(
-                          topic.title,
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFFFFD700),
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                        // Speech Title & Topic Pill
+                        Row(
+                          children: [
+                            Text(topic.emoji,
+                                style: const TextStyle(fontSize: 22)),
+                            const SizedBox(width: 8),
+                            Text(
+                              topic.title,
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFD700),
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Speech Passage Display Box
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF131D2D),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: _isPassed
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFF334155),
+                              width: 1.4,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                topic.passageEn,
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  height: 1.45,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                topic.passageMl,
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFF94A3B8),
+                                  fontSize: 12.5,
+                                  height: 1.4,
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+
+                              // Listen to model voice button
+                              GestureDetector(
+                                onTap: () => _playModelSpeech(topic.passageEn),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 7),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF1E293B),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                        color: const Color(0xFF38BDF8)
+                                            .withValues(alpha: 0.4)),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        _isSpeakingTts
+                                            ? Icons.volume_up_rounded
+                                            : Icons.headphones_rounded,
+                                        color: const Color(0xFF38BDF8),
+                                        size: 16,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'Listen to Native Pace',
+                                        style: GoogleFonts.outfit(
+                                          color: const Color(0xFF38BDF8),
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
+
+                        const SizedBox(height: 14),
+
+                        // Helpful Speech Delivery Tip
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E1B4B),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                                color: const Color(0xFFA855F7)
+                                    .withValues(alpha: 0.3)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Text('💡', style: TextStyle(fontSize: 16)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  topic.speechTipEn,
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFFE9D5FF),
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        // Big Glowing Microphone Button
+                        Center(
+                          child: Column(
+                            children: [
+                              GestureDetector(
+                                onTap: () => _toggleListening(topic.passageEn),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 250),
+                                  width: 76,
+                                  height: 76,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: _isListening
+                                        ? const Color(0xFFEF4444)
+                                        : (_isPassed
+                                            ? const Color(0xFF10B981)
+                                            : const Color(0xFFE11D48)),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: (_isListening
+                                                ? const Color(0xFFEF4444)
+                                                : const Color(0xFFE11D48))
+                                            .withValues(alpha: 0.5),
+                                        blurRadius: _isListening ? 24 : 12,
+                                        spreadRadius: _isListening ? 6 : 1,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Icon(
+                                    _isListening
+                                        ? Icons.mic_rounded
+                                        : (_isPassed
+                                            ? Icons.check_circle_rounded
+                                            : Icons.mic_none_rounded),
+                                    color: Colors.white,
+                                    size: 36,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                _isListening
+                                    ? 'Listening... Speak the speech aloud!'
+                                    : (_isPassed
+                                        ? 'Great delivery! Ready for next ➔'
+                                        : 'Tap mic and read the speech aloud'),
+                                style: GoogleFonts.outfit(
+                                  color: _isListening
+                                      ? const Color(0xFFFCA5A5)
+                                      : (_isPassed
+                                          ? const Color(0xFF34D399)
+                                          : Colors.white70),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 18),
+
+                        // Live Speech Transcript & Evaluation Breakdown Card
+                        if (_liveTranscript.isNotEmpty) ...[
+                          _buildEvaluationCard(),
+                        ],
+
+                        const SizedBox(height: 24),
+
+                        // Continue / Next Button
+                        if (_isPassed)
+                          SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFFFD700),
+                                foregroundColor: Colors.black,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                elevation: 4,
+                              ),
+                              onPressed: _onNextTopic,
+                              child: Text(
+                                _currentTopicIndex + 1 < _topics.length
+                                    ? 'NEXT MINI SPEECH ➔'
+                                    : 'COMPLETE STEP 11 & PROCEED ➔',
+                                style: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ),
                       ],
                     ),
-                    const SizedBox(height: 12),
-
-                    // Speech Passage Display Box
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF131D2D),
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(
-                          color: _isPassed
-                              ? const Color(0xFF10B981)
-                              : const Color(0xFF334155),
-                          width: 1.4,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            topic.passageEn,
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: 16,
-                              height: 1.45,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            topic.passageMl,
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFF94A3B8),
-                              fontSize: 12.5,
-                              height: 1.4,
-                            ),
-                          ),
-                          const SizedBox(height: 14),
-
-                          // Listen to model voice button
-                          GestureDetector(
-                            onTap: () => _playModelSpeech(topic.passageEn),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 7),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1E293B),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                    color: const Color(0xFF38BDF8)
-                                        .withValues(alpha: 0.4)),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    _isSpeakingTts
-                                        ? Icons.volume_up_rounded
-                                        : Icons.headphones_rounded,
-                                    color: const Color(0xFF38BDF8),
-                                    size: 16,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    'Listen to Native Pace',
-                                    style: GoogleFonts.outfit(
-                                      color: const Color(0xFF38BDF8),
-                                      fontSize: 11.5,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 14),
-
-                    // Helpful Speech Delivery Tip
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1E1B4B),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                            color: const Color(0xFFA855F7).withValues(alpha: 0.3)),
-                      ),
-                      child: Row(
-                        children: [
-                          const Text('💡', style: TextStyle(fontSize: 16)),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              topic.speechTipEn,
-                              style: GoogleFonts.inter(
-                                color: const Color(0xFFE9D5FF),
-                                fontSize: 11,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Big Glowing Microphone Button
-                    Center(
-                      child: Column(
-                        children: [
-                          GestureDetector(
-                            onTap: () => _toggleListening(topic.passageEn),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 250),
-                              width: 76,
-                              height: 76,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: _isListening
-                                    ? const Color(0xFFEF4444)
-                                    : (_isPassed
-                                        ? const Color(0xFF10B981)
-                                        : const Color(0xFFE11D48)),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: (_isListening
-                                            ? const Color(0xFFEF4444)
-                                            : const Color(0xFFE11D48))
-                                        .withValues(alpha: 0.5),
-                                    blurRadius: _isListening ? 24 : 12,
-                                    spreadRadius: _isListening ? 6 : 1,
-                                  ),
-                                ],
-                              ),
-                              child: Icon(
-                                _isListening
-                                    ? Icons.mic_rounded
-                                    : (_isPassed
-                                        ? Icons.check_circle_rounded
-                                        : Icons.mic_none_rounded),
-                                color: Colors.white,
-                                size: 36,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            _isListening
-                                ? 'Listening... Speak the speech aloud!'
-                                : (_isPassed
-                                    ? 'Great delivery! Ready for next ➔'
-                                    : 'Tap mic and read the speech aloud'),
-                            style: GoogleFonts.outfit(
-                              color: _isListening
-                                  ? const Color(0xFFFCA5A5)
-                                  : (_isPassed
-                                      ? const Color(0xFF34D399)
-                                      : Colors.white70),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 18),
-
-                    // Live Speech Transcript & Evaluation Breakdown Card
-                    if (_liveTranscript.isNotEmpty) ...[
-                      _buildEvaluationCard(),
-                    ],
-
-                    const SizedBox(height: 24),
-
-                    // Continue / Next Button
-                    if (_isPassed)
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFFFD700),
-                            foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            elevation: 4,
-                          ),
-                          onPressed: _onNextTopic,
-                          child: Text(
-                            _currentTopicIndex + 1 < _topics.length
-                                ? 'NEXT MINI SPEECH ➔'
-                                : 'COMPLETE STEP 11 & PROCEED ➔',
-                            style: GoogleFonts.outfit(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
         ],
       ),
     );
@@ -707,7 +717,8 @@ class _PocketMiniSpeechPracticePageState
               children: [
                 const Padding(
                   padding: EdgeInsets.only(top: 2, right: 8),
-                  child: Icon(Icons.mic_rounded, size: 16, color: Colors.white70),
+                  child:
+                      Icon(Icons.mic_rounded, size: 16, color: Colors.white70),
                 ),
                 Flexible(
                   child: Text(

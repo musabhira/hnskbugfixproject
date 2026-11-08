@@ -12,9 +12,6 @@ import 'pocket_fortress_defense_service.dart';
 import 'curriculum_data/pocket_90day_negative_sentence_data.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
-import 'package:pocket_mates_app/custom_code/services/pocket_ad_preload_manager.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocket_native_ad_card.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocket_banner_ad_widget.dart';
 
 /// 🔄 Model for Negative Sentence Transformation Challenge
 class NegativeSentenceRound {
@@ -104,7 +101,8 @@ class _PocketNegativeSentenceBuilderPageState
   void initState() {
     super.initState();
     // 🚀 Upfront Preloading of Step Native Ad for instant zero-lag display
-    PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.review);
+    PocketAdPreloadManager.instance
+        .preloadForPlacement(PocketAdPlacement.review);
 
     _rounds = Pocket90DayNegativeSentenceData.getRoundsForDay(widget.day);
     _initTts();
@@ -212,7 +210,8 @@ class _PocketNegativeSentenceBuilderPageState
     final uid = widget.userId ?? SupaFlow.client.auth.currentUser?.id;
     final prefs = await SharedPreferences.getInstance();
 
-    final userKey = uid != null ? 'pocket_day_${uid}_${widget.day}_step_10_done' : null;
+    final userKey =
+        uid != null ? 'pocket_day_${uid}_${widget.day}_step_10_done' : null;
     if (userKey != null) await prefs.setBool(userKey, true);
     await prefs.setBool('pocket_day_guest_${widget.day}_step_10_done', true);
 
@@ -264,11 +263,13 @@ class _PocketNegativeSentenceBuilderPageState
               ),
               const SizedBox(height: 16),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
                   color: const Color(0xFF132238),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+                  border:
+                      Border.all(color: const Color(0xFFFFD700), width: 1.2),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -296,7 +297,8 @@ class _PocketNegativeSentenceBuilderPageState
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFA855F7),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                   ),
                   onPressed: () {
                     Navigator.pop(ctx);
@@ -328,17 +330,22 @@ class _PocketNegativeSentenceBuilderPageState
 
   @override
   Widget build(BuildContext context) {
-    final round = (_currentIndex < _rounds.length) ? _rounds[_currentIndex] : _rounds.last;
+    final round = (_currentIndex < _rounds.length)
+        ? _rounds[_currentIndex]
+        : _rounds.last;
     final isKid = PocketKidsService.isKidAccount;
 
     return Scaffold(
-      backgroundColor: isKid ? const Color(0xFF1E1035) : const Color(0xFF090D16),
+      backgroundColor:
+          isKid ? const Color(0xFF1E1035) : const Color(0xFF090D16),
       appBar: AppBar(
-        backgroundColor: isKid ? const Color(0xFF2E1065) : const Color(0xFF0F172A),
+        backgroundColor:
+            isKid ? const Color(0xFF2E1065) : const Color(0xFF0F172A),
         elevation: 0,
         titleSpacing: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white70),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: Colors.white70),
           onPressed: () => Navigator.pop(context),
         ),
         title: Row(
@@ -363,7 +370,8 @@ class _PocketNegativeSentenceBuilderPageState
                   ),
                   Text(
                     'Step 10 • Day ${widget.day}',
-                    style: GoogleFonts.inter(color: Colors.white54, fontSize: 10.5),
+                    style: GoogleFonts.inter(
+                        color: Colors.white54, fontSize: 10.5),
                   ),
                 ],
               ),
@@ -380,7 +388,8 @@ class _PocketNegativeSentenceBuilderPageState
               decoration: BoxDecoration(
                 color: const Color(0xFFA855F7).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFA855F7).withValues(alpha: 0.6)),
+                border: Border.all(
+                    color: const Color(0xFFA855F7).withValues(alpha: 0.6)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -405,7 +414,8 @@ class _PocketNegativeSentenceBuilderPageState
             decoration: BoxDecoration(
               color: const Color(0xFF1E293B),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFA855F7).withValues(alpha: 0.6)),
+              border: Border.all(
+                  color: const Color(0xFFA855F7).withValues(alpha: 0.6)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -445,91 +455,94 @@ class _PocketNegativeSentenceBuilderPageState
             ),
           SafeArea(
             child: Column(
-          children: [
-            // Top Progress bar
-            LinearProgressIndicator(
-              value: (_currentIndex + 1) / _rounds.length,
-              minHeight: 4,
-              backgroundColor: Colors.white12,
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFA855F7)),
-            ),
+              children: [
+                // Top Progress bar
+                LinearProgressIndicator(
+                  value: (_currentIndex + 1) / _rounds.length,
+                  minHeight: 4,
+                  backgroundColor: Colors.white12,
+                  valueColor:
+                      const AlwaysStoppedAnimation<Color>(Color(0xFFA855F7)),
+                ),
 
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 💡 Negative Sentence Concept Class Banner (Audio Directive)
-                    if (_showConceptGuide)
-                      _buildConceptGuideBanner(),
-
-                    // Target Card: Positive sentence to transform
-                    _buildPositivePromptCard(round),
-
-                    const SizedBox(height: 14),
-
-                    // Transformation Goal & Rule Capsule
-                    _buildRulePill(round),
-
-                    const SizedBox(height: 14),
-
-                    // 🎯 Target Negative Sentence Meaning in Malayalam (User Audio Directive: "വേർഡ് ബാങ്കിന്റെ അവിടെ എഴുതി വെക്കണം ഇവർ എന്താണ് ടാപ്പ് ചെയ്യേണ്ടത് എന്നുള്ളത്... അപ്പൊ നെഗറ്റീവ് എന്താണ് മലയാളത്തിൽ എഴുതി വെക്കണം")
-                    _buildTargetNegativeGoalCard(round),
-
-                    const SizedBox(height: 16),
-
-                    // Assembled Negative Sentence Bar
-                    _buildAssembledSentenceBar(round),
-
-                    const SizedBox(height: 20),
-
-                    // Word Bank Chips Header
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'WORD BANK • TAP IN NEGATIVE ORDER:',
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFFFFD700),
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        if (_assembledWords.isNotEmpty && !_isRoundPassed)
-                          GestureDetector(
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              setState(() {
-                                final removed = _assembledWords.removeLast();
-                                _activeWordBank.add(removed);
-                              });
-                            },
-                            child: Row(
-                              children: [
-                                const Icon(Icons.undo_rounded, size: 14, color: Colors.white60),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Undo',
-                                  style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
-                                ),
-                              ],
+                        // 💡 Negative Sentence Concept Class Banner (Audio Directive)
+                        if (_showConceptGuide) _buildConceptGuideBanner(),
+
+                        // Target Card: Positive sentence to transform
+                        _buildPositivePromptCard(round),
+
+                        const SizedBox(height: 14),
+
+                        // Transformation Goal & Rule Capsule
+                        _buildRulePill(round),
+
+                        const SizedBox(height: 14),
+
+                        // 🎯 Target Negative Sentence Meaning in Malayalam (User Audio Directive: "വേർഡ് ബാങ്കിന്റെ അവിടെ എഴുതി വെക്കണം ഇവർ എന്താണ് ടാപ്പ് ചെയ്യേണ്ടത് എന്നുള്ളത്... അപ്പൊ നെഗറ്റീവ് എന്താണ് മലയാളത്തിൽ എഴുതി വെക്കണം")
+                        _buildTargetNegativeGoalCard(round),
+
+                        const SizedBox(height: 16),
+
+                        // Assembled Negative Sentence Bar
+                        _buildAssembledSentenceBar(round),
+
+                        const SizedBox(height: 20),
+
+                        // Word Bank Chips Header
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'WORD BANK • TAP IN NEGATIVE ORDER:',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFD700),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.5,
+                              ),
                             ),
-                          ),
+                            if (_assembledWords.isNotEmpty && !_isRoundPassed)
+                              GestureDetector(
+                                onTap: () {
+                                  HapticFeedback.lightImpact();
+                                  setState(() {
+                                    final removed =
+                                        _assembledWords.removeLast();
+                                    _activeWordBank.add(removed);
+                                  });
+                                },
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.undo_rounded,
+                                        size: 14, color: Colors.white60),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Undo',
+                                      style: GoogleFonts.inter(
+                                          color: Colors.white60, fontSize: 11),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Word Bank Touch Chips
+                        _buildWordBankWrap(),
                       ],
                     ),
-                    const SizedBox(height: 12),
-
-                    // Word Bank Touch Chips
-                    _buildWordBankWrap(),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
         ],
       ),
     );
@@ -542,7 +555,8 @@ class _PocketNegativeSentenceBuilderPageState
       decoration: BoxDecoration(
         color: const Color(0xFF131D2D),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFF2563EB).withValues(alpha: 0.6), width: 1.4),
+        border: Border.all(
+            color: const Color(0xFF2563EB).withValues(alpha: 0.6), width: 1.4),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.3),
@@ -576,7 +590,9 @@ class _PocketNegativeSentenceBuilderPageState
               GestureDetector(
                 onTap: () => _speak(round.positiveSentence),
                 child: Icon(
-                  _isSpeaking ? Icons.volume_up_rounded : Icons.volume_down_rounded,
+                  _isSpeaking
+                      ? Icons.volume_up_rounded
+                      : Icons.volume_down_rounded,
                   color: const Color(0xFF60A5FA),
                   size: 20,
                 ),
@@ -612,7 +628,8 @@ class _PocketNegativeSentenceBuilderPageState
       decoration: BoxDecoration(
         color: const Color(0xFF1E1B4B),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFA855F7).withValues(alpha: 0.4), width: 1.0),
+        border: Border.all(
+            color: const Color(0xFFA855F7).withValues(alpha: 0.4), width: 1.0),
       ),
       child: Row(
         children: [
@@ -652,7 +669,8 @@ class _PocketNegativeSentenceBuilderPageState
       decoration: BoxDecoration(
         color: const Color(0xFF1E1035),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFA855F7).withValues(alpha: 0.6)),
+        border:
+            Border.all(color: const Color(0xFFA855F7).withValues(alpha: 0.6)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -673,14 +691,16 @@ class _PocketNegativeSentenceBuilderPageState
               ),
               GestureDetector(
                 onTap: () => setState(() => _showConceptGuide = false),
-                child: const Icon(Icons.close_rounded, color: Colors.white60, size: 18),
+                child: const Icon(Icons.close_rounded,
+                    color: Colors.white60, size: 18),
               ),
             ],
           ),
           const SizedBox(height: 6),
           Text(
             'ഒരു കാര്യത്തെ "അല്ല / ചെയ്യുന്നില്ല / സാധിക്കില്ല" എന്ന് നിഷേധിച്ചു പറയുന്നതിനാണ് Negative Sentence എന്ന് പറയുന്നത്.',
-            style: GoogleFonts.inter(color: Colors.white, fontSize: 12, height: 1.3),
+            style: GoogleFonts.inter(
+                color: Colors.white, fontSize: 12, height: 1.3),
           ),
           const SizedBox(height: 6),
           Container(
@@ -694,7 +714,10 @@ class _PocketNegativeSentenceBuilderPageState
                 Expanded(
                   child: Text(
                     'ഉദാ: "I am happy" (എനിക്ക് സന്തോഷമാണ്) ➔ "I am NOT happy" (എനിക്ക് സന്തോഷമില്ല)',
-                    style: GoogleFonts.outfit(color: const Color(0xFFE9D5FF), fontSize: 11.5, fontWeight: FontWeight.bold),
+                    style: GoogleFonts.outfit(
+                        color: const Color(0xFFE9D5FF),
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -712,7 +735,8 @@ class _PocketNegativeSentenceBuilderPageState
       decoration: BoxDecoration(
         color: const Color(0xFF0F2B20),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.7), width: 1.2),
+        border: Border.all(
+            color: const Color(0xFF10B981).withValues(alpha: 0.7), width: 1.2),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF10B981).withValues(alpha: 0.2),
@@ -792,7 +816,8 @@ class _PocketNegativeSentenceBuilderPageState
           else
             for (final w in _assembledWords)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: (w.toLowerCase() == 'not' ||
@@ -803,7 +828,8 @@ class _PocketNegativeSentenceBuilderPageState
                   ),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: (w.toLowerCase() == 'not' || w.toLowerCase() == 'cannot')
+                    color: (w.toLowerCase() == 'not' ||
+                            w.toLowerCase() == 'cannot')
                         ? const Color(0xFFFCA5A5)
                         : const Color(0xFFE9D5FF),
                     width: 1.0,
@@ -835,10 +861,13 @@ class _PocketNegativeSentenceBuilderPageState
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              color: isShaking ? const Color(0xFF7F1D1D) : const Color(0xFF1E293B),
+              color:
+                  isShaking ? const Color(0xFF7F1D1D) : const Color(0xFF1E293B),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: isShaking ? const Color(0xFFEF4444) : const Color(0xFF475569),
+                color: isShaking
+                    ? const Color(0xFFEF4444)
+                    : const Color(0xFF475569),
                 width: 1.4,
               ),
               boxShadow: [
@@ -865,7 +894,8 @@ class _PocketNegativeSentenceBuilderPageState
           chip = AnimatedBuilder(
             animation: _shakeAnimController,
             builder: (context, child) {
-              final offset = math.sin(_shakeAnimController.value * math.pi * 5) * 8.0;
+              final offset =
+                  math.sin(_shakeAnimController.value * math.pi * 5) * 8.0;
               return Transform.translate(
                 offset: Offset(offset, 0),
                 child: child,

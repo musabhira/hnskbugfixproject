@@ -3,12 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_rewarded_score_alert_modal.dart';
 
-/// 🔋 Futuristic Daily Battery Reward Widget (User Audio Directive!)
-/// Placed above the "Mission" button on Target/Roadmap page.
-/// Shows Battery Low (Red, 0-2) -> Recharging (Amber, 3-4) -> Full Battery (Green, 5/5),
-/// with a 60-second live cooldown timer between sponsor videos.
+/// 🔋 Minimalist iPhone-Style Daily Battery Reward Button
+/// Placed right above the "Mission" button with the exact same size & minimal setup.
+/// Features 5 segments:
+/// - 0/5: Red Battery Low
+/// - 1/5: Red Low
+/// - 2/5: Yellow/Amber
+/// - 3/5 & 4/5: Green
+/// - 5/5: 100% Full Charge
+/// - Live 60-second cooldown timer between rewarded videos.
 class PocketDailyBatteryRewardWidget extends StatefulWidget {
   final VoidCallback? onRewardClaimed;
 
@@ -34,9 +38,9 @@ class _PocketDailyBatteryRewardWidgetState
     super.initState();
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1400),
+      duration: const Duration(milliseconds: 1200),
     )..repeat(reverse: true);
-    _pulseAnimation = Tween<double>(begin: 0.95, end: 1.05).animate(
+    _pulseAnimation = Tween<double>(begin: 0.96, end: 1.04).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
 
@@ -86,13 +90,14 @@ class _PocketDailyBatteryRewardWidgetState
     }
   }
 
-  void _onWidgetTapped() {
+  Future<void> _onWidgetTapped() async {
     HapticFeedback.mediumImpact();
+
     if (_isVip) {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('👑 VIP Gold Active: Unlimited ad-free energy!'),
+          content: Text('👑 VIP Gold: Battery is permanently 100% full!'),
           backgroundColor: Color(0xFF0F172A),
           behavior: SnackBarBehavior.floating,
         ),
@@ -110,7 +115,7 @@ class _PocketDailyBatteryRewardWidgetState
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Battery recharging! Next video ready in ${_cooldownSeconds}s.',
+                  'Battery cooling down. Next recharge in ${_cooldownSeconds}s!',
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
@@ -133,7 +138,7 @@ class _PocketDailyBatteryRewardWidgetState
               SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Daily battery 100% full! 250 PS claimed today. Resets tomorrow ☀️',
+                  'Daily battery 100% full! Resets tomorrow morning ☀️',
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
@@ -146,12 +151,34 @@ class _PocketDailyBatteryRewardWidgetState
       return;
     }
 
-    // Open the full interactive Alert Modal
-    PocketRewardedScoreAlertModal.show(
-      context,
-      onRewardClaimed: () {
-        _refreshState();
+    // Directly launch Rewarded Video Ad cleanly
+    await PocketAdMobService.instance.showRewardedAd(
+      context: context,
+      onUserEarnedReward: (reward) async {
+        final newScore =
+            await PocketAdMobService.instance.grantRewardedPocketScore();
+        await _refreshState();
         widget.onRewardClaimed?.call();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Text('⚡', style: TextStyle(fontSize: 16)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Battery recharged! +50 Pocket Score added (Total: $newScore PS) 🔋✨',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: const Color(0xFF059669),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
       },
     );
   }
@@ -160,24 +187,33 @@ class _PocketDailyBatteryRewardWidgetState
   Widget build(BuildContext context) {
     if (_isVip) {
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E293B),
+          color: const Color(0xFF0F172A),
           borderRadius: BorderRadius.circular(12),
-          border:
-              Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
+          border: Border.all(
+            color: const Color(0xFFFFD700).withValues(alpha: 0.6),
+            width: 1.1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.35),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('👑', style: TextStyle(fontSize: 12)),
-            const SizedBox(width: 4),
+            const Text('👑', style: TextStyle(fontSize: 13)),
+            const SizedBox(width: 5),
             Text(
-              'VIP Energy 100%',
+              '100% VIP',
               style: GoogleFonts.outfit(
                 color: const Color(0xFFFFD700),
-                fontSize: 10.5,
-                fontWeight: FontWeight.bold,
+                fontSize: 11.5,
+                fontWeight: FontWeight.w800,
               ),
             ),
           ],
@@ -185,7 +221,7 @@ class _PocketDailyBatteryRewardWidgetState
       );
     }
 
-    // Determine Color & Labels based on dailyCount
+    // Determine colors and label
     Color batteryColor;
     String statusLabel;
     bool shouldPulse = false;
@@ -194,41 +230,50 @@ class _PocketDailyBatteryRewardWidgetState
       batteryColor = const Color(0xFF38BDF8); // Cyan cooldown
       statusLabel = '⏳ ${_cooldownSeconds}s';
     } else if (_dailyCount == 0) {
-      batteryColor = const Color(0xFFEF4444); // Red
-      statusLabel = 'Battery Low ⚡ +50PS';
+      batteryColor = const Color(0xFFEF4444); // Red: Low
+      statusLabel = 'Battery Low';
       shouldPulse = true;
-    } else if (_dailyCount <= 2) {
-      batteryColor = const Color(0xFFF97316); // Orange-Red
-      statusLabel = '⚡ $_dailyCount/5 • +50PS';
+    } else if (_dailyCount == 1) {
+      batteryColor = const Color(0xFFEF4444); // Red: 1/5
+      statusLabel = '1/5 Low';
       shouldPulse = true;
-    } else if (_dailyCount <= 4) {
-      batteryColor = const Color(0xFFEAB308); // Amber
-      statusLabel = '⚡ $_dailyCount/5 • +50PS';
-      shouldPulse = true;
-    } else {
+    } else if (_dailyCount == 2) {
+      batteryColor = const Color(0xFFF59E0B); // Amber/Yellow
+      statusLabel = '2/5';
+      shouldPulse = false;
+    } else if (_dailyCount == 3) {
       batteryColor = const Color(0xFF10B981); // Emerald Green
-      statusLabel = '🔋 5/5 Full!';
+      statusLabel = '3/5';
+      shouldPulse = false;
+    } else if (_dailyCount == 4) {
+      batteryColor = const Color(0xFF10B981); // Emerald Green
+      statusLabel = '4/5';
+      shouldPulse = false;
+    } else {
+      batteryColor = const Color(0xFF22C55E); // Bright Green Full
+      statusLabel = '100% Full';
       shouldPulse = false;
     }
 
     Widget pillContent = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5.5),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
         color: const Color(0xFF0F172A),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: batteryColor.withValues(alpha: 0.8),
+          color: batteryColor.withValues(alpha: 0.85),
           width: 1.2,
         ),
         boxShadow: [
+          if (shouldPulse)
+            BoxShadow(
+              color: batteryColor.withValues(alpha: 0.35),
+              blurRadius: 8,
+              spreadRadius: 1,
+            ),
           BoxShadow(
-            color: batteryColor.withValues(alpha: shouldPulse ? 0.35 : 0.15),
-            blurRadius: shouldPulse ? 8 : 4,
-            spreadRadius: shouldPulse ? 1 : 0,
-          ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.5),
-            blurRadius: 6,
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
@@ -236,14 +281,14 @@ class _PocketDailyBatteryRewardWidgetState
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 🔋 Micro 5-Segment Battery Shell
+          // 🔋 iPhone-style 5-block battery icon
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 28,
-                height: 14,
-                padding: const EdgeInsets.all(1.5),
+                width: 25,
+                height: 13,
+                padding: const EdgeInsets.all(1.4),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(3),
                   border: Border.all(color: batteryColor, width: 1.2),
@@ -255,8 +300,8 @@ class _PocketDailyBatteryRewardWidgetState
                       child: Container(
                         margin: EdgeInsets.only(right: index < 4 ? 1.0 : 0),
                         decoration: BoxDecoration(
-                          color: isFilled ? batteryColor : Colors.transparent,
-                          borderRadius: BorderRadius.circular(1),
+                          color: isFilled ? batteryColor : Colors.white12,
+                          borderRadius: BorderRadius.circular(0.8),
                         ),
                       ),
                     );
@@ -265,14 +310,14 @@ class _PocketDailyBatteryRewardWidgetState
               ),
               // Battery Terminal Tip
               Container(
-                width: 2.5,
-                height: 6,
-                margin: const EdgeInsets.only(left: 1.5),
+                width: 2.2,
+                height: 5.5,
+                margin: const EdgeInsets.only(left: 1.2),
                 decoration: BoxDecoration(
                   color: batteryColor,
                   borderRadius: const BorderRadius.only(
-                    topRight: Radius.circular(1.5),
-                    bottomRight: Radius.circular(1.5),
+                    topRight: Radius.circular(1.2),
+                    bottomRight: Radius.circular(1.2),
                   ),
                 ),
               ),
@@ -280,12 +325,12 @@ class _PocketDailyBatteryRewardWidgetState
           ),
           const SizedBox(width: 6),
 
-          // Status / Cooldown Label
+          // Minimal clean status text
           Text(
             statusLabel,
             style: GoogleFonts.outfit(
               color: batteryColor,
-              fontSize: 10.5,
+              fontSize: 11.5,
               fontWeight: FontWeight.w800,
               letterSpacing: 0.2,
             ),
@@ -296,7 +341,7 @@ class _PocketDailyBatteryRewardWidgetState
 
     return InkWell(
       onTap: _onWidgetTapped,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(12),
       child: shouldPulse
           ? ScaleTransition(
               scale: _pulseAnimation,
