@@ -601,9 +601,10 @@ class _PoketCosmosResidentIslandViewState
                     isInteractive: true,
                     zoomScale: 2.4,
                     plots: _islandPlots,
-                    selectedPlotNumber: (_colony.planetName == _myPlot.planetName)
-                        ? _myPlot.plotNumber
-                        : null,
+                    selectedPlotNumber: widget.targetPlotNumber ??
+                        ((_colony.planetName == _myPlot.planetName)
+                            ? _myPlot.plotNumber
+                            : null),
                     planetName: _colony.planetName,
                     initialReservations: _reservations,
                     onPlotPurchased: () => _loadResidentIsland(),
