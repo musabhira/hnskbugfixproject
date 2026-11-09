@@ -6507,7 +6507,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
     return Positioned(
       left: cardLeft,
-      top: adY - 68.0, // Centered for compact minimal card (~135px height)
+      top: adY - 170.0, // Centered for full Medium Rectangle card (~340px height)
       width: cardWidth,
       child: Center(
         child: ConstrainedBox(
@@ -6515,7 +6515,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
           child: PocketNativeAdCard(
             key: ValueKey('roadmap_target_ad_$day'),
             placement: PocketAdPlacement.target,
-            isCompact: true,
             margin: EdgeInsets.zero,
           ),
         ),

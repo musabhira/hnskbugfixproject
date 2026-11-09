@@ -271,20 +271,37 @@ class PoketCosmosAllocationService {
     ),
     CelestialColonyInfo(
       planetId: 452,
-      planetName: 'Kepler-452b 🌿',
+      planetName: 'Kepler-452b 🌌',
       code: 'KEP',
       islandName: 'Cygnus Haven',
-      streetName: 'Earth 2.0 Biosphere Trail',
-      landColor: Color(0xFF15803D),
-      waterColor: Color(0xFF0D9488),
-      climate: 'Eternal Spring Biosphere 🌸',
-      shapeStyle: IslandShapeStyle.crescentLagoon,
+      streetName: 'Super-Earth Exoplanet Trail',
+      landColor: Color(0xFF065F46), // Exotic alien deep emerald
+      waterColor:
+          Color(0xFF312E81), // Bioluminescent deep indigo exoplanet ocean
+      climate: 'Bioluminescent Exosphere 🌌',
+      shapeStyle: IslandShapeStyle.cloverBays,
     ),
   ];
 
-  /// Finds colony info matching a planet code (e.g. 'EP', 'MAR', 'JUP')
+  /// Finds colony info matching a planet code (e.g. 'EP', 'MAR', 'JUP', 'MER', 'KEP')
   CelestialColonyInfo getColonyByCode(String code) {
-    final upper = code.trim().toUpperCase();
+    var upper = code.trim().toUpperCase();
+    if (upper == 'MOON') upper = 'LUN';
+    if (upper == 'TIT' || upper == 'TITAN') upper = 'TTN';
+    if (upper == 'EARTH' || upper == 'EARTH PRIME') upper = 'EP';
+    if (upper == 'MERCURY') upper = 'MER';
+    if (upper == 'VENUS') upper = 'VEN';
+    if (upper == 'MARS') upper = 'MAR';
+    if (upper == 'JUPITER') upper = 'JUP';
+    if (upper == 'EUROPA') upper = 'EUR';
+    if (upper == 'GANYMEDE') upper = 'GAN';
+    if (upper == 'SATURN') upper = 'SAT';
+    if (upper == 'URANUS') upper = 'URA';
+    if (upper == 'NEPTUNE') upper = 'NEP';
+    if (upper == 'TRITON') upper = 'TRI';
+    if (upper == 'PLUTO') upper = 'PLT';
+    if (upper == 'KEPLER' || upper == 'KEPLER-452B') upper = 'KEP';
+
     for (final c in colonies) {
       if (c.code.toUpperCase() == upper) return c;
     }
@@ -293,11 +310,24 @@ class PoketCosmosAllocationService {
 
   /// Finds colony info matching a planet name or code
   CelestialColonyInfo getColonyByPlanetName(String planetName) {
-    final lower = planetName.toLowerCase();
+    final lower = planetName.toLowerCase().trim();
+    // 1. Exact or alias code match
     for (final c in colonies) {
-      if (lower.contains(c.code.toLowerCase()) ||
-          lower.contains(c.planetName.toLowerCase()) ||
-          c.planetName.toLowerCase().contains(lower.split(' ').first)) {
+      if (c.code.toLowerCase() == lower) return c;
+    }
+    // 2. Island name match (e.g., 'caloris basin', 'cygnus haven', 'tranquility base')
+    for (final c in colonies) {
+      if (lower.contains(c.islandName.toLowerCase()) ||
+          c.islandName.toLowerCase().contains(lower)) {
+        return c;
+      }
+    }
+    // 3. Planet name match (e.g., 'mercury', 'kepler', 'ganymede', 'mars')
+    for (final c in colonies) {
+      final baseClean =
+          c.planetName.toLowerCase().replaceAll(RegExp(r'[^\w\s-]'), '').trim();
+      if (lower.contains(baseClean) ||
+          baseClean.contains(lower.split(' ').first)) {
         return c;
       }
     }
@@ -433,9 +463,7 @@ class PoketCosmosAllocationService {
     // 6. Slots & Occupancy (25 plots per island)
     final int slots = maxPlotsPerIsland; // 25
     final int effectiveFilled = filledSlots ??
-        (safeWave < currentWave
-            ? 25
-            : (safeWave == currentWave ? 12 : 0));
+        (safeWave < currentWave ? 25 : (safeWave == currentWave ? 12 : 0));
 
     final int islandId = colony.planetId * 10000 + safeWave;
 
@@ -455,7 +483,9 @@ class PoketCosmosAllocationService {
       shapeSeed: shapeSeed,
       shapeStyle: shapeStyle,
       wave: safeWave,
-      isPresidential: false, // President's Citadel is strictly separate on Earth Prime
+      planetCode: colony.code,
+      isPresidential:
+          false, // President's Citadel is strictly separate on Earth Prime
     );
   }
 
@@ -464,14 +494,16 @@ class PoketCosmosAllocationService {
     final List<Map<String, dynamic>> list = [];
     for (int w = 1; w <= math.max(1, maxWaves); w++) {
       for (final colony in colonies) {
-        final island = generateProceduralIsland(colony: colony, wave: w, activeWave: maxWaves);
+        final island = generateProceduralIsland(
+            colony: colony, wave: w, activeWave: maxWaves);
         list.add({
           'wave': w,
           'colony': colony,
           'planetCode': colony.code,
           'planetName': colony.planetName,
           'islandName': island.name,
-          'streetName': (w == 1) ? colony.streetName : 'Wave $w ${colony.streetName}',
+          'streetName':
+              (w == 1) ? colony.streetName : 'Wave $w ${colony.streetName}',
           'climate': island.climate,
           'shapeStyle': island.shapeStyle,
           'totalPlots': maxPlotsPerIsland,
@@ -523,7 +555,10 @@ class PoketCosmosAllocationService {
     final int occupied = totalOccupiedInWave ??
         (wave == 1
             ? waveCapacity
-            : math.max(0, instance._allRegisteredProfiles.length - ((wave - 1) * waveCapacity)));
+            : math.max(
+                0,
+                instance._allRegisteredProfiles.length -
+                    ((wave - 1) * waveCapacity)));
     final double occupancyRatio = (occupied / waveCapacity).clamp(0.0, 1.0);
 
     // Dynamic market curve:
@@ -1098,8 +1133,9 @@ class PoketCosmosAllocationService {
           coordinates: Offset.zero,
           isVip: false,
           isPresident: false,
-          tier:
-              (localPlotNum <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+          tier: (localPlotNum <= 6
+              ? PlotDeedTier.beachfront
+              : PlotDeedTier.standard),
           status: PlotStatus.occupied,
         );
         _userBirthPlots[userId] = plot;
@@ -1637,8 +1673,8 @@ class PoketCosmosAllocationService {
         countryName: island,
         planetName: planet,
         coordinates: Offset.zero,
-        postalPinCode:
-            pin ?? 'PKT-W01-EP-I01-P${effectivePlotNum.toString().padLeft(2, '0')}',
+        postalPinCode: pin ??
+            'PKT-W01-EP-I01-P${effectivePlotNum.toString().padLeft(2, '0')}',
       );
     }
     return null;
@@ -1888,17 +1924,21 @@ class PoketCosmosAllocationService {
         final String uid = (item['user_id'] ?? item['id'] ?? '').toString();
         if (uid.isEmpty) continue;
 
+        // Determine if this user belongs to this colony
+        bool matchesColony = false;
+        int targetPlot = 0;
+
         // 🚪 Check if user has relocated to another planet/colony
         if (relocatedUids.contains(uid)) {
           final relPlanet =
               prefs.getString('cosmos_user_relocated_planet_$uid');
-          final relWave =
-              prefs.getInt('cosmos_user_relocated_wave_$uid') ?? 1;
-          final relPlot =
-              prefs.getInt('cosmos_user_relocated_plot_$uid') ?? 1;
+          final relWave = prefs.getInt('cosmos_user_relocated_wave_$uid') ?? 1;
+          final relPlot = prefs.getInt('cosmos_user_relocated_plot_$uid') ?? 1;
           if (relPlanet != colony.code || relWave != wave) {
             continue; // 🚪 User moved away from this island! Old plot is now completely VACANT with '+'!
           }
+          matchesColony = true;
+          targetPlot = relPlot;
         }
 
         final String rawName =
@@ -1911,10 +1951,6 @@ class PoketCosmosAllocationService {
         final int score =
             (item['pocket_score'] as num?)?.toInt() ?? (600 + (i * 45) % 800);
         final String? bio = item['bio'] as String?;
-
-        // Determine if this user belongs to this colony
-        bool matchesColony = false;
-        int targetPlot = 0;
 
         // Check if bio contains cosmic pin (e.g., PKT-W01-MAR-I01-P04 or PKT-W01-TTN-I01-P177)
         if (bio != null && bio.contains('PKT-W')) {
@@ -1985,25 +2021,123 @@ class PoketCosmosAllocationService {
       debugPrint('⚠️ Fetching Supabase profiles for colony non-fatal: $e');
     }
 
-    // 3. Inject current user's local birthplace if on this island
-    if (_cachedBirthPlot != null &&
-        _cachedBirthPlot!.planetName == colony.planetName) {
-      final userPlot = _cachedBirthPlot!;
-      final localPlot = (userPlot.plotNumber <= maxPlotsPerIsland)
-          ? userPlot.plotNumber
-          : (((userPlot.plotNumber - 1) % waveCapacity) % maxPlotsPerIsland) + 1;
-      final globalPlot = (userPlot.plotNumber <= maxPlotsPerIsland)
-          ? calculateGlobalPlotNumber(
-              wave: wave,
-              planetCode: colony.code,
-              localPlotNumber: userPlot.plotNumber,
-            )
-          : userPlot.plotNumber;
-      final coord = (localPlot - 1 < coords.length) ? coords[localPlot - 1] : Offset.zero;
-      plotMap[localPlot] = userPlot.copyWith(
-        plotNumber: globalPlot,
-        coordinates: coord,
-      );
+    // 2. Populate Iconic & Algorithmic Pioneers if island has fewer than 12 citizens
+    final pioneers = getColonyPioneers(colony);
+    for (final p in pioneers) {
+      final localPlot = (p.plotNumber <= maxPlotsPerIsland)
+          ? p.plotNumber
+          : (((p.plotNumber - 1) % waveCapacity) % maxPlotsPerIsland) + 1;
+      if (!plotMap.containsKey(localPlot)) {
+        final coord = (localPlot - 1 < coords.length)
+            ? coords[localPlot - 1]
+            : Offset.zero;
+        final globalPlot = calculateGlobalPlotNumber(
+          wave: wave,
+          planetCode: colony.code,
+          localPlotNumber: localPlot,
+        );
+        final waveStr = wave.toString().padLeft(2, '0');
+        final plotStr = globalPlot.toString().padLeft(3, '0');
+        plotMap[localPlot] = p.copyWith(
+          plotNumber: globalPlot,
+          coordinates: coord,
+          postalPinCode: 'PKT-W$waveStr-${colony.code}-I$waveStr-P$plotStr',
+        );
+      }
+    }
+
+    // Fill remaining up to 12 slots with deterministic pioneers so every world has 12 occupied plots matching the 12/25 counter
+    const defaultCandidateSlots = [1, 2, 3, 4, 6, 7, 9, 10, 11, 12, 14, 15];
+    final defaultPioneerNames = [
+      'Commander ${colony.islandName.split(' ').first}',
+      'Dr. ${colony.code} Horizon',
+      'Pioneer Zephyr',
+      'Solar Warden',
+      'Astro Navigator',
+      'Cosmic Sentinel',
+      'Starlight Scholar',
+      'Nebula Guardian',
+      'Orbital Scout',
+      'Deep Void Ranger',
+      'Galaxy Pioneer',
+      'Aero Veteran',
+    ];
+    final defaultAvatars = [
+      '🧑‍🚀',
+      '👨‍🚀',
+      '👩‍🚀',
+      '🦁',
+      '🦅',
+      '🐺',
+      '🦊',
+      '🐯',
+      '⚡',
+      '🌟',
+      '🚀',
+      '✨'
+    ];
+
+    for (int k = 0;
+        k < defaultCandidateSlots.length && plotMap.length < 12;
+        k++) {
+      final slot = defaultCandidateSlots[k];
+      if (!plotMap.containsKey(slot)) {
+        final coord =
+            (slot - 1 < coords.length) ? coords[slot - 1] : Offset.zero;
+        final globalPlot = calculateGlobalPlotNumber(
+          wave: wave,
+          planetCode: colony.code,
+          localPlotNumber: slot,
+        );
+        final waveStr = wave.toString().padLeft(2, '0');
+        final plotStr = globalPlot.toString().padLeft(3, '0');
+        plotMap[slot] = CitizenPlot(
+          plotNumber: globalPlot,
+          userId: 'pioneer_${colony.code}_$globalPlot',
+          userName: defaultPioneerNames[k % defaultPioneerNames.length],
+          userAvatar: defaultAvatars[k % defaultAvatars.length],
+          day: 28 + (k * 5) % 60,
+          pocketScore: 650 + (k * 45) % 550,
+          streetName: (wave == 1)
+              ? colony.streetName
+              : 'Wave $wave ${colony.streetName}',
+          postOffice: colony.islandName,
+          countryName: colony.islandName,
+          planetName: colony.planetName,
+          coordinates: coord,
+          postalPinCode: 'PKT-W$waveStr-${colony.code}-I$waveStr-P$plotStr',
+          tier: (slot <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+          status: PlotStatus.occupied,
+        );
+      }
+    }
+
+    // 3. Inject current user's local birthplace or purchased plot if on this island
+    final currentPlot = currentUserBirthPlot;
+    if (currentPlot != null) {
+      final viewerPlanetCode = PoketCosmosDistanceService.instance
+          .resolvePlanetCode(currentPlot.planetName);
+      if (viewerPlanetCode == colony.code) {
+        final localPlot = (currentPlot.plotNumber <= maxPlotsPerIsland)
+            ? currentPlot.plotNumber
+            : (((currentPlot.plotNumber - 1) % waveCapacity) %
+                    maxPlotsPerIsland) +
+                1;
+        final globalPlot = (currentPlot.plotNumber <= maxPlotsPerIsland)
+            ? calculateGlobalPlotNumber(
+                wave: wave,
+                planetCode: colony.code,
+                localPlotNumber: currentPlot.plotNumber,
+              )
+            : currentPlot.plotNumber;
+        final coord = (localPlot - 1 < coords.length)
+            ? coords[localPlot - 1]
+            : Offset.zero;
+        plotMap[localPlot] = currentPlot.copyWith(
+          plotNumber: globalPlot,
+          coordinates: coord,
+        );
+      }
     }
 
     final result = plotMap.values.toList()
@@ -2128,6 +2262,101 @@ class PoketCosmosAllocationService {
               colony, 7, 'Abyss Diver', '🌀', 49, 670, PlotDeedTier.standard),
           _createPioneer(
               colony, 12, 'Oceanic Prime', '✨', 77, 930, PlotDeedTier.standard),
+        ];
+      case 'MER':
+        return [
+          _createPioneer(colony, 1, 'Commander Caloris', '🧑‍🚀', 89, 1210,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 3, 'Hermes Vance', '🚀', 66, 840,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 4, 'Sol Vanguard', '☀️', 75, 960,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 6, 'Scorched Nomad', '🔥', 48, 670,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 7, 'Iron Ridge Scout', '🛡️', 55, 730,
+              PlotDeedTier.standard),
+          _createPioneer(colony, 9, 'Cinder Explorer', '🌋', 42, 590,
+              PlotDeedTier.standard),
+          _createPioneer(colony, 10, 'Zenith Sunfire', '✨', 61, 810,
+              PlotDeedTier.standard),
+          _createPioneer(colony, 12, 'Apollo Mercury', '🌟', 82, 1050,
+              PlotDeedTier.standard),
+        ];
+      case 'GAN':
+        return [
+          _createPioneer(colony, 1, 'Perrine Overseer', '🛡️', 90, 1260,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 3, 'Magnetic Warden', '⚡', 67, 850,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 4, 'Grooved Ice Nomad', '🛰️', 58, 770,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 6, 'Jupiter Shield', '🪐', 72, 920,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 7, 'Citadel Sentinel', '⚔️', 46, 640,
+              PlotDeedTier.standard),
+          _createPioneer(colony, 9, 'Galvanic Ranger', '🌌', 63, 820,
+              PlotDeedTier.standard),
+          _createPioneer(colony, 11, 'Perrine Pathfinder', '✨', 52, 710,
+              PlotDeedTier.standard),
+          _createPioneer(colony, 12, 'Solar Dynamo', '🌟', 84, 1100,
+              PlotDeedTier.standard),
+        ];
+      case 'URA':
+        return [
+          _createPioneer(colony, 1, 'Miranda Sentinel', '💎', 87, 1190,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 3, 'Cyan Climber', '🧊', 63, 820,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 4, 'Aquamarine Ranger', '🌌', 71, 910,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 6, 'Ice Cliff Nomad', '❄️', 50, 690,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 7, 'Methane Skywatcher', '🔭', 44, 620,
+              PlotDeedTier.standard),
+          _createPioneer(colony, 9, 'Turquoise Voyager', '✨', 59, 780,
+              PlotDeedTier.standard),
+          _createPioneer(colony, 11, 'Borealis Drift', '🌪️', 76, 970,
+              PlotDeedTier.standard),
+          _createPioneer(
+              colony, 12, 'Frost Apex', '🌟', 85, 1120, PlotDeedTier.standard),
+        ];
+      case 'TRI':
+        return [
+          _createPioneer(colony, 1, 'Geyser Voyager', '🔱', 89, 1230,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 3, 'Cantaloupe Drifter', '❄️', 65, 840,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 4, 'Nitrogen Vanguard', '🌊', 74, 940,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 6, 'Kuiper Outpost', '🪐', 47, 650,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 7, 'Sub-Zero Nomad', '🧊', 53, 720,
+              PlotDeedTier.standard),
+          _createPioneer(colony, 9, 'Cryo Spout Scout', '🚀', 60, 790,
+              PlotDeedTier.standard),
+          _createPioneer(colony, 11, 'Retrograde Star', '✨', 78, 990,
+              PlotDeedTier.standard),
+          _createPioneer(colony, 12, 'Triton Sovereign', '🌟', 86, 1140,
+              PlotDeedTier.standard),
+        ];
+      case 'KEP':
+        return [
+          _createPioneer(colony, 1, 'Exoplanet Pioneer', '🌌', 92, 1350,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 3, 'Cygnus Botanist', '🌿', 70, 890,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 4, 'Nebula Explorer', '✨', 80, 1020,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 6, 'Super-Earth Settler', '🪐', 56, 750,
+              PlotDeedTier.beachfront),
+          _createPioneer(colony, 7, 'Biolum Sentinel', '🌸', 64, 830,
+              PlotDeedTier.standard),
+          _createPioneer(colony, 9, 'Interstellar Nomad', '🚀', 49, 680,
+              PlotDeedTier.standard),
+          _createPioneer(colony, 10, 'Alien Flora Warden', '🌺', 62, 810,
+              PlotDeedTier.standard),
+          _createPioneer(colony, 12, 'Cygnus Voyager', '🌟', 88, 1190,
+              PlotDeedTier.standard),
         ];
       default:
         return [

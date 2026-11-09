@@ -774,11 +774,19 @@ class PocketAdMobService {
     _adminAdPreviewOverride = value;
   }
 
+  // ⚡ In-memory instant VIP cache for 0ms latency ad loading
+  bool? _cachedIsVip;
+  bool isUserVipSync() => _cachedIsVip ?? false;
+  void updateCachedVipStatus(bool isVip) {
+    _cachedIsVip = isVip;
+  }
+
   /// 🛡️ Check if the current user is a VIP / Premium Member
   /// VIP Rule: Never show any ads to VIPs!
   Future<bool> isUserVip() async {
     // If admin enabled live test previewing in Admin Panel, temporarily allow ads to show for verification
     if (_adminAdPreviewOverride) {
+      _cachedIsVip = false;
       return false;
     }
 
@@ -791,6 +799,7 @@ class PocketAdMobService {
           prefs.getBool('remove_ads') == true ||
           (prefs.getString('handskill_plan') != null &&
               prefs.getString('handskill_plan') != 'free')) {
+        _cachedIsVip = true;
         return true;
       }
 
@@ -812,14 +821,16 @@ class PocketAdMobService {
                 profile['subscription_tier'] != null ||
                 role == 'admin' ||
                 role == 'vip';
-            // Synchronize to local SharedPreferences
+            // Synchronize to local SharedPreferences and memory cache
             await prefs.setBool('is_vip', isVipDb);
             await prefs.setBool('is_premium', isVipDb);
+            _cachedIsVip = isVipDb;
             if (isVipDb) return true;
           }
         } catch (_) {}
       }
     } catch (_) {}
+    _cachedIsVip = false;
     return false;
   }
 
@@ -829,6 +840,15 @@ class PocketAdMobService {
       if (vip) return;
       _loadInterstitialAd();
       _loadRewardedAd();
+      // 🚀 Proactively preload Native/Banner ads for Home, Vibes, Target and Ranking so they appear instantly!
+      PocketAdPreloadManager.instance
+          .preloadForPlacement(PocketAdPlacement.home);
+      PocketAdPreloadManager.instance
+          .preloadForPlacement(PocketAdPlacement.vibes);
+      PocketAdPreloadManager.instance
+          .preloadForPlacement(PocketAdPlacement.target);
+      PocketAdPreloadManager.instance
+          .preloadForPlacement(PocketAdPlacement.ranking);
     });
   }
 
@@ -1545,8 +1565,7 @@ class PocketAdPreloadManager {
 
   /// Preload an ad for a specific placement ahead of time
   Future<void> preloadForPlacement(PocketAdPlacement placement) async {
-    final isVip = await PocketAdMobService.instance.isUserVip();
-    if (isVip) return;
+    if (PocketAdMobService.instance.isUserVipSync()) return;
     if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return;
     if (_preloadedBanners.containsKey(placement) ||
         _loadingPlacements.contains(placement)) {
@@ -1555,10 +1574,7 @@ class PocketAdPreloadManager {
 
     _loadingPlacements.add(placement);
     final unitId = PocketAdMobService.instance.getUnitIdForPlacement(placement);
-    final AdSize size = (placement == PocketAdPlacement.banner ||
-            placement == PocketAdPlacement.target ||
-            placement == PocketAdPlacement.review ||
-            placement == PocketAdPlacement.learningStep)
+    final AdSize size = (placement == PocketAdPlacement.banner)
         ? AdSize.banner
         : AdSize.mediumRectangle;
 
@@ -1660,10 +1676,7 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
   bool _hasRetriedWithFallback = false;
 
   bool get _isCompact =>
-      widget.isCompact ??
-      (widget.placement == PocketAdPlacement.target ||
-          widget.placement == PocketAdPlacement.review ||
-          widget.placement == PocketAdPlacement.learningStep);
+      widget.isCompact ?? (widget.placement == PocketAdPlacement.banner);
 
   @override
   void initState() {
@@ -1680,30 +1693,45 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
   }
 
   Future<void> _checkVipAndLoad() async {
-    final vip = await PocketAdMobService.instance.isUserVip();
-    if (vip) {
+    // ⚡ Instant synchronous VIP check from cache (0ms latency!)
+    if (PocketAdMobService.instance.isUserVipSync()) {
       if (mounted) setState(() => _isVip = true);
       return;
     }
 
     if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
-      if (mounted) setState(() => _isLoaded = true);
       return;
     }
 
     final targetUnitId = widget.customAdUnitId ??
         PocketAdMobService.instance.getUnitIdForPlacement(widget.placement);
 
+    // 🚀 Trigger live AdMob load immediately with ZERO lag!
     _loadBanner(targetUnitId);
+
+    // Background verify VIP status without blocking ad triggering
+    PocketAdMobService.instance.isUserVip().then((vip) {
+      if (vip && mounted) {
+        setState(() {
+          _isVip = true;
+          _bannerAd?.dispose();
+          _bannerAd = null;
+        });
+      }
+    });
   }
 
   void _loadBanner(String unitId) {
     PocketAdMobService.instance._recordAdRequest(widget.placement.name);
 
     _bannerAd?.dispose();
+    final AdSize requestedSize = (widget.placement == PocketAdPlacement.banner)
+        ? AdSize.banner
+        : AdSize.mediumRectangle;
+
     _bannerAd = BannerAd(
       adUnitId: unitId,
-      size: _isCompact ? AdSize.banner : AdSize.mediumRectangle,
+      size: requestedSize,
       request: const AdRequest(),
       listener: BannerAdListener(
         onAdLoaded: (_) {
@@ -1773,7 +1801,12 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
       return const SizedBox.shrink();
     }
 
-    // ⚡ Preloaded Minimal Mode (For Target Roadmap, Modals, & Conversational Steps)
+    // ⚡ Real AdMob ad only! If not loaded or null, cleanly collapse (no dummy card!)
+    if (!_isLoaded || _bannerAd == null) {
+      return const SizedBox.shrink();
+    }
+
+    // ⚡ Preloaded Minimal Mode (For standard banner or compact requests)
     if (_isCompact) {
       return _buildCompactCard(context);
     }
@@ -1782,8 +1815,12 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
     return _buildStandardCard(context);
   }
 
-  /// 🌟 Sleek, Compact Minimal Native Ad Card (~135px height, preloaded, zero pop-in)
+  /// 🌟 Sleek, Compact Minimal Native Ad Card
   Widget _buildCompactCard(BuildContext context) {
+    if (_bannerAd == null || !_isLoaded) {
+      return const SizedBox.shrink();
+    }
+
     return Container(
       margin: widget.margin,
       decoration: BoxDecoration(
@@ -1914,77 +1951,24 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
             ),
           ),
 
-          // 🖼️ Ad Content Frame (Live AdMob Banner or Preloaded Branded VIP Promotion)
-          if (_bannerAd != null && _isLoaded)
-            Center(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                height: 50,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.black26,
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: SizedBox(
-                    width: _bannerAd!.size.width.toDouble(),
-                    height: _bannerAd!.size.height.toDouble(),
-                    child: AdWidget(ad: _bannerAd!),
-                  ),
-                ),
-              ),
-            )
-          else
-            // Preloaded Branded Fallback Strip (Always visible, ZERO layout shift, never disappears)
-            Container(
+          // 🖼️ Ad Content Frame (Live AdMob Banner)
+          Center(
+            child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                ),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.08),
-                  width: 0.8,
-                ),
+                color: Colors.black26,
               ),
-              child: Row(
-                children: [
-                  const Icon(Icons.auto_awesome, color: Color(0xFFFFD700), size: 16),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'AI English Companion • 4.9 ★ (10K+ Reviews)',
-                      style: GoogleFonts.outfit(
-                        color: Colors.white70,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF0284C7).withValues(alpha: 0.25),
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Text(
-                      'VIP',
-                      style: GoogleFonts.outfit(
-                        color: const Color(0xFF38BDF8),
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: SizedBox(
+                  width: _bannerAd!.size.width.toDouble(),
+                  height: _bannerAd!.size.height.toDouble(),
+                  child: AdWidget(ad: _bannerAd!),
+                ),
               ),
             ),
+          ),
 
           // 👑 Minimal Golden VIP Upgrade Pill (Height 32px)
           Padding(
@@ -2051,6 +2035,10 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
 
   /// 📱 Standard Full-Size Native Ad Card
   Widget _buildStandardCard(BuildContext context) {
+    if (_bannerAd == null || !_isLoaded) {
+      return const SizedBox.shrink();
+    }
+
     return Container(
       margin: widget.margin,
       decoration: BoxDecoration(
@@ -2202,187 +2190,27 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
           ),
 
           // 🖼️ Ad Creative Canvas (Instagram Post Media Frame)
-          if (_bannerAd != null && _isLoaded)
-            Center(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 14),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.08),
-                    width: 1.0,
-                  ),
-                  color: Colors.black26,
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: SizedBox(
-                    width: _bannerAd!.size.width.toDouble(),
-                    height: _bannerAd!.size.height.toDouble(),
-                    child: AdWidget(ad: _bannerAd!),
-                  ),
-                ),
-              ),
-            )
-          else
-            // 💻 Desktop / Windows / Preloaded Demo Creative (Always visible, ZERO layout shift)
-            Container(
+          Center(
+            child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 14),
-              height: 220,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
                 border: Border.all(
                   color: Colors.white.withValues(alpha: 0.08),
                   width: 1.0,
                 ),
+                color: Colors.black26,
               ),
-              child: Stack(
-                children: [
-                  // Visual Media Graphic
-                  Positioned.fill(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: RadialGradient(
-                            center: const Alignment(0, -0.2),
-                            radius: 1.1,
-                            colors: [
-                              const Color(0xFF0284C7).withValues(alpha: 0.35),
-                              const Color(0xFF0F172A),
-                            ],
-                          ),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: const Color(0xFF131B26),
-                                border: Border.all(
-                                  color: const Color(0xFFFFFC00),
-                                  width: 1.5,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFFFFFC00)
-                                        .withValues(alpha: 0.3),
-                                    blurRadius: 12,
-                                  ),
-                                ],
-                              ),
-                              child: const Icon(
-                                Icons.bolt_rounded,
-                                color: Color(0xFFFFFC00),
-                                size: 30,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              'Poket Mates AI English Companion',
-                              style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Daily Spoken English Battles & 90-Day Fluency Journey',
-                              style: GoogleFonts.outfit(
-                                color: Colors.white70,
-                                fontSize: 11.5,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                ...List.generate(
-                                  5,
-                                  (i) => const Icon(
-                                    Icons.star_rounded,
-                                    color: Color(0xFFFFD700),
-                                    size: 15,
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  '4.9 ★ (10K+ Reviews)',
-                                  style: GoogleFonts.outfit(
-                                    color: const Color(0xFFFFD700),
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  // "AdMob Native Preview" Label
-                  Positioned(
-                    top: 10,
-                    right: 10,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.7),
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: Colors.white24, width: 0.6),
-                      ),
-                      child: Text(
-                        'AdMob Native Preview',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white70,
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Install Action Button
-                  Positioned(
-                    bottom: 10,
-                    right: 10,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0284C7),
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: [
-                          BoxShadow(
-                            color:
-                                const Color(0xFF0284C7).withValues(alpha: 0.4),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Text(
-                        'Install Now',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  width: _bannerAd!.size.width.toDouble(),
+                  height: _bannerAd!.size.height.toDouble(),
+                  child: AdWidget(ad: _bannerAd!),
+                ),
               ),
             ),
+          ),
 
           // 👑 Minimal Golden VIP Button (Matching Random / Pocket Talk gradient)
           _buildVipUpgradeBar(context),
@@ -2828,18 +2656,28 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
   }
 
   Future<void> _initBanner() async {
-    final vip = await PocketAdMobService.instance.isUserVip();
-    if (vip) {
+    // ⚡ Instant synchronous VIP check from cache (0ms latency!)
+    if (PocketAdMobService.instance.isUserVipSync()) {
       if (mounted) setState(() => _isVip = true);
       return;
     }
 
     if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
-      if (mounted) setState(() => _isLoaded = true);
       return;
     }
 
     _loadBanner(PocketAdMobService.instance.bannerAdUnitId);
+
+    // Background verify VIP status without blocking ad triggering
+    PocketAdMobService.instance.isUserVip().then((vip) {
+      if (vip && mounted) {
+        setState(() {
+          _isVip = true;
+          _bannerAd?.dispose();
+          _bannerAd = null;
+        });
+      }
+    });
   }
 
   void _loadBanner(String unitId) {

@@ -192,8 +192,10 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         return;
       }
 
-      final colony = PoketCosmosAllocationService.instance
-          .getColonyByPlanetName(_selectedPlanet?.name ?? island.name);
+      final colony = island.planetCode != null
+          ? PoketCosmosAllocationService.instance.getColonyByCode(island.planetCode!)
+          : PoketCosmosAllocationService.instance
+              .getColonyByPlanetName(_selectedPlanet?.name ?? island.name);
       final targetWave = (island.id % 100 > 0) ? (island.id % 100) : 1;
       final plots = await PoketCosmosAllocationService.instance
           .getOccupiedPlotsForColony(colony, wave: targetWave);
@@ -327,7 +329,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
             occupiedPlots: activeWaves * 25,
             countryMaps: _buildPlanetIslands(
               planetId: 30,
-              planetCode: 'MOON',
+              planetCode: 'LUN',
               baseIslandName: 'Tranquility Base',
               baseTag: 'First Lunar Colony',
               landColor: const Color(0xFF475569),
@@ -499,7 +501,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
             occupiedPlots: activeWaves * 25,
             countryMaps: _buildPlanetIslands(
               planetId: 61,
-              planetCode: 'TIT',
+              planetCode: 'TTN',
               baseIslandName: 'Kraken Mare Bay',
               baseTag: 'Liquid Methane Sea',
               landColor: const Color(0xFF92400E),
@@ -629,31 +631,31 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         ),
       ),
 
-      // 10. Kepler-452b 🌿 (Interstellar Earth 2.0 • Cygnus Constellation)
+      // 10. Kepler-452b 🌌 (Interstellar Exoplanet • Cygnus Constellation)
       PoketPlanet(
         id: 452,
-        name: 'Kepler-452b 🌿',
-        theme: 'Interstellar Habitable Frontier (Earth 2.0)',
-        tagLine: '1,400 Light-Years Away in Cygnus • Super-Earth Biosphere',
-        primaryColor: const Color(0xFF10B981),
-        glowColor: const Color(0xFF059669),
+        name: 'Kepler-452b 🌌',
+        theme: 'Interstellar Alien Exosphere Frontier',
+        tagLine: '1,400 Light-Years Away in Cygnus • Bioluminescent Exoplanet',
+        primaryColor: const Color(0xFF6366F1),
+        glowColor: const Color(0xFF4F46E5),
         radius: 20,
         orbitDistance: 765,
         orbitSpeed: 0.11,
         isExoplanet: true,
         totalPlots: activeWaves * 25,
-        occupiedPlots: 15,
+        occupiedPlots: 12,
         countryMaps: _buildPlanetIslands(
           planetId: 452,
           planetCode: 'KEP',
           baseIslandName: 'Cygnus Haven',
-          baseTag: 'Interstellar Earth 2.0',
-          landColor: const Color(0xFF15803D),
-          waterColor: const Color(0xFF0D9488),
-          climate: 'Eternal Spring 🌸',
-          climateIcon: Icons.eco_rounded,
-          islandEmoji: '🌿',
-          shapeStyle: IslandShapeStyle.crescentLagoon,
+          baseTag: 'Interstellar Exoplanet',
+          landColor: const Color(0xFF065F46),
+          waterColor: const Color(0xFF312E81),
+          climate: 'Bioluminescent Exosphere 🌌',
+          climateIcon: Icons.auto_awesome_rounded,
+          islandEmoji: '🌌',
+          shapeStyle: IslandShapeStyle.cloverBays,
           activeWaves: activeWaves,
         ),
       ),
@@ -704,7 +706,12 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
       _activeScreen = 1;
       _currentIslandIndex = 0;
     });
-    _loadIslandPlots(planet.countryMaps.first);
+    if (_islandPageController.hasClients) {
+      _islandPageController.jumpToPage(0);
+    }
+    if (planet.countryMaps.isNotEmpty) {
+      _loadIslandPlots(planet.countryMaps.first);
+    }
   }
 
   void _navigateToFullscreenAerialMap(PoketCountryMap island) {
@@ -2152,49 +2159,106 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                 ),
               ),
               const SizedBox(height: 18),
-              SizedBox(
-                width: double.infinity,
-                height: 44,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0284C7),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                  ),
-                  onPressed: () {
-                    Navigator.of(ctx).pop();
-                    if (plot.userId.isNotEmpty &&
-                        !plot.userId.startsWith('empty') &&
-                        !plot.userId.startsWith('vacant')) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              VerfiedSwitchPage(userId: plot.userId),
+              Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 44,
+                      child: OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF38BDF8),
+                          side: const BorderSide(color: Color(0xFF38BDF8), width: 1.2),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
                         ),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                              'Plot #${plot.plotNumber} (${plot.postalPinCode}) is available for purchase!'),
-                          backgroundColor: const Color(0xFF10B981),
+                        onPressed: () {
+                          Navigator.of(ctx).pop();
+                          if (plot.userId.isNotEmpty &&
+                              !plot.userId.startsWith('empty') &&
+                              !plot.userId.startsWith('vacant')) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    VerfiedSwitchPage(userId: plot.userId),
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                    'Plot #${plot.plotNumber} (${plot.postalPinCode}) is available for purchase!'),
+                                backgroundColor: const Color(0xFF10B981),
+                              ),
+                            );
+                          }
+                        },
+                        icon: const Icon(Icons.person_pin_rounded, size: 18),
+                        label: const Text(
+                          'Profile 👤',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                         ),
-                      );
-                    }
-                  },
-                  icon: const Icon(Icons.person_pin_rounded, size: 20),
-                  label: const Text(
-                    'View Profile 👤',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: SizedBox(
+                      height: 44,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFDC2626),
+                          foregroundColor: Colors.white,
+                          elevation: 3,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: () {
+                          Navigator.of(ctx).pop();
+                          final planet = _selectedPlanet ?? _planets.first;
+                          final island = _selectedIsland ??
+                              (planet.countryMaps.isNotEmpty
+                                  ? planet.countryMaps[_currentIslandIndex.clamp(0, planet.countryMaps.length - 1)]
+                                  : planet.countryMaps.first);
+                          final colony = island.planetCode != null
+                              ? PoketCosmosAllocationService.instance.getColonyByCode(island.planetCode!)
+                              : PoketCosmosAllocationService.instance.getColonyByPlanetName(planet.name);
+
+                          PocketIslandAttackPage.launch(
+                            context,
+                            island: island,
+                            colony: colony,
+                            plots: _currentIslandPlots,
+                            isMockAttack: false,
+                          );
+                        },
+                        icon: const Icon(Icons.flash_on_rounded, size: 18),
+                        label: const Text(
+                          'Challenge ⚔️',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         );
       },
     );
+  }
+
+  /// 🌐 Returns all 15 celestial bodies (10 planets + 5 moons/satellites)
+  List<PoketPlanet> get _all15CelestialWorlds {
+    final list = <PoketPlanet>[];
+    for (final p in _planets) {
+      list.add(p);
+      for (final s in p.satellites) {
+        list.add(s.toPlanet());
+      }
+    }
+    return list;
   }
 
   // =========================================================================
@@ -2210,7 +2274,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
       isScrollControlled: true,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setModalState) {
-          final filtered = _planets.where((p) {
+          final allWorlds = _all15CelestialWorlds;
+          final filtered = allWorlds.where((p) {
             if (searchQuery.trim().isEmpty) return true;
             final q = searchQuery.toLowerCase().trim();
             final islandNames =
@@ -2338,8 +2403,17 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                           itemBuilder: (context, idx) {
                             final p = filtered[idx];
                             final isCurrent = p.id == _selectedPlanet?.id;
-                            final planetIdx = _planets.indexOf(p);
-                            final startPlot = ((_activeWaves - 1) * 375) + (planetIdx * 25) + 1;
+                            final colonyIdx = PoketCosmosAllocationService.colonies.indexWhere((c) {
+                              if (c.planetId == p.id) return true;
+                              if (p.countryMaps.isNotEmpty && p.countryMaps.first.planetCode != null) {
+                                if (c.code.toUpperCase() == p.countryMaps.first.planetCode!.toUpperCase()) return true;
+                              }
+                              final pClean = p.name.toLowerCase().replaceAll(RegExp(r'[^\w\s-]'), '').trim();
+                              final cClean = c.planetName.toLowerCase().replaceAll(RegExp(r'[^\w\s-]'), '').trim();
+                              return pClean.contains(cClean.split(' ').first) || cClean.contains(pClean.split(' ').first);
+                            });
+                            final safeColonyIdx = colonyIdx >= 0 ? colonyIdx : 0;
+                            final startPlot = ((_activeWaves - 1) * 375) + (safeColonyIdx * 25) + 1;
                             final endPlot = startPlot + 24;
 
                             return InkWell(

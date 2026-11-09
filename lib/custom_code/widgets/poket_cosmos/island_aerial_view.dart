@@ -780,6 +780,11 @@ enum CelestialColonyType {
   titan,
   pluto,
   neptune,
+  mercury,
+  ganymede,
+  uranus,
+  triton,
+  kepler,
 }
 
 /// 🎨 Island Aerial CustomPainter with Expansive Green Terrains & Safe In-Land Habit Plots
@@ -806,68 +811,75 @@ class IslandAerialPainter extends CustomPainter {
   double get timeSeconds => animProgress * 40.0;
 
   CelestialColonyType get colonyType {
+    if (island.planetCode != null) {
+      final code = island.planetCode!.toUpperCase();
+      switch (code) {
+        case 'EP': return CelestialColonyType.earth;
+        case 'MAR': return CelestialColonyType.mars;
+        case 'JUP': return CelestialColonyType.jupiter;
+        case 'SAT': return CelestialColonyType.saturn;
+        case 'LUN':
+        case 'MOON': return CelestialColonyType.moon;
+        case 'EUR': return CelestialColonyType.europa;
+        case 'VEN': return CelestialColonyType.venus;
+        case 'TTN':
+        case 'TIT': return CelestialColonyType.titan;
+        case 'PLT': return CelestialColonyType.pluto;
+        case 'NEP': return CelestialColonyType.neptune;
+        case 'MER': return CelestialColonyType.mercury;
+        case 'GAN': return CelestialColonyType.ganymede;
+        case 'URA': return CelestialColonyType.uranus;
+        case 'TRI': return CelestialColonyType.triton;
+        case 'KEP': return CelestialColonyType.kepler;
+      }
+    }
+    final planetId = island.id ~/ 10000;
+    if (planetId == 1) return CelestialColonyType.mercury;
+    if (planetId == 2) return CelestialColonyType.venus;
+    if (planetId == 3) return CelestialColonyType.earth;
+    if (planetId == 30) return CelestialColonyType.moon;
+    if (planetId == 4) return CelestialColonyType.mars;
+    if (planetId == 5) return CelestialColonyType.jupiter;
+    if (planetId == 51) return CelestialColonyType.europa;
+    if (planetId == 52) return CelestialColonyType.ganymede;
+    if (planetId == 6) return CelestialColonyType.saturn;
+    if (planetId == 61) return CelestialColonyType.titan;
+    if (planetId == 7) return CelestialColonyType.uranus;
+    if (planetId == 8) return CelestialColonyType.neptune;
+    if (planetId == 81) return CelestialColonyType.triton;
+    if (planetId == 9) return CelestialColonyType.pluto;
+    if (planetId == 452) return CelestialColonyType.kepler;
+
     final text = '${island.name} ${island.tag} ${island.climate}'.toLowerCase();
-    if (text.contains('mars') ||
-        text.contains('ares') ||
-        text.contains('olympus') ||
-        text.contains('rusty') ||
-        island.shapeStyle == IslandShapeStyle.fortressPlateau) {
-      return CelestialColonyType.mars;
-    }
-    if (text.contains('jupiter') ||
-        text.contains('solaria') ||
-        text.contains('red spot') ||
-        island.shapeStyle == IslandShapeStyle.crescentLagoon) {
-      return CelestialColonyType.jupiter;
-    }
-    if (text.contains('saturn') ||
-        text.contains('ringside') ||
-        text.contains('ring sanctuary') ||
-        island.shapeStyle == IslandShapeStyle.sCurveArchipelago) {
-      return CelestialColonyType.saturn;
-    }
-    if (text.contains('moon') ||
-        text.contains('lunar') ||
-        text.contains('mare tranqu') ||
-        island.shapeStyle == IslandShapeStyle.hookPeninsula) {
-      return CelestialColonyType.moon;
-    }
-    if (text.contains('europa') ||
-        text.contains('glacier rift') ||
-        text.contains('ice ocean') ||
-        island.shapeStyle == IslandShapeStyle.dualIsletBridge) {
-      return CelestialColonyType.europa;
-    }
-    if (text.contains('venus') ||
-        text.contains('aphrodite') ||
-        text.contains('sulfur') ||
-        island.shapeStyle == IslandShapeStyle.starAtoll) {
-      return CelestialColonyType.venus;
-    }
-    if (text.contains('titan') ||
-        text.contains('kraken mare') ||
-        text.contains('hydrocarbon') ||
-        island.shapeStyle == IslandShapeStyle.heartSanctuary) {
-      return CelestialColonyType.titan;
-    }
-    if (text.contains('pluto') ||
-        text.contains('tombaugh') ||
-        text.contains('cryo') ||
-        text.contains('frost') ||
-        island.shapeStyle == IslandShapeStyle.cloverBays) {
-      return CelestialColonyType.pluto;
-    }
-    if (text.contains('neptune') ||
-        text.contains('triton') ||
-        text.contains('tempest') ||
-        island.shapeStyle == IslandShapeStyle.citadelApex) {
-      return CelestialColonyType.neptune;
-    }
+    if (text.contains('mercury') || text.contains('caloris')) return CelestialColonyType.mercury;
+    if (text.contains('kepler') || text.contains('cygnus')) return CelestialColonyType.kepler;
+    if (text.contains('ganymede') || text.contains('perrine')) return CelestialColonyType.ganymede;
+    if (text.contains('uranus') || text.contains('miranda')) return CelestialColonyType.uranus;
+    if (text.contains('triton') || text.contains('geyser')) return CelestialColonyType.triton;
+    if (text.contains('mars') || text.contains('ares') || text.contains('olympus')) return CelestialColonyType.mars;
+    if (text.contains('jupiter') || text.contains('solaria') || text.contains('red spot')) return CelestialColonyType.jupiter;
+    if (text.contains('saturn') || text.contains('cassini') || text.contains('ring')) return CelestialColonyType.saturn;
+    if (text.contains('moon') || text.contains('lunar') || text.contains('tranquil')) return CelestialColonyType.moon;
+    if (text.contains('europa') || text.contains('conamara') || text.contains('glacier')) return CelestialColonyType.europa;
+    if (text.contains('venus') || text.contains('aphrodite') || text.contains('sulfur')) return CelestialColonyType.venus;
+    if (text.contains('titan') || text.contains('kraken')) return CelestialColonyType.titan;
+    if (text.contains('pluto') || text.contains('tombaugh') || text.contains('sputnik')) return CelestialColonyType.pluto;
+    if (text.contains('neptune')) return CelestialColonyType.neptune;
     return CelestialColonyType.earth;
   }
 
   String get colonyPlanetCode {
     switch (colonyType) {
+      case CelestialColonyType.mercury:
+        return 'MER';
+      case CelestialColonyType.ganymede:
+        return 'GAN';
+      case CelestialColonyType.uranus:
+        return 'URA';
+      case CelestialColonyType.triton:
+        return 'TRI';
+      case CelestialColonyType.kepler:
+        return 'KEP';
       case CelestialColonyType.mars:
         return 'MAR';
       case CelestialColonyType.jupiter:
@@ -915,6 +927,11 @@ class IslandAerialPainter extends CustomPainter {
   bool get isPluto => colonyType == CelestialColonyType.pluto;
   bool get isNeptune => colonyType == CelestialColonyType.neptune;
   bool get isEarth => colonyType == CelestialColonyType.earth;
+  bool get isMercury => colonyType == CelestialColonyType.mercury;
+  bool get isGanymede => colonyType == CelestialColonyType.ganymede;
+  bool get isUranus => colonyType == CelestialColonyType.uranus;
+  bool get isTriton => colonyType == CelestialColonyType.triton;
+  bool get isKepler => colonyType == CelestialColonyType.kepler;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1116,6 +1133,16 @@ class IslandAerialPainter extends CustomPainter {
           Color(0xFF1E3A8A), // Oceanic storm deep blue
           Color(0xFF172554), // Abyssal navy trench
           Color(0xFF030712), // Cosmic storm black
+        ];
+        break;
+      default:
+        hasStars = isMercury || isKepler;
+        oceanColors = [
+          island.waterColor,
+          island.waterColor.withValues(alpha: 0.85),
+          const Color(0xFF1E1B4B),
+          const Color(0xFF0F172A),
+          const Color(0xFF020617),
         ];
         break;
     }
@@ -1415,6 +1442,11 @@ class IslandAerialPainter extends CustomPainter {
         innerReefColor = const Color(0xFF93C5FD).withValues(alpha: 0.68);
         foamWaveColor = Colors.white.withValues(alpha: 0.42);
         break;
+      default:
+        outerReefColor = island.waterColor.withValues(alpha: 0.38);
+        innerReefColor = island.waterColor.withValues(alpha: 0.65);
+        foamWaveColor = Colors.white.withValues(alpha: 0.35);
+        break;
     }
 
     // Outermost translucent planetary reef/halo contour
@@ -1493,6 +1525,10 @@ class IslandAerialPainter extends CustomPainter {
       case CelestialColonyType.neptune:
         beachSandColor = const Color(0xFFBFDBFE); // Diamond azure shore
         wetSandColor = const Color(0xFF1D4ED8).withValues(alpha: 0.60);
+        break;
+      default:
+        beachSandColor = island.landColor.withValues(alpha: 0.65);
+        wetSandColor = island.waterColor.withValues(alpha: 0.55);
         break;
     }
 
@@ -1579,6 +1615,11 @@ class IslandAerialPainter extends CustomPainter {
         coreColor = const Color(0xFF2563EB);
         deepColor = const Color(0xFF172554);
         break;
+      default:
+        sunlitColor = island.landColor.withValues(alpha: 0.85);
+        coreColor = island.landColor;
+        deepColor = const Color(0xFF0F172A);
+        break;
     }
 
     final landGradient = RadialGradient(
@@ -1625,6 +1666,8 @@ class IslandAerialPainter extends CustomPainter {
         _drawNeptunianTempestStreaks(canvas, islandPath);
         break;
       case CelestialColonyType.earth:
+        break;
+      default:
         break;
     }
   }
@@ -1936,6 +1979,10 @@ class IslandAerialPainter extends CustomPainter {
       case CelestialColonyType.neptune:
         lagoonColor = const Color(0xFF1E3A8A).withValues(alpha: 0.90);
         sandColor = const Color(0xFFBFDBFE);
+        break;
+      default:
+        lagoonColor = island.waterColor.withValues(alpha: 0.88);
+        sandColor = island.landColor.withValues(alpha: 0.60);
         break;
     }
 
@@ -3010,6 +3057,13 @@ class IslandAerialPainter extends CustomPainter {
           Paint()..color = const Color(0xFF0F766E).withValues(alpha: 0.22),
         ];
         break;
+      default:
+        districtPaints = [
+          Paint()..color = island.landColor.withValues(alpha: 0.28),
+          Paint()..color = island.landColor.withValues(alpha: 0.20),
+          Paint()..color = island.waterColor.withValues(alpha: 0.26),
+        ];
+        break;
     }
 
     for (int i = 0; i < cells.length; i++) {
@@ -3975,6 +4029,27 @@ class IslandAerialPainter extends CustomPainter {
     } else if (isMoon) {
       turfColor = const Color(0xFF334155).withValues(alpha: 0.32);
       borderKerbColor = const Color(0xFF64748B).withValues(alpha: 0.38);
+    } else if (isMercury) {
+      turfColor = const Color(0xFF1E293B).withValues(alpha: 0.40);
+      borderKerbColor = const Color(0xFF94A3B8).withValues(alpha: 0.45);
+    } else if (isKepler) {
+      turfColor = const Color(0xFF312E81).withValues(alpha: 0.42);
+      borderKerbColor = const Color(0xFF10B981).withValues(alpha: 0.50);
+    } else if (isGanymede) {
+      turfColor = const Color(0xFF334155).withValues(alpha: 0.35);
+      borderKerbColor = const Color(0xFF38BDF8).withValues(alpha: 0.42);
+    } else if (isUranus) {
+      turfColor = const Color(0xFF0E7490).withValues(alpha: 0.35);
+      borderKerbColor = const Color(0xFF22D3EE).withValues(alpha: 0.45);
+    } else if (isTriton) {
+      turfColor = const Color(0xFF1E3A8A).withValues(alpha: 0.35);
+      borderKerbColor = const Color(0xFF60A5FA).withValues(alpha: 0.45);
+    } else if (isEuropa) {
+      turfColor = const Color(0xFF0369A1).withValues(alpha: 0.32);
+      borderKerbColor = const Color(0xFF7DD3FC).withValues(alpha: 0.40);
+    } else if (isPluto) {
+      turfColor = const Color(0xFF581C87).withValues(alpha: 0.32);
+      borderKerbColor = const Color(0xFFA855F7).withValues(alpha: 0.40);
     } else {
       turfColor = Colors.white.withValues(alpha: 0.10);
       borderKerbColor = Colors.white.withValues(alpha: 0.22);
@@ -4593,6 +4668,51 @@ class IslandAerialPainter extends CustomPainter {
             Paint()..color = const Color(0xFFA855F7));
         canvas.drawCircle(pos.translate(-1.4, -1.4), treeSize * 0.30,
             Paint()..color = const Color(0xFFF3E8FF));
+      } else if (isMercury) {
+        // ⚪ Mercury Solar Concentrators & High-Temp Iron Obelisks
+        final panel = Rect.fromCenter(
+            center: pos, width: treeSize * 1.5, height: treeSize * 0.85);
+        canvas.drawRect(panel, Paint()..color = const Color(0xFF1E293B));
+        canvas.drawRect(
+            panel,
+            Paint()
+              ..color = const Color(0xFFCBD5E1)
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 0.8);
+        canvas.drawCircle(
+            pos, treeSize * 0.35, Paint()..color = const Color(0xFFF59E0B));
+      } else if (isKepler) {
+        // 🌌 Kepler-452b Bioluminescent Alien Spores & Exotic Flora
+        canvas.drawCircle(
+            pos, treeSize * 0.95, Paint()..color = const Color(0xFF312E81));
+        canvas.drawCircle(pos.translate(-0.8, -0.8), treeSize * 0.70,
+            Paint()..color = const Color(0xFF7C3AED));
+        canvas.drawCircle(pos.translate(-1.4, -1.4), treeSize * 0.35,
+            Paint()..color = const Color(0xFF34D399));
+      } else if (isGanymede) {
+        // 🛡️ Ganymede Magnetic Ice Spires
+        canvas.drawCircle(
+            pos, treeSize * 0.85, Paint()..color = const Color(0xFF1E293B));
+        canvas.drawCircle(pos.translate(-0.7, -0.7), treeSize * 0.60,
+            Paint()..color = const Color(0xFF0284C7));
+        canvas.drawCircle(pos.translate(-1.3, -1.3), treeSize * 0.30,
+            Paint()..color = const Color(0xFF38BDF8));
+      } else if (isUranus) {
+        // 💎 Uranus Aquamarine Cryo Pinnacles
+        canvas.drawCircle(
+            pos, treeSize * 0.85, Paint()..color = const Color(0xFF0E7490));
+        canvas.drawCircle(pos.translate(-0.7, -0.7), treeSize * 0.60,
+            Paint()..color = const Color(0xFF06B6D4));
+        canvas.drawCircle(pos.translate(-1.3, -1.3), treeSize * 0.30,
+            Paint()..color = const Color(0xFFA5F3FC));
+      } else if (isTriton) {
+        // 🔱 Triton Cryo-Geyser Vents
+        canvas.drawCircle(
+            pos, treeSize * 0.85, Paint()..color = const Color(0xFF1E40AF));
+        canvas.drawCircle(pos.translate(-0.7, -0.7), treeSize * 0.60,
+            Paint()..color = const Color(0xFF3B82F6));
+        canvas.drawCircle(pos.translate(-1.3, -1.3), treeSize * 0.30,
+            Paint()..color = const Color(0xFFBAE6FD));
       } else {
         // 🪐 Gas Giant / Volcanic Beacon Stations (Jupiter, Saturn, Venus, Neptune)
         final pylonColor = isJupiter

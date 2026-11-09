@@ -128,6 +128,7 @@ class PoketCountryMap {
   final int shapeSeed;
   final IslandShapeStyle shapeStyle;
   final int wave;
+  final String? planetCode;
 
   const PoketCountryMap({
     required this.id,
@@ -146,6 +147,7 @@ class PoketCountryMap {
     this.shapeSeed = 1,
     this.shapeStyle = IslandShapeStyle.crescentLagoon,
     this.wave = 1,
+    this.planetCode,
   });
 
   int get availableSlots => (totalSlots - filledSlots).clamp(0, totalSlots);
@@ -179,6 +181,7 @@ class PoketCountryMap {
     int? shapeSeed,
     IslandShapeStyle? shapeStyle,
     int? wave,
+    String? planetCode,
   }) {
     return PoketCountryMap(
       id: id ?? this.id,
@@ -197,6 +200,7 @@ class PoketCountryMap {
       shapeSeed: shapeSeed ?? this.shapeSeed,
       shapeStyle: shapeStyle ?? this.shapeStyle,
       wave: wave ?? this.wave,
+      planetCode: planetCode ?? this.planetCode,
     );
   }
 }
