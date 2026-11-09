@@ -105,9 +105,15 @@ class PocketAdMobService {
   // - Android / iOS Release builds (Production App): Test mode OFF, verified production Ad Unit IDs.
   // - Debug / Profile mode: Test mode ON (Google sample test ad units).
   // - Web / Desktop: Simulation mode.
+  // 🧪 User-requested TestFlight testing mode with Google Official Test IDs (100% Fill Rate)
+  // When true: Uses Google's guaranteed test ads so there are ZERO "No ad to show" errors,
+  // and zero risk of invalid activity warnings while testing repeatedly.
+  static bool useTestModeInBuild = true;
+
   bool get _isTestMode {
     if (_overrideTestMode != null) return _overrideTestMode!;
     if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return true;
+    if (useTestModeInBuild) return true;
     return !kReleaseMode;
   }
 
@@ -121,12 +127,22 @@ class PocketAdMobService {
   static const String iosAppId = 'ca-app-pub-8489571803367790~7234734906';
 
   // 🎯 Google Official Safe Test Ad Unit IDs (Immediate testing without account bans)
-  static const String _testBannerId = 'ca-app-pub-3940256099942544/6300978111';
-  static const String _testInterstitialId =
-      'ca-app-pub-3940256099942544/1033173712';
-  static const String _testRewardedId =
-      'ca-app-pub-3940256099942544/5224354917';
-  static const String testNativeId = 'ca-app-pub-3940256099942544/2247696110';
+  // Android Test IDs:
+  static const String _testBannerIdAndroid = 'ca-app-pub-3940256099942544/6300978111';
+  static const String _testInterstitialIdAndroid = 'ca-app-pub-3940256099942544/1033173712';
+  static const String _testRewardedIdAndroid = 'ca-app-pub-3940256099942544/5224354917';
+  static const String _testNativeIdAndroid = 'ca-app-pub-3940256099942544/2247696110';
+
+  // iOS Test IDs:
+  static const String _testBannerIdIos = 'ca-app-pub-3940256099942544/2934735716';
+  static const String _testInterstitialIdIos = 'ca-app-pub-3940256099942544/4411468910';
+  static const String _testRewardedIdIos = 'ca-app-pub-3940256099942544/1712485313';
+  static const String _testNativeIdIos = 'ca-app-pub-3940256099942544/3986624511';
+
+  static String get testBannerId => Platform.isIOS ? _testBannerIdIos : _testBannerIdAndroid;
+  static String get testInterstitialId => Platform.isIOS ? _testInterstitialIdIos : _testInterstitialIdAndroid;
+  static String get testRewardedId => Platform.isIOS ? _testRewardedIdIos : _testRewardedIdAndroid;
+  static String get testNativeId => Platform.isIOS ? _testNativeIdIos : _testNativeIdAndroid;
 
   // 🚀 Android Production Ad Unit IDs
   // Banner / Medium Rectangle In-Feed Units (300x250)
@@ -236,13 +252,13 @@ class PocketAdMobService {
         case PocketAdPlacement.target:
         case PocketAdPlacement.review:
         case PocketAdPlacement.banner:
-          return _testBannerId;
+          return testBannerId;
         case PocketAdPlacement.learningStep:
         case PocketAdPlacement.dayCompletion:
         case PocketAdPlacement.attack:
-          return _testInterstitialId;
+          return testInterstitialId;
         case PocketAdPlacement.storeCoins:
-          return _testRewardedId;
+          return testRewardedId;
       }
     }
 
@@ -1210,11 +1226,16 @@ class PocketAdMobService {
       return;
     }
 
-    // ⏱️ Policy Safeguard: Enforce minimum interval between interstitials (3 minutes)
+    // ⏱️ Policy Safeguard: Enforce minimum interval between interstitials
+    final minInterval = (placement == PocketAdPlacement.attack)
+        ? const Duration(seconds: 20)
+        : minInterstitialInterval;
+
     if (!forceShowForTesting &&
         _lastInterstitialShownTime != null &&
         DateTime.now().difference(_lastInterstitialShownTime!) <
-            minInterstitialInterval) {
+            minInterval) {
+      debugPrint('⏱️ [PocketAdMob] Interstitial cooldown active (${minInterval.inSeconds}s). Skipping.');
       onDismissed?.call();
       return;
     }
@@ -1297,6 +1318,7 @@ class PocketAdMobService {
 
     if (_interstitialAd != null) {
       _lastInterstitialShownTime = DateTime.now();
+      final completer = Completer<void>();
       _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
         onAdShowedFullScreenContent: (ad) {
           _recordAdImpression(placement.name);
@@ -1306,19 +1328,28 @@ class PocketAdMobService {
           _interstitialAd = null;
           _loadInterstitialAd();
           onDismissed?.call();
+          if (!completer.isCompleted) completer.complete();
         },
         onAdFailedToShowFullScreenContent: (ad, err) {
           ad.dispose();
           _interstitialAd = null;
           _loadInterstitialAd();
           onDismissed?.call();
+          if (!completer.isCompleted) completer.complete();
         },
       );
       _interstitialAd!.show();
+      await completer.future.timeout(
+        const Duration(seconds: 15),
+        onTimeout: () {
+          onDismissed?.call();
+        },
+      );
     } else {
       // If cached interstitial is null or placement needs a direct one-shot load
       final targetUnitId = getUnitIdForPlacement(placement);
       _recordAdRequest(placement.name);
+      final completer = Completer<void>();
       InterstitialAd.load(
         adUnitId: targetUnitId,
         request: const AdRequest(),
@@ -1333,10 +1364,12 @@ class PocketAdMobService {
               onAdDismissedFullScreenContent: (a) {
                 a.dispose();
                 onDismissed?.call();
+                if (!completer.isCompleted) completer.complete();
               },
               onAdFailedToShowFullScreenContent: (a, err) {
                 a.dispose();
                 onDismissed?.call();
+                if (!completer.isCompleted) completer.complete();
               },
             );
             ad.show();
@@ -1344,8 +1377,15 @@ class PocketAdMobService {
           onAdFailedToLoad: (err) {
             _recordAdFailed(placement.name, err);
             onDismissed?.call();
+            if (!completer.isCompleted) completer.complete();
           },
         ),
+      );
+      await completer.future.timeout(
+        const Duration(seconds: 8),
+        onTimeout: () {
+          onDismissed?.call();
+        },
       );
     }
   }

@@ -700,6 +700,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     return (y >= minY - 520.0) && (y <= maxY + 520.0);
   }
 
+  bool _isRoadmapAdInViewport(int day, double minY, double maxY) {
+    final adY = _getNodeY(day) - (_nodeSpacingY * 0.68);
+    return (adY >= minY - 600.0) && (adY <= maxY + 600.0);
+  }
+
   void _scrollToRule({bool animate = false}) {
     if (!_scrollController.hasClients ||
         !_scrollController.position.hasContentDimensions) return;
@@ -3145,7 +3150,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
                                     // 📱 Native Ad Card on Mountain Trail between Gate and Next House (User Audio Directive!)
                                     for (int day = 1; day < _totalDays; day++)
-                                      if (_isDayInViewport(day, minY, maxY))
+                                      if (_isRoadmapAdInViewport(day, minY, maxY))
                                         _buildRoadmapNativeAd(
                                             day, screenWidth),
 

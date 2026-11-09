@@ -7329,9 +7329,16 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
               ),
-              onPressed: () {
+              onPressed: () async {
                 Navigator.pop(ctx);
-                Navigator.pop(context, true);
+                // 📺 Trigger Attack Interstitial Ad for Non-VIP Learners on Raid Victory
+                await PocketAdMobService.instance.showInterstitialAd(
+                  context: context,
+                  placement: PocketAdPlacement.attack,
+                );
+                if (context.mounted) {
+                  Navigator.pop(context, true);
+                }
               },
               child: Text(
                 'CLAIM REWARDS & RETURN 🏆',
@@ -7449,11 +7456,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   Future<void> _openHouseSiege2dBattle() async {
     // Execute the real backend attack and synchronization
     await _executeCitadelAttack();
-
-    if (!mounted) return;
-
-    // Close the current screen with the existing reverse navigation animation
-    Navigator.of(context).pop();
   }
 
   /// 🔤 Step 3 Essential Spelling Challenge Playfield (Zero MCQs - Pure Interactive Letter Tiles)

@@ -316,6 +316,29 @@ class _AdMobDualEngineInspectorSheetState
               Row(
                 children: [
                   Text(
+                    'Test Ads:',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white60,
+                      fontSize: 11,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Switch.adaptive(
+                    value: PocketAdMobService.useTestModeInBuild,
+                    activeThumbColor: Colors.lightBlueAccent,
+                    onChanged: (val) {
+                      HapticFeedback.lightImpact();
+                      setState(() {
+                        PocketAdMobService.useTestModeInBuild = val;
+                        PocketAdMobService.instance.setOverrideTestMode(val);
+                      });
+                      _addLog('TEST', 'AD_MODE_TOGGLE',
+                          val ? '🧪 Google Test Ads (100% Fill Rate) enabled' : '🚀 Live Production Ads enabled');
+                      _reloadBothEngines();
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
                     'Bypass VIP:',
                     style: GoogleFonts.outfit(
                       color: Colors.white60,
