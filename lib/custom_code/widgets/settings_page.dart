@@ -22,6 +22,7 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_parental_patter
 import 'package:pocket_mates_app/custom_code/services/app_store_review_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -58,9 +59,10 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _loadUserSettings() async {
     final prefs = await SharedPreferences.getInstance();
+    final isVip = await PocketAdMobService.instance.isUserVip();
     if (mounted) {
       setState(() {
-        _isVip = prefs.getBool('is_vip') ?? false;
+        _isVip = isVip;
         _selectedLanguage = prefs.getString('preferred_language') ?? PocketLanguageService.currentLanguage;
         _isPowerSaving = prefs.getBool('power_saving_mode') ?? false;
         _isNotificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
@@ -91,6 +93,7 @@ class _SettingsPageState extends State<SettingsPage> {
     
     try {
       PocketKidsService.resetSession();
+      PocketAdMobService.instance.onUserSignedOut();
       // Set a timeout to ensure responsiveness even if network is slow
       await SupaFlow.client.auth.signOut().timeout(const Duration(seconds: 2));
     } catch (e) {

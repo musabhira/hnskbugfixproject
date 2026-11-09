@@ -2,6 +2,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 
@@ -364,6 +365,70 @@ class _AdMobDualEngineInspectorSheetState
                     _profileDbState['subscription_tier']?.toString() ?? 'free'),
                 _buildDbChip('role',
                     _profileDbState['role']?.toString() ?? 'user'),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Equation: isTrueVip = ${isVipActive ? "TRUE (VIP)" : "FALSE (FREE)"}',
+                  style: GoogleFonts.jetBrainsMono(
+                    color: isVipActive ? const Color(0xFFFFD700) : Colors.greenAccent,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                InkWell(
+                  onTap: () async {
+                    HapticFeedback.mediumImpact();
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.setBool('is_vip', false);
+                    await prefs.setBool('is_premium', false);
+                    await prefs.setBool('remove_ads', false);
+                    await prefs.setString('handskill_plan', 'free');
+                    if (_userId != null) {
+                      await prefs.setBool('is_vip_$_userId', false);
+                      await prefs.setBool('is_premium_$_userId', false);
+                      await prefs.setString('handskill_plan_$_userId', 'free');
+                    }
+                    PocketAdMobService.instance.onAccountSwitched(_userId);
+                    _addLog('ACTION', 'CACHE_PURGED', 'Wiped all old VIP flags from device storage!');
+                    await _loadLiveDiagnostics();
+                    _reloadBothEngines();
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('🧹 Device VIP Cache Purged! Free Mode Restored.'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4), width: 0.8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.cleaning_services_rounded, color: Colors.redAccent, size: 12),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Wipe Device Cache',
+                          style: GoogleFonts.outfit(
+                            color: Colors.redAccent,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ],

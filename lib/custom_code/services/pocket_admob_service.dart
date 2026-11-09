@@ -894,7 +894,12 @@ class PocketAdMobService {
               role == 'vip' ||
               role == 'admin';
 
+          debugPrint('🔍 [PocketAdMob] Check VIP for UID $uid:');
+          debugPrint('   -> DB Profile: is_vip=${profile['is_vip']}, is_premium=${profile['is_premium']}, verified=${profile['verified']}, tier=$tier, role=$role');
+          debugPrint('   -> hasActivePaidTier: $hasActivePaidTier, isTrueVip: $isTrueVip');
+
           if (isTrueVip) {
+            debugPrint('   👑 [PocketAdMob] Result: USER IS VIP. All Ads Suppressed.');
             // 👑 PREMIUM / VIP ACCOUNT: Suppress ALL ads!
             await prefs.setBool('is_vip_$uid', true);
             await prefs.setBool('is_premium_$uid', true);
@@ -910,6 +915,7 @@ class PocketAdMobService {
             _cachedIsVip = true;
             return true;
           } else {
+            debugPrint('   🟢 [PocketAdMob] Result: USER IS FREE. Ads Allowed. Cleared device VIP flags.');
             // 👤 NON-PREMIUM / FREE ACCOUNT: MUST SHOW ADS!
             // Clean up any stale VIP flags left behind by another account on this phone!
             await prefs.setBool('is_vip_$uid', false);
@@ -1026,7 +1032,9 @@ class PocketAdMobService {
     bool forceShowForTesting = false,
   }) async {
     final vip = await isUserVip();
+    debugPrint('🎬 [PocketAdMob] showRewardedAd requested. User is VIP: $vip, forceShowForTesting: $forceShowForTesting');
     if (vip && !forceShowForTesting) {
+      debugPrint('👑 [PocketAdMob] VIP user: skipping ad and instantly granting reward!');
       // VIPs get reward instantly without watching any ad
       onUserEarnedReward(RewardItem(50, 'bonus_vip'));
       onAdClosed?.call();
@@ -1200,7 +1208,9 @@ class PocketAdMobService {
     bool forceShowForTesting = false,
   }) async {
     final vip = await isUserVip();
+    debugPrint('📱 [PocketAdMob] showInterstitialAd requested. User is VIP: $vip, forceShowForTesting: $forceShowForTesting');
     if (vip && !forceShowForTesting) {
+      debugPrint('👑 [PocketAdMob] VIP user: Interstitial skipped.');
       onDismissed?.call();
       return;
     }
