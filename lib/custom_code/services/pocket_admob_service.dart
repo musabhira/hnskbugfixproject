@@ -1023,9 +1023,10 @@ class PocketAdMobService {
     required BuildContext context,
     required void Function(RewardItem reward) onUserEarnedReward,
     VoidCallback? onAdClosed,
+    bool forceShowForTesting = false,
   }) async {
     final vip = await isUserVip();
-    if (vip) {
+    if (vip && !forceShowForTesting) {
       // VIPs get reward instantly without watching any ad
       onUserEarnedReward(RewardItem(50, 'bonus_vip'));
       onAdClosed?.call();
@@ -1196,15 +1197,17 @@ class PocketAdMobService {
     BuildContext? context,
     PocketAdPlacement placement = PocketAdPlacement.dayCompletion,
     VoidCallback? onDismissed,
+    bool forceShowForTesting = false,
   }) async {
     final vip = await isUserVip();
-    if (vip) {
+    if (vip && !forceShowForTesting) {
       onDismissed?.call();
       return;
     }
 
     // ⏱️ Policy Safeguard: Enforce minimum interval between interstitials (3 minutes)
-    if (_lastInterstitialShownTime != null &&
+    if (!forceShowForTesting &&
+        _lastInterstitialShownTime != null &&
         DateTime.now().difference(_lastInterstitialShownTime!) <
             minInterstitialInterval) {
       onDismissed?.call();
@@ -1780,6 +1783,8 @@ class PocketNativeAdCard extends StatefulWidget {
   final PocketAdPlacement placement;
   final String? customAdUnitId;
   final bool? isCompact;
+  final bool forceFreeMode;
+  final void Function(String status, String? details)? onStatusChange;
 
   const PocketNativeAdCard({
     super.key,
@@ -1787,18 +1792,24 @@ class PocketNativeAdCard extends StatefulWidget {
     this.placement = PocketAdPlacement.home,
     this.customAdUnitId,
     this.isCompact,
+    this.forceFreeMode = false,
+    this.onStatusChange,
   });
 
   @override
   State<PocketNativeAdCard> createState() => _PocketNativeAdCardState();
 }
 
-class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
+class _PocketNativeAdCardState extends State<PocketNativeAdCard>
+    with AutomaticKeepAliveClientMixin {
   BannerAd? _bannerAd;
   bool _isLoaded = false;
   bool _isVip = false;
   bool _hasRetriedWithAlternateSize = false;
   bool _hasRetriedWithFallback = false;
+
+  @override
+  bool get wantKeepAlive => true;
 
   bool get _isCompact =>
       widget.isCompact ?? (widget.placement == PocketAdPlacement.banner);
@@ -1806,26 +1817,38 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
   @override
   void initState() {
     super.initState();
+    // 👑 Synchronous VIP check: if already confirmed VIP, skip immediately
+    if (!widget.forceFreeMode && PocketAdMobService.instance.isUserVipSync()) {
+      _isVip = true;
+      widget.onStatusChange?.call('VIP_BLOCKED', 'User is VIP in local cache');
+      return;
+    }
+
     // ⚡ Try immediate instant render from Preloaded Ad Cache
     final preloaded =
         PocketAdPreloadManager.instance.consumePreloadedAd(widget.placement);
-    if (preloaded != null) {
+    if (preloaded != null && !widget.forceFreeMode) {
       _bannerAd = preloaded;
       _isLoaded = true;
+      widget.onStatusChange?.call('LOADED', 'From Preloaded Cache (${preloaded.size.width}x${preloaded.size.height})');
     } else {
       _checkVipAndLoad();
     }
   }
 
   Future<void> _checkVipAndLoad() async {
-    final vip = await PocketAdMobService.instance.isUserVip();
-    if (vip) {
-      if (mounted) setState(() => _isVip = true);
-      return;
+    if (!widget.forceFreeMode) {
+      final vip = await PocketAdMobService.instance.isUserVip();
+      if (vip) {
+        if (mounted) setState(() => _isVip = true);
+        widget.onStatusChange?.call('VIP_BLOCKED', 'User is VIP (Supabase/Prefs)');
+        return;
+      }
     }
 
     if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
       if (mounted) setState(() => _isLoaded = true);
+      widget.onStatusChange?.call('SIMULATED', 'Desktop / Web environment');
       return;
     }
 
@@ -1842,6 +1865,8 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
     final AdSize requestedSize = sizeOverride ??
         ((_isCompact) ? AdSize.banner : AdSize.mediumRectangle);
 
+    widget.onStatusChange?.call('REQUESTING', 'Unit: $unitId (${requestedSize.width}x${requestedSize.height})');
+
     _bannerAd = BannerAd(
       adUnitId: unitId,
       size: requestedSize,
@@ -1850,12 +1875,14 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
         onAdLoaded: (_) {
           PocketAdMobService.instance._recordAdLoaded(widget.placement.name);
           if (mounted) setState(() => _isLoaded = true);
+          widget.onStatusChange?.call('LOADED', 'Ad loaded: ${requestedSize.width}x${requestedSize.height}');
         },
         onAdFailedToLoad: (ad, err) {
           PocketAdMobService.instance
               ._recordAdFailed(widget.placement.name, err);
           ad.dispose();
           _bannerAd = null;
+          widget.onStatusChange?.call('FAILED', 'Code ${err.code}: ${err.message}');
 
           // 🔄 Tier 1 Fallback: If 300x250 medium rectangle failed, retry with 320x50 banner
           // in case the ad unit ID was created as a standard banner in Google AdMob Console!
@@ -1863,6 +1890,7 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
               requestedSize == AdSize.mediumRectangle &&
               !_isCompact) {
             _hasRetriedWithAlternateSize = true;
+            widget.onStatusChange?.call('RETRYING_BANNER', 'Retrying with 320x50 banner size');
             _loadBanner(unitId, sizeOverride: AdSize.banner);
             return;
           }
@@ -1877,6 +1905,7 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
               unitId != fallbackUnitId &&
               !PocketAdMobService.instance._isTestMode) {
             _hasRetriedWithFallback = true;
+            widget.onStatusChange?.call('RETRYING_FALLBACK_UNIT', 'Retrying with verified Ranking Unit: $fallbackUnitId');
             _loadBanner(fallbackUnitId, sizeOverride: AdSize.mediumRectangle);
             return;
           }
@@ -1885,6 +1914,7 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
         onAdImpression: (_) {
           PocketAdMobService.instance
               ._recordAdImpression(widget.placement.name);
+          widget.onStatusChange?.call('IMPRESSION', 'Ad impression recorded');
         },
       ),
     );
@@ -1924,8 +1954,9 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
 
   @override
   Widget build(BuildContext context) {
-    // 👑 VIP users never see any ads
-    if (_isVip) {
+    super.build(context);
+    // 👑 VIP users never see any ads (unless forceFreeMode active)
+    if (_isVip && !widget.forceFreeMode) {
       return const SizedBox.shrink();
     }
 
@@ -2419,6 +2450,607 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
             textAlign: TextAlign.center,
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// 🏛️ Legacy Native Ad Card from Working Build v1.0.225+427 (commit dc50278)
+/// Restored in full fidelity for side-by-side production diagnostics & fallback.
+class LegacyDc50278NativeAdCard extends StatefulWidget {
+  final EdgeInsetsGeometry margin;
+  final PocketAdPlacement placement;
+  final String? customAdUnitId;
+  final bool forceFreeMode;
+  final void Function(String status, String? details)? onStatusChange;
+
+  const LegacyDc50278NativeAdCard({
+    super.key,
+    this.margin = const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+    this.placement = PocketAdPlacement.home,
+    this.customAdUnitId,
+    this.forceFreeMode = false,
+    this.onStatusChange,
+  });
+
+  @override
+  State<LegacyDc50278NativeAdCard> createState() =>
+      _LegacyDc50278NativeAdCardState();
+}
+
+class _LegacyDc50278NativeAdCardState extends State<LegacyDc50278NativeAdCard>
+    with AutomaticKeepAliveClientMixin {
+  BannerAd? _bannerAd;
+  bool _isLoaded = false;
+  bool _isVip = false;
+  bool _hasRetriedWithFallback = false;
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkVipAndLoad();
+  }
+
+  Future<void> _checkVipAndLoad() async {
+    if (!widget.forceFreeMode) {
+      final vip = await PocketAdMobService.instance.isUserVip();
+      if (vip) {
+        if (mounted) setState(() => _isVip = true);
+        widget.onStatusChange?.call('VIP_BLOCKED', 'User is VIP in DB/Cache');
+        return;
+      }
+    }
+
+    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
+      if (mounted) setState(() => _isLoaded = true);
+      widget.onStatusChange?.call('SIMULATED', 'Desktop/Web simulation');
+      return;
+    }
+
+    final targetUnitId = widget.customAdUnitId ??
+        PocketAdMobService.instance.getUnitIdForPlacement(widget.placement);
+
+    _loadBanner(targetUnitId);
+  }
+
+  void _loadBanner(String unitId) {
+    widget.onStatusChange?.call('REQUESTING', 'Unit: $unitId (300x250)');
+    PocketAdMobService.instance._recordAdRequest('legacy_${widget.placement.name}');
+
+    _bannerAd?.dispose();
+    _bannerAd = BannerAd(
+      adUnitId: unitId,
+      size: AdSize.mediumRectangle, // 300x250 Instagram feed style
+      request: const AdRequest(),
+      listener: BannerAdListener(
+        onAdLoaded: (_) {
+          PocketAdMobService.instance
+              ._recordAdLoaded('legacy_${widget.placement.name}');
+          if (mounted) setState(() => _isLoaded = true);
+          widget.onStatusChange
+              ?.call('LOADED', '300x250 MediumRectangle loaded successfully');
+        },
+        onAdFailedToLoad: (ad, err) {
+          PocketAdMobService.instance
+              ._recordAdFailed('legacy_${widget.placement.name}', err);
+          ad.dispose();
+          _bannerAd = null;
+          widget.onStatusChange?.call(
+              'FAILED', 'Code ${err.code}: ${err.message} (Unit: $unitId)');
+
+          // 🔄 Auto-Fallback from dc50278: If custom placement unit fails,
+          // instantly retry with the verified working Global Ranking Unit ID (platform-aware)
+          final fallbackUnitId = Platform.isIOS
+              ? PocketAdMobService.prodIosRankingAdUnitId
+              : PocketAdMobService.prodRankingAdUnitId;
+
+          if (!_hasRetriedWithFallback &&
+              unitId != fallbackUnitId &&
+              !PocketAdMobService.instance._isTestMode) {
+            _hasRetriedWithFallback = true;
+            widget.onStatusChange?.call('FALLBACK_RETRY',
+                'Retrying with fallback Ranking Unit: $fallbackUnitId');
+            _loadBanner(fallbackUnitId);
+            return;
+          }
+          if (mounted) setState(() => _isLoaded = false);
+        },
+        onAdImpression: (_) {
+          PocketAdMobService.instance
+              ._recordAdImpression('legacy_${widget.placement.name}');
+          widget.onStatusChange?.call('IMPRESSION', 'Ad impression recorded');
+        },
+      ),
+    );
+
+    _bannerAd?.load();
+  }
+
+  @override
+  void dispose() {
+    _bannerAd?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    if ((_isVip && !widget.forceFreeMode) || !_isLoaded) {
+      return const SizedBox.shrink();
+    }
+
+    if (_bannerAd == null) {
+      // 💻 Desktop / Windows / Web Native Ad Simulation (dc50278 Style)
+      return Container(
+        margin: widget.margin,
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F172A),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.1),
+            width: 1.0,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.35),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Instagram-Style Post Header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+              child: Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFFF59E0B).withValues(alpha: 0.6),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/images/pocket_mates_logo.png',
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: const Color(0xFF1E293B),
+                          alignment: Alignment.center,
+                          child: const Icon(Icons.bolt_rounded,
+                              color: Color(0xFFF59E0B), size: 20),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                'Pocket Mates Ads (dc50278)',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.2,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            const Icon(
+                              Icons.verified_rounded,
+                              color: Color(0xFFF59E0B),
+                              size: 15,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Text(
+                              'Sponsored',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white54,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Text('•',
+                                style: TextStyle(
+                                    color: Colors.white30, fontSize: 10)),
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 5, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(
+                                  color: Colors.white24,
+                                  width: 0.6,
+                                ),
+                              ),
+                              child: Text(
+                                'Ad',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white70,
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.more_horiz_rounded,
+                      color: Colors.white38, size: 20),
+                ],
+              ),
+            ),
+            // Simulated Instagram Content
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white12),
+                    ),
+                    child: const Center(
+                      child: Text('📱', style: TextStyle(fontSize: 24)),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Pocket AI English Companion',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Boost your vocabulary with daily live battles & AI mates.',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white60,
+                            fontSize: 11,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3B82F6),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      'Install',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            _buildVipUpgradeBar(context),
+          ],
+        ),
+      );
+    }
+
+    // 📱 Production Mobile Native Ad (Instagram Feed Post Layout from dc50278)
+    return Container(
+      margin: widget.margin,
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.1),
+          width: 1.0,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 📸 Instagram-Style Post Header
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+            child: Row(
+              children: [
+                // Circular Pocket Mates Brand Avatar with subtle gold ring
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFFF59E0B).withValues(alpha: 0.6),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+                        blurRadius: 6,
+                        spreadRadius: 1,
+                      ),
+                    ],
+                  ),
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/images/pocket_mates_logo.png',
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: const Color(0xFF1E293B),
+                        alignment: Alignment.center,
+                        child: const Icon(Icons.bolt_rounded,
+                            color: Color(0xFFF59E0B), size: 20),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              'Pocket Mates Ads',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.2,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(
+                            Icons.verified_rounded,
+                            color: Color(0xFFF59E0B),
+                            size: 15,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Text(
+                            'Sponsored',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white54,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const Text(
+                            '•',
+                            style:
+                                TextStyle(color: Colors.white30, fontSize: 10),
+                          ),
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 5, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(
+                                color: Colors.white24,
+                                width: 0.6,
+                              ),
+                            ),
+                            child: Text(
+                              'Ad',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white70,
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.4,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.more_horiz_rounded,
+                      color: Colors.white38, size: 20),
+                  padding: EdgeInsets.zero,
+                  constraints:
+                      const BoxConstraints(minWidth: 32, minHeight: 32),
+                  splashRadius: 18,
+                  tooltip: 'Sponsored Ad by Google AdMob',
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Sponsored advertisement. Upgrade to Pocket VIP to remove all ads.',
+                          style: GoogleFonts.outfit(fontSize: 12),
+                        ),
+                        backgroundColor: const Color(0xFF1E293B),
+                        duration: const Duration(seconds: 3),
+                        action: SnackBarAction(
+                          label: 'Go VIP',
+                          textColor: const Color(0xFFFFD700),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const SubscriptionPage()),
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+
+          // 🖼️ Ad Creative Canvas (300x250 Medium Rectangle Container)
+          Center(
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 10),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.08),
+                  width: 1.0,
+                ),
+                color: Colors.black26,
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  width: _bannerAd!.size.width.toDouble(),
+                  height: _bannerAd!.size.height.toDouble(),
+                  child: AdWidget(ad: _bannerAd!),
+                ),
+              ),
+            ),
+          ),
+
+          // 👑 Sleek Yellow/Golden VIP Upgrade Button
+          _buildVipUpgradeBar(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVipUpgradeBar(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                const Color(0xFFF59E0B).withValues(alpha: 0.18),
+                const Color(0xFFD97706).withValues(alpha: 0.10),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: const Color(0xFFF59E0B).withValues(alpha: 0.45),
+              width: 1.0,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Text('👑', style: TextStyle(fontSize: 13)),
+              ),
+              const SizedBox(width: 9),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Go VIP – Remove All Ads',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      'Enjoy 100% ad-free experience & unlimited learning',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white54,
+                        fontSize: 10,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 13,
+                color: Color(0xFFFFD700),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

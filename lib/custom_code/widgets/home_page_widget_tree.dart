@@ -63,6 +63,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_app_update_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/ads/admob_dual_engine_inspector_sheet.dart';
 
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
 typedef ChatConversation = groups_provider.ChatConversation;
@@ -1251,31 +1252,50 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               backgroundColor: material.Colors.transparent,
               bottomNavigationBar: _buildBottomNavigationBar(context),
               floatingActionButton: _currentIndex == 2
-                  ? material.FloatingActionButton.extended(
-                      heroTag: 'mates_ranking_fab',
-                      onPressed: () {
-                        HapticFeedback.mediumImpact();
-                        PocketWorldRankingTrailWidget.showMatesRankingModal(
-                          context,
-                          userId: _currentUserId,
-                        );
-                      },
-                      backgroundColor: const Color(0xFFFFFC00),
-                      foregroundColor: material.Colors.black,
-                      elevation: 4,
-                      highlightElevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      label: Text(
-                        'Mates Rank',
-                        style: GoogleFonts.outfit(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 13,
-                          color: material.Colors.black,
-                          letterSpacing: 0.3,
+                  ? material.Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        material.FloatingActionButton.small(
+                          heroTag: 'admob_dual_lab_fab',
+                          onPressed: () {
+                            HapticFeedback.mediumImpact();
+                            AdMobDualEngineInspectorSheet.show(context);
+                          },
+                          backgroundColor: const Color(0xFF1E293B),
+                          foregroundColor: const Color(0xFFFFFC00),
+                          elevation: 4,
+                          tooltip: 'AdMob Live Diagnostic Lab',
+                          child: const Icon(Icons.analytics_rounded, size: 20),
                         ),
-                      ),
+                        const SizedBox(height: 10),
+                        material.FloatingActionButton.extended(
+                          heroTag: 'mates_ranking_fab',
+                          onPressed: () {
+                            HapticFeedback.mediumImpact();
+                            PocketWorldRankingTrailWidget.showMatesRankingModal(
+                              context,
+                              userId: _currentUserId,
+                            );
+                          },
+                          backgroundColor: const Color(0xFFFFFC00),
+                          foregroundColor: material.Colors.black,
+                          elevation: 4,
+                          highlightElevation: 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          label: Text(
+                            'Mates Rank',
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 13,
+                              color: material.Colors.black,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ),
+                      ],
                     )
                   : null,
               body: material.ColoredBox(
