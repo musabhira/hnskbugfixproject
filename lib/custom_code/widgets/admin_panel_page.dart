@@ -837,27 +837,52 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
 
     setState(() {
       user['verified'] = newStatus;
+      if (newStatus) {
+        user['is_vip'] = true;
+        user['is_premium'] = true;
+      }
     });
 
     try {
+      final updateData = {
+        'verified': newStatus,
+        if (newStatus) 'is_vip': true,
+        if (newStatus) 'is_premium': true,
+        if (newStatus) 'is_subscribed': true,
+        if (newStatus) 'subscription_tier': 'vip_gold',
+        'updated_at': DateTime.now().toIso8601String(),
+      };
+
       if (uid != null && uid.isNotEmpty) {
-        await supabase
-            .from('profile')
-            .update({'verified': newStatus}).eq('user_id', uid);
+        try {
+          await supabase.from('profiles').update(updateData).eq('id', uid);
+        } catch (_) {}
+        try {
+          await supabase.from('profile').update(updateData).eq('user_id', uid);
+        } catch (_) {}
       }
       if (profileId != null) {
         try {
-          await supabase
-              .from('profile')
-              .update({'verified': newStatus}).eq('id', profileId);
+          await supabase.from('profiles').update(updateData).eq('id', profileId);
+        } catch (_) {}
+        try {
+          await supabase.from('profile').update(updateData).eq('id', profileId);
         } catch (_) {}
       }
+
+      // If updating current user, refresh AdMob VIP status immediately
+      if (uid == supabase.auth.currentUser?.id ||
+          profileId == supabase.auth.currentUser?.id) {
+        PocketAdMobService.instance.updateCachedVipStatus(newStatus);
+        PocketAdMobService.instance.isUserVip();
+      }
+
       _loadStats();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(
-                  'User ${newStatus ? "Verified" : "Unverified"} successfully!'),
+                  'User ${newStatus ? "Verified & VIP Granted 👑" : "Unverified"} successfully!'),
               backgroundColor: newStatus ? Colors.green : Colors.orange),
         );
       }
