@@ -792,6 +792,66 @@ class PocketAdMobService {
 
     try {
       final prefs = await SharedPreferences.getInstance();
+
+      // 1. First check user's profile in Supabase to sync real-time database status
+      final user = SupaFlow.client.auth.currentUser;
+      final uid = user?.id;
+      final email = user?.email?.toLowerCase();
+      if (uid != null) {
+        try {
+          dynamic profile;
+          try {
+            profile = await SupaFlow.client
+                .from('profiles')
+                .select(
+                    'is_vip, is_premium, is_subscribed, subscription_tier, role')
+                .eq('id', uid)
+                .maybeSingle();
+          } catch (_) {}
+          if (profile == null) {
+            try {
+              profile = await SupaFlow.client
+                  .from('profile')
+                  .select(
+                      'is_vip, is_premium, is_subscribed, subscription_tier, role')
+                  .or('user_id.eq.$uid,id.eq.$uid')
+                  .maybeSingle();
+            } catch (_) {}
+          }
+
+          if (profile != null) {
+            final role = profile['role']?.toString().toLowerCase();
+            final isTrueVip = profile['is_vip'] == true ||
+                profile['is_premium'] == true ||
+                profile['is_subscribed'] == true ||
+                profile['subscription_tier'] != null ||
+                role == 'vip';
+
+            // ⚠️ CRITICAL ADMIN TESTING FIX:
+            // An admin / developer testing the app on TestFlight should NEVER have ads suppressed!
+            // If the user has role 'admin' or developer email and has not explicitly purchased VIP:
+            // Clear any previously poisoned local VIP flags so ads load properly!
+            final isAdminUser = role == 'admin' ||
+                (email != null &&
+                    (email.contains('musab') || email.contains('admin')));
+            if (isAdminUser && !isTrueVip) {
+              await prefs.setBool('is_vip', false);
+              await prefs.setBool('is_premium', false);
+              await prefs.setBool('remove_ads', false);
+              _cachedIsVip = false;
+              return false;
+            }
+
+            // Synchronize to local SharedPreferences and memory cache
+            await prefs.setBool('is_vip', isTrueVip);
+            await prefs.setBool('is_premium', isTrueVip);
+            _cachedIsVip = isTrueVip;
+            if (isTrueVip) return true;
+          }
+        } catch (_) {}
+      }
+
+      // 2. Check local SharedPreferences (e.g. offline or guest)
       if (prefs.getBool('is_vip') == true ||
           prefs.getBool('has_vip_pass') == true ||
           prefs.getBool('is_premium') == true ||
@@ -801,33 +861,6 @@ class PocketAdMobService {
               prefs.getString('handskill_plan') != 'free')) {
         _cachedIsVip = true;
         return true;
-      }
-
-      // Check current user's profile in Supabase to sync real-time database status
-      final uid = SupaFlow.client.auth.currentUser?.id;
-      if (uid != null) {
-        try {
-          final profile = await SupaFlow.client
-              .from('profile')
-              .select(
-                  'is_vip, is_premium, is_subscribed, subscription_tier, role')
-              .or('user_id.eq.$uid,id.eq.$uid')
-              .maybeSingle();
-          if (profile != null) {
-            final role = profile['role']?.toString().toLowerCase();
-            final isVipDb = profile['is_vip'] == true ||
-                profile['is_premium'] == true ||
-                profile['is_subscribed'] == true ||
-                profile['subscription_tier'] != null ||
-                role == 'admin' ||
-                role == 'vip';
-            // Synchronize to local SharedPreferences and memory cache
-            await prefs.setBool('is_vip', isVipDb);
-            await prefs.setBool('is_premium', isVipDb);
-            _cachedIsVip = isVipDb;
-            if (isVipDb) return true;
-          }
-        } catch (_) {}
       }
     } catch (_) {}
     _cachedIsVip = false;
@@ -1597,8 +1630,12 @@ class PocketAdPreloadManager {
               ._recordAdFailed('preloaded_${placement.name}', err);
           if (!PocketAdMobService.instance._isTestMode) {
             final fallbackId = (placement == PocketAdPlacement.banner)
-                ? PocketAdMobService.prodHomeAdUnitId
-                : PocketAdMobService.prodRankingAdUnitId;
+                ? (Platform.isIOS
+                    ? PocketAdMobService.prodIosStandardBannerAdUnitId
+                    : PocketAdMobService.prodStandardBannerAdUnitId)
+                : (Platform.isIOS
+                    ? PocketAdMobService.prodIosRankingAdUnitId
+                    : PocketAdMobService.prodRankingAdUnitId);
             if (unitId != fallbackId) {
               _preloadFallback(placement, fallbackId, size);
             }
@@ -1693,39 +1730,28 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
   }
 
   Future<void> _checkVipAndLoad() async {
-    // ⚡ Instant synchronous VIP check from cache (0ms latency!)
-    if (PocketAdMobService.instance.isUserVipSync()) {
+    final vip = await PocketAdMobService.instance.isUserVip();
+    if (vip) {
       if (mounted) setState(() => _isVip = true);
       return;
     }
 
     if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
+      if (mounted) setState(() => _isLoaded = true);
       return;
     }
 
     final targetUnitId = widget.customAdUnitId ??
         PocketAdMobService.instance.getUnitIdForPlacement(widget.placement);
 
-    // 🚀 Trigger live AdMob load immediately with ZERO lag!
     _loadBanner(targetUnitId);
-
-    // Background verify VIP status without blocking ad triggering
-    PocketAdMobService.instance.isUserVip().then((vip) {
-      if (vip && mounted) {
-        setState(() {
-          _isVip = true;
-          _bannerAd?.dispose();
-          _bannerAd = null;
-        });
-      }
-    });
   }
 
   void _loadBanner(String unitId) {
     PocketAdMobService.instance._recordAdRequest(widget.placement.name);
 
     _bannerAd?.dispose();
-    final AdSize requestedSize = (widget.placement == PocketAdPlacement.banner)
+    final AdSize requestedSize = (_isCompact)
         ? AdSize.banner
         : AdSize.mediumRectangle;
 
@@ -1743,13 +1769,17 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
               ._recordAdFailed(widget.placement.name, err);
           ad.dispose();
           _bannerAd = null;
-          // 🔄 Auto-Fallback: If custom placement unit fails (e.g. Code 3 No-Fill on newly created IDs),
-          // instantly retry with the verified working Global Ranking Unit ID so Vibes & Homes NEVER stay blank!
+          // 🔄 Auto-Fallback: If custom placement unit fails (e.g. Code 3 No-Fill in UAE/regions),
+          // instantly retry with the verified working Global Ranking Unit ID (matching platform)!
+          final fallbackUnitId = Platform.isIOS
+              ? PocketAdMobService.prodIosRankingAdUnitId
+              : PocketAdMobService.prodRankingAdUnitId;
+
           if (!_hasRetriedWithFallback &&
-              unitId != PocketAdMobService.prodRankingAdUnitId &&
+              unitId != fallbackUnitId &&
               !PocketAdMobService.instance._isTestMode) {
             _hasRetriedWithFallback = true;
-            _loadBanner(PocketAdMobService.prodRankingAdUnitId);
+            _loadBanner(fallbackUnitId);
             return;
           }
           if (mounted) setState(() => _isLoaded = false);
@@ -2656,28 +2686,18 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
   }
 
   Future<void> _initBanner() async {
-    // ⚡ Instant synchronous VIP check from cache (0ms latency!)
-    if (PocketAdMobService.instance.isUserVipSync()) {
+    final vip = await PocketAdMobService.instance.isUserVip();
+    if (vip) {
       if (mounted) setState(() => _isVip = true);
       return;
     }
 
     if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
+      if (mounted) setState(() => _isLoaded = true);
       return;
     }
 
     _loadBanner(PocketAdMobService.instance.bannerAdUnitId);
-
-    // Background verify VIP status without blocking ad triggering
-    PocketAdMobService.instance.isUserVip().then((vip) {
-      if (vip && mounted) {
-        setState(() {
-          _isVip = true;
-          _bannerAd?.dispose();
-          _bannerAd = null;
-        });
-      }
-    });
   }
 
   void _loadBanner(String unitId) {
@@ -2697,14 +2717,17 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
           PocketAdMobService.instance._recordAdFailed('standard_banner', err);
           ad.dispose();
           _bannerAd = null;
-          // Auto-fallback in production: retry with alternate production unit (NEVER test banner in production!)
+          // Auto-fallback in production: retry with alternate production unit (matching platform!)
           if (!_hasRetriedWithFallback &&
               !PocketAdMobService.instance._isTestMode) {
             _hasRetriedWithFallback = true;
-            final fallbackProdId =
-                (unitId != PocketAdMobService.prodHomeAdUnitId)
-                    ? PocketAdMobService.prodHomeAdUnitId
-                    : PocketAdMobService.prodReelsAdUnitId;
+            final fallbackProdId = Platform.isIOS
+                ? (unitId != PocketAdMobService.prodIosStandardBannerAdUnitId
+                    ? PocketAdMobService.prodIosStandardBannerAdUnitId
+                    : PocketAdMobService.prodIosRankingAdUnitId)
+                : (unitId != PocketAdMobService.prodStandardBannerAdUnitId
+                    ? PocketAdMobService.prodStandardBannerAdUnitId
+                    : PocketAdMobService.prodRankingAdUnitId);
             _loadBanner(fallbackProdId);
             return;
           }
