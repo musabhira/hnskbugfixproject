@@ -1033,13 +1033,8 @@ class PocketAdMobService {
   }) async {
     final vip = await isUserVip();
     debugPrint('🎬 [PocketAdMob] showRewardedAd requested. User is VIP: $vip, forceShowForTesting: $forceShowForTesting');
-    if (vip && !forceShowForTesting) {
-      debugPrint('👑 [PocketAdMob] VIP user: skipping ad and instantly granting reward!');
-      // VIPs get reward instantly without watching any ad
-      onUserEarnedReward(RewardItem(50, 'bonus_vip'));
-      onAdClosed?.call();
-      return;
-    }
+    // Note: Rewarded Ads are 100% opt-in (user deliberately tapped "Watch Video to Earn Reward").
+    // We always attempt to load and show the rewarded video ad to honor user action!
 
     // 🛡️ Policy Compliance Check: Daily Cap & Cooldown
     final eligibility = await checkRewardedAdEligibility();

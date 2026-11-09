@@ -23,6 +23,7 @@ import 'package:pocket_mates_app/custom_code/services/app_store_review_service.d
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
+import 'package:path_provider/path_provider.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -1162,75 +1163,200 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  Future<double> _calculateRealCacheSizeMb() async {
+    try {
+      final tempDir = await getTemporaryDirectory();
+      int totalBytes = 0;
+      if (tempDir.existsSync()) {
+        tempDir.listSync(recursive: true, followLinks: false).forEach((file) {
+          if (file is File) {
+            try {
+              totalBytes += file.lengthSync();
+            } catch (_) {}
+          }
+        });
+      }
+      return totalBytes / (1024 * 1024);
+    } catch (_) {
+      return 0.0;
+    }
+  }
+
   void _showStorageCleanerModal() {
+    double currentCacheMb = 0.0;
+    bool isCalculating = true;
+
     showDialog(
       context: context,
-      builder: (dCtx) => AlertDialog(
-        backgroundColor: const Color(0xFF0F172A),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            const Icon(Icons.cleaning_services_rounded, color: Color(0xFFEC4899), size: 22),
-            const SizedBox(width: 8),
-            Text(
-              'Data & Storage Cleaner',
-              style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Pocket Mates caches audio voice clips and avatars locally for fast offline playback.',
-              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
-            ),
-            const SizedBox(height: 14),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Temporary Cache:', style: TextStyle(color: Colors.white70, fontSize: 13)),
-                  Text(
-                    '18.4 MB',
-                    style: GoogleFonts.outfit(color: const Color(0xFFEC4899), fontWeight: FontWeight.bold, fontSize: 15),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dCtx),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFEC4899),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            onPressed: () {
-              PaintingBinding.instance.imageCache.clear();
-              PaintingBinding.instance.imageCache.clearLiveImages();
-              Navigator.pop(dCtx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('✨ 18.4 MB temporary cache successfully cleared!'),
-                  backgroundColor: Color(0xFF0F172A),
+      builder: (dCtx) => StatefulBuilder(
+        builder: (context, setModalState) {
+          if (isCalculating) {
+            _calculateRealCacheSizeMb().then((size) {
+              if (dCtx.mounted) {
+                setModalState(() {
+                  currentCacheMb = size;
+                  isCalculating = false;
+                });
+              }
+            });
+          }
+
+          final displaySize = currentCacheMb < 0.1
+              ? '${(currentCacheMb * 1024).toStringAsFixed(1)} KB'
+              : '${currentCacheMb.toStringAsFixed(2)} MB';
+
+          return AlertDialog(
+            backgroundColor: const Color(0xFF0F172A),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: Row(
+              children: [
+                const Icon(Icons.cleaning_services_rounded, color: Color(0xFFEC4899), size: 22),
+                const SizedBox(width: 8),
+                Text(
+                  'Data & Storage Cleaner',
+                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                 ),
-              );
-            },
-            child: const Text('Clear Cache Now'),
-          ),
-        ],
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Manage offline media files, image cache, and reset device VIP/Ad storage.',
+                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+                ),
+                const SizedBox(height: 14),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Live Disk Cache:', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                      if (isCalculating)
+                        const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFEC4899)),
+                        )
+                      else
+                        Text(
+                          displaySize,
+                          style: GoogleFonts.outfit(
+                            color: currentCacheMb < 0.01 ? Colors.greenAccent : const Color(0xFFEC4899),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Deep Reset wipes all local SharedPreferences, stale VIP flags, and forces fresh free account state.',
+                  style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dCtx),
+                child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+              ),
+              OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFFEC4899),
+                  side: const BorderSide(color: Color(0xFFEC4899)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                onPressed: () async {
+                  HapticFeedback.lightImpact();
+                  PaintingBinding.instance.imageCache.clear();
+                  PaintingBinding.instance.imageCache.clearLiveImages();
+                  try {
+                    final tempDir = await getTemporaryDirectory();
+                    if (tempDir.existsSync()) {
+                      tempDir.listSync().forEach((f) {
+                        try { f.deleteSync(recursive: true); } catch (_) {}
+                      });
+                    }
+                  } catch (_) {}
+
+                  setModalState(() {
+                    currentCacheMb = 0.0;
+                    isCalculating = false;
+                  });
+
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('✨ Media cache cleared to 0.0 KB!'),
+                        backgroundColor: Color(0xFF0F172A),
+                      ),
+                    );
+                  }
+                },
+                child: const Text('Clear Media Cache'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFFD700),
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                onPressed: () async {
+                  HapticFeedback.heavyImpact();
+                  PaintingBinding.instance.imageCache.clear();
+                  PaintingBinding.instance.imageCache.clearLiveImages();
+                  try {
+                    final tempDir = await getTemporaryDirectory();
+                    if (tempDir.existsSync()) {
+                      tempDir.listSync().forEach((f) {
+                        try { f.deleteSync(recursive: true); } catch (_) {}
+                      });
+                    }
+                  } catch (_) {}
+
+                  // 🧹 Deep wipe all VIP / Ad suppression flags from SharedPreferences
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setBool('is_vip', false);
+                  await prefs.setBool('is_premium', false);
+                  await prefs.setBool('remove_ads', false);
+                  await prefs.setBool('is_subscribed', false);
+                  await prefs.setString('handskill_plan', 'free');
+
+                  final uid = SupaFlow.client.auth.currentUser?.id;
+                  if (uid != null && uid.isNotEmpty) {
+                    await prefs.setBool('is_vip_$uid', false);
+                    await prefs.setBool('is_premium_$uid', false);
+                    await prefs.setString('handskill_plan_$uid', 'free');
+                  }
+
+                  PocketAdMobService.instance.onAccountSwitched(uid);
+
+                  Navigator.pop(dCtx);
+
+                  if (mounted) {
+                    setState(() => _isVip = false);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('🧹 Full Deep Reset Complete! All VIP & Storage Cache Wiped.'),
+                        backgroundColor: Color(0xFF10B981),
+                        duration: Duration(seconds: 3),
+                      ),
+                    );
+                  }
+                },
+                child: const Text('⚡ Deep Reset All Cache & VIP', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
