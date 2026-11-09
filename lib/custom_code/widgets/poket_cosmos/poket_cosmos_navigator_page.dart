@@ -13,6 +13,7 @@ import 'planet_sphere_icon_widget.dart';
 import '../verified_switch_page.dart';
 import '../../services/pocket_game_audio_service.dart';
 import '../../services/poket_cosmos_allocation_service.dart';
+import '../../services/pocket_island_group_service.dart';
 
 /// 🌌 Poket Cosmos Explorer:
 /// - Screen 0: Fullscreen Solar System & Scientific Moons (compact 3D tilt bend button & iOS back).
@@ -1568,7 +1569,46 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
+                      // 💬 Island Neighbors Group Chat Button
+                      SizedBox(
+                        height: 38,
+                        child: OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF38BDF8),
+                            side: const BorderSide(
+                              color: Color(0xFF38BDF8),
+                              width: 1.2,
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+                            final colony = PoketCosmosAllocationService.instance
+                                .getColonyByPlanetName(
+                                    _selectedPlanet?.name ?? island.name);
+                            PocketIslandGroupService.instance.openIslandGroupChat(
+                              context,
+                              planetCode: colony.code,
+                              planetName: colony.planetName,
+                              wave: island.wave,
+                              islandName: island.name,
+                            );
+                          },
+                          icon: const Text('💬', style: TextStyle(fontSize: 13)),
+                          label: const Text(
+                            'Neighbors',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
                       Expanded(
                         flex: 4,
                         child: Builder(

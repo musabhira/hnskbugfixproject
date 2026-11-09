@@ -10,6 +10,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_islan
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/island_aerial_view.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_models.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_navigator_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_island_group_service.dart';
 
 /// 🏝️ Fullscreen Resident Island Map for Main Profile PageView
 /// Shows the citizen's actual island with:
@@ -886,6 +887,47 @@ class _PoketCosmosResidentIslandViewState
                     onPressed: _showFilterSheet,
                   ),
                 ],
+              ),
+            ),
+          ),
+
+          // 💬 Floating Island Neighbors Group Chat Capsule
+          Positioned(
+            bottom: bottomPad + 76,
+            left: 20,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                HapticFeedback.mediumImpact();
+                PocketIslandGroupService.instance.openIslandGroupChat(
+                  context,
+                  planetCode: _colony.code,
+                  planetName: _colony.planetName,
+                  wave: _island.wave,
+                  islandName: _island.name,
+                );
+              },
+              icon: const Text('💬', style: TextStyle(fontSize: 15)),
+              label: Text(
+                'NEIGHBORS 💬',
+                style: GoogleFonts.outfit(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 12,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0284C7),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 14, vertical: 11),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: const BorderSide(
+                    color: Color(0xFF38BDF8),
+                    width: 1.2,
+                  ),
+                ),
+                elevation: 6,
               ),
             ),
           ),

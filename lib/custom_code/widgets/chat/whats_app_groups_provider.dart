@@ -11,7 +11,8 @@ import 'package:pocket_mates_app/custom_code/services/local_sync_server.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/services/vibes_seen_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_island_group_service.dart';
+import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_service.dart';
 
 part 'whats_app_groups_provider.g.dart';
 
@@ -799,6 +800,9 @@ class Conversations extends _$Conversations {
   Future<List<ChatConversation>> _fetchGroups(
       String userId, String? profileId) async {
     try {
+      // 🏝️ Proactively ensure current user's Cosmos Island Group is enrolled
+      _syncUserCosmosIslandGroup(userId);
+
       // Get groups where user is a member
       var query = _supabase.from('group_members').select('''
             group_id,
@@ -902,6 +906,33 @@ class Conversations extends _$Conversations {
     } catch (e) {
       rethrow;
     }
+  }
+
+  void _syncUserCosmosIslandGroup(String userId) {
+    if (userId.isEmpty) return;
+    SharedPreferences.getInstance().then((prefs) {
+      final pin = prefs.getString('cosmos_user_relocated_pin_$userId') ??
+          prefs.getString('cosmos_user_pin_$userId') ??
+          prefs.getString('user_cosmos_pin') ??
+          prefs.getString('cosmos_pin');
+      if (pin != null && pin.isNotEmpty) {
+        final match =
+            RegExp(r'PKT-W(\d+)-([A-Z]+)-I\d+-P(\d+)').firstMatch(pin);
+        if (match != null) {
+          final wave = int.tryParse(match.group(1) ?? '1') ?? 1;
+          final code = match.group(2) ?? 'EP';
+          final colony =
+              PoketCosmosAllocationService.instance.getColonyByCode(code);
+          PocketIslandGroupService.instance.ensureIslandGroupAndMember(
+            planetCode: code,
+            planetName: colony.planetName,
+            wave: wave,
+            userId: userId,
+            islandName: colony.islandName,
+          );
+        }
+      }
+    }).catchError((_) {});
   }
 
   Future<List<Map<String, dynamic>>> _getAllGroupsStatuses(

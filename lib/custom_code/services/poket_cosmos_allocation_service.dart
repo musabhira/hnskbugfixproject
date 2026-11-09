@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import '/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_models.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/island_aerial_view.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_island_group_service.dart';
 import 'poket_cosmos_vocab_dictionary.dart';
 import 'poket_cosmos_distance_service.dart';
 
@@ -745,6 +747,26 @@ class PoketCosmosAllocationService {
         relocatedList.add(uid);
         await prefs.setStringList('cosmos_all_relocated_uids', relocatedList);
       }
+
+      // 🏝️ Global Island Neighbors Group Relocation Hook:
+      // Automatically leaves the old island group and joins the new island group!
+      final prevMatch =
+          RegExp(r'PKT-W(\d+)-([A-Z]+)-I\d+-P(\d+)').firstMatch(existingBio);
+      final oldCode = prevMatch?.group(2) ?? 'EP';
+      final oldWave = int.tryParse(prevMatch?.group(1) ?? '1') ?? 1;
+
+      unawaited(
+        PocketIslandGroupService.instance.onUserRelocated(
+          userId: uid,
+          oldPlanetCode: oldCode,
+          newPlanetCode: targetPlanetCode,
+          oldWave: oldWave,
+          newWave: targetWave,
+          newPlotNumber: targetPlotNumber,
+          newPlanetName: colony.planetName,
+          newIslandName: effectiveIslandName,
+        ),
+      );
 
       // Update in-memory profile immediately so UI updates with zero delay
       final profIdx = _allRegisteredProfiles.indexWhere((p) =>
@@ -1626,6 +1648,22 @@ class PoketCosmosAllocationService {
       }
     } catch (e) {
       debugPrint('⚠️ Supabase profile update non-fatal: $e');
+    }
+
+    // 🏝️ Automatically enroll user into their Island Neighbors Group
+    if (uid != null && uid.isNotEmpty) {
+      final colony = getColonyByPlanetName(plot.planetName);
+      final waveMatch = RegExp(r'PKT-W(\d+)').firstMatch(plot.postalPinCode);
+      final wave = int.tryParse(waveMatch?.group(1) ?? '1') ?? 1;
+      unawaited(
+        PocketIslandGroupService.instance.ensureIslandGroupAndMember(
+          planetCode: colony.code,
+          planetName: plot.planetName,
+          wave: wave,
+          userId: uid,
+          islandName: plot.countryName,
+        ),
+      );
     }
   }
 
