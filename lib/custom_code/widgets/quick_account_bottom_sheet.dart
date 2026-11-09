@@ -9,6 +9,7 @@ import '/pages/home_page/home_page_widget.dart';
 import '/auth_page/auth_page_widget.dart';
 import 'package:pocket_mates_app/main.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 
 class AutoLoginBottomSheet extends StatefulWidget {
   final double? width;
@@ -266,6 +267,9 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
       } catch (e) {
         debugPrint('[QuickAccount] Error syncing account mode: $e');
       }
+
+      // 👑 Switch VIP & AdMob status seamlessly for the new account
+      PocketAdMobService.instance.onAccountSwitched(res.user!.id);
 
       if (!mounted) return;
       Navigator.of(context).pop();

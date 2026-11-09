@@ -773,12 +773,27 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       };
 
       if (uid != null && uid.isNotEmpty) {
-        await supabase.from('profile').update(updateData).eq('user_id', uid);
+        try {
+          await supabase.from('profiles').update(updateData).eq('id', uid);
+        } catch (_) {}
+        try {
+          await supabase.from('profile').update(updateData).eq('user_id', uid);
+        } catch (_) {}
       }
       if (profileId != null) {
         try {
+          await supabase.from('profiles').update(updateData).eq('id', profileId);
+        } catch (_) {}
+        try {
           await supabase.from('profile').update(updateData).eq('id', profileId);
         } catch (_) {}
+      }
+
+      // If updating current user, refresh AdMob VIP status immediately
+      if (uid == supabase.auth.currentUser?.id ||
+          profileId == supabase.auth.currentUser?.id) {
+        PocketAdMobService.instance.updateCachedVipStatus(newStatus);
+        PocketAdMobService.instance.isUserVip();
       }
 
       if (mounted) {

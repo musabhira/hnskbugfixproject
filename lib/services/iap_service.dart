@@ -222,9 +222,14 @@ class IAPService {
         await prefs.setString('vip_purchased_at', DateTime.now().toIso8601String());
         _isVipActive = true;
 
-        // 2. Sync to Supabase user profile & entitlements
         if (userId != null) {
-          await supabase.from('profile').update({
+          await prefs.setBool('is_vip_$userId', true);
+          await prefs.setString('handskill_plan_$userId', 'pro');
+        }
+
+        // 2. Sync to Supabase user profile & entitlements (both 'profiles' and 'profile')
+        if (userId != null) {
+          final iapUpdate = {
             'is_vip': true,
             'subscription_tier': 'vip_gold',
             'subscription_status': 'active',
@@ -232,7 +237,13 @@ class IAPService {
             'verified': true,
             'has_purchased_c2_certificate': true,
             'updated_at': DateTime.now().toIso8601String(),
-          }).eq('user_id', userId);
+          };
+          try {
+            await supabase.from('profiles').update(iapUpdate).eq('id', userId);
+          } catch (_) {}
+          try {
+            await supabase.from('profile').update(iapUpdate).eq('user_id', userId);
+          } catch (_) {}
 
           // Record transaction in user_subscriptions table if exists
           try {

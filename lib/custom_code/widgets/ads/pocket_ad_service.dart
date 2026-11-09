@@ -14,16 +14,8 @@ class PocketAdService {
   /// Check whether the current user is subscribed (Starter, Pro, or Business)
   /// Subscribed users enjoy a 100% Ad-Free Experience
   Future<bool> isUserSubscribed() async {
-    // 👑 Central VIP / Kids Rule: Check PocketAdMobService first!
-    final isVip = await PocketAdMobService.instance.isUserVip();
-    if (isVip) return true;
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final plan = prefs.getString('handskill_plan') ?? 'free';
-      return plan != 'free';
-    } catch (_) {
-      return false;
-    }
+    // 👑 Central VIP / Kids Rule: Directly synchronize with PocketAdMobService
+    return await PocketAdMobService.instance.isUserVip();
   }
 
   /// Calculates user account age in days to provide a pleasant, non-intrusive onboarding cushion.

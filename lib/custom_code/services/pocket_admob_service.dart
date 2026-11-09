@@ -699,6 +699,20 @@ class PocketAdMobService {
       preloadAds();
       // 🎯 Request Apple App Tracking Transparency (ATT) permission for interest-based personalized ads
       requestAppTrackingConsent();
+
+      // 🔄 Real-time Account Switch & Logout Listener:
+      // Instantly resets and recalculates VIP entitlement so switching between Premium and Free accounts
+      // on the same device shows/hides ads with 100% precision!
+      try {
+        SupaFlow.client.auth.onAuthStateChange.listen((data) {
+          final user = data.session?.user;
+          if (user != null) {
+            onAccountSwitched(user.id);
+          } else {
+            onUserSignedOut();
+          }
+        });
+      } catch (_) {}
     } catch (e) {
       if (kDebugMode) print('PocketAdMobService initialize error: $e');
     }
@@ -774,11 +788,43 @@ class PocketAdMobService {
     _adminAdPreviewOverride = value;
   }
 
-  // ⚡ In-memory instant VIP cache for 0ms latency ad loading
+  // ⚡ User-Scoped In-memory instant VIP cache for 0ms latency ad loading
+  String? _cachedVipUid;
   bool? _cachedIsVip;
-  bool isUserVipSync() => _cachedIsVip ?? false;
+
+  /// ⚡ Synchronous VIP status check matching the current logged-in user
+  bool isUserVipSync() {
+    if (_adminAdPreviewOverride) return false;
+    final currentUid = SupaFlow.client.auth.currentUser?.id;
+    if (currentUid == null || currentUid.isEmpty) return false;
+    if (_cachedVipUid == currentUid && _cachedIsVip != null) {
+      return _cachedIsVip!;
+    }
+    return false;
+  }
+
   void updateCachedVipStatus(bool isVip) {
+    _cachedVipUid = SupaFlow.client.auth.currentUser?.id;
     _cachedIsVip = isVip;
+  }
+
+  /// 🔄 Called when an account is switched or signed in
+  void onAccountSwitched(String? newUid) {
+    _cachedVipUid = null;
+    _cachedIsVip = null;
+    isUserVip();
+  }
+
+  /// 🚪 Called when user signs out
+  void onUserSignedOut() {
+    _cachedVipUid = null;
+    _cachedIsVip = false;
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setBool('is_vip', false);
+      prefs.setBool('is_premium', false);
+      prefs.setBool('remove_ads', false);
+      prefs.setString('handskill_plan', 'free');
+    }).catchError((_) {});
   }
 
   /// 🛡️ Check if the current user is a VIP / Premium Member
@@ -796,73 +842,113 @@ class PocketAdMobService {
       // 1. First check user's profile in Supabase to sync real-time database status
       final user = SupaFlow.client.auth.currentUser;
       final uid = user?.id;
-      final email = user?.email?.toLowerCase();
-      if (uid != null) {
-        try {
-          dynamic profile;
-          try {
-            profile = await SupaFlow.client
-                .from('profiles')
-                .select(
-                    'is_vip, is_premium, is_subscribed, subscription_tier, role')
-                .eq('id', uid)
-                .maybeSingle();
-          } catch (_) {}
-          if (profile == null) {
-            try {
-              profile = await SupaFlow.client
-                  .from('profile')
-                  .select(
-                      'is_vip, is_premium, is_subscribed, subscription_tier, role')
-                  .or('user_id.eq.$uid,id.eq.$uid')
-                  .maybeSingle();
-            } catch (_) {}
-          }
 
-          if (profile != null) {
-            final role = profile['role']?.toString().toLowerCase();
-            final isTrueVip = profile['is_vip'] == true ||
-                profile['is_premium'] == true ||
-                profile['is_subscribed'] == true ||
-                profile['subscription_tier'] != null ||
-                role == 'vip';
-
-            // ⚠️ CRITICAL ADMIN TESTING FIX:
-            // An admin / developer testing the app on TestFlight should NEVER have ads suppressed!
-            // If the user has role 'admin' or developer email and has not explicitly purchased VIP:
-            // Clear any previously poisoned local VIP flags so ads load properly!
-            final isAdminUser = role == 'admin' ||
-                (email != null &&
-                    (email.contains('musab') || email.contains('admin')));
-            if (isAdminUser && !isTrueVip) {
-              await prefs.setBool('is_vip', false);
-              await prefs.setBool('is_premium', false);
-              await prefs.setBool('remove_ads', false);
-              _cachedIsVip = false;
-              return false;
-            }
-
-            // Synchronize to local SharedPreferences and memory cache
-            await prefs.setBool('is_vip', isTrueVip);
-            await prefs.setBool('is_premium', isTrueVip);
-            _cachedIsVip = isTrueVip;
-            if (isTrueVip) return true;
-          }
-        } catch (_) {}
+      // Guest / Not logged in: Show ads
+      if (uid == null || uid.isEmpty) {
+        _cachedVipUid = null;
+        _cachedIsVip = false;
+        return false;
       }
 
-      // 2. Check local SharedPreferences (e.g. offline or guest)
-      if (prefs.getBool('is_vip') == true ||
-          prefs.getBool('has_vip_pass') == true ||
-          prefs.getBool('is_premium') == true ||
-          prefs.getBool('is_subscribed') == true ||
-          prefs.getBool('remove_ads') == true ||
-          (prefs.getString('handskill_plan') != null &&
-              prefs.getString('handskill_plan') != 'free')) {
+      try {
+        dynamic profile;
+        try {
+          profile = await SupaFlow.client
+              .from('profiles')
+              .select(
+                  'is_vip, is_premium, is_subscribed, subscription_tier, role, verified')
+              .eq('id', uid)
+              .maybeSingle();
+        } catch (_) {}
+        if (profile == null) {
+          try {
+            profile = await SupaFlow.client
+                .from('profile')
+                .select(
+                    'is_vip, is_premium, is_subscribed, subscription_tier, role, verified')
+                .or('user_id.eq.$uid,id.eq.$uid')
+                .maybeSingle();
+          } catch (_) {}
+        }
+
+        if (profile != null) {
+          final role = profile['role']?.toString().toLowerCase().trim();
+          final tier = profile['subscription_tier']?.toString().toLowerCase().trim();
+          final bool hasActivePaidTier = tier != null &&
+              tier.isNotEmpty &&
+              tier != 'free' &&
+              tier != 'none' &&
+              tier != 'null';
+
+          // 👑 Determine VIP Status:
+          // a) is_vip == true (Manual Admin panel assignment or IAP subscription)
+          // b) is_premium == true / is_subscribed == true
+          // c) verified == true (Verified ticket holder)
+          // d) hasActivePaidTier (e.g. 'vip_gold', 'monthly', 'pro', 'quarterly', 'yearly')
+          // e) role == 'vip'
+          final bool isTrueVip = profile['is_vip'] == true ||
+              profile['is_premium'] == true ||
+              profile['is_subscribed'] == true ||
+              profile['verified'] == true ||
+              hasActivePaidTier ||
+              role == 'vip';
+
+          if (isTrueVip) {
+            // 👑 PREMIUM / VIP ACCOUNT: Suppress ALL ads!
+            await prefs.setBool('is_vip_$uid', true);
+            await prefs.setBool('is_premium_$uid', true);
+            await prefs.setString('handskill_plan_$uid', tier ?? 'pro');
+
+            // Device flags
+            await prefs.setBool('is_vip', true);
+            await prefs.setBool('is_premium', true);
+            await prefs.setBool('remove_ads', true);
+            await prefs.setString('handskill_plan', tier ?? 'pro');
+
+            _cachedVipUid = uid;
+            _cachedIsVip = true;
+            return true;
+          } else {
+            // 👤 NON-PREMIUM / FREE ACCOUNT: MUST SHOW ADS!
+            // Clean up any stale VIP flags left behind by another account on this phone!
+            await prefs.setBool('is_vip_$uid', false);
+            await prefs.setBool('is_premium_$uid', false);
+            await prefs.setString('handskill_plan_$uid', 'free');
+
+            // Clear device flags so stale VIP never blocks free account ads
+            await prefs.setBool('is_vip', false);
+            await prefs.setBool('is_premium', false);
+            await prefs.setBool('remove_ads', false);
+            await prefs.setString('handskill_plan', 'free');
+
+            _cachedVipUid = uid;
+            _cachedIsVip = false;
+            return false;
+          }
+        }
+      } catch (e) {
+        debugPrint('[PocketAdMob] Error checking user profile VIP: $e');
+      }
+
+      // 2. Fallback to user-scoped local preferences if network is offline
+      final userScopedVip = prefs.getBool('is_vip_$uid');
+      if (userScopedVip != null) {
+        _cachedVipUid = uid;
+        _cachedIsVip = userScopedVip;
+        return userScopedVip;
+      }
+
+      final userScopedPlan = prefs.getString('handskill_plan_$uid');
+      if (userScopedPlan != null &&
+          userScopedPlan != 'free' &&
+          userScopedPlan.isNotEmpty) {
+        _cachedVipUid = uid;
         _cachedIsVip = true;
         return true;
       }
     } catch (_) {}
+
+    _cachedVipUid = SupaFlow.client.auth.currentUser?.id;
     _cachedIsVip = false;
     return false;
   }
