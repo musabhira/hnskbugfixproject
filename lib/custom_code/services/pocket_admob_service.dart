@@ -885,13 +885,14 @@ class PocketAdMobService {
           // b) is_premium == true / is_subscribed == true
           // c) verified == true (Verified ticket holder)
           // d) hasActivePaidTier (e.g. 'vip_gold', 'monthly', 'pro', 'quarterly', 'yearly')
-          // e) role == 'vip'
+          // e) role == 'vip' || role == 'admin'
           final bool isTrueVip = profile['is_vip'] == true ||
               profile['is_premium'] == true ||
               profile['is_subscribed'] == true ||
               profile['verified'] == true ||
               hasActivePaidTier ||
-              role == 'vip';
+              role == 'vip' ||
+              role == 'admin';
 
           if (isTrueVip) {
             // 👑 PREMIUM / VIP ACCOUNT: Suppress ALL ads!

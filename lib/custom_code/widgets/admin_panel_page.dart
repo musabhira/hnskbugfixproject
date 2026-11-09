@@ -16026,7 +16026,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
 
       final isVip = u['is_vip'] == true ||
           u['is_premium'] == true ||
-          u['is_subscribed'] == true;
+          u['is_subscribed'] == true ||
+          u['verified'] == true;
 
       if (_premiumFilter == 'vip_only') return isVip;
       if (_premiumFilter == 'free_only') return !isVip;
@@ -16037,7 +16038,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
         .where((u) =>
             u['is_vip'] == true ||
             u['is_premium'] == true ||
-            u['is_subscribed'] == true)
+            u['is_subscribed'] == true ||
+            u['verified'] == true)
         .length;
 
     return RefreshIndicator(
@@ -16176,7 +16178,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                           final user = filteredUsers[index];
                           final isVip = user['is_vip'] == true ||
                               user['is_premium'] == true ||
-                              user['is_subscribed'] == true;
+                              user['is_subscribed'] == true ||
+                              user['verified'] == true;
                           final name = user['name']?.toString() ?? 'Unnamed';
                           final phone =
                               user['phone_no']?.toString() ?? 'No phone';
