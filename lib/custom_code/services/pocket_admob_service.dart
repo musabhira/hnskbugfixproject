@@ -1796,6 +1796,7 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
   BannerAd? _bannerAd;
   bool _isLoaded = false;
   bool _isVip = false;
+  bool _hasRetriedWithAlternateSize = false;
   bool _hasRetriedWithFallback = false;
 
   bool get _isCompact =>
@@ -1833,13 +1834,12 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
     _loadBanner(targetUnitId);
   }
 
-  void _loadBanner(String unitId) {
+  void _loadBanner(String unitId, {AdSize? sizeOverride}) {
     PocketAdMobService.instance._recordAdRequest(widget.placement.name);
 
     _bannerAd?.dispose();
-    final AdSize requestedSize = (_isCompact)
-        ? AdSize.banner
-        : AdSize.mediumRectangle;
+    final AdSize requestedSize = sizeOverride ??
+        ((_isCompact) ? AdSize.banner : AdSize.mediumRectangle);
 
     _bannerAd = BannerAd(
       adUnitId: unitId,
@@ -1855,7 +1855,18 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
               ._recordAdFailed(widget.placement.name, err);
           ad.dispose();
           _bannerAd = null;
-          // 🔄 Auto-Fallback: If custom placement unit fails (e.g. Code 3 No-Fill in UAE/regions),
+
+          // 🔄 Tier 1 Fallback: If 300x250 medium rectangle failed, retry with 320x50 banner
+          // in case the ad unit ID was created as a standard banner in Google AdMob Console!
+          if (!_hasRetriedWithAlternateSize &&
+              requestedSize == AdSize.mediumRectangle &&
+              !_isCompact) {
+            _hasRetriedWithAlternateSize = true;
+            _loadBanner(unitId, sizeOverride: AdSize.banner);
+            return;
+          }
+
+          // 🔄 Tier 2 Fallback: If placement unit fails (e.g. Code 3 No-Fill in UAE/regions),
           // instantly retry with the verified working Global Ranking Unit ID (matching platform)!
           final fallbackUnitId = Platform.isIOS
               ? PocketAdMobService.prodIosRankingAdUnitId
@@ -1865,7 +1876,7 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
               unitId != fallbackUnitId &&
               !PocketAdMobService.instance._isTestMode) {
             _hasRetriedWithFallback = true;
-            _loadBanner(fallbackUnitId);
+            _loadBanner(fallbackUnitId, sizeOverride: AdSize.mediumRectangle);
             return;
           }
           if (mounted) setState(() => _isLoaded = false);
