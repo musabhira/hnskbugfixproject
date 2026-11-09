@@ -13,6 +13,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 import 'games/pocket_alphabet_balloon_sky_game_page.dart';
 import 'curriculum_data/day1_az_and_300vocab_data.dart';
 import 'pocket_fortress_defense_service.dart';
@@ -426,6 +427,11 @@ class _PocketDay1Step1AvatarChatPageState
           textNative: replyNative,
           audioText:
               'Awesome, $_userName! You already know the alphabet. Step 1 is complete! Let\'s drive to Level 2!',
+          cardContent: const PocketNativeAdCard(
+            placement: PocketAdPlacement.learningStep,
+            isCompact: true,
+            margin: EdgeInsets.symmetric(vertical: 8),
+          ),
           speakThisPrompt: 'Tap below to exit & drive to Level 2 🚗',
           inBubbleOptions: [
             Step1InBubbleOption(
@@ -1115,6 +1121,11 @@ class _PocketDay1Step1AvatarChatPageState
           textNative: replyNative,
           audioText:
               'Congratulations, $_userName! You completed Step 1! Step 2 Vocabulary is now unlocked. Let\'s drive to Level 2!',
+          cardContent: const PocketNativeAdCard(
+            placement: PocketAdPlacement.learningStep,
+            isCompact: true,
+            margin: EdgeInsets.symmetric(vertical: 8),
+          ),
           speakThisPrompt: 'Tap below to exit to mountain map & drive to Level 2 🚗',
           inBubbleOptions: [
             Step1InBubbleOption(
@@ -1468,7 +1479,21 @@ class _PocketDay1Step1AvatarChatPageState
         itemCount: _messages.length,
         itemBuilder: (ctx, index) {
           final msg = _messages[index];
-          return _buildChatMessageItem(msg);
+          final item = _buildChatMessageItem(msg);
+          if (index == 1 && _messages.length >= 3) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                item,
+                const PocketNativeAdCard(
+                  placement: PocketAdPlacement.learningStep,
+                  isCompact: true,
+                  margin: EdgeInsets.symmetric(vertical: 8),
+                ),
+              ],
+            );
+          }
+          return item;
         },
       ),
       // User Audio Directive: Floating Action Button in the Center with Safe Height

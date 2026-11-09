@@ -490,6 +490,14 @@ class _PocketDayOpenWorldAdventurePageState
       if (stepIndex == _totalSteps) {
         await prefs.setBool('pocket_day_${uid}_${widget.day}_steps_completed', true);
         await prefs.setBool('pocket_day_${uid}_${widget.day}_step_${_totalSteps}_done', true);
+        final now = DateTime.now();
+        final todayStr = '${now.year}-${now.month}-${now.day}';
+        final existingStepsDate =
+            prefs.getString('learning_day_${uid}_${widget.day}_steps_date');
+        if (existingStepsDate == null || existingStepsDate.isEmpty) {
+          await prefs.setString(
+              'learning_day_${uid}_${widget.day}_steps_date', todayStr);
+        }
       }
     }
 
@@ -2025,7 +2033,14 @@ class _PocketDayOpenWorldAdventurePageState
                           textAlign: TextAlign.center,
                         ),
                       ],
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 14),
+                      // 🚀 Preloaded Minimal Native Ad inside Gate Conquered Alert Dialog
+                      const PocketNativeAdCard(
+                        placement: PocketAdPlacement.target,
+                        isCompact: true,
+                        margin: EdgeInsets.symmetric(vertical: 4),
+                      ),
+                      const SizedBox(height: 12),
                       SizedBox(
                         width: double.infinity,
                         height: 48,

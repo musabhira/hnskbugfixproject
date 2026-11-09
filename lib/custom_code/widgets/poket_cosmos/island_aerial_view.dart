@@ -139,51 +139,60 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
     final islandY = (details.localPosition.dy - cy) / scale;
     final tapPoint = Offset(islandX, islandY);
 
-    // 1. Check if occupied citizen plot tapped
-    CitizenPlot? hitPlot;
-    double minDistance = 30.0 * scale;
-
-    for (final plot in widget.plots) {
-      final d = (plot.coordinates - tapPoint).distance;
-      if (d < minDistance) {
-        minDistance = d;
-        hitPlot = plot;
-      }
-    }
-
-    if (hitPlot != null) {
-      if (widget.onPlotTapped != null) {
-        widget.onPlotTapped!(hitPlot);
-      } else {
-        HapticFeedback.mediumImpact();
-        PocketCitadelAttackPage.openForUser(
-          context,
-          userId: hitPlot.userId,
-          targetName: hitPlot.userName,
-        );
-      }
-      return;
-    }
-
-    // 2. Check if a pre-booked or vacant parcel was tapped (1..18 plots)
     final allCoords =
         IslandAerialPainter.get35PlotCoordinates(widget.island.shapeStyle);
     final maxPlots = math.min(
         PoketCosmosAllocationService.maxPlotsPerIsland, allCoords.length);
 
-    for (int i = 0; i < maxPlots; i++) {
-      final plotNum = i + 1;
-      final isOccupied = widget.plots.any((p) => p.plotNumber == plotNum);
-      if (isOccupied) continue;
+    final islandWave = widget.island.activeWaveNumber;
+    final colony = PoketCosmosAllocationService.instance
+        .getColonyByPlanetName(widget.island.name);
 
-      final d = (allCoords[i] - tapPoint).distance;
+    for (int i = 0; i < maxPlots; i++) {
+      final localPlotNumber = i + 1;
+      final globalPlotNumber =
+          PoketCosmosAllocationService.calculateGlobalPlotNumber(
+        wave: islandWave,
+        planetCode: colony.code,
+        localPlotNumber: localPlotNumber,
+      );
+
+      final coord = allCoords[i];
+      final d = (coord - tapPoint).distance;
       if (d < 30.0) {
-        if (_activeReservations.containsKey(plotNum)) {
+        // Check if occupied citizen plot
+        CitizenPlot? occupiedPlot;
+        for (final p in widget.plots) {
+          if (p.plotNumber == localPlotNumber ||
+              p.plotNumber == globalPlotNumber) {
+            occupiedPlot = p;
+            break;
+          }
+        }
+
+        if (occupiedPlot != null) {
+          if (widget.onPlotTapped != null) {
+            widget.onPlotTapped!(occupiedPlot);
+          } else {
+            HapticFeedback.mediumImpact();
+            PocketCitadelAttackPage.openForUser(
+              context,
+              userId: occupiedPlot.userId,
+              targetName: occupiedPlot.userName,
+            );
+          }
+          return;
+        }
+
+        // Check if pre-booked
+        final reservation = _activeReservations[localPlotNumber] ??
+            _activeReservations[globalPlotNumber];
+        if (reservation != null && !reservation.isExpired) {
           // Pre-booked parcel tapped
-          _showPreBookedStatusSheet(context, _activeReservations[plotNum]!);
+          _showPreBookedStatusSheet(context, reservation);
         } else {
           // Vacant parcel tapped with [+] sign
-          _showNeighborInviteSheet(context, plotNum);
+          _showNeighborInviteSheet(context, localPlotNumber);
         }
         return;
       }
@@ -372,8 +381,7 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
     HapticFeedback.mediumImpact();
     final colony = PoketCosmosAllocationService.instance
         .getColonyByPlanetName(widget.planetName ?? widget.island.name);
-    final targetWave =
-        (widget.island.id ~/ 100) > 0 ? (widget.island.id ~/ 100) : 1;
+    final targetWave = widget.island.activeWaveNumber;
     final globalPlotNumber =
         PoketCosmosAllocationService.calculateGlobalPlotNumber(
       wave: targetWave,
@@ -3299,11 +3307,11 @@ class IslandAerialPainter extends CustomPainter {
             ..strokeJoin = StrokeJoin.round,
         );
       } else if (isPreBooked) {
-        // ⏳ Render 4-Hour Animated Rotating Countdown Timer Ring
+        // ⏳ Render 4-Hour Animated Rotating Countdown Timer Ring with uniform plot number
         _drawPreBookedParcel(
-            canvas, housePos, parcelRect, plotRot, reservation, isSel);
+            canvas, housePos, parcelRect, plotRot, reservation, globalPlotNumber, isSel);
       } else {
-        // ➕ Render Vacant Plot with center pulsing Plus (+) icon and global plot number
+        // ➕ Render Vacant Plot with centered Plus (+) icon and uniform plot number badge
         _drawVacantParcelWithPlus(
             canvas, housePos, parcelRect, plotRot, globalPlotNumber, isSel);
       }
@@ -3329,143 +3337,75 @@ class IslandAerialPainter extends CustomPainter {
     }
   }
 
-  // ➕ Vacant Parcel with Pulsing Center PLUS Button
+  // ➕ Vacant Parcel with Clean Centered PLUS Button and Uniform Plot Number Badge
   void _drawVacantParcelWithPlus(Canvas canvas, Offset housePos,
       Rect parcelRect, double plotRot, int plotNumber, bool isSel) {
     canvas.save();
     canvas.translate(housePos.dx, housePos.dy);
     canvas.rotate(plotRot);
+    canvas.translate(-housePos.dx, -housePos.dy);
 
-    // 1. Soft turf base harmonized with the planetary biome
-    Color turfColor;
-    Color borderColor;
+    // 1. Uniform Plot Number Badge at top-left of parcel — exact same as on bought plots!
+    _drawPlotNumberBadge(canvas, parcelRect, plotNumber, isSel);
 
-    switch (colonyType) {
-      case CelestialColonyType.moon:
-        turfColor = const Color(0xFF475569);
-        borderColor = const Color(0xFF94A3B8);
-        break;
-      case CelestialColonyType.mars:
-        turfColor = const Color(0xFF9A3412);
-        borderColor = const Color(0xFFEA580C);
-        break;
-      case CelestialColonyType.jupiter:
-        turfColor = const Color(0xFFB45309);
-        borderColor = const Color(0xFFF59E0B);
-        break;
-      case CelestialColonyType.saturn:
-        turfColor = const Color(0xFFCA8A04);
-        borderColor = const Color(0xFFFCD34D);
-        break;
-      case CelestialColonyType.europa:
-        turfColor = const Color(0xFF0284C7);
-        borderColor = const Color(0xFF7DD3FC);
-        break;
-      case CelestialColonyType.venus:
-        turfColor = const Color(0xFFB45309);
-        borderColor = const Color(0xFFFBBF24);
-        break;
-      case CelestialColonyType.titan:
-        turfColor = const Color(0xFF047857);
-        borderColor = const Color(0xFF10B981);
-        break;
-      case CelestialColonyType.pluto:
-        turfColor = const Color(0xFFA855F7);
-        borderColor = const Color(0xFFC084FC);
-        break;
-      case CelestialColonyType.neptune:
-        turfColor = const Color(0xFF2563EB);
-        borderColor = const Color(0xFF60A5FA);
-        break;
-      case CelestialColonyType.earth:
-        turfColor = const Color(0xFF15803D);
-        borderColor = const Color(0xFF4ADE80);
-        break;
-    }
+    // 2. Clean Centered PLUS Button at housePos (Center of vacant plot)
+    final pulse = math.sin(timeSeconds * 3.0 + plotNumber) * 0.10 + 1.0;
+    final buttonRadius = 7.5 * pulse;
 
-    final turfRRect = RRect.fromRectAndRadius(
-      Rect.fromCenter(center: Offset.zero, width: 52.0, height: 40.0),
-      const Radius.circular(9.0),
-    );
-    final turfPaint = Paint()
-      ..color = turfColor.withValues(alpha: 0.35)
-      ..style = PaintingStyle.fill;
-    canvas.drawRRect(turfRRect, turfPaint);
-
-    final borderPaint = Paint()
-      ..color = borderColor.withValues(alpha: 0.55)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-    canvas.drawRRect(turfRRect, borderPaint);
-
-    // 2. Small stone path leading into center
-    final pathPaint = Paint()
-      ..color = const Color(0xFFCBD5E1).withValues(alpha: 0.35)
-      ..strokeWidth = 1.8;
-    canvas.drawLine(const Offset(0, 14), const Offset(0, 4.0), pathPaint);
-
-    // 3. Center Glowing PLUS Button (Coral Crimson Red with +)
-    final pulse = math.sin(timeSeconds * 3.5 + plotNumber) * 0.12 + 1.0;
-    final btnRadius = 6.4 * pulse;
-
-    // Glowing aura
+    // Soft drop shadow
     canvas.drawCircle(
-      Offset.zero,
-      btnRadius + 3.0,
-      Paint()..color = const Color(0xFFE11D48).withValues(alpha: 0.28),
+      housePos.translate(0.5, 0.6),
+      buttonRadius,
+      Paint()..color = Colors.black45,
     );
-
-    // Center button background (Coral Crimson Red)
+    // Translucent dark slate circular button
     canvas.drawCircle(
-      Offset.zero,
-      btnRadius,
-      Paint()..color = const Color(0xFFE11D48),
+      housePos,
+      buttonRadius,
+      Paint()..color = const Color(0xFF0F172A).withValues(alpha: 0.85),
     );
-
+    // Crisp border (Gold if selected, subtle cyan/white if unselected)
     canvas.drawCircle(
-      Offset.zero,
-      btnRadius,
+      housePos,
+      buttonRadius,
       Paint()
-        ..color = Colors.white.withValues(alpha: 0.9)
+        ..color = isSel ? const Color(0xFFFFD700) : const Color(0xFF38BDF8)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 0.8,
+        ..strokeWidth = isSel ? 1.5 : 1.0,
     );
 
-    // Crisp white Plus (+) icon lines
+    // Crisp Plus (+) symbol centered inside the button
     final plusPaint = Paint()
-      ..color = Colors.white
-      ..strokeWidth = 1.4
+      ..color = isSel ? const Color(0xFFFFD700) : Colors.white
+      ..strokeWidth = 1.6
       ..strokeCap = StrokeCap.round;
-    const plusSize = 2.6;
+    const plusHalf = 3.2;
     canvas.drawLine(
-        const Offset(-plusSize, 0), const Offset(plusSize, 0), plusPaint);
+      housePos.translate(-plusHalf, 0),
+      housePos.translate(plusHalf, 0),
+      plusPaint,
+    );
     canvas.drawLine(
-        const Offset(0, -plusSize), const Offset(0, plusSize), plusPaint);
-
-    // 4. Subtle "#$plotNumber" badge
-    final textPainter = TextPainter(
-      text: TextSpan(
-        text: '#$plotNumber',
-        style: const TextStyle(
-          color: Color(0xFFFDA4AF),
-          fontSize: 3.3,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 0.3,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    textPainter.paint(canvas, Offset(-textPainter.width / 2, -8.5));
+      housePos.translate(0, -plusHalf),
+      housePos.translate(0, plusHalf),
+      plusPaint,
+    );
 
     canvas.restore();
   }
 
   // ⏳ Pre-Booked Parcel with Animated Rotating Countdown Timer Ring
   void _drawPreBookedParcel(Canvas canvas, Offset housePos, Rect parcelRect,
-      double plotRot, NeighborReservationPass pass, bool isSel) {
+      double plotRot, NeighborReservationPass pass, int plotNumber, bool isSel) {
     canvas.save();
     canvas.translate(housePos.dx, housePos.dy);
     canvas.rotate(plotRot);
+    canvas.translate(-housePos.dx, -housePos.dy);
+
+    // Uniform Plot Number Badge
+    _drawPlotNumberBadge(canvas, parcelRect, plotNumber, isSel);
+
+    canvas.translate(housePos.dx, housePos.dy);
 
     // 1. Gold/Amber reserved parcel base
     final turfRRect = RRect.fromRectAndRadius(
@@ -3961,16 +3901,34 @@ class IslandAerialPainter extends CustomPainter {
   void _drawPlotNumberBadge(
       Canvas canvas, Rect parcelRect, int plotNumber, bool isSel) {
     // Placed neatly on the top-left inside the parcel bounds
-    final badgeCenter = Offset(parcelRect.left + 8.5, parcelRect.top + 6.0);
+    final text = '#$plotNumber';
+    final tp = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: TextStyle(
+          color: isSel ? const Color(0xFFFFD700) : Colors.white,
+          fontSize: 4.8,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 0.3,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+
+    final badgeWidth = math.max(16.0, tp.width + 6.0);
+    final badgeHeight = tp.height + 3.0;
+    final badgeCenter = Offset(parcelRect.left + (badgeWidth / 2) + 2.0,
+        parcelRect.top + (badgeHeight / 2) + 2.0);
     final badgeRRect = RRect.fromRectAndRadius(
-      Rect.fromCenter(center: badgeCenter, width: 13.5, height: 6.0),
-      const Radius.circular(2.0),
+      Rect.fromCenter(
+          center: badgeCenter, width: badgeWidth, height: badgeHeight),
+      const Radius.circular(3.0),
     );
 
     // Subtle drop shadow
     canvas.drawRRect(
       badgeRRect.shift(const Offset(0.3, 0.4)),
-      Paint()..color = Colors.black38,
+      Paint()..color = Colors.black54,
     );
     // Dark slate body
     canvas.drawRRect(
@@ -3986,24 +3944,10 @@ class IslandAerialPainter extends CustomPainter {
       Paint()
         ..color = isSel
             ? const Color(0xFFFFD700)
-            : const Color(0xFF38BDF8).withValues(alpha: 0.75)
+            : const Color(0xFF38BDF8).withValues(alpha: 0.85)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = isSel ? 0.9 : 0.6,
+        ..strokeWidth = isSel ? 1.0 : 0.7,
     );
-
-    // Minimal plot number text: '#25'
-    final tp = TextPainter(
-      text: TextSpan(
-        text: '#$plotNumber',
-        style: TextStyle(
-          color: isSel ? const Color(0xFFFFD700) : Colors.white,
-          fontSize: 3.2,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 0.3,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
 
     tp.paint(canvas,
         Offset(badgeCenter.dx - tp.width / 2, badgeCenter.dy - tp.height / 2));

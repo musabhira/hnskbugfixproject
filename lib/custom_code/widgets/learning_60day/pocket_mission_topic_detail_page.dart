@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'pocket_language_selection_dialog.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 
 /// 🎮 Dedicated Gamified Arcade Detail Page Arena for Daily Mission Learning Topics
 class PocketMissionTopicDetailPage extends StatefulWidget {
@@ -234,7 +235,14 @@ class _PocketMissionTopicDetailPageState
                     ],
                   ),
                 ),
-                const SizedBox(height: 22),
+                const SizedBox(height: 14),
+                // 🚀 Preloaded Minimal Native Ad inside Quest Completion Modal
+                const PocketNativeAdCard(
+                  placement: PocketAdPlacement.review,
+                  isCompact: true,
+                  margin: EdgeInsets.symmetric(vertical: 4),
+                ),
+                const SizedBox(height: 10),
                 SizedBox(
                   width: double.infinity,
                   height: 48,

@@ -21,6 +21,7 @@ enum PocketAdPlacement {
   attack,
   storeCoins,
   banner, // 📱 Dedicated Standard 320x50 Sticky Banner Unit
+  target, // 🎯 Roadmap target page between gate and next house
 }
 
 /// 📊 Real-time AdMob Telemetry & Event Model
@@ -232,6 +233,7 @@ class PocketAdMobService {
         case PocketAdPlacement.reels:
         case PocketAdPlacement.vibes:
         case PocketAdPlacement.home:
+        case PocketAdPlacement.target:
         case PocketAdPlacement.review:
         case PocketAdPlacement.banner:
           return _testBannerId;
@@ -253,6 +255,7 @@ class PocketAdMobService {
         case PocketAdPlacement.vibes:
           return prodIosVibesAdUnitId;
         case PocketAdPlacement.home:
+        case PocketAdPlacement.target:
           return prodIosHomeAdUnitId;
         case PocketAdPlacement.review:
           return prodIosReviewAdUnitId;
@@ -277,6 +280,7 @@ class PocketAdMobService {
       case PocketAdPlacement.vibes:
         return prodVibesAdUnitId;
       case PocketAdPlacement.home:
+      case PocketAdPlacement.target:
         return prodHomeAdUnitId;
       case PocketAdPlacement.review:
         return prodReviewAdUnitId;
@@ -300,6 +304,7 @@ class PocketAdMobService {
     if (Platform.isIOS) {
       switch (placement) {
         case PocketAdPlacement.home:
+        case PocketAdPlacement.target:
           return prodIosNativeHomeAdUnitId;
         case PocketAdPlacement.vibes:
           return prodIosNativeVibesAdUnitId;
@@ -314,6 +319,7 @@ class PocketAdMobService {
 
     switch (placement) {
       case PocketAdPlacement.home:
+      case PocketAdPlacement.target:
         return prodNativeHomeAdUnitId;
       case PocketAdPlacement.vibes:
         return prodNativeVibesAdUnitId;
@@ -1549,7 +1555,10 @@ class PocketAdPreloadManager {
 
     _loadingPlacements.add(placement);
     final unitId = PocketAdMobService.instance.getUnitIdForPlacement(placement);
-    final AdSize size = (placement == PocketAdPlacement.banner)
+    final AdSize size = (placement == PocketAdPlacement.banner ||
+            placement == PocketAdPlacement.target ||
+            placement == PocketAdPlacement.review ||
+            placement == PocketAdPlacement.learningStep)
         ? AdSize.banner
         : AdSize.mediumRectangle;
 
@@ -1630,12 +1639,14 @@ class PocketNativeAdCard extends StatefulWidget {
   final EdgeInsetsGeometry margin;
   final PocketAdPlacement placement;
   final String? customAdUnitId;
+  final bool? isCompact;
 
   const PocketNativeAdCard({
     super.key,
     this.margin = const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
     this.placement = PocketAdPlacement.home,
     this.customAdUnitId,
+    this.isCompact,
   });
 
   @override
@@ -1647,6 +1658,12 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
   bool _isLoaded = false;
   bool _isVip = false;
   bool _hasRetriedWithFallback = false;
+
+  bool get _isCompact =>
+      widget.isCompact ??
+      (widget.placement == PocketAdPlacement.target ||
+          widget.placement == PocketAdPlacement.review ||
+          widget.placement == PocketAdPlacement.learningStep);
 
   @override
   void initState() {
@@ -1686,7 +1703,7 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
     _bannerAd?.dispose();
     _bannerAd = BannerAd(
       adUnitId: unitId,
-      size: AdSize.mediumRectangle, // 300x250 Instagram feed style
+      size: _isCompact ? AdSize.banner : AdSize.mediumRectangle,
       request: const AdRequest(),
       listener: BannerAdListener(
         onAdLoaded: (_) {
@@ -1725,226 +1742,48 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
     super.dispose();
   }
 
+  void _showAdInfoSnackbar(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Sponsored advertisement. Upgrade to Poket VIP to remove all ads.',
+          style: GoogleFonts.outfit(fontSize: 12),
+        ),
+        backgroundColor: const Color(0xFF1E293B),
+        duration: const Duration(seconds: 3),
+        action: SnackBarAction(
+          label: 'Go VIP',
+          textColor: const Color(0xFFFFD700),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => const SubscriptionPage()),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (_isVip || !_isLoaded) {
+    // 👑 VIP users never see any ads
+    if (_isVip) {
       return const SizedBox.shrink();
     }
 
-    if (_bannerAd == null) {
-      // 💻 Desktop / Windows / Web Native Ad Simulation (Chat Tile + FAB VIP Style)
-      return Container(
-        margin: widget.margin,
-        decoration: BoxDecoration(
-          color: const Color(0xFF131B26).withValues(alpha: 0.85),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.08),
-            width: 1.0,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.25),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Chat Tile-Style Header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
-              child: Row(
-                children: [
-                  // 48x48 Avatar with Glowing Aura Ring matching ConversationTile
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFF131B26),
-                      border: Border.all(
-                        color: const Color(0xFFFFFC00).withValues(alpha: 0.6),
-                        width: 1.5,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFFFFC00).withValues(alpha: 0.25),
-                          blurRadius: 10,
-                          spreadRadius: 1.5,
-                        ),
-                      ],
-                    ),
-                    child: ClipOval(
-                      child: Image.asset(
-                        'assets/images/pocket_mates_logo.png',
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                          color: const Color(0xFF131B26),
-                          alignment: Alignment.center,
-                          child: const Icon(Icons.bolt_rounded,
-                              color: Color(0xFFFFFC00), size: 24),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Row(
-                          children: [
-                            Flexible(
-                              child: Text(
-                                'Poket Mates Ads',
-                                style: GoogleFonts.outfit(
-                                  color: Colors.white,
-                                  fontSize: 14.5,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.1,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            const Icon(
-                              Icons.verified_rounded,
-                              color: Color(0xFFFFFC00),
-                              size: 15,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            Text(
-                              'Sponsored',
-                              style: GoogleFonts.outfit(
-                                color: Colors.white54,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            const Text(
-                              '•',
-                              style: TextStyle(
-                                  color: Colors.white30, fontSize: 10),
-                            ),
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 5, vertical: 1),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(4),
-                                border: Border.all(
-                                  color: Colors.white24,
-                                  width: 0.6,
-                                ),
-                              ),
-                              child: Text(
-                                'Ad',
-                                style: GoogleFonts.outfit(
-                                  color: Colors.white70,
-                                  fontSize: 9.5,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.4,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.more_horiz_rounded,
-                      color: Colors.white38, size: 20),
-                ],
-              ),
-            ),
-            // Simulated Content
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 14),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0F172A),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white12),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF131B26),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white12),
-                    ),
-                    child: const Center(
-                      child: Text('📱', style: TextStyle(fontSize: 24)),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Poket AI English Companion',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Boost your vocabulary with daily live battles & AI mates.',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white60,
-                            fontSize: 11,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFFC00),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Text(
-                      'Install',
-                      style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Sleek VIP Action Button (Mates Rank Yellow FAB Style)
-            _buildVipUpgradeBar(context),
-          ],
-        ),
-      );
+    // ⚡ Preloaded Minimal Mode (For Target Roadmap, Modals, & Conversational Steps)
+    if (_isCompact) {
+      return _buildCompactCard(context);
     }
 
-    // 📱 Production Mobile Native Ad (Chat Tile Theme + Mates Rank Style VIP)
+    // 📱 Standard Instagram Feed-Style Native Ad Card
+    return _buildStandardCard(context);
+  }
+
+  /// 🌟 Sleek, Compact Minimal Native Ad Card (~135px height, preloaded, zero pop-in)
+  Widget _buildCompactCard(BuildContext context) {
     return Container(
       margin: widget.margin,
       decoration: BoxDecoration(
@@ -1957,7 +1796,8 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.25),
-            blurRadius: 8,
+            blurRadius: 6,
+            spreadRadius: 0,
             offset: const Offset(0, 2),
           ),
         ],
@@ -1966,27 +1806,294 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 📸 Chat Tile-Style Header
+          // 📸 Compact Header (32x32 Avatar + Title + Verified Badge + Sponsored)
           Padding(
-            padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
+            padding: const EdgeInsets.fromLTRB(12, 10, 10, 6),
             child: Row(
               children: [
-                // 48x48 Avatar with Glowing Aura Ring matching ConversationTile
+                // 32x32 Glowing Avatar
                 Container(
-                  width: 48,
-                  height: 48,
+                  width: 32,
+                  height: 32,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: const Color(0xFF131B26),
                     border: Border.all(
-                      color: const Color(0xFFFFFC00).withValues(alpha: 0.6),
+                      color: const Color(0xFFFFFC00),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFFFC00).withValues(alpha: 0.25),
+                        blurRadius: 6,
+                      ),
+                    ],
+                  ),
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/images/pocket_mates_logo.png',
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const Icon(
+                        Icons.bolt_rounded,
+                        color: Color(0xFFFFFC00),
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              'Poket Mates Ads',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(
+                            Icons.verified_rounded,
+                            color: Color(0xFFFFFC00),
+                            size: 13,
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Text(
+                            'Sponsored',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white54,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(width: 5),
+                          const Text('•', style: TextStyle(color: Colors.white30, fontSize: 9)),
+                          const SizedBox(width: 5),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0.5),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(3),
+                              border: Border.all(color: Colors.white24, width: 0.5),
+                            ),
+                            child: Text(
+                              'Ad',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white70,
+                                fontSize: 8.5,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.more_horiz_rounded, color: Colors.white38, size: 18),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 26, minHeight: 26),
+                  splashRadius: 14,
+                  onPressed: () => _showAdInfoSnackbar(context),
+                ),
+              ],
+            ),
+          ),
+
+          // 🖼️ Ad Content Frame (Live AdMob Banner or Preloaded Branded VIP Promotion)
+          if (_bannerAd != null && _isLoaded)
+            Center(
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                height: 50,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.black26,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: SizedBox(
+                    width: _bannerAd!.size.width.toDouble(),
+                    height: _bannerAd!.size.height.toDouble(),
+                    child: AdWidget(ad: _bannerAd!),
+                  ),
+                ),
+              ),
+            )
+          else
+            // Preloaded Branded Fallback Strip (Always visible, ZERO layout shift, never disappears)
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.08),
+                  width: 0.8,
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.auto_awesome, color: Color(0xFFFFD700), size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'AI English Companion • 4.9 ★ (10K+ Reviews)',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white70,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0284C7).withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Text(
+                      'VIP',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFF38BDF8),
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          // 👑 Minimal Golden VIP Upgrade Pill (Height 32px)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(10, 6, 10, 8),
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+                );
+              },
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                width: double.infinity,
+                height: 32,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color(0xFFFFB300),
+                      Color(0xFFFFFC00),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFFB300).withValues(alpha: 0.25),
+                      blurRadius: 6,
+                      offset: const Offset(0, 1.5),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.workspace_premium_rounded,
+                        color: Colors.black, size: 15),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Go VIP & Remove All Ads',
+                      style: GoogleFonts.outfit(
+                        color: Colors.black,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.1,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.arrow_forward_rounded,
+                      color: Colors.black,
+                      size: 13,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 📱 Standard Full-Size Native Ad Card
+  Widget _buildStandardCard(BuildContext context) {
+    return Container(
+      margin: widget.margin,
+      decoration: BoxDecoration(
+        color: const Color(0xFF131B26).withValues(alpha: 0.75),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.07),
+          width: 1.0,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 6,
+            spreadRadius: 0,
+            offset: const Offset(0, 1.5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 📸 Instagram Feed-Style Header matching ConversationTile
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
+            child: Row(
+              children: [
+                // 50x50 Avatar with Glowing Aura Ring matching ConversationTile exactly
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFF131B26),
+                    border: Border.all(
+                      color: const Color(0xFFFFFC00),
                       width: 1.5,
                     ),
                     boxShadow: [
                       BoxShadow(
                         color: const Color(0xFFFFFC00).withValues(alpha: 0.25),
                         blurRadius: 10,
-                        spreadRadius: 1.5,
+                        spreadRadius: 1.0,
                       ),
                     ],
                   ),
@@ -1998,7 +2105,7 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
                         color: const Color(0xFF131B26),
                         alignment: Alignment.center,
                         child: const Icon(Icons.bolt_rounded,
-                            color: Color(0xFFFFFC00), size: 24),
+                            color: Color(0xFFFFFC00), size: 26),
                       ),
                     ),
                   ),
@@ -2088,118 +2195,274 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
                       const BoxConstraints(minWidth: 32, minHeight: 32),
                   splashRadius: 18,
                   tooltip: 'Sponsored Ad by Google AdMob',
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Sponsored advertisement. Upgrade to Poket VIP to remove all ads.',
-                          style: GoogleFonts.outfit(fontSize: 12),
-                        ),
-                        backgroundColor: const Color(0xFF1E293B),
-                        duration: const Duration(seconds: 3),
-                        action: SnackBarAction(
-                          label: 'Go VIP',
-                          textColor: const Color(0xFFFFD700),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const SubscriptionPage()),
-                            );
-                          },
-                        ),
-                      ),
-                    );
-                  },
+                  onPressed: () => _showAdInfoSnackbar(context),
                 ),
               ],
             ),
           ),
 
-          // 🖼️ Ad Creative Canvas (Centered Instagram Post Media Frame)
-          Center(
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 12),
+          // 🖼️ Ad Creative Canvas (Instagram Post Media Frame)
+          if (_bannerAd != null && _isLoaded)
+            Center(
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 14),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.08),
+                    width: 1.0,
+                  ),
+                  color: Colors.black26,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: SizedBox(
+                    width: _bannerAd!.size.width.toDouble(),
+                    height: _bannerAd!.size.height.toDouble(),
+                    child: AdWidget(ad: _bannerAd!),
+                  ),
+                ),
+              ),
+            )
+          else
+            // 💻 Desktop / Windows / Preloaded Demo Creative (Always visible, ZERO layout shift)
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 14),
+              height: 220,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
                 border: Border.all(
                   color: Colors.white.withValues(alpha: 0.08),
                   width: 1.0,
                 ),
-                color: Colors.black26,
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: SizedBox(
-                  width: _bannerAd!.size.width.toDouble(),
-                  height: _bannerAd!.size.height.toDouble(),
-                  child: AdWidget(ad: _bannerAd!),
-                ),
+              child: Stack(
+                children: [
+                  // Visual Media Graphic
+                  Positioned.fill(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: RadialGradient(
+                            center: const Alignment(0, -0.2),
+                            radius: 1.1,
+                            colors: [
+                              const Color(0xFF0284C7).withValues(alpha: 0.35),
+                              const Color(0xFF0F172A),
+                            ],
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: const Color(0xFF131B26),
+                                border: Border.all(
+                                  color: const Color(0xFFFFFC00),
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFFFFC00)
+                                        .withValues(alpha: 0.3),
+                                    blurRadius: 12,
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.bolt_rounded,
+                                color: Color(0xFFFFFC00),
+                                size: 30,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Poket Mates AI English Companion',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Daily Spoken English Battles & 90-Day Fluency Journey',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white70,
+                                fontSize: 11.5,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                ...List.generate(
+                                  5,
+                                  (i) => const Icon(
+                                    Icons.star_rounded,
+                                    color: Color(0xFFFFD700),
+                                    size: 15,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  '4.9 ★ (10K+ Reviews)',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFFFFD700),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  // "AdMob Native Preview" Label
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.7),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.white24, width: 0.6),
+                      ),
+                      child: Text(
+                        'AdMob Native Preview',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white70,
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Install Action Button
+                  Positioned(
+                    bottom: 10,
+                    right: 10,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0284C7),
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                const Color(0xFF0284C7).withValues(alpha: 0.4),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        'Install Now',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
 
-          // 👑 Signature Mates Rank-Style Full Width Yellow VIP Button
+          // 👑 Minimal Golden VIP Button (Matching Random / Pocket Talk gradient)
           _buildVipUpgradeBar(context),
         ],
       ),
     );
   }
 
-  /// 👑 Signature Mates Rank-Style Full Width Yellow VIP Button (Matching App FAB & Action buttons)
+  /// 👑 Minimal Yellow Gradient VIP Button matching Random & Pocket Talk buttons
   Widget _buildVipUpgradeBar(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const SubscriptionPage()),
-          );
-        },
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFFFC00),
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
-              ),
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.25),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text('👑', style: TextStyle(fontSize: 16)),
-              const SizedBox(width: 8),
-              Text(
-                'Go VIP – Remove All Ads',
-                style: GoogleFonts.outfit(
-                  color: Colors.black,
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 0.3,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+              );
+            },
+            borderRadius: BorderRadius.circular(13),
+            child: Container(
+              width: double.infinity,
+              height: 42,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFFFFB300),
+                    Color(0xFFFFFC00),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
+                borderRadius: BorderRadius.circular(13),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFFB300).withValues(alpha: 0.28),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-              const SizedBox(width: 6),
-              const Icon(
-                Icons.arrow_forward_rounded,
-                color: Colors.black,
-                size: 16,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.workspace_premium_rounded,
+                      color: Colors.black, size: 18),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Go VIP & Remove All Ads',
+                    style: GoogleFonts.outfit(
+                      color: Colors.black,
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  const Icon(
+                    Icons.arrow_forward_rounded,
+                    color: Colors.black,
+                    size: 16,
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+          const SizedBox(height: 5),
+          Text(
+            'Enjoy 100% ad-free experience & unlimited live matches',
+            style: GoogleFonts.outfit(
+              color: Colors.white38,
+              fontSize: 10.5,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }

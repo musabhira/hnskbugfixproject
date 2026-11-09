@@ -7,6 +7,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/flame_icon_widget.dart';
 
 import 'package:pocket_mates_app/custom_code/widgets/kids/student_creative_writing_90day_curriculum.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 
 const Color kSBg = Color(0xFF0B111E);
 const Color kSCard = Color(0xFF141C2F);
@@ -216,7 +217,14 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
                   color: kSEm,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
+              // 🚀 Preloaded Minimal Native Ad inside Quest Completion Modal
+              const PocketNativeAdCard(
+                placement: PocketAdPlacement.review,
+                isCompact: true,
+                margin: EdgeInsets.symmetric(vertical: 4),
+              ),
+              const SizedBox(height: 10),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: kSGold,

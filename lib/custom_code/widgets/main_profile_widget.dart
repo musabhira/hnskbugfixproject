@@ -28,6 +28,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_resident_island_view.dart';
+import 'package:pocket_mates_app/custom_code/widgets/profile/pocket_army_desk_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_challenge_generator.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/day90_master_certificate_dialog.dart';
@@ -2387,6 +2388,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           if (isMe) ...[
             const SizedBox(height: 16),
             _buildMinimalAttackersSection(),
+            const SizedBox(height: 16),
+            PocketArmyDeskWidget(userId: widget.userId ?? ''),
             const SizedBox(height: 16),
             _buildCitadelFightArenaDesk(),
           ] else ...[

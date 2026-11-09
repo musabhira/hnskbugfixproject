@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_action_chat_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
@@ -346,25 +347,58 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         final justCreated =
             prefs.getBool('just_created_account_${user.id}') ?? false;
 
+        // Check if user has an existing valid profile name in state or cache
+        String? profileName = _preloadedProfile?['name']?.toString().trim();
+        String? profileAvatar =
+            _preloadedProfile?['profile_image_url']?.toString();
+
+        if (profileName == null || profileName.isEmpty) {
+          final cachedStr = prefs.getString('cached_profile_${user.id}');
+          if (cachedStr != null && cachedStr.isNotEmpty) {
+            try {
+              final cachedMap = jsonDecode(cachedStr) as Map<String, dynamic>;
+              profileName = cachedMap['name']?.toString().trim();
+              profileAvatar = cachedMap['profile_image_url']?.toString();
+            } catch (_) {}
+          }
+        }
+
+        if (profileName == null || profileName.isEmpty) {
+          try {
+            final directRes = await supabase
+                .from('profile')
+                .select('name, bio, profile_image_url')
+                .or('id.eq.${user.id},user_id.eq.${user.id}')
+                .maybeSingle();
+            if (directRes != null) {
+              profileName = directRes['name']?.toString().trim();
+              profileAvatar = directRes['profile_image_url']?.toString();
+            }
+          } catch (_) {}
+        }
+
         // If the user already has a valid profile name in Supabase, mark setup as completed
-        final profileName = _preloadedProfile?['name']?.toString().trim();
         if (profileName != null &&
             profileName.isNotEmpty &&
             profileName != 'Pocket Mate') {
           await prefs.setBool('profile_setup_completed_${user.id}', true);
           await prefs.setBool('profile_setup_prompted_${user.id}', true);
           await prefs.remove('just_created_account_${user.id}');
+
+          // 🌌 Guarantee every registered citizen has a Pocket Cosmos plot!
+          // If they missed born address or ceremony, auto-allocate a free plot in the active wave (out of 375).
+          await PoketCosmosAllocationService.instance.ensureUserHasAllocatedPlot(
+            defaultName: profileName,
+            defaultAvatar: profileAvatar,
+          );
           return;
         }
 
-        // Only redirect to Profile Create if the user just went through NEW account registration
-        if (justCreated && !completed && !prompted) {
-          await prefs.setBool('profile_setup_prompted_${user.id}', true);
-          await prefs.remove('just_created_account_${user.id}');
-          if (mounted) {
-            context.pushNamed(ProfileCreateCustomWidget.routeName);
-            return;
-          }
+        // If profile setup has NOT been completed (e.g., closed app on phone number or DOB step during onboarding)
+        // Resume onboarding immediately so they finish profile setup and claim their Pocket Cosmos plot!
+        if (mounted) {
+          context.pushNamed(ProfileCreateCustomWidget.routeName);
+          return;
         }
       } catch (e) {
         debugPrint('Profile setup check error: $e');

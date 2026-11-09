@@ -1,8 +1,11 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flame/game.dart' hide Matrix4;
+import '/backend/supabase/supabase.dart';
+import '../learning_60day/pocket_island_attack_page.dart';
 import 'poket_cosmos_models.dart';
 import 'flame_solar_system_game.dart';
 import 'island_aerial_view.dart';
@@ -60,6 +63,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
   CitizenPlot? _inspectedPlot;
 
   double _currentAerialZoom = 1.0;
+  int _activeWaves = 1;
   late AnimationController _ambientOceanAnimController;
 
   @override
@@ -148,6 +152,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
     final waves = await PoketCosmosAllocationService.instance.getActiveWaveIndex();
     if (mounted) {
       setState(() {
+        _activeWaves = waves;
         _planets = _buildCosmosPlanets(activeWaves: waves);
         if (_selectedPlanet != null) {
           _selectedPlanet = _planets.firstWhere(
@@ -216,37 +221,14 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
     required IslandShapeStyle shapeStyle,
     int activeWaves = 1,
   }) {
+    final colony =
+        PoketCosmosAllocationService.instance.getColonyByCode(planetCode);
     final List<PoketCountryMap> list = [];
-    // Wave 1 primary island
-    list.add(PoketCountryMap(
-      id: planetId * 100 + 1,
-      name: baseIslandName,
-      tag: baseTag,
-      landColor: landColor,
-      waterColor: waterColor,
-      totalSlots: 25,
-      filledSlots: 25,
-      climate: climate,
-      climateIcon: climateIcon,
-      islandEmoji: islandEmoji,
-      shapeStyle: shapeStyle,
-    ));
-
-    // Waves 2..activeWaves expansions
-    for (int w = 2; w <= activeWaves; w++) {
-      final islandName = PoketCosmosAllocationService.generateInfiniteIslandName(planetCode, w, w);
-      list.add(PoketCountryMap(
-        id: planetId * 100 + w,
-        name: islandName,
-        tag: 'Living Colony (Wave $w)',
-        landColor: landColor,
-        waterColor: waterColor,
-        totalSlots: 25,
-        filledSlots: w == 2 ? 15 : 0,
-        climate: climate,
-        climateIcon: climateIcon,
-        islandEmoji: islandEmoji,
-        shapeStyle: shapeStyle,
+    for (int w = 1; w <= math.max(1, activeWaves); w++) {
+      list.add(PoketCosmosAllocationService.generateProceduralIsland(
+        colony: colony,
+        wave: w,
+        activeWave: activeWaves,
       ));
     }
     return list;
@@ -327,7 +309,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         totalPlots: activeWaves * 25 + 1,
         occupiedPlots: activeWaves * 25,
         countryMaps: _buildEarth30EnglishIslands(activeWaves: activeWaves),
-        satellites: const [
+        satellites: [
           PoketSatellite(
             id: 30,
             name: 'The Moon 🌕',
@@ -336,28 +318,26 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
             theme: 'Earth\'s Natural Satellite & Off-World Harbor',
             tagLine:
                 'Tidally Locked • First Off-World Colony (Tranquility Base)',
-            primaryColor: Color(0xFFE2E8F0),
-            glowColor: Color(0xFFCBD5E1),
+            primaryColor: const Color(0xFFE2E8F0),
+            glowColor: const Color(0xFFCBD5E1),
             radius: 8.5,
             orbitDistance: 25.0,
             orbitSpeed: 2.4,
-            totalPlots: 50,
-            occupiedPlots: 36,
-            countryMaps: [
-              PoketCountryMap(
-                id: 3001,
-                name: 'Tranquility Base',
-                tag: 'First Lunar Colony',
-                landColor: Color(0xFF475569),
-                waterColor: Color(0xFF0F172A),
-                totalSlots: 35,
-                filledSlots: 36,
-                climate: 'Lunar Glow 🌕',
-                climateIcon: Icons.nightlight_round,
-                islandEmoji: '🌕',
-                shapeStyle: IslandShapeStyle.ringAtoll,
-              ),
-            ],
+            totalPlots: activeWaves * 25,
+            occupiedPlots: activeWaves * 25,
+            countryMaps: _buildPlanetIslands(
+              planetId: 30,
+              planetCode: 'MOON',
+              baseIslandName: 'Tranquility Base',
+              baseTag: 'First Lunar Colony',
+              landColor: const Color(0xFF475569),
+              waterColor: const Color(0xFF0F172A),
+              climate: 'Lunar Glow 🌕',
+              climateIcon: Icons.nightlight_round,
+              islandEmoji: '🌕',
+              shapeStyle: IslandShapeStyle.ringAtoll,
+              activeWaves: activeWaves,
+            ),
           ),
         ],
       ),
@@ -416,7 +396,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
           shapeStyle: IslandShapeStyle.ringAtoll,
           activeWaves: activeWaves,
         ),
-        satellites: const [
+        satellites: [
           PoketSatellite(
             id: 51,
             name: 'Europa 🧊',
@@ -424,28 +404,26 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
             satelliteType: 'Jupiter\'s Oceanic Moon',
             theme: 'Subsurface Liquid Ocean beneath Ice Shell',
             tagLine: 'Cryo Tide Vault • Conamara Chaos',
-            primaryColor: Color(0xFFBAE6FD),
-            glowColor: Color(0xFF38BDF8),
+            primaryColor: const Color(0xFFBAE6FD),
+            glowColor: const Color(0xFF38BDF8),
             radius: 8.0,
             orbitDistance: 27.0,
             orbitSpeed: 2.1,
-            totalPlots: 50,
-            occupiedPlots: 31,
-            countryMaps: [
-              PoketCountryMap(
-                id: 5101,
-                name: 'Conamara Chaos',
-                tag: 'Liquid Ocean Vault',
-                landColor: Color(0xFF0284C7),
-                waterColor: Color(0xFF38BDF8),
-                totalSlots: 35,
-                filledSlots: 31,
-                climate: 'Cryo Tide 🌊',
-                climateIcon: Icons.water_drop_rounded,
-                islandEmoji: '🧊',
-                shapeStyle: IslandShapeStyle.crescentLagoon,
-              ),
-            ],
+            totalPlots: activeWaves * 25,
+            occupiedPlots: activeWaves * 25,
+            countryMaps: _buildPlanetIslands(
+              planetId: 51,
+              planetCode: 'EUR',
+              baseIslandName: 'Conamara Chaos',
+              baseTag: 'Liquid Ocean Vault',
+              landColor: const Color(0xFF0284C7),
+              waterColor: const Color(0xFF38BDF8),
+              climate: 'Cryo Tide 🌊',
+              climateIcon: Icons.water_drop_rounded,
+              islandEmoji: '🧊',
+              shapeStyle: IslandShapeStyle.crescentLagoon,
+              activeWaves: activeWaves,
+            ),
           ),
           PoketSatellite(
             id: 52,
@@ -454,28 +432,26 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
             satelliteType: 'Jupiter\'s Super-Moon',
             theme: 'Largest Satellite in Solar System (Bigger than Mercury)',
             tagLine: 'Internal Magnetic Dynamo • Silicate Highlands',
-            primaryColor: Color(0xFF94A3B8),
-            glowColor: Color(0xFF64748B),
+            primaryColor: const Color(0xFF94A3B8),
+            glowColor: const Color(0xFF64748B),
             radius: 9.2,
             orbitDistance: 40.0,
             orbitSpeed: 1.5,
-            totalPlots: 50,
-            occupiedPlots: 26,
-            countryMaps: [
-              PoketCountryMap(
-                id: 5201,
-                name: 'Perrine Regio',
-                tag: 'Magnetic Ocean Citadel',
-                landColor: Color(0xFF475569),
-                waterColor: Color(0xFF0284C7),
-                totalSlots: 35,
-                filledSlots: 26,
-                climate: 'Magnetic Glow ⚡',
-                climateIcon: Icons.shield_rounded,
-                islandEmoji: '🛡️',
-                shapeStyle: IslandShapeStyle.fortressPlateau,
-              ),
-            ],
+            totalPlots: activeWaves * 25,
+            occupiedPlots: activeWaves * 25,
+            countryMaps: _buildPlanetIslands(
+              planetId: 52,
+              planetCode: 'GAN',
+              baseIslandName: 'Perrine Regio',
+              baseTag: 'Magnetic Ocean Citadel',
+              landColor: const Color(0xFF475569),
+              waterColor: const Color(0xFF0284C7),
+              climate: 'Magnetic Glow ⚡',
+              climateIcon: Icons.shield_rounded,
+              islandEmoji: '🛡️',
+              shapeStyle: IslandShapeStyle.fortressPlateau,
+              activeWaves: activeWaves,
+            ),
           ),
         ],
       ),
@@ -506,7 +482,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
           shapeStyle: IslandShapeStyle.dualIsletBridge,
           activeWaves: activeWaves,
         ),
-        satellites: const [
+        satellites: [
           PoketSatellite(
             id: 61,
             name: 'Titan 🪐',
@@ -514,28 +490,26 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
             satelliteType: 'Saturn\'s Atmospheric Moon',
             theme: 'Dense Nitrogen Sky & Liquid Methane Seas',
             tagLine: 'Golden Clouds • Hydrocarbon Ocean Harbor (Kraken Mare)',
-            primaryColor: Color(0xFFFBBF24),
-            glowColor: Color(0xFFD97706),
+            primaryColor: const Color(0xFFFBBF24),
+            glowColor: const Color(0xFFD97706),
             radius: 9.0,
             orbitDistance: 34.0,
             orbitSpeed: 1.8,
-            totalPlots: 50,
-            occupiedPlots: 38,
-            countryMaps: [
-              PoketCountryMap(
-                id: 6101,
-                name: 'Kraken Mare Bay',
-                tag: 'Liquid Methane Sea',
-                landColor: Color(0xFF92400E),
-                waterColor: Color(0xFFD97706),
-                totalSlots: 35,
-                filledSlots: 38,
-                climate: 'Golden Rain 🌧️',
-                climateIcon: Icons.umbrella_rounded,
-                islandEmoji: '🪐',
-                shapeStyle: IslandShapeStyle.ringAtoll,
-              ),
-            ],
+            totalPlots: activeWaves * 25,
+            occupiedPlots: activeWaves * 25,
+            countryMaps: _buildPlanetIslands(
+              planetId: 61,
+              planetCode: 'TIT',
+              baseIslandName: 'Kraken Mare Bay',
+              baseTag: 'Liquid Methane Sea',
+              landColor: const Color(0xFF92400E),
+              waterColor: const Color(0xFFD97706),
+              climate: 'Golden Rain 🌧️',
+              climateIcon: Icons.umbrella_rounded,
+              islandEmoji: '🪐',
+              shapeStyle: IslandShapeStyle.ringAtoll,
+              activeWaves: activeWaves,
+            ),
           ),
         ],
       ),
@@ -594,7 +568,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
           shapeStyle: IslandShapeStyle.heartSanctuary,
           activeWaves: activeWaves,
         ),
-        satellites: const [
+        satellites: [
           PoketSatellite(
             id: 81,
             name: 'Triton 🔱',
@@ -602,28 +576,26 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
             satelliteType: 'Neptune\'s Cryo Moon',
             theme: 'Retrograde Nitrogen Geyser Satellite',
             tagLine: 'Sub-Zero Cryo Spouts • Kuiper Belt Capture',
-            primaryColor: Color(0xFF93C5FD),
-            glowColor: Color(0xFF3B82F6),
+            primaryColor: const Color(0xFF93C5FD),
+            glowColor: const Color(0xFF3B82F6),
             radius: 7.8,
             orbitDistance: 27.0,
             orbitSpeed: -1.9, // Retrograde orbit!
-            totalPlots: 50,
-            occupiedPlots: 24,
-            countryMaps: [
-              PoketCountryMap(
-                id: 8101,
-                name: 'Triton Geyser',
-                tag: 'Cryo Spout Basin',
-                landColor: Color(0xFF1E40AF),
-                waterColor: Color(0xFF60A5FA),
-                totalSlots: 35,
-                filledSlots: 24,
-                climate: 'Cryo Plume ❄️',
-                climateIcon: Icons.ac_unit_rounded,
-                islandEmoji: '🔱',
-                shapeStyle: IslandShapeStyle.crescentLagoon,
-              ),
-            ],
+            totalPlots: activeWaves * 25,
+            occupiedPlots: activeWaves * 25,
+            countryMaps: _buildPlanetIslands(
+              planetId: 81,
+              planetCode: 'TRI',
+              baseIslandName: 'Triton Geyser',
+              baseTag: 'Cryo Spout Basin',
+              landColor: const Color(0xFF1E40AF),
+              waterColor: const Color(0xFF60A5FA),
+              climate: 'Cryo Plume ❄️',
+              climateIcon: Icons.ac_unit_rounded,
+              islandEmoji: '🔱',
+              shapeStyle: IslandShapeStyle.crescentLagoon,
+              activeWaves: activeWaves,
+            ),
           ),
         ],
       ),
@@ -691,11 +663,11 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
   /// 🏝️ Earth Prime Sovereign & Citizen Colony Islands
   static List<PoketCountryMap> _buildEarth30EnglishIslands({int activeWaves = 1}) {
     final list = <PoketCountryMap>[
-      // 👑 Island #0: Presidential Citadel (President Mus'ab's Exclusive Sovereign Sanctuary)
+      // 👑 Island #0: Presidential Citadel (President Mus'ab's Exclusive Sovereign Sanctuary - ONLY ON EARTH PRIME)
       const PoketCountryMap(
         id: 1,
         name: 'Presidential Citadel 👑',
-        tag: 'Presidential Sanctuary',
+        tag: 'Presidential Sanctuary • Earth Prime 🌍',
         landColor: Color(0xFF15803D),
         waterColor: Color(0xFF0284C7),
         totalSlots: 1,
@@ -707,44 +679,19 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         islandEmoji: '🏰',
         isPresidential: true,
         shapeStyle: IslandShapeStyle.citadelApex,
-      ),
-
-      // 🏝️ Wave 1 Citizen Colony: Ocean Whisper Atoll (Plots 1..25)
-      const PoketCountryMap(
-        id: 301,
-        name: 'Ocean Whisper Atoll',
-        tag: 'Wave 1 Colony Island',
-        landColor: Color(0xFF16A34A),
-        waterColor: Color(0xFF06B6D4), // Coral turquoise
-        totalSlots: 25,
-        filledSlots: 25,
-        climate: 'Tropical Breeze 🌊',
-        climateIcon: Icons.waves_rounded,
-        description:
-            'Verdant tropical crescent atoll where Earth Prime citizens build their lifelong homes.',
-        islandEmoji: '🏝️',
-        shapeStyle: IslandShapeStyle.crescentLagoon,
+        wave: 1,
       ),
     ];
 
-    // Additional Waves
-    for (int w = 2; w <= activeWaves; w++) {
-      final name = (w == 2)
-          ? 'Serenity Atoll'
-          : PoketCosmosAllocationService.generateInfiniteIslandName('EP', w, w);
-      list.add(PoketCountryMap(
-        id: 300 + w,
-        name: name,
-        tag: 'Wave $w Expansion Island',
-        landColor: const Color(0xFF0D9488),
-        waterColor: const Color(0xFF0EA5E9),
-        totalSlots: 25,
-        filledSlots: w == 2 ? 15 : 0,
-        climate: 'Ocean Horizon 🍃',
-        climateIcon: Icons.air_rounded,
-        description: 'Wave $w expansion island expanding the frontier of Earth Prime.',
-        islandEmoji: '🌴',
-        shapeStyle: IslandShapeStyle.sCurveArchipelago,
+    final earthColony =
+        PoketCosmosAllocationService.instance.getColonyByCode('EP');
+
+    // Procedural Loop for all citizen islands on Earth Prime (Wave 1 to activeWaves)
+    for (int w = 1; w <= math.max(1, activeWaves); w++) {
+      list.add(PoketCosmosAllocationService.generateProceduralIsland(
+        colony: earthColony,
+        wave: w,
+        activeWave: activeWaves,
       ));
     }
 
@@ -1272,11 +1219,41 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                           ),
                         ),
                         Text(
-                          '${islands.length} Distinct Islands • 35 Plots per Island',
+                          '${islands.length} Distinct Islands • 25 Plots per Island',
                           style: const TextStyle(
                               color: Colors.white60, fontSize: 11),
                         ),
                       ],
+                    ),
+                  ),
+                  InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: _showCosmosPlanetSearchSheet,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      margin: const EdgeInsets.only(right: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white12),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.search_rounded,
+                              color: Color(0xFF38BDF8), size: 14),
+                          SizedBox(width: 4),
+                          Text(
+                            'Search',
+                            style: TextStyle(
+                              color: Color(0xFF38BDF8),
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   InkWell(
@@ -1511,7 +1488,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                           Text(
                             island.isPresidential
                                 ? '1 VIP Slot (Supreme President)'
-                                : 'Filled Slots: ${island.filledSlots} / 35 Plots',
+                                : 'Filled Slots: ${island.filledSlots} / ${island.totalSlots} Plots',
                             style: TextStyle(
                               color: island.isPresidential
                                   ? const Color(0xFFFFD700)
@@ -1551,31 +1528,85 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                     ],
                   ),
 
-                  // Explore Island Button (Full Width)
-                  SizedBox(
-                    width: double.infinity,
-                    height: 38,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: island.isPresidential
-                            ? const Color(0xFFFFD700)
-                            : island.waterColor,
-                        foregroundColor:
-                            island.isPresidential ? Colors.black : Colors.white,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
-                        elevation: 4,
+                  // Action Row: Explore Island & Attack / Mock Attack
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 5,
+                        child: SizedBox(
+                          height: 38,
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: island.isPresidential
+                                  ? const Color(0xFFFFD700)
+                                  : island.waterColor,
+                              foregroundColor: island.isPresidential
+                                  ? Colors.black
+                                  : Colors.white,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              elevation: 4,
+                            ),
+                            onPressed: () =>
+                                _navigateToFullscreenAerialMap(island),
+                            icon: const Icon(Icons.travel_explore_rounded,
+                                size: 16),
+                            label: Text(
+                              island.isPresidential
+                                  ? 'Crown Sanctuary 👑'
+                                  : 'Explore 🏝️',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 12),
+                            ),
+                          ),
+                        ),
                       ),
-                      onPressed: () => _navigateToFullscreenAerialMap(island),
-                      icon: const Icon(Icons.travel_explore_rounded, size: 18),
-                      label: Text(
-                        island.isPresidential
-                            ? 'Enter Crown Sanctuary 👑'
-                            : 'Explore Island 🏝️',
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 13),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        flex: 4,
+                        child: Builder(
+                          builder: (context) {
+                            final myId =
+                                SupaFlow.client.auth.currentUser?.id ?? '';
+                            final bool isOwn = _currentIslandPlots
+                                .any((p) => p.userId == myId);
+                            return SizedBox(
+                              height: 38,
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: isOwn
+                                      ? const Color(0xFF10B981)
+                                      : const Color(0xFFEF4444),
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
+                                  elevation: 4,
+                                ),
+                                onPressed: () {
+                                  HapticFeedback.mediumImpact();
+                                  PocketIslandAttackPage.launch(
+                                    context,
+                                    island: island,
+                                    colony: PoketCosmosAllocationService.instance
+                                        .getColonyByPlanetName(_selectedPlanet?.name ?? island.name),
+                                    plots: _currentIslandPlots,
+                                    isMockAttack: isOwn,
+                                  );
+                                },
+                                icon: Text(isOwn ? '🛡️' : '⚔️',
+                                    style: const TextStyle(fontSize: 14)),
+                                label: Text(
+                                  isOwn ? 'Mock' : 'Attack',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),
@@ -1706,7 +1737,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                         Text(
                           island.isPresidential
                               ? 'Imperial Palace & Sovereign Grounds'
-                              : '35 Plots • Pinch to Zoom in & Inspect Houses',
+                              : '${island.totalSlots} Plots • Pinch to Zoom in & Inspect Houses',
                           style: const TextStyle(
                               color: Colors.white70, fontSize: 11),
                         ),
@@ -1931,6 +1962,48 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                         const BoxConstraints(minWidth: 36, minHeight: 36),
                     padding: EdgeInsets.zero,
                   ),
+                  // 6. Search 15 Worlds 🪐
+                  IconButton(
+                    icon: const Icon(Icons.search_rounded,
+                        color: Color(0xFF38BDF8), size: 20),
+                    tooltip: 'Search 15 Worlds',
+                    onPressed: _showCosmosPlanetSearchSheet,
+                    constraints:
+                        const BoxConstraints(minWidth: 36, minHeight: 36),
+                    padding: EdgeInsets.zero,
+                  ),
+                  // 7. Island Attack / Mock Attack ⚔️
+                  IconButton(
+                    icon: Builder(
+                      builder: (context) {
+                        final myId =
+                            SupaFlow.client.auth.currentUser?.id ?? '';
+                        final bool isOwn = _currentIslandPlots
+                            .any((p) => p.userId == myId);
+                        return Text(isOwn ? '🛡️' : '⚔️',
+                            style: const TextStyle(fontSize: 16));
+                      },
+                    ),
+                    tooltip: 'Launch Battle',
+                    onPressed: () {
+                      final myId =
+                          SupaFlow.client.auth.currentUser?.id ?? '';
+                      final bool isOwn = _currentIslandPlots
+                          .any((p) => p.userId == myId);
+                      HapticFeedback.mediumImpact();
+                      PocketIslandAttackPage.launch(
+                        context,
+                        island: island,
+                        colony: PoketCosmosAllocationService.instance
+                            .getColonyByPlanetName(_selectedPlanet?.name ?? island.name),
+                        plots: _currentIslandPlots,
+                        isMockAttack: isOwn,
+                      );
+                    },
+                    constraints:
+                        const BoxConstraints(minWidth: 36, minHeight: 36),
+                    padding: EdgeInsets.zero,
+                  ),
                 ],
               ),
             ),
@@ -2125,6 +2198,272 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
   }
 
   // =========================================================================
+  // 🔍 COSMOS 15 CELESTIAL WORLDS SEARCH & JUMP SHEET
+  // =========================================================================
+  void _showCosmosPlanetSearchSheet() {
+    HapticFeedback.mediumImpact();
+    String searchQuery = '';
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) {
+          final filtered = _planets.where((p) {
+            if (searchQuery.trim().isEmpty) return true;
+            final q = searchQuery.toLowerCase().trim();
+            final islandNames =
+                p.countryMaps.map((m) => m.name.toLowerCase()).join(' ');
+            return p.name.toLowerCase().contains(q) ||
+                p.theme.toLowerCase().contains(q) ||
+                islandNames.contains(q);
+          }).toList();
+
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.78,
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            decoration: const BoxDecoration(
+              color: Color(0xFF0F172A),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              border:
+                  Border(top: BorderSide(color: Color(0xFF38BDF8), width: 1.5)),
+              boxShadow: [
+                BoxShadow(
+                    color: Color(0x66000000),
+                    blurRadius: 24,
+                    offset: Offset(0, -6)),
+              ],
+            ),
+            child: Column(
+              children: [
+                Container(
+                  width: 44,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF475569),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                Row(
+                  children: [
+                    const Text('🪐', style: TextStyle(fontSize: 22)),
+                    const SizedBox(width: 10),
+                    Text(
+                      'SEARCH 15 CELESTIAL WORLDS',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded,
+                          color: Colors.white70),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Instantly find and travel to any of the 15 celestial worlds and their 25-plot islands.',
+                  style: GoogleFonts.outfit(
+                      color: const Color(0xFF94A3B8), fontSize: 12),
+                ),
+                const SizedBox(height: 12),
+                // 🔍 Live Search Box
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFF334155)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.search_rounded,
+                          color: Color(0xFF38BDF8), size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextField(
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 13.5),
+                          decoration: const InputDecoration(
+                            hintText:
+                                'Search Planets or Islands (e.g. Titan, Mars, Aphrodite)...',
+                            hintStyle: TextStyle(
+                                color: Color(0xFF64748B), fontSize: 13),
+                            border: InputBorder.none,
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          onChanged: (val) {
+                            setModalState(() {
+                              searchQuery = val;
+                            });
+                          },
+                        ),
+                      ),
+                      if (searchQuery.isNotEmpty)
+                        GestureDetector(
+                          onTap: () {
+                            setModalState(() {
+                              searchQuery = '';
+                            });
+                          },
+                          child: const Icon(Icons.cancel_rounded,
+                              color: Colors.white54, size: 18),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Expanded(
+                  child: filtered.isEmpty
+                      ? Center(
+                          child: Text(
+                            'No planet found matching "$searchQuery"',
+                            style: const TextStyle(
+                                color: Colors.white54, fontSize: 13),
+                          ),
+                        )
+                      : ListView.separated(
+                          physics: const BouncingScrollPhysics(),
+                          itemCount: filtered.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 10),
+                          itemBuilder: (context, idx) {
+                            final p = filtered[idx];
+                            final isCurrent = p.id == _selectedPlanet?.id;
+                            final planetIdx = _planets.indexOf(p);
+                            final startPlot = ((_activeWaves - 1) * 375) + (planetIdx * 25) + 1;
+                            final endPlot = startPlot + 24;
+
+                            return InkWell(
+                              onTap: () {
+                                Navigator.pop(ctx);
+                                _navigateToPlanetArchipelago(p);
+                              },
+                              borderRadius: BorderRadius.circular(16),
+                              child: Container(
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: isCurrent
+                                      ? const Color(0xFF0284C7)
+                                          .withValues(alpha: 0.22)
+                                      : const Color(0xFF1E293B),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: isCurrent
+                                        ? const Color(0xFF38BDF8)
+                                        : const Color(0xFF334155),
+                                    width: isCurrent ? 1.5 : 1.0,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 44,
+                                      height: 44,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            p.glowColor,
+                                            p.primaryColor
+                                          ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          p.name
+                                              .split(' ')
+                                              .last
+                                              .replaceAll(')', ''),
+                                          style:
+                                              const TextStyle(fontSize: 22),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 14),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Text(
+                                                p.name,
+                                                style: GoogleFonts.outfit(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                              if (isCurrent) ...[
+                                                const SizedBox(width: 8),
+                                                Container(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 6,
+                                                      vertical: 2),
+                                                  decoration: BoxDecoration(
+                                                    color:
+                                                        const Color(0xFF16A34A),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            6),
+                                                  ),
+                                                  child: Text(
+                                                    'ACTIVE PLANET',
+                                                    style: GoogleFonts.outfit(
+                                                      color: Colors.white,
+                                                      fontSize: 9,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                          const SizedBox(height: 3),
+                                          Text(
+                                            '${p.countryMaps.first.name} • ${p.countryMaps.length} Islands (${p.totalPlots} Plots) • Active Wave $_activeWaves: #$startPlot-#$endPlot',
+                                            style: GoogleFonts.outfit(
+                                              color: const Color(0xFF94A3B8),
+                                              fontSize: 11.5,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const Icon(
+                                        Icons.arrow_forward_ios_rounded,
+                                        color: Color(0xFF38BDF8),
+                                        size: 14),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // =========================================================================
   // 🌌 COSMOS 1 CR+ LOOP SYSTEM ALLOCATION & RELOCATION DIALOG
   // =========================================================================
   void _showCosmosLoopDialog() {
@@ -2170,7 +2509,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                               fontSize: 18),
                         ),
                         const Text(
-                          'Infinite Scaling: 50 Users / Island across 9 Planets',
+                          'Infinite Scaling: 25 Plots / Island across 15 Celestial Worlds (375 / Wave)',
                           style:
                               TextStyle(color: Colors.white60, fontSize: 11.5),
                         ),
@@ -2206,10 +2545,18 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                     ),
                     const SizedBox(height: 4),
                     const Text(
-                      '1. As new citizens join, they fill 50 plots on Island 1 of Earth Prime.\n'
-                      '2. The loop moves across: Mercury ⚪ -> Venus 🟡 -> Mars 🔴 -> Jupiter 🟠 -> Saturn 🪐 -> Uranus 💎 -> Neptune 🌊 -> Pluto ❄️.\n'
-                      '3. Once Pluto fills up, the cosmic cycle wraps back to Earth Prime generating Island Cycle II!\n'
-                      '4. This algorithm guarantees unique, permanent real estate for 1 Crore (10 Million+) to 10 Crore+ citizens!',
+                      '1. Each island features exactly 25 plots. Wave 1 spans all 15 Celestial Worlds (Plots #1 to #375).\n'
+                      '2. Sequential Progression:\n'
+                      '   • Earth Prime (#1-#25) 🌍  • Mars (#26-#50) 🔴\n'
+                      '   • Jupiter (#51-#75) 🟠      • Saturn (#76-#100) 🪐\n'
+                      '   • The Moon (#101-#125) 🌕  • Europa (#126-#150) 🧊\n'
+                      '   • Venus (#151-#175) 🟡     • Titan (#176-#200) 🪐\n'
+                      '   • Pluto (#201-#225) ❄️      • Neptune (#226-#250) 🌊\n'
+                      '   • Mercury (#251-#275) ⚪   • Ganymede (#276-#300) 🛰️\n'
+                      '   • Uranus (#301-#325) 💎    • Triton (#326-#350) 🌀\n'
+                      '   • Kepler-452b (#351-#375) 🌌\n'
+                      '3. Once all 375 plots are claimed, the cosmic cycle opens Wave 2 on Earth Prime (#376)!\n'
+                      '4. Every citizen is guaranteed a 100% unique, permanent global plot deed across 100 Crore+ citizens!',
                       style: TextStyle(
                           color: Colors.white70, fontSize: 11, height: 1.4),
                     ),
@@ -2219,54 +2566,76 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
 
               const SizedBox(height: 14),
               // User's Assigned Cosmic Home
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      const Color(0xFF0284C7).withValues(alpha: 0.2),
-                      const Color(0xFF14181B),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                      color: const Color(0xFF38BDF8).withValues(alpha: 0.5)),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.home_work_rounded,
-                        color: Color(0xFF38BDF8), size: 28),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('🌟 Birthplace (ജനിച്ച സ്ഥലം) & Residence',
-                              style: TextStyle(
-                                  color: Colors.white54, fontSize: 11)),
-                          const SizedBox(height: 2),
-                          Text(
-                            '🌟 Birthplace: The Moon 🌕 • Tranquility Base',
-                            style: const TextStyle(
-                                color: Color(0xFF38BDF8),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12),
-                          ),
-                          Text(
-                            '🏡 Current: ${_selectedPlanet?.name ?? "Earth Prime 🌍"} • ${_selectedIsland?.name ?? "Vocabulary Bay"}',
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 12.5),
-                          ),
-                          const Text('Deed: Plot #14 • PIN: PK-P3-IS002-SL14',
-                              style: TextStyle(
-                                  color: Color(0xFFFFD700), fontSize: 11)),
+              Builder(
+                builder: (context) {
+                  final userPlot = PoketCosmosAllocationService
+                          .instance.currentUserBirthPlot ??
+                      PoketCosmosAllocationService.instance.currentBirthPlot;
+                  final planetName = userPlot?.planetName ??
+                      _selectedPlanet?.name ??
+                      'Earth Prime 🌍';
+                  final islandName = userPlot?.countryName ??
+                      _selectedIsland?.name ??
+                      'Vocabulary Bay';
+                  final streetName = userPlot?.streetName ?? 'Reefway Avenue';
+                  final plotNumber = userPlot?.plotNumber ?? 1;
+                  final pinCode =
+                      userPlot?.postalPinCode ?? 'PKT-W01-EP-I01-P01';
+
+                  return Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          const Color(0xFF0284C7).withValues(alpha: 0.2),
+                          const Color(0xFF14181B),
                         ],
                       ),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                          color:
+                              const Color(0xFF38BDF8).withValues(alpha: 0.5)),
                     ),
-                  ],
-                ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.home_work_rounded,
+                            color: Color(0xFF38BDF8), size: 28),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                  '🌟 Birthplace (ജനിച്ച സ്ഥലം) & Residence',
+                                  style: TextStyle(
+                                      color: Colors.white54, fontSize: 11)),
+                              const SizedBox(height: 2),
+                              Text(
+                                '🌟 Birthplace: $planetName • $islandName',
+                                style: const TextStyle(
+                                    color: Color(0xFF38BDF8),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12),
+                              ),
+                              Text(
+                                '🏡 Island: $islandName • $streetName',
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 12.5),
+                              ),
+                              Text(
+                                'Deed: Plot #$plotNumber • PIN: $pinCode',
+                                style: const TextStyle(
+                                    color: Color(0xFFFFD700), fontSize: 11),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
 
               const SizedBox(height: 16),

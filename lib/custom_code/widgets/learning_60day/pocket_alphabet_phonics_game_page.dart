@@ -5,6 +5,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'pocket_mission_curriculum_1_18.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 🎮 DEDICATED ALPHABET & PHONICS GAME SCREEN (MINIMALIST GAME EDITION)
@@ -278,7 +279,14 @@ class _PocketAlphabetPhonicsGamePageState
                     ],
                   ),
                 ),
-                const SizedBox(height: 22),
+                const SizedBox(height: 12),
+                // 🚀 Preloaded Minimal Native Ad inside Step Completion Modal
+                const PocketNativeAdCard(
+                  placement: PocketAdPlacement.review,
+                  isCompact: true,
+                  margin: EdgeInsets.symmetric(vertical: 4),
+                ),
+                const SizedBox(height: 10),
                 SizedBox(
                   width: double.infinity,
                   height: 48,

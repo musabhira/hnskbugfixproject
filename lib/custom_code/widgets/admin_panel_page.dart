@@ -16320,8 +16320,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
   // 🌌 POKET COSMOS WAVE & ISLAND CONTROL TAB (ADMIN)
   // =========================================================================
   Widget _buildCosmosAdminTab() {
-    final totalPlots = _cosmosActiveWave * 250;
-    final totalIslands = _cosmosActiveWave * 10;
+    final totalPlots = _cosmosActiveWave * 375;
+    final totalIslands = _cosmosActiveWave * 15;
     final occupiedPlots =
         math.min(totalUsers > 0 ? totalUsers : 277, totalPlots);
     final availablePlots = math.max(0, totalPlots - occupiedPlots);
@@ -16331,7 +16331,7 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
       wave: _cosmosActiveWave,
       planetCode: 'EP',
       localPlotNumber: 10,
-      totalOccupiedInWave: occupiedPlots % 250,
+      totalOccupiedInWave: occupiedPlots % 375,
     );
 
     return SingleChildScrollView(
@@ -16388,7 +16388,7 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                           ),
                           const SizedBox(height: 3),
                           Text(
-                            '10 Planets • 25 Plots Per Island • 250 Plots Per Wave',
+                            '15 Worlds • 25 Plots Per Island • 375 Plots Per Wave',
                             style: GoogleFonts.plusJakartaSans(
                               color: const Color(0xFF94A3B8),
                               fontSize: 12,
@@ -16410,7 +16410,7 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                         const Color(0xFF38BDF8),
                         Icons.waves_rounded),
                     const SizedBox(width: 10),
-                    _buildCosmosMetric('Total Planets', '10 Worlds',
+                    _buildCosmosMetric('Total Planets', '15 Worlds',
                         const Color(0xFFA855F7), Icons.public_rounded),
                     const SizedBox(width: 10),
                     _buildCosmosMetric('Total Islands', '$totalIslands Islands',
@@ -16441,7 +16441,7 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
           ),
           const SizedBox(height: 20),
 
-          // Action 1: Add 10 Islands (+250 Plots) Button
+          // Action 1: Add 15 Islands (+375 Plots) Button
           Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
@@ -16469,7 +16469,7 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Instantly adds 10 new islands (1 new island to each of the 10 planets) and releases 250 new citizen plots. Syncs globally to Supabase for all users.',
+                  'Instantly adds 15 new islands (1 new island to each of the 15 celestial worlds) and releases 375 new citizen plots. Syncs globally to Supabase for all users.',
                   style: GoogleFonts.plusJakartaSans(
                     color: const Color(0xFF94A3B8),
                     fontSize: 12.5,
@@ -16502,7 +16502,7 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                               const Icon(Icons.add_circle_rounded, size: 20),
                               const SizedBox(width: 8),
                               Text(
-                                '➕ ADD 10 ISLANDS (+250 PLOTS) 🏝️',
+                                '➕ ADD 15 ISLANDS (+375 PLOTS) 🏝️',
                                 style: GoogleFonts.outfit(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
@@ -16546,7 +16546,7 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Current Base Price: $currentBasePrice PS. Land value dynamically calculates from supply vs demand ($occupancyPct% occupied). When you add 10 islands, total supply expands, lowering prices for new users; as plots fill up, prices rise.',
+                  'Current Base Price: $currentBasePrice PS. Land value dynamically calculates from supply vs demand ($occupancyPct% occupied). When you add 15 islands, total supply expands, lowering prices for new users; as plots fill up, prices rise.',
                   style: GoogleFonts.plusJakartaSans(
                     color: const Color(0xFF94A3B8),
                     fontSize: 12.5,
@@ -16617,7 +16617,7 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                           title: const Text('Sync All Citizen Plots?',
                               style: TextStyle(color: Colors.white)),
                           content: const Text(
-                            'This will verify all registered users in Supabase profile table and ensure every citizen has an assigned unique cosmic PIN across the 10 planets.',
+                            'This will verify all registered users in Supabase profile table and ensure every citizen has an assigned unique cosmic PIN across the 15 celestial worlds.',
                             style: TextStyle(color: Colors.white70),
                           ),
                           actions: [
@@ -16646,7 +16646,7 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                       );
                     },
                     icon: const Icon(Icons.sync_rounded, size: 18),
-                    label: const Text('Sync All Citizen Plots (10 Planets)'),
+                    label: const Text('Sync All Citizen Plots (15 Worlds)'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFFA855F7),
                       side: const BorderSide(color: Color(0xFFA855F7)),
@@ -16676,14 +16676,14 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Add 10 Islands (+250 Plots)?',
+                'Add 15 Islands (+375 Plots)?',
                 style: GoogleFonts.outfit(color: Colors.white, fontSize: 18),
               ),
             ),
           ],
         ),
         content: Text(
-          'This will unlock Wave ${_cosmosActiveWave + 1}, adding 1 island to each of the 10 planets and expanding the universe to ${(_cosmosActiveWave + 1) * 250} total plots globally.',
+          'This will unlock Wave ${_cosmosActiveWave + 1}, adding 1 island to each of the 15 celestial worlds and expanding the universe to ${(_cosmosActiveWave + 1) * 375} total plots globally.',
           style: GoogleFonts.plusJakartaSans(color: Colors.white70),
         ),
         actions: [
@@ -16718,7 +16718,7 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                '🎉 Successfully unlocked Wave $newWave! 10 new islands & 250 plots added globally!'),
+                '🎉 Successfully unlocked Wave $newWave! 15 new islands & 375 plots added globally!'),
             backgroundColor: const Color(0xFF10B981),
           ),
         );

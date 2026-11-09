@@ -127,6 +127,7 @@ class PoketCountryMap {
   final bool isPresidential;
   final int shapeSeed;
   final IslandShapeStyle shapeStyle;
+  final int wave;
 
   const PoketCountryMap({
     required this.id,
@@ -144,11 +145,22 @@ class PoketCountryMap {
     this.isPresidential = false,
     this.shapeSeed = 1,
     this.shapeStyle = IslandShapeStyle.crescentLagoon,
+    this.wave = 1,
   });
 
   int get availableSlots => (totalSlots - filledSlots).clamp(0, totalSlots);
   double get occupancyRatio =>
       totalSlots > 0 ? (filledSlots / totalSlots).clamp(0.0, 1.0) : 0.0;
+
+  /// Dynamic active wave number calculation (safe across infinite scaling)
+  int get activeWaveNumber {
+    if (wave > 1) return wave;
+    final tagMatch = RegExp(r'Wave (\d+)').firstMatch(tag);
+    if (tagMatch != null) return int.tryParse(tagMatch.group(1) ?? '1') ?? 1;
+    final nameMatch = RegExp(r'Wave (\d+)').firstMatch(name);
+    if (nameMatch != null) return int.tryParse(nameMatch.group(1) ?? '1') ?? 1;
+    return 1;
+  }
 
   PoketCountryMap copyWith({
     int? id,
@@ -166,6 +178,7 @@ class PoketCountryMap {
     bool? isPresidential,
     int? shapeSeed,
     IslandShapeStyle? shapeStyle,
+    int? wave,
   }) {
     return PoketCountryMap(
       id: id ?? this.id,
@@ -183,6 +196,7 @@ class PoketCountryMap {
       isPresidential: isPresidential ?? this.isPresidential,
       shapeSeed: shapeSeed ?? this.shapeSeed,
       shapeStyle: shapeStyle ?? this.shapeStyle,
+      wave: wave ?? this.wave,
     );
   }
 }

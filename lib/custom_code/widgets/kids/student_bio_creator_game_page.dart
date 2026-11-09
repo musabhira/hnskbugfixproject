@@ -7,6 +7,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/flame_icon_widget.dart';
 
 import 'package:pocket_mates_app/custom_code/widgets/kids/student_creative_writing_90day_curriculum.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 
 const Color kPBg = Color(0xFF0A111F);
 const Color kPCard = Color(0xFF142038);
@@ -210,7 +211,14 @@ class _StudentBioCreatorGameState extends State<StudentBioCreatorGamePage>
                   color: kPEm,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
+              // 🚀 Preloaded Minimal Native Ad inside Quest Completion Modal
+              const PocketNativeAdCard(
+                placement: PocketAdPlacement.review,
+                isCompact: true,
+                margin: EdgeInsets.symmetric(vertical: 4),
+              ),
+              const SizedBox(height: 10),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: kPGold,

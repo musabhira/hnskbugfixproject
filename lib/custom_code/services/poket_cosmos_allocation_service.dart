@@ -304,8 +304,9 @@ class PoketCosmosAllocationService {
     return colonies.first; // Earth Prime fallback
   }
 
-  /// 🌐 Computes the unique global sequential plot number (1 to 250 in Wave 1, 251 to 500 in Wave 2, etc.)
-  /// Uses Round-Robin / Interleaved planetary distribution so every planet has active citizens from the start!
+  /// 🌐 Computes the unique global sequential plot number (1 to 375 in Wave 1, 376 to 750 in Wave 2, etc.)
+  /// Planetary block layout: Earth: 1-25, Mars: 26-50, Jupiter: 51-75, ..., Neptune: 226-250, ..., Kepler: 351-375.
+  /// Guarantees that Plot #2 is strictly on Earth Prime and Plot #250 is strictly on Neptune with zero duplicates!
   static int calculateGlobalPlotNumber({
     int wave = 1,
     required String planetCode,
@@ -318,18 +319,18 @@ class PoketCosmosAllocationService {
     final clampedLocal = localPlotNumber.clamp(1, maxPlotsPerIsland);
     final clampedWave = math.max(1, wave);
     final offsetWithinWave =
-        ((clampedLocal - 1) * colonies.length) + planetIndex;
+        (planetIndex * maxPlotsPerIsland) + (clampedLocal - 1);
     return ((clampedWave - 1) * waveCapacity) + offsetWithinWave + 1;
   }
 
   /// 🌐 Parses a global sequential plot number back into wave, planet colony, and local plot number
-  /// Interleaved across all 10 planets: User 1->Earth, 2->Mars, 3->Jupiter, ..., 10->Neptune, 11->Earth P2...
   static Map<String, dynamic> parseGlobalPlotNumber(int globalPlotNumber) {
     final gNum = math.max(1, globalPlotNumber);
     final wave = ((gNum - 1) ~/ waveCapacity) + 1;
     final withinWave = (gNum - 1) % waveCapacity;
-    final planetIndex = (withinWave % colonies.length);
-    final localPlot = (withinWave ~/ colonies.length) + 1;
+    final planetIndex =
+        (withinWave ~/ maxPlotsPerIsland).clamp(0, colonies.length - 1);
+    final localPlot = (withinWave % maxPlotsPerIsland) + 1;
     final colony = colonies[planetIndex];
     return {
       'wave': wave,
@@ -341,26 +342,140 @@ class PoketCosmosAllocationService {
     };
   }
 
+  /// 🏝️ Dynamic Procedural Island Loop Engine
+  /// Scales infinitely to unlimited islands per celestial world.
+  /// Generates procedural names, unique shape variations, subtle land/water color shifts,
+  /// and dynamic occupancy per wave.
+  static PoketCountryMap generateProceduralIsland({
+    required CelestialColonyInfo colony,
+    required int wave,
+    int? activeWave,
+    int? filledSlots,
+  }) {
+    final int safeWave = math.max(1, wave);
+    final int currentWave = activeWave ?? 1;
+
+    // 1. Procedural Unique Island Name (Algorithmic English Vocabulary Generator)
+    final String islandName = (safeWave == 1)
+        ? colony.islandName
+        : generateInfiniteIslandName(colony.code, safeWave, safeWave);
+
+    // 2. Procedural Island Shape Style (Loop system across citizen shapes)
+    // Note: citadelApex is reserved strictly for President's Citadel on Earth Prime
+    const citizenShapes = [
+      IslandShapeStyle.crescentLagoon,
+      IslandShapeStyle.ringAtoll,
+      IslandShapeStyle.starAtoll,
+      IslandShapeStyle.sCurveArchipelago,
+      IslandShapeStyle.dualIsletBridge,
+      IslandShapeStyle.hookPeninsula,
+      IslandShapeStyle.heartSanctuary,
+      IslandShapeStyle.cloverBays,
+      IslandShapeStyle.fortressPlateau,
+    ];
+    final int shapeIndex =
+        ((colony.planetId * 7) + (safeWave * 3)) % citizenShapes.length;
+    final IslandShapeStyle shapeStyle =
+        (safeWave == 1) ? colony.shapeStyle : citizenShapes[shapeIndex];
+
+    // 3. Shape Seed (unique integer for procedural coastline variations)
+    final int shapeSeed = (colony.planetId * 1000) + (safeWave * 37) + 1;
+
+    // 4. Procedural Biome Variations (Subtle color gradient shifts per wave)
+    final hslLand = HSLColor.fromColor(colony.landColor);
+    final double hueShift = ((safeWave - 1) * 11.0) % 24.0 - 12.0;
+    final double lightShift = (((safeWave - 1) * 3) % 12 - 6) / 100.0;
+    final dynamicLandColor = hslLand
+        .withHue((hslLand.hue + hueShift).clamp(0.0, 360.0))
+        .withLightness((hslLand.lightness + lightShift).clamp(0.18, 0.82))
+        .toColor();
+
+    final hslWater = HSLColor.fromColor(colony.waterColor);
+    final double waterHueShift = ((safeWave - 1) * 7.0) % 18.0 - 9.0;
+    final dynamicWaterColor = hslWater
+        .withHue((hslWater.hue + waterHueShift).clamp(0.0, 360.0))
+        .toColor();
+
+    // 5. Procedural Climate Descriptions & Icons
+    const climateVariations = [
+      'Azure Trade Winds 🍃',
+      'Coral Reef Shallows 🌊',
+      'Emerald Palm Ridge 🌴',
+      'Bioluminescent Twilight ✨',
+      'Golden Sunrise Haven 🌅',
+      'Crystal Tide Shallows 💎',
+      'Misty Ocean Horizon 🌫️',
+      'Tropical Rain Sanctuary 🌧️',
+    ];
+    final String dynamicClimate = (safeWave == 1)
+        ? colony.climate
+        : climateVariations[
+            (safeWave + colony.planetId) % climateVariations.length];
+
+    const climateIcons = [
+      Icons.air_rounded,
+      Icons.waves_rounded,
+      Icons.eco_rounded,
+      Icons.wb_sunny_rounded,
+      Icons.water_drop_rounded,
+      Icons.nightlight_round,
+    ];
+    final IconData dynamicIcon =
+        climateIcons[(safeWave + colony.planetId) % climateIcons.length];
+
+    const islandEmojis = ['🏝️', '🌴', '🌊', '🌺', '🐚', '🦜'];
+    final String dynamicEmoji = (safeWave == 1)
+        ? (colony.planetName.contains('🌍')
+            ? '🏝️'
+            : colony.planetName.split(' ').last)
+        : islandEmojis[(safeWave + colony.planetId) % islandEmojis.length];
+
+    // 6. Slots & Occupancy (25 plots per island)
+    final int slots = maxPlotsPerIsland; // 25
+    final int effectiveFilled = filledSlots ??
+        (safeWave < currentWave
+            ? 25
+            : (safeWave == currentWave ? 12 : 0));
+
+    final int islandId = colony.planetId * 10000 + safeWave;
+
+    return PoketCountryMap(
+      id: islandId,
+      name: islandName,
+      tag: (safeWave == 1)
+          ? 'Genesis Colony Island'
+          : 'Wave $safeWave Expansion Island',
+      landColor: (safeWave == 1) ? colony.landColor : dynamicLandColor,
+      waterColor: (safeWave == 1) ? colony.waterColor : dynamicWaterColor,
+      totalSlots: slots,
+      filledSlots: effectiveFilled,
+      climate: dynamicClimate,
+      climateIcon: dynamicIcon,
+      islandEmoji: dynamicEmoji,
+      shapeSeed: shapeSeed,
+      shapeStyle: shapeStyle,
+      wave: safeWave,
+      isPresidential: false, // President's Citadel is strictly separate on Earth Prime
+    );
+  }
+
   /// 🌐 Returns all islands generated across planets for the given active wave count
   static List<Map<String, dynamic>> getAllIslandsCatalog({int maxWaves = 1}) {
     final List<Map<String, dynamic>> list = [];
     for (int w = 1; w <= math.max(1, maxWaves); w++) {
       for (final colony in colonies) {
-        final islandName = (w == 1)
-            ? colony.islandName
-            : generateInfiniteIslandName(colony.code, w, w);
+        final island = generateProceduralIsland(colony: colony, wave: w, activeWave: maxWaves);
         list.add({
           'wave': w,
           'colony': colony,
           'planetCode': colony.code,
           'planetName': colony.planetName,
-          'islandName': islandName,
-          'streetName': colony.streetName,
-          'climate': colony.climate,
-          'shapeStyle': colony.shapeStyle,
+          'islandName': island.name,
+          'streetName': (w == 1) ? colony.streetName : 'Wave $w ${colony.streetName}',
+          'climate': island.climate,
+          'shapeStyle': island.shapeStyle,
           'totalPlots': maxPlotsPerIsland,
-          'occupiedCount':
-              math.min(maxPlotsPerIsland, 8 + (w * 3) + (colony.planetId % 9)),
+          'occupiedCount': island.filledSlots,
         });
       }
     }
@@ -407,8 +522,8 @@ class PoketCosmosAllocationService {
   }) {
     final int occupied = totalOccupiedInWave ??
         (wave == 1
-            ? 250
-            : math.max(0, instance._allRegisteredProfiles.length - 250));
+            ? waveCapacity
+            : math.max(0, instance._allRegisteredProfiles.length - ((wave - 1) * waveCapacity)));
     final double occupancyRatio = (occupied / waveCapacity).clamp(0.0, 1.0);
 
     // Dynamic market curve:
@@ -581,6 +696,31 @@ class PoketCosmosAllocationService {
       // Save to SharedPreferences
       await saveBirthplace(newPlot);
 
+      // 🚪 Global Relocation Tracking (Enforces Single Global Plot Deed & Vacates Old Plot Instantly)
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('cosmos_user_relocated_pin_$uid', newPin);
+      await prefs.setString(
+          'cosmos_user_relocated_planet_$uid', targetPlanetCode);
+      await prefs.setInt('cosmos_user_relocated_plot_$uid', targetPlotNumber);
+      await prefs.setInt('cosmos_user_relocated_wave_$uid', targetWave);
+
+      final relocatedList =
+          prefs.getStringList('cosmos_all_relocated_uids') ?? [];
+      if (!relocatedList.contains(uid)) {
+        relocatedList.add(uid);
+        await prefs.setStringList('cosmos_all_relocated_uids', relocatedList);
+      }
+
+      // Update in-memory profile immediately so UI updates with zero delay
+      final profIdx = _allRegisteredProfiles.indexWhere((p) =>
+          (p['id']?.toString() == uid) || (p['user_id']?.toString() == uid));
+      if (profIdx != -1) {
+        _allRegisteredProfiles[profIdx]['bio'] = newBio;
+        _allRegisteredProfiles[profIdx]['pocket_score'] = newScore;
+        _allRegisteredProfiles[profIdx]['country'] = effectiveIslandName;
+        _allRegisteredProfiles[profIdx]['city'] = effectiveStreetName;
+      }
+
       // Refresh registered profiles cache & clear cached plots
       clearPlotCaches();
       await loadAllRegisteredProfiles(forceRefresh: true);
@@ -617,6 +757,7 @@ class PoketCosmosAllocationService {
 
     for (int i = 0; i < profiles.length; i++) {
       final prof = profiles[i];
+      final uid = (prof['user_id'] ?? prof['id'] ?? '').toString();
       final bio = prof['bio']?.toString() ?? '';
       final match =
           RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(bio);
@@ -627,6 +768,8 @@ class PoketCosmosAllocationService {
         final g = calculateGlobalPlotNumber(
             wave: w, planetCode: pCode, localPlotNumber: lPlot);
         plotToProfile[g] = prof;
+        relocatedUserIndices.add(i);
+      } else if (instance._userBirthPlots.containsKey(uid)) {
         relocatedUserIndices.add(i);
       }
     }
@@ -687,6 +830,23 @@ class PoketCosmosAllocationService {
   /// 🌟 Cached Result of a Birthplace Allocation
   CitizenPlot? _cachedBirthPlot;
   CitizenPlot? get currentBirthPlot => _cachedBirthPlot;
+
+  /// 🌟 Returns the verified birthplace plot of the active logged in user
+  CitizenPlot? get currentUserBirthPlot {
+    if (_cachedBirthPlot != null) return _cachedBirthPlot;
+    final uid = SupaFlow.client.auth.currentUser?.id;
+    if (uid != null) {
+      if (_userBirthPlots.containsKey(uid)) {
+        return _userBirthPlots[uid];
+      }
+      final plot = getCachedUserPlot(uid);
+      if (plot != null) {
+        _cachedBirthPlot = plot;
+        return plot;
+      }
+    }
+    return null;
+  }
 
   /// 🪐 Returns the exact, verified planet code of the currently viewing user
   String getCurrentViewerPlanetCode() {
@@ -794,7 +954,7 @@ class PoketCosmosAllocationService {
         final pinStr =
             'PKT-W${wave.toString().padLeft(2, '0')}-${colony.code}-I${wave.toString().padLeft(2, '0')}-P${localPlot.toString().padLeft(2, '0')}';
         final plot = CitizenPlot(
-          plotNumber: localPlot,
+          plotNumber: gNum,
           userId: userId,
           userName: prof['name']?.toString() ?? 'Citizen #$gNum',
           userAvatar: prof['profile_image_url']?.toString() ?? '🦁',
@@ -864,6 +1024,37 @@ class PoketCosmosAllocationService {
       return plot;
     }
 
+    // 2.5 Check if user has relocated to another planet/plot
+    final prefs = await SharedPreferences.getInstance();
+    final relPin = prefs.getString('cosmos_user_relocated_pin_$userId');
+    if (relPin != null && relPin.isNotEmpty) {
+      final relPlanet =
+          prefs.getString('cosmos_user_relocated_planet_$userId') ?? 'EP';
+      final relWave = prefs.getInt('cosmos_user_relocated_wave_$userId') ?? 1;
+      final relPlot = prefs.getInt('cosmos_user_relocated_plot_$userId') ?? 1;
+      final colony = getColonyByCode(relPlanet);
+      final gNum = calculateGlobalPlotNumber(
+          wave: relWave, planetCode: relPlanet, localPlotNumber: relPlot);
+      final plot = CitizenPlot(
+        plotNumber: gNum,
+        userId: userId,
+        userName: fallbackName ?? 'Citizen',
+        userAvatar: fallbackAvatar ?? '🦁',
+        day: 1,
+        pocketScore: 100,
+        streetName: colony.streetName,
+        postOffice: colony.islandName,
+        countryName: colony.islandName,
+        planetName: colony.planetName,
+        postalPinCode: relPin,
+        coordinates: Offset.zero,
+        tier: (relPlot <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+        status: PlotStatus.occupied,
+      );
+      _userBirthPlots[userId] = plot;
+      return plot;
+    }
+
     // 3. Check registered profiles list first for deterministic sequential assignment
     if (_allRegisteredProfiles.isEmpty) {
       await loadAllRegisteredProfiles();
@@ -882,10 +1073,16 @@ class PoketCosmosAllocationService {
           RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(bio);
       if (pinMatch != null) {
         final planetCode = pinMatch.group(2) ?? 'EP';
-        final plotNum = int.tryParse(pinMatch.group(4) ?? '1') ?? 1;
+        final waveNum = int.tryParse(pinMatch.group(1) ?? '1') ?? 1;
+        final localPlotNum = int.tryParse(pinMatch.group(4) ?? '1') ?? 1;
+        final globalPlotNum = calculateGlobalPlotNumber(
+          planetCode: planetCode,
+          localPlotNumber: localPlotNum,
+          wave: waveNum,
+        );
         final colony = getColonyByCode(planetCode);
         final plot = CitizenPlot(
-          plotNumber: plotNum,
+          plotNumber: globalPlotNum,
           userId: userId,
           userName: prof['name']?.toString() ?? fallbackName ?? 'Citizen',
           userAvatar:
@@ -897,12 +1094,12 @@ class PoketCosmosAllocationService {
           countryName: colony.islandName,
           planetName: colony.planetName,
           postalPinCode: pinMatch.group(0) ??
-              'PKT-W01-$planetCode-I01-P${plotNum.toString().padLeft(2, '0')}',
+              'PKT-W01-$planetCode-I01-P${localPlotNum.toString().padLeft(2, '0')}',
           coordinates: Offset.zero,
           isVip: false,
           isPresident: false,
           tier:
-              (plotNum <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+              (localPlotNum <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
           status: PlotStatus.occupied,
         );
         _userBirthPlots[userId] = plot;
@@ -917,7 +1114,7 @@ class PoketCosmosAllocationService {
       final pinStr =
           'PKT-W${wave.toString().padLeft(2, '0')}-${colony.code}-I${wave.toString().padLeft(2, '0')}-P${localPlot.toString().padLeft(2, '0')}';
       final plot = CitizenPlot(
-        plotNumber: localPlot,
+        plotNumber: gNum,
         userId: userId,
         userName: prof['name']?.toString() ?? fallbackName ?? 'Citizen #$gNum',
         userAvatar:
@@ -962,10 +1159,16 @@ class PoketCosmosAllocationService {
             RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(bio);
         if (pinMatch != null) {
           final planetCode = pinMatch.group(2) ?? 'EP';
-          final plotNum = int.tryParse(pinMatch.group(4) ?? '1') ?? 1;
+          final waveNum = int.tryParse(pinMatch.group(1) ?? '1') ?? 1;
+          final localPlotNum = int.tryParse(pinMatch.group(4) ?? '1') ?? 1;
+          final globalPlotNum = calculateGlobalPlotNumber(
+            planetCode: planetCode,
+            localPlotNumber: localPlotNum,
+            wave: waveNum,
+          );
           final colony = getColonyByCode(planetCode);
           final plot = CitizenPlot(
-            plotNumber: plotNum,
+            plotNumber: globalPlotNum,
             userId: userId,
             userName: res['name']?.toString() ?? fallbackName ?? 'Citizen',
             userAvatar:
@@ -977,11 +1180,11 @@ class PoketCosmosAllocationService {
             countryName: colony.islandName,
             planetName: colony.planetName,
             postalPinCode: pinMatch.group(0) ??
-                'PKT-W01-$planetCode-I01-P${plotNum.toString().padLeft(2, '0')}',
+                'PKT-W01-$planetCode-I01-P${localPlotNum.toString().padLeft(2, '0')}',
             coordinates: Offset.zero,
             isVip: false,
             isPresident: false,
-            tier: (plotNum <= 6
+            tier: (localPlotNum <= 6
                 ? PlotDeedTier.beachfront
                 : PlotDeedTier.standard),
             status: PlotStatus.occupied,
@@ -1059,12 +1262,21 @@ class PoketCosmosAllocationService {
           final pinRegex = RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)');
           final match = pinRegex.firstMatch(bio);
           if (match != null) {
+            final wave = int.tryParse(match.group(1) ?? '1') ?? 1;
             final planetCode = match.group(2) ?? 'EP';
             final plotNum = int.tryParse(match.group(4) ?? '1') ?? 1;
             final colony = getColonyByCode(planetCode);
 
+            final globalPlotNum = (plotNum <= maxPlotsPerIsland)
+                ? calculateGlobalPlotNumber(
+                    wave: wave,
+                    planetCode: colony.code,
+                    localPlotNumber: plotNum,
+                  )
+                : plotNum;
+
             final plot = CitizenPlot(
-              plotNumber: plotNum,
+              plotNumber: globalPlotNum,
               userId: uid,
               userName: userName.isNotEmpty
                   ? userName
@@ -1118,8 +1330,14 @@ class PoketCosmosAllocationService {
         await _markPlotOccupied(
             activeWave, colony.code, reservation.plotNumber);
 
+        final globalPlotNum = calculateGlobalPlotNumber(
+          wave: activeWave,
+          planetCode: colony.code,
+          localPlotNumber: reservation.plotNumber,
+        );
+
         final plot = CitizenPlot(
-          plotNumber: reservation.plotNumber,
+          plotNumber: globalPlotNum,
           userId: uid ?? 'user_${DateTime.now().millisecondsSinceEpoch}',
           userName: userName.isNotEmpty ? userName : 'Adventurer',
           userAvatar: avatar.isNotEmpty ? avatar : '🦁',
@@ -1261,16 +1479,22 @@ class PoketCosmosAllocationService {
         ? pickedColony.streetName
         : 'Wave $currentWave ${pickedColony.streetName}';
 
+    final globalPlotNum = calculateGlobalPlotNumber(
+      wave: currentWave,
+      planetCode: pickedColony.code,
+      localPlotNumber: pickedPlotNum,
+    );
+
     // Mark plot occupied
     await _markPlotOccupied(currentWave, pickedColony.code, pickedPlotNum);
 
-    // Format Immutable Born Address: PKT-W{Wave}-{PlanetCode}-I{IslandNum}-P{PlotNum}
+    // Format Immutable Born Address: PKT-W{Wave}-{PlanetCode}-I{IslandNum}-P{GlobalPlotNum}
     final waveStr = currentWave.toString().padLeft(2, '0');
-    final plotStr = pickedPlotNum.toString().padLeft(2, '0');
+    final plotStr = globalPlotNum.toString().padLeft(3, '0');
     final cosmosPin = 'PKT-W$waveStr-${pickedColony.code}-I$waveStr-P$plotStr';
 
     final plot = CitizenPlot(
-      plotNumber: pickedPlotNum,
+      plotNumber: globalPlotNum,
       userId: uid ?? 'user_${DateTime.now().millisecondsSinceEpoch}',
       userName: userName.isNotEmpty ? userName : 'Adventurer',
       userAvatar: avatar.isNotEmpty ? avatar : '🦁',
@@ -1385,8 +1609,24 @@ class PoketCosmosAllocationService {
         prefs.getString(_kCosmosPin);
 
     if (planet != null && island != null && plotNum != null) {
+      int effectivePlotNum = plotNum;
+      if (pin != null) {
+        final pinMatch =
+            RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(pin);
+        if (pinMatch != null) {
+          final pCode = pinMatch.group(2) ?? 'EP';
+          final wNum = int.tryParse(pinMatch.group(1) ?? '1') ?? 1;
+          final localP = int.tryParse(pinMatch.group(4) ?? '1') ?? 1;
+          effectivePlotNum = calculateGlobalPlotNumber(
+            planetCode: pCode,
+            localPlotNumber: localP,
+            wave: wNum,
+          );
+        }
+      }
+
       return CitizenPlot(
-        plotNumber: plotNum,
+        plotNumber: effectivePlotNum,
         userId: uid ?? SupaFlow.client.auth.currentUser?.id ?? 'user_local',
         userName: userName.isNotEmpty ? userName : 'Adventurer',
         userAvatar: avatar.isNotEmpty ? avatar : '🦁',
@@ -1398,7 +1638,7 @@ class PoketCosmosAllocationService {
         planetName: planet,
         coordinates: Offset.zero,
         postalPinCode:
-            pin ?? 'PKT-W01-EP-I01-P${plotNum.toString().padLeft(2, '0')}',
+            pin ?? 'PKT-W01-EP-I01-P${effectivePlotNum.toString().padLeft(2, '0')}',
       );
     }
     return null;
@@ -1418,6 +1658,11 @@ class PoketCosmosAllocationService {
         userBasedWave = ((count - 1) ~/ waveCapacity) + 1;
       }
     } catch (_) {}
+
+    // If Wave 1 still has vacant plots across the 15 worlds (< 375 citizens), strictly remain in Wave 1!
+    if (userBasedWave == 1) {
+      return 1;
+    }
 
     int remoteWave = 1;
     try {
@@ -1634,11 +1879,27 @@ class PoketCosmosAllocationService {
           .limit(1000);
 
       final List<dynamic> profiles = res as List<dynamic>;
+      final prefs = await SharedPreferences.getInstance();
+      final relocatedUids =
+          prefs.getStringList('cosmos_all_relocated_uids') ?? [];
 
       for (int i = 0; i < profiles.length; i++) {
         final item = profiles[i] as Map<String, dynamic>;
         final String uid = (item['user_id'] ?? item['id'] ?? '').toString();
         if (uid.isEmpty) continue;
+
+        // 🚪 Check if user has relocated to another planet/colony
+        if (relocatedUids.contains(uid)) {
+          final relPlanet =
+              prefs.getString('cosmos_user_relocated_planet_$uid');
+          final relWave =
+              prefs.getInt('cosmos_user_relocated_wave_$uid') ?? 1;
+          final relPlot =
+              prefs.getInt('cosmos_user_relocated_plot_$uid') ?? 1;
+          if (relPlanet != colony.code || relWave != wave) {
+            continue; // 🚪 User moved away from this island! Old plot is now completely VACANT with '+'!
+          }
+        }
 
         final String rawName =
             (item['display_name'] ?? item['name'] ?? 'Citizen ${i + 1}')
@@ -1655,7 +1916,7 @@ class PoketCosmosAllocationService {
         bool matchesColony = false;
         int targetPlot = 0;
 
-        // Check if bio contains cosmic pin (e.g., PKT-W01-MAR-I01-P04)
+        // Check if bio contains cosmic pin (e.g., PKT-W01-MAR-I01-P04 or PKT-W01-TTN-I01-P177)
         if (bio != null && bio.contains('PKT-W')) {
           final regex = RegExp(r'PKT-W(\d+)-([A-Z]+)-I\d+-P(\d+)');
           final match = regex.firstMatch(bio);
@@ -1665,7 +1926,9 @@ class PoketCosmosAllocationService {
             final pinPlot = int.tryParse(match.group(3) ?? '1') ?? 1;
             if (pinWave == wave && pinCode == colony.code) {
               matchesColony = true;
-              targetPlot = pinPlot;
+              targetPlot = (pinPlot <= maxPlotsPerIsland)
+                  ? pinPlot
+                  : (((pinPlot - 1) % waveCapacity) % maxPlotsPerIsland) + 1;
             }
           }
         }
@@ -1688,12 +1951,17 @@ class PoketCosmosAllocationService {
           final coord = (targetPlot - 1 < coords.length)
               ? coords[targetPlot - 1]
               : Offset.zero;
+          final globalPlot = calculateGlobalPlotNumber(
+            wave: wave,
+            planetCode: colony.code,
+            localPlotNumber: targetPlot,
+          );
           final waveStr = wave.toString().padLeft(2, '0');
-          final plotStr = targetPlot.toString().padLeft(2, '0');
+          final plotStr = globalPlot.toString().padLeft(3, '0');
           final pin = 'PKT-W$waveStr-${colony.code}-I$waveStr-P$plotStr';
 
           plotMap[targetPlot] = CitizenPlot(
-            plotNumber: targetPlot,
+            plotNumber: globalPlot,
             userId: uid,
             userName: name,
             userAvatar:
@@ -1719,11 +1987,23 @@ class PoketCosmosAllocationService {
 
     // 3. Inject current user's local birthplace if on this island
     if (_cachedBirthPlot != null &&
-        _cachedBirthPlot!.planetName == colony.planetName &&
-        _cachedBirthPlot!.plotNumber <= maxPlotsPerIsland) {
-      final pNum = _cachedBirthPlot!.plotNumber;
-      final coord = (pNum - 1 < coords.length) ? coords[pNum - 1] : Offset.zero;
-      plotMap[pNum] = _cachedBirthPlot!.copyWith(coordinates: coord);
+        _cachedBirthPlot!.planetName == colony.planetName) {
+      final userPlot = _cachedBirthPlot!;
+      final localPlot = (userPlot.plotNumber <= maxPlotsPerIsland)
+          ? userPlot.plotNumber
+          : (((userPlot.plotNumber - 1) % waveCapacity) % maxPlotsPerIsland) + 1;
+      final globalPlot = (userPlot.plotNumber <= maxPlotsPerIsland)
+          ? calculateGlobalPlotNumber(
+              wave: wave,
+              planetCode: colony.code,
+              localPlotNumber: userPlot.plotNumber,
+            )
+          : userPlot.plotNumber;
+      final coord = (localPlot - 1 < coords.length) ? coords[localPlot - 1] : Offset.zero;
+      plotMap[localPlot] = userPlot.copyWith(
+        plotNumber: globalPlot,
+        coordinates: coord,
+      );
     }
 
     final result = plotMap.values.toList()
@@ -1861,17 +2141,22 @@ class PoketCosmosAllocationService {
 
   CitizenPlot _createPioneer(
     CelestialColonyInfo colony,
-    int plotNum,
+    int localPlotNum,
     String name,
     String avatar,
     int day,
     int score,
     PlotDeedTier tier,
   ) {
-    final plotStr = plotNum.toString().padLeft(2, '0');
+    final globalPlotNum = calculateGlobalPlotNumber(
+      wave: 1,
+      planetCode: colony.code,
+      localPlotNumber: localPlotNum,
+    );
+    final plotStr = globalPlotNum.toString().padLeft(3, '0');
     return CitizenPlot(
-      plotNumber: plotNum,
-      userId: 'pioneer_${colony.code}_$plotNum',
+      plotNumber: globalPlotNum,
+      userId: 'pioneer_${colony.code}_$globalPlotNum',
       userName: name,
       userAvatar: avatar,
       day: day,

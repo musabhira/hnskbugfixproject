@@ -528,7 +528,6 @@ class _PocketVibesStoryAdWidgetState extends State<PocketVibesStoryAdWidget> {
     if (_isVip) {
       return const SizedBox.shrink();
     }
-    }
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),

@@ -126,8 +126,8 @@ class _PoketCosmosTestCenterModalState extends State<PoketCosmosTestCenterModal>
 
             _buildActionCard(
               icon: '🎯',
-              title: 'Test Specific Celestial Body (All 10 Planets)',
-              subtitle: 'Earth, Mars, Moon, Jupiter, Saturn, Venus, Europa, Titan, Neptune, Pluto - test custom atmosphere & camera focus!',
+              title: 'Test Specific Celestial Body (All 15 Worlds)',
+              subtitle: 'Earth, Mars, Moon, Jupiter, Saturn, Europa, Venus, Titan, Pluto, Neptune, Mercury, Ganymede, Uranus, Triton, Kepler-452b - custom atmosphere & camera focus!',
               color: const Color(0xFFE11D48),
               onTap: () => _showPlanetPickerSheet(context),
             ),
@@ -136,7 +136,7 @@ class _PoketCosmosTestCenterModalState extends State<PoketCosmosTestCenterModal>
             _buildActionCard(
               icon: '🎲',
               title: 'Direct 4-Step Born Ceremony (Random Newborn)',
-              subtitle: 'Balanced distribution across all 10 planets (Earth, Mars, Moon, Saturn, etc.) with dedicated camera focus!',
+              subtitle: 'Balanced distribution across all 15 celestial worlds with dedicated camera focus!',
               color: const Color(0xFF38BDF8),
               onTap: () async {
                 Navigator.pop(context);
@@ -253,7 +253,7 @@ class _PoketCosmosTestCenterModalState extends State<PoketCosmosTestCenterModal>
             _buildActionCard(
               icon: '🌌',
               title: 'Open Full Cosmos Explorer',
-              subtitle: 'Flame 3D Solar System -> 30 Archipelago Islands -> 35 Plots',
+              subtitle: 'Flame 3D Solar System -> 15 Celestial Worlds -> 25 Plots per Island',
               color: const Color(0xFF0284C7),
               onTap: () {
                 Navigator.pop(context);

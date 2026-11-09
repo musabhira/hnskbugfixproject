@@ -18,6 +18,7 @@ import 'pocket_90day_vocab_curriculum.dart';
 import 'pocket_formula_blueprint_builder_card.dart';
 import 'games/pocket_formula_master_game_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 
 /// 💬 Chat Message Model for Days 3 to 16 Unified Avatar Conversational Engine
 class DayChatMessage {
@@ -2439,6 +2440,8 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
     )..repeat(reverse: true);
 
     _spec = PocketDays3To16Registry.getSpec(widget.day);
+    PocketAdPreloadManager.instance
+        .preloadForPlacement(PocketAdPlacement.learningStep);
 
     _initUserName();
     _initTts();
@@ -3174,6 +3177,11 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
           textNative: replyNative,
           audioText:
               'Congratulations, $_userName! You have mastered Day ${widget.day} Step 1. Let us proceed to Step 2!',
+          cardContent: const PocketNativeAdCard(
+            placement: PocketAdPlacement.learningStep,
+            isCompact: true,
+            margin: EdgeInsets.symmetric(vertical: 8),
+          ),
           speakThisPrompt: 'Tap below to return to the road: 👇',
           inBubbleOptions: [
             DayInBubbleOption(
@@ -3374,7 +3382,24 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
                   physics: const BouncingScrollPhysics(),
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
                   itemCount: _messages.length,
-                  itemBuilder: (ctx, idx) => _buildMessageItem(_messages[idx]),
+                  itemBuilder: (ctx, idx) {
+                    final item = _buildMessageItem(_messages[idx]);
+                    // Show sleek minimal native ad in chat flow after introductory messages
+                    if (idx == 1 && _messages.length >= 3) {
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          item,
+                          const PocketNativeAdCard(
+                            placement: PocketAdPlacement.learningStep,
+                            isCompact: true,
+                            margin: EdgeInsets.symmetric(vertical: 8),
+                          ),
+                        ],
+                      );
+                    }
+                    return item;
+                  },
                 ),
               ),
               _buildBottomBar(),

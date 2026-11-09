@@ -127,9 +127,18 @@ class PocketRobot {
   String get planetName => cosmosColony.planetName;
   String get islandName => cosmosColony.islandName;
   String get streetName => cosmosColony.streetName;
-  int get plotNumber => (((baseLevel - 1).clamp(0, 999999) ~/ 10) % 9) + 2; // Plots 2..10
+  int get localPlotNumber =>
+      (((baseLevel - 1).clamp(0, 999999) ~/
+                  PoketCosmosAllocationService.colonies.length) %
+              24) +
+          2; // Local 2..25
+  int get plotNumber => PoketCosmosAllocationService.calculateGlobalPlotNumber(
+        wave: 1,
+        planetCode: planetCode,
+        localPlotNumber: localPlotNumber,
+      );
   String get cosmosPin =>
-      'PKT-W01-$planetCode-I01-P${plotNumber.toString().padLeft(2, '0')}';
+      'PKT-W01-$planetCode-I01-P${plotNumber.toString().padLeft(3, '0')}';
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -243,15 +252,21 @@ class PocketRobotService {
       final lvl = (level ?? animal?.dayLevel ?? 1).clamp(1, 100);
       final colonies = PoketCosmosAllocationService.colonies;
       final colony = colonies[(lvl - 1) % colonies.length];
-      final plotNum = (((lvl - 1) ~/ 10) % 10) + 11; // Plots 11..20
+      final localPlotNum = (((lvl - 1) ~/ colonies.length) % 20) + 6; // Local 6..25
+      final globalPlotNum =
+          PoketCosmosAllocationService.calculateGlobalPlotNumber(
+        wave: 1,
+        planetCode: colony.code,
+        localPlotNumber: localPlotNum,
+      );
       final pin =
-          'PKT-W01-${colony.code}-I01-P${plotNum.toString().padLeft(2, '0')}';
+          'PKT-W01-${colony.code}-I01-P${globalPlotNum.toString().padLeft(3, '0')}';
       return {
         'planetCode': colony.code,
         'planetName': colony.planetName,
         'islandName': colony.islandName,
         'streetName': colony.streetName,
-        'plotNumber': plotNum,
+        'plotNumber': globalPlotNum,
         'cosmosPin': pin,
       };
     }

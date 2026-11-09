@@ -637,25 +637,27 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
                   Text(
                     _currentStage == 1
                         ? _assignedIsland.name.toUpperCase()
-                        : 'PLOT #${_assignedPlot.plotNumber}',
+                        : '${_assignedPlot.planetName.toUpperCase()} • PLOT #${_assignedPlot.plotNumber}',
                     style: GoogleFonts.outfit(
                       color: Colors.white,
-                      fontSize: 20,
+                      fontSize: 18.5,
                       fontWeight: FontWeight.w900,
-                      letterSpacing: 1.2,
+                      letterSpacing: 1.1,
                     ),
+                    textAlign: TextAlign.center,
                   ),
-                  if (_currentStage == 2) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      _assignedPlot.streetName,
-                      style: GoogleFonts.plusJakartaSans(
-                        color: const Color(0xFF38BDF8),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
+                  const SizedBox(height: 3),
+                  Text(
+                    _currentStage == 1
+                        ? _assignedPlot.planetName
+                        : '${_assignedIsland.name} • ${_assignedPlot.streetName}',
+                    style: GoogleFonts.plusJakartaSans(
+                      color: const Color(0xFF38BDF8),
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
                     ),
-                  ],
+                    textAlign: TextAlign.center,
+                  ),
                 ],
               ),
             ),

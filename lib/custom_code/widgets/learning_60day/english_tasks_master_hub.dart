@@ -337,11 +337,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   final Set<int> _completedDays = {};
   bool _hasCheckedConsistencyToday = false;
   final Map<int, String> _completedDates = {};
+  final Map<int, String> _stepsCompletedDates = {};
   int _levelRivalShuffleSeed = 0;
 
   // Spacing & node dimensions for upward climbing roadmap with 90 English Houses
   // User audio directive: "ഒരു വീട് കഴിഞ്ഞ് ഒരു ഗ്യാപ്പ് ഇട്ടിട്ട് ഗേറ്റ്. ഇപ്പോൾ ഭയങ്കര congested ആയി കിടക്കുന്നുണ്ട്. Distance double/triple ആക്കുക."
-  static const double _nodeSpacingY = 560.0;
+  // Expanded node spacing to 880.0 so there is a generous, breathable gap after the Gate for the Native Ad Card before the next House!
+  static const double _nodeSpacingY = 880.0;
   static const double _expandedActiveGap = 0.0;
   static const double _topPadding =
       480.0; // Summit apex spacing with Citadel Palace
@@ -397,6 +399,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     });
 
     _loadData();
+    // ⚡ Preload Native Ad for roadmap gaps between Gate and next House
+    PocketAdPreloadManager.instance
+        .preloadForPlacement(PocketAdPlacement.target);
     // 🎵 Play gentle ambient target roadmap loop music
     PocketGameAudioService.instance.playTargetTheme();
     PocketSyllabusRepository.getSavedLevel().then((lvl) {
@@ -433,10 +438,19 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     if (_isDayCompleted(day))
       return false; // Completed days never wait for midnight!
     if (!_isDayCompleted(day - 1)) return false;
-    final lastCompDate = _completedDates[day - 1] ?? _lastCompletedDateStr;
-    if (lastCompDate == null || lastCompDate.isEmpty) return false;
+
     final now = DateTime.now();
     final todayStr = '${now.year}-${now.month}-${now.day}';
+
+    // 🎯 If the previous day's learning steps were completed on a prior date (e.g. yesterday),
+    // the user has ALREADY waited overnight! Attacking the gate today must NOT trigger another 24-hour wait!
+    final stepsDate = _stepsCompletedDates[day - 1];
+    if (stepsDate != null && stepsDate.isNotEmpty && stepsDate != todayStr) {
+      return false; // Steps finished on an earlier date -> Unlock immediately!
+    }
+
+    final lastCompDate = _completedDates[day - 1] ?? _lastCompletedDateStr;
+    if (lastCompDate == null || lastCompDate.isEmpty) return false;
     return lastCompDate == todayStr;
   }
 
@@ -487,6 +501,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final Set<int> completed = {};
     final Set<int> stepsCompleted = {};
     final Map<int, String> compDates = {};
+    final Map<int, String> stepsDates = {};
     for (int d = 1; d <= _totalDays; d++) {
       if (prefs.getBool('pocket_day_${uid}_${d}_completed') == true) {
         completed.add(d);
@@ -495,6 +510,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         if (dDate != null && dDate.isNotEmpty) {
           compDates[d] = dDate;
         }
+      }
+      final sDate = prefs.getString('learning_day_${uid}_${d}_steps_date');
+      if (sDate != null && sDate.isNotEmpty) {
+        stepsDates[d] = sDate;
       }
       if (prefs.getBool('pocket_day_${uid}_${d}_steps_completed') == true ||
           prefs.getBool('pocket_day_${uid}_${d}_completed') == true) {
@@ -580,6 +599,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         _completedDates
           ..clear()
           ..addAll(compDates);
+        _stepsCompletedDates
+          ..clear()
+          ..addAll(stepsDates);
         _subStepFlags
           ..clear()
           ..addAll(subFlags);
@@ -675,7 +697,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   /// Lightweight Viewport Culling Check (User Audio Directive: "hang aavaruthu... lightweight aayirikkanam... lazy loading okke koduthittu")
   bool _isDayInViewport(int day, double minY, double maxY) {
     final y = _getNodeY(day);
-    return (y >= minY - 320.0) && (y <= maxY + 320.0);
+    return (y >= minY - 520.0) && (y <= maxY + 520.0);
   }
 
   void _scrollToRule({bool animate = false}) {
@@ -736,13 +758,18 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             pointsAwarded, uid);
       }
 
-      // Passing the 17th step (Mastery Exam) certifies Day and unlocks the next house gate!
+      // Passing the 17th step (Mastery Exam) certifies Day learning steps and records steps completion date
       if (stepIndex == 17) {
-        await prefs.setBool('pocket_day_${uid}_${day}_completed', true);
+        await prefs.setBool('pocket_day_${uid}_${day}_steps_completed', true);
         await prefs.setInt('learning_last_completed_day_$uid', day);
         final now = DateTime.now();
-        await prefs.setString('learning_day_${uid}_${day}_completed_date',
-            '${now.year}-${now.month}-${now.day}');
+        final todayStr = '${now.year}-${now.month}-${now.day}';
+        final existingStepsDate =
+            prefs.getString('learning_day_${uid}_${day}_steps_date');
+        if (existingStepsDate == null || existingStepsDate.isEmpty) {
+          await prefs.setString(
+              'learning_day_${uid}_${day}_steps_date', todayStr);
+        }
       }
     }
     HapticFeedback.heavyImpact();
@@ -3115,6 +3142,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                       if (_isDayInViewport(day, minY, maxY))
                                         _buildRoadmapGate(
                                             day, screenWidth, targetActiveDay),
+
+                                    // 📱 Native Ad Card on Mountain Trail between Gate and Next House (User Audio Directive!)
+                                    for (int day = 1; day < _totalDays; day++)
+                                      if (_isDayInViewport(day, minY, maxY))
+                                        _buildRoadmapNativeAd(
+                                            day, screenWidth),
 
                                     // Interactive 3D Level Nodes (Days 1 to 90) (Viewport Culled)
                                     for (int day = 1; day <= _totalDays; day++)
@@ -5841,8 +5874,21 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       await prefs.setBool('pocket_day_${uid}_${day}_steps_completed', true);
       await prefs.setInt('learning_last_completed_day_$uid', day);
       final now = DateTime.now();
-      await prefs.setString('learning_day_${uid}_${day}_completed_date',
-          '${now.year}-${now.month}-${now.day}');
+      final todayStr = '${now.year}-${now.month}-${now.day}';
+      final existingStepsDate =
+          prefs.getString('learning_day_${uid}_${day}_steps_date');
+      if (existingStepsDate == null || existingStepsDate.isEmpty) {
+        await prefs.setString(
+            'learning_day_${uid}_${day}_steps_date', todayStr);
+      }
+      // 🎯 Preserve the date when learning tasks were actually completed
+      // If user finished tasks yesterday, breaching gate today must NOT trigger an extra 24-hour midnight wait!
+      final dateToRecord =
+          (existingStepsDate != null && existingStepsDate.isNotEmpty)
+              ? existingStepsDate
+              : todayStr;
+      await prefs.setString(
+          'learning_day_${uid}_${day}_completed_date', dateToRecord);
       await prefs.setInt('pocket_learning_user_stage_$uid', day + 1);
       await prefs.setInt('learning_day_$uid', day + 1);
 
@@ -6131,9 +6177,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 _subStepFlags['step_$requiredSteps'] == true));
     final bool isAttackReady = !isCompleted && isCurrent && areHouseTasksDone;
 
-    // Exact midpoint along the mountain trail between house day and house day + 1
-    final gateY = _getNodeY(day) - (_nodeSpacingY * 0.50);
-    final gateX = _getNodeXFractional(day + 0.50, screenWidth);
+    // Spaced along mountain trail between house day and house day + 1 (allowing ample room for Native Ad Card before House day+1)
+    final gateY = _getNodeY(day) - (_nodeSpacingY * 0.36);
+    final gateX = _getNodeXFractional(day + 0.36, screenWidth);
 
     final double gateWidth = (screenWidth * 0.72).clamp(240.0, 280.0);
     const double gateHeight = 64.0;
@@ -6439,6 +6485,38 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 📱 Minimalist Native Ad Card placed on the roadmap trail between Gate and Next House
+  /// User Audio Directive: "ഡേ വൺ കഴിഞ്ഞ് ഒരു ഗേറ്റ് ഉണ്ട്. ഗേറ്റ് കഴിഞ്ഞു കഴിഞ്ഞാൽ ഒരു സ്പേസ് ഉണ്ട്.
+  /// ആ സ്പേസ് കുറച്ചുകൂടി വലുതാക്കുക. എന്നിട്ട് എന്ത് ചെയ്യുക അവിടെ നേറ്റീവ് ആഡ് പ്ലേസ് ചെയ്യുക.
+  /// മറ്റേ കാർഡ് നമ്മൾ കാർഡ് ഉണ്ടല്ലോ കാർഡ് ആയിട്ട് പ്ലേസ് ചെയ്യുക. എന്നിട്ട് അത് തന്നെ പോക്കറ്റ് മേറ്റ്സ് ആഡ്സ്
+  /// എന്ന് പറയുന്ന കാർഡ് നേറ്റീവ് ആഡിന്റെ കാർഡ് പ്ലേസ് ചെയ്യുക... വിഐപി എടുത്ത ആൾക്കാരാണെങ്കിൽ ആഡ് ഒരിക്കലും കാണിക്കരുത്."
+  Widget _buildRoadmapNativeAd(int day, double screenWidth) {
+    if (_isSubscribed) return const SizedBox.shrink();
+    if (day >= _totalDays) return const SizedBox.shrink();
+
+    // Symmetrically placed on the trail between Gate (0.36) and next House (1.00)
+    final double adY = _getNodeY(day) - (_nodeSpacingY * 0.68);
+    final double cardWidth = (screenWidth * 0.88).clamp(280.0, 340.0);
+    final double cardLeft = (screenWidth - cardWidth) / 2;
+
+    return Positioned(
+      left: cardLeft,
+      top: adY - 68.0, // Centered for compact minimal card (~135px height)
+      width: cardWidth,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: cardWidth),
+          child: PocketNativeAdCard(
+            key: ValueKey('roadmap_target_ad_$day'),
+            placement: PocketAdPlacement.target,
+            isCompact: true,
+            margin: EdgeInsets.zero,
           ),
         ),
       ),
@@ -7913,10 +7991,17 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final double targetY;
 
     if (allDone) {
-      // Parked right in front of the next house (House 2 for Day 1)!
-      final nextDay = (activeDay + 1).clamp(1, _totalDays);
-      targetX = _getNodeX(nextDay, screenWidth);
-      targetY = _getNodeY(nextDay) + 48.0;
+      final bool isGateBreached = _isDayCompleted(activeDay);
+      if (!isGateBreached) {
+        // 🚗 Stopped directly at Gate $activeDay awaiting fortress breach!
+        targetX = _getNodeXFractional(activeDay + 0.36, screenWidth);
+        targetY = _getNodeY(activeDay) - (_nodeSpacingY * 0.36) + 40.0;
+      } else {
+        // 🎉 Gate breached! Vehicle moves past the Gate and Native Ad Card to the front of House ${activeDay + 1}!
+        final nextDay = (activeDay + 1).clamp(1, _totalDays);
+        targetX = _getNodeX(nextDay, screenWidth);
+        targetY = _getNodeY(nextDay) + 48.0;
+      }
     } else {
       targetX = _getSubStepX(activeDay, currentActiveStepIndex, screenWidth,
           totalSteps: totalStepsCount);
@@ -7934,17 +8019,34 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         onTap: () {
           HapticFeedback.mediumImpact();
           if (allDone) {
-            final nextDay = (activeDay + 1).clamp(1, _totalDays);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  '🚗 Vehicle parked in front of House $nextDay! Tap House $nextDay to continue!',
-                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+            final bool isGateBreached = _isDayCompleted(activeDay);
+            if (!isGateBreached) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  backgroundColor: const Color(0xFF1E293B),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  content: Text(
+                    '⚔️ Vehicle is at Gate $activeDay! Challenge the Level Defender to breach the gate and proceed.',
+                    style: GoogleFonts.outfit(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
                 ),
-                backgroundColor: const Color(0xFF10B981),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
+              );
+            } else {
+              final nextDay = (activeDay + 1).clamp(1, _totalDays);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    '🚗 Gate $activeDay breached! Welcome to House $nextDay! Tap House $nextDay to continue!',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                  ),
+                  backgroundColor: const Color(0xFF10B981),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            }
           } else {
             subSteps[currentActiveStepIndex - 1].onAction();
           }
@@ -8088,8 +8190,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       final bool sittingAtGate = currentHouseDone && !gateBreached;
 
       if (sittingAtGate) {
-        x = _getNodeXFractional(effectiveAvatarDay + 0.50, screenWidth);
-        y = _getNodeY(effectiveAvatarDay) - (_nodeSpacingY * 0.50);
+        x = _getNodeXFractional(effectiveAvatarDay + 0.36, screenWidth);
+        y = _getNodeY(effectiveAvatarDay) - (_nodeSpacingY * 0.36);
       } else {
         x = _getNodeX(effectiveAvatarDay, screenWidth);
         y = _getNodeY(effectiveAvatarDay);
