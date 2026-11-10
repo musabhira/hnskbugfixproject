@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -455,7 +456,8 @@ class PocketGameAudioService with WidgetsBindingObserver {
             if (_player?.state == PlayerState.paused) {
               await _player?.resume();
             } else {
-              await _player?.play(UrlSource(_currentTrackUrl!));
+              final source = await _resolveAudioSource(_currentTrackUrl!);
+              await _player?.play(source);
             }
           }
         }
@@ -469,6 +471,17 @@ class PocketGameAudioService with WidgetsBindingObserver {
   Future<void> playTargetTheme() async {
     final track = targetTracks[0];
     await playTrack(track, volume: kDefaultBgmVolume);
+  }
+
+  /// 🛡️ Disk Cache audio files to prevent runaway Supabase Cached Egress
+  Future<Source> _resolveAudioSource(String url) async {
+    try {
+      final file = await DefaultCacheManager().getSingleFile(url);
+      return DeviceFileSource(file.path);
+    } catch (e) {
+      debugPrint('⚠️ Audio cache notice: $e, falling back to direct network stream');
+      return UrlSource(url);
+    }
   }
 
   /// Play any specific track with automatic error fallback
@@ -502,7 +515,8 @@ class PocketGameAudioService with WidgetsBindingObserver {
 
       if (!isMuted) {
         await _player?.stop();
-        await _player?.play(UrlSource(track.url));
+        final source = await _resolveAudioSource(track.url);
+        await _player?.play(source);
       }
     } catch (e) {
       debugPrint('⚠️ Error playing track ${track.title}: $e');
@@ -538,7 +552,8 @@ class PocketGameAudioService with WidgetsBindingObserver {
         if (_player?.state == PlayerState.paused) {
           await _player?.resume();
         } else if (_player?.state != PlayerState.playing) {
-          await _player?.play(UrlSource(_currentTrackUrl!));
+          final source = await _resolveAudioSource(_currentTrackUrl!);
+          await _player?.play(source);
         }
       } else {
         await playAmbientAppTheme();
@@ -567,7 +582,8 @@ class PocketGameAudioService with WidgetsBindingObserver {
             if (_player?.state == PlayerState.paused) {
               await _player?.resume();
             } else {
-              await _player?.play(UrlSource(_currentTrackUrl!));
+              final source = await _resolveAudioSource(_currentTrackUrl!);
+              await _player?.play(source);
             }
           } else {
             await playAmbientAppTheme();

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -79,7 +80,14 @@ class _VoiceMessagePlayerState extends State<VoiceMessagePlayer> {
       if (_isPlaying) {
         await _audioPlayer.pause();
       } else {
-        await _audioPlayer.play(UrlSource(widget.fileUrl));
+        Source source;
+        try {
+          final file = await DefaultCacheManager().getSingleFile(widget.fileUrl);
+          source = DeviceFileSource(file.path);
+        } catch (_) {
+          source = UrlSource(widget.fileUrl);
+        }
+        await _audioPlayer.play(source);
       }
     } catch (e) {
       debugPrint('Error playing audio: $e');
