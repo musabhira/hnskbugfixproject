@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/ads/admob_dual_engine_inspector_sheet.dart';
 
 /// 📱 Admin Panel Dedicated Ads Tab
 /// Cross-platform diagnostic inspector for all 12 AdMob placements on Android & iOS.
@@ -625,6 +626,24 @@ class _AdminAdsManagementTabState extends State<AdminAdsManagementTab> {
                 style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const Spacer(),
+              ElevatedButton.icon(
+                onPressed: () {
+                  HapticFeedback.mediumImpact();
+                  AdMobDualEngineInspectorSheet.show(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF1E293B),
+                  foregroundColor: const Color(0xFFFFFC00),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    side: const BorderSide(color: Color(0xFFFFFC00), width: 0.8),
+                  ),
+                ),
+                icon: const Icon(Icons.analytics_rounded, size: 15),
+                label: const Text('Live Diagnostic Lab', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+              ),
+              const SizedBox(width: 6),
               IconButton(
                 icon: const Icon(Icons.refresh_rounded, color: Color(0xFF38BDF8), size: 20),
                 tooltip: 'Refresh Status',

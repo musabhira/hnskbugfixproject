@@ -33,6 +33,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citad
 
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_island_inspector_modal.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_talk_engine.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_guard_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_gang_group_language_service.dart';
@@ -5565,6 +5566,15 @@ Draft: "$draft"''';
                       },
               ),
             ],
+            if (widget.groupName.contains('Neighbors') || _currentGroupName.contains('Neighbors'))
+              IconButton(
+                icon: const Icon(Icons.public_rounded, color: Color(0xFF38BDF8), size: 22),
+                tooltip: 'Island Map 🗺️',
+                onPressed: () {
+                  HapticFeedback.mediumImpact();
+                  PoketCosmosIslandInspectorModal.show(context);
+                },
+              ),
             PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert, color: Colors.white),
               color: appBarColor,
@@ -10966,7 +10976,84 @@ Draft: "$draft"''';
                     ),
                     const SizedBox(height: 20),
 
-                    // 🌐 PocketGang Allowed Languages Section
+                    // 🏝️ Celestial Island Map Card for Neighbors Groups
+                    if (widget.groupName.contains('Neighbors') || _currentGroupName.contains('Neighbors')) ...[
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.5), width: 1.2),
+                          boxShadow: const [
+                            BoxShadow(color: Colors.black38, blurRadius: 10, offset: Offset(0, 3)),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Text('🏝️', style: TextStyle(fontSize: 20)),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Celestial Island Map',
+                                        style: GoogleFonts.outfit(
+                                          color: Colors.white,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text(
+                                        'View your 25-resident island, neighbors & territory',
+                                        style: GoogleFonts.plusJakartaSans(
+                                          color: const Color(0xFF94A3B8),
+                                          fontSize: 11.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  PoketCosmosIslandInspectorModal.show(context);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF0284C7),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                icon: const Icon(Icons.public_rounded, size: 18),
+                                label: Text(
+                                  'Explore Island Map 🗺️',
+                                  style: GoogleFonts.outfit(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     if (_isEligibleForPocketGangWorkspace) ...[
                       Container(
                         padding: const EdgeInsets.all(14),

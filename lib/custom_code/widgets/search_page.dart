@@ -980,6 +980,43 @@ class _SearchPageState extends State<SearchPage> {
                     ),
                   ),
                 ),
+                Container(width: 1, height: 26, color: Colors.white12),
+                // Active Waves
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.waves_rounded,
+                                size: 12, color: Color(0xFFA855F7)),
+                            const SizedBox(width: 4),
+                            Text(
+                              'WAVE',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFA855F7),
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Wave 1 & 2',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFC084FC),
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

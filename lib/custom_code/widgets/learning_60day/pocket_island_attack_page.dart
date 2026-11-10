@@ -1050,14 +1050,20 @@ class _PocketIslandAttackPageState extends State<PocketIslandAttackPage>
                             style: const TextStyle(fontSize: 18),
                           ),
                           const SizedBox(width: 8),
-                          Text(
-                            widget.isMockAttack
-                                ? 'LAUNCH MOCK RUNNER'
-                                : 'START 25-GATE RAID',
-                            style: GoogleFonts.outfit(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 13.5,
-                              letterSpacing: 0.5,
+                          Flexible(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                widget.isMockAttack
+                                    ? 'LAUNCH RUNNER'
+                                    : 'START 25-GATE RAID',
+                                maxLines: 1,
+                                style: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 13.5,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
                             ),
                           ),
                         ],

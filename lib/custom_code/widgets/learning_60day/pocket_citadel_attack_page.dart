@@ -7329,13 +7329,10 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
               ),
-              onPressed: () async {
+              onPressed: () {
                 Navigator.pop(ctx);
-                // 📺 Trigger Attack Interstitial Ad for Non-VIP Learners on Raid Victory
-                await PocketAdMobService.instance.showInterstitialAd(
-                  context: context,
-                  placement: PocketAdPlacement.attack,
-                );
+                // 🎯 User Directive: Interstitial ad is already shown once upon finishing the raid mini-game.
+                // Do not show a second repeated ad on "CLAIM REWARDS & RETURN".
                 if (context.mounted) {
                   Navigator.pop(context, true);
                 }

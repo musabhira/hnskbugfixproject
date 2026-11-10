@@ -7,7 +7,6 @@ import 'learning_models.dart';
 import 'learning_service.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_defense_trap_modal.dart';
-import 'pocket_daily_mission_page.dart';
 import 'pocket_day_detail_overview_page.dart';
 import 'day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
@@ -1136,15 +1135,7 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
             }
 
             if (isUnlocked || isMasterAdmin) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => PocketDailyMissionPage(
-                    day: stage.day,
-                    onMissionCompleted: _loadProgress,
-                  ),
-                ),
-              );
+              PocketDayDetailOverviewPage.show(context, stage.day);
             } else {
               HapticFeedback.lightImpact();
               if (stage.day == currentDay + 1) {

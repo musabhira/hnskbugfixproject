@@ -15,7 +15,6 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_open_world_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_defense_trap_modal.dart';
-import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_daily_mission_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_game_rules_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_diagnostic_sheet.dart';
@@ -2576,15 +2575,7 @@ class _PocketKidsTasksMasterHubPageState
                     child: OutlinedButton(
                       onPressed: () {
                         Navigator.pop(ctx);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PocketDailyMissionPage(
-                              day: day,
-                              onMissionCompleted: () => _loadData(),
-                            ),
-                          ),
-                        );
+                        _startActiveSubStep(day);
                       },
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Color(0xFF10B981)),

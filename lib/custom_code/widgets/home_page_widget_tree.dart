@@ -35,7 +35,6 @@ import 'package:pocket_mates_app/custom_code/widgets/chat/audio_space/pocket_flo
 import 'package:pocket_mates_app/custom_code/widgets/chat/audio_space/pocket_coffee_table_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/doodle_background_painter.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_mission_timer_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_daily_mission_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
@@ -388,7 +387,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
           // 🌌 Guarantee every registered citizen has a Pocket Cosmos plot!
           // If they missed born address or ceremony, auto-allocate a free plot in the active wave (out of 375).
-          await PoketCosmosAllocationService.instance.ensureUserHasAllocatedPlot(
+          await PoketCosmosAllocationService.instance
+              .ensureUserHasAllocatedPlot(
             defaultName: profileName,
             defaultAvatar: profileAvatar,
           );
@@ -717,8 +717,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         safeSetState(() {
           _preloadedProfile = profileMap;
           profileId = profileMap['id']?.toString();
-          final tier = (profileMap['subscription_tier'] ?? '').toString().toLowerCase().trim();
-          final bool isSub = tier.isNotEmpty && tier != 'free' && tier != 'none';
+          final tier = (profileMap['subscription_tier'] ?? '')
+              .toString()
+              .toLowerCase()
+              .trim();
+          final bool isSub =
+              tier.isNotEmpty && tier != 'free' && tier != 'none';
           _isVerified = (profileMap['verified'] == true) || isSub;
           _isLoading = false; // Show UI immediately from cache
         });
@@ -794,7 +798,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           final base =
               displayName.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
           final baseSlug = base.isNotEmpty ? base : 'mate';
-          final shortUid = userId.replaceAll('-', '').substring(0, math.min(5, userId.replaceAll('-', '').length)).toLowerCase();
+          final shortUid = userId
+              .replaceAll('-', '')
+              .substring(0, math.min(5, userId.replaceAll('-', '').length))
+              .toLowerCase();
           final cleanSlug = '$baseSlug-$shortUid';
           final fallbackProfile = {
             'id': userId,
@@ -841,7 +848,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       safeSetState(() {
         _preloadedProfile = profileResponse;
         profileId = profileResponse?['id']?.toString() ?? userId;
-        final tier = (profileResponse?['subscription_tier'] ?? '').toString().toLowerCase().trim();
+        final tier = (profileResponse?['subscription_tier'] ?? '')
+            .toString()
+            .toLowerCase()
+            .trim();
         final bool isSub = tier.isNotEmpty && tier != 'free' && tier != 'none';
         _isVerified = (profileResponse?['verified'] == true) || isSub;
 
@@ -1260,50 +1270,31 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               backgroundColor: material.Colors.transparent,
               bottomNavigationBar: _buildBottomNavigationBar(context),
               floatingActionButton: _currentIndex == 2
-                  ? material.Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        material.FloatingActionButton.small(
-                          heroTag: 'admob_dual_lab_fab',
-                          onPressed: () {
-                            HapticFeedback.mediumImpact();
-                            AdMobDualEngineInspectorSheet.show(context);
-                          },
-                          backgroundColor: const Color(0xFF1E293B),
-                          foregroundColor: const Color(0xFFFFFC00),
-                          elevation: 4,
-                          tooltip: 'AdMob Live Diagnostic Lab',
-                          child: const Icon(Icons.analytics_rounded, size: 20),
+                  ? material.FloatingActionButton.extended(
+                      heroTag: 'mates_ranking_fab',
+                      onPressed: () {
+                        HapticFeedback.mediumImpact();
+                        PocketWorldRankingTrailWidget.showMatesRankingModal(
+                          context,
+                          userId: _currentUserId,
+                        );
+                      },
+                      backgroundColor: const Color(0xFFFFFC00),
+                      foregroundColor: material.Colors.black,
+                      elevation: 4,
+                      highlightElevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      label: Text(
+                        'Mates Rank',
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 13,
+                          color: material.Colors.black,
+                          letterSpacing: 0.3,
                         ),
-                        const SizedBox(height: 10),
-                        material.FloatingActionButton.extended(
-                          heroTag: 'mates_ranking_fab',
-                          onPressed: () {
-                            HapticFeedback.mediumImpact();
-                            PocketWorldRankingTrailWidget.showMatesRankingModal(
-                              context,
-                              userId: _currentUserId,
-                            );
-                          },
-                          backgroundColor: const Color(0xFFFFFC00),
-                          foregroundColor: material.Colors.black,
-                          elevation: 4,
-                          highlightElevation: 2,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          label: Text(
-                            'Mates Rank',
-                            style: GoogleFonts.outfit(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 13,
-                              color: material.Colors.black,
-                              letterSpacing: 0.3,
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     )
                   : null,
               body: material.ColoredBox(
@@ -5774,12 +5765,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         return GestureDetector(
           onTap: () {
             HapticFeedback.selectionClick();
-            Navigator.push(
-              context,
-              material.MaterialPageRoute(
-                builder: (_) => PocketDailyMissionPage(day: timer.day),
-              ),
-            );
           },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
@@ -5889,15 +5874,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   ),
                   onPressed: () {
                     HapticFeedback.lightImpact();
-                    if (isTargetMet) {
-                      Navigator.push(
-                        context,
-                        material.MaterialPageRoute(
-                          builder: (_) =>
-                              PocketDailyMissionPage(day: timer.day),
-                        ),
-                      );
-                    } else {
+                    if (!isTargetMet) {
                       timer.toggleTimer();
                     }
                   },

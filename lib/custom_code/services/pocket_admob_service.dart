@@ -112,8 +112,9 @@ class PocketAdMobService {
   bool get _isTestMode {
     if (_overrideTestMode != null) return _overrideTestMode!;
     if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return true;
-    if (useTestModeInBuild) return true;
-    return false; // Force 100% Production Ads everywhere
+    // 🚀 Force 100% Production Ads everywhere on Android & iOS.
+    // Absolutely NO Google test banner/interstitial units in release/device builds.
+    return false;
   }
 
   bool? get overrideTestMode => _overrideTestMode;
@@ -127,21 +128,33 @@ class PocketAdMobService {
 
   // 🎯 Google Official Safe Test Ad Unit IDs (Immediate testing without account bans)
   // Android Test IDs:
-  static const String _testBannerIdAndroid = 'ca-app-pub-3940256099942544/6300978111';
-  static const String _testInterstitialIdAndroid = 'ca-app-pub-3940256099942544/1033173712';
-  static const String _testRewardedIdAndroid = 'ca-app-pub-3940256099942544/5224354917';
-  static const String _testNativeIdAndroid = 'ca-app-pub-3940256099942544/2247696110';
+  static const String _testBannerIdAndroid =
+      'ca-app-pub-3940256099942544/6300978111';
+  static const String _testInterstitialIdAndroid =
+      'ca-app-pub-3940256099942544/1033173712';
+  static const String _testRewardedIdAndroid =
+      'ca-app-pub-3940256099942544/5224354917';
+  static const String _testNativeIdAndroid =
+      'ca-app-pub-3940256099942544/2247696110';
 
   // iOS Test IDs:
-  static const String _testBannerIdIos = 'ca-app-pub-3940256099942544/2934735716';
-  static const String _testInterstitialIdIos = 'ca-app-pub-3940256099942544/4411468910';
-  static const String _testRewardedIdIos = 'ca-app-pub-3940256099942544/1712485313';
-  static const String _testNativeIdIos = 'ca-app-pub-3940256099942544/3986624511';
+  static const String _testBannerIdIos =
+      'ca-app-pub-3940256099942544/2934735716';
+  static const String _testInterstitialIdIos =
+      'ca-app-pub-3940256099942544/4411468910';
+  static const String _testRewardedIdIos =
+      'ca-app-pub-3940256099942544/1712485313';
+  static const String _testNativeIdIos =
+      'ca-app-pub-3940256099942544/3986624511';
 
-  static String get testBannerId => Platform.isIOS ? _testBannerIdIos : _testBannerIdAndroid;
-  static String get testInterstitialId => Platform.isIOS ? _testInterstitialIdIos : _testInterstitialIdAndroid;
-  static String get testRewardedId => Platform.isIOS ? _testRewardedIdIos : _testRewardedIdAndroid;
-  static String get testNativeId => Platform.isIOS ? _testNativeIdIos : _testNativeIdAndroid;
+  static String get testBannerId =>
+      Platform.isIOS ? _testBannerIdIos : _testBannerIdAndroid;
+  static String get testInterstitialId =>
+      Platform.isIOS ? _testInterstitialIdIos : _testInterstitialIdAndroid;
+  static String get testRewardedId =>
+      Platform.isIOS ? _testRewardedIdIos : _testRewardedIdAndroid;
+  static String get testNativeId =>
+      Platform.isIOS ? _testNativeIdIos : _testNativeIdAndroid;
 
   // 🚀 Android Production Ad Unit IDs
   // Banner / Medium Rectangle In-Feed Units (300x250)
@@ -889,7 +902,8 @@ class PocketAdMobService {
 
         if (profile != null) {
           final role = profile['role']?.toString().toLowerCase().trim();
-          final tier = profile['subscription_tier']?.toString().toLowerCase().trim();
+          final tier =
+              profile['subscription_tier']?.toString().toLowerCase().trim();
           final bool hasActivePaidTier = tier != null &&
               tier.isNotEmpty &&
               tier != 'free' &&
@@ -906,10 +920,12 @@ class PocketAdMobService {
               profile['is_subscribed'] == true;
 
           debugPrint('🔍 [PocketAdMob] Genuine DB Check VIP for UID $uid:');
-          debugPrint('   -> DB Profile: subscription_tier=$tier, role=$role, hasActivePaidTier=$hasActivePaidTier => isTrueVip=$isTrueVip');
+          debugPrint(
+              '   -> DB Profile: subscription_tier=$tier, role=$role, hasActivePaidTier=$hasActivePaidTier => isTrueVip=$isTrueVip');
 
           if (isTrueVip) {
-            debugPrint('   👑 [PocketAdMob] Result: USER IS VIP. All Ads Suppressed.');
+            debugPrint(
+                '   👑 [PocketAdMob] Result: USER IS VIP. All Ads Suppressed.');
             await prefs.setBool('is_vip_$uid', true);
             await prefs.setString('subscription_tier_$uid', tier ?? 'monthly');
 
@@ -923,7 +939,8 @@ class PocketAdMobService {
             _cachedIsVip = true;
             return true;
           } else {
-            debugPrint('   🟢 [PocketAdMob] Result: USER IS FREE. Ads Allowed. Cleared device VIP flags.');
+            debugPrint(
+                '   🟢 [PocketAdMob] Result: USER IS FREE. Ads Allowed. Cleared device VIP flags.');
             await prefs.setBool('is_vip_$uid', false);
             await prefs.setString('subscription_tier_$uid', 'free');
 
@@ -1009,7 +1026,8 @@ class PocketAdMobService {
     _rewardedCompleters.clear();
   }
 
-  void _loadRewardedAd({bool isFallback = false, Completer<RewardedAd?>? completer}) {
+  void _loadRewardedAd(
+      {bool isFallback = false, Completer<RewardedAd?>? completer}) {
     if (completer != null) {
       if (_rewardedAd != null) {
         if (!completer.isCompleted) completer.complete(_rewardedAd);
@@ -1022,8 +1040,9 @@ class PocketAdMobService {
     _isRewardedLoading = true;
     _recordAdRequest('rewarded_coins');
 
-    final targetUnitId = isFallback ? testRewardedId : rewardedAdUnitId;
-    debugPrint('🎬 [PocketAdMob] Loading rewarded ad unit: $targetUnitId (fallback: $isFallback)');
+    final targetUnitId = rewardedAdUnitId;
+    debugPrint(
+        '🎬 [PocketAdMob] Loading rewarded ad unit: $targetUnitId (fallback: $isFallback)');
 
     RewardedAd.load(
       adUnitId: targetUnitId,
@@ -1033,21 +1052,16 @@ class PocketAdMobService {
           _rewardedAd = ad;
           _isRewardedLoading = false;
           _recordAdLoaded('rewarded_coins');
-          debugPrint('🎬 [PocketAdMob] Rewarded ad loaded successfully (fallback: $isFallback)');
+          debugPrint('🎬 [PocketAdMob] Rewarded ad loaded successfully');
           _flushRewardedCompleters(_rewardedAd);
         },
         onAdFailedToLoad: (error) {
           _recordAdFailed('rewarded_coins', error);
-          debugPrint('🎬 [PocketAdMob] Rewarded ad failed to load: ${error.code} - ${error.message} (fallback: $isFallback)');
+          debugPrint(
+              '🎬 [PocketAdMob] Rewarded ad failed to load: ${error.code} - ${error.message}');
           _isRewardedLoading = false;
-          if (!isFallback) {
-            // 🔄 Immediate retry with verified safe test rewarded unit so user is NEVER locked out of rewards!
-            debugPrint('🎬 [PocketAdMob] Retrying rewarded ad with fallback unit: $testRewardedId');
-            _loadRewardedAd(isFallback: true);
-          } else {
-            _rewardedAd = null;
-            _flushRewardedCompleters(null);
-          }
+          _rewardedAd = null;
+          _flushRewardedCompleters(null);
         },
       ),
     );
@@ -1055,7 +1069,7 @@ class PocketAdMobService {
 
   /// 🎬 Show Rewarded Video Ad (e.g. after completing a day or to claim bonus rewards)
   /// Enforces Google AdMob legal frequency caps (max 5/day, 60s cooldown) to protect publisher account from invalid activity.
-  /// If user is VIP, skips ad and immediately executes onUserEarnedReward!
+  /// If user is VIP, skips ad completely and immediately executes onUserEarnedReward!
   Future<void> showRewardedAd({
     required BuildContext context,
     required void Function(RewardItem reward) onUserEarnedReward,
@@ -1063,9 +1077,17 @@ class PocketAdMobService {
     bool forceShowForTesting = false,
   }) async {
     final vip = await isUserVip();
-    debugPrint('🎬 [PocketAdMob] showRewardedAd requested. User is VIP: $vip, forceShowForTesting: $forceShowForTesting');
-    // Note: Rewarded Ads are 100% opt-in (user deliberately tapped "Watch Video to Earn Reward").
-    // We always attempt to load and show the rewarded video ad to honor user action!
+    debugPrint(
+        '🎬 [PocketAdMob] showRewardedAd requested. User is VIP: $vip, forceShowForTesting: $forceShowForTesting');
+
+    // 👑 VIP Direct Reward Bypass: VIP users NEVER watch ads!
+    if (vip && !forceShowForTesting) {
+      debugPrint(
+          '👑 [PocketAdMob] VIP user bypassed rewarded ad, granting bonus directly.');
+      onUserEarnedReward(RewardItem(50, 'PocketScore'));
+      onAdClosed?.call();
+      return;
+    }
 
     // 🛡️ Policy Compliance Check: Daily Cap & Cooldown
     final eligibility = await checkRewardedAdEligibility();
@@ -1262,7 +1284,8 @@ class PocketAdMobService {
                   height: 24,
                   child: CircularProgressIndicator(
                     strokeWidth: 2.5,
-                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
                   ),
                 ),
                 const SizedBox(width: 18),
@@ -1292,7 +1315,9 @@ class PocketAdMobService {
         timer.cancel();
         if (!completer.isCompleted) completer.complete(_rewardedAd);
       } else if (DateTime.now().isAfter(deadline) ||
-          (!_isRewardedLoading && _rewardedAd == null && _rewardedCompleters.isEmpty)) {
+          (!_isRewardedLoading &&
+              _rewardedAd == null &&
+              _rewardedCompleters.isEmpty)) {
         timer.cancel();
         if (!completer.isCompleted) completer.complete(null);
       }
@@ -1333,19 +1358,22 @@ class PocketAdMobService {
           SnackBar(
             content: Row(
               children: [
-                const Icon(Icons.info_outline, color: Color(0xFFFFB300), size: 18),
+                const Icon(Icons.info_outline,
+                    color: Color(0xFFFFB300), size: 18),
                 const SizedBox(width: 8),
                 const Expanded(
                   child: Text(
                     'Sponsor video is not ready yet. Please check your connection and try again!',
-                    style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
+                    style:
+                        TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
                   ),
                 ),
               ],
             ),
             backgroundColor: const Color(0xFF1E293B),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       }
@@ -1362,7 +1390,8 @@ class PocketAdMobService {
     bool forceShowForTesting = false,
   }) async {
     final vip = await isUserVip();
-    debugPrint('📱 [PocketAdMob] showInterstitialAd requested. User is VIP: $vip, forceShowForTesting: $forceShowForTesting');
+    debugPrint(
+        '📱 [PocketAdMob] showInterstitialAd requested. User is VIP: $vip, forceShowForTesting: $forceShowForTesting');
     if (vip && !forceShowForTesting) {
       debugPrint('👑 [PocketAdMob] VIP user: Interstitial skipped.');
       onDismissed?.call();
@@ -1376,9 +1405,9 @@ class PocketAdMobService {
 
     if (!forceShowForTesting &&
         _lastInterstitialShownTime != null &&
-        DateTime.now().difference(_lastInterstitialShownTime!) <
-            minInterval) {
-      debugPrint('⏱️ [PocketAdMob] Interstitial cooldown active (${minInterval.inSeconds}s). Skipping.');
+        DateTime.now().difference(_lastInterstitialShownTime!) < minInterval) {
+      debugPrint(
+          '⏱️ [PocketAdMob] Interstitial cooldown active (${minInterval.inSeconds}s). Skipping.');
       onDismissed?.call();
       return;
     }
@@ -1890,7 +1919,8 @@ class PocketAdPreloadManager {
       // Remove any ads older than 5 minutes (AdMob impression freshness window)
       pool.removeWhere((ad) {
         final created = _adCreatedAt[ad];
-        if (created != null && now.difference(created) > const Duration(minutes: 5)) {
+        if (created != null &&
+            now.difference(created) > const Duration(minutes: 5)) {
           if (!_activeMountedBanners.contains(ad)) {
             ad.dispose();
             _adCreatedAt.remove(ad);
@@ -1926,7 +1956,8 @@ class PocketAdPreloadManager {
   }
 
   /// Backward-compatible alias for preloaded consumption
-  BannerAd? consumePreloadedAd(PocketAdPlacement placement) => acquireAd(placement);
+  BannerAd? consumePreloadedAd(PocketAdPlacement placement) =>
+      acquireAd(placement);
 
   /// Releases the ad when its widget unmounts (e.g. scrolled past).
   /// Instead of disposing it immediately, preserves it in the pool so the next gap
@@ -2079,7 +2110,6 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard>
   bool _isVip = false;
   bool _hasRetriedWithAlternateSize = false;
   bool _hasRetriedWithFallback = false;
-  bool _hasRetriedWithTestUnit = false;
 
   @override
   bool get wantKeepAlive => true;
@@ -2103,7 +2133,8 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard>
     if (reusable != null && !widget.forceFreeMode) {
       _bannerAd = reusable;
       _isLoaded = true;
-      widget.onStatusChange?.call('LOADED', 'From Persistent Cache (${reusable.size.width}x${reusable.size.height})');
+      widget.onStatusChange?.call('LOADED',
+          'From Persistent Cache (${reusable.size.width}x${reusable.size.height})');
     } else {
       _checkVipAndLoad();
     }
@@ -2114,7 +2145,8 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard>
       final vip = await PocketAdMobService.instance.isUserVip();
       if (vip) {
         if (mounted) setState(() => _isVip = true);
-        widget.onStatusChange?.call('VIP_BLOCKED', 'User is VIP (Supabase/Prefs)');
+        widget.onStatusChange
+            ?.call('VIP_BLOCKED', 'User is VIP (Supabase/Prefs)');
         return;
       }
     }
@@ -2135,10 +2167,11 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard>
     PocketAdMobService.instance._recordAdRequest(widget.placement.name);
 
     _bannerAd?.dispose();
-    final AdSize requestedSize = sizeOverride ??
-        ((_isCompact) ? AdSize.banner : AdSize.mediumRectangle);
+    final AdSize requestedSize =
+        sizeOverride ?? ((_isCompact) ? AdSize.banner : AdSize.mediumRectangle);
 
-    widget.onStatusChange?.call('REQUESTING', 'Unit: $unitId (${requestedSize.width}x${requestedSize.height})');
+    widget.onStatusChange?.call('REQUESTING',
+        'Unit: $unitId (${requestedSize.width}x${requestedSize.height})');
 
     _bannerAd = BannerAd(
       adUnitId: unitId,
@@ -2152,14 +2185,16 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard>
                 .registerLoadedAd(widget.placement, _bannerAd!);
           }
           if (mounted) setState(() => _isLoaded = true);
-          widget.onStatusChange?.call('LOADED', 'Ad loaded: ${requestedSize.width}x${requestedSize.height}');
+          widget.onStatusChange?.call('LOADED',
+              'Ad loaded: ${requestedSize.width}x${requestedSize.height}');
         },
         onAdFailedToLoad: (ad, err) {
           PocketAdMobService.instance
               ._recordAdFailed(widget.placement.name, err);
           ad.dispose();
           _bannerAd = null;
-          widget.onStatusChange?.call('FAILED', 'Code ${err.code}: ${err.message}');
+          widget.onStatusChange
+              ?.call('FAILED', 'Code ${err.code}: ${err.message}');
 
           // 🔄 Tier 1 Fallback: If 300x250 medium rectangle failed, retry with 320x50 banner
           // in case the ad unit ID was created as a standard banner in Google AdMob Console!
@@ -2167,7 +2202,8 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard>
               requestedSize == AdSize.mediumRectangle &&
               !_isCompact) {
             _hasRetriedWithAlternateSize = true;
-            widget.onStatusChange?.call('RETRYING_BANNER', 'Retrying with 320x50 banner size');
+            widget.onStatusChange
+                ?.call('RETRYING_BANNER', 'Retrying with 320x50 banner size');
             _loadBanner(unitId, sizeOverride: AdSize.banner);
             return;
           }
@@ -2182,17 +2218,9 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard>
               unitId != fallbackUnitId &&
               !PocketAdMobService.instance._isTestMode) {
             _hasRetriedWithFallback = true;
-            widget.onStatusChange?.call('RETRYING_FALLBACK_UNIT', 'Retrying with verified Ranking Unit: $fallbackUnitId');
+            widget.onStatusChange?.call('RETRYING_FALLBACK_UNIT',
+                'Retrying with verified Ranking Unit: $fallbackUnitId');
             _loadBanner(fallbackUnitId, sizeOverride: AdSize.mediumRectangle);
-            return;
-          }
-
-          // 🔄 Tier 3 Fallback: If both production units fail (e.g. Code 3 No-Fill in test region),
-          // fallback to official test banner unit so UI is never blank
-          if (!_hasRetriedWithTestUnit) {
-            _hasRetriedWithTestUnit = true;
-            widget.onStatusChange?.call('RETRYING_TEST_UNIT', 'Retrying with safe test unit');
-            _loadBanner(PocketAdMobService.testBannerId, sizeOverride: requestedSize);
             return;
           }
 
@@ -2230,8 +2258,7 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard>
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                  builder: (_) => const SubscriptionPage()),
+              MaterialPageRoute(builder: (_) => const SubscriptionPage()),
             );
           },
         ),
@@ -2305,12 +2332,6 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard>
                       color: const Color(0xFFFFFC00),
                       width: 1.2,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFFFFC00).withValues(alpha: 0.25),
-                        blurRadius: 6,
-                      ),
-                    ],
                   ),
                   child: ClipOval(
                     child: Image.asset(
@@ -2324,7 +2345,7 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard>
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -2363,14 +2384,18 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard>
                             ),
                           ),
                           const SizedBox(width: 5),
-                          const Text('•', style: TextStyle(color: Colors.white30, fontSize: 9)),
+                          const Text('•',
+                              style: TextStyle(
+                                  color: Colors.white30, fontSize: 9)),
                           const SizedBox(width: 5),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0.5),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 4, vertical: 0.5),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(3),
-                              border: Border.all(color: Colors.white24, width: 0.5),
+                              border:
+                                  Border.all(color: Colors.white24, width: 0.5),
                             ),
                             child: Text(
                               'Ad',
@@ -2387,9 +2412,11 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard>
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.more_horiz_rounded, color: Colors.white38, size: 18),
+                  icon: const Icon(Icons.more_horiz_rounded,
+                      color: Colors.white38, size: 18),
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 26, minHeight: 26),
+                  constraints:
+                      const BoxConstraints(minWidth: 26, minHeight: 26),
                   splashRadius: 14,
                   onPressed: () => _showAdInfoSnackbar(context),
                 ),
@@ -2726,16 +2753,6 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard>
               ),
             ),
           ),
-          const SizedBox(height: 5),
-          Text(
-            'Enjoy 100% ad-free experience & unlimited live matches',
-            style: GoogleFonts.outfit(
-              color: Colors.white38,
-              fontSize: 10.5,
-              fontWeight: FontWeight.w500,
-            ),
-            textAlign: TextAlign.center,
-          ),
         ],
       ),
     );
@@ -2805,7 +2822,8 @@ class _LegacyDc50278NativeAdCardState extends State<LegacyDc50278NativeAdCard>
 
   void _loadBanner(String unitId) {
     widget.onStatusChange?.call('REQUESTING', 'Unit: $unitId (300x250)');
-    PocketAdMobService.instance._recordAdRequest('legacy_${widget.placement.name}');
+    PocketAdMobService.instance
+        ._recordAdRequest('legacy_${widget.placement.name}');
 
     _bannerAd?.dispose();
     _bannerAd = BannerAd(
@@ -3687,7 +3705,6 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
   bool _isLoaded = false;
   bool _isVip = false;
   bool _hasRetriedWithFallback = false;
-  bool _hasRetriedWithTestUnit = false;
 
   @override
   void initState() {
@@ -3748,10 +3765,6 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
                     : PocketAdMobService.prodRankingAdUnitId);
             _loadBanner(fallbackProdId);
             return;
-          } else if (!_hasRetriedWithTestUnit) {
-            _hasRetriedWithTestUnit = true;
-            _loadBanner(PocketAdMobService.testBannerId);
-            return;
           }
           if (mounted) setState(() => _isLoaded = false);
         },
@@ -3765,7 +3778,8 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
 
   @override
   void dispose() {
-    PocketAdPreloadManager.instance.releaseAd(PocketAdPlacement.banner, _bannerAd);
+    PocketAdPreloadManager.instance
+        .releaseAd(PocketAdPlacement.banner, _bannerAd);
     super.dispose();
   }
 

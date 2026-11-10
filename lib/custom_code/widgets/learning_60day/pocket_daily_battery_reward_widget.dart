@@ -151,7 +151,36 @@ class _PocketDailyBatteryRewardWidgetState
       return;
     }
 
-    // Directly launch Rewarded Video Ad cleanly
+    // 👑 VIP Direct Instant Score Grant (No Ad required!)
+    if (_isVip) {
+      final newScore =
+          await PocketAdMobService.instance.grantRewardedPocketScore();
+      await _refreshState();
+      widget.onRewardClaimed?.call();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Text('👑', style: TextStyle(fontSize: 16)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'VIP Instant Reward! +50 Pocket Score granted without ads (Total: $newScore PS) ⚡✨',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF0F172A),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
+
+    // Directly launch Rewarded Video Ad cleanly for Free users
     await PocketAdMobService.instance.showRewardedAd(
       context: context,
       onUserEarnedReward: (reward) async {
@@ -264,7 +293,7 @@ class _PocketDailyBatteryRewardWidgetState
       } else {
         batteryColor = const Color(0xFF10B981);
       }
-      topTitle = 'Watch Reward';
+      topTitle = _isVip ? 'Claim Reward' : 'Watch Reward';
       bottomSub = '+50 PS (${_dailyCount}/5)';
       subColor = const Color(0xFFFFD700); // Yellow/Golden score callout
     }

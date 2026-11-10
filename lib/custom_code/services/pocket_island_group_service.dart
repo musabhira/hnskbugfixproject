@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 import '/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_models.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
@@ -15,27 +16,27 @@ class PocketIslandGroupService {
 
   static const String _kIslandGroupPrefix = 'cosmos_island_';
   static const String _kUserJoinedGroupKey = 'cosmos_user_active_island_group_';
+  static const String _kIslandNamespace = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
 
-  /// Deterministic unique group ID for an island (e.g. "cosmos_island_ep_w1", "cosmos_island_mer_w1")
+  /// Deterministic unique UUID for an island group (100% compliant with PostgreSQL uuid type!)
   String getIslandGroupId({
     required String planetCode,
     required int wave,
     int islandIndex = 1,
   }) {
     final cleanCode = planetCode.trim().toLowerCase();
-    return '$_kIslandGroupPrefix${cleanCode}_w${wave}_i$islandIndex';
+    final seed = '$_kIslandGroupPrefix${cleanCode}_w${wave}_i$islandIndex';
+    return const Uuid().v5(_kIslandNamespace, seed);
   }
 
-  /// Official Island Neighbors Group Name
+  /// Official Island Neighbors Group Name (Minimal & Clean)
   String getIslandGroupName({
     required String planetName,
     required int wave,
     String? islandName,
   }) {
-    final suffix = (islandName != null && islandName.isNotEmpty)
-        ? ' • $islandName'
-        : '';
-    return '🏝️ $planetName Neighbors$suffix (Wave $wave)';
+    final cleanPlanet = planetName.replaceAll(RegExp(r'[^\w\s]'), '').trim();
+    return '🏝️ $cleanPlanet Neighbors';
   }
 
   /// Ensures the island group exists in Supabase `groups` table,

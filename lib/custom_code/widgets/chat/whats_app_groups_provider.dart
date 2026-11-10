@@ -132,14 +132,17 @@ class ChatConversation {
     if (otherProfile != null) {
       final score = (otherProfile['pocket_score'] as num?)?.toInt() ??
           (otherProfile['learning_points'] as num?)?.toInt() ??
-          (otherProfile['xp'] as num?)?.toInt() ?? 0;
+          (otherProfile['xp'] as num?)?.toInt() ??
+          0;
       final stage = (otherProfile['learning_day'] as num?)?.toInt() ??
           (otherProfile['learning_stage'] as num?)?.toInt() ??
           (otherProfile['stage'] as num?)?.toInt() ??
-          (otherProfile['level'] as num?)?.toInt() ?? 1;
+          (otherProfile['level'] as num?)?.toInt() ??
+          1;
       final talisman = otherProfile['equipped_talisman']?.toString() ??
           otherProfile['talisman_id']?.toString();
-      if (otherProfile['avatar_config'] != null && otherProfile['avatar_config'] is Map) {
+      if (otherProfile['avatar_config'] != null &&
+          otherProfile['avatar_config'] is Map) {
         avatarCfg = Map<String, dynamic>.from(otherProfile['avatar_config']);
         avatarCfg['stage'] = stage;
         if (talisman != null) avatarCfg['talismanId'] = talisman;
@@ -534,13 +537,33 @@ class Conversations extends _$Conversations {
       if (favoritedToolsRaw == null || favoritedToolsRaw == '[]') {
         favoritedTools = [
           {'title': 'Schedule', 'timeAdded': DateTime.now().toIso8601String()},
-          {'title': '90-Day English Tasks', 'timeAdded': DateTime.now().toIso8601String()},
-          {'title': '1-on-1 English Match', 'timeAdded': DateTime.now().subtract(const Duration(minutes: 1)).toIso8601String()},
-          {'title': 'Voice Speaking Sprint', 'timeAdded': DateTime.now().subtract(const Duration(minutes: 2)).toIso8601String()},
-          {'title': 'Diagrams', 'timeAdded': DateTime.now().subtract(const Duration(minutes: 3)).toIso8601String()},
+          {
+            'title': '90-Day English Tasks',
+            'timeAdded': DateTime.now().toIso8601String()
+          },
+          {
+            'title': '1-on-1 English Match',
+            'timeAdded': DateTime.now()
+                .subtract(const Duration(minutes: 1))
+                .toIso8601String()
+          },
+          {
+            'title': 'Voice Speaking Sprint',
+            'timeAdded': DateTime.now()
+                .subtract(const Duration(minutes: 2))
+                .toIso8601String()
+          },
+          {
+            'title': 'Diagrams',
+            'timeAdded': DateTime.now()
+                .subtract(const Duration(minutes: 3))
+                .toIso8601String()
+          },
         ];
-        await prefs.setString('favorited_tools_$userId', jsonEncode(favoritedTools));
-        await prefs.setString('favorited_tools_guest', jsonEncode(favoritedTools));
+        await prefs.setString(
+            'favorited_tools_$userId', jsonEncode(favoritedTools));
+        await prefs.setString(
+            'favorited_tools_guest', jsonEncode(favoritedTools));
       } else {
         try {
           favoritedTools = jsonDecode(favoritedToolsRaw) as List;
@@ -637,44 +660,59 @@ class Conversations extends _$Conversations {
 
         final prefs = await SharedPreferences.getInstance();
         final matesList = prefs.getStringList('pocket_mates_$userId') ?? [];
-        final robotMates = matesList.where((id) => PocketRobotService.isRobotId(id)).toList();
+        final robotMates =
+            matesList.where((id) => PocketRobotService.isRobotId(id)).toList();
         for (final robotId in robotMates) {
           final robot = PocketRobotService.getRobotById(robotId);
           if (robot != null) {
-            final history = await PocketRobotService.getRobotChatHistory(userId, robotId);
+            final history =
+                await PocketRobotService.getRobotChatHistory(userId, robotId);
             final lastMsgObj = history.isNotEmpty ? history.first : null;
             final isSnap = lastMsgObj != null &&
                 (lastMsgObj['message_type'] == 'snap' ||
-                 lastMsgObj['metadata']?['is_snap'] == true ||
-                 lastMsgObj['message_text']?.toString().contains('Snap') == true);
+                    lastMsgObj['metadata']?['is_snap'] == true ||
+                    lastMsgObj['message_text']?.toString().contains('Snap') ==
+                        true);
 
             final snapUrl = isSnap
-                ? (lastMsgObj['content'] ?? lastMsgObj['file_url'] ?? lastMsgObj['media_url'])?.toString()
+                ? (lastMsgObj['content'] ??
+                        lastMsgObj['file_url'] ??
+                        lastMsgObj['media_url'])
+                    ?.toString()
                 : null;
             final snapCaption = isSnap
-                ? (lastMsgObj['metadata']?['caption'] ?? lastMsgObj['message_text'])?.toString()
+                ? (lastMsgObj['metadata']?['caption'] ??
+                        lastMsgObj['message_text'])
+                    ?.toString()
                 : null;
 
             final isUnread = lastMsgObj != null &&
                 lastMsgObj['sender_id'] == robot.id &&
-                (lastMsgObj['is_read'] == false || lastMsgObj['metadata']?['is_read'] == false);
+                (lastMsgObj['is_read'] == false ||
+                    lastMsgObj['metadata']?['is_read'] == false);
 
             final lastMsg = isSnap
                 ? (isUnread ? '⚡ New Snap • Tap to view' : 'Opened Snap')
-                : (lastMsgObj != null ? lastMsgObj['message_text']?.toString() : robot.openingMessage);
+                : (lastMsgObj != null
+                    ? lastMsgObj['message_text']?.toString()
+                    : robot.openingMessage);
 
-            final lastTime = lastMsgObj != null && lastMsgObj['created_at'] != null
-                ? DateTime.tryParse(lastMsgObj['created_at'].toString()) ?? DateTime.now()
-                : DateTime.now();
+            final lastTime =
+                lastMsgObj != null && lastMsgObj['created_at'] != null
+                    ? DateTime.tryParse(lastMsgObj['created_at'].toString()) ??
+                        DateTime.now()
+                    : DateTime.now();
 
-            final robotVibes = await PocketRobotService.getActiveRobotVibes(robot.id);
+            final robotVibes =
+                await PocketRobotService.getActiveRobotVibes(robot.id);
             final hasStatus = robotVibes.isNotEmpty;
-            final isSeen = hasStatus && VibesSeenService.isWatched(
-              currentUserId: userId,
-              userId: robot.id,
-              profileId: robot.id,
-              statuses: robotVibes,
-            );
+            final isSeen = hasStatus &&
+                VibesSeenService.isWatched(
+                  currentUserId: userId,
+                  userId: robot.id,
+                  profileId: robot.id,
+                  statuses: robotVibes,
+                );
             final hasUnwatchedStatus = hasStatus && !isSeen;
 
             updatedPersonal.add(ChatConversation(
@@ -702,20 +740,24 @@ class Conversations extends _$Conversations {
 
       // 🏛️ Official President of Pocket World & Pocket Mates
       try {
-        final presInfo = await PocketPresidentService.getLastPresidentMessage(userId);
-        final presVibes = await PocketPresidentService.getActivePresidentVibes();
+        final presInfo =
+            await PocketPresidentService.getLastPresidentMessage(userId);
+        final presVibes =
+            await PocketPresidentService.getActivePresidentVibes();
         final hasStatus = presVibes.isNotEmpty;
-        final isSeen = hasStatus && VibesSeenService.isWatched(
-          currentUserId: userId,
-          userId: PocketPresidentService.presidentId,
-          profileId: PocketPresidentService.presidentId,
-          statuses: presVibes,
-        );
+        final isSeen = hasStatus &&
+            VibesSeenService.isWatched(
+              currentUserId: userId,
+              userId: PocketPresidentService.presidentId,
+              profileId: PocketPresidentService.presidentId,
+              statuses: presVibes,
+            );
         final hasUnwatchedStatus = hasStatus && !isSeen;
 
         final lastTime = presInfo['created_at'] is DateTime
             ? presInfo['created_at'] as DateTime
-            : (DateTime.tryParse(presInfo['created_at']?.toString() ?? '') ?? DateTime.now());
+            : (DateTime.tryParse(presInfo['created_at']?.toString() ?? '') ??
+                DateTime.now());
 
         updatedPersonal.add(ChatConversation(
           id: PocketPresidentService.presidentId,
@@ -748,7 +790,8 @@ class Conversations extends _$Conversations {
       if (combined.isEmpty) {
         String mussabUserId = '188d1b93-1d15-436e-b6ed-455d91ec8bd6';
         String mussabName = "Mus'ab hira";
-        String? mussabAvatar = 'https://gswhynuabdspnwudltth.supabase.co/storage/v1/object/public/profile/188d1b93-1d15-436e-b6ed-455d91ec8bd6/1781195183004.jpg';
+        String? mussabAvatar =
+            'https://gswhynuabdspnwudltth.supabase.co/storage/v1/object/public/profile/188d1b93-1d15-436e-b6ed-455d91ec8bd6/1781195183004.jpg';
 
         try {
           final profileQuery = await _supabase
@@ -767,7 +810,8 @@ class Conversations extends _$Conversations {
           id: mussabUserId,
           name: mussabName,
           imageUrl: mussabAvatar,
-          lastMessage: 'Hi! Welcome to Pocket Mates. Tap here to chat with me instantly!',
+          lastMessage:
+              'Hi! Welcome to Pocket Mates. Tap here to chat with me instantly!',
           lastMessageTime: DateTime.now(),
           unreadCount: 0,
           isGroup: false,
@@ -824,10 +868,10 @@ class Conversations extends _$Conversations {
         query = query.eq('user_id', userId);
       }
 
-      final response = await query
-          .eq('is_active', true)
-          .order('last_message_time',
-              referencedTable: 'groups', ascending: false);
+      final response = await query.eq('is_active', true).order(
+          'last_message_time',
+          referencedTable: 'groups',
+          ascending: false);
 
       final groupList = (response as List)
           .map((item) => Map<String, dynamic>.from(item))
@@ -861,11 +905,12 @@ class Conversations extends _$Conversations {
             await _getGroupUnreadCountOnly(gId, userId, lastReadTime);
         final statusList = statusMap[gId] ?? [];
         final hasStatus = statusList.isNotEmpty;
-        final isSeen = hasStatus && VibesSeenService.isWatched(
-          currentUserId: userId,
-          groupId: gId,
-          statuses: statusList,
-        );
+        final isSeen = hasStatus &&
+            VibesSeenService.isWatched(
+              currentUserId: userId,
+              groupId: gId,
+              statuses: statusList,
+            );
         final hasUnwatchedStatus = hasStatus && !isSeen;
 
         final lastMsgTime = groupData['last_message_time'] != null
@@ -874,9 +919,15 @@ class Conversations extends _$Conversations {
                 ? DateTime.tryParse(groupData['created_at'].toString())
                 : null);
 
+        String rawGroupName = groupData['name'] ?? 'Unnamed Group';
+        if (rawGroupName.toLowerCase().contains('neighbors')) {
+          rawGroupName =
+              rawGroupName.replaceAll(RegExp(r'\(Wave \d+\)'), '').trim();
+        }
+
         return ChatConversation(
           id: gId,
-          name: groupData['name'] ?? 'Unnamed Group',
+          name: rawGroupName,
           imageUrl: groupData['group_image_url'],
           lastMessage: groupData['last_message'],
           lastMessageTime: lastMsgTime,
@@ -890,19 +941,16 @@ class Conversations extends _$Conversations {
 
       final List<ChatConversation?> conversations =
           await Future.wait(conversationFutures);
-      return conversations
-          .whereType<ChatConversation>()
-          .where((c) {
-            final n = c.name.toLowerCase();
-            // Completely hide ALL English Hub groups from regular Chat tiles
-            if (n.contains('english hub') ||
-                n.contains('english learning') ||
-                n.contains('english practice')) {
-              return false;
-            }
-            return true;
-          })
-          .toList();
+      return conversations.whereType<ChatConversation>().where((c) {
+        final n = c.name.toLowerCase();
+        // Completely hide ALL English Hub groups from regular Chat tiles
+        if (n.contains('english hub') ||
+            n.contains('english learning') ||
+            n.contains('english practice')) {
+          return false;
+        }
+        return true;
+      }).toList();
     } catch (e) {
       rethrow;
     }
@@ -910,11 +958,21 @@ class Conversations extends _$Conversations {
 
   void _syncUserCosmosIslandGroup(String userId) {
     if (userId.isEmpty) return;
-    SharedPreferences.getInstance().then((prefs) {
-      final pin = prefs.getString('cosmos_user_relocated_pin_$userId') ??
+    SharedPreferences.getInstance().then((prefs) async {
+      String? pin = prefs.getString('cosmos_user_relocated_pin_$userId') ??
           prefs.getString('cosmos_user_pin_$userId') ??
           prefs.getString('user_cosmos_pin') ??
           prefs.getString('cosmos_pin');
+
+      if (pin == null || pin.isEmpty) {
+        final plot =
+            PoketCosmosAllocationService.instance.getCachedUserPlot(userId) ??
+                PoketCosmosAllocationService.instance.currentBirthPlot;
+        if (plot != null) {
+          pin = plot.postalPinCode;
+        }
+      }
+
       if (pin != null && pin.isNotEmpty) {
         final match =
             RegExp(r'PKT-W(\d+)-([A-Z]+)-I\d+-P(\d+)').firstMatch(pin);
@@ -923,11 +981,22 @@ class Conversations extends _$Conversations {
           final code = match.group(2) ?? 'EP';
           final colony =
               PoketCosmosAllocationService.instance.getColonyByCode(code);
-          PocketIslandGroupService.instance.ensureIslandGroupAndMember(
+          await PocketIslandGroupService.instance.ensureIslandGroupAndMember(
             planetCode: code,
             planetName: colony.planetName,
             wave: wave,
             userId: userId,
+            islandName: colony.islandName,
+          );
+
+          // Populate 25 island neighbors into group_members
+          final allPlots = await PoketCosmosAllocationService.instance
+              .getOccupiedPlotsForColony(colony, wave: wave);
+          await PocketIslandGroupService.instance.syncAllIslandResidents(
+            planetCode: code,
+            planetName: colony.planetName,
+            wave: wave,
+            plots: allPlots,
             islandName: colony.islandName,
           );
         }
@@ -997,7 +1066,8 @@ class Conversations extends _$Conversations {
       // Fetch user profiles for all participants
       final profilesResponse = await _supabase
           .from('profile')
-          .select('id, user_id, name, profile_image_url, pocket_score, learning_points, xp, learning_day, learning_stage, stage, level, avatar_config, equipped_talisman, talisman_id')
+          .select(
+              'id, user_id, name, profile_image_url, pocket_score, learning_points, xp, learning_day, learning_stage, stage, level, avatar_config, equipped_talisman, talisman_id')
           .inFilter('user_id', userIds.toList());
 
       final profileMap = <String, Map<String, dynamic>>{};
@@ -1040,12 +1110,13 @@ class Conversations extends _$Conversations {
         final userStatusData =
             otherProfileId != null ? statusMap[otherProfileId] : null;
         final hasStatus = userStatusData?.isNotEmpty ?? false;
-        final isSeen = hasStatus && VibesSeenService.isWatched(
-          currentUserId: userId,
-          userId: otherUserId,
-          profileId: otherProfileId,
-          statuses: userStatusData,
-        );
+        final isSeen = hasStatus &&
+            VibesSeenService.isWatched(
+              currentUserId: userId,
+              userId: otherUserId,
+              profileId: otherProfileId,
+              statuses: userStatusData,
+            );
         final hasUnwatchedStatus = hasStatus && !isSeen;
 
         chats.add(ChatConversation.fromPersonalJson(
@@ -1057,7 +1128,7 @@ class Conversations extends _$Conversations {
           statusData: userStatusData,
         ));
       }
- 
+
       // Filter out any kid animal bots or mentors so they never clash with adult chats
       chats.removeWhere((c) =>
           c.id == 'mentor_animal_king_lion' ||
@@ -1099,8 +1170,8 @@ class Conversations extends _$Conversations {
 
       final data = response as List<dynamic>;
       return data
-          .map((json) => ChatConversation.fromActiveTimer(
-              Map<String, dynamic>.from(json)))
+          .map((json) =>
+              ChatConversation.fromActiveTimer(Map<String, dynamic>.from(json)))
           .toList();
     } catch (e) {
       debugPrint('Error fetching active timers: $e');

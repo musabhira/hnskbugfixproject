@@ -2204,14 +2204,25 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
               Center(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: const PocketNativeAdCard(
+                  child: PocketNativeAdCard(
                     placement: PocketAdPlacement.reels,
                     margin: EdgeInsets.zero,
+                    onStatusChange: (status, details) {
+                      if (status == 'FAILED' || status == 'VIP_BLOCKED') {
+                        // ⚡ If ad failed to load or user is VIP, automatically skip to next home!
+                        // Prevents showing an empty ad screen with just a button.
+                        Future.delayed(const Duration(milliseconds: 250), () {
+                          if (mounted) {
+                            _scrollToNextReel();
+                          }
+                        });
+                      }
+                    },
                   ),
                 ),
               ),
 
-              // 🧭 Modern Floating Reel Progress & Next Button (Instagram Reels Standard)
+              // 🧭 Modern Floating Home Progress & Next Button
               Positioned(
                 bottom: bottomPadding + 20,
                 left: 20,
@@ -2239,7 +2250,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Continue Reel',
+                          'Continue Home',
                           style: GoogleFonts.outfit(
                             color: Colors.white,
                             fontSize: 13,
@@ -3959,7 +3970,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    isKid ? 'CONTINUE TO NEXT REEL' : 'CONTINUE TO NEXT HOME',
+                    'CONTINUE TO NEXT HOME',
                     style: GoogleFonts.outfit(
                       color: Colors.black,
                       fontWeight: FontWeight.w900,
@@ -4411,7 +4422,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  'CONTINUE REEL FEED',
+                                  'CONTINUE HOMES',
                                   style: GoogleFonts.outfit(
                                     color: Colors.black,
                                     fontWeight: FontWeight.w900,
@@ -4825,7 +4836,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  'CONTINUE REEL FEED',
+                                  'CONTINUE HOMES',
                                   style: GoogleFonts.outfit(
                                     color: Colors.black,
                                     fontWeight: FontWeight.w900,
@@ -5286,7 +5297,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  'CONTINUE REEL FEED',
+                                  'CONTINUE HOMES',
                                   style: GoogleFonts.outfit(
                                     color: Colors.black,
                                     fontWeight: FontWeight.w900,
@@ -5681,7 +5692,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  'CONTINUE REEL FEED',
+                                  'CONTINUE HOMES',
                                   style: GoogleFonts.outfit(
                                     color: Colors.black,
                                     fontWeight: FontWeight.w900,

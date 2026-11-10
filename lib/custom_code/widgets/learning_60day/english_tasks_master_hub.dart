@@ -14,7 +14,6 @@ import 'pocket_world_street_page.dart';
 import 'pocket_open_world_game_page.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_defense_trap_modal.dart';
-import 'pocket_daily_mission_page.dart';
 import 'pocket_score_level_engine.dart';
 import 'pocket_world_game_rules_modal.dart';
 import 'pocket_day1_diagnostic_sheet.dart';
@@ -2447,15 +2446,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     child: OutlinedButton(
                       onPressed: () {
                         Navigator.pop(ctx);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PocketDailyMissionPage(
-                              day: day,
-                              onMissionCompleted: () => _loadData(),
-                            ),
-                          ),
-                        );
+                        _startActiveSubStep(day);
                       },
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Color(0xFF10B981)),
@@ -5035,13 +5026,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         ),
                       ),
                       Text(
-                        PocketLanguageService.localize(
-                          en: 'Suggest New Step / Syllabus Topic',
-                          ml: 'പുതിയ സ്റ്റെപ്പ് നിർദ്ദേശിക്കാം • Suggest Step',
-                          hi: 'नया स्टेप या विषय सुझाएं',
-                          ta: 'புதிய படியைப் பரிந்துரைக்கவும்',
-                          te: 'కొత్త దశను సూచించండి',
-                        ),
+                        'Suggest Step • Share Your Ideas',
                         style: GoogleFonts.outfit(
                           color: Colors.white70,
                           fontSize: 10,
@@ -5106,7 +5091,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   const Text('🏛️', style: TextStyle(fontSize: 13)),
                   const SizedBox(width: 6),
                   Text(
-                    'POCKET MATES ENGLISH CLUB',
+                    'POKET MATES MEMBERSHIP',
                     style: GoogleFonts.outfit(
                       color: const Color(0xFF38BDF8),
                       fontSize: 10.5,
@@ -5118,13 +5103,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               ),
               const SizedBox(height: 3),
               Text(
-                PocketLanguageService.localize(
-                  en: 'Join Community & Follow for Daily Updates',
-                  ml: 'കമ്മ്യൂണിറ്റിയിൽ ചേരൂ • ദിവസേനയുള്ള അപ്‌ഡേറ്റുകൾ',
-                  hi: 'कम्युनिटी से जुड़ें • दैनिक अपडेट प्राप्त करें',
-                  ta: 'சமூகத்தில் இணையுங்கள் • தினசரி புதுப்பிப்புகள்',
-                  te: 'కమ్యూనిటీలో చేరండి • రోజువారీ అప్‌డేట్‌లు',
-                ),
+                'Join Community • Daily Updates',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.outfit(
                   color: Colors.white70,

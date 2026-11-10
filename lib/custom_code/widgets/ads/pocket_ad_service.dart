@@ -542,9 +542,17 @@ class _PocketVibesStoryAdWidgetState extends State<PocketVibesStoryAdWidget> {
                     children: [
                       const Spacer(),
                       // 🌟 Real Google AdMob Native Ad Card (Placement: Vibes with Ranking fallback)
-                      const PocketNativeAdCard(
+                      PocketNativeAdCard(
                         placement: PocketAdPlacement.vibes,
                         margin: EdgeInsets.zero,
+                        onStatusChange: (status, details) {
+                          if (status == 'FAILED' || status == 'VIP_BLOCKED') {
+                            // If ad failed to trigger or user is VIP, do not show empty screen with "Next Vibe"
+                            Future.delayed(const Duration(milliseconds: 250), () {
+                              if (mounted) widget.onNext();
+                            });
+                          }
+                        },
                       ),
                       const SizedBox(height: 18),
                       // Skip / Next Button (Modern floating glass pill)

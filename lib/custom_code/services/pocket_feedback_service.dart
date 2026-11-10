@@ -10,7 +10,8 @@ class AppFeedbackItem {
   final String? userId;
   final String userName;
   final int? dayNumber;
-  final String feedbackType; // 'roadmap_idea', 'day_completion', 'feature_request', 'bug_report', 'general'
+  final String
+      feedbackType; // 'roadmap_idea', 'day_completion', 'feature_request', 'bug_report', 'general'
   final int rating;
   final String feedbackText;
   final String? suggestedStep;
@@ -85,19 +86,20 @@ class PocketFeedbackService {
         } catch (_) {}
       }
 
-      final String resolvedLanguage = (language != null && language.isNotEmpty && language != 'ml')
-          ? language
-          : (PocketLanguageService.isHindi
-              ? 'hi'
-              : PocketLanguageService.isTamil
-                  ? 'ta'
-                  : PocketLanguageService.isTelugu
-                      ? 'te'
-                      : PocketLanguageService.isKannada
-                          ? 'kn'
-                          : PocketLanguageService.isMalayalam
-                              ? 'ml'
-                              : 'en');
+      final String resolvedLanguage =
+          (language != null && language.isNotEmpty && language != 'ml')
+              ? language
+              : (PocketLanguageService.isHindi
+                  ? 'hi'
+                  : PocketLanguageService.isTamil
+                      ? 'ta'
+                      : PocketLanguageService.isTelugu
+                          ? 'te'
+                          : PocketLanguageService.isKannada
+                              ? 'kn'
+                              : PocketLanguageService.isMalayalam
+                                  ? 'ml'
+                                  : 'en');
 
       await _supabase.from('app_feedback').insert({
         'user_id': user?.id,
@@ -106,9 +108,10 @@ class PocketFeedbackService {
         'feedback_type': type,
         'rating': rating.clamp(1, 5),
         'feedback_text': text.trim(),
-        'suggested_step': (suggestedStep != null && suggestedStep.trim().isNotEmpty)
-            ? suggestedStep.trim()
-            : null,
+        'suggested_step':
+            (suggestedStep != null && suggestedStep.trim().isNotEmpty)
+                ? suggestedStep.trim()
+                : null,
         'language': resolvedLanguage,
         'status': 'new',
       });
@@ -137,7 +140,9 @@ class PocketFeedbackService {
 
       final res = await query.order('created_at', ascending: false).limit(100);
       final List list = res as List? ?? [];
-      return list.map((m) => AppFeedbackItem.fromMap(m as Map<String, dynamic>)).toList();
+      return list
+          .map((m) => AppFeedbackItem.fromMap(m as Map<String, dynamic>))
+          .toList();
     } catch (e) {
       debugPrint('Error fetching feedbacks: $e');
       return [];
@@ -149,8 +154,7 @@ class PocketFeedbackService {
     try {
       await _supabase
           .from('app_feedback')
-          .update({'status': newStatus})
-          .eq('id', feedbackId);
+          .update({'status': newStatus}).eq('id', feedbackId);
       return true;
     } catch (e) {
       debugPrint('Error updating feedback status: $e');
@@ -199,51 +203,51 @@ class _FeedbackBottomSheetContentState
   bool _isSubmitting = false;
 
   List<Map<String, String>> get _categories => [
-    {
-      'id': 'roadmap_idea',
-      'label': PocketLanguageService.localize(
-        en: '💡 Suggest Step / Idea',
-        ml: '💡 പുതിയ സ്റ്റെപ്പ് / ആശയം',
-        hi: '💡 नया स्टेप / सुझाव',
-        ta: '💡 புதிய படி / யோசனை',
-        te: '💡 కొత్త దశ / ఆలోచన',
-      ),
-      'sub': 'Suggest New Step / Roadmap',
-    },
-    {
-      'id': 'day_completion',
-      'label': PocketLanguageService.localize(
-        en: '🌟 Day Completion Review',
-        ml: '🌟 ഡേ ഫീഡ്ബാക്ക്',
-        hi: '🌟 दिन की समीक्षा',
-        ta: '🌟 நாள் கருத்து',
-        te: '🌟 రోజు సమీక్ష',
-      ),
-      'sub': 'Day Review & Experience',
-    },
-    {
-      'id': 'feature_request',
-      'label': PocketLanguageService.localize(
-        en: '🚀 Feature Request',
-        ml: '🚀 പുതിയ ഫീച്ചർ വേണം',
-        hi: '🚀 नया फीचर अनुरोध',
-        ta: '🚀 புதிய அம்சம் கோரிக்கை',
-        te: '🚀 కొత్త ఫీచర్ అభ్యర్థన',
-      ),
-      'sub': 'Feature Request',
-    },
-    {
-      'id': 'bug_report',
-      'label': PocketLanguageService.localize(
-        en: '🐞 Report Bug / Issue',
-        ml: '🐞 പ്രശ്നം റിപ്പോർട്ട് ചെയ്യാം',
-        hi: '🐞 समस्या रिपोर्ट करें',
-        ta: '🐞 பிழை அறிக்கை',
-        te: '🐞 సమస్య నివేదిక',
-      ),
-      'sub': 'Bug / Issue Report',
-    },
-  ];
+        {
+          'id': 'roadmap_idea',
+          'label': PocketLanguageService.localize(
+            en: '💡 Suggest Step / Idea',
+            ml: '💡 പുതിയ സ്റ്റെപ്പ് / ആശയം',
+            hi: '💡 नया स्टेप / सुझाव',
+            ta: '💡 புதிய படி / யோசனை',
+            te: '💡 కొత్త దశ / ఆలోచన',
+          ),
+          'sub': 'Suggest New Step / Roadmap',
+        },
+        {
+          'id': 'day_completion',
+          'label': PocketLanguageService.localize(
+            en: '🌟 Day Completion Review',
+            ml: '🌟 ഡേ ഫീഡ്ബാക്ക്',
+            hi: '🌟 दिन की समीक्षा',
+            ta: '🌟 நாள் கருத்து',
+            te: '🌟 రోజు సమీక్ష',
+          ),
+          'sub': 'Day Review & Experience',
+        },
+        {
+          'id': 'feature_request',
+          'label': PocketLanguageService.localize(
+            en: '🚀 Feature Request',
+            ml: '🚀 പുതിയ ഫീച്ചർ വേണം',
+            hi: '🚀 नया फीचर अनुरोध',
+            ta: '🚀 புதிய அம்சம் கோரிக்கை',
+            te: '🚀 కొత్త ఫీచర్ అభ్యర్థన',
+          ),
+          'sub': 'Feature Request',
+        },
+        {
+          'id': 'bug_report',
+          'label': PocketLanguageService.localize(
+            en: '🐞 Report Bug / Issue',
+            ml: '🐞 പ്രശ്നം റിപ്പോർട്ട് ചെയ്യാം',
+            hi: '🐞 समस्या रिपोर्ट करें',
+            ta: '🐞 பிழை அறிக்கை',
+            te: '🐞 సమస్య నివేదిక',
+          ),
+          'sub': 'Bug / Issue Report',
+        },
+      ];
 
   @override
   void initState() {
@@ -431,11 +435,13 @@ class _FeedbackBottomSheetContentState
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFF0284C7).withValues(alpha: 0.25),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFF38BDF8), width: 1),
+                    border:
+                        Border.all(color: const Color(0xFF38BDF8), width: 1),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -443,7 +449,7 @@ class _FeedbackBottomSheetContentState
                       const Text('💡', style: TextStyle(fontSize: 12)),
                       const SizedBox(width: 5),
                       Text(
-                        'STARTUP FEEDBACK ENGINE',
+                        'FEEDBACK ENGINE',
                         style: GoogleFonts.outfit(
                           color: const Color(0xFF38BDF8),
                           fontSize: 10,
@@ -466,13 +472,7 @@ class _FeedbackBottomSheetContentState
             const SizedBox(height: 10),
 
             Text(
-              PocketLanguageService.localize(
-                en: 'Your Ideas & Feedback 🚀',
-                ml: 'നിങ്ങളുടെ ആശയങ്ങളും ഫീഡ്ബാക്കും 🚀',
-                hi: 'आपके विचार और सुझाव 🚀',
-                ta: 'உங்கள் யோசனைகள் & கருத்துக்கள் 🚀',
-                te: 'మీ ఆలోచనలు & అభిప్రాయం 🚀',
-              ),
+              'Your Ideas & Feedback 🚀',
               style: GoogleFonts.outfit(
                 color: Colors.white,
                 fontSize: 19,
@@ -480,13 +480,7 @@ class _FeedbackBottomSheetContentState
               ),
             ),
             Text(
-              PocketLanguageService.localize(
-                en: 'Share Your Ideas & Suggest Roadmap Steps',
-                ml: 'പുതിയ സ്റ്റെപ്പുകൾ നിർദ്ദേശിക്കാം',
-                hi: 'नए स्टेप्स और विषयों का सुझाव दें',
-                ta: 'புதிய படிகள் மற்றும் தலைப்புகளைப் பரிந்துரைக்கவும்',
-                te: 'కొత్త దశలు మరియు అంశాలను సూచించండి',
-              ),
+              'Share Your Ideas & Suggest Steps',
               style: GoogleFonts.outfit(
                 color: const Color(0xFF94A3B8),
                 fontSize: 13,
@@ -511,13 +505,7 @@ class _FeedbackBottomSheetContentState
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      PocketLanguageService.localize(
-                        en: 'Suggest new learning steps or topics here. We will integrate your ideas directly into upcoming syllabus updates!',
-                        ml: 'നിങ്ങൾക്ക് ആവശ്യമുള്ള പുതിയ സ്റ്റെപ്പുകളോ വിഷയങ്ങളോ ഇവിടെ നിർദ്ദേശിക്കാം. ഞങ്ങൾ നിങ്ങൾക്കായി അടുത്ത അപ്‌ഡേറ്റിൽ ആ സ്റ്റെപ്പുകൾ റോഡ്‌മാപ്പിൽ ചേർക്കും!',
-                        hi: 'यहाँ नए विषय या स्टेप्स सुझाएं। हम आपके सुझावों को अगले सिलेबस अपडेट में सीधे जोड़ेंगे!',
-                        ta: 'புதிய தலைப்புகள் அல்லது படிகளை இங்கே பரிந்துரைக்கவும். அடுத்த புதுப்பிப்பில் அவற்றைச் சேர்ப்போம்!',
-                        te: 'ఇక్కడ కొత్త అంశాలు లేదా దశలను సూచించండి. తదుపరి అప్‌డేట్‌లో వాటిని నేరుగా సిలబస్‌లో చేర్చుతాము!',
-                      ),
+                      'Suggest new learning steps or topics here. We will integrate your ideas directly into upcoming syllabus updates!',
                       style: GoogleFonts.outfit(
                         color: const Color(0xFFA7F3D0),
                         fontSize: 11.5,
@@ -565,9 +553,8 @@ class _FeedbackBottomSheetContentState
                   selectedColor: const Color(0xFFFFD700),
                   backgroundColor: const Color(0xFF1E293B),
                   side: BorderSide(
-                    color: isSelected
-                        ? const Color(0xFFFFD700)
-                        : Colors.white24,
+                    color:
+                        isSelected ? const Color(0xFFFFD700) : Colors.white24,
                     width: 1,
                   ),
                   onSelected: (selected) {
@@ -626,7 +613,8 @@ class _FeedbackBottomSheetContentState
             const SizedBox(height: 14),
 
             // Optional: Suggested Step Input
-            if (_selectedType == 'roadmap_idea' || _selectedType == 'feature_request') ...[
+            if (_selectedType == 'roadmap_idea' ||
+                _selectedType == 'feature_request') ...[
               Text(
                 PocketLanguageService.localize(
                   en: 'Suggested Step Title (e.g. Job Interview Practice):',
@@ -669,8 +657,8 @@ class _FeedbackBottomSheetContentState
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                        color: Color(0xFF38BDF8), width: 1.5),
+                    borderSide:
+                        const BorderSide(color: Color(0xFF38BDF8), width: 1.5),
                   ),
                 ),
               ),
@@ -780,4 +768,3 @@ class _FeedbackBottomSheetContentState
     );
   }
 }
-

@@ -52,6 +52,7 @@ class _PoketCosmosIslandInspectorModalState
   final TransformationController _transformController = TransformationController();
 
   int _currentIndex = 0;
+  int _selectedWave = 1;
   bool _transformInitialized = false;
   final List<CelestialColonyInfo> _colonies = PoketCosmosAllocationService.colonies;
 
@@ -84,31 +85,54 @@ class _PoketCosmosIslandInspectorModalState
     super.dispose();
   }
 
-  void _loadColonyData(int index) {
+  void _loadColonyData(int index, {int? waveOverride}) {
     final colony = _colonies[index];
+    final wave = waveOverride ?? _selectedWave;
+    _selectedWave = wave;
+
+    final String islandDisplayName = (wave == 0 && colony.code == 'EP')
+        ? 'Presidential Sovereign Citadel'
+        : (wave == 1)
+            ? colony.islandName
+            : PoketCosmosAllocationService.generateInfiniteIslandName(
+                colony.code, wave, 2);
+
+    final String streetDisplayName = (wave == 0 && colony.code == 'EP')
+        ? 'Presidential Avenue 👑'
+        : (wave == 1)
+            ? colony.streetName
+            : 'Wave $wave ${colony.streetName}';
+
     _currentIsland = PoketCountryMap(
-      id: colony.planetId * 100 + 1,
-      name: colony.islandName,
+      id: colony.planetId * 100 + (wave == 0 ? 99 : wave),
+      name: islandDisplayName,
       tag: '${colony.planetName} Living Colony',
-      landColor: colony.landColor,
+      landColor: (wave == 0 && colony.code == 'EP')
+          ? const Color(0xFFEAB308)
+          : colony.landColor,
       waterColor: colony.waterColor,
       totalSlots: PoketCosmosAllocationService.maxPlotsPerIsland,
       filledSlots: 5,
-      climate: colony.climate,
+      climate: (wave == 0 && colony.code == 'EP')
+          ? 'Presidential Sovereign Haven 👑'
+          : colony.climate,
       climateIcon: Icons.travel_explore_rounded,
-      shapeSeed: 42 + index * 19,
-      shapeStyle: colony.shapeStyle,
+      shapeSeed: 42 + index * 19 + (wave * 73),
+      shapeStyle: (wave == 0 && colony.code == 'EP')
+          ? IslandShapeStyle.citadelApex
+          : colony.shapeStyle,
+      isPresidential: (wave == 0 && colony.code == 'EP'),
     );
 
     // Plot #2: Pre-booked Neighbor Reservation with active 4-hour countdown timer
     const reservationPlotNum = 2;
     final pass = NeighborReservationPass(
-      code: 'PKT-W01-${colony.code}-I01-P02',
-      cosmosPin: 'PKT-W01-${colony.code}-I01-P02',
+      code: 'PKT-W0${wave == 0 ? 1 : wave}-${colony.code}-I0${wave == 0 ? 1 : wave}-P02',
+      cosmosPin: 'PKT-W0${wave == 0 ? 1 : wave}-${colony.code}-I0${wave == 0 ? 1 : wave}-P02',
       planetName: colony.planetName,
       islandId: _currentIsland.id,
-      islandName: colony.islandName,
-      streetName: colony.streetName,
+      islandName: islandDisplayName,
+      streetName: streetDisplayName,
       plotNumber: reservationPlotNum,
       hostUserName: 'Cosmic Pioneer',
       createdAt: DateTime.now().subtract(const Duration(minutes: 28)),
@@ -120,7 +144,7 @@ class _PoketCosmosIslandInspectorModalState
 
     // Load real database users & permanent colony pioneers
     PoketCosmosAllocationService.instance
-        .getOccupiedPlotsForColony(colony)
+        .getOccupiedPlotsForColony(colony, wave: (wave == 0 ? 1 : wave))
         .then((occupiedPlots) {
       if (!mounted || _currentIndex != index) return;
       setState(() {
@@ -314,9 +338,6 @@ class _PoketCosmosIslandInspectorModalState
 
   Widget _buildTopHeaderAndCarousel(BuildContext context, CelestialColonyInfo colony) {
     final topPadding = MediaQuery.of(context).padding.top;
-    final userPlot = PoketCosmosAllocationService.instance.currentBirthPlot;
-    final isUserHomeIsland = userPlot != null &&
-        colony.planetName.toLowerCase().contains(userPlot.planetName.toLowerCase().split(' ').first);
 
     return Container(
       padding: EdgeInsets.only(top: topPadding + 6, bottom: 12),
@@ -354,69 +375,27 @@ class _PoketCosmosIslandInspectorModalState
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: isUserHomeIsland
-                                  ? const Color(0xFF10B981).withValues(alpha: 0.3)
-                                  : const Color(0xFF0284C7).withValues(alpha: 0.25),
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(
-                                color: isUserHomeIsland ? const Color(0xFF34D399) : const Color(0xFF38BDF8),
-                                width: 0.9,
-                              ),
-                            ),
-                            child: Text(
-                              isUserHomeIsland ? '🏡 THIS IS YOUR ISLAND' : 'PLANETARY ISLAND',
-                              style: GoogleFonts.outfit(
-                                color: isUserHomeIsland ? const Color(0xFF6EE7B7) : const Color(0xFF38BDF8),
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 1.2,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: Colors.white10,
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: Colors.white24, width: 0.8),
-                            ),
-                            child: Text(
-                              '${_currentIndex + 1}/10',
-                              style: GoogleFonts.jetBrainsMono(
-                                color: Colors.white,
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 2),
                       Text(
-                        '${colony.planetName} • ${colony.islandName}',
+                        colony.planetName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.outfit(
                           color: Colors.white,
-                          fontSize: 16.5,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
                         ),
                       ),
                       Text(
-                        'This is ${colony.planetName.split(" ").first} Island • 20 Exclusive Territorial Plots',
+                        '${_currentIsland.name} • ${_selectedWave == 0 ? "Presidential" : "Wave $_selectedWave"}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.plusJakartaSans(
-                          color: const Color(0xFFFFD700),
-                          fontSize: 11.5,
+                          color: const Color(0xFF38BDF8),
+                          fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -437,7 +416,25 @@ class _PoketCosmosIslandInspectorModalState
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
+
+          // 🌊 Wave / Island Multi-Selector Row (750 Plots across 2 Waves)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildWaveSelectorPill(1, 'Wave 1 • Island #1', colony),
+                const SizedBox(width: 8),
+                _buildWaveSelectorPill(2, 'Wave 2 • Island #2', colony),
+                if (colony.code == 'EP') ...[
+                  const SizedBox(width: 8),
+                  _buildWaveSelectorPill(0, '👑 Citadel', colony),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
 
           // Horizontal 10-Colony Chip Carousel
           SizedBox(
@@ -521,6 +518,42 @@ class _PoketCosmosIslandInspectorModalState
     );
   }
 
+  Widget _buildWaveSelectorPill(int wave, String label, CelestialColonyInfo colony) {
+    final isSelected = _selectedWave == wave;
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        setState(() {
+          _loadColonyData(_currentIndex, waveOverride: wave);
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? (wave == 0 ? const Color(0xFFEAB308) : const Color(0xFF0284C7))
+              : const Color(0xFF1E293B).withValues(alpha: 0.7),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected
+                ? (wave == 0 ? const Color(0xFFFDE047) : const Color(0xFF38BDF8))
+                : Colors.white12,
+            width: isSelected ? 1.2 : 0.8,
+          ),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.outfit(
+            color: isSelected ? Colors.white : Colors.white70,
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildBottomColonyCard(BuildContext context, CelestialColonyInfo colony) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -563,7 +596,7 @@ class _PoketCosmosIslandInspectorModalState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      colony.islandName,
+                      _currentIsland.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.outfit(
@@ -573,7 +606,7 @@ class _PoketCosmosIslandInspectorModalState
                       ),
                     ),
                     Text(
-                      '🛣️ ${colony.streetName} • Wave #1',
+                      '🛣️ ${colony.streetName} • Wave #$_selectedWave',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.plusJakartaSans(
