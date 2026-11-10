@@ -185,6 +185,81 @@ class CitadelScenicLandscapePainter extends CustomPainter {
             end: Alignment.bottomCenter,
           ).createShader(Rect.fromLTWH(0, 0, w, h));
           break;
+        case 'MER':
+          // Mercury: Pure space obsidian, high-contrast solar glare, blazing white-gold corona & slate horizon
+          skyShader = const LinearGradient(
+            colors: [
+              Color(0xFF000000), // Pure Black Void
+              Color(0xFF090D16), // Deep Space Obsidian
+              Color(0xFF1E293B), // Scorched Iron Dusk
+              Color(0xFF475569), // Caloris Basalt Horizon
+              Color(0xFFF1F5F9), // Brilliant Solar Glare Horizon
+            ],
+            stops: [0.0, 0.30, 0.60, 0.85, 1.0],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, 0, w, h));
+          break;
+        case 'KEP':
+          // Kepler-452b: Deep interstellar emerald abyss, double-star shimmer, bioluminescent aurora
+          skyShader = const LinearGradient(
+            colors: [
+              Color(0xFF011A14), // Interstellar Void
+              Color(0xFF064E3B), // Deep Emerald Exosphere
+              Color(0xFF047857), // Shimmering Jade Aurora
+              Color(0xFF10B981), // Radiant Mint Horizon
+              Color(0xFFA7F3D0), // Sunlit Exoplanet Haze
+            ],
+            stops: [0.0, 0.25, 0.55, 0.82, 1.0],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, 0, w, h));
+          break;
+        case 'GAN':
+          // Ganymede: Deep Jovian obsidian void, cobalt magnetic auroras, icy pale horizon
+          skyShader = const LinearGradient(
+            colors: [
+              Color(0xFF020617),
+              Color(0xFF0F172A),
+              Color(0xFF1E3A8A),
+              Color(0xFF3B82F6),
+              Color(0xFF93C5FD),
+            ],
+            stops: [0.0, 0.28, 0.58, 0.84, 1.0],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, 0, w, h));
+          break;
+        case 'URA':
+          // Uranus: Deep cyan abyss into electric aquamarine and faint vertical ring shimmer
+          skyShader = const LinearGradient(
+            colors: [
+              Color(0xFF083344),
+              Color(0xFF155E75),
+              Color(0xFF0891B2),
+              Color(0xFF06B6D4),
+              Color(0xFFA5F3FC),
+            ],
+            stops: [0.0, 0.25, 0.52, 0.80, 1.0],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, 0, w, h));
+          break;
+        case 'TRI':
+          // Triton: Deep cosmic navy, cryo nitrogen plumes, pale crystalline blue horizon
+          skyShader = const LinearGradient(
+            colors: [
+              Color(0xFF020617),
+              Color(0xFF172554),
+              Color(0xFF1E40AF),
+              Color(0xFF3B82F6),
+              Color(0xFFBFDBFE),
+            ],
+            stops: [0.0, 0.28, 0.58, 0.84, 1.0],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, 0, w, h));
+          break;
         default: // 'EP' or null: 100% untouched Earth Prime
           skyShader = const LinearGradient(
             colors: [
@@ -526,6 +601,76 @@ class CitadelScenicLandscapePainter extends CustomPainter {
             end: Alignment.bottomCenter,
           ).createShader(Rect.fromLTWH(0, gy - 200, w, 220));
           break;
+        case 'MER':
+          // Mercury: Caloris Basin razor-sharp scorched iron-basalt crater peaks
+          mountainShader = const LinearGradient(
+            colors: [
+              Color(0xFFFFFFFF), // Blinding solar reflection rim
+              Color(0xFF94A3B8), // Metallic slate ridge
+              Color(0xFF475569), // Scorched iron rock
+              Color(0xFF0F172A), // Shadowed dark basalt base
+            ],
+            stops: [0.0, 0.18, 0.58, 1.0],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 200, w, 220));
+          break;
+        case 'KEP':
+          // Kepler-452b: Titanic super-Earth monoliths with bioluminescent emerald crests
+          mountainShader = const LinearGradient(
+            colors: [
+              Color(0xFFA7F3D0), // Glowing mint peak crest
+              Color(0xFF10B981), // Vivid alien emerald cliff
+              Color(0xFF047857), // Deep jade canyon wall
+              Color(0xFF022C22), // Primeval forest base
+            ],
+            stops: [0.0, 0.20, 0.55, 1.0],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 200, w, 220));
+          break;
+        case 'GAN':
+          // Ganymede: Grooved icy tectonic ridges with electric blue rift lines
+          mountainShader = const LinearGradient(
+            colors: [
+              Color(0xFFE0F2FE),
+              Color(0xFF38BDF8),
+              Color(0xFF1E3A8A),
+              Color(0xFF0F172A),
+            ],
+            stops: [0.0, 0.20, 0.60, 1.0],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 200, w, 220));
+          break;
+        case 'URA':
+          // Uranus: Cyan cryo-ice mountain spires
+          mountainShader = const LinearGradient(
+            colors: [
+              Color(0xFFCFFAFE),
+              Color(0xFF06B6D4),
+              Color(0xFF0E7490),
+              Color(0xFF083344),
+            ],
+            stops: [0.0, 0.20, 0.58, 1.0],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 200, w, 220));
+          break;
+        case 'TRI':
+          // Triton: Sub-zero nitrogen ice geyser plateaus
+          mountainShader = const LinearGradient(
+            colors: [
+              Color(0xFFDBEAFE),
+              Color(0xFF60A5FA),
+              Color(0xFF1E40AF),
+              Color(0xFF0F172A),
+            ],
+            stops: [0.0, 0.20, 0.60, 1.0],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 200, w, 220));
+          break;
         default:
           mountainShader = const LinearGradient(
             colors: [
@@ -640,6 +785,41 @@ class CitadelScenicLandscapePainter extends CustomPainter {
         case 'NEP':
           foothillShader = const LinearGradient(
             colors: [Color(0xFF2563EB), Color(0xFF0F172A)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 80, w, 90));
+          break;
+        case 'MER':
+          foothillShader = const LinearGradient(
+            colors: [Color(0xFF64748B), Color(0xFF1E293B)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 80, w, 90));
+          break;
+        case 'KEP':
+          foothillShader = const LinearGradient(
+            colors: [Color(0xFF10B981), Color(0xFF064E3B)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 80, w, 90));
+          break;
+        case 'GAN':
+          foothillShader = const LinearGradient(
+            colors: [Color(0xFF38BDF8), Color(0xFF0F172A)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 80, w, 90));
+          break;
+        case 'URA':
+          foothillShader = const LinearGradient(
+            colors: [Color(0xFF06B6D4), Color(0xFF083344)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, gy - 80, w, 90));
+          break;
+        case 'TRI':
+          foothillShader = const LinearGradient(
+            colors: [Color(0xFF3B82F6), Color(0xFF172554)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ).createShader(Rect.fromLTWH(0, gy - 80, w, 90));
@@ -784,6 +964,56 @@ class CitadelScenicLandscapePainter extends CustomPainter {
           ];
           ridgeBorderColor = const Color(0xFFBAE6FD);
           break;
+        case 'MER':
+          // Mercury: Scorched iron-slate rim over Caloris basalt bedrock
+          hillColors = [
+            const Color(0xFFE2E8F0), // Gleaming sunlit metallic crest
+            const Color(0xFF94A3B8), // Metallic slate
+            const Color(0xFF475569), // Dark iron regolith
+            const Color(0xFF1E293B), // Basalt bedrock
+          ];
+          ridgeBorderColor = const Color(0xFFF8FAFC);
+          break;
+        case 'KEP':
+          // Kepler-452b: Bioluminescent mint moss rim over alien jade loam
+          hillColors = [
+            const Color(0xFFA7F3D0), // Glowing mint rim
+            const Color(0xFF10B981), // Exotic emerald turf
+            const Color(0xFF059669), // Rich jade loam
+            const Color(0xFF064E3B), // Deep primeval base
+          ];
+          ridgeBorderColor = const Color(0xFF6EE7B7);
+          break;
+        case 'GAN':
+          // Ganymede: Silicate frost rim over electric cobalt ice
+          hillColors = [
+            const Color(0xFFBFDBFE),
+            const Color(0xFF3B82F6),
+            const Color(0xFF1E3A8A),
+            const Color(0xFF0F172A),
+          ];
+          ridgeBorderColor = const Color(0xFF93C5FD);
+          break;
+        case 'URA':
+          // Uranus: Cyan cryo-frost rim over turquoise methane soil
+          hillColors = [
+            const Color(0xFFA5F3FC),
+            const Color(0xFF06B6D4),
+            const Color(0xFF0E7490),
+            const Color(0xFF083344),
+          ];
+          ridgeBorderColor = const Color(0xFFCFFAFE);
+          break;
+        case 'TRI':
+          // Triton: Crystalline nitrogen rim over sub-zero sapphire bedrock
+          hillColors = [
+            const Color(0xFFDBEAFE),
+            const Color(0xFF60A5FA),
+            const Color(0xFF1E40AF),
+            const Color(0xFF172554),
+          ];
+          ridgeBorderColor = const Color(0xFFBFDBFE);
+          break;
         default:
           hillColors = [
             const Color(0xFF22C55E),
@@ -904,6 +1134,41 @@ class CitadelScenicLandscapePainter extends CustomPainter {
               const Color(0xFF1D4ED8),
               const Color(0xFF2563EB),
               const Color(0xFF60A5FA),
+            ];
+            break;
+          case 'MER':
+            riverColors = [
+              const Color(0xFFF8FAFC),
+              const Color(0xFF94A3B8),
+              const Color(0xFF475569),
+            ];
+            break;
+          case 'KEP':
+            riverColors = [
+              const Color(0xFF34D399),
+              const Color(0xFF059669),
+              const Color(0xFF047857),
+            ];
+            break;
+          case 'GAN':
+            riverColors = [
+              const Color(0xFF38BDF8),
+              const Color(0xFF0284C7),
+              const Color(0xFF1E3A8A),
+            ];
+            break;
+          case 'URA':
+            riverColors = [
+              const Color(0xFF67E8F9),
+              const Color(0xFF06B6D4),
+              const Color(0xFF0E7490),
+            ];
+            break;
+          case 'TRI':
+            riverColors = [
+              const Color(0xFF93C5FD),
+              const Color(0xFF3B82F6),
+              const Color(0xFF1E40AF),
             ];
             break;
           default:
@@ -1205,9 +1470,240 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       case 'NEP': // Neptune: Deep cosmic cobalt, Triton cryo-geysers, ring arcs
         _drawNeptuneCelestialAtmosphere(canvas, w, gy, ambientProg);
         break;
+      case 'MER': // Mercury: Massive Blazing Sun with Solar Coronal Flares & Starfield
+        _drawMercurySunAtmosphere(canvas, w, gy, ambientProg);
+        break;
+      case 'KEP': // Kepler-452b: Cygnus Binary Stars & Emerald Auroral Veil
+        _drawKeplerExoAtmosphere(canvas, w, gy, ambientProg);
+        break;
+      case 'GAN': // Ganymede: Looming Jupiter & Magnetic Curtains
+        _drawGanymedeJupiterAtmosphere(canvas, w, gy, ambientProg);
+        break;
+      case 'URA': // Uranus: Vertical Ring Arcs & Cyan Haze
+        _drawUranusRingAtmosphere(canvas, w, gy, ambientProg);
+        break;
+      case 'TRI': // Triton: Crescent Neptune & Nitrogen Cryo Plumes
+        _drawTritonNeptuneAtmosphere(canvas, w, gy, ambientProg);
+        break;
       default:
         break;
     }
+  }
+
+  /// ⚪ Mercury: Massive Blazing Sun hanging in the pitch black vacuum of space
+  void _drawMercurySunAtmosphere(
+      Canvas canvas, double w, double gy, double ambientProg) {
+    // 🌌 Starfield visible in daytime (no atmosphere to scatter sunlight)
+    final starPaint = Paint()..color = Colors.white.withValues(alpha: 0.90);
+    for (int i = 0; i < 48; i++) {
+      final sx = ((i * 73.0) % w);
+      final sy = ((i * 53.0) % (gy * 0.60));
+      final sz = 0.9 + ((i % 3) * 0.6);
+      canvas.drawCircle(Offset(sx, sy), sz, starPaint);
+    }
+
+    // ☀️ Colossal Sun (3x larger than from Earth)
+    final sunX = w * 0.72;
+    final sunY = gy * 0.22;
+    const sunRadius = 68.0;
+
+    // Solar Prominence / Flare loops
+    final flarePaint = Paint()
+      ..color = const Color(0xFFF97316).withValues(alpha: 0.45)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.5
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
+    final loopAngle = ambientProg * 2 * math.pi;
+    for (int j = 0; j < 4; j++) {
+      final a = loopAngle + (j * math.pi / 2);
+      final fx = sunX + math.cos(a) * (sunRadius + 14);
+      final fy = sunY + math.sin(a) * (sunRadius + 14);
+      canvas.drawCircle(Offset(fx, fy), 18.0 + (j * 3), flarePaint);
+    }
+
+    // Massive White-Gold Outer Corona
+    canvas.drawCircle(
+      Offset(sunX, sunY),
+      sunRadius * 2.2,
+      Paint()
+        ..color = const Color(0xFFFDE68A).withValues(alpha: 0.22)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 40),
+    );
+    canvas.drawCircle(
+      Offset(sunX, sunY),
+      sunRadius * 1.5,
+      Paint()
+        ..color = const Color(0xFFF59E0B).withValues(alpha: 0.40)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 22),
+    );
+
+    // Blinding White Core
+    final corePaint = Paint()
+      ..shader = const RadialGradient(
+        colors: [
+          Color(0xFFFFFFFF),
+          Color(0xFFFEF08A),
+          Color(0xFFF59E0B),
+        ],
+        stops: [0.0, 0.70, 1.0],
+      ).createShader(Rect.fromCircle(center: Offset(sunX, sunY), radius: sunRadius));
+    canvas.drawCircle(Offset(sunX, sunY), sunRadius, corePaint);
+  }
+
+  /// 🌌 Kepler-452b: Cygnus Binary Stars & Bioluminescent Auroral Veil
+  void _drawKeplerExoAtmosphere(
+      Canvas canvas, double w, double gy, double ambientProg) {
+    // Cygnus Constellation Stars
+    final starPaint = Paint()..color = const Color(0xFFA7F3D0).withValues(alpha: 0.85);
+    for (int i = 0; i < 45; i++) {
+      final sx = ((i * 81.0) % w);
+      final sy = ((i * 43.0) % (gy * 0.62));
+      canvas.drawCircle(Offset(sx, sy), 1.0 + ((i % 3) * 0.5), starPaint);
+    }
+
+    // Emerald Auroral Curtains in Sky
+    final auroraPaint = Paint()
+      ..shader = LinearGradient(
+        colors: [
+          Colors.transparent,
+          const Color(0xFF10B981).withValues(alpha: 0.28),
+          const Color(0xFF34D399).withValues(alpha: 0.22),
+          Colors.transparent,
+        ],
+        stops: const [0.0, 0.35, 0.70, 1.0],
+      ).createShader(Rect.fromLTWH(0, 0, w, gy * 0.55))
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 16);
+    final aPath = Path()
+      ..moveTo(0, gy * 0.15 + math.sin(ambientProg * 2 * math.pi) * 12)
+      ..cubicTo(w * 0.33, gy * 0.05, w * 0.66, gy * 0.28, w, gy * 0.12)
+      ..lineTo(w, gy * 0.45)
+      ..cubicTo(w * 0.66, gy * 0.55, w * 0.33, gy * 0.32, 0, gy * 0.42)
+      ..close();
+    canvas.drawPath(aPath, auroraPaint);
+
+    // Primary G2 Star (Kepler-452)
+    final kx = w * 0.75;
+    final ky = gy * 0.20;
+    canvas.drawCircle(
+      Offset(kx, ky),
+      34.0,
+      Paint()
+        ..shader = const RadialGradient(
+          colors: [Color(0xFFFFFFFF), Color(0xFFFEF08A), Color(0xFFF59E0B)],
+        ).createShader(Rect.fromCircle(center: Offset(kx, ky), radius: 34.0)),
+    );
+
+    // Distant Red Companion Star
+    final cx = w * 0.86;
+    final cy = gy * 0.14;
+    canvas.drawCircle(
+      Offset(cx, cy),
+      12.0,
+      Paint()
+        ..shader = const RadialGradient(
+          colors: [Color(0xFFFECDD3), Color(0xFFF43F5E), Color(0xFF881337)],
+        ).createShader(Rect.fromCircle(center: Offset(cx, cy), radius: 12.0)),
+    );
+  }
+
+  /// 🛡️ Ganymede: Giant Jupiter with Storm Bands & Magnetic Auroral Glow
+  void _drawGanymedeJupiterAtmosphere(
+      Canvas canvas, double w, double gy, double ambientProg) {
+    final jx = w * 0.74;
+    final jy = gy * 0.22;
+    const jRadius = 76.0;
+
+    // Jupiter Magnetic Blue Aurora
+    canvas.drawCircle(
+      Offset(jx, jy),
+      jRadius + 18,
+      Paint()
+        ..color = const Color(0xFF38BDF8).withValues(alpha: 0.30)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20),
+    );
+
+    // Jupiter Base
+    canvas.save();
+    canvas.clipPath(Path()..addOval(Rect.fromCircle(center: Offset(jx, jy), radius: jRadius)));
+    canvas.drawCircle(
+      Offset(jx, jy),
+      jRadius,
+      Paint()
+        ..shader = const LinearGradient(
+          colors: [
+            Color(0xFF92400E),
+            Color(0xFFF59E0B),
+            Color(0xFFB45309),
+            Color(0xFFD97706),
+            Color(0xFF78350F),
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ).createShader(Rect.fromCircle(center: Offset(jx, jy), radius: jRadius)),
+    );
+    // Great Red Spot
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(jx + 22, jy + 24), width: 28, height: 16),
+      Paint()..color = const Color(0xFFDC2626).withValues(alpha: 0.9),
+    );
+    canvas.restore();
+  }
+
+  /// 💎 Uranus: Cyan Atmospheric Glow & Faint Vertical Ring System
+  void _drawUranusRingAtmosphere(
+      Canvas canvas, double w, double gy, double ambientProg) {
+    // Vertical faint rings spanning sky
+    final ringPaint = Paint()
+      ..color = const Color(0xFFA5F3FC).withValues(alpha: 0.25)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.0
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(w * 0.70, gy * 0.25), width: 30, height: 160),
+      ringPaint,
+    );
+
+    // Cyan Glacial Disc
+    canvas.drawCircle(
+      Offset(w * 0.70, gy * 0.25),
+      36.0,
+      Paint()
+        ..shader = const RadialGradient(
+          colors: [Color(0xFFECFEFF), Color(0xFF06B6D4), Color(0xFF0E7490)],
+        ).createShader(Rect.fromCircle(center: Offset(w * 0.70, gy * 0.25), radius: 36.0)),
+    );
+  }
+
+  /// 🔱 Triton: Giant Crescent Neptune in Sky with Nitrogen Plumes
+  void _drawTritonNeptuneAtmosphere(
+      Canvas canvas, double w, double gy, double ambientProg) {
+    final nx = w * 0.76;
+    final ny = gy * 0.22;
+    const nRadius = 60.0;
+
+    // Crescent Azure Neptune
+    canvas.drawCircle(
+      Offset(nx, ny),
+      nRadius,
+      Paint()
+        ..shader = const RadialGradient(
+          colors: [Color(0xFF60A5FA), Color(0xFF2563EB), Color(0xFF1E3A8A)],
+        ).createShader(Rect.fromCircle(center: Offset(nx, ny), radius: nRadius)),
+    );
+
+    // Cryo-Geyser Plume from horizon
+    final plumeBob = math.sin(ambientProg * 2 * math.pi) * 8.0;
+    final plumePaint = Paint()
+      ..shader = LinearGradient(
+        colors: [
+          const Color(0xFFBFDBFE).withValues(alpha: 0.60),
+          Colors.transparent,
+        ],
+        begin: Alignment.bottomCenter,
+        end: Alignment.topCenter,
+      ).createShader(Rect.fromLTWH(w * 0.22, gy * 0.35, 24, gy * 0.45))
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+    canvas.drawRect(Rect.fromLTWH(w * 0.22, gy * 0.35 + plumeBob, 20, gy * 0.40), plumePaint);
   }
 
   /// 🌍 Moon: The Majestic Earthrise hanging in the dark lunar cosmos
@@ -1469,6 +1965,46 @@ class CitadelScenicLandscapePainter extends CustomPainter {
         boardBorderColor = const Color(0xFFC084FC);
         textColor = const Color(0xFFFAF5FF);
         legColor = const Color(0xFF3B0764);
+        break;
+      case 'MER':
+        title = 'MERCURY';
+        subtitle = 'SEC-01 • CALORIS BASIN';
+        boardColor = const Color(0xFF334155);
+        boardBorderColor = const Color(0xFF94A3B8);
+        textColor = const Color(0xFFF8FAFC);
+        legColor = const Color(0xFF1E293B);
+        break;
+      case 'KEP':
+        title = 'KEPLER-452B';
+        subtitle = 'SEC-01 • CYGNUS HAVEN';
+        boardColor = const Color(0xFF064E3B);
+        boardBorderColor = const Color(0xFF10B981);
+        textColor = const Color(0xFFECFDF5);
+        legColor = const Color(0xFF022C22);
+        break;
+      case 'GAN':
+        title = 'GANYMEDE';
+        subtitle = 'SEC-01 • PERRINE REGIO';
+        boardColor = const Color(0xFF1E293B);
+        boardBorderColor = const Color(0xFF38BDF8);
+        textColor = const Color(0xFFF0F9FF);
+        legColor = const Color(0xFF0F172A);
+        break;
+      case 'URA':
+        title = 'URANUS';
+        subtitle = 'SEC-01 • MIRANDA GLADE';
+        boardColor = const Color(0xFF0E7490);
+        boardBorderColor = const Color(0xFF06B6D4);
+        textColor = const Color(0xFFECFEFF);
+        legColor = const Color(0xFF083344);
+        break;
+      case 'TRI':
+        title = 'TRITON';
+        subtitle = 'SEC-01 • GEYSER CRYO';
+        boardColor = const Color(0xFF1E40AF);
+        boardBorderColor = const Color(0xFF60A5FA);
+        textColor = const Color(0xFFEFF6FF);
+        legColor = const Color(0xFF172554);
         break;
       default:
         title = 'EARTH';
@@ -2223,6 +2759,21 @@ class CitadelScenicLandscapePainter extends CustomPainter {
         break;
       case 'NEP':
         gemColor = const Color(0xFF67E8F9); // Turquoise cryo lanterns
+        break;
+      case 'MER':
+        gemColor = const Color(0xFFF8FAFC); // Blazing white-gold solar reflectors
+        break;
+      case 'KEP':
+        gemColor = const Color(0xFF34D399); // Bioluminescent emerald spore nodes
+        break;
+      case 'GAN':
+        gemColor = const Color(0xFF60A5FA); // Electric cobalt magnetic pavers
+        break;
+      case 'URA':
+        gemColor = const Color(0xFFA5F3FC); // Cyan methane ice lanterns
+        break;
+      case 'TRI':
+        gemColor = const Color(0xFF93C5FD); // Crystalline nitrogen gems
         break;
       default:
         gemColor = const Color(0xFFFDE047); // Warm golden garden pavers
@@ -3156,6 +3707,36 @@ class CitadelScenicLandscapePainter extends CustomPainter {
         leafColor1 = const Color(0xFF1D4ED8);
         leafColor2 = const Color(0xFF06B6D4);
         accentColor = const Color(0xFF93C5FD);
+        break;
+      case 'MER':
+        // Mercury: Scorched iron-slate succulents with silver highlights
+        leafColor1 = const Color(0xFF475569);
+        leafColor2 = const Color(0xFF64748B);
+        accentColor = const Color(0xFFE2E8F0);
+        break;
+      case 'KEP':
+        // Kepler-452b: Bioluminescent alien fungal emerald foliage
+        leafColor1 = const Color(0xFF047857);
+        leafColor2 = const Color(0xFF10B981);
+        accentColor = const Color(0xFF6EE7B7);
+        break;
+      case 'GAN':
+        // Ganymede: Cryo Jovian cobalt moss
+        leafColor1 = const Color(0xFF1E3A8A);
+        leafColor2 = const Color(0xFF2563EB);
+        accentColor = const Color(0xFF93C5FD);
+        break;
+      case 'URA':
+        // Uranus: Frosted cyan methane fronds
+        leafColor1 = const Color(0xFF0E7490);
+        leafColor2 = const Color(0xFF06B6D4);
+        accentColor = const Color(0xFFA5F3FC);
+        break;
+      case 'TRI':
+        // Triton: Sub-zero nitrogen crystalline fronds
+        leafColor1 = const Color(0xFF1E40AF);
+        leafColor2 = const Color(0xFF3B82F6);
+        accentColor = const Color(0xFFBFDBFE);
         break;
       default:
         // Earth Prime & Moon: Rich classic green with red apples
@@ -4614,6 +5195,76 @@ class CitadelInfiniteOceanSkyBackdropPainter extends CustomPainter {
           Color(0xFF172554),
           Color(0xFF0A1128),
           Color(0xFF030712),
+        ];
+        break;
+      case 'MER':
+        daySkyColors = const [
+          Color(0xFF000000),
+          Color(0xFF090D16),
+          Color(0xFF1E293B),
+          Color(0xFFE2E8F0),
+        ];
+        dayOceanColors = const [
+          Color(0xFF1E293B),
+          Color(0xFF0F172A),
+          Color(0xFF020617),
+          Color(0xFF000000),
+        ];
+        break;
+      case 'KEP':
+        daySkyColors = const [
+          Color(0xFF011A14),
+          Color(0xFF064E3B),
+          Color(0xFF10B981),
+          Color(0xFFA7F3D0),
+        ];
+        dayOceanColors = const [
+          Color(0xFF064E3B),
+          Color(0xFF047857),
+          Color(0xFF022C22),
+          Color(0xFF011A14),
+        ];
+        break;
+      case 'GAN':
+        daySkyColors = const [
+          Color(0xFF020617),
+          Color(0xFF1E3A8A),
+          Color(0xFF3B82F6),
+          Color(0xFF93C5FD),
+        ];
+        dayOceanColors = const [
+          Color(0xFF1E3A8A),
+          Color(0xFF0F172A),
+          Color(0xFF0369A1),
+          Color(0xFF0284C7),
+        ];
+        break;
+      case 'URA':
+        daySkyColors = const [
+          Color(0xFF083344),
+          Color(0xFF155E75),
+          Color(0xFF06B6D4),
+          Color(0xFFA5F3FC),
+        ];
+        dayOceanColors = const [
+          Color(0xFF0E7490),
+          Color(0xFF155E75),
+          Color(0xFF083344),
+          Color(0xFF021B24),
+        ];
+        break;
+      case 'TRI':
+        daySkyColors = const [
+          Color(0xFF020617),
+          Color(0xFF172554),
+          Color(0xFF3B82F6),
+          Color(0xFFBFDBFE),
+        ];
+        dayOceanColors = const [
+          Color(0xFF1E40AF),
+          Color(0xFF172554),
+          Color(0xFF0F172A),
+          Color(0xFF020617),
         ];
         break;
       default:

@@ -28,6 +28,7 @@ import 'package:pocket_mates_app/custom_code/widgets/admin_games_hub_widget.dart
 import 'package:pocket_mates_app/custom_code/services/app_store_review_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_release_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_feedback_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin_ads_management_tab.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_navigator_page.dart';
@@ -94,6 +95,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   // Cosmos Wave Expansion State
   int _cosmosActiveWave = 1;
   bool _isUnlockingCosmosWave = false;
+
+  // 💡 Startup Feedback & Roadmap Ideas State
+  List<AppFeedbackItem> _adminFeedbacks = [];
+  bool _isLoadingFeedbacks = false;
+  String _feedbackStatusFilter = 'all';
+  String _feedbackTypeFilter = 'all';
+  String _feedbackSearchQuery = '';
 
   // E-Learning State
   List<Map<String, dynamic>> allCourses = [];
@@ -232,7 +240,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 21, vsync: this);
+    _tabController = TabController(length: 22, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showPasswordDialog();
       _loadRobotCycleData();
@@ -244,7 +252,22 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       _loadReviewModeConfig();
       _loadCertificatesData();
       _loadCosmosAdminStats();
+      _loadAdminFeedbacks();
     });
+  }
+
+  Future<void> _loadAdminFeedbacks() async {
+    setState(() => _isLoadingFeedbacks = true);
+    final list = await PocketFeedbackService.instance.fetchFeedbacks(
+      status: _feedbackStatusFilter == 'all' ? null : _feedbackStatusFilter,
+      type: _feedbackTypeFilter == 'all' ? null : _feedbackTypeFilter,
+    );
+    if (mounted) {
+      setState(() {
+        _adminFeedbacks = list;
+        _isLoadingFeedbacks = false;
+      });
+    }
   }
 
   Future<void> _loadCosmosAdminStats() async {
@@ -1021,6 +1044,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       'VIP & Premium Users 👑',
       'AdMob & Ads 📺',
       'Cosmos Islands 🌌',
+      'User Feedbacks & Step Ideas 💡',
     ];
 
     return Scaffold(
@@ -1098,7 +1122,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                               () => _tabController.animateTo(9)),
                           _buildCategoryPill('⚙️ Ads & Controls', 5, activeCat,
                               () => _tabController.animateTo(19)),
-                          _buildCategoryPill('⭐ All Tools (21)', 0, activeCat,
+                          _buildCategoryPill('💡 Feedback', 6, activeCat,
+                              () => _tabController.animateTo(21)),
+                          _buildCategoryPill('⭐ All Tools (22)', 0, activeCat,
                               () => _showHubsQuickLauncher(context)),
                         ],
                       ),
@@ -1193,6 +1219,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                     Tab(
                         icon: Icon(Icons.public_rounded, size: 16),
                         text: 'Cosmos 🌌'),
+                    Tab(
+                        icon: Icon(Icons.lightbulb_rounded, size: 16),
+                        text: 'Feedbacks 💡'),
                   ],
                 ),
               ),
@@ -1224,6 +1253,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           _buildPremiumUsersTab(),
           const AdminAdsManagementTab(),
           _buildCosmosAdminTab(),
+          _buildFeedbacksTab(),
         ],
       ),
     );
@@ -1260,6 +1290,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   }
 
   int _getCategoryForTabIndex(int index) {
+    if (index == 21) return 6; // Feedbacks & Ideas
     if (index == 0 || index == 1) return 1; // Desks
     if (index == 3 || index == 4 || index == 5 || index == 6 || index == 18)
       return 2; // Citizens
@@ -1324,6 +1355,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         'color': const Color(0xFF38BDF8),
         'tabIndex': 20,
         'icon': Icons.satellite_alt_rounded,
+      },
+      {
+        'title': '💡 Feedbacks & Step Ideas',
+        'subtitle': 'Review user suggestions, roadmap ideas & day ratings',
+        'color': const Color(0xFF10B981),
+        'tabIndex': 21,
+        'icon': Icons.lightbulb_rounded,
       },
     ];
 
@@ -16891,6 +16929,606 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // =========================================================================
+  // 💡 STARTUP FEEDBACK & ROADMAP IDEAS ENGINE TAB
+  // =========================================================================
+  Widget _buildFeedbacksTab() {
+    final filtered = _adminFeedbacks.where((f) {
+      if (_feedbackStatusFilter != 'all' && f.status != _feedbackStatusFilter) {
+        return false;
+      }
+      if (_feedbackTypeFilter != 'all' && f.feedbackType != _feedbackTypeFilter) {
+        return false;
+      }
+      if (_feedbackSearchQuery.isNotEmpty) {
+        final q = _feedbackSearchQuery.toLowerCase();
+        final matchesUser = f.userName.toLowerCase().contains(q);
+        final matchesText = f.feedbackText.toLowerCase().contains(q);
+        final matchesStep = (f.suggestedStep ?? '').toLowerCase().contains(q);
+        if (!matchesUser && !matchesText && !matchesStep) return false;
+      }
+      return true;
+    }).toList();
+
+    final totalCount = _adminFeedbacks.length;
+    final newCount = _adminFeedbacks.where((f) => f.status == 'new').length;
+    final ideasCount = _adminFeedbacks
+        .where((f) => f.suggestedStep != null && f.suggestedStep!.isNotEmpty)
+        .length;
+    final avgRating = _adminFeedbacks.isEmpty
+        ? 5.0
+        : (_adminFeedbacks.map((f) => f.rating).reduce((a, b) => a + b) /
+            _adminFeedbacks.length);
+
+    return RefreshIndicator(
+      onRefresh: _loadAdminFeedbacks,
+      color: const Color(0xFFFFD700),
+      backgroundColor: const Color(0xFF0F172A),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics()),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Top Overview Banner
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF064E3B), Color(0xFF0F172A)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.5),
+                  width: 1.2,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Text('💡', style: TextStyle(fontSize: 22)),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Startup Feedback & Roadmap Engine',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'Review real learner thoughts, daily mission reviews, and requested curriculum steps.',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFA7F3D0),
+                            fontSize: 11.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: _loadAdminFeedbacks,
+                    icon: _isLoadingFeedbacks
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Color(0xFFFFD700),
+                            ),
+                          )
+                        : const Icon(Icons.refresh_rounded,
+                            color: Color(0xFFFFD700)),
+                    tooltip: 'Refresh Feedbacks',
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            // Stat Cards Row
+            Row(
+              children: [
+                _buildCosmosStatCard('TOTAL', '$totalCount',
+                    Icons.mark_chat_read_rounded, const Color(0xFF38BDF8)),
+                const SizedBox(width: 8),
+                _buildCosmosStatCard('NEW PENDING', '$newCount',
+                    Icons.fiber_new_rounded, const Color(0xFFF59E0B)),
+                const SizedBox(width: 8),
+                _buildCosmosStatCard('STEP IDEAS', '$ideasCount',
+                    Icons.auto_awesome_rounded, const Color(0xFF10B981)),
+                const SizedBox(width: 8),
+                _buildCosmosStatCard('AVG RATING',
+                    '${avgRating.toStringAsFixed(1)} ★',
+                    Icons.star_rounded, const Color(0xFFFFD700)),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Search Box
+            TextField(
+              onChanged: (val) => setState(() => _feedbackSearchQuery = val),
+              style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
+              decoration: InputDecoration(
+                hintText: 'Search by user, step suggestion, or message...',
+                hintStyle:
+                    GoogleFonts.outfit(color: Colors.white38, fontSize: 12),
+                prefixIcon: const Icon(Icons.search_rounded,
+                    color: Color(0xFFFFD700), size: 18),
+                suffixIcon: _feedbackSearchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear, color: Colors.white54, size: 16),
+                        onPressed: () => setState(() => _feedbackSearchQuery = ''),
+                      )
+                    : null,
+                filled: true,
+                fillColor: const Color(0xFF1E293B),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.white24),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.white24),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide:
+                      const BorderSide(color: Color(0xFF10B981), width: 1.5),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Status Filter Chips
+            Row(
+              children: [
+                Text(
+                  'Status: ',
+                  style: GoogleFonts.outfit(color: Colors.white60, fontSize: 12),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildFilterPill('All Status', 'all', _feedbackStatusFilter,
+                            (v) => setState(() => _feedbackStatusFilter = v)),
+                        _buildFilterPill('New Pending', 'new', _feedbackStatusFilter,
+                            (v) => setState(() => _feedbackStatusFilter = v)),
+                        _buildFilterPill('Reviewed', 'reviewed', _feedbackStatusFilter,
+                            (v) => setState(() => _feedbackStatusFilter = v)),
+                        _buildFilterPill('Implemented 🚀', 'implemented', _feedbackStatusFilter,
+                            (v) => setState(() => _feedbackStatusFilter = v)),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+
+            // Type Filter Chips
+            Row(
+              children: [
+                Text(
+                  'Category: ',
+                  style: GoogleFonts.outfit(color: Colors.white60, fontSize: 12),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildFilterPill('All Categories', 'all', _feedbackTypeFilter,
+                            (v) => setState(() => _feedbackTypeFilter = v)),
+                        _buildFilterPill('💡 Roadmap Ideas', 'roadmap_idea', _feedbackTypeFilter,
+                            (v) => setState(() => _feedbackTypeFilter = v)),
+                        _buildFilterPill('🌟 Day Reviews', 'day_completion', _feedbackTypeFilter,
+                            (v) => setState(() => _feedbackTypeFilter = v)),
+                        _buildFilterPill('🚀 Features', 'feature_request', _feedbackTypeFilter,
+                            (v) => setState(() => _feedbackTypeFilter = v)),
+                        _buildFilterPill('🐞 Bug Reports', 'bug_report', _feedbackTypeFilter,
+                            (v) => setState(() => _feedbackTypeFilter = v)),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Feedbacks List
+            if (_isLoadingFeedbacks)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(40),
+                  child: CircularProgressIndicator(color: Color(0xFFFFD700)),
+                ),
+              )
+            else if (filtered.isEmpty)
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.only(top: 30),
+                  padding: const EdgeInsets.all(28),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    children: [
+                      const Icon(Icons.inbox_rounded,
+                          size: 42, color: Colors.white30),
+                      const SizedBox(height: 10),
+                      Text(
+                        'No Feedbacks Found',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white70,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Learner suggestions and reviews will appear here live.',
+                        style: GoogleFonts.outfit(
+                            color: Colors.white38, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: filtered.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (context, idx) {
+                  final fb = filtered[idx];
+                  return _buildFeedbackCard(fb);
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterPill(
+      String label, String value, String activeValue, ValueChanged<String> onSelected) {
+    final isSelected = activeValue == value;
+    return GestureDetector(
+      onTap: () => onSelected(value),
+      child: Container(
+        margin: const EdgeInsets.only(right: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFFFD700) : const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected ? const Color(0xFFFFD700) : Colors.white24,
+            width: 0.8,
+          ),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.outfit(
+            color: isSelected ? Colors.black : Colors.white70,
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFeedbackCard(AppFeedbackItem fb) {
+    final Color badgeColor;
+    final String badgeLabel;
+    switch (fb.feedbackType) {
+      case 'roadmap_idea':
+        badgeColor = const Color(0xFF10B981);
+        badgeLabel = '💡 Roadmap Step Idea';
+        break;
+      case 'day_completion':
+        badgeColor = const Color(0xFF38BDF8);
+        badgeLabel = '🌟 Day Review';
+        break;
+      case 'feature_request':
+        badgeColor = const Color(0xFFA855F7);
+        badgeLabel = '🚀 Feature Request';
+        break;
+      case 'bug_report':
+        badgeColor = const Color(0xFFEF4444);
+        badgeLabel = '🐞 Bug Report';
+        break;
+      default:
+        badgeColor = const Color(0xFFF59E0B);
+        badgeLabel = '📝 General';
+    }
+
+    final Color statusColor;
+    switch (fb.status) {
+      case 'implemented':
+        statusColor = const Color(0xFF10B981);
+        break;
+      case 'reviewed':
+        statusColor = const Color(0xFF38BDF8);
+        break;
+      default:
+        statusColor = const Color(0xFFF59E0B);
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: fb.status == 'new'
+              ? const Color(0xFFF59E0B).withValues(alpha: 0.5)
+              : Colors.white12,
+          width: fb.status == 'new' ? 1.2 : 0.8,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header Row: User, Day, Stars, Status
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.white10,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.person_outline_rounded,
+                    color: Colors.white70, size: 16),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            fb.userName,
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (fb.dayNumber != null) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 1.5),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0284C7).withValues(alpha: 0.3),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                  color: const Color(0xFF38BDF8), width: 0.6),
+                            ),
+                            child: Text(
+                              'Day ${fb.dayNumber}',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFF38BDF8),
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    Text(
+                      '${fb.createdAt.day}/${fb.createdAt.month}/${fb.createdAt.year} • ${fb.language.toUpperCase()}',
+                      style: GoogleFonts.outfit(
+                          color: Colors.white38, fontSize: 10),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Rating Stars
+              Row(
+                children: List.generate(
+                  5,
+                  (i) => Icon(
+                    i < fb.rating
+                        ? Icons.star_rounded
+                        : Icons.star_outline_rounded,
+                    color: i < fb.rating
+                        ? const Color(0xFFFFD700)
+                        : Colors.white24,
+                    size: 15,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          // Category Badge
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: badgeColor.withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: badgeColor.withValues(alpha: 0.6), width: 0.8),
+            ),
+            child: Text(
+              badgeLabel,
+              style: GoogleFonts.outfit(
+                color: badgeColor,
+                fontSize: 10.5,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // Suggested Step Highlight (If Provided)
+          if (fb.suggestedStep != null && fb.suggestedStep!.isNotEmpty) ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF064E3B).withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: const Color(0xFF34D399).withValues(alpha: 0.5),
+                  width: 0.8,
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Text('✨', style: TextStyle(fontSize: 14)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Suggested Step: ${fb.suggestedStep}',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFA7F3D0),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+
+          // Feedback Message Text
+          Text(
+            fb.feedbackText,
+            style: GoogleFonts.outfit(
+              color: Colors.white.withValues(alpha: 0.9),
+              fontSize: 12.5,
+              height: 1.45,
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Bottom Action Bar: Status & Controls
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: statusColor, width: 0.8),
+                ),
+                child: Text(
+                  fb.status.toUpperCase(),
+                  style: GoogleFonts.outfit(
+                    color: statusColor,
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+              const Spacer(),
+
+              // Quick Actions
+              if (fb.status == 'new')
+                TextButton.icon(
+                  onPressed: () async {
+                    HapticFeedback.lightImpact();
+                    await PocketFeedbackService.instance
+                        .updateFeedbackStatus(fb.id, 'reviewed');
+                    _loadAdminFeedbacks();
+                  },
+                  icon: const Icon(Icons.done_rounded, size: 14),
+                  label: const Text('Mark Reviewed'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: const Color(0xFF38BDF8),
+                    visualDensity: VisualDensity.compact,
+                    textStyle: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold),
+                  ),
+                ),
+
+              if (fb.status != 'implemented')
+                TextButton.icon(
+                  onPressed: () async {
+                    HapticFeedback.mediumImpact();
+                    await PocketFeedbackService.instance
+                        .updateFeedbackStatus(fb.id, 'implemented');
+                    _loadAdminFeedbacks();
+                  },
+                  icon: const Icon(Icons.rocket_launch_rounded, size: 14),
+                  label: const Text('Implement 🚀'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: const Color(0xFF10B981),
+                    visualDensity: VisualDensity.compact,
+                    textStyle: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold),
+                  ),
+                ),
+
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert_rounded,
+                    color: Colors.white54, size: 18),
+                color: const Color(0xFF0F172A),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  side: const BorderSide(color: Colors.white24),
+                ),
+                onSelected: (status) async {
+                  await PocketFeedbackService.instance
+                      .updateFeedbackStatus(fb.id, status);
+                  _loadAdminFeedbacks();
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'new',
+                    child: Text('Set as New', style: TextStyle(color: Colors.white, fontSize: 12)),
+                  ),
+                  const PopupMenuItem(
+                    value: 'reviewed',
+                    child: Text('Set as Reviewed', style: TextStyle(color: Colors.white, fontSize: 12)),
+                  ),
+                  const PopupMenuItem(
+                    value: 'implemented',
+                    child: Text('Set as Implemented', style: TextStyle(color: Colors.white, fontSize: 12)),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

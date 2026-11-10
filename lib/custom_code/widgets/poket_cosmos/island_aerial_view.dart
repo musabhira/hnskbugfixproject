@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_street_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'poket_cosmos_models.dart';
 
 /// 🏝️ Aerial Top-Down Island View Widget with:
@@ -175,10 +177,33 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
             widget.onPlotTapped!(occupiedPlot);
           } else {
             HapticFeedback.mediumImpact();
+            final colony = PoketCosmosAllocationService.instance
+                .getColonyByPlanetName(occupiedPlot.planetName);
             PocketCitadelAttackPage.openForUser(
               context,
               userId: occupiedPlot.userId,
               targetName: occupiedPlot.userName,
+              targetDay: occupiedPlot.day,
+              neighbor: PocketNeighbor(
+                id: occupiedPlot.userId,
+                name: occupiedPlot.userName,
+                day: occupiedPlot.day,
+                streak: occupiedPlot.day,
+                rank: 'Cosmic Citizen',
+                paletteId: 'warm_cottage',
+                isMe: false,
+                hasActiveShield: true,
+                statusMessage: occupiedPlot.postalPinCode,
+                isPocketRobo: PocketRobotService.isRobotId(occupiedPlot.userId),
+                hp: 100,
+                maxHp: 100,
+                planetCode: colony.code,
+                planetName: colony.planetName,
+                islandName: occupiedPlot.countryName,
+                streetName: occupiedPlot.streetName,
+                plotNumber: occupiedPlot.plotNumber,
+                cosmosPin: occupiedPlot.postalPinCode,
+              ),
             );
           }
           return;

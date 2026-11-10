@@ -198,9 +198,12 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
     );
 
     final coords = IslandAerialPainter.get35PlotCoordinates(island.shapeStyle);
-    final targetPos = (plot.plotNumber >= 1 && plot.plotNumber <= coords.length)
-        ? coords[plot.plotNumber - 1]
-        : Offset.zero;
+    final localPlot = (plot.plotNumber >= 1 && plot.plotNumber <= 25)
+        ? plot.plotNumber
+        : (((plot.plotNumber - 1) % 25) + 1);
+    final targetPos = (localPlot >= 1 && localPlot <= coords.length)
+        ? coords[localPlot - 1]
+        : coords.first;
 
     final updatedPlot = plot.copyWith(coordinates: targetPos);
 
@@ -266,9 +269,12 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
     const targetScale = 14.0;
 
     final coords = IslandAerialPainter.get35PlotCoordinates(_assignedIsland.shapeStyle);
-    final targetPlotCoord = (_assignedPlot.plotNumber >= 1 && _assignedPlot.plotNumber <= coords.length)
-        ? coords[_assignedPlot.plotNumber - 1]
-        : Offset.zero;
+    final localPlot = (_assignedPlot.plotNumber >= 1 && _assignedPlot.plotNumber <= 25)
+        ? _assignedPlot.plotNumber
+        : (((_assignedPlot.plotNumber - 1) % 25) + 1);
+    final targetPlotCoord = (localPlot >= 1 && localPlot <= coords.length)
+        ? coords[localPlot - 1]
+        : coords.first;
 
     final painterScale = ((worldHeight / 850.0) * 1.15).clamp(0.95, 1.50);
     final targetWorldX = worldWidth / 2 + targetPlotCoord.dx * painterScale;
@@ -739,6 +745,9 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
 
         final fullBornAddress =
             '${widget.userName}\nPlot #${_assignedPlot.plotNumber} • ${_assignedPlot.countryName} • ${_assignedPlot.planetName}';
+        final colony = PoketCosmosAllocationService.instance
+            .getColonyByPlanetName(_assignedPlot.planetName);
+        final colonyCode = colony.code;
 
         return Stack(
           fit: StackFit.expand,
@@ -749,17 +758,18 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
                 painter: CitadelInfiniteOceanSkyBackdropPainter(
                   isNight: false,
                   ambientProg: _landscapeAmbientController.value,
+                  planetCode: colonyCode,
                 ),
               ),
             ),
 
-            // Continuous meadow green base behind the bottom edge
+            // Continuous celestial land base behind the bottom edge
             Positioned(
               left: 0,
               right: 0,
               bottom: 0,
               height: 150,
-              child: Container(color: const Color(0xFF15803D)),
+              child: Container(color: colony.landColor),
             ),
 
             // 🌄 Fullscreen Interactive Estate with Living Scenery (boundaryMargin: EdgeInsets.zero locks edges!)

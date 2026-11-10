@@ -6,11 +6,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flame/game.dart' hide Matrix4;
 import '/backend/supabase/supabase.dart';
 import '../learning_60day/pocket_island_attack_page.dart';
+import '../learning_60day/pocket_citadel_attack_page.dart';
+import '../learning_60day/pocket_world_street_page.dart';
+import '../../services/pocket_robot_service.dart';
 import 'poket_cosmos_models.dart';
 import 'flame_solar_system_game.dart';
 import 'island_aerial_view.dart';
 import 'planet_sphere_icon_widget.dart';
-import '../verified_switch_page.dart';
 import '../../services/pocket_game_audio_service.dart';
 import '../../services/poket_cosmos_allocation_service.dart';
 import '../../services/pocket_island_group_service.dart';
@@ -2216,12 +2218,35 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                           if (plot.userId.isNotEmpty &&
                               !plot.userId.startsWith('empty') &&
                               !plot.userId.startsWith('vacant')) {
-                            Navigator.push(
+                            final colony = PoketCosmosAllocationService.instance
+                                .getColonyByPlanetName(plot.planetName);
+                            final neighbor = PocketNeighbor(
+                              id: plot.userId,
+                              name: plot.userName,
+                              day: plot.day,
+                              streak: plot.day,
+                              rank: 'Cosmic Citizen',
+                              paletteId: 'warm_cottage',
+                              isMe: false,
+                              hasActiveShield: true,
+                              statusMessage: plot.postalPinCode,
+                              isPocketRobo: PocketRobotService.isRobotId(plot.userId),
+                              hp: 100,
+                              maxHp: 100,
+                              planetCode: colony.code,
+                              planetName: colony.planetName,
+                              islandName: plot.countryName,
+                              streetName: plot.streetName,
+                              plotNumber: plot.plotNumber,
+                              cosmosPin: plot.postalPinCode,
+                            );
+
+                            PocketCitadelAttackPage.openForUser(
                               context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    VerfiedSwitchPage(userId: plot.userId),
-                              ),
+                              userId: plot.userId,
+                              targetName: plot.userName,
+                              targetDay: plot.day,
+                              neighbor: neighbor,
                             );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(

@@ -2,6 +2,7 @@ import 'package:pocket_mates_app/custom_code/widgets/main_profile_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_street_page.dart';
+import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_service.dart';
 
 import '/backend/supabase/supabase.dart';
 import 'package:flutter/material.dart';
@@ -12,11 +13,23 @@ class VerfiedSwitchPage extends StatefulWidget {
     this.width,
     this.height,
     required this.userId,
+    this.planetCode,
+    this.planetName,
+    this.islandName,
+    this.streetName,
+    this.plotNumber,
+    this.cosmosPin,
   });
 
   final double? width;
   final double? height;
   final String userId;
+  final String? planetCode;
+  final String? planetName;
+  final String? islandName;
+  final String? streetName;
+  final int? plotNumber;
+  final String? cosmosPin;
   static String routeName = 'verifiedProfile';
   static String routePath = '/verifiedProfile';
 
@@ -156,6 +169,7 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
               final robot = PocketRobotService.getRobotById(widget.userId) ??
                   PocketRobotService.getRobotByLevel(1);
               final dynamicLevel = PocketRobotService.getDynamicLevel(robot);
+              final meta = PocketRobotService.getCosmosAddressForRobotId(robot.id, level: dynamicLevel);
               return PocketNeighbor(
                 id: robot.id,
                 name: robot.name,
@@ -169,22 +183,44 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
                 isPocketRobo: true,
                 hp: 100,
                 maxHp: 100,
+                planetCode: widget.planetCode ?? (meta['planetCode'] as String?),
+                planetName: widget.planetName ?? (meta['planetName'] as String?),
+                islandName: widget.islandName ?? (meta['islandName'] as String?),
+                streetName: widget.streetName ?? (meta['streetName'] as String?),
+                plotNumber: widget.plotNumber ?? (meta['plotNumber'] as int?),
+                cosmosPin: widget.cosmosPin ?? (meta['cosmosPin'] as String?),
               );
             }()
-          : PocketNeighbor(
-              id: widget.userId,
-              name: _rawProfileData?['first_name'] ?? _rawProfileData?['name'] ?? 'Citadel Defender',
-              day: (_rawProfileData?['learning_day'] as num?)?.toInt() ?? 1,
-              streak: (_rawProfileData?['streak'] as num?)?.toInt() ?? 1,
-              rank: _rawProfileData?['rank']?.toString() ?? 'Citizen',
-              paletteId: _rawProfileData?['palette_id']?.toString() ?? 'warm_cottage',
-              isMe: false,
-              hasActiveShield: true,
-              statusMessage: _rawProfileData?['bio']?.toString() ?? 'Learning English everyday!',
-              isPocketRobo: _rawProfileData?['is_pocket_robo'] == true,
-              hp: 100,
-              maxHp: 100,
-            );
+          : () {
+              final cachedPlot = PoketCosmosAllocationService.instance.getCachedUserPlot(widget.userId);
+              final colony = cachedPlot != null
+                  ? PoketCosmosAllocationService.instance.getColonyByPlanetName(cachedPlot.planetName)
+                  : (widget.planetName != null
+                      ? PoketCosmosAllocationService.instance.getColonyByPlanetName(widget.planetName!)
+                      : (widget.planetCode != null
+                          ? PoketCosmosAllocationService.instance.getColonyByCode(widget.planetCode!)
+                          : null));
+              return PocketNeighbor(
+                id: widget.userId,
+                name: _rawProfileData?['first_name'] ?? _rawProfileData?['name'] ?? 'Citadel Defender',
+                day: (_rawProfileData?['learning_day'] as num?)?.toInt() ?? 1,
+                streak: (_rawProfileData?['streak'] as num?)?.toInt() ?? 1,
+                rank: _rawProfileData?['rank']?.toString() ?? 'Citizen',
+                paletteId: _rawProfileData?['palette_id']?.toString() ?? 'warm_cottage',
+                isMe: false,
+                hasActiveShield: true,
+                statusMessage: _rawProfileData?['bio']?.toString() ?? 'Learning English everyday!',
+                isPocketRobo: _rawProfileData?['is_pocket_robo'] == true,
+                hp: 100,
+                maxHp: 100,
+                planetCode: widget.planetCode ?? colony?.code ?? cachedPlot?.planetName,
+                planetName: widget.planetName ?? colony?.planetName ?? cachedPlot?.planetName,
+                islandName: widget.islandName ?? cachedPlot?.countryName,
+                streetName: widget.streetName ?? cachedPlot?.streetName,
+                plotNumber: widget.plotNumber ?? cachedPlot?.plotNumber,
+                cosmosPin: widget.cosmosPin ?? cachedPlot?.postalPinCode,
+              );
+            }();
 
       return PocketCitadelAttackPage(
         neighbor: neighbor,

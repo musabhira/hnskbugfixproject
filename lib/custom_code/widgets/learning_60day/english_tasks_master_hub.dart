@@ -42,6 +42,7 @@ import 'pocket_citadel_store_sheet.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 import 'package:flame/components.dart' show Vector2;
 import 'flame_english_house_game.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_feedback_service.dart';
 import 'pocket_90day_vocab_curriculum.dart';
 import 'pocket_day_detail_overview_page.dart';
 import 'pocket_day_open_world_adventure_page.dart';
@@ -1866,6 +1867,17 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
           }
         }
       });
+
+      // 💡 Prompt user for Day Review / Startup Feedback
+      Future.delayed(const Duration(milliseconds: 1600), () {
+        if (mounted) {
+          PocketFeedbackService.showFeedbackBottomSheet(
+            context,
+            dayNumber: _progress?.currentDay ?? 1,
+            defaultType: 'day_completion',
+          );
+        }
+      });
     }
   }
 
@@ -3179,6 +3191,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
                           // 🌿 Grassy Ground Syllabus Notice (Under Rules on green ground)
                           _buildGroundEnglishSyllabusNotice(screenWidth),
+
+                          // 💡 Grassy Ground Startup Feedback & Step Suggestion Box (Audio Directive)
+                          _buildGroundFeedbackBox(screenWidth),
 
                           // Bouncing Animated Character Avatar at Current Level or Rules Node
                           _buildAnimatedAvatar(screenWidth, targetActiveDay),
@@ -4935,6 +4950,100 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 💡 Grassy Ground Feedback Box (Audio Directive: Startup Feedback Engine)
+  Widget _buildGroundFeedbackBox(double screenWidth) {
+    final x = screenWidth / 2;
+    final y = _ruleNodeY + 115.0;
+    const pillWidth = 280.0;
+
+    return Positioned(
+      left: x - (pillWidth / 2),
+      top: y,
+      width: pillWidth,
+      child: Center(
+        child: InkWell(
+          onTap: () {
+            HapticFeedback.mediumImpact();
+            PocketFeedbackService.showFeedbackBottomSheet(
+              context,
+              dayNumber: _progress?.currentDay ?? 1,
+              defaultType: 'roadmap_idea',
+            );
+          },
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF064E3B), Color(0xFF0F172A)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.7),
+                width: 1.2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.4),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+                BoxShadow(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                  blurRadius: 12,
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Text('💡', style: TextStyle(fontSize: 15)),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'ഐഡിയകളും ഫീഡ്ബാക്കും • Ideas',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                      Text(
+                        'പുതിയ സ്റ്റെപ്പ് നിർദ്ദേശിക്കാം • Suggest Step',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white70,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 13,
+                  color: Color(0xFFFFD700),
+                ),
+              ],
+            ),
           ),
         ),
       ),
