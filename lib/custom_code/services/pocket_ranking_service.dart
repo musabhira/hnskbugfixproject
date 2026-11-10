@@ -508,8 +508,10 @@ class PocketRankingService {
 
         final isPrestige = effectiveLevel >= 90 || effectiveScore >= 45000;
         final stars = isPrestige ? math.max(1, (effectiveScore - 45000) ~/ 2000 + 1) : 0;
-        final isVerified = row['verified'] == true;
-        final isVip = row['is_premium'] == true || row['is_vip'] == true || row['is_subscribed'] == true;
+        final tier = row['subscription_tier']?.toString().toLowerCase().trim();
+        final bool isSub = tier != null && tier.isNotEmpty && tier != 'free' && tier != 'none';
+        final isVip = isSub || row['is_premium'] == true || row['is_vip'] == true || row['is_subscribed'] == true;
+        final isVerified = row['verified'] == true || isSub;
 
         rankedList.add(PocketRankedUser(
           userId: uid,
@@ -886,8 +888,10 @@ class PocketRankingService {
           final gRank = isMe ? myGlobalRank : await fetchUserGlobalRank(uid, effectiveScore, isUnder17);
           final isPrestige = effectiveLevel >= 90 || effectiveScore >= 45000;
           final stars = isPrestige ? math.max(1, (effectiveScore - 45000) ~/ 2000 + 1) : 0;
-          final isVerified = row['verified'] == true;
-          final isVip = row['is_premium'] == true;
+          final tier = row['subscription_tier']?.toString().toLowerCase().trim();
+          final bool isSub = tier != null && tier.isNotEmpty && tier != 'free' && tier != 'none';
+          final isVip = isSub || row['is_premium'] == true || row['is_vip'] == true || row['is_subscribed'] == true;
+          final isVerified = row['verified'] == true || isSub;
 
           final rawDispName = row['display_name']?.toString().trim();
           final rawUserName = (row['name']?.toString() ?? 'Pocket Mate').trim();
@@ -935,8 +939,15 @@ class PocketRankingService {
         isRobot: false,
         isPrestigeSovereign: isPrestige,
         prestigeStars: stars,
-        isVerified: myProfile?['verified'] == true,
-        isVip: myProfile?['is_premium'] == true,
+        isVerified: myProfile?['verified'] == true ||
+            (myProfile?['subscription_tier'] != null &&
+                myProfile!['subscription_tier'].toString().toLowerCase().trim() != 'free' &&
+                myProfile!['subscription_tier'].toString().toLowerCase().trim() != 'none'),
+        isVip: myProfile?['is_premium'] == true ||
+            myProfile?['is_vip'] == true ||
+            (myProfile?['subscription_tier'] != null &&
+                myProfile!['subscription_tier'].toString().toLowerCase().trim() != 'free' &&
+                myProfile!['subscription_tier'].toString().toLowerCase().trim() != 'none'),
       ));
     }
 

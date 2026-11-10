@@ -2060,7 +2060,9 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
     final timeFormatted = timeStr != null
         ? timeago.format(DateTime.tryParse(timeStr) ?? DateTime.now())
         : '';
-    final isVerified = _threadDetail?['verified'] == true || _threadDetail?['is_verified'] == true;
+    final authorTier = (_threadDetail?['subscription_tier'] ?? '').toString().toLowerCase().trim();
+    final bool isAuthorSub = authorTier.isNotEmpty && authorTier != 'free' && authorTier != 'none';
+    final isVerified = _threadDetail?['verified'] == true || _threadDetail?['is_verified'] == true || isAuthorSub;
     final day = (_threadDetail?['learning_day'] as num?)?.toInt() ?? 1;
     final mediaUrl = _threadDetail?['media_url']?.toString();
 

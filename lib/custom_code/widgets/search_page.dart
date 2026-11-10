@@ -2690,8 +2690,11 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
             isPresident ? 'The President' : (profile['name'] ?? 'Partner');
         final shopName = profile['shop_name'];
         final targetName = name.toLowerCase();
+        final tier = (profile['subscription_tier'] ?? '').toString().toLowerCase().trim();
+        final bool isSub = tier.isNotEmpty && tier != 'free' && tier != 'none';
         final isVerified = isPresident ||
             profile['verified'] == true ||
+            isSub ||
             profile['is_vip'] == true ||
             profile['is_subscribed'] == true ||
             targetName.contains('musab') ||

@@ -717,7 +717,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         safeSetState(() {
           _preloadedProfile = profileMap;
           profileId = profileMap['id']?.toString();
-          _isVerified = profileMap['verified'] ?? false;
+          final tier = (profileMap['subscription_tier'] ?? '').toString().toLowerCase().trim();
+          final bool isSub = tier.isNotEmpty && tier != 'free' && tier != 'none';
+          _isVerified = (profileMap['verified'] == true) || isSub;
           _isLoading = false; // Show UI immediately from cache
         });
       }
@@ -839,7 +841,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       safeSetState(() {
         _preloadedProfile = profileResponse;
         profileId = profileResponse?['id']?.toString() ?? userId;
-        _isVerified = profileResponse?['verified'] ?? false;
+        final tier = (profileResponse?['subscription_tier'] ?? '').toString().toLowerCase().trim();
+        final bool isSub = tier.isNotEmpty && tier != 'free' && tier != 'none';
+        _isVerified = (profileResponse?['verified'] == true) || isSub;
 
         final int followersCount = followers.length +
             ((userResponse?['followers'] as num?)?.toInt() ?? 0);

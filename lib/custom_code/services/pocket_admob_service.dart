@@ -895,50 +895,38 @@ class PocketAdMobService {
               tier != 'none' &&
               tier != 'null';
 
-          // 👑 Determine VIP Status:
-          // a) is_vip == true (Manual Admin panel assignment or IAP subscription)
-          // b) is_premium == true / is_subscribed == true
-          // c) hasActivePaidTier (e.g. 'vip_gold', 'monthly', 'pro', 'quarterly', 'yearly')
-          // d) role == 'vip' || role == 'admin'
-          // Note: Identity 'verified' badge is NOT a paid VIP membership!
-          final bool isTrueVip = profile['is_vip'] == true ||
-              profile['is_premium'] == true ||
-              profile['is_subscribed'] == true ||
-              hasActivePaidTier ||
+          // Option B Single Source of Truth:
+          // A user is ONLY VIP if they have an active paid subscription tier
+          // (monthly, quarterly, yearly, vip_gold, etc.) OR role is admin/vip!
+          final bool isTrueVip = hasActivePaidTier ||
               role == 'vip' ||
-              role == 'admin';
+              role == 'admin' ||
+              profile['is_vip'] == true ||
+              profile['is_subscribed'] == true;
 
-          debugPrint('🔍 [PocketAdMob] Check VIP for UID $uid:');
-          debugPrint('   -> DB Profile: is_vip=${profile['is_vip']}, is_premium=${profile['is_premium']}, verified=${profile['verified']}, tier=$tier, role=$role');
-          debugPrint('   -> hasActivePaidTier: $hasActivePaidTier, isTrueVip: $isTrueVip');
+          debugPrint('🔍 [PocketAdMob] Genuine DB Check VIP for UID $uid:');
+          debugPrint('   -> DB Profile: subscription_tier=$tier, role=$role, hasActivePaidTier=$hasActivePaidTier => isTrueVip=$isTrueVip');
 
           if (isTrueVip) {
             debugPrint('   👑 [PocketAdMob] Result: USER IS VIP. All Ads Suppressed.');
-            // 👑 PREMIUM / VIP ACCOUNT: Suppress ALL ads!
             await prefs.setBool('is_vip_$uid', true);
-            await prefs.setBool('is_premium_$uid', true);
             await prefs.setString('subscription_tier_$uid', tier ?? 'monthly');
-            await prefs.setString('handskill_plan_$uid', tier ?? 'pro');
 
-            // Device flags
-            await prefs.setBool('is_vip', true);
-            await prefs.setBool('is_premium', true);
-            await prefs.setBool('remove_ads', true);
-            await prefs.setString('handskill_plan', tier ?? 'pro');
+            // Clear un-scoped global device flags to prevent cross-account leaks
+            await prefs.setBool('is_vip', false);
+            await prefs.setBool('is_premium', false);
+            await prefs.setBool('remove_ads', false);
+            await prefs.setString('handskill_plan', 'free');
 
             _cachedVipUid = uid;
             _cachedIsVip = true;
             return true;
           } else {
             debugPrint('   🟢 [PocketAdMob] Result: USER IS FREE. Ads Allowed. Cleared device VIP flags.');
-            // 👤 NON-PREMIUM / FREE ACCOUNT: MUST SHOW ADS!
-            // Clean up any stale VIP flags left behind by another account on this phone!
             await prefs.setBool('is_vip_$uid', false);
-            await prefs.setBool('is_premium_$uid', false);
             await prefs.setString('subscription_tier_$uid', 'free');
-            await prefs.setString('handskill_plan_$uid', 'free');
 
-            // Clear device flags so stale VIP never blocks free account ads
+            // Clear un-scoped global device flags so stale VIP never blocks free account ads
             await prefs.setBool('is_vip', false);
             await prefs.setBool('is_premium', false);
             await prefs.setBool('remove_ads', false);
@@ -955,21 +943,17 @@ class PocketAdMobService {
 
       // 2. Fallback to user-scoped local preferences if network is offline
       final userScopedTier = prefs.getString('subscription_tier_$uid');
-      if (userScopedTier != null) {
-        final isVip = userScopedTier != 'free' && userScopedTier.isNotEmpty;
+      if (userScopedTier != null && userScopedTier.isNotEmpty) {
+        final isVip = userScopedTier != 'free' && userScopedTier != 'none';
         _cachedVipUid = uid;
         _cachedIsVip = isVip;
         return isVip;
       }
 
-      final userScopedPlan = prefs.getString('handskill_plan_$uid');
-      if (userScopedPlan != null &&
-          userScopedPlan != 'free' &&
-          userScopedPlan.isNotEmpty) {
-        _cachedVipUid = uid;
-        _cachedIsVip = true;
-        return true;
-      }
+      // 3. User is FREE by default! (never assume VIP)
+      _cachedVipUid = uid;
+      _cachedIsVip = false;
+      return false;
     } catch (_) {}
 
     _cachedVipUid = SupaFlow.client.auth.currentUser?.id;

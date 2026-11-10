@@ -110,7 +110,7 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
       final profileResponse = await _supabase
           .from('profile')
           .select(
-              'profile_image_url, shop_name, verified, user_id, name, first_name, learning_day, streak, rank, palette_id, bio, is_pocket_robo, bg_color_code, bg_text_color, button_color_code, button_text_color')
+              'profile_image_url, shop_name, verified, subscription_tier, user_id, name, first_name, learning_day, streak, rank, palette_id, bio, is_pocket_robo, bg_color_code, bg_text_color, button_color_code, button_text_color')
           .eq('user_id', widget.userId)
           .maybeSingle();
 
@@ -118,7 +118,9 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
         setState(() {
           _rawProfileData = profileResponse;
           _shopNameController.text = profileResponse['shop_name'] ?? '';
-          _isVerified = profileResponse['verified'] ?? false;
+          final tier = (profileResponse['subscription_tier'] ?? '').toString().toLowerCase().trim();
+          final bool isSub = tier.isNotEmpty && tier != 'free' && tier != 'none';
+          _isVerified = (profileResponse['verified'] ?? false) || isSub;
         });
       }
     } catch (error) {
