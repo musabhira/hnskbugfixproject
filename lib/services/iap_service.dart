@@ -229,12 +229,18 @@ class IAPService {
 
         // 2. Sync to Supabase user profile & entitlements (both 'profiles' and 'profile')
         if (userId != null) {
+          String planName = 'monthly';
+          if (purchase.productID == vipQuarterlyProductId) {
+            planName = 'quarterly';
+          } else if (purchase.productID == vipYearlyProductId) {
+            planName = 'yearly';
+          }
+
           final iapUpdate = {
             'is_vip': true,
-            'subscription_tier': 'vip_gold',
+            'subscription_tier': planName,
             'subscription_status': 'active',
             'vip_product_id': purchase.productID,
-            'verified': true,
             'has_purchased_c2_certificate': true,
             'updated_at': DateTime.now().toIso8601String(),
           };

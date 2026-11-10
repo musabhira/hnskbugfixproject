@@ -743,32 +743,30 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
     }
   }
 
-  /// 👑 Manual VIP Toggle (User Audio Directive: Manual VIP access in Admin Panel)
-  Future<void> _toggleUserVip(
-      Map<String, dynamic> user, bool currentStatus) async {
-    final newStatus = !currentStatus;
-    final uid = user['user_id']?.toString();
+  /// 👑 Sets the user's subscription tier directly (Option B Single Source of Truth)
+  Future<void> _setUserSubscriptionTier(
+      Map<String, dynamic> user, String targetTier) async {
+    final oldTier = user['subscription_tier']?.toString() ?? 'free';
+    final bool newIsVip = targetTier != 'free';
+    final uid = user['user_id']?.toString() ?? user['id']?.toString();
     final profileId = user['id'];
 
-    // Optimistic local update for instant snappy UI
     setState(() {
-      user['is_vip'] = newStatus;
-      user['is_premium'] = newStatus;
-      user['is_subscribed'] = newStatus;
-      user['subscription_tier'] = newStatus ? 'vip_gold' : 'free';
-      if (newStatus) user['verified'] = true;
+      user['subscription_tier'] = targetTier;
+      user['is_vip'] = newIsVip;
+      user['is_premium'] = newIsVip;
+      user['is_subscribed'] = newIsVip;
     });
 
     try {
       final updateData = {
-        'is_vip': newStatus,
-        'is_premium': newStatus,
-        'is_subscribed': newStatus,
-        'subscription_tier': newStatus ? 'vip_gold' : 'free',
-        'subscription_status': newStatus ? 'active' : 'inactive',
-        'vip_product_id': newStatus ? 'manual_admin_granted' : null,
-        if (newStatus) 'verified': true,
-        if (newStatus) 'has_purchased_c2_certificate': true,
+        'subscription_tier': targetTier,
+        'is_vip': newIsVip,
+        'is_premium': newIsVip,
+        'is_subscribed': newIsVip,
+        'subscription_status': newIsVip ? 'active' : 'inactive',
+        'vip_product_id': newIsVip ? 'manual_admin_$targetTier' : null,
+        if (newIsVip) 'has_purchased_c2_certificate': true,
         'updated_at': DateTime.now().toIso8601String(),
       };
 
@@ -792,7 +790,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       // If updating current user, refresh AdMob VIP status immediately
       if (uid == supabase.auth.currentUser?.id ||
           profileId == supabase.auth.currentUser?.id) {
-        PocketAdMobService.instance.updateCachedVipStatus(newStatus);
+        PocketAdMobService.instance.updateCachedVipStatus(newIsVip);
         PocketAdMobService.instance.isUserVip();
       }
 
@@ -800,33 +798,126 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              newStatus
-                  ? '👑 Full VIP Gold access GRANTED to ${user['name'] ?? "User"}!'
-                  : 'VIP access removed for ${user['name'] ?? "User"}.',
+              newIsVip
+                  ? '👑 Plan updated to ${targetTier.toUpperCase()} for ${user['name'] ?? "User"}!'
+                  : 'Subscription reset to Free for ${user['name'] ?? "User"}.',
             ),
             backgroundColor:
-                newStatus ? const Color(0xFFFFD700) : Colors.orange,
+                newIsVip ? const Color(0xFFFFD700) : Colors.orange,
             behavior: SnackBarBehavior.floating,
           ),
         );
       }
     } catch (e) {
-      debugPrint('Error updating VIP status: $e');
+      debugPrint('Error updating subscription tier: $e');
       setState(() {
-        user['is_vip'] = currentStatus;
-        user['is_premium'] = currentStatus;
-        user['is_subscribed'] = currentStatus;
-        user['subscription_tier'] = currentStatus ? 'vip_gold' : 'free';
+        user['subscription_tier'] = oldTier;
+        user['is_vip'] = oldTier != 'free';
+        user['is_premium'] = oldTier != 'free';
+        user['is_subscribed'] = oldTier != 'free';
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error updating VIP: $e'),
+            content: Text('Error updating plan: $e'),
             backgroundColor: Colors.red,
           ),
         );
       }
     }
+  }
+
+  /// 👑 Plan Selector Dialog for Admin (Free, Monthly, Yearly, VIP Gold)
+  Future<void> _showSubscriptionTierDialog(Map<String, dynamic> user) async {
+    final currentTier = user['subscription_tier']?.toString().toLowerCase().trim() ?? 'free';
+    final selectedTier = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Color(0xFFFFD700), width: 1.2),
+        ),
+        title: Row(
+          children: [
+            const Icon(Icons.workspace_premium_rounded, color: Color(0xFFFFD700), size: 24),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Set Plan: ${user['name'] ?? "User"}',
+                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildTierOptionTile(ctx, 'Free Tier (Ads Active)', 'free', Icons.person_outline, Colors.white60, currentTier),
+            const SizedBox(height: 8),
+            _buildTierOptionTile(ctx, 'Monthly VIP (Ad-Free)', 'monthly', Icons.calendar_month_rounded, const Color(0xFF38BDF8), currentTier),
+            const SizedBox(height: 8),
+            _buildTierOptionTile(ctx, 'Yearly VIP (Ad-Free)', 'yearly', Icons.star_rounded, const Color(0xFFFFD700), currentTier),
+            const SizedBox(height: 8),
+            _buildTierOptionTile(ctx, 'VIP Gold (Full Bypass)', 'vip_gold', Icons.shield_rounded, const Color(0xFF10B981), currentTier),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+          ),
+        ],
+      ),
+    );
+
+    if (selectedTier != null && selectedTier != currentTier) {
+      await _setUserSubscriptionTier(user, selectedTier);
+    }
+  }
+
+  Widget _buildTierOptionTile(BuildContext ctx, String title, String tierValue, IconData icon, Color color, String currentTier) {
+    final isSelected = currentTier == tierValue;
+    return InkWell(
+      onTap: () => Navigator.pop(ctx, tierValue),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? color.withValues(alpha: 0.18) : Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? color : Colors.white12,
+            width: isSelected ? 1.5 : 1.0,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : Colors.white70,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+            if (isSelected)
+              Icon(Icons.check_circle_rounded, color: color, size: 18),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 👑 Manual VIP Toggle (User Audio Directive: Manual VIP access in Admin Panel)
+  Future<void> _toggleUserVip(
+      Map<String, dynamic> user, bool currentStatus) async {
+    await _showSubscriptionTierDialog(user);
   }
 
   Future<void> _toggleUserVerification(
@@ -837,19 +928,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
 
     setState(() {
       user['verified'] = newStatus;
-      if (newStatus) {
-        user['is_vip'] = true;
-        user['is_premium'] = true;
-      }
     });
 
     try {
       final updateData = {
         'verified': newStatus,
-        if (newStatus) 'is_vip': true,
-        if (newStatus) 'is_premium': true,
-        if (newStatus) 'is_subscribed': true,
-        if (newStatus) 'subscription_tier': 'vip_gold',
         'updated_at': DateTime.now().toIso8601String(),
       };
 
@@ -869,34 +952,20 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           await supabase.from('profile').update(updateData).eq('id', profileId);
         } catch (_) {}
       }
-
-      // If updating current user, refresh AdMob VIP status immediately
-      if (uid == supabase.auth.currentUser?.id ||
-          profileId == supabase.auth.currentUser?.id) {
-        PocketAdMobService.instance.updateCachedVipStatus(newStatus);
-        PocketAdMobService.instance.isUserVip();
-      }
-
-      _loadStats();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(
-                  'User ${newStatus ? "Verified & VIP Granted 👑" : "Unverified"} successfully!'),
-              backgroundColor: newStatus ? Colors.green : Colors.orange),
+            content: Text(newStatus
+                ? '✅ Verification badge granted to ${user['name'] ?? "User"}'
+                : 'Verification badge removed from ${user['name'] ?? "User"}'),
+            backgroundColor: newStatus ? const Color(0xFF38BDF8) : Colors.orange,
+            behavior: SnackBarBehavior.floating,
+          ),
         );
       }
     } catch (e) {
-      setState(() {
-        user['verified'] = currentStatus;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Error updating verification: $e'),
-              backgroundColor: Colors.red),
-        );
-      }
+      debugPrint('Error updating verification: $e');
+      setState(() => user['verified'] = currentStatus);
     }
   }
 

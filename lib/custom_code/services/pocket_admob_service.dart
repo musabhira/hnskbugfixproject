@@ -917,6 +917,7 @@ class PocketAdMobService {
             // 👑 PREMIUM / VIP ACCOUNT: Suppress ALL ads!
             await prefs.setBool('is_vip_$uid', true);
             await prefs.setBool('is_premium_$uid', true);
+            await prefs.setString('subscription_tier_$uid', tier ?? 'monthly');
             await prefs.setString('handskill_plan_$uid', tier ?? 'pro');
 
             // Device flags
@@ -934,6 +935,7 @@ class PocketAdMobService {
             // Clean up any stale VIP flags left behind by another account on this phone!
             await prefs.setBool('is_vip_$uid', false);
             await prefs.setBool('is_premium_$uid', false);
+            await prefs.setString('subscription_tier_$uid', 'free');
             await prefs.setString('handskill_plan_$uid', 'free');
 
             // Clear device flags so stale VIP never blocks free account ads
@@ -952,11 +954,12 @@ class PocketAdMobService {
       }
 
       // 2. Fallback to user-scoped local preferences if network is offline
-      final userScopedVip = prefs.getBool('is_vip_$uid');
-      if (userScopedVip != null) {
+      final userScopedTier = prefs.getString('subscription_tier_$uid');
+      if (userScopedTier != null) {
+        final isVip = userScopedTier != 'free' && userScopedTier.isNotEmpty;
         _cachedVipUid = uid;
-        _cachedIsVip = userScopedVip;
-        return userScopedVip;
+        _cachedIsVip = isVip;
+        return isVip;
       }
 
       final userScopedPlan = prefs.getString('handskill_plan_$uid');
