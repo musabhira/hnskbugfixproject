@@ -3124,6 +3124,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                 final minY = scrollOffset;
                                 final maxY = scrollOffset + screenH;
 
+                                for (int day = 1; day < _totalDays; day++) {
+                                  if (_isRoadmapAdInViewport(day, minY, maxY)) {
+                                    _triggeredAdDays.add(day);
+                                  }
+                                }
+
                                 return Stack(
                                   children: [
                                     // 🏡 90 Progressive Architectural English Houses (Viewport Culled)
@@ -3149,10 +3155,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                       if (_isDayInViewport(day, minY, maxY))
                                         _buildRoadmapGate(
                                             day, screenWidth, targetActiveDay),
-
-                                    for (int day = 1; day < _totalDays; day++)
-                                      if (_isRoadmapAdInViewport(day, minY, maxY))
-                                        _triggeredAdDays.add(day),
 
                                     for (final day in _triggeredAdDays)
                                       _buildRoadmapNativeAd(
