@@ -192,6 +192,16 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       TextEditingController();
   int _presidentProtectionHours = 24;
 
+  // 🔔 FCM Instant Push Notification State
+  final TextEditingController _pushNotificationTitleController =
+      TextEditingController();
+  final TextEditingController _pushNotificationBodyController =
+      TextEditingController();
+  final TextEditingController _pushNotificationUserIdController =
+      TextEditingController();
+  String _pushNotificationTarget = 'broadcast'; // 'broadcast' or 'individual'
+  bool _isSendingPushNotification = false;
+
   // 🎯 Targets & Homes Curriculum State (User Audio Directive!)
   int _curriculumSelectedDay = 1;
   final TextEditingController _curriculumJsonController =
@@ -433,6 +443,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
     _presidentAnnouncementContentController.dispose();
     _presidentAnnouncementMediaUrlController.dispose();
     _presidentProtectionTargetController.dispose();
+    _pushNotificationTitleController.dispose();
+    _pushNotificationBodyController.dispose();
+    _pushNotificationUserIdController.dispose();
     _lionBroadcastTitleController.dispose();
     _lionBroadcastContentController.dispose();
     _lionBroadcastMediaUrlController.dispose();
@@ -13711,6 +13724,406 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
               ],
             ),
           ),
+          const SizedBox(height: 16),
+          // 💬 Official WhatsApp Community Card for President Campaigns
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xFF25D366),
+                  Color(0xFF128C7E),
+                  Color(0xFF075E54),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF25D366).withValues(alpha: 0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.forum_rounded,
+                        color: Colors.white, size: 24),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Official WhatsApp Community 💬',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.white24,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        'Active Group',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Community: Pocket Mates Official English Club\nDirect learner community for updates, daily tips, and peer conversations.',
+                  style: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.95), fontSize: 12),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: const Color(0xFF075E54),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                        ),
+                        icon: const Icon(Icons.open_in_new_rounded, size: 16),
+                        label: const Text('Open WhatsApp',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        onPressed: () async {
+                          const url =
+                              'https://chat.whatsapp.com/HqRgqeHEQVm6LoZ7L8dO6r';
+                          final uri = Uri.parse(url);
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri,
+                                mode: LaunchMode.externalApplication);
+                          }
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black.withValues(alpha: 0.35),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                      icon: const Icon(Icons.copy_rounded, size: 16),
+                      label: const Text('Copy Link'),
+                      onPressed: () {
+                        Clipboard.setData(const ClipboardData(
+                            text:
+                                'https://chat.whatsapp.com/HqRgqeHEQVm6LoZ7L8dO6r'));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content:
+                                  Text('WhatsApp link copied to clipboard!')),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          // 🔔 Instant Push Notification (FCM) Dispatcher Card
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF111827),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.notifications_active_rounded,
+                        color: Color(0xFF38BDF8), size: 22),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Instant Push Notification (FCM) 🔔',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15.5,
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        'Cloud Messaging',
+                        style: TextStyle(
+                            color: Color(0xFF38BDF8),
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Send instant lock-screen push notifications to all registered devices or to a specific citizen.',
+                  style: GoogleFonts.inter(
+                      color: Colors.white60, fontSize: 12),
+                ),
+                const SizedBox(height: 14),
+                // Target selection: Broadcast vs Individual
+                Row(
+                  children: [
+                    ChoiceChip(
+                      label: const Text('📢 Broadcast to All'),
+                      selected: _pushNotificationTarget == 'broadcast',
+                      selectedColor: const Color(0xFF38BDF8),
+                      labelStyle: TextStyle(
+                        color: _pushNotificationTarget == 'broadcast'
+                            ? Colors.black
+                            : Colors.white70,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                      onSelected: (selected) {
+                        if (selected) {
+                          setState(() => _pushNotificationTarget = 'broadcast');
+                        }
+                      },
+                    ),
+                    const SizedBox(width: 10),
+                    ChoiceChip(
+                      label: const Text('👤 Individual User'),
+                      selected: _pushNotificationTarget == 'individual',
+                      selectedColor: const Color(0xFF38BDF8),
+                      labelStyle: TextStyle(
+                        color: _pushNotificationTarget == 'individual'
+                            ? Colors.black
+                            : Colors.white70,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                      onSelected: (selected) {
+                        if (selected) {
+                          setState(() => _pushNotificationTarget = 'individual');
+                        }
+                      },
+                    ),
+                  ],
+                ),
+                if (_pushNotificationTarget == 'individual') ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    'Target User ID (UUID):',
+                    style: GoogleFonts.outfit(
+                        color: Colors.white70, fontSize: 12),
+                  ),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: _pushNotificationUserIdController,
+                    style: const TextStyle(color: Colors.white, fontSize: 13),
+                    decoration: InputDecoration(
+                      hintText: 'e.g. 1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d',
+                      hintStyle:
+                          const TextStyle(color: Colors.white38, fontSize: 12),
+                      filled: true,
+                      fillColor: const Color(0xFF0F172A),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.1),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 12),
+                Text(
+                  'Notification Title:',
+                  style: GoogleFonts.outfit(
+                      color: Colors.white70, fontSize: 12),
+                ),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: _pushNotificationTitleController,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'e.g., Today\'s English Mission is Live! 🔥',
+                    hintStyle:
+                        const TextStyle(color: Colors.white38, fontSize: 12),
+                    filled: true,
+                    fillColor: const Color(0xFF0F172A),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Colors.white.withValues(alpha: 0.1),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Notification Message / Body:',
+                  style: GoogleFonts.outfit(
+                      color: Colors.white70, fontSize: 12),
+                ),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: _pushNotificationBodyController,
+                  maxLines: 2,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'e.g., Join your mates in the speaking room now!',
+                    hintStyle:
+                        const TextStyle(color: Colors.white38, fontSize: 12),
+                    filled: true,
+                    fillColor: const Color(0xFF0F172A),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Colors.white.withValues(alpha: 0.1),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF38BDF8),
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: _isSendingPushNotification
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.black),
+                        )
+                      : const Icon(Icons.send_rounded, size: 16),
+                  label: Text(
+                    _isSendingPushNotification
+                        ? 'Dispatching Push Notification...'
+                        : (_pushNotificationTarget == 'broadcast'
+                            ? 'Dispatch Broadcast to All Citizens 🚀'
+                            : 'Send Push to Specific User 📲'),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                  onPressed: _isSendingPushNotification
+                      ? null
+                      : () async {
+                          final title =
+                              _pushNotificationTitleController.text.trim();
+                          final body =
+                              _pushNotificationBodyController.text.trim();
+                          final targetUid =
+                              _pushNotificationUserIdController.text.trim();
+
+                          if (title.isEmpty || body.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                    'Please provide both title and message.'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                            return;
+                          }
+
+                          if (_pushNotificationTarget == 'individual' &&
+                              targetUid.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Please enter a target User ID.'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                            return;
+                          }
+
+                          setState(() => _isSendingPushNotification = true);
+
+                          try {
+                            final Map<String, dynamic> payload = {
+                              'action': _pushNotificationTarget,
+                              'title': title,
+                              'body': body,
+                              'data': {
+                                'type': 'admin_manual_push',
+                                'timestamp':
+                                    DateTime.now().toIso8601String(),
+                              },
+                            };
+                            if (_pushNotificationTarget == 'individual') {
+                              payload['user_id'] = targetUid;
+                            }
+
+                            final response = await SupaFlow.client.functions
+                                .invoke('send-push-notification',
+                                    body: payload);
+
+                            if (!mounted) return;
+
+                            if (response.status == 200) {
+                              _pushNotificationTitleController.clear();
+                              _pushNotificationBodyController.clear();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                      'Push notification dispatched successfully! 🔔'),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                      'Push dispatch returned status ${response.status}'),
+                                  backgroundColor: Colors.orange,
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Push dispatch failed: $e'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          } finally {
+                            if (mounted) {
+                              setState(() => _isSendingPushNotification = false);
+                            }
+                          }
+                        },
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -17529,6 +17942,43 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCosmosStatCard(
+      String label, String value, IconData icon, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
+            ),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                color: Colors.white54,
+                fontSize: 9.5,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }

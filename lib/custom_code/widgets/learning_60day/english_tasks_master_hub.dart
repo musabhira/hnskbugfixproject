@@ -43,6 +43,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart
 import 'package:flame/components.dart' show Vector2;
 import 'flame_english_house_game.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_feedback_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'pocket_90day_vocab_curriculum.dart';
 import 'pocket_day_detail_overview_page.dart';
 import 'pocket_day_open_world_adventure_page.dart';
@@ -348,7 +349,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   static const double _expandedActiveGap = 0.0;
   static const double _topPadding =
       480.0; // Summit apex spacing with Citadel Palace
-  static const double _bottomPadding = 320.0;
+  static const double _bottomPadding = 360.0;
   double get _ruleNodeY =>
       _getNodeY(1) + 200.0; // Positioned below Day 1 at the bottom
   final Map<String, bool> _subStepFlags = {};
@@ -3193,6 +3194,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                           // 💡 Grassy Ground Startup Feedback & Step Suggestion Box (Audio Directive)
                           _buildGroundFeedbackBox(screenWidth),
 
+                          // 🏛️ Official Community & Club Membership Box (WhatsApp & Instagram)
+                          _buildGroundCommunityClubBox(screenWidth),
+
                           // Bouncing Animated Character Avatar at Current Level or Rules Node
                           _buildAnimatedAvatar(screenWidth, targetActiveDay),
                         ],
@@ -5017,7 +5021,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'ഐഡിയകളും ഫീഡ്ബാക്കും • Ideas',
+                        PocketLanguageService.localize(
+                          en: 'Ideas & Feedback • Startup Engine',
+                          ml: 'ഐഡിയകളും ഫീഡ്ബാക്കും • Ideas',
+                          hi: 'सुझाव और फ़ीडबैक • Ideas',
+                          ta: 'கருத்துக்கள் & யோசனைகள் • Ideas',
+                          te: 'ఆలోచనలు & అభిప్రాయం • Ideas',
+                        ),
                         style: GoogleFonts.outfit(
                           color: const Color(0xFFFFD700),
                           fontWeight: FontWeight.bold,
@@ -5025,7 +5035,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         ),
                       ),
                       Text(
-                        'പുതിയ സ്റ്റെപ്പ് നിർദ്ദേശിക്കാം • Suggest Step',
+                        PocketLanguageService.localize(
+                          en: 'Suggest New Step / Syllabus Topic',
+                          ml: 'പുതിയ സ്റ്റെപ്പ് നിർദ്ദേശിക്കാം • Suggest Step',
+                          hi: 'नया स्टेप या विषय सुझाएं',
+                          ta: 'புதிய படியைப் பரிந்துரைக்கவும்',
+                          te: 'కొత్త దశను సూచించండి',
+                        ),
                         style: GoogleFonts.outfit(
                           color: Colors.white70,
                           fontSize: 10,
@@ -5042,6 +5058,220 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 🏛️ Official Community & Club Membership Box (WhatsApp & Instagram Community)
+  Widget _buildGroundCommunityClubBox(double screenWidth) {
+    final x = screenWidth / 2;
+    final y = _ruleNodeY + 175.0;
+    final cardWidth = (screenWidth * 0.90).clamp(280.0, 360.0);
+
+    return Positioned(
+      left: x - (cardWidth / 2),
+      top: y,
+      width: cardWidth,
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.4),
+              width: 1.1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.35),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header Tag
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('🏛️', style: TextStyle(fontSize: 13)),
+                  const SizedBox(width: 6),
+                  Text(
+                    'POCKET MATES ENGLISH CLUB',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFF38BDF8),
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 3),
+              Text(
+                PocketLanguageService.localize(
+                  en: 'Join Community & Follow for Daily Updates',
+                  ml: 'കമ്മ്യൂണിറ്റിയിൽ ചേരൂ • ദിവസേനയുള്ള അപ്‌ഡേറ്റുകൾ',
+                  hi: 'कम्युनिटी से जुड़ें • दैनिक अपडेट प्राप्त करें',
+                  ta: 'சமூகத்தில் இணையுங்கள் • தினசரி புதுப்பிப்புகள்',
+                  te: 'కమ్యూనిటీలో చేరండి • రోజువారీ అప్‌డేట్‌లు',
+                ),
+                textAlign: TextAlign.center,
+                style: GoogleFonts.outfit(
+                  color: Colors.white70,
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              // Action Buttons Row (WhatsApp Community & Instagram)
+              Row(
+                children: [
+                  // 1. WhatsApp Community Button
+                  Expanded(
+                    child: InkWell(
+                      onTap: () async {
+                        HapticFeedback.mediumImpact();
+                        const waUrl =
+                            'https://chat.whatsapp.com/HqRgqeHEQVm6LoZ7L8dO6r';
+                        final uri = Uri.parse(waUrl);
+                        try {
+                          await launchUrl(uri,
+                              mode: LaunchMode.externalApplication);
+                        } catch (e) {
+                          debugPrint('Error launching WhatsApp: $e');
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF25D366)
+                              .withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(0xFF25D366)
+                                .withValues(alpha: 0.6),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF25D366),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.chat_bubble_rounded,
+                                color: Colors.white,
+                                size: 11,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                'WhatsApp',
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFF6EE7B7),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+
+                  // 2. Instagram Profile Button
+                  Expanded(
+                    child: InkWell(
+                      onTap: () async {
+                        HapticFeedback.mediumImpact();
+                        const instaUrl =
+                            'https://www.instagram.com/poketmates.app?vrfl=NTc2MWhma2p1NzF2&utm_source=qr';
+                        final uri = Uri.parse(instaUrl);
+                        try {
+                          await launchUrl(uri,
+                              mode: LaunchMode.externalApplication);
+                        } catch (e) {
+                          debugPrint('Error launching Instagram: $e');
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 8),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              const Color(0xFF833AB4)
+                                  .withValues(alpha: 0.20),
+                              const Color(0xFFFD1D1D)
+                                  .withValues(alpha: 0.20),
+                              const Color(0xFFF77737)
+                                  .withValues(alpha: 0.20),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(0xFFE1306C)
+                                .withValues(alpha: 0.6),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFE1306C),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.camera_alt_rounded,
+                                color: Colors.white,
+                                size: 11,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                'Instagram',
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFF9A8D4),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),

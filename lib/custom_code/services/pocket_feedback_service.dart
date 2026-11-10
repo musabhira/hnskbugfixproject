@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 /// 💡 App Feedback Model for Startup Roadmap & User Ideas
 class AppFeedbackItem {
@@ -66,7 +67,7 @@ class PocketFeedbackService {
     int? dayNumber,
     int rating = 5,
     String type = 'roadmap_idea',
-    String language = 'ml',
+    String? language,
   }) async {
     try {
       final user = _supabase.auth.currentUser;
@@ -84,6 +85,20 @@ class PocketFeedbackService {
         } catch (_) {}
       }
 
+      final String resolvedLanguage = (language != null && language.isNotEmpty && language != 'ml')
+          ? language
+          : (PocketLanguageService.isHindi
+              ? 'hi'
+              : PocketLanguageService.isTamil
+                  ? 'ta'
+                  : PocketLanguageService.isTelugu
+                      ? 'te'
+                      : PocketLanguageService.isKannada
+                          ? 'kn'
+                          : PocketLanguageService.isMalayalam
+                              ? 'ml'
+                              : 'en');
+
       await _supabase.from('app_feedback').insert({
         'user_id': user?.id,
         'user_name': userName,
@@ -94,7 +109,7 @@ class PocketFeedbackService {
         'suggested_step': (suggestedStep != null && suggestedStep.trim().isNotEmpty)
             ? suggestedStep.trim()
             : null,
-        'language': language,
+        'language': resolvedLanguage,
         'status': 'new',
       });
 
@@ -183,25 +198,49 @@ class _FeedbackBottomSheetContentState
   final TextEditingController _stepController = TextEditingController();
   bool _isSubmitting = false;
 
-  final List<Map<String, String>> _categories = const [
+  List<Map<String, String>> get _categories => [
     {
       'id': 'roadmap_idea',
-      'label': '💡 പുതിയ സ്റ്റെപ്പ് / ആശയം',
+      'label': PocketLanguageService.localize(
+        en: '💡 Suggest Step / Idea',
+        ml: '💡 പുതിയ സ്റ്റെപ്പ് / ആശയം',
+        hi: '💡 नया स्टेप / सुझाव',
+        ta: '💡 புதிய படி / யோசனை',
+        te: '💡 కొత్త దశ / ఆలోచన',
+      ),
       'sub': 'Suggest New Step / Roadmap',
     },
     {
       'id': 'day_completion',
-      'label': '🌟 ഡേ ഫീഡ്ബാക്ക്',
+      'label': PocketLanguageService.localize(
+        en: '🌟 Day Completion Review',
+        ml: '🌟 ഡേ ഫീഡ്ബാക്ക്',
+        hi: '🌟 दिन की समीक्षा',
+        ta: '🌟 நாள் கருத்து',
+        te: '🌟 రోజు సమీక్ష',
+      ),
       'sub': 'Day Review & Experience',
     },
     {
       'id': 'feature_request',
-      'label': '🚀 പുതിയ ഫീച്ചർ വേണം',
+      'label': PocketLanguageService.localize(
+        en: '🚀 Feature Request',
+        ml: '🚀 പുതിയ ഫീച്ചർ വേണം',
+        hi: '🚀 नया फीचर अनुरोध',
+        ta: '🚀 புதிய அம்சம் கோரிக்கை',
+        te: '🚀 కొత్త ఫీచర్ అభ్యర్థన',
+      ),
       'sub': 'Feature Request',
     },
     {
       'id': 'bug_report',
-      'label': '🐞 പ്രശ്നം റിപ്പോർട്ട് ചെയ്യാം',
+      'label': PocketLanguageService.localize(
+        en: '🐞 Report Bug / Issue',
+        ml: '🐞 പ്രശ്നം റിപ്പോർട്ട് ചെയ്യാം',
+        hi: '🐞 समस्या रिपोर्ट करें',
+        ta: '🐞 பிழை அறிக்கை',
+        te: '🐞 సమస్య నివేదిక',
+      ),
       'sub': 'Bug / Issue Report',
     },
   ];
@@ -226,7 +265,13 @@ class _FeedbackBottomSheetContentState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'ദയവായി നിങ്ങളുടെ അഭിപ്രായം രേഖപ്പെടുത്തൂ / Please enter your feedback.',
+            PocketLanguageService.localize(
+              en: 'Please enter your feedback or suggestions.',
+              ml: 'ദയവായി നിങ്ങളുടെ അഭിപ്രായം രേഖപ്പെടുത്തൂ.',
+              hi: 'कृपया अपनी प्रतिक्रिया या सुझाव दर्ज करें।',
+              ta: 'தயவுசெய்து உங்கள் கருத்தை பதிவு செய்யவும்.',
+              te: 'దయచేసి మీ అభిప్రాయాన్ని నమోదు చేయండి.',
+            ),
             style: GoogleFonts.outfit(color: Colors.white),
           ),
           backgroundColor: const Color(0xFFE11D48),
@@ -254,7 +299,7 @@ class _FeedbackBottomSheetContentState
       HapticFeedback.heavyImpact();
       Navigator.of(context).pop();
 
-      // Show warm celebratory confirmation
+      // Show warm celebratory confirmation in user's native language
       showDialog(
         context: context,
         builder: (dialogCtx) => AlertDialog(
@@ -269,7 +314,13 @@ class _FeedbackBottomSheetContentState
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'നന്ദി! ലഭിച്ചു ❤️',
+                  PocketLanguageService.localize(
+                    en: 'Thank you! Received ❤️',
+                    ml: 'നന്ദി! ലഭിച്ചു ❤️',
+                    hi: 'धन्यवाद! प्राप्त हुआ ❤️',
+                    ta: 'நன்றி! பெறப்பட்டது ❤️',
+                    te: 'ధన్యవాదాలు! అందింది ❤️',
+                  ),
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -284,20 +335,17 @@ class _FeedbackBottomSheetContentState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'നിങ്ങളുടെ വിലയേറിയ നിർദ്ദേശങ്ങളും അഭിപ്രായങ്ങളും ഞങ്ങളുടെ ടീം പരിശോധിക്കും. നിങ്ങൾ നിർദ്ദേശിച്ച സ്റ്റെപ്പുകൾ അടുത്ത അപ്‌ഡേറ്റുകളിൽ ഉൾപ്പെടുത്താൻ ഞങ്ങൾ പരമാവധി ശ്രമിക്കും!',
+                PocketLanguageService.localize(
+                  en: 'Your valuable suggestions and ideas will be reviewed by our startup team. We will integrate your suggested steps into our upcoming syllabus updates!',
+                  ml: 'നിങ്ങളുടെ വിലയേറിയ നിർദ്ദേശങ്ങളും അഭിപ്രായങ്ങളും ഞങ്ങളുടെ ടീം പരിശോധിക്കും. നിങ്ങൾ നിർദ്ദേശിച്ച സ്റ്റെപ്പുകൾ അടുത്ത അപ്‌ഡേറ്റുകളിൽ ഉൾപ്പെടുത്താൻ ഞങ്ങൾ പരമാവധി ശ്രമിക്കും!',
+                  hi: 'आपकी मूल्यवान प्रतिक्रिया और सुझावों की समीक्षा की जाएगी। हम आपके सुझावों को आगामी अपडेट में शामिल करने का पूरा प्रयास करेंगे!',
+                  ta: 'உங்கள் மதிப்புமிக்க கருத்துக்கள் பரிசீலிக்கப்படும். அடுத்த புதுப்பிப்புகளில் அவற்றைச் சேர்க்க முயற்சிப்போம்!',
+                  te: 'మీ విలువైన సలహాలను మా బృందం సమీక్షిస్తుంది. రాబోయే అప్‌డేట్‌లలో మీ సూచనలను చేర్చడానికి మేము ప్రయత్నిస్తాము!',
+                ),
                 style: GoogleFonts.outfit(
                   color: Colors.white70,
                   fontSize: 13,
                   height: 1.5,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'Thank you! Your feedback will help us craft the next learning steps on the roadmap.',
-                style: GoogleFonts.outfit(
-                  color: const Color(0xFF34D399),
-                  fontSize: 12,
-                  fontStyle: FontStyle.italic,
                 ),
               ),
             ],
@@ -306,7 +354,13 @@ class _FeedbackBottomSheetContentState
             TextButton(
               onPressed: () => Navigator.of(dialogCtx).pop(),
               child: Text(
-                'സന്തോഷം / Done 👍',
+                PocketLanguageService.localize(
+                  en: 'Done 👍',
+                  ml: 'സന്തോഷം 👍',
+                  hi: 'ठीक है 👍',
+                  ta: 'சரி 👍',
+                  te: 'సరే 👍',
+                ),
                 style: GoogleFonts.outfit(
                   color: const Color(0xFF10B981),
                   fontWeight: FontWeight.bold,
@@ -320,7 +374,13 @@ class _FeedbackBottomSheetContentState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'ഫീഡ്ബാക്ക് അയക്കാൻ കഴിഞ്ഞില്ല, ദയവായി വീണ്ടും ശ്രമിക്കൂ.',
+            PocketLanguageService.localize(
+              en: 'Failed to submit feedback. Please try again.',
+              ml: 'ഫീഡ്ബാക്ക് അയക്കാൻ കഴിഞ്ഞില്ല, ദയവായി വീണ്ടും ശ്രമിക്കൂ.',
+              hi: 'फ़ीडबैक भेजने में विफल। कृपया पुनः प्रयास करें।',
+              ta: 'கருத்து அனுப்ப முடியவில்லை. மீண்டும் முயற்சிக்கவும்.',
+              te: 'అభిప్రాయం పంపడం విఫలమైంది. దయచేసి మళ్ళీ ప్రయత్నించండి.',
+            ),
             style: GoogleFonts.outfit(color: Colors.white),
           ),
           backgroundColor: const Color(0xFFDC2626),
@@ -406,7 +466,13 @@ class _FeedbackBottomSheetContentState
             const SizedBox(height: 10),
 
             Text(
-              'നിങ്ങളുടെ ആശയങ്ങളും ഫീഡ്ബാക്കും 🚀',
+              PocketLanguageService.localize(
+                en: 'Your Ideas & Feedback 🚀',
+                ml: 'നിങ്ങളുടെ ആശയങ്ങളും ഫീഡ്ബാക്കും 🚀',
+                hi: 'आपके विचार और सुझाव 🚀',
+                ta: 'உங்கள் யோசனைகள் & கருத்துக்கள் 🚀',
+                te: 'మీ ఆలోచనలు & అభిప్రాయం 🚀',
+              ),
               style: GoogleFonts.outfit(
                 color: Colors.white,
                 fontSize: 19,
@@ -414,7 +480,13 @@ class _FeedbackBottomSheetContentState
               ),
             ),
             Text(
-              'Share Your Ideas & Suggest Roadmap Steps',
+              PocketLanguageService.localize(
+                en: 'Share Your Ideas & Suggest Roadmap Steps',
+                ml: 'പുതിയ സ്റ്റെപ്പുകൾ നിർദ്ദേശിക്കാം',
+                hi: 'नए स्टेप्स और विषयों का सुझाव दें',
+                ta: 'புதிய படிகள் மற்றும் தலைப்புகளைப் பரிந்துரைக்கவும்',
+                te: 'కొత్త దశలు మరియు అంశాలను సూచించండి',
+              ),
               style: GoogleFonts.outfit(
                 color: const Color(0xFF94A3B8),
                 fontSize: 13,
@@ -439,7 +511,13 @@ class _FeedbackBottomSheetContentState
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'നിങ്ങൾക്ക് ആവശ്യമുള്ള പുതിയ സ്റ്റെപ്പുകളോ വിഷയങ്ങളോ ഇവിടെ നിർദ്ദേശിക്കാം. ഞങ്ങൾ നിങ്ങൾക്കായി അടുത്ത അപ്‌ഡേറ്റിൽ ആ സ്റ്റെപ്പുകൾ റോഡ്‌മാപ്പിൽ ചേർക്കും!',
+                      PocketLanguageService.localize(
+                        en: 'Suggest new learning steps or topics here. We will integrate your ideas directly into upcoming syllabus updates!',
+                        ml: 'നിങ്ങൾക്ക് ആവശ്യമുള്ള പുതിയ സ്റ്റെപ്പുകളോ വിഷയങ്ങളോ ഇവിടെ നിർദ്ദേശിക്കാം. ഞങ്ങൾ നിങ്ങൾക്കായി അടുത്ത അപ്‌ഡേറ്റിൽ ആ സ്റ്റെപ്പുകൾ റോഡ്‌മാപ്പിൽ ചേർക്കും!',
+                        hi: 'यहाँ नए विषय या स्टेप्स सुझाएं। हम आपके सुझावों को अगले सिलेबस अपडेट में सीधे जोड़ेंगे!',
+                        ta: 'புதிய தலைப்புகள் அல்லது படிகளை இங்கே பரிந்துரைக்கவும். அடுத்த புதுப்பிப்பில் அவற்றைச் சேர்ப்போம்!',
+                        te: 'ఇక్కడ కొత్త అంశాలు లేదా దశలను సూచించండి. తదుపరి అప్‌డేట్‌లో వాటిని నేరుగా సిలబస్‌లో చేర్చుతాము!',
+                      ),
                       style: GoogleFonts.outfit(
                         color: const Color(0xFFA7F3D0),
                         fontSize: 11.5,
@@ -454,7 +532,13 @@ class _FeedbackBottomSheetContentState
 
             // Category Selector Chips
             Text(
-              'വിഭാഗം തിരഞ്ഞെടുക്കുക / Select Category:',
+              PocketLanguageService.localize(
+                en: 'Select Category:',
+                ml: 'വിഭാഗം തിരഞ്ഞെടുക്കുക:',
+                hi: 'श्रेणी चुनें:',
+                ta: 'வகையைத் தேர்ந்தெடுக்கவும்:',
+                te: 'వర్గాన్ని ఎంచుకోండి:',
+              ),
               style: GoogleFonts.outfit(
                 color: Colors.white70,
                 fontSize: 12,
@@ -500,7 +584,13 @@ class _FeedbackBottomSheetContentState
             Row(
               children: [
                 Text(
-                  'റേറ്റിംഗ് / Rating:',
+                  PocketLanguageService.localize(
+                    en: 'Rating:',
+                    ml: 'റേറ്റിംഗ്:',
+                    hi: 'रेटिंग:',
+                    ta: 'மதிப்பீடு:',
+                    te: 'రేటింగ్:',
+                  ),
                   style: GoogleFonts.outfit(
                     color: Colors.white70,
                     fontSize: 12,
@@ -538,7 +628,13 @@ class _FeedbackBottomSheetContentState
             // Optional: Suggested Step Input
             if (_selectedType == 'roadmap_idea' || _selectedType == 'feature_request') ...[
               Text(
-                'നിർദ്ദേശിക്കുന്ന സ്റ്റെപ്പ് / പേര് (ഉദാ: Job Interview Practice):',
+                PocketLanguageService.localize(
+                  en: 'Suggested Step Title (e.g. Job Interview Practice):',
+                  ml: 'നിർദ്ദേശിക്കുന്ന സ്റ്റെപ്പ് / പേര് (ഉദാ: Job Interview Practice):',
+                  hi: 'सुझाए गए स्टेप का नाम (उदा: Job Interview Practice):',
+                  ta: 'பரிந்துரைக்கப்பட்ட படி தலைப்பு (எ.கா: Job Interview):',
+                  te: 'సూచించిన దశ శీర్షిక (ఉదా: Job Interview Practice):',
+                ),
                 style: GoogleFonts.outfit(
                   color: Colors.white70,
                   fontSize: 12,
@@ -550,7 +646,13 @@ class _FeedbackBottomSheetContentState
                 controller: _stepController,
                 style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
                 decoration: InputDecoration(
-                  hintText: 'ഉദാ: Daily Malayalam-to-English speaking game...',
+                  hintText: PocketLanguageService.localize(
+                    en: 'e.g. Shopping English, Airport Dialogues, Phonics...',
+                    ml: 'ഉദാ: ഷോപ്പിംഗ് ഇംഗ്ലീഷ്, എയർപോർട്ട് സംഭാഷണം...',
+                    hi: 'उदा: शॉपिंग इंग्लिश, एयरपोर्ट बातचीत...',
+                    ta: 'எ.கா: ஷாப்பிங் ஆங்கிலம், விமான நிலைய உரையாடல்...',
+                    te: 'ఉదా: షాపింగ్ ఇంగ్లీష్, ఎయిర్‌పోర్ట్ సంభాషణ...',
+                  ),
                   hintStyle:
                       GoogleFonts.outfit(color: Colors.white38, fontSize: 12),
                   filled: true,
@@ -577,7 +679,13 @@ class _FeedbackBottomSheetContentState
 
             // Main Feedback Details
             Text(
-              'നിങ്ങളുടെ അഭിപ്രായം / Details:',
+              PocketLanguageService.localize(
+                en: 'Feedback / Details:',
+                ml: 'നിങ്ങളുടെ അഭിപ്രായം:',
+                hi: 'आपकी प्रतिक्रिया / विवरण:',
+                ta: 'உங்கள் கருத்து / விவரங்கள்:',
+                te: 'మీ అభిప్రాయం / వివరాలు:',
+              ),
               style: GoogleFonts.outfit(
                 color: Colors.white70,
                 fontSize: 12,
@@ -591,8 +699,13 @@ class _FeedbackBottomSheetContentState
               minLines: 3,
               style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
               decoration: InputDecoration(
-                hintText:
-                    'നിങ്ങളുടെ അഭിപ്രായം, അനുഭവങ്ങൾ അല്ലെങ്കിൽ ആശയങ്ങൾ തുറന്നെഴുതാം...',
+                hintText: PocketLanguageService.localize(
+                  en: 'Describe your idea, what you loved, or how we can improve...',
+                  ml: 'നിങ്ങളുടെ അഭിപ്രായം, അനുഭവങ്ങൾ അല്ലെങ്കിൽ ആശയങ്ങൾ തുറന്നെഴുതാം...',
+                  hi: 'अपना विचार, सुझाव या सुधार यहाँ विस्तार से लिखें...',
+                  ta: 'உங்கள் யோசனை அல்லது பரிந்துரைகளை இங்கே எழுதுங்கள்...',
+                  te: 'మీ ఆలోచన లేదా సూచనలను ఇక్కడ రాయండి...',
+                ),
                 hintStyle:
                     GoogleFonts.outfit(color: Colors.white38, fontSize: 12),
                 filled: true,
@@ -645,7 +758,13 @@ class _FeedbackBottomSheetContentState
                           const Icon(Icons.send_rounded, size: 18),
                           const SizedBox(width: 8),
                           Text(
-                            'അയക്കുക / Submit Feedback 🚀',
+                            PocketLanguageService.localize(
+                              en: 'Submit Feedback 🚀',
+                              ml: 'ഫീഡ്ബാക്ക് അയക്കാം 🚀',
+                              hi: 'फ़ीडबैक भेजें 🚀',
+                              ta: 'கருத்து அனுப்பவும் 🚀',
+                              te: 'అభిప్రాయం పంపండి 🚀',
+                            ),
                             style: GoogleFonts.outfit(
                               fontWeight: FontWeight.bold,
                               fontSize: 14,

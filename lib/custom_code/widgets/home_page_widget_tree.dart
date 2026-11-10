@@ -894,6 +894,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   Future<void> _checkAppUpdate() async {
     try {
       await PocketAppUpdateService.checkForUpdate(context);
+      final uid = SupaFlow.client.auth.currentUser?.id;
+      if (uid != null && uid.isNotEmpty) {
+        await PocketPresidentService.checkAndDeliverInstalledReleaseNotes(uid);
+      }
     } catch (e) {
       debugPrint('Update check error: $e');
     }

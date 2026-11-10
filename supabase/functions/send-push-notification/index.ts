@@ -16,11 +16,7 @@ serve(async (req) => {
 
   try {
     const payload = await req.json()
-    const { record, table } = payload
-
-    if (!record) {
-      return new Response(JSON.stringify({ error: 'No record provided' }), { status: 400 })
-    }
+    const { record, table, action } = payload
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -32,7 +28,45 @@ serve(async (req) => {
     let body = ""
     let data: any = {}
 
-    if (table === 'messages') {
+    if (action === 'broadcast' || table === 'broadcast') {
+      // 📢 Global Broadcast to all registered users
+      title = payload.title || "POKET MATES Announcement 🏛️"
+      body = payload.body || "New updates are waiting for you in Pocket Mates!"
+      data = {
+        type: 'broadcast',
+        click_action: 'FLUTTER_NOTIFICATION_CLICK',
+        ...(payload.data || {})
+      }
+
+      const { data: profiles } = await supabase
+        .from('profile')
+        .select('fcm_token')
+        .not('fcm_token', 'is', null)
+
+      tokens = profiles?.map((p: any) => p.fcm_token).filter((t: any) => !!t && t.length > 10) || []
+    } else if (action === 'individual' || table === 'individual') {
+      // 👤 Individual User Direct Notification
+      const targetUserId = payload.user_id || record?.user_id
+      title = payload.title || "POKET Notification 🔔"
+      body = payload.body || "You have a new update in Pocket Mates!"
+      data = {
+        type: 'individual_alert',
+        click_action: 'FLUTTER_NOTIFICATION_CLICK',
+        ...(payload.data || {})
+      }
+
+      if (targetUserId) {
+        const { data: profile } = await supabase
+          .from('profile')
+          .select('fcm_token')
+          .eq('user_id', targetUserId)
+          .maybeSingle()
+
+        if (profile?.fcm_token) {
+          tokens.push(profile.fcm_token)
+        }
+      }
+    } else if (table === 'messages' && record) {
       // 1-on-1 Message
       const receiverId = record.receiver_id
       const senderId = record.sender_id
@@ -60,7 +94,7 @@ serve(async (req) => {
         sender_id: senderId,
         click_action: 'FLUTTER_NOTIFICATION_CLICK'
       }
-    } else if (table === 'group_messages') {
+    } else if (table === 'group_messages' && record) {
       // Group Message
       const groupId = record.group_id
       const senderId = record.sender_id
@@ -92,6 +126,10 @@ serve(async (req) => {
         group_id: groupId.toString(),
         sender_id: senderId,
         click_action: 'FLUTTER_NOTIFICATION_CLICK'
+      }
+    } else {
+      if (!record && !action) {
+        return new Response(JSON.stringify({ error: 'No record or action provided' }), { status: 400 })
       }
     }
 

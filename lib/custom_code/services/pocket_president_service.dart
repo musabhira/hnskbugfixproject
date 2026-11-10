@@ -1,5 +1,9 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_release_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,7 +24,13 @@ class PocketPresidentService {
       'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=300&auto=format&fit=crop&q=80';
 
   static const String defaultWelcomeMessage =
-      'Welcome to Poket Mates! 🌟 I am the President of Poket World. If you have any questions, doubts, complaints, or need assistance on your learning journey, message me here anytime. You are under presidential care!';
+      'Welcome to Poket Mates! 🏛️🌟 I am the President of Poket World. You are officially an honored member of our global English Club!\n\n'
+      '📌 Official Community Channels:\n\n'
+      '💬 Official WhatsApp Community (Join for daily syllabus updates, tips & club announcements):\n'
+      '👉 https://chat.whatsapp.com/HqRgqeHEQVm6LoZ7L8dO6r\n\n'
+      '📸 Official Instagram (Follow for daily reels, learning tips & direct DM support/doubts):\n'
+      '👉 https://www.instagram.com/poketmates.app?vrfl=NTc2MWhma2p1NzF2&utm_source=qr\n\n'
+      'If you have any doubts, feedback, questions, or need assistance, message me here anytime. You are under 24/7 presidential care!';
 
   // SharedPreferences Keys
   static const String _kPresidentChatPrefix = 'president_chat_';
@@ -456,6 +466,17 @@ class PocketPresidentService {
       debugPrint('Error updating inquiry in Supabase: $e');
     }
 
+    // 4. Dispatch Instant Push Notification directly to the citizen's mobile device
+    try {
+      final supabase = SupaFlow.client;
+      await supabase.functions.invoke('send-push-notification', body: {
+        'action': 'individual',
+        'user_id': targetUserId,
+        'title': '🏛️ Presidential Office Message',
+        'body': replyText.length > 100 ? '${replyText.substring(0, 97)}...' : replyText,
+      });
+    } catch (_) {}
+
     return reply;
   }
 
@@ -526,6 +547,73 @@ class PocketPresidentService {
     );
 
     await prefs.setBool(releaseKey, true);
+  }
+
+  /// 🚀 Automatically delivers release notes & community links for current installed build
+  /// into user's 1-on-1 President chat upon first launch of that version!
+  static Future<void> checkAndDeliverInstalledReleaseNotes(String userId) async {
+    try {
+      if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return;
+      final packageInfo = await PackageInfo.fromPlatform();
+      final currentVersion = packageInfo.version;
+      final currentBuild = int.tryParse(packageInfo.buildNumber) ?? 0;
+      final platform = Platform.isIOS ? 'iOS' : 'Android';
+
+      final prefs = await SharedPreferences.getInstance();
+      final deliveredKey =
+          'pres_release_delivered_v_${currentVersion}_${currentBuild}_$userId';
+      if (prefs.getBool(deliveredKey) == true) {
+        return; // Already delivered for this installed build!
+      }
+
+      // Fetch active production release or remote release notes
+      final activeRelease = await PocketReleaseService.fetchActiveProductionRelease(
+          platform.toLowerCase());
+
+      final buffer = StringBuffer();
+      buffer.writeln(
+          '🏛️ Official Presidential Briefing – What\'s New in $platform v$currentVersion');
+      buffer.writeln();
+      buffer.writeln(
+          'Greetings, citizen! 🌟 The Presidential Office is proud to announce our latest update:');
+      buffer.writeln();
+
+      if (activeRelease != null && activeRelease.releaseNotes.trim().isNotEmpty) {
+        buffer.writeln(activeRelease.releaseNotes.trim());
+      } else {
+        buffer.writeln(
+            '• Daily syllabus updates and interactive learning journey enhancements.\n'
+            '• Citadel homestead optimizations and real-time multiplayer connections.\n'
+            '• AdMob performance tuning, smoother native ads, and full-screen reel experiences.');
+      }
+
+      buffer.writeln();
+      buffer.writeln('👥 Stay connected with our official English Club Community:');
+      buffer.writeln();
+      buffer.writeln('💬 Official WhatsApp Community (Daily tips & syllabus updates):');
+      buffer.writeln('👉 https://chat.whatsapp.com/HqRgqeHEQVm6LoZ7L8dO6r');
+      buffer.writeln();
+      buffer.writeln(
+          '📸 Official Instagram (Follow for reels, daily tips & DM support):');
+      buffer.writeln(
+          '👉 https://www.instagram.com/poketmates.app?vrfl=NTc2MWhma2p1NzF2&utm_source=qr');
+      buffer.writeln();
+      buffer.writeln(
+          'If you have any doubts, questions, or suggestions, message me here anytime. Speak with confidence!');
+
+      await sendPresidentReplyToUser(
+        targetUserId: userId,
+        replyText: buffer.toString().trim(),
+        adminName: 'Presidential Office',
+      );
+
+      await prefs.setBool(deliveredKey, true);
+      debugPrint(
+          'PocketPresidentService: Delivered v$currentVersion ($currentBuild) release notes to user $userId');
+    } catch (e) {
+      debugPrint(
+          'PocketPresidentService: Error delivering installed release notes: $e');
+    }
   }
 
   /// 🤖 Autonomous Robot / AI Presidential Response Generator
@@ -842,6 +930,19 @@ class PocketPresidentService {
       });
     } catch (e) {
       debugPrint('Error broadcasting announcement to Supabase: $e');
+    }
+
+    // 3. Dispatch Push Notification via Supabase Edge Function to all citizens!
+    try {
+      final supabase = SupaFlow.client;
+      await supabase.functions.invoke('send-push-notification', body: {
+        'action': 'broadcast',
+        'title': '🏛️ [Presidential Decree] $title',
+        'body': content.length > 120 ? '${content.substring(0, 117)}...' : content,
+      });
+      debugPrint('Presidential Broadcast Push Notification dispatched!');
+    } catch (pushErr) {
+      debugPrint('Error triggering broadcast push notification: $pushErr');
     }
   }
 
