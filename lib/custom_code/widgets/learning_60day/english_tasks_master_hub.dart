@@ -352,6 +352,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       _getNodeY(1) + 200.0; // Positioned below Day 1 at the bottom
   final Map<String, bool> _subStepFlags = {};
   final Set<int> _daysWithStepsCompleted = {};
+  final Set<int> _triggeredAdDays = <int>{};
 
   bool _isDayStepsCompleted(int day) {
     if (_isMasterAdmin) return true;
@@ -701,8 +702,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   }
 
   bool _isRoadmapAdInViewport(int day, double minY, double maxY) {
+    if (!_hasInitiallyScrolled) return false;
     final adY = _getNodeY(day) - (_nodeSpacingY * 0.68);
-    return (adY >= minY - 600.0) && (adY <= maxY + 600.0);
+    return (adY >= minY - 900.0) && (adY <= maxY + 900.0);
   }
 
   void _scrollToRule({bool animate = false}) {
@@ -3148,11 +3150,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                         _buildRoadmapGate(
                                             day, screenWidth, targetActiveDay),
 
-                                    // 📱 Native Ad Card on Mountain Trail between Gate and Next House (User Audio Directive!)
                                     for (int day = 1; day < _totalDays; day++)
                                       if (_isRoadmapAdInViewport(day, minY, maxY))
-                                        _buildRoadmapNativeAd(
-                                            day, screenWidth),
+                                        _triggeredAdDays.add(day),
+
+                                    for (final day in _triggeredAdDays)
+                                      _buildRoadmapNativeAd(
+                                          day, screenWidth),
 
                                     // Interactive 3D Level Nodes (Days 1 to 90) (Viewport Culled)
                                     for (int day = 1; day <= _totalDays; day++)

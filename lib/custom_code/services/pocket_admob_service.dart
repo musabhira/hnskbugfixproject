@@ -105,16 +105,15 @@ class PocketAdMobService {
   // - Android / iOS Release builds (Production App): Test mode OFF, verified production Ad Unit IDs.
   // - Debug / Profile mode: Test mode ON (Google sample test ad units).
   // - Web / Desktop: Simulation mode.
-  // 🧪 User-requested TestFlight testing mode with Google Official Test IDs (100% Fill Rate)
-  // When true: Uses Google's guaranteed test ads so there are ZERO "No ad to show" errors,
-  // and zero risk of invalid activity warnings while testing repeatedly.
-  static bool useTestModeInBuild = true;
+  // 🚀 User Directive: 100% Real Production Ad Units across TestFlight & Release builds
+  // Test Mode completely disabled for live AdMob CPM & Production verification!
+  static bool useTestModeInBuild = false;
 
   bool get _isTestMode {
     if (_overrideTestMode != null) return _overrideTestMode!;
     if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return true;
     if (useTestModeInBuild) return true;
-    return !kReleaseMode;
+    return false; // Force 100% Production Ads everywhere
   }
 
   bool? get overrideTestMode => _overrideTestMode;
@@ -899,13 +898,12 @@ class PocketAdMobService {
           // 👑 Determine VIP Status:
           // a) is_vip == true (Manual Admin panel assignment or IAP subscription)
           // b) is_premium == true / is_subscribed == true
-          // c) verified == true (Verified ticket holder)
-          // d) hasActivePaidTier (e.g. 'vip_gold', 'monthly', 'pro', 'quarterly', 'yearly')
-          // e) role == 'vip' || role == 'admin'
+          // c) hasActivePaidTier (e.g. 'vip_gold', 'monthly', 'pro', 'quarterly', 'yearly')
+          // d) role == 'vip' || role == 'admin'
+          // Note: Identity 'verified' badge is NOT a paid VIP membership!
           final bool isTrueVip = profile['is_vip'] == true ||
               profile['is_premium'] == true ||
               profile['is_subscribed'] == true ||
-              profile['verified'] == true ||
               hasActivePaidTier ||
               role == 'vip' ||
               role == 'admin';
@@ -1202,10 +1200,137 @@ class PocketAdMobService {
         await _recordRewardedAdCompletion();
         onUserEarnedReward(reward);
       });
+      return;
+    }
+
+    // ⚡ If not loaded yet, do NOT grant free score without the video!
+    // Instead, show a brief loading dialog and wait for it to load on-demand.
+    await _showRewardedAdWithLoadingDialog(
+      context: context,
+      onUserEarnedReward: onUserEarnedReward,
+      onAdClosed: onAdClosed,
+    );
+  }
+
+  /// 🎬 On-demand Rewarded Video loader with graceful loading modal
+  Future<void> _showRewardedAdWithLoadingDialog({
+    required BuildContext context,
+    required void Function(RewardItem reward) onUserEarnedReward,
+    VoidCallback? onAdClosed,
+  }) async {
+    if (!context.mounted) {
+      onAdClosed?.call();
+      return;
+    }
+
+    bool dialogOpen = true;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => PopScope(
+        canPop: false,
+        child: Dialog(
+          backgroundColor: const Color(0xFF0F172A),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+            side: const BorderSide(color: Color(0xFF10B981), width: 1.2),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 22),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                  ),
+                ),
+                const SizedBox(width: 18),
+                Expanded(
+                  child: Text(
+                    'Loading sponsor video...\nPlease wait a moment 🎬',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ).then((_) => dialogOpen = false);
+
+    _loadRewardedAd();
+    final completer = Completer<RewardedAd?>();
+    final deadline = DateTime.now().add(const Duration(seconds: 7));
+
+    Timer.periodic(const Duration(milliseconds: 300), (timer) {
+      if (_rewardedAd != null) {
+        timer.cancel();
+        if (!completer.isCompleted) completer.complete(_rewardedAd);
+      } else if (DateTime.now().isAfter(deadline) || (!_isRewardedLoading && _rewardedAd == null)) {
+        timer.cancel();
+        if (!completer.isCompleted) completer.complete(null);
+      }
+    });
+
+    final ad = await completer.future;
+
+    if (dialogOpen && context.mounted) {
+      Navigator.of(context, rootNavigator: true).pop();
+      dialogOpen = false;
+    }
+
+    if (ad != null) {
+      ad.fullScreenContentCallback = FullScreenContentCallback(
+        onAdShowedFullScreenContent: (_) {
+          _recordAdImpression('rewarded_coins');
+        },
+        onAdDismissedFullScreenContent: (dispAd) {
+          dispAd.dispose();
+          _rewardedAd = null;
+          _loadRewardedAd();
+          onAdClosed?.call();
+        },
+        onAdFailedToShowFullScreenContent: (dispAd, err) {
+          dispAd.dispose();
+          _rewardedAd = null;
+          _loadRewardedAd();
+          onAdClosed?.call();
+        },
+      );
+      ad.show(onUserEarnedReward: (_, reward) async {
+        await _recordRewardedAdCompletion();
+        onUserEarnedReward(reward);
+      });
     } else {
-      // Ad was not ready, immediately grant reward and reload
-      await _recordRewardedAdCompletion();
-      onUserEarnedReward(RewardItem(50, 'fallback'));
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.info_outline, color: Color(0xFFFFB300), size: 18),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text(
+                    'Sponsor video is not ready yet. Please check your connection and try again!',
+                    style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF1E293B),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      }
       onAdClosed?.call();
       _loadRewardedAd();
     }
@@ -1731,6 +1856,78 @@ class PocketAdPreloadManager {
   final Map<PocketAdPlacement, BannerAd> _preloadedBanners = {};
   final Set<PocketAdPlacement> _loadingPlacements = {};
 
+  // 🛡️ Persistent Reusable Ad Pool: Keeps loaded ads alive across scroll gaps and page navigation
+  // Prevents ads from wiping away when user scrolls or navigates between pages!
+  final Map<PocketAdPlacement, BannerAd> _reusableAds = {};
+  final Map<PocketAdPlacement, DateTime> _adCreatedAt = {};
+  final Set<BannerAd> _activeMountedBanners = {};
+
+  /// Acquires an active reusable BannerAd or a preloaded BannerAd for this placement.
+  /// If available and currently unmounted, it attaches instantly with 0ms delay!
+  BannerAd? acquireAd(PocketAdPlacement placement) {
+    // 1. Check existing reusable ad for this placement
+    final reusable = _reusableAds[placement];
+    final created = _adCreatedAt[placement];
+    if (reusable != null && created != null) {
+      // AdMob freshness window: 4 minutes
+      if (DateTime.now().difference(created) < const Duration(minutes: 4)) {
+        if (!_activeMountedBanners.contains(reusable)) {
+          _activeMountedBanners.add(reusable);
+          return reusable;
+        }
+      } else {
+        // Expired (>4 min)
+        if (!_activeMountedBanners.contains(reusable)) {
+          reusable.dispose();
+          _reusableAds.remove(placement);
+          _adCreatedAt.remove(placement);
+        }
+      }
+    }
+
+    // 2. Consume preloaded banner if ready
+    final preloaded = _preloadedBanners.remove(placement);
+    if (preloaded != null) {
+      _reusableAds[placement] = preloaded;
+      _adCreatedAt[placement] = DateTime.now();
+      _activeMountedBanners.add(preloaded);
+      // Trigger background refill for subsequent slots
+      preloadForPlacement(placement);
+      return preloaded;
+    }
+
+    // Trigger preload for future gaps
+    preloadForPlacement(placement);
+    return null;
+  }
+
+  /// Releases the ad when its widget unmounts (e.g. scrolled past).
+  /// Instead of disposing it immediately, preserves it in the pool so the next gap
+  /// or page can render it immediately without disappearing!
+  void releaseAd(PocketAdPlacement placement, BannerAd? ad) {
+    if (ad == null) return;
+    _activeMountedBanners.remove(ad);
+
+    final created = _adCreatedAt[placement];
+    if (created != null &&
+        DateTime.now().difference(created) > const Duration(minutes: 4)) {
+      ad.dispose();
+      _reusableAds.remove(placement);
+      _adCreatedAt.remove(placement);
+    }
+  }
+
+  /// Registers a newly loaded BannerAd into the persistent reusable pool
+  void registerLoadedAd(PocketAdPlacement placement, BannerAd ad) {
+    _activeMountedBanners.add(ad);
+    final old = _reusableAds[placement];
+    if (old != null && old != ad && !_activeMountedBanners.contains(old)) {
+      old.dispose();
+    }
+    _reusableAds[placement] = ad;
+    _adCreatedAt[placement] = DateTime.now();
+  }
+
   /// Preload an ad for a specific placement ahead of time
   Future<void> preloadForPlacement(PocketAdPlacement placement) async {
     if (PocketAdMobService.instance.isUserVipSync()) return;
@@ -1869,13 +2066,13 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard>
       return;
     }
 
-    // ⚡ Try immediate instant render from Preloaded Ad Cache
-    final preloaded =
-        PocketAdPreloadManager.instance.consumePreloadedAd(widget.placement);
-    if (preloaded != null && !widget.forceFreeMode) {
-      _bannerAd = preloaded;
+    // ⚡ Try immediate instant render from Persistent Reusable / Preloaded Cache
+    final reusable =
+        PocketAdPreloadManager.instance.acquireAd(widget.placement);
+    if (reusable != null && !widget.forceFreeMode) {
+      _bannerAd = reusable;
       _isLoaded = true;
-      widget.onStatusChange?.call('LOADED', 'From Preloaded Cache (${preloaded.size.width}x${preloaded.size.height})');
+      widget.onStatusChange?.call('LOADED', 'From Persistent Cache (${reusable.size.width}x${reusable.size.height})');
     } else {
       _checkVipAndLoad();
     }
@@ -1919,6 +2116,10 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard>
       listener: BannerAdListener(
         onAdLoaded: (_) {
           PocketAdMobService.instance._recordAdLoaded(widget.placement.name);
+          if (_bannerAd != null) {
+            PocketAdPreloadManager.instance
+                .registerLoadedAd(widget.placement, _bannerAd!);
+          }
           if (mounted) setState(() => _isLoaded = true);
           widget.onStatusChange?.call('LOADED', 'Ad loaded: ${requestedSize.width}x${requestedSize.height}');
         },
@@ -1969,7 +2170,9 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard>
 
   @override
   void dispose() {
-    _bannerAd?.dispose();
+    if (_bannerAd != null) {
+      PocketAdPreloadManager.instance.releaseAd(widget.placement, _bannerAd);
+    }
     super.dispose();
   }
 
@@ -2616,7 +2819,9 @@ class _LegacyDc50278NativeAdCardState extends State<LegacyDc50278NativeAdCard>
 
   @override
   void dispose() {
-    _bannerAd?.dispose();
+    if (_bannerAd != null) {
+      PocketAdPreloadManager.instance.releaseAd(widget.placement, _bannerAd);
+    }
     super.dispose();
   }
 
@@ -3304,7 +3509,9 @@ class _PocketChatBubbleAdWidgetState extends State<PocketChatBubbleAdWidget> {
 
   @override
   void dispose() {
-    _bannerAd?.dispose();
+    if (_bannerAd != null) {
+      PocketAdPreloadManager.instance.releaseAd(widget.placement, _bannerAd);
+    }
     super.dispose();
   }
 
@@ -3518,7 +3725,9 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
 
   @override
   void dispose() {
-    _bannerAd?.dispose();
+    if (_bannerAd != null) {
+      PocketAdPreloadManager.instance.releaseAd(widget.placement, _bannerAd);
+    }
     super.dispose();
   }
 
