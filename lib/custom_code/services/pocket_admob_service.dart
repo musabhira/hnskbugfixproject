@@ -2157,9 +2157,7 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard>
 
   @override
   void dispose() {
-    if (_bannerAd != null) {
-      PocketAdPreloadManager.instance.releaseAd(widget.placement, _bannerAd);
-    }
+    _bannerAd?.dispose();
     super.dispose();
   }
 
@@ -2806,9 +2804,7 @@ class _LegacyDc50278NativeAdCardState extends State<LegacyDc50278NativeAdCard>
 
   @override
   void dispose() {
-    if (_bannerAd != null) {
-      PocketAdPreloadManager.instance.releaseAd(widget.placement, _bannerAd);
-    }
+    _bannerAd?.dispose();
     super.dispose();
   }
 
@@ -3496,9 +3492,7 @@ class _PocketChatBubbleAdWidgetState extends State<PocketChatBubbleAdWidget> {
 
   @override
   void dispose() {
-    if (_bannerAd != null) {
-      PocketAdPreloadManager.instance.releaseAd(widget.placement, _bannerAd);
-    }
+    _bannerAd?.dispose();
     super.dispose();
   }
 
@@ -3712,9 +3706,7 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
 
   @override
   void dispose() {
-    if (_bannerAd != null) {
-      PocketAdPreloadManager.instance.releaseAd(widget.placement, _bannerAd);
-    }
+    _bannerAd?.dispose();
     super.dispose();
   }
 
