@@ -27,6 +27,7 @@ import 'pocket_feed_vibe_share_sheet.dart';
 import 'pocket_reels_game_engine.dart';
 import 'pocket_reels_content_engine.dart';
 import '../report_dailoge.dart';
+import '../subscription_page.dart';
 
 /// Item type for the Reels Feed: Homestead, Interactive Mini-Game, Public Vibe, Story, Interview, Speak Challenge, Vocab, or Native Ad
 enum ReelItemType {
@@ -2047,7 +2048,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     );
   }
 
-  /// 📢 Native Ad Reel Slide styled like an aesthetic full-screen sponsor card
+  /// 📢 Native Ad Reel Slide styled like an aesthetic full-screen sponsor reel (Instagram Reels standard)
   Widget _buildNativeAdReelSlide(int index) {
     return FutureBuilder<bool>(
       future: PocketAdMobService.instance.isUserVip(),
@@ -2058,45 +2059,202 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
         // ⚡ Preload next reel ad in background for upcoming reels
         PocketAdPreloadManager.instance
             .preloadForPlacement(PocketAdPlacement.reels);
+
+        final topPadding = MediaQuery.of(context).padding.top;
+        final bottomPadding = MediaQuery.of(context).padding.bottom;
+
         return Container(
-          color: const Color(0xFF0F172A),
+          color: const Color(0xFF090D16),
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // Background gradient
-              Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Color(0xFF0F172A),
-                      Color(0xFF1E293B),
-                      Color(0xFF0B1329)
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
+              // 🌌 Immersive Ambient Backdrop
+              Positioned.fill(
+                child: Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Color(0xFF0A0F1D),
+                        Color(0xFF0F172A),
+                        Color(0xFF060913),
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
                   ),
                 ),
               ),
+
+              // Ambient background glows
+              Positioned(
+                top: MediaQuery.of(context).size.height * 0.22,
+                left: -60,
+                child: Container(
+                  width: 240,
+                  height: 240,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: MediaQuery.of(context).size.height * 0.22,
+                right: -60,
+                child: Container(
+                  width: 260,
+                  height: 260,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFF10B981).withValues(alpha: 0.08),
+                  ),
+                ),
+              ),
+
+              // 🌟 Header: Sponsored pill & VIP badge
+              Positioned(
+                top: topPadding + 14,
+                left: 18,
+                right: 18,
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.55),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.15)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFB300),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text(
+                              'Ad',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.4,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Sponsored',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Spacer(),
+                    // 👑 VIP shortcut chip
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const SubscriptionPage()),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                              color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.star_rounded,
+                                color: Color(0xFFFFD700), size: 14),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Go VIP',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFD700),
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // 📱 Centered High-Impact Native Ad Card
               Center(
-                child: SingleChildScrollView(
-                  physics: const NeverScrollableScrollPhysics(),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const PocketNativeAdCard(
-                        placement: PocketAdPlacement.reels,
-                        margin: EdgeInsets.symmetric(horizontal: 16),
-                      ),
-                      const SizedBox(height: 16),
-                      TextButton.icon(
-                        onPressed: _scrollToNextReel,
-                        icon: const Icon(Icons.arrow_downward_rounded,
-                            color: Colors.white60, size: 16),
-                        label: const Text('Swipe up for next English Mate',
-                            style:
-                                TextStyle(color: Colors.white60, fontSize: 12)),
-                      ),
-                    ],
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: const PocketNativeAdCard(
+                    placement: PocketAdPlacement.reels,
+                    margin: EdgeInsets.zero,
+                  ),
+                ),
+              ),
+
+              // 🧭 Modern Floating Reel Progress & Next Button (Instagram Reels Standard)
+              Positioned(
+                bottom: bottomPadding + 20,
+                left: 20,
+                right: 20,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: _scrollToNextReel,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E293B).withValues(alpha: 0.85),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.12)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Continue Reel',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: Color(0xFF6EE7B7),
+                          size: 20,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

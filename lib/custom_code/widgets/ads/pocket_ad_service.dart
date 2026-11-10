@@ -546,14 +546,36 @@ class _PocketVibesStoryAdWidgetState extends State<PocketVibesStoryAdWidget> {
                         placement: PocketAdPlacement.vibes,
                         margin: EdgeInsets.zero,
                       ),
-                      const SizedBox(height: 16),
-                      // Skip / Next Button
-                      TextButton.icon(
-                        onPressed: widget.onNext,
-                        icon: const Icon(Icons.arrow_forward_rounded, color: Colors.white70, size: 16),
-                        label: Text(
-                          'Swipe or Tap for next Vibe',
-                          style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13),
+                      const SizedBox(height: 18),
+                      // Skip / Next Button (Modern floating glass pill)
+                      GestureDetector(
+                        onTap: widget.onNext,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E293B).withValues(alpha: 0.8),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: Colors.white12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Next Vibe',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              const Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                color: Color(0xFF6EE7B7),
+                                size: 12,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       const Spacer(),
@@ -564,25 +586,25 @@ class _PocketVibesStoryAdWidgetState extends State<PocketVibesStoryAdWidget> {
             ),
           ),
 
-          // Tap Gesture Zones (Left = Prev, Right = Next)
-          Positioned.fill(
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 1,
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    onTap: widget.onPrevious,
-                  ),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    onTap: widget.onNext,
-                  ),
-                ),
-              ],
+          // Tap Gesture Zones (Left/Right margins for quick tap-advance without blocking ad clicks)
+          Positioned(
+            top: 80,
+            bottom: 80,
+            left: 0,
+            width: 48,
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: widget.onPrevious,
+            ),
+          ),
+          Positioned(
+            top: 80,
+            bottom: 80,
+            right: 0,
+            width: 48,
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: widget.onNext,
             ),
           ),
 

@@ -358,6 +358,7 @@ class PocketAdMobService {
   RewardedAd? _rewardedAd;
   bool _isInterstitialLoading = false;
   bool _isRewardedLoading = false;
+  final List<Completer<RewardedAd?>> _rewardedCompleters = [];
   DateTime? _lastInterstitialShownTime;
   static const Duration minInterstitialInterval = Duration(minutes: 3);
 
@@ -1001,23 +1002,52 @@ class PocketAdMobService {
     );
   }
 
-  void _loadRewardedAd() {
+  void _flushRewardedCompleters(RewardedAd? ad) {
+    for (final c in _rewardedCompleters) {
+      if (!c.isCompleted) c.complete(ad);
+    }
+    _rewardedCompleters.clear();
+  }
+
+  void _loadRewardedAd({bool isFallback = false, Completer<RewardedAd?>? completer}) {
+    if (completer != null) {
+      if (_rewardedAd != null) {
+        if (!completer.isCompleted) completer.complete(_rewardedAd);
+        return;
+      }
+      _rewardedCompleters.add(completer);
+    }
+
     if (_isRewardedLoading || _rewardedAd != null) return;
     _isRewardedLoading = true;
     _recordAdRequest('rewarded_coins');
+
+    final targetUnitId = isFallback ? testRewardedId : rewardedAdUnitId;
+    debugPrint('🎬 [PocketAdMob] Loading rewarded ad unit: $targetUnitId (fallback: $isFallback)');
+
     RewardedAd.load(
-      adUnitId: rewardedAdUnitId,
+      adUnitId: targetUnitId,
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) {
           _rewardedAd = ad;
           _isRewardedLoading = false;
           _recordAdLoaded('rewarded_coins');
+          debugPrint('🎬 [PocketAdMob] Rewarded ad loaded successfully (fallback: $isFallback)');
+          _flushRewardedCompleters(_rewardedAd);
         },
         onAdFailedToLoad: (error) {
-          _rewardedAd = null;
-          _isRewardedLoading = false;
           _recordAdFailed('rewarded_coins', error);
+          debugPrint('🎬 [PocketAdMob] Rewarded ad failed to load: ${error.code} - ${error.message} (fallback: $isFallback)');
+          _isRewardedLoading = false;
+          if (!isFallback) {
+            // 🔄 Immediate retry with verified safe test rewarded unit so user is NEVER locked out of rewards!
+            debugPrint('🎬 [PocketAdMob] Retrying rewarded ad with fallback unit: $testRewardedId');
+            _loadRewardedAd(isFallback: true);
+          } else {
+            _rewardedAd = null;
+            _flushRewardedCompleters(null);
+          }
         },
       ),
     );
@@ -1253,15 +1283,16 @@ class PocketAdMobService {
       ),
     ).then((_) => dialogOpen = false);
 
-    _loadRewardedAd();
     final completer = Completer<RewardedAd?>();
-    final deadline = DateTime.now().add(const Duration(seconds: 7));
+    _loadRewardedAd(completer: completer);
+    final deadline = DateTime.now().add(const Duration(seconds: 10));
 
     Timer.periodic(const Duration(milliseconds: 300), (timer) {
       if (_rewardedAd != null) {
         timer.cancel();
         if (!completer.isCompleted) completer.complete(_rewardedAd);
-      } else if (DateTime.now().isAfter(deadline) || (!_isRewardedLoading && _rewardedAd == null)) {
+      } else if (DateTime.now().isAfter(deadline) ||
+          (!_isRewardedLoading && _rewardedAd == null && _rewardedCompleters.isEmpty)) {
         timer.cancel();
         if (!completer.isCompleted) completer.complete(null);
       }
@@ -1845,29 +1876,35 @@ class PocketAdPreloadManager {
 
   // 🛡️ Persistent Reusable Ad Pool: Keeps loaded ads alive across scroll gaps and page navigation
   // Prevents ads from wiping away when user scrolls or navigates between pages!
-  final Map<PocketAdPlacement, BannerAd> _reusableAds = {};
-  final Map<PocketAdPlacement, DateTime> _adCreatedAt = {};
+  final Map<PocketAdPlacement, List<BannerAd>> _reusableAdsPool = {};
+  final Map<BannerAd, DateTime> _adCreatedAt = {};
   final Set<BannerAd> _activeMountedBanners = {};
 
   /// Acquires an active reusable BannerAd or a preloaded BannerAd for this placement.
   /// If available and currently unmounted, it attaches instantly with 0ms delay!
   BannerAd? acquireAd(PocketAdPlacement placement) {
-    // 1. Check existing reusable ad for this placement
-    final reusable = _reusableAds[placement];
-    final created = _adCreatedAt[placement];
-    if (reusable != null && created != null) {
-      // AdMob freshness window: 4 minutes
-      if (DateTime.now().difference(created) < const Duration(minutes: 4)) {
-        if (!_activeMountedBanners.contains(reusable)) {
-          _activeMountedBanners.add(reusable);
-          return reusable;
+    // 1. Check existing reusable ad in pool for this placement
+    final pool = _reusableAdsPool[placement];
+    if (pool != null && pool.isNotEmpty) {
+      final now = DateTime.now();
+      // Remove any ads older than 5 minutes (AdMob impression freshness window)
+      pool.removeWhere((ad) {
+        final created = _adCreatedAt[ad];
+        if (created != null && now.difference(created) > const Duration(minutes: 5)) {
+          if (!_activeMountedBanners.contains(ad)) {
+            ad.dispose();
+            _adCreatedAt.remove(ad);
+            return true;
+          }
         }
-      } else {
-        // Expired (>4 min)
-        if (!_activeMountedBanners.contains(reusable)) {
-          reusable.dispose();
-          _reusableAds.remove(placement);
-          _adCreatedAt.remove(placement);
+        return false;
+      });
+
+      // Find first unmounted ad
+      for (final ad in pool) {
+        if (!_activeMountedBanners.contains(ad)) {
+          _activeMountedBanners.add(ad);
+          return ad;
         }
       }
     }
@@ -1875,8 +1912,8 @@ class PocketAdPreloadManager {
     // 2. Consume preloaded banner if ready
     final preloaded = _preloadedBanners.remove(placement);
     if (preloaded != null) {
-      _reusableAds[placement] = preloaded;
-      _adCreatedAt[placement] = DateTime.now();
+      _reusableAdsPool.putIfAbsent(placement, () => []).add(preloaded);
+      _adCreatedAt[preloaded] = DateTime.now();
       _activeMountedBanners.add(preloaded);
       // Trigger background refill for subsequent slots
       preloadForPlacement(placement);
@@ -1888,6 +1925,9 @@ class PocketAdPreloadManager {
     return null;
   }
 
+  /// Backward-compatible alias for preloaded consumption
+  BannerAd? consumePreloadedAd(PocketAdPlacement placement) => acquireAd(placement);
+
   /// Releases the ad when its widget unmounts (e.g. scrolled past).
   /// Instead of disposing it immediately, preserves it in the pool so the next gap
   /// or page can render it immediately without disappearing!
@@ -1895,24 +1935,35 @@ class PocketAdPreloadManager {
     if (ad == null) return;
     _activeMountedBanners.remove(ad);
 
-    final created = _adCreatedAt[placement];
+    final created = _adCreatedAt[ad];
     if (created != null &&
-        DateTime.now().difference(created) > const Duration(minutes: 4)) {
+        DateTime.now().difference(created) > const Duration(minutes: 5)) {
       ad.dispose();
-      _reusableAds.remove(placement);
-      _adCreatedAt.remove(placement);
+      _reusableAdsPool[placement]?.remove(ad);
+      _adCreatedAt.remove(ad);
     }
   }
 
   /// Registers a newly loaded BannerAd into the persistent reusable pool
   void registerLoadedAd(PocketAdPlacement placement, BannerAd ad) {
     _activeMountedBanners.add(ad);
-    final old = _reusableAds[placement];
-    if (old != null && old != ad && !_activeMountedBanners.contains(old)) {
-      old.dispose();
+    _adCreatedAt[ad] = DateTime.now();
+    final pool = _reusableAdsPool.putIfAbsent(placement, () => []);
+    if (!pool.contains(ad)) {
+      pool.add(ad);
     }
-    _reusableAds[placement] = ad;
-    _adCreatedAt[placement] = DateTime.now();
+    // Cap pool to max 3 ads per placement to save memory
+    if (pool.length > 3) {
+      final oldest = pool.firstWhere(
+        (a) => !_activeMountedBanners.contains(a),
+        orElse: () => pool.first,
+      );
+      if (!_activeMountedBanners.contains(oldest)) {
+        pool.remove(oldest);
+        oldest.dispose();
+        _adCreatedAt.remove(oldest);
+      }
+    }
   }
 
   /// Preload an ad for a specific placement ahead of time
@@ -1992,16 +2043,8 @@ class PocketAdPreloadManager {
 
   /// Whether a preloaded ad is ready
   bool hasPreloadedAd(PocketAdPlacement placement) {
-    return _preloadedBanners.containsKey(placement);
-  }
-
-  /// Retrieve and consume the preloaded ad for immediate presentation,
-  /// and automatically trigger background preloading for the next ad!
-  BannerAd? consumePreloadedAd(PocketAdPlacement placement) {
-    final ad = _preloadedBanners.remove(placement);
-    // Background refill for next ad
-    preloadForPlacement(placement);
-    return ad;
+    return _preloadedBanners.containsKey(placement) ||
+        (_reusableAdsPool[placement]?.isNotEmpty ?? false);
   }
 }
 
@@ -2036,6 +2079,7 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard>
   bool _isVip = false;
   bool _hasRetriedWithAlternateSize = false;
   bool _hasRetriedWithFallback = false;
+  bool _hasRetriedWithTestUnit = false;
 
   @override
   bool get wantKeepAlive => true;
@@ -2142,6 +2186,16 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard>
             _loadBanner(fallbackUnitId, sizeOverride: AdSize.mediumRectangle);
             return;
           }
+
+          // 🔄 Tier 3 Fallback: If both production units fail (e.g. Code 3 No-Fill in test region),
+          // fallback to official test banner unit so UI is never blank
+          if (!_hasRetriedWithTestUnit) {
+            _hasRetriedWithTestUnit = true;
+            widget.onStatusChange?.call('RETRYING_TEST_UNIT', 'Retrying with safe test unit');
+            _loadBanner(PocketAdMobService.testBannerId, sizeOverride: requestedSize);
+            return;
+          }
+
           if (mounted) setState(() => _isLoaded = false);
         },
         onAdImpression: (_) {
@@ -2157,7 +2211,7 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard>
 
   @override
   void dispose() {
-    _bannerAd?.dispose();
+    PocketAdPreloadManager.instance.releaseAd(widget.placement, _bannerAd);
     super.dispose();
   }
 
@@ -3633,6 +3687,7 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
   bool _isLoaded = false;
   bool _isVip = false;
   bool _hasRetriedWithFallback = false;
+  bool _hasRetriedWithTestUnit = false;
 
   @override
   void initState() {
@@ -3693,6 +3748,10 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
                     : PocketAdMobService.prodRankingAdUnitId);
             _loadBanner(fallbackProdId);
             return;
+          } else if (!_hasRetriedWithTestUnit) {
+            _hasRetriedWithTestUnit = true;
+            _loadBanner(PocketAdMobService.testBannerId);
+            return;
           }
           if (mounted) setState(() => _isLoaded = false);
         },
@@ -3706,7 +3765,7 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
 
   @override
   void dispose() {
-    _bannerAd?.dispose();
+    PocketAdPreloadManager.instance.releaseAd(PocketAdPlacement.banner, _bannerAd);
     super.dispose();
   }
 

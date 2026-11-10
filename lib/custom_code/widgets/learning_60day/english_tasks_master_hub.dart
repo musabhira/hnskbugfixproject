@@ -353,7 +353,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       _getNodeY(1) + 200.0; // Positioned below Day 1 at the bottom
   final Map<String, bool> _subStepFlags = {};
   final Set<int> _daysWithStepsCompleted = {};
-  final Set<int> _triggeredAdDays = <int>{};
 
   bool _isDayStepsCompleted(int day) {
     if (_isMasterAdmin) return true;
@@ -704,8 +703,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
   bool _isRoadmapAdInViewport(int day, double minY, double maxY) {
     if (!_hasInitiallyScrolled) return false;
+    // Spaced along mountain trail at alternate gates (Day 1, 3, 5, 7, 9...)
+    // so ads repeat persistently without overlapping houses or wipeouts
+    if (day % 2 == 0) return false;
     final adY = _getNodeY(day) - (_nodeSpacingY * 0.68);
-    return (adY >= minY - 900.0) && (adY <= maxY + 900.0);
+    return (adY >= minY - 360.0) && (adY <= maxY + 360.0);
   }
 
   void _scrollToRule({bool animate = false}) {
@@ -3136,12 +3138,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                 final minY = scrollOffset;
                                 final maxY = scrollOffset + screenH;
 
-                                for (int day = 1; day < _totalDays; day++) {
-                                  if (_isRoadmapAdInViewport(day, minY, maxY)) {
-                                    _triggeredAdDays.add(day);
-                                  }
-                                }
-
                                 return Stack(
                                   children: [
                                     // 🏡 90 Progressive Architectural English Houses (Viewport Culled)
@@ -3168,9 +3164,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                         _buildRoadmapGate(
                                             day, screenWidth, targetActiveDay),
 
-                                    for (final day in _triggeredAdDays)
-                                      _buildRoadmapNativeAd(
-                                          day, screenWidth),
+                                    // 📱 Roadmap Native Ad Slots (Repeats persistently across gates without wipeout)
+                                    for (int day = 1; day < _totalDays; day++)
+                                      if (_isRoadmapAdInViewport(day, minY, maxY))
+                                        _buildRoadmapNativeAd(
+                                            day, screenWidth),
 
                                     // Interactive 3D Level Nodes (Days 1 to 90) (Viewport Culled)
                                     for (int day = 1; day <= _totalDays; day++)
