@@ -70,7 +70,9 @@ class _PoketCosmosResidentIslandViewState
     final homeColony = PoketCosmosAllocationService.instance
         .getColonyByPlanetName(home.planetName);
     final isSamePlanet = homeColony.code.toUpperCase() == _colony.code.toUpperCase();
-    final isSameWave = (_island.wave == (home.wave ?? 1));
+    final homeParsed = PoketCosmosAllocationService.parseGlobalPlotNumber(home.plotNumber);
+    final homeWave = (homeParsed['wave'] as num?)?.toInt() ?? 1;
+    final isSameWave = (_island.wave == homeWave);
     return isSamePlanet && isSameWave;
   }
 
