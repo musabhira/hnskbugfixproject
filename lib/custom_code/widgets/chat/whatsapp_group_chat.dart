@@ -6855,52 +6855,83 @@ Draft: "$draft"''';
                       ),
                     ),
                   ),
-                GestureDetector(
-                  onLongPress: () {
-                    HapticFeedback.mediumImpact();
-                    _showMessageContextMenu(message, isMe);
+                Dismissible(
+                  key: Key('reply_swipe_${message.id}'),
+                  direction: DismissDirection.startToEnd,
+                  movementDuration: const Duration(milliseconds: 200),
+                  dismissThresholds: const {
+                    DismissDirection.startToEnd: 0.22,
                   },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: _highlightedMessageId == message.id
-                          ? const Color(0xFFFFD700).withValues(alpha: 0.35)
-                          : (isMe
-                              ? const Color(0xFF2B3038)
-                              : const Color(0xFF22262C)),
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.08),
-                        width: 0.8,
+                  confirmDismiss: (direction) async {
+                    _triggerReplyToMessage(message);
+                    return false; // Never dismiss the item from the list, only trigger reply action
+                  },
+                  background: Container(
+                    alignment: Alignment.centerLeft,
+                    padding: const EdgeInsets.only(left: 14.0),
+                    child: Container(
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFF38BDF8).withValues(alpha: 0.5),
+                          width: 1,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.reply,
+                        size: 18,
+                        color: Color(0xFF38BDF8),
                       ),
                     ),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                    child: Stack(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(
-                              left: 2, right: 2, top: 1, bottom: 16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (message.replyToMessage != null ||
-                                  message.metadata?['reply_type'] ==
-                                      'status_reply' ||
-                                  message.metadata?['reply_to'] != null)
-                                _buildReplyInBubble(message, isMe),
-                              if (message.messageType == 'image')
-                                _buildImageMessage(message),
-                              if (message.messageType == 'snap')
-                                _buildSnapMessage(message, isMe),
-                              if (message.messageType ==
-                                      'pocket_talk_request' ||
-                                  message.metadata?['is_pocket_talk'] == true)
-                                _buildPocketTalkRequestMessage(message, isMe),
-                              if (message.messageType == 'mate_request' ||
-                                  message.metadata?['type'] == 'mate_request' ||
-                                  message.metadata?['is_mate_request'] == true)
-                                _buildMateRequestMessage(message, isMe),
-                              if (message.messageType == 'citadel_fight' ||
+                  ),
+                  child: GestureDetector(
+                    onLongPress: () {
+                      HapticFeedback.mediumImpact();
+                      _showMessageContextMenu(message, isMe);
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: _highlightedMessageId == message.id
+                            ? const Color(0xFFFFD700).withValues(alpha: 0.35)
+                            : (isMe
+                                ? const Color(0xFF2B3038)
+                                : const Color(0xFF22262C)),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.08),
+                          width: 0.8,
+                        ),
+                      ),
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      child: Stack(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                left: 2, right: 2, top: 1, bottom: 16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (message.replyToMessage != null ||
+                                    message.metadata?['reply_type'] ==
+                                        'status_reply' ||
+                                    message.metadata?['reply_to'] != null)
+                                  _buildReplyInBubble(message, isMe),
+                                if (message.messageType == 'image')
+                                  _buildImageMessage(message),
+                                if (message.messageType == 'snap')
+                                  _buildSnapMessage(message, isMe),
+                                if (message.messageType ==
+                                        'pocket_talk_request' ||
+                                    message.metadata?['is_pocket_talk'] == true)
+                                  _buildPocketTalkRequestMessage(message, isMe),
+                                if (message.messageType == 'mate_request' ||
+                                    message.metadata?['type'] == 'mate_request' ||
+                                    message.metadata?['is_mate_request'] == true)
+                                  _buildMateRequestMessage(message, isMe),
+                                if (message.messageType == 'citadel_fight' ||
                                   message.metadata?['fight_id'] != null)
                                 _buildCitadelFightMessage(message, isMe),
                               if (message.messageType == 'citadel_attack' ||
@@ -7143,6 +7174,7 @@ Draft: "$draft"''';
                       ],
                     ),
                   ),
+                ),
                 ),
                 // ⚠️ Inline Language Warning (Below Message Bubble)
                 if (message.metadata?['language_warning'] != null &&
@@ -9254,6 +9286,35 @@ Draft: "$draft"''';
   void _showErrorSnackBar(String message) =>
       _showSnackBar(message, isError: true);
 
+  void _triggerReplyToMessage(ChatMessage message) {
+    HapticFeedback.selectionClick();
+    final senderDisplayName = message.senderName ??
+        (message.senderProfile?['name'] ??
+            (message.metadata?['robot_name'] ??
+                (message.metadata?['sender_name'] ?? 'Mate')));
+    safeSetState(() {
+      _replyMessage = {
+        'id': message.id,
+        'message_text': message.messageText ??
+            (message.messageType == 'voice'
+                ? '🎤 Voice note'
+                : '📷 Media'),
+        'sender_id': message.senderId,
+        'sender_name': senderDisplayName,
+        'metadata': message.metadata,
+        'message_type': message.messageType,
+        'file_url': message.fileUrl,
+      };
+    });
+    _focusNode.requestFocus();
+    if (_messageController.text.trim().isEmpty) {
+      _messageController.text = '@$senderDisplayName ';
+      _messageController.selection = TextSelection.fromPosition(
+        TextPosition(offset: _messageController.text.length),
+      );
+    }
+  }
+
   void _showMessageContextMenu(ChatMessage message, bool isMe) {
     if (message.isOptimistic || message.isPending) return;
 
@@ -9393,32 +9454,7 @@ Draft: "$draft"''';
                     color: Colors.white, fontWeight: FontWeight.w600)),
             onTap: () {
               Navigator.pop(context);
-              HapticFeedback.selectionClick();
-              final senderDisplayName = message.senderName ??
-                  (message.senderProfile?['name'] ??
-                      (message.metadata?['robot_name'] ??
-                          (message.metadata?['sender_name'] ?? 'Mate')));
-              safeSetState(() {
-                _replyMessage = {
-                  'id': message.id,
-                  'message_text': message.messageText ??
-                      (message.messageType == 'voice'
-                          ? '🎤 Voice note'
-                          : '📷 Media'),
-                  'sender_id': message.senderId,
-                  'sender_name': senderDisplayName,
-                  'metadata': message.metadata,
-                  'message_type': message.messageType,
-                  'file_url': message.fileUrl,
-                };
-              });
-              _focusNode.requestFocus();
-              if (_messageController.text.trim().isEmpty) {
-                _messageController.text = '@$senderDisplayName ';
-                _messageController.selection = TextSelection.fromPosition(
-                  TextPosition(offset: _messageController.text.length),
-                );
-              }
+              _triggerReplyToMessage(message);
             },
           ),
           if (message.messageText != null)

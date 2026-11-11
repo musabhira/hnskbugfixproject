@@ -593,6 +593,110 @@ class PocketActionChatService {
     }
   }
 
+  /// Restore or sync missing Pocket Talk request chat message between two users
+  /// Ensures historical pact notifications or pact entries have a corresponding chat bubble
+  static Future<void> syncHistoricalPocketTalkRequestMessage({
+    required String myId,
+    required String otherUserId,
+  }) async {
+    if (!_isValidUuid(myId) || !_isValidUuid(otherUserId)) return;
+    try {
+      // 1. Check if a pocket_talk_request message already exists between these users
+      final existingMsg = await _supabase
+          .from('messages')
+          .select('id')
+          .or('and(sender_id.eq.$myId,receiver_id.eq.$otherUserId),and(sender_id.eq.$otherUserId,receiver_id.eq.$myId)')
+          .or('message_type.eq.pocket_talk_request,metadata->>is_pocket_talk.eq.true')
+          .limit(1);
+
+      if ((existingMsg as List).isNotEmpty) {
+        return; // Already present
+      }
+
+      // 2. Look for any existing notification of type pocket_talk
+      final notif = await _supabase
+          .from('notifications')
+          .select('*')
+          .or('and(sender_id.eq.$myId,user_id.eq.$otherUserId),and(sender_id.eq.$otherUserId,user_id.eq.$myId)')
+          .inFilter('type', ['pocket_talk', 'poket_talk'])
+          .order('created_at', ascending: false)
+          .limit(1)
+          .maybeSingle();
+
+      String senderId = myId;
+      String receiverId = otherUserId;
+      String notifStatus = 'pending';
+      String createdAt = DateTime.now().toUtc().toIso8601String();
+      String? pactId;
+
+      if (notif != null) {
+        senderId = notif['sender_id']?.toString() ?? myId;
+        receiverId = notif['user_id']?.toString() ?? otherUserId;
+        notifStatus = notif['status']?.toString() ?? 'pending';
+        createdAt = notif['created_at']?.toString() ?? createdAt;
+      } else {
+        // Check pocket_talk_pacts table
+        final pactIdCandidate = (myId.compareTo(otherUserId) < 0)
+            ? 'pact_${myId}_$otherUserId'
+            : 'pact_${otherUserId}_$myId';
+        final pactRes = await _supabase
+            .from('pocket_talk_pacts')
+            .select('*')
+            .eq('pact_id', pactIdCandidate)
+            .maybeSingle();
+        if (pactRes == null) return; // No pact exists
+
+        senderId = pactRes['initiator_id']?.toString() ??
+            pactRes['user1_id']?.toString() ??
+            myId;
+        receiverId = (senderId == myId) ? otherUserId : myId;
+        notifStatus = (pactRes['is_accepted'] == true) ? 'accepted' : 'pending';
+        createdAt = pactRes['started_at']?.toString() ?? createdAt;
+        pactId = pactIdCandidate;
+      }
+
+      String sName = 'Pocket Mate';
+      String? sAvatar;
+      try {
+        final profileRes = await _supabase
+            .from('profile')
+            .select('name, profile_image_url')
+            .eq('user_id', senderId)
+            .maybeSingle();
+        if (profileRes != null) {
+          if (profileRes['name'] != null) sName = profileRes['name'].toString();
+          sAvatar = profileRes['profile_image_url']?.toString();
+        }
+      } catch (_) {}
+
+      const String messageText =
+          '⚡ Pocket Talk Challenge: Invited you to a 4-Day Spoken English Pact! Tap to accept and start Day 1.';
+      final metadata = {
+        'is_pocket_talk': true,
+        'type': 'pocket_talk_request',
+        'pact_id': pactId ?? 'pact_${senderId}_$receiverId',
+        'sender_id': senderId,
+        'receiver_id': receiverId,
+        'sender_name': sName,
+        'sender_avatar': sAvatar,
+        'status': notifStatus,
+        'timestamp': createdAt,
+      };
+
+      await _supabase.from('messages').insert({
+        'sender_id': senderId,
+        'receiver_id': receiverId,
+        'message_text': messageText,
+        'content': messageText,
+        'message_type': 'pocket_talk_request',
+        'metadata': metadata,
+        'created_at': createdAt,
+      });
+    } catch (e) {
+      debugPrint('syncHistoricalPocketTalkRequestMessage error: $e');
+    }
+  }
+
   // =========================================================================
   // 4. POCKETTALK REQUEST ACTION
   // =========================================================================

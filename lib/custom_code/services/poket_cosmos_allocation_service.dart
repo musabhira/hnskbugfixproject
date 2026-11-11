@@ -1733,11 +1733,6 @@ class PoketCosmosAllocationService {
       }
     } catch (_) {}
 
-    // If Wave 1 still has vacant plots across the 15 worlds (< 375 citizens), strictly remain in Wave 1!
-    if (userBasedWave == 1) {
-      return 1;
-    }
-
     int remoteWave = 1;
     try {
       final res = await SupaFlow.client

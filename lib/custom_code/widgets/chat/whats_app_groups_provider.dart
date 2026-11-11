@@ -777,6 +777,63 @@ class Conversations extends _$Conversations {
         debugPrint('Error adding President conversation: $e');
       }
 
+      // 🏝️ Cosmos Island Neighbors Group (Guaranteed in Chat List for Citizen's Island)
+      try {
+        String? pin = prefs.getString('cosmos_user_relocated_pin_$userId') ??
+            prefs.getString('cosmos_user_pin_$userId') ??
+            prefs.getString('user_cosmos_pin') ??
+            prefs.getString('cosmos_pin');
+
+        if (pin == null || pin.isEmpty) {
+          final plot =
+              PoketCosmosAllocationService.instance.getCachedUserPlot(userId) ??
+                  PoketCosmosAllocationService.instance.currentBirthPlot;
+          if (plot != null) {
+            pin = plot.postalPinCode;
+          }
+        }
+
+        if (pin != null && pin.isNotEmpty) {
+          final match =
+              RegExp(r'PKT-W(\d+)-([A-Z]+)-I\d+-P(\d+)').firstMatch(pin);
+          if (match != null) {
+            final wave = int.tryParse(match.group(1) ?? '1') ?? 1;
+            final code = match.group(2) ?? 'EP';
+            final colony =
+                PoketCosmosAllocationService.instance.getColonyByCode(code);
+            final islandGroupId = PocketIslandGroupService.instance.getIslandGroupId(
+              planetCode: code,
+              wave: wave,
+            );
+            final islandGroupName = PocketIslandGroupService.instance.getIslandGroupName(
+              planetName: colony.planetName,
+              wave: wave,
+              islandName: colony.islandName,
+            );
+
+            // If not already fetched in updatedGroups from group_members query, inject it!
+            final alreadyInGroups = updatedGroups.any((g) => g.id == islandGroupId);
+            if (!alreadyInGroups) {
+              updatedGroups.insert(
+                0,
+                ChatConversation(
+                  id: islandGroupId,
+                  name: islandGroupName,
+                  imageUrl: 'assets/images/pocket_mates_logo.png',
+                  lastMessage: 'Official Neighborhood Group for ${colony.planetName} Island',
+                  lastMessageTime: DateTime.now(),
+                  unreadCount: 0,
+                  isGroup: true,
+                  isPinned: pinnedIds.contains(islandGroupId),
+                ),
+              );
+            }
+          }
+        }
+      } catch (e) {
+        debugPrint('Error ensuring user island neighbors group in chat: $e');
+      }
+
       // Combine and sort
       final combined = [
         ...notifications,

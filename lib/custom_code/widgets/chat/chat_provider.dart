@@ -971,13 +971,21 @@ class ChatMessages extends _$ChatMessages {
       } catch (_) {}
     }
 
+    // Only set reply_to_message_id if it is a valid 36-char PostgreSQL UUID.
+    // Non-UUID IDs (e.g. temp_, robot_msg_) will cause Postgres syntax error (22P02).
+    // The rich quoted message snapshot is safely preserved in enrichedMetadata['reply_to'].
+    final bool isValidReplyUuid = replyToId != null &&
+        replyToId.isNotEmpty &&
+        RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$')
+            .hasMatch(replyToId);
+
     final Map<String, dynamic> messageData = {
       'sender_id': uid,
       'message_text': text,
       'message_type': messageType,
       'file_url': fileUrl,
       'voice_duration': voiceDuration,
-      'reply_to_message_id': replyToId,
+      'reply_to_message_id': isValidReplyUuid ? replyToId : null,
       'gallery_id': galleryId,
       'thought_id': thoughtId,
       'metadata': enrichedMetadata,

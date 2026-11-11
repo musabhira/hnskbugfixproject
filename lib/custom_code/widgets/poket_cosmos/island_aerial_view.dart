@@ -3319,16 +3319,15 @@ class IslandAerialPainter extends CustomPainter {
           Rect.fromCenter(center: housePos, width: 60.0, height: 48.0);
 
       if (citizenPlot != null) {
-        // 🏡 Render full architectural compound (scaled up to 1.42 so villas, cars, pools, gazebos are grand, prominent & clearly visible!)
+        // Render full architectural compound
         final day = citizenPlot.day;
         canvas.save();
         canvas.translate(housePos.dx, housePos.dy);
         canvas.rotate(plotRot);
-        canvas.scale(1.42);
+        canvas.scale(1.22);
         canvas.translate(-housePos.dx, -housePos.dy);
 
-        // 1. Manicured lawn base & garden kerb border
-        _drawPlotLawnAndGardens(canvas, parcelRect, housePos, plotNumber);
+        // Lawn box / kerb removed per user request (so house sits cleanly on the island terrain)
 
         // 2. Tidy yard corner trees (safely in corner, away from house)
         _drawYardTreeClusters(canvas, parcelRect, plotNumber);
@@ -3485,22 +3484,6 @@ class IslandAerialPainter extends CustomPainter {
     _drawPlotNumberBadge(canvas, parcelRect, plotNumber, isSel);
 
     canvas.translate(housePos.dx, housePos.dy);
-
-    // 1. Gold/Amber reserved parcel base
-    final turfRRect = RRect.fromRectAndRadius(
-      Rect.fromCenter(center: Offset.zero, width: 34.0, height: 26.0),
-      const Radius.circular(6.0),
-    );
-    final turfPaint = Paint()
-      ..color = const Color(0xFFB45309).withValues(alpha: 0.25)
-      ..style = PaintingStyle.fill;
-    canvas.drawRRect(turfRRect, turfPaint);
-
-    final borderPaint = Paint()
-      ..color = const Color(0xFFF59E0B).withValues(alpha: 0.60)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.9;
-    canvas.drawRRect(turfRRect, borderPaint);
 
     // 2. Animated Rotating Countdown Timer Ring
     final ringRadius = 5.8;
@@ -3976,38 +3959,56 @@ class IslandAerialPainter extends CustomPainter {
     }
   }
 
-  // 6. Minimal Plot Number Badge strictly inside parcel boundary (#plotNumber only, no username)
+  // 6. Minimal Plot Number Pin placed neatly on a slender post at the parcel side
   void _drawPlotNumberBadge(
       Canvas canvas, Rect parcelRect, int plotNumber, bool isSel) {
-    // Placed neatly on the top-left inside the parcel bounds
     final text = '#$plotNumber';
     final tp = TextPainter(
       text: TextSpan(
         text: text,
         style: TextStyle(
           color: isSel ? const Color(0xFFFFD700) : Colors.white,
-          fontSize: 4.8,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 0.3,
+          fontSize: 3.8,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.2,
         ),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
 
-    final badgeWidth = math.max(16.0, tp.width + 6.0);
-    final badgeHeight = tp.height + 3.0;
+    final badgeWidth = tp.width + 4.0;
+    final badgeHeight = tp.height + 2.0;
+    // Positioned neatly near the corner
     final badgeCenter = Offset(parcelRect.left + (badgeWidth / 2) + 2.0,
-        parcelRect.top + (badgeHeight / 2) + 2.0);
+        parcelRect.top + (badgeHeight / 2) + 1.5);
+
+    // Slender minimal post / pole ("ഒരു കമ്പിയിൽ ഇങ്ങനെ നിൽക്കുന്ന പോലെ")
+    final postPaint = Paint()
+      ..color = Colors.white60
+      ..strokeWidth = 0.6
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(
+      badgeCenter.translate(0, badgeHeight / 2),
+      badgeCenter.translate(0, badgeHeight / 2 + 3.0),
+      postPaint,
+    );
+    // Tiny base dot on the ground
+    canvas.drawCircle(
+      badgeCenter.translate(0, badgeHeight / 2 + 3.0),
+      0.6,
+      Paint()..color = Colors.black45,
+    );
+
     final badgeRRect = RRect.fromRectAndRadius(
       Rect.fromCenter(
           center: badgeCenter, width: badgeWidth, height: badgeHeight),
-      const Radius.circular(3.0),
+      const Radius.circular(2.0),
     );
 
     // Subtle drop shadow
     canvas.drawRRect(
-      badgeRRect.shift(const Offset(0.3, 0.4)),
-      Paint()..color = Colors.black54,
+      badgeRRect.shift(const Offset(0.2, 0.3)),
+      Paint()..color = Colors.black45,
     );
     // Dark slate body
     canvas.drawRRect(
@@ -4015,7 +4016,7 @@ class IslandAerialPainter extends CustomPainter {
       Paint()
         ..color = isSel
             ? const Color(0xFF0F172A)
-            : const Color(0xFF1E293B).withValues(alpha: 0.95),
+            : const Color(0xFF1E293B).withValues(alpha: 0.90),
     );
     // Golden / cyan border
     canvas.drawRRect(
@@ -4023,16 +4024,17 @@ class IslandAerialPainter extends CustomPainter {
       Paint()
         ..color = isSel
             ? const Color(0xFFFFD700)
-            : const Color(0xFF38BDF8).withValues(alpha: 0.85)
+            : const Color(0xFF38BDF8).withValues(alpha: 0.70)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = isSel ? 1.0 : 0.7,
+        ..strokeWidth = isSel ? 0.8 : 0.5,
     );
 
     tp.paint(canvas,
         Offset(badgeCenter.dx - tp.width / 2, badgeCenter.dy - tp.height / 2));
   }
 
-  // 6b. Manicured Yard Lawn & Garden Boundary (Enhances high-zoom aesthetics)
+  // 6b. Manicured Yard Lawn & Garden Boundary (Disabled per user request so house rests directly on terrain)
+  // ignore: unused_element
   void _drawPlotLawnAndGardens(
       Canvas canvas, Rect parcelRect, Offset housePos, int plotNumber) {
     final lawnRRect = RRect.fromRectAndRadius(
@@ -4323,9 +4325,9 @@ class IslandAerialPainter extends CustomPainter {
     Rect rect,
     Color roofBase,
     Color ridgeHighlight, {
-    bool hasPatio = true,
+    bool hasPatio = false,
   }) {
-    // 1. Warm Sandstone / Buff Paved Terrace Base (Images 1 & 3 under the orange roof)
+    // 1. Warm Sandstone / Buff Paved Terrace Base (Disabled so house rests cleanly on natural terrain)
     if (hasPatio) {
       final patioRect = rect.inflate(2.2);
       canvas.drawRRect(
@@ -4338,7 +4340,7 @@ class IslandAerialPainter extends CustomPainter {
     canvas.drawRRect(
       RRect.fromRectAndRadius(
           rect.translate(0.9, 1.1), const Radius.circular(1.2)),
-      Paint()..color = Colors.black38,
+      Paint()..color = Colors.black26,
     );
 
     // 3. Faceted Slopes & Hip Ridges

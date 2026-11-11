@@ -236,6 +236,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
   static final Set<String> _cachedGlobalViewedHomeIds = {};
   final Set<String> _viewedHomeIds = {};
   final Set<String> _protectedHomeIds = {};
+  final Set<int> _skippedAdIndices = {};
   bool _isHomesAudioMuted = false;
 
   // Audio player for house ambient background music delegated to PocketGameAudioService
@@ -2211,11 +2212,15 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                       if (status == 'FAILED' || status == 'VIP_BLOCKED') {
                         // ⚡ If ad failed to load or user is VIP, automatically skip to next home!
                         // Prevents showing an empty ad screen with just a button.
-                        Future.delayed(const Duration(milliseconds: 250), () {
-                          if (mounted) {
-                            _scrollToNextReel();
-                          }
-                        });
+                        // Guard with _skippedAdIndices so failure retry chain doesn't fire multiple skips!
+                        if (!_skippedAdIndices.contains(index)) {
+                          _skippedAdIndices.add(index);
+                          Future.delayed(const Duration(milliseconds: 250), () {
+                            if (mounted) {
+                              _scrollToNextReel();
+                            }
+                          });
+                        }
                       }
                     },
                   ),

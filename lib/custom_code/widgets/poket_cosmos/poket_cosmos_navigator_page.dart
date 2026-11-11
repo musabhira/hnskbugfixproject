@@ -65,8 +65,9 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
   List<CitizenPlot> _currentIslandPlots = [];
   CitizenPlot? _inspectedPlot;
 
+  CitizenPlot? _myHomePlot;
   double _currentAerialZoom = 1.0;
-  int _activeWaves = 1;
+  int _activeWaves = 2; // Default to 2 active waves (750 plots across the 15 celestial worlds)
   late AnimationController _ambientOceanAnimController;
 
   @override
@@ -79,7 +80,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
       duration: const Duration(seconds: 40),
     )..repeat();
     _islandPageController = PageController(viewportFraction: 0.84);
-    _planets = _buildCosmosPlanets();
+    _planets = _buildCosmosPlanets(activeWaves: 2);
     _refreshCosmosWaves();
     if (widget.initialPlanetCode != null && widget.initialPlanetCode!.isNotEmpty) {
       final code = widget.initialPlanetCode!.toUpperCase();
@@ -127,7 +128,18 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
     } else {
       _loadIslandPlots(_planets.first.countryMaps.first);
     }
+    _loadUserHomePlot();
     _aerialMapZoomController.addListener(_onAerialZoomChanged);
+  }
+
+  Future<void> _loadUserHomePlot() async {
+    try {
+      final myId = SupaFlow.client.auth.currentUser?.id ?? '';
+      final p = await PoketCosmosAllocationService.instance.getUserPlot(userId: myId);
+      if (mounted) {
+        setState(() => _myHomePlot = p);
+      }
+    } catch (_) {}
   }
 
   void _onAerialZoomChanged() {
@@ -1571,44 +1583,54 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                           ),
                         ),
                       ),
-                      const SizedBox(width: 6),
-                      // 💬 Island Neighbors Group Chat Button
-                      SizedBox(
-                        height: 38,
-                        child: OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF38BDF8),
-                            side: const BorderSide(
-                              color: Color(0xFF38BDF8),
-                              width: 1.2,
+                      // 💬 Island Neighbors Group Chat Button (Only visible on user's own island per privacy requirement)
+                      Builder(
+                        builder: (context) {
+                          final myId = SupaFlow.client.auth.currentUser?.id ?? '';
+                          final bool isOwn = _currentIslandPlots.any((p) => p.userId == myId);
+                          if (!isOwn) return const SizedBox.shrink();
+
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 6),
+                            child: SizedBox(
+                              height: 38,
+                              child: OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: const Color(0xFF38BDF8),
+                                  side: const BorderSide(
+                                    color: Color(0xFF38BDF8),
+                                    width: 1.2,
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  HapticFeedback.lightImpact();
+                                  final colony = PoketCosmosAllocationService.instance
+                                      .getColonyByPlanetName(
+                                          _selectedPlanet?.name ?? island.name);
+                                  PocketIslandGroupService.instance.openIslandGroupChat(
+                                    context,
+                                    planetCode: colony.code,
+                                    planetName: colony.planetName,
+                                    wave: island.wave,
+                                    islandName: island.name,
+                                  );
+                                },
+                                icon: const Text('💬', style: TextStyle(fontSize: 13)),
+                                label: const Text(
+                                  'Neighbors',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ),
                             ),
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          onPressed: () {
-                            HapticFeedback.lightImpact();
-                            final colony = PoketCosmosAllocationService.instance
-                                .getColonyByPlanetName(
-                                    _selectedPlanet?.name ?? island.name);
-                            PocketIslandGroupService.instance.openIslandGroupChat(
-                              context,
-                              planetCode: colony.code,
-                              planetName: colony.planetName,
-                              wave: island.wave,
-                              islandName: island.name,
-                            );
-                          },
-                          icon: const Text('💬', style: TextStyle(fontSize: 13)),
-                          label: const Text(
-                            'Neighbors',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ),
+                          );
+                        },
                       ),
                       const SizedBox(width: 6),
                       Expanded(
@@ -1617,8 +1639,12 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                           builder: (context) {
                             final myId =
                                 SupaFlow.client.auth.currentUser?.id ?? '';
-                            final bool isOwn = _currentIslandPlots
-                                .any((p) => p.userId == myId);
+                            final colony = PoketCosmosAllocationService.instance
+                                .getColonyByPlanetName(_selectedPlanet?.name ?? island.name);
+                            // Mock Attack is strictly for the user's OWN planet/island!
+                            // Per user directive: "മോക്ക് അറ്റാക്ക് എന്റെ പ്ലാനറ്റിൽ മാത്രമാണ് മോക്ക് അറ്റാക്ക് കാണിക്കുള്ളൂ. അല്ലാന്നുണ്ടെങ്കിൽ മെയിൻ അറ്റാക്ക് ആണ് കാണിക്കേണ്ടത്. അറ്റാക്ക് എന്ന് പറഞ്ഞ് കാണിക്കണം."
+                            final bool isOwn = _currentIslandPlots.any((p) => p.userId == myId) ||
+                                (_myHomePlot != null && _myHomePlot!.planetName.toLowerCase() == colony.planetName.toLowerCase());
                             return SizedBox(
                               height: 38,
                               child: ElevatedButton.icon(
@@ -1636,8 +1662,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                                   PocketIslandAttackPage.launch(
                                     context,
                                     island: island,
-                                    colony: PoketCosmosAllocationService.instance
-                                        .getColonyByPlanetName(_selectedPlanet?.name ?? island.name),
+                                    colony: colony,
                                     plots: _currentIslandPlots,
                                     isMockAttack: isOwn,
                                   );
@@ -1645,7 +1670,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                                 icon: Text(isOwn ? '🛡️' : '⚔️',
                                     style: const TextStyle(fontSize: 14)),
                                 label: Text(
-                                  isOwn ? 'Mock' : 'Attack',
+                                  isOwn ? 'Mock Attack' : 'Attack',
                                   style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 12),
@@ -2027,8 +2052,10 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                       builder: (context) {
                         final myId =
                             SupaFlow.client.auth.currentUser?.id ?? '';
-                        final bool isOwn = _currentIslandPlots
-                            .any((p) => p.userId == myId);
+                        final colony = PoketCosmosAllocationService.instance
+                            .getColonyByPlanetName(_selectedPlanet?.name ?? island.name);
+                        final bool isOwn = _currentIslandPlots.any((p) => p.userId == myId) ||
+                            (_myHomePlot != null && _myHomePlot!.planetName.toLowerCase() == colony.planetName.toLowerCase());
                         return Text(isOwn ? '🛡️' : '⚔️',
                             style: const TextStyle(fontSize: 16));
                       },
@@ -2037,14 +2064,15 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                     onPressed: () {
                       final myId =
                           SupaFlow.client.auth.currentUser?.id ?? '';
-                      final bool isOwn = _currentIslandPlots
-                          .any((p) => p.userId == myId);
+                      final colony = PoketCosmosAllocationService.instance
+                          .getColonyByPlanetName(_selectedPlanet?.name ?? island.name);
+                      final bool isOwn = _currentIslandPlots.any((p) => p.userId == myId) ||
+                          (_myHomePlot != null && _myHomePlot!.planetName.toLowerCase() == colony.planetName.toLowerCase());
                       HapticFeedback.mediumImpact();
                       PocketIslandAttackPage.launch(
                         context,
                         island: island,
-                        colony: PoketCosmosAllocationService.instance
-                            .getColonyByPlanetName(_selectedPlanet?.name ?? island.name),
+                        colony: colony,
                         plots: _currentIslandPlots,
                         isMockAttack: isOwn,
                       );
@@ -2063,254 +2091,57 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
   }
 
   // =========================================================================
-  // 🏡 PLOT DETAILS MODAL BOTTOM SHEET
+  // 🏡 PLOT DETAILS / DIRECT CITADEL ATTACK NAVIGATION
   // =========================================================================
   void _showPlotDetailsSheet(CitizenPlot plot) {
     setState(() => _inspectedPlot = plot);
 
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        return Container(
-          padding: const EdgeInsets.all(20),
-          decoration: const BoxDecoration(
-            color: Color(0xFF14181B),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-            boxShadow: [BoxShadow(color: Colors.black87, blurRadius: 20)],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: plot.isPresident
-                          ? const Color(0xFFFFD700)
-                          : const Color(0xFF0284C7),
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                    child: Center(
-                      child: Text(
-                        plot.isPresident ? '👑' : '🏡',
-                        style: const TextStyle(fontSize: 22),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          plot.userName,
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                        Text(
-                          'Plot #${plot.plotNumber} • ${plot.postalPinCode}',
-                          style: const TextStyle(
-                              color: Color(0xFFFFD700), fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon:
-                        const Icon(Icons.close_rounded, color: Colors.white54),
-                    onPressed: () => Navigator.of(ctx).pop(),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              // Habit Level & Streak Stats
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.06),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Habit Stage',
-                              style: TextStyle(
-                                  color: Colors.white54, fontSize: 11)),
-                          const SizedBox(height: 2),
-                          Text('Day ${plot.day} / 90',
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14)),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.06),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Score & Streak',
-                              style: TextStyle(
-                                  color: Colors.white54, fontSize: 11)),
-                          const SizedBox(height: 2),
-                          Text('${plot.pocketScore} PS • 🔥 ${plot.day}d',
-                              style: const TextStyle(
-                                  color: Color(0xFFFFD700),
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14)),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              // Registered Postal Address
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.04),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white12),
-                ),
-                child: Text(
-                  '📮 ${plot.formalPostalAddress}',
-                  style: const TextStyle(color: Colors.white70, fontSize: 11.5),
-                ),
-              ),
-              const SizedBox(height: 18),
-              Row(
-                children: [
-                  Expanded(
-                    child: SizedBox(
-                      height: 44,
-                      child: OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF38BDF8),
-                          side: const BorderSide(color: Color(0xFF38BDF8), width: 1.2),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                        ),
-                        onPressed: () {
-                          Navigator.of(ctx).pop();
-                          if (plot.userId.isNotEmpty &&
-                              !plot.userId.startsWith('empty') &&
-                              !plot.userId.startsWith('vacant')) {
-                            final colony = PoketCosmosAllocationService.instance
-                                .getColonyByPlanetName(plot.planetName);
-                            final neighbor = PocketNeighbor(
-                              id: plot.userId,
-                              name: plot.userName,
-                              day: plot.day,
-                              streak: plot.day,
-                              rank: 'Cosmic Citizen',
-                              paletteId: 'warm_cottage',
-                              isMe: false,
-                              hasActiveShield: true,
-                              statusMessage: plot.postalPinCode,
-                              isPocketRobo: PocketRobotService.isRobotId(plot.userId),
-                              hp: 100,
-                              maxHp: 100,
-                              planetCode: colony.code,
-                              planetName: colony.planetName,
-                              islandName: plot.countryName,
-                              streetName: plot.streetName,
-                              plotNumber: plot.plotNumber,
-                              cosmosPin: plot.postalPinCode,
-                            );
+    // If plot is occupied by a user or pioneer robot, go DIRECTLY to their attack profile!
+    // ("ബോട്ടംഷീറ്റ് പോലും കാണിക്കണ്ട ആ വീടുകളിൽ ടാപ്പ് ചെയ്തു കഴിഞ്ഞു കഴിഞ്ഞാൽ ഡയറക്റ്റ് അതിന്റെ അറ്റാക്കിങ് പ്രൊഫൈലിലേക്ക് പോകണം")
+    if (plot.userId.isNotEmpty &&
+        !plot.userId.startsWith('empty') &&
+        !plot.userId.startsWith('vacant')) {
+      final colony = PoketCosmosAllocationService.instance
+          .getColonyByPlanetName(plot.planetName);
+      final neighbor = PocketNeighbor(
+        id: plot.userId,
+        name: plot.userName,
+        day: plot.day,
+        streak: plot.day,
+        rank: 'Cosmic Citizen',
+        paletteId: 'warm_cottage',
+        isMe: false,
+        hasActiveShield: true,
+        statusMessage: plot.postalPinCode,
+        isPocketRobo: PocketRobotService.isRobotId(plot.userId),
+        hp: 100,
+        maxHp: 100,
+        planetCode: colony.code,
+        planetName: colony.planetName,
+        islandName: plot.countryName,
+        streetName: plot.streetName,
+        plotNumber: plot.plotNumber,
+        cosmosPin: plot.postalPinCode,
+      );
 
-                            PocketCitadelAttackPage.openForUser(
-                              context,
-                              userId: plot.userId,
-                              targetName: plot.userName,
-                              targetDay: plot.day,
-                              neighbor: neighbor,
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                    'Plot #${plot.plotNumber} (${plot.postalPinCode}) is available for purchase!'),
-                                backgroundColor: const Color(0xFF10B981),
-                              ),
-                            );
-                          }
-                        },
-                        icon: const Icon(Icons.person_pin_rounded, size: 18),
-                        label: const Text(
-                          'Profile 👤',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: SizedBox(
-                      height: 44,
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFDC2626),
-                          foregroundColor: Colors.white,
-                          elevation: 3,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                        ),
-                        onPressed: () {
-                          Navigator.of(ctx).pop();
-                          final planet = _selectedPlanet ?? _planets.first;
-                          final island = _selectedIsland ??
-                              (planet.countryMaps.isNotEmpty
-                                  ? planet.countryMaps[_currentIslandIndex.clamp(0, planet.countryMaps.length - 1)]
-                                  : planet.countryMaps.first);
-                          final colony = island.planetCode != null
-                              ? PoketCosmosAllocationService.instance.getColonyByCode(island.planetCode!)
-                              : PoketCosmosAllocationService.instance.getColonyByPlanetName(planet.name);
+      HapticFeedback.lightImpact();
+      PocketCitadelAttackPage.openForUser(
+        context,
+        userId: plot.userId,
+        targetName: plot.userName,
+        targetDay: plot.day,
+        neighbor: neighbor,
+      );
+      return;
+    }
 
-                          PocketIslandAttackPage.launch(
-                            context,
-                            island: island,
-                            colony: colony,
-                            plots: _currentIslandPlots,
-                            isMockAttack: false,
-                          );
-                        },
-                        icon: const Icon(Icons.flash_on_rounded, size: 18),
-                        label: const Text(
-                          'Challenge ⚔️',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
+    // Vacant plot fallback notice (rare as vacant plot taps directly trigger neighbor invite sheet)
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+            'Plot #${plot.plotNumber} (${plot.postalPinCode}) is vacant and available for claiming!'),
+        backgroundColor: const Color(0xFF10B981),
+      ),
     );
   }
 

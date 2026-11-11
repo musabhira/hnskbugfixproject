@@ -458,20 +458,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       );
       List<CitadelRaidLogEntry> raids =
           await PocketFortressDefenseService.getRecentRaids();
-      if (raids.isEmpty && day >= 4) {
-        final mockRaid = CitadelRaidLogEntry(
-          id: 'mock_raid_${day}_1',
-          attackerId: 'robot_citadel_6_0',
-          attackerName: 'Cyber Valkyrie 🛡️ #01',
-          attackerAvatar: '🤖',
-          attackerWeapon: '⚡ Laser Broadsword',
-          timestamp: DateTime.now().subtract(const Duration(hours: 2)),
-          breached: true,
-          coinsLooted: 15,
-          ironDomeBlocked: false,
-        );
-        raids = [mockRaid];
-      }
 
       final houseId = isMe ? 'me' : (widget.userId ?? '');
       final isProtected =
@@ -3605,57 +3591,67 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
           Padding(
             padding: const EdgeInsets.all(14),
-            child: _recentRaids.isEmpty
-                ? Container(
-                    padding: const EdgeInsets.all(18),
-                    alignment: Alignment.center,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text('🛡️', style: TextStyle(fontSize: 28)),
-                        const SizedBox(height: 8),
-                        Text(
-                          'No intrusions recorded! Your citadel defense holds firm.',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12.5,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          'Attacker details will appear here after an intrusion.',
-                          style: GoogleFonts.inter(
-                              color: Colors.white54, fontSize: 10.5),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  )
-                : Column(
-                    children: _recentRaids.map((entry) {
-                      final timeDiff =
-                          DateTime.now().difference(entry.timestamp);
-                      final timeText = timeDiff.inHours < 1
-                          ? '${timeDiff.inMinutes.clamp(1, 60)}m ago'
-                          : (timeDiff.inHours < 24
-                              ? '${timeDiff.inHours}h ago'
-                              : '${timeDiff.inDays}d ago');
+            child: () {
+              // 👮 Filter: Only show real intrusions where another user attacked THIS user (exclude self-attacks and generic placeholders without username)
+              final validRaids = _recentRaids.where((entry) {
+                final isSelf = entry.attackerId.isNotEmpty &&
+                    (entry.attackerId == userId || entry.attackerId == 'me');
+                if (isSelf) return false;
+                final rawName = entry.attackerName.trim();
+                if (rawName.isEmpty ||
+                    rawName.toLowerCase() == 'you' ||
+                    rawName.toLowerCase() == 'test raid' ||
+                    rawName.toLowerCase().contains('shadow citadel raider')) {
+                  return false;
+                }
+                return true;
+              }).toList();
 
-                      final bool isSelf = entry.attackerId.isNotEmpty &&
-                          (entry.attackerId == userId ||
-                              entry.attackerId == 'me');
-                      final String rawName = entry.attackerName.trim();
-                      final displayAttackerName = (rawName.isNotEmpty &&
-                              rawName.toLowerCase() != 'you' &&
-                              !isSelf)
-                          ? rawName
-                          : (isSelf ? 'Test Raid' : 'Shadow Citadel Raider 🦹');
-                      final displayAttackerAvatar =
-                          entry.attackerAvatar.isNotEmpty
-                              ? entry.attackerAvatar
-                              : '⚔️';
+              if (validRaids.isEmpty) {
+                return Container(
+                  padding: const EdgeInsets.all(18),
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('🛡️', style: TextStyle(fontSize: 28)),
+                      const SizedBox(height: 8),
+                      Text(
+                        'No intrusions recorded! Your citadel defense holds firm.',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12.5,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        'Attacker details will appear here after an intrusion.',
+                        style: GoogleFonts.inter(
+                            color: Colors.white54, fontSize: 10.5),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return Column(
+                children: validRaids.map((entry) {
+                  final timeDiff =
+                      DateTime.now().difference(entry.timestamp);
+                  final timeText = timeDiff.inHours < 1
+                      ? '${timeDiff.inMinutes.clamp(1, 60)}m ago'
+                      : (timeDiff.inHours < 24
+                          ? '${timeDiff.inHours}h ago'
+                          : '${timeDiff.inDays}d ago');
+
+                  final displayAttackerName = entry.attackerName.trim();
+                  final displayAttackerAvatar =
+                      entry.attackerAvatar.isNotEmpty
+                          ? entry.attackerAvatar
+                          : '⚔️';
 
                       Widget attackerAvatarWidget;
                       if (displayAttackerAvatar.startsWith('http')) {
@@ -3847,7 +3843,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         ),
                       );
                     }).toList(),
-                  ),
+                  );
+                }(),
           ),
         ],
       ),

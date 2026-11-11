@@ -537,7 +537,7 @@ class _PoketCosmosResidentIslandViewState
                                           ),
                                           const SizedBox(height: 3),
                                           Text(
-                                            '${c.islandName} • 25 Plots (Wave 1: #$startPlot-#$endPlot)',
+                                            '${c.islandName} • 25 Plots (Wave $currentWave: #$startPlot-#$endPlot)',
                                             style: GoogleFonts.outfit(
                                               color: const Color(0xFF94A3B8),
                                               fontSize: 11.5,
@@ -734,7 +734,7 @@ class _PoketCosmosResidentIslandViewState
               return InteractiveViewer(
                 transformationController: _transformController,
                 minScale: 0.55,
-                maxScale: 12.0,
+                maxScale: 25.0,
                 boundaryMargin: EdgeInsets.zero,
                 constrained: false,
                 child: SizedBox(
@@ -891,46 +891,47 @@ class _PoketCosmosResidentIslandViewState
             ),
           ),
 
-          // 💬 Floating Island Neighbors Group Chat Capsule
-          Positioned(
-            bottom: bottomPad + 76,
-            left: 20,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                HapticFeedback.mediumImpact();
-                PocketIslandGroupService.instance.openIslandGroupChat(
-                  context,
-                  planetCode: _colony.code,
-                  planetName: _colony.planetName,
-                  wave: _island.wave,
-                  islandName: _island.name,
-                );
-              },
-              icon: const Text('💬', style: TextStyle(fontSize: 15)),
-              label: Text(
-                'NEIGHBORS 💬',
-                style: GoogleFonts.outfit(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 12,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0284C7),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 14, vertical: 11),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  side: const BorderSide(
-                    color: Color(0xFF38BDF8),
-                    width: 1.2,
+          // 💬 Floating Island Neighbors Group Chat Capsule (Only shown on user's own island per privacy requirement)
+          if (_colony.planetName == _myPlot.planetName)
+            Positioned(
+              bottom: bottomPad + 76,
+              left: 20,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  HapticFeedback.mediumImpact();
+                  PocketIslandGroupService.instance.openIslandGroupChat(
+                    context,
+                    planetCode: _colony.code,
+                    planetName: _colony.planetName,
+                    wave: _island.wave,
+                    islandName: _island.name,
+                  );
+                },
+                icon: const Text('💬', style: TextStyle(fontSize: 15)),
+                label: Text(
+                  'NEIGHBORS 💬',
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 12,
+                    letterSpacing: 0.5,
                   ),
                 ),
-                elevation: 6,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0284C7),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 14, vertical: 11),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: const BorderSide(
+                      color: Color(0xFF38BDF8),
+                      width: 1.2,
+                    ),
+                  ),
+                  elevation: 6,
+                ),
               ),
             ),
-          ),
 
           // ⚔️ Floating Island Attack / Mock Attack Action Capsule
           Positioned(
@@ -983,67 +984,51 @@ class _PoketCosmosResidentIslandViewState
             ),
           ),
 
-          // 🎯 Bottom Floating Actions: "FOCUS MY HOUSE 🏡" & "COSMOS EXPLORER 🪐"
+          // 🎯 Bottom Floating Actions: "FOCUS TO MY PLOT 🏡" & "COSMOS EXPLORER 🪐"
           Positioned(
             bottom: bottomPad + 18,
             left: 20,
             right: 20,
             child: Row(
               children: [
-                Expanded(
-                  flex: 3,
-                  child: Builder(
-                    builder: (context) {
-                      final isHomeColony =
-                          (_colony.planetName == _myPlot.planetName);
-                      return ElevatedButton.icon(
-                        onPressed: () {
-                          HapticFeedback.mediumImpact();
-                          if (isHomeColony) {
-                            _centerOnUserPlot(MediaQuery.of(context).size);
-                          } else {
-                            _switchToColony(
-                              PoketCosmosAllocationService.instance
-                                  .getColonyByPlanetName(_myPlot.planetName),
-                            );
-                          }
-                        },
-                        icon: Text(isHomeColony ? '🏡' : '🚀',
-                            style: const TextStyle(fontSize: 16)),
-                        label: Text(
-                          isHomeColony
-                              ? 'FOCUS TO MY PLOT (#${_myPlot.plotNumber})'
-                              : 'FLY TO MY PLOT (${_myPlot.planetName.split(" ").first}) 🚀',
-                          style: GoogleFonts.outfit(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                            letterSpacing: 0.4,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                // Only show "FOCUS TO MY PLOT" if the user is currently on their home island!
+                // Per user directive: "ഫോക്കസ് ടു മൈ പ്ലോട്ട് എന്നുള്ളത് എന്റെ ഐലൻഡിൽ എന്റെ പ്ലോട്ടിൽ മാത്രം ഫോക്കസ് ടു പ്ലോട്ട് ഉള്ളൂ. അല്ലാതെ ആ ബട്ടൺ കാണിക്കേണ്ട ആവശ്യമില്ല."
+                if (_colony.planetName == _myPlot.planetName) ...[
+                  Expanded(
+                    flex: 3,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        HapticFeedback.mediumImpact();
+                        _centerOnUserPlot(MediaQuery.of(context).size);
+                      },
+                      icon: const Text('🏡', style: TextStyle(fontSize: 16)),
+                      label: Text(
+                        'FOCUS TO MY PLOT (#${_myPlot.plotNumber})',
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          letterSpacing: 0.4,
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: isHomeColony
-                              ? const Color(0xFF16A34A)
-                              : const Color(0xFF2563EB),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            side: BorderSide(
-                              color: isHomeColony
-                                  ? const Color(0xFF4ADE80)
-                                  : const Color(0xFF60A5FA),
-                              width: 1.2,
-                            ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF16A34A),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: const BorderSide(
+                            color: Color(0xFF4ADE80),
+                            width: 1.2,
                           ),
-                          elevation: 6,
                         ),
-                      );
-                    },
+                        elevation: 6,
+                      ),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 10),
+                  const SizedBox(width: 10),
+                ],
                 Expanded(
                   flex: 2,
                   child: ElevatedButton.icon(

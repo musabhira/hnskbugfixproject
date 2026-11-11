@@ -564,13 +564,25 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
 
       // Insert announcement row into messages table
       try {
+        final pactId = (myId.compareTo(candidate.userId) < 0)
+            ? 'pact_${myId}_${candidate.userId}'
+            : 'pact_${candidate.userId}_$myId';
         await _supabase.from('messages').insert({
           if (convId != null) 'conversation_id': convId,
           'sender_id': myId,
           'receiver_id': candidate.userId,
           'content': pactAnnouncement,
           'message_text': pactAnnouncement,
-          'message_type': 'text',
+          'message_type': 'pocket_talk_request',
+          'metadata': {
+            'is_pocket_talk': true,
+            'type': 'pocket_talk_request',
+            'pact_id': pactId,
+            'sender_id': myId,
+            'receiver_id': candidate.userId,
+            'status': 'pending',
+            'timestamp': nowIso,
+          },
         });
       } catch (_) {}
     } catch (_) {}
