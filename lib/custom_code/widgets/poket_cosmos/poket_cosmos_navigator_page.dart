@@ -1436,6 +1436,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                     island: island,
                     isInteractive: false,
                     plots: _currentIslandPlots,
+                    planetName: _selectedPlanet?.name ?? island.name,
                   ),
                   // President 👑 Badge or English Tag
                   Positioned(
@@ -1748,6 +1749,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                       zoomScale: _currentAerialZoom,
                       plots: _currentIslandPlots,
                       selectedPlotNumber: _inspectedPlot?.plotNumber,
+                      planetName: _selectedPlanet?.name ?? island.name,
                       onPlotTapped: _showPlotDetailsSheet,
                       onPlotPurchased: () => _loadIslandPlots(island),
                     ),

@@ -317,19 +317,23 @@ class PoketCosmosAllocationService {
     for (final c in colonies) {
       if (c.code.toLowerCase() == lower) return c;
     }
-    // 2. Island name match (e.g., 'caloris basin', 'cygnus haven', 'tranquility base')
-    for (final c in colonies) {
-      if (lower.contains(c.islandName.toLowerCase()) ||
-          c.islandName.toLowerCase().contains(lower)) {
-        return c;
-      }
-    }
-    // 3. Planet name match (e.g., 'mercury', 'kepler', 'ganymede', 'mars')
+    // 2. Exact or partial planet name match (e.g., 'mercury', 'kepler', 'ganymede', 'mars', 'earth')
     for (final c in colonies) {
       final baseClean =
           c.planetName.toLowerCase().replaceAll(RegExp(r'[^\w\s-]'), '').trim();
+      final words = baseClean.split(' ');
+      final mainWord = words.first;
       if (lower.contains(baseClean) ||
-          baseClean.contains(lower.split(' ').first)) {
+          baseClean.contains(lower) ||
+          lower.contains(mainWord) ||
+          mainWord.contains(lower)) {
+        return c;
+      }
+    }
+    // 3. Island name match (e.g., 'caloris basin', 'cygnus haven', 'tranquility base')
+    for (final c in colonies) {
+      if (lower.contains(c.islandName.toLowerCase()) ||
+          c.islandName.toLowerCase().contains(lower)) {
         return c;
       }
     }

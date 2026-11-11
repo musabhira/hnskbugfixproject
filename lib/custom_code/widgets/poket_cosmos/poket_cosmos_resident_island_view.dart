@@ -5,8 +5,10 @@ import 'package:google_fonts/google_fonts.dart';
 import '/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_island_attack_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_street_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/island_aerial_view.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_models.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_navigator_page.dart';
@@ -754,10 +756,34 @@ class _PoketCosmosResidentIslandViewState
                     onPlotPurchased: () => _loadResidentIsland(),
                     onPlotTapped: (tappedPlot) {
                       HapticFeedback.mediumImpact();
+                      final plotColony = PoketCosmosAllocationService.instance
+                          .getColonyByPlanetName(tappedPlot.planetName);
+                      final neighbor = PocketNeighbor(
+                        id: tappedPlot.userId,
+                        name: tappedPlot.userName,
+                        day: tappedPlot.day,
+                        streak: tappedPlot.day,
+                        rank: 'Cosmic Citizen',
+                        paletteId: 'warm_cottage',
+                        isMe: false,
+                        hasActiveShield: true,
+                        statusMessage: tappedPlot.postalPinCode,
+                        isPocketRobo: PocketRobotService.isRobotId(tappedPlot.userId),
+                        hp: 100,
+                        maxHp: 100,
+                        planetCode: plotColony.code,
+                        planetName: plotColony.planetName,
+                        islandName: tappedPlot.countryName,
+                        streetName: tappedPlot.streetName,
+                        plotNumber: tappedPlot.plotNumber,
+                        cosmosPin: tappedPlot.postalPinCode,
+                      );
                       PocketCitadelAttackPage.openForUser(
                         context,
                         userId: tappedPlot.userId,
                         targetName: tappedPlot.userName,
+                        targetDay: tappedPlot.day,
+                        neighbor: neighbor,
                       );
                     },
                   ),

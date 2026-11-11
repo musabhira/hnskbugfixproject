@@ -176,6 +176,51 @@ class PocketCitadelAttackPage extends StatefulWidget {
       return;
     }
 
+    // 🚀 Check if target is a Pioneer (e.g. pioneer_MER_257)
+    if (userId.startsWith('pioneer_')) {
+      final parts = userId.split('_');
+      final pCode = parts.length >= 2 ? parts[1] : 'MER';
+      final pGlobalPlot = parts.length >= 3 ? (int.tryParse(parts[2]) ?? 1) : 1;
+      final pColony = PoketCosmosAllocationService.instance.getColonyByCode(pCode);
+      final pParsed = PoketCosmosAllocationService.parseGlobalPlotNumber(pGlobalPlot);
+      final pLocalPlot = pParsed['localPlotNumber'] as int;
+      final pWave = pParsed['wave'] as int;
+      final waveStr = pWave.toString().padLeft(2, '0');
+      final plotStr = pGlobalPlot.toString().padLeft(3, '0');
+      final pioneerNeighbor = PocketNeighbor(
+        id: userId,
+        name: targetName ?? 'Pioneer $pGlobalPlot',
+        day: targetDay ?? (28 + (pLocalPlot * 5) % 60),
+        streak: targetDay ?? (28 + (pLocalPlot * 5) % 60),
+        rank: 'Cosmic Pioneer',
+        paletteId: paletteId ?? 'warm_cottage',
+        isMe: false,
+        hasActiveShield: true,
+        statusMessage: 'PKT-W$waveStr-${pColony.code}-I$waveStr-P$plotStr',
+        isPocketRobo: false,
+        hp: 100,
+        maxHp: 100,
+        planetCode: pColony.code,
+        planetName: pColony.planetName,
+        islandName: pColony.islandName,
+        streetName: pColony.streetName,
+        plotNumber: pGlobalPlot,
+        cosmosPin: 'PKT-W$waveStr-${pColony.code}-I$waveStr-P$plotStr',
+      );
+      if (!context.mounted) return null;
+      return await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PocketCitadelAttackPage(
+            neighbor: pioneerNeighbor,
+            attackerDay: attackerDay,
+            isDefenseMode: isDefenseMode,
+            isKidMode: isKidMode,
+          ),
+        ),
+      );
+    }
+
     final isRobot = PocketRobotService.isRobotId(userId) ||
         !RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
 

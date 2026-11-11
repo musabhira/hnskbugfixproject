@@ -147,8 +147,12 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
         PoketCosmosAllocationService.maxPlotsPerIsland, allCoords.length);
 
     final islandWave = widget.island.activeWaveNumber;
-    final colony = PoketCosmosAllocationService.instance
-        .getColonyByPlanetName(widget.island.name);
+    final colony = (widget.island.planetCode != null &&
+            widget.island.planetCode!.isNotEmpty)
+        ? PoketCosmosAllocationService.instance
+            .getColonyByCode(widget.island.planetCode!)
+        : PoketCosmosAllocationService.instance
+            .getColonyByPlanetName(widget.planetName ?? widget.island.name);
 
     for (int i = 0; i < maxPlots; i++) {
       final localPlotNumber = i + 1;
@@ -404,8 +408,12 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
 
   void _showNeighborInviteSheet(BuildContext context, int plotNumber) {
     HapticFeedback.mediumImpact();
-    final colony = PoketCosmosAllocationService.instance
-        .getColonyByPlanetName(widget.planetName ?? widget.island.name);
+    final colony = (widget.island.planetCode != null &&
+            widget.island.planetCode!.isNotEmpty)
+        ? PoketCosmosAllocationService.instance
+            .getColonyByCode(widget.island.planetCode!)
+        : PoketCosmosAllocationService.instance
+            .getColonyByPlanetName(widget.planetName ?? widget.island.name);
     final targetWave = widget.island.activeWaveNumber;
     final globalPlotNumber =
         PoketCosmosAllocationService.calculateGlobalPlotNumber(
