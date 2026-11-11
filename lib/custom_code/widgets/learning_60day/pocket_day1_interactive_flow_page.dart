@@ -13,6 +13,7 @@ import 'package:pocket_mates_app/custom_code/widgets/chat/english_learning_group
 import 'package:pocket_mates_app/custom_code/widgets/english_match/anonymous_english_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/english_match/pocket_talk_card_swiper_dialog.dart';
 import 'pocket_day1_tutor_curriculum.dart';
+import 'learning_models.dart';
 import 'curriculum_data/day_1_curriculum_data.dart';
 import 'curriculum_data/pocket_day_curriculum_service.dart';
 import 'curriculum_data/day1_az_and_300vocab_data.dart';
