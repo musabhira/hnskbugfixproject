@@ -6162,17 +6162,31 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             ),
           ],
           if (bio.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(
-              bio,
-              textAlign: alignment == CrossAxisAlignment.center
-                  ? TextAlign.center
-                  : TextAlign.start,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: textColor,
-                height: 1.4,
-              ),
+            Builder(
+              builder: (context) {
+                // Strip raw cosmic pin and default citizen tag from bio body to keep it clean
+                final cleanBioText = bio
+                    .replaceAll(
+                        RegExp(r'\s*(\n\n)?🏡\s*(Citizen\s+of\s+[^()\n]+(\([^)]+\))?|PKT-[^\n]+).*$', caseSensitive: false),
+                        '')
+                    .replaceAll(RegExp(r'\s*(\n\n)?🏡\s*PKT-W\d+-[A-Z]+-I\d+-P\d+.*$'), '')
+                    .trim();
+                if (cleanBioText.isEmpty) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    cleanBioText,
+                    textAlign: alignment == CrossAxisAlignment.center
+                        ? TextAlign.center
+                        : TextAlign.start,
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: textColor,
+                      height: 1.4,
+                    ),
+                  ),
+                );
+              },
             ),
           ],
 
@@ -6291,21 +6305,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       }
     }
 
-    // 2. Bio pin check
-    final bio = _profileData?['bio']?.toString() ?? '';
-    final match = RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(bio);
-    if (match != null) {
-      final wave = int.tryParse(match.group(1) ?? '1') ?? 1;
-      final code = match.group(2) ?? 'EP';
-      final plot = int.tryParse(match.group(4) ?? '1') ?? 1;
-      return {
-        'planetCode': code,
-        'plotNumber': plot,
-        'wave': wave,
-      };
-    }
-
-    // 3. Registered profiles cache check (real Supabase chronological sequential ordering)
+    // 2. Registered profiles cache check FIRST (real Supabase chronological sequential ordering)
     final cached =
         PoketCosmosAllocationService.instance.getCachedUserPlot(currentUserId);
     if (cached != null) {
@@ -6317,6 +6317,28 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       return {
         'planetCode': colony.code,
         'plotNumber': cached.plotNumber,
+        'wave': wave,
+      };
+    }
+
+    // 3. Bio pin check (calculates TRUE global plot number even if bio stored local plot index)
+    final bio = _profileData?['bio']?.toString() ?? '';
+    final match = RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(bio);
+    if (match != null) {
+      final wave = int.tryParse(match.group(1) ?? '1') ?? 1;
+      final code = match.group(2) ?? 'EP';
+      final plot = int.tryParse(match.group(4) ?? '1') ?? 1;
+      final colony = PoketCosmosAllocationService.instance.getColonyByCode(code);
+      final globalPlot = (plot <= PoketCosmosAllocationService.maxPlotsPerIsland)
+          ? PoketCosmosAllocationService.calculateGlobalPlotNumber(
+              wave: wave,
+              planetCode: colony.code,
+              localPlotNumber: plot,
+            )
+          : plot;
+      return {
+        'planetCode': colony.code,
+        'plotNumber': globalPlot,
         'wave': wave,
       };
     }
@@ -6341,9 +6363,15 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final localPlot = ((currentUserId.hashCode.abs() ~/ 10) %
             PoketCosmosAllocationService.maxPlotsPerIsland) +
         1;
+    final globalFallback =
+        PoketCosmosAllocationService.calculateGlobalPlotNumber(
+      wave: 1,
+      planetCode: colony.code,
+      localPlotNumber: localPlot,
+    );
     return {
       'planetCode': colony.code,
-      'plotNumber': localPlot,
+      'plotNumber': globalFallback,
       'wave': 1,
     };
   }
@@ -6359,8 +6387,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         ? colony.islandName
         : PoketCosmosAllocationService.generateInfiniteIslandName(
             colony.code, wave, wave);
-    final plotStr = plotNum.toString().padLeft(2, '0');
-    return 'Plot #$plotStr • $islandName • $cleanPlanet';
+    return 'Plot #$plotNum • $islandName • $cleanPlanet';
   }
 
   Widget _buildVerifiedGoldenTick({double size = 18}) {

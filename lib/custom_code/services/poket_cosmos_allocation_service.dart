@@ -2538,8 +2538,9 @@ class PoketCosmosAllocationService {
     final waveStr = currentWave.toString().padLeft(2, '0');
     final plotStr = plotNumber.toString().padLeft(2, '0');
     final cosmosPin = 'PKT-W$waveStr-${colony.code}-I$waveStr-P$plotStr';
-    final randSuffix = (1000 + math.Random().nextInt(9000)).toString();
-    final code = 'PKT-${colony.code}-$plotStr-$randSuffix';
+    // 6-digit numeric invite code for seamless sharing (e.g. 583921)
+    final sixDigitCode = (100000 + math.Random().nextInt(900000)).toString();
+    final code = sixDigitCode;
 
     final expiresAt = DateTime.now().add(const Duration(hours: 4));
 
@@ -2560,6 +2561,7 @@ class PoketCosmosAllocationService {
     final Map<String, dynamic> store =
         rawJson != null ? jsonDecode(rawJson) : {};
     store[code] = pass.toJson();
+    store['PKT-$code'] = pass.toJson();
     store[cosmosPin] = pass.toJson();
     await prefs.setString(_kReservationsKey, jsonEncode(store));
 
@@ -2722,7 +2724,7 @@ class PoketCosmosAllocationService {
           .from('app_codes')
           .select('description')
           .eq('class_name', 'neighbor_pass')
-          .eq('class_code', cleanCode)
+          .or('class_code.eq.$cleanCode,class_code.eq.${cleanCode.replaceFirst('PKT-', '')}')
           .eq('is_active', true)
           .maybeSingle();
       if (res != null && res['description'] != null) {
