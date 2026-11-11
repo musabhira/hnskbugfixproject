@@ -3445,8 +3445,9 @@ class PocketFortressDefenseService {
             p['user_id'].toString(): {
               'name': p['name']?.toString() ?? 'User',
               'day': PocketScoreLevelEngine.calculateEffectiveLevel(
-                day: (p['day'] as num?)?.toInt() ??
-                    (p['learning_day'] as num?)?.toInt() ??
+                day: (p['learning_day'] as num?)?.toInt() ??
+                    (p['learning_stage'] as num?)?.toInt() ??
+                    (p['level'] as num?)?.toInt() ??
                     1,
                 pocketScore: (p['pocket_score'] as num?)?.toInt() ?? 0,
               ),

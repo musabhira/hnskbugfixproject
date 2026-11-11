@@ -324,9 +324,10 @@ class PocketCitadelAttackPage extends StatefulWidget {
     } catch (_) {}
 
     final rawCourseDay = targetDay ??
-        (p['day'] as num?)?.toInt() ??
         (p['learning_day'] as num?)?.toInt() ??
+        (p['learning_stage'] as num?)?.toInt() ??
         (p['stage'] as num?)?.toInt() ??
+        (p['level'] as num?)?.toInt() ??
         localCachedDay ??
         1;
     final defenderScore = (p['pocket_score'] as num?)?.toInt() ?? 0;

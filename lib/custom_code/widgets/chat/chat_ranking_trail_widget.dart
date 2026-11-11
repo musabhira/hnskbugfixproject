@@ -285,8 +285,8 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
           (p['learning_points'] as num?)?.toInt() ??
           (p['xp'] as num?)?.toInt() ??
           0;
-      final rawDay = (p['day'] as num?)?.toInt() ??
-          (p['learning_day'] as num?)?.toInt() ??
+      final rawDay = (p['learning_day'] as num?)?.toInt() ??
+          (p['learning_stage'] as num?)?.toInt() ??
           (p['level'] as num?)?.toInt() ??
           1;
       final level = PocketScoreLevelEngine.calculateEffectiveLevel(

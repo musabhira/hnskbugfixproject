@@ -532,7 +532,19 @@ class _PocketDay1InteractiveFlowPageState
       final now = DateTime.now();
       await prefs.setString('learning_day_${uid}_${widget.day}_completed_date',
           '${now.year}-${now.month}-${now.day}');
+      await prefs.setInt('pocket_learning_user_stage_$uid', 2);
+      await prefs.setInt('learning_day_$uid', 2);
+      await prefs.setBool('pocket_day_${uid}_2_unlocked', true);
       await PocketFortressDefenseService.recordTrainingPoints(150, uid);
+      final stage = LearningMilestoneStage.getStageForDay(2);
+      try {
+        await _supabase.from('profile').update({
+          'learning_day': 2,
+          'learning_stage': stage.stageNumber,
+          'level': 2,
+          'last_learning_date': now.toIso8601String(),
+        }).eq('user_id', uid);
+      } catch (_) {}
     }
 
     widget.onCompleted?.call();

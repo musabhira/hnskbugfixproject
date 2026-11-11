@@ -74,8 +74,9 @@ class _IslandStreetDriveViewState extends State<IslandStreetDriveView>
       int idx = 1;
       for (var row in res) {
         final name = row['name']?.toString() ?? 'Citizen #$idx';
-        final day = (row['day'] as num?)?.toInt() ??
-            (row['learning_day'] as num?)?.toInt() ??
+        final day = (row['learning_day'] as num?)?.toInt() ??
+            (row['learning_stage'] as num?)?.toInt() ??
+            (row['level'] as num?)?.toInt() ??
             1;
         final score = (row['pocket_score'] as num?)?.toInt() ?? 0;
         final isVip = row['is_vip'] == true || row['is_premium'] == true;

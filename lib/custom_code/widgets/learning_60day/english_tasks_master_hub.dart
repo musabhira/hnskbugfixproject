@@ -780,6 +780,21 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
           await prefs.setString(
               'learning_day_${uid}_${day}_steps_date', todayStr);
         }
+
+        // 🚀 User Audio Requirement: As soon as Day D learning missions are completed,
+        // user has mastered Day D! Upgrade their level & learning_day in Supabase profile immediately:
+        final nextDay = day + 1;
+        await prefs.setInt('pocket_learning_user_stage_$uid', nextDay);
+        await prefs.setInt('learning_day_$uid', nextDay);
+        final stage = LearningMilestoneStage.getStageForDay(nextDay);
+        try {
+          await _supabase.from('profile').update({
+            'learning_day': nextDay,
+            'learning_stage': stage.stageNumber,
+            'level': nextDay,
+            'last_learning_date': now.toIso8601String(),
+          }).eq('user_id', uid);
+        } catch (_) {}
       }
     }
     HapticFeedback.heavyImpact();
@@ -6220,6 +6235,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
           'learning_day_${uid}_${day}_completed_date', dateToRecord);
       await prefs.setInt('pocket_learning_user_stage_$uid', day + 1);
       await prefs.setInt('learning_day_$uid', day + 1);
+      await prefs.setBool('pocket_day_${uid}_${day + 1}_unlocked', true);
 
       // Award +50 Pocket Score
       await PocketFortressDefenseService.recordTrainingPoints(50, uid);

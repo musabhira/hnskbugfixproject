@@ -493,9 +493,9 @@ class PocketRankingService {
 
         // 🪙 Accurate Pocket Score (User Audio Directive: strictly reflect actual pocket_score, no fake 0-rank 1 bugs)
         final rawScore = (row['pocket_score'] as num?)?.toInt() ?? 0;
-        final rawDay = (row['day'] as num?)?.toInt() ??
-            (row['learning_day'] as num?)?.toInt() ??
+        final rawDay = (row['learning_day'] as num?)?.toInt() ??
             (row['learning_stage'] as num?)?.toInt() ??
+            (row['level'] as num?)?.toInt() ??
             1;
 
         final isMe = uid == currentUserId;
@@ -874,8 +874,8 @@ class PocketRankingService {
           final rawScore = (row['pocket_score'] as num?)?.toInt() ?? 0;
           final effectiveScore = isMe ? math.max(myScore, rawScore) : rawScore;
           // 📚 Level is derived from course progress (day ceiling) with minimum pass mark (score floor)
-          final rawDay = (row['day'] as num?)?.toInt() ??
-              (row['learning_day'] as num?)?.toInt() ??
+          // ⚠️ Do NOT use row['day'] because 'day' in Supabase profile is user's Date of Birth day!
+          final rawDay = (row['learning_day'] as num?)?.toInt() ??
               (row['learning_stage'] as num?)?.toInt() ??
               (row['level'] as num?)?.toInt() ??
               1;

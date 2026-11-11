@@ -828,8 +828,9 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
 
         if (profiles.isNotEmpty) {
           for (final p in profiles) {
-            final rawDay = (p['day'] as num?)?.toInt() ??
-                (p['learning_day'] as num?)?.toInt() ??
+            final rawDay = (p['learning_day'] as num?)?.toInt() ??
+                (p['learning_stage'] as num?)?.toInt() ??
+                (p['level'] as num?)?.toInt() ??
                 1;
             final score = (p['pocket_score'] as num?)?.toInt() ?? 0;
             final day = PocketScoreLevelEngine.calculateEffectiveLevel(
@@ -978,8 +979,9 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
               targetName = p['name']?.toString() ??
                   p['display_name']?.toString() ??
                   'Citizen Citadel';
-              final rawDay = (p['day'] as num?)?.toInt() ??
-                  (p['learning_day'] as num?)?.toInt() ??
+              final rawDay = (p['learning_day'] as num?)?.toInt() ??
+                  (p['learning_stage'] as num?)?.toInt() ??
+                  (p['level'] as num?)?.toInt() ??
                   1;
               final score = (p['pocket_score'] as num?)?.toInt() ?? 0;
               effectiveDay = PocketScoreLevelEngine.calculateEffectiveLevel(
