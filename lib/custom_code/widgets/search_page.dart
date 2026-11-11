@@ -61,6 +61,7 @@ class _SearchPageState extends State<SearchPage> {
   String _plotStatusFilter = 'all'; // 'all', 'booked', 'available'
   String _plotPlanetFilter =
       'all'; // 'all', 'EP', 'MAR', 'JUP', 'SAT', 'LUN', 'EUR', 'VEN', 'TTN', 'PLT', 'NEP'
+  int _activeWaveCount = 2;
 
   @override
   void initState() {
@@ -74,6 +75,9 @@ class _SearchPageState extends State<SearchPage> {
     });
     PoketCosmosAllocationService.instance.loadAllRegisteredProfiles().then((_) {
       if (mounted) setState(() {});
+    });
+    PoketCosmosAllocationService.instance.getActiveWaveIndex().then((w) {
+      if (mounted) setState(() => _activeWaveCount = w);
     });
   }
 
@@ -798,9 +802,9 @@ class _SearchPageState extends State<SearchPage> {
   /// 🏡 Dedicated Plots Tab: Reverse Infinite Grid (Plot #1 at bottom, highest at top, lazy loaded)
   Widget _buildPlotsTab() {
     final query = _currentSearchQuery.trim().toLowerCase();
-    // Wave catalog supports infinite loops (Wave 1: 1..250, Wave 2: 251..500, etc.)
+    // Wave catalog supports infinite loops (Wave 1: 1..375, Wave 2: 376..750, etc.)
     final allPlots =
-        PoketCosmosAllocationService.getWavePlotsCatalog(maxWaves: 2);
+        PoketCosmosAllocationService.getWavePlotsCatalog(maxWaves: _activeWaveCount);
 
     // Dashboard metrics
     final int totalPlotsCount = allPlots.length;
@@ -1006,7 +1010,7 @@ class _SearchPageState extends State<SearchPage> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Wave 1 & 2',
+                          'Wave $_activeWaveCount',
                           style: GoogleFonts.outfit(
                             color: const Color(0xFFC084FC),
                             fontSize: 13.5,

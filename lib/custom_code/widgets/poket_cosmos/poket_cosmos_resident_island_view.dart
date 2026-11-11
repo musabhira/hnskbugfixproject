@@ -57,10 +57,22 @@ class _PoketCosmosResidentIslandViewState
   bool _transformInitialized = false;
 
   late CitizenPlot _myPlot;
+  CitizenPlot? _actualUserHomePlot;
   late PoketCountryMap _island;
   late CelestialColonyInfo _colony;
   List<CitizenPlot> _islandPlots = [];
   Map<int, NeighborReservationPass> _reservations = {};
+
+  bool get _isCurrentViewingUserHomeIsland {
+    final home = _actualUserHomePlot ??
+        PoketCosmosAllocationService.instance.currentUserBirthPlot;
+    if (home == null) return false;
+    final homeColony = PoketCosmosAllocationService.instance
+        .getColonyByPlanetName(home.planetName);
+    final isSamePlanet = homeColony.code.toUpperCase() == _colony.code.toUpperCase();
+    final isSameWave = (_island.wave == (home.wave ?? 1));
+    return isSamePlanet && isSameWave;
+  }
 
   @override
   void initState() {
@@ -242,8 +254,19 @@ class _PoketCosmosResidentIslandViewState
 
     final updatedIsland = island.copyWith(filledSlots: plotsList.length);
 
+    // Load actual user home plot for permission & identity checks
+    final effectiveUid = (widget.userId != null && widget.userId!.isNotEmpty)
+        ? widget.userId!
+        : (SupaFlow.client.auth.currentUser?.id ?? 'guest_user');
+    final actualHome = await PoketCosmosAllocationService.instance.getUserPlot(
+      userId: effectiveUid,
+      fallbackName: widget.userName ?? 'Citizen',
+      fallbackAvatar: widget.userAvatar ?? '🦁',
+    );
+
     if (mounted) {
       setState(() {
+        _actualUserHomePlot = actualHome;
         _myPlot = updatedPlot;
         _island = updatedIsland;
         _colony = colony;
@@ -728,10 +751,17 @@ class _PoketCosmosResidentIslandViewState
                     isInteractive: true,
                     zoomScale: 2.4,
                     plots: _islandPlots,
-                    selectedPlotNumber: widget.targetPlotNumber ??
-                        ((_colony.planetName == _myPlot.planetName)
-                            ? _myPlot.plotNumber
-                            : null),
+                    selectedPlotNumber: () {
+                      final raw = widget.targetPlotNumber ??
+                          (_isCurrentViewingUserHomeIsland
+                              ? _myPlot.plotNumber
+                              : null);
+                      if (raw == null) return null;
+                      if (raw > PoketCosmosAllocationService.maxPlotsPerIsland) {
+                        return PoketCosmosAllocationService.parseGlobalPlotNumber(raw)['localPlotNumber'] as int;
+                      }
+                      return raw;
+                    }(),
                     planetName: _colony.planetName,
                     initialReservations: _reservations,
                     onPlotPurchased: () => _loadResidentIsland(),
@@ -899,7 +929,7 @@ class _PoketCosmosResidentIslandViewState
           ),
 
           // 💬 Floating Island Neighbors Group Chat Capsule (Only shown on user's own island per privacy requirement)
-          if (_colony.planetName == _myPlot.planetName)
+          if (_isCurrentViewingUserHomeIsland)
             Positioned(
               bottom: bottomPad + 76,
               left: 20,
@@ -940,56 +970,47 @@ class _PoketCosmosResidentIslandViewState
               ),
             ),
 
-          // ⚔️ Floating Island Attack / Mock Attack Action Capsule
-          Positioned(
-            bottom: bottomPad + 76,
-            right: 20,
-            child: Builder(
-              builder: (context) {
-                final isHomeColony = (_colony.planetName == _myPlot.planetName);
-                return ElevatedButton.icon(
-                  onPressed: () {
-                    HapticFeedback.mediumImpact();
-                    PocketIslandAttackPage.launch(
-                      context,
-                      island: _island,
-                      colony: _colony,
-                      plots: _islandPlots,
-                      isMockAttack: isHomeColony,
-                    );
-                  },
-                  icon: Text(isHomeColony ? '🛡️' : '⚔️',
-                      style: const TextStyle(fontSize: 16)),
-                  label: Text(
-                    isHomeColony ? 'MOCK ATTACK 🛡️' : 'ISLAND ATTACK ⚔️',
-                    style: GoogleFonts.outfit(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 12,
-                      letterSpacing: 0.5,
+          // ⚔️ Floating Island Attack Action Capsule (Only shown when viewing other islands/alien colonies per user directive)
+          if (!_isCurrentViewingUserHomeIsland)
+            Positioned(
+              bottom: bottomPad + 76,
+              right: 20,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  HapticFeedback.mediumImpact();
+                  PocketIslandAttackPage.launch(
+                    context,
+                    island: _island,
+                    colony: _colony,
+                    plots: _islandPlots,
+                    isMockAttack: false,
+                  );
+                },
+                icon: const Text('⚔️', style: TextStyle(fontSize: 16)),
+                label: Text(
+                  'ATTACK ⚔️',
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 12,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFEF4444),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 14, vertical: 11),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: const BorderSide(
+                      color: Color(0xFFF87171),
+                      width: 1.2,
                     ),
                   ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isHomeColony
-                        ? const Color(0xFF10B981)
-                        : const Color(0xFFEF4444),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 11),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(
-                        color: isHomeColony
-                            ? const Color(0xFF34D399)
-                            : const Color(0xFFF87171),
-                        width: 1.2,
-                      ),
-                    ),
-                    elevation: 6,
-                  ),
-                );
-              },
+                  elevation: 6,
+                ),
+              ),
             ),
-          ),
 
           // 🎯 Bottom Floating Actions: "FOCUS TO MY PLOT 🏡" & "COSMOS EXPLORER 🪐"
           Positioned(
@@ -1000,7 +1021,7 @@ class _PoketCosmosResidentIslandViewState
               children: [
                 // Only show "FOCUS TO MY PLOT" if the user is currently on their home island!
                 // Per user directive: "ഫോക്കസ് ടു മൈ പ്ലോട്ട് എന്നുള്ളത് എന്റെ ഐലൻഡിൽ എന്റെ പ്ലോട്ടിൽ മാത്രം ഫോക്കസ് ടു പ്ലോട്ട് ഉള്ളൂ. അല്ലാതെ ആ ബട്ടൺ കാണിക്കേണ്ട ആവശ്യമില്ല."
-                if (_colony.planetName == _myPlot.planetName) ...[
+                if (_isCurrentViewingUserHomeIsland) ...[
                   Expanded(
                     flex: 3,
                     child: ElevatedButton.icon(

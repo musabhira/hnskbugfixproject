@@ -870,12 +870,60 @@ class PoketCosmosAllocationService {
       // 2. Check active in-memory user plot overrides (e.g. bought/switched plots)
       for (final entry in instance._userBirthPlots.entries) {
         final plot = entry.value;
-        if (plot.planetName == colony.planetName && plot.plotNumber == lNum) {
+        if (plot.planetName == colony.planetName &&
+            (plot.plotNumber == gNum || plot.plotNumber == lNum)) {
           ownerName = plot.userName;
           avatar = plot.userAvatar;
           userId = entry.key;
           isOccupied = true;
           break;
+        }
+      }
+
+      // 3. Iconic Pioneers on Wave 1 (Genesis Islands)
+      final int wave = parsed['wave'] as int? ?? 1;
+      if (!isOccupied && wave == 1) {
+        final pioneers = instance.getColonyPioneers(colony);
+        for (final p in pioneers) {
+          final pLocal = (p.plotNumber <= maxPlotsPerIsland)
+              ? p.plotNumber
+              : (((p.plotNumber - 1) % waveCapacity) % maxPlotsPerIsland) + 1;
+          if (pLocal == lNum) {
+            ownerName = p.userName;
+            avatar = p.userAvatar;
+            userId = p.userId;
+            isOccupied = true;
+            break;
+          }
+        }
+
+        // Fill deterministic pioneer slots matching getOccupiedPlotsForColony
+        if (!isOccupied) {
+          const defaultCandidateSlots = [1, 2, 3, 4, 6, 7, 9, 10, 11, 12, 14, 15];
+          final slotIdx = defaultCandidateSlots.indexOf(lNum);
+          if (slotIdx != -1) {
+            final defaultPioneerNames = [
+              'Commander ${colony.islandName.split(' ').first}',
+              'Dr. ${colony.code} Horizon',
+              'Pioneer Zephyr',
+              'Solar Warden',
+              'Astro Navigator',
+              'Cosmic Sentinel',
+              'Starlight Scholar',
+              'Nebula Guardian',
+              'Orbital Scout',
+              'Deep Void Ranger',
+              'Galaxy Pioneer',
+              'Aero Veteran',
+            ];
+            final defaultAvatars = [
+              '🧑‍🚀', '👨‍🚀', '👩‍🚀', '🦁', '🦅', '🐺', '🦊', '🐯', '⚡', '🌟', '🚀', '✨'
+            ];
+            ownerName = defaultPioneerNames[slotIdx % defaultPioneerNames.length];
+            avatar = defaultAvatars[slotIdx % defaultAvatars.length];
+            userId = 'pioneer_${colony.code}_$gNum';
+            isOccupied = true;
+          }
         }
       }
 
@@ -2058,94 +2106,97 @@ class PoketCosmosAllocationService {
       debugPrint('⚠️ Fetching Supabase profiles for colony non-fatal: $e');
     }
 
-    // 2. Populate Iconic & Algorithmic Pioneers if island has fewer than 12 citizens
-    final pioneers = getColonyPioneers(colony);
-    for (final p in pioneers) {
-      final localPlot = (p.plotNumber <= maxPlotsPerIsland)
-          ? p.plotNumber
-          : (((p.plotNumber - 1) % waveCapacity) % maxPlotsPerIsland) + 1;
-      if (!plotMap.containsKey(localPlot)) {
-        final coord = (localPlot - 1 < coords.length)
-            ? coords[localPlot - 1]
-            : Offset.zero;
-        final globalPlot = calculateGlobalPlotNumber(
-          wave: wave,
-          planetCode: colony.code,
-          localPlotNumber: localPlot,
-        );
-        final waveStr = wave.toString().padLeft(2, '0');
-        final plotStr = globalPlot.toString().padLeft(3, '0');
-        plotMap[localPlot] = p.copyWith(
-          plotNumber: globalPlot,
-          coordinates: coord,
-          postalPinCode: 'PKT-W$waveStr-${colony.code}-I$waveStr-P$plotStr',
-        );
+    // 2. Populate Iconic & Algorithmic Pioneers ONLY on Wave 1 (Genesis Islands)
+    // On Wave 2 and above, plots are strictly for real users and remain vacant ('+') until claimed!
+    if (wave == 1) {
+      final pioneers = getColonyPioneers(colony);
+      for (final p in pioneers) {
+        final localPlot = (p.plotNumber <= maxPlotsPerIsland)
+            ? p.plotNumber
+            : (((p.plotNumber - 1) % waveCapacity) % maxPlotsPerIsland) + 1;
+        if (!plotMap.containsKey(localPlot)) {
+          final coord = (localPlot - 1 < coords.length)
+              ? coords[localPlot - 1]
+              : Offset.zero;
+          final globalPlot = calculateGlobalPlotNumber(
+            wave: wave,
+            planetCode: colony.code,
+            localPlotNumber: localPlot,
+          );
+          final waveStr = wave.toString().padLeft(2, '0');
+          final plotStr = globalPlot.toString().padLeft(3, '0');
+          plotMap[localPlot] = p.copyWith(
+            plotNumber: globalPlot,
+            coordinates: coord,
+            postalPinCode: 'PKT-W$waveStr-${colony.code}-I$waveStr-P$plotStr',
+          );
+        }
       }
-    }
 
-    // Fill remaining up to 12 slots with deterministic pioneers so every world has 12 occupied plots matching the 12/25 counter
-    const defaultCandidateSlots = [1, 2, 3, 4, 6, 7, 9, 10, 11, 12, 14, 15];
-    final defaultPioneerNames = [
-      'Commander ${colony.islandName.split(' ').first}',
-      'Dr. ${colony.code} Horizon',
-      'Pioneer Zephyr',
-      'Solar Warden',
-      'Astro Navigator',
-      'Cosmic Sentinel',
-      'Starlight Scholar',
-      'Nebula Guardian',
-      'Orbital Scout',
-      'Deep Void Ranger',
-      'Galaxy Pioneer',
-      'Aero Veteran',
-    ];
-    final defaultAvatars = [
-      '🧑‍🚀',
-      '👨‍🚀',
-      '👩‍🚀',
-      '🦁',
-      '🦅',
-      '🐺',
-      '🦊',
-      '🐯',
-      '⚡',
-      '🌟',
-      '🚀',
-      '✨'
-    ];
+      // Fill remaining up to 12 slots with deterministic pioneers on Wave 1 so genesis islands feel alive
+      const defaultCandidateSlots = [1, 2, 3, 4, 6, 7, 9, 10, 11, 12, 14, 15];
+      final defaultPioneerNames = [
+        'Commander ${colony.islandName.split(' ').first}',
+        'Dr. ${colony.code} Horizon',
+        'Pioneer Zephyr',
+        'Solar Warden',
+        'Astro Navigator',
+        'Cosmic Sentinel',
+        'Starlight Scholar',
+        'Nebula Guardian',
+        'Orbital Scout',
+        'Deep Void Ranger',
+        'Galaxy Pioneer',
+        'Aero Veteran',
+      ];
+      final defaultAvatars = [
+        '🧑‍🚀',
+        '👨‍🚀',
+        '👩‍🚀',
+        '🦁',
+        '🦅',
+        '🐺',
+        '🦊',
+        '🐯',
+        '⚡',
+        '🌟',
+        '🚀',
+        '✨'
+      ];
 
-    for (int k = 0;
-        k < defaultCandidateSlots.length && plotMap.length < 12;
-        k++) {
-      final slot = defaultCandidateSlots[k];
-      if (!plotMap.containsKey(slot)) {
-        final coord =
-            (slot - 1 < coords.length) ? coords[slot - 1] : Offset.zero;
-        final globalPlot = calculateGlobalPlotNumber(
-          wave: wave,
-          planetCode: colony.code,
-          localPlotNumber: slot,
-        );
-        final waveStr = wave.toString().padLeft(2, '0');
-        final plotStr = globalPlot.toString().padLeft(3, '0');
-        plotMap[slot] = CitizenPlot(
-          plotNumber: globalPlot,
-          userId: 'pioneer_${colony.code}_$globalPlot',
-          userName: defaultPioneerNames[k % defaultPioneerNames.length],
-          userAvatar: defaultAvatars[k % defaultAvatars.length],
-          day: 28 + (k * 5) % 60,
-          pocketScore: 650 + (k * 45) % 550,
-          streetName: (wave == 1)
-              ? colony.streetName
-              : 'Wave $wave ${colony.streetName}',
-          postOffice: colony.islandName,
-          countryName: colony.islandName,
-          planetName: colony.planetName,
-          coordinates: coord,
-          postalPinCode: 'PKT-W$waveStr-${colony.code}-I$waveStr-P$plotStr',
-          tier: (slot <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
-          status: PlotStatus.occupied,
-        );
+      for (int k = 0;
+          k < defaultCandidateSlots.length && plotMap.length < 12;
+          k++) {
+        final slot = defaultCandidateSlots[k];
+        if (!plotMap.containsKey(slot)) {
+          final coord =
+              (slot - 1 < coords.length) ? coords[slot - 1] : Offset.zero;
+          final globalPlot = calculateGlobalPlotNumber(
+            wave: wave,
+            planetCode: colony.code,
+            localPlotNumber: slot,
+          );
+          final waveStr = wave.toString().padLeft(2, '0');
+          final plotStr = globalPlot.toString().padLeft(3, '0');
+          plotMap[slot] = CitizenPlot(
+            plotNumber: globalPlot,
+            userId: 'pioneer_${colony.code}_$globalPlot',
+            userName: defaultPioneerNames[k % defaultPioneerNames.length],
+            userAvatar: defaultAvatars[k % defaultAvatars.length],
+            day: 28 + (k * 5) % 60,
+            pocketScore: 650 + (k * 45) % 550,
+            streetName: (wave == 1)
+                ? colony.streetName
+                : 'Wave $wave ${colony.streetName}',
+            postOffice: colony.islandName,
+            countryName: colony.islandName,
+            planetName: colony.planetName,
+            coordinates: coord,
+            postalPinCode: 'PKT-W$waveStr-${colony.code}-I$waveStr-P$plotStr',
+            tier: (slot <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
+            status: PlotStatus.occupied,
+          );
+        }
       }
     }
 

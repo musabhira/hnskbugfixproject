@@ -3123,10 +3123,20 @@ class IslandAerialPainter extends CustomPainter {
     }
 
     // 3. Highlight Selected District Territory with Radiant Golden Glow
-    if (selectedPlotNumber != null &&
-        selectedPlotNumber! >= 1 &&
-        selectedPlotNumber! <= cells.length) {
-      final selCell = cells[selectedPlotNumber! - 1];
+    int? effectiveLocalSel;
+    if (selectedPlotNumber != null) {
+      if (selectedPlotNumber! >= 1 && selectedPlotNumber! <= cells.length) {
+        effectiveLocalSel = selectedPlotNumber;
+      } else if (selectedPlotNumber! > PoketCosmosAllocationService.maxPlotsPerIsland) {
+        final parsed = PoketCosmosAllocationService.parseGlobalPlotNumber(selectedPlotNumber!);
+        effectiveLocalSel = parsed['localPlotNumber'] as int?;
+      }
+    }
+
+    if (effectiveLocalSel != null &&
+        effectiveLocalSel >= 1 &&
+        effectiveLocalSel <= cells.length) {
+      final selCell = cells[effectiveLocalSel - 1];
       canvas.drawPath(
         selCell,
         Paint()
