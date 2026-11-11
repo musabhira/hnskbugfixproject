@@ -55,26 +55,11 @@ class PocketPresidentService {
       final raw = prefs.getString(key);
 
       List<Map<String, dynamic>> historyList = [];
-      if (raw == null || raw.isEmpty) {
-        // Initialize default welcome message if user has no history yet
-        final welcomeMsg = {
-          'id': 'pres_welcome_$userId',
-          'sender_id': presidentId,
-          'receiver_id': userId,
-          'message_text': defaultWelcomeMessage,
-          'message_type': 'text',
-          'created_at': DateTime.now().subtract(const Duration(minutes: 5)).toIso8601String(),
-          'is_read': false,
-          'metadata': {
-            'is_official': true,
-            'is_president': true,
-            'golden_tick': true,
-          }
-        };
-        historyList = [welcomeMsg];
-      } else {
-        final List<dynamic> decoded = jsonDecode(raw);
-        historyList = decoded.map((e) => Map<String, dynamic>.from(e)).toList();
+      if (raw != null && raw.isNotEmpty) {
+        try {
+          final List<dynamic> decoded = jsonDecode(raw);
+          historyList = decoded.map((e) => Map<String, dynamic>.from(e)).toList();
+        } catch (_) {}
       }
 
       // Sync any remote messages or replies from Supabase reports
@@ -96,7 +81,7 @@ class PocketPresidentService {
               final mid = rm['id']?.toString() ?? '';
               if (mid.isNotEmpty && !historyList.any((h) => h['id'] == mid)) {
                 final isPres = rm['is_president'] == true || rm['sender_id'] == presidentId;
-                historyList.insert(0, {
+                historyList.add({
                   'id': mid,
                   'sender_id': isPres ? presidentId : userId,
                   'receiver_id': isPres ? userId : presidentId,
@@ -116,6 +101,11 @@ class PocketPresidentService {
               }
             }
             if (addedRemote) {
+              historyList.sort((a, b) {
+                final tA = DateTime.tryParse(a['created_at']?.toString() ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+                final tB = DateTime.tryParse(b['created_at']?.toString() ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+                return tB.compareTo(tA);
+              });
               await prefs.setString(key, jsonEncode(historyList));
             }
           }
@@ -135,7 +125,7 @@ class PocketPresidentService {
           if (!alreadyInChat) {
             final mediaUrl = ann['media_url']?.toString();
             final hasMedia = mediaUrl != null && mediaUrl.isNotEmpty;
-            historyList.insert(0, {
+            historyList.add({
               'id': 'pres_broadcast_$annId',
               'sender_id': presidentId,
               'receiver_id': userId,
@@ -156,8 +146,39 @@ class PocketPresidentService {
           }
         }
         if (addedNew) {
+          historyList.sort((a, b) {
+            final tA = DateTime.tryParse(a['created_at']?.toString() ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+            final tB = DateTime.tryParse(b['created_at']?.toString() ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+            return tB.compareTo(tA);
+          });
           await prefs.setString(key, jsonEncode(historyList));
         }
+      }
+
+      if (historyList.isEmpty) {
+        final welcomeMsg = {
+          'id': 'pres_welcome_$userId',
+          'sender_id': presidentId,
+          'receiver_id': userId,
+          'message_text': defaultWelcomeMessage,
+          'message_type': 'text',
+          'created_at': DateTime.now().subtract(const Duration(minutes: 5)).toIso8601String(),
+          'is_read': false,
+          'metadata': {
+            'is_official': true,
+            'is_president': true,
+            'golden_tick': true,
+          }
+        };
+        historyList = [welcomeMsg];
+        await prefs.setString(key, jsonEncode(historyList));
+      } else {
+        // Guarantee sorted descending by timestamp
+        historyList.sort((a, b) {
+          final tA = DateTime.tryParse(a['created_at']?.toString() ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+          final tB = DateTime.tryParse(b['created_at']?.toString() ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+          return tB.compareTo(tA);
+        });
       }
 
       return historyList;
@@ -244,7 +265,14 @@ class PocketPresidentService {
     final prefs = await SharedPreferences.getInstance();
     final key = '$_kPresidentChatPrefix$userId';
     final history = await getPresidentChatHistory(userId);
-    final updatedHistory = [message, ...history];
+    final existingIdx = history.indexWhere((m) => m['id'] == messageId);
+    final List<Map<String, dynamic>> updatedHistory;
+    if (existingIdx != -1) {
+      updatedHistory = List<Map<String, dynamic>>.from(history);
+      updatedHistory[existingIdx] = message;
+    } else {
+      updatedHistory = [message, ...history];
+    }
     await prefs.setString(key, jsonEncode(updatedHistory));
 
     // 2. Fetch sender profile details & auth credentials to enrich report metadata
@@ -412,7 +440,14 @@ class PocketPresidentService {
     final prefs = await SharedPreferences.getInstance();
     final key = '$_kPresidentChatPrefix$targetUserId';
     final history = await getPresidentChatHistory(targetUserId);
-    final updated = [reply, ...history];
+    final existingIdx = history.indexWhere((m) => m['id'] == messageId);
+    final List<Map<String, dynamic>> updated;
+    if (existingIdx != -1) {
+      updated = List<Map<String, dynamic>>.from(history);
+      updated[existingIdx] = reply;
+    } else {
+      updated = [reply, ...history];
+    }
     await prefs.setString(key, jsonEncode(updated));
 
     // 2. Update master inquiries status to replied locally

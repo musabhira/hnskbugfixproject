@@ -278,33 +278,6 @@ class _PoketCosmosResidentIslandViewState
 
   String _plotFilter = 'all'; // 'all', 'occupied', 'vacant'
 
-  Future<void> _switchToColony(CelestialColonyInfo newColony) async {
-    setState(() => _isLoading = true);
-
-    final currentWave =
-        await PoketCosmosAllocationService.instance.getActiveWaveIndex();
-    final island = PoketCosmosAllocationService.generateProceduralIsland(
-      colony: newColony,
-      wave: currentWave,
-    );
-
-    final reservationsMap = await PoketCosmosAllocationService.instance
-        .getActiveReservationsMap(island.id);
-    final colonyOccupied = await PoketCosmosAllocationService.instance
-        .getOccupiedPlotsForColony(newColony);
-
-    if (mounted) {
-      setState(() {
-        _island = island.copyWith(filledSlots: colonyOccupied.length);
-        _colony = newColony;
-        _islandPlots = colonyOccupied;
-        _reservations = reservationsMap;
-        _isLoading = false;
-        _transformInitialized = false;
-      });
-    }
-  }
-
   String _getColonyEmoji(CelestialColonyInfo c) {
     if (c.planetName.contains('Earth')) return '🌍';
     if (c.planetName.contains('Mars')) return '🔴';
@@ -463,7 +436,15 @@ class _PoketCosmosResidentIslandViewState
                             return InkWell(
                               onTap: () {
                                 Navigator.pop(ctx);
-                                _switchToColony(c);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => PoketCosmosNavigatorPage(
+                                      initialPlanetCode: c.code,
+                                      initialScreen: 1,
+                                    ),
+                                  ),
+                                );
                               },
                               borderRadius: BorderRadius.circular(16),
                               child: Container(

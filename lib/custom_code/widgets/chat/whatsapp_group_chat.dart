@@ -87,6 +87,9 @@ import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_team_
 import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_dashboard_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_diagram_hub_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_modular_plus_sheet.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_todo_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_ideas_board_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_calendar_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/pocketgang_tools_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocketgang_task_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/snap/snap_view_dialog.dart';
@@ -6039,8 +6042,43 @@ Draft: "$draft"''';
                                   tasks: _gangTasks,
                                 ),
                               )
-                            else if (toolKey == 'diagram_studio')
+                            else if (toolKey == 'diagram_studio' || toolKey == 'whiteboard')
                               PocketGangDiagramHubWidget(
+                                groupId: widget.groupId,
+                                groupName: widget.groupName,
+                                currentUserId: _currentUserId,
+                              )
+                            else if (toolKey == 'todo')
+                              PocketGangTodoWidget(
+                                groupId: widget.groupId,
+                                groupName: widget.groupName,
+                                currentUserId: _currentUserId,
+                                groupMembers: _groupMembers,
+                                isAdmin: _userRole == 'admin',
+                                tasks: _gangTasks,
+                                onTasksChanged: () async {
+                                  final tasks = await PocketGangTaskService.instance
+                                      .getTasks(widget.groupId);
+                                  if (mounted) {
+                                    safeSetState(() => _gangTasks = tasks);
+                                  }
+                                },
+                              )
+                            else if (toolKey == 'ideas_board')
+                              PocketGangIdeasBoardWidget(
+                                groupId: widget.groupId,
+                                groupName: widget.groupName,
+                                currentUserId: _currentUserId,
+                                onTaskCreated: () async {
+                                  final tasks = await PocketGangTaskService.instance
+                                      .getTasks(widget.groupId);
+                                  if (mounted) {
+                                    safeSetState(() => _gangTasks = tasks);
+                                  }
+                                },
+                              )
+                            else if (toolKey == 'calendar')
+                              PocketGangCalendarWidget(
                                 groupId: widget.groupId,
                                 groupName: widget.groupName,
                                 currentUserId: _currentUserId,
@@ -6304,6 +6342,18 @@ Draft: "$draft"''';
     } else if (toolKey == 'diagram_studio') {
       title = 'Diagram Studio';
       iconWidget = const Text('📐', style: TextStyle(fontSize: 12));
+    } else if (toolKey == 'whiteboard') {
+      title = 'Whiteboard';
+      iconWidget = const Text('🎨', style: TextStyle(fontSize: 12));
+    } else if (toolKey == 'todo') {
+      title = 'To-do List';
+      iconWidget = const Text('✅', style: TextStyle(fontSize: 12));
+    } else if (toolKey == 'ideas_board') {
+      title = 'Ideas Board';
+      iconWidget = const Text('💡', style: TextStyle(fontSize: 12));
+    } else if (toolKey == 'calendar') {
+      title = 'Calendar';
+      iconWidget = const Text('📅', style: TextStyle(fontSize: 12));
     }
 
     return _buildModularGangTab(
