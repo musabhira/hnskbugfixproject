@@ -319,19 +319,6 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
               ],
             ),
           ),
-                              color: const Color(0xFFFFD700),
-                              fontWeight: FontWeight.w900,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
 
           // 📺 Prominent Rewarded Video Card (User Audio Directive: Easy to spot & Claim +50 PS)
           Container(
