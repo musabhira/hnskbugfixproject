@@ -1248,101 +1248,15 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                       ],
                     ),
                   ),
-                  InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: _showCosmosPlanetSearchSheet,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      margin: const EdgeInsets.only(right: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white12),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.search_rounded,
-                              color: Color(0xFF38BDF8), size: 14),
-                          SizedBox(width: 4),
-                          Text(
-                            'Search',
-                            style: TextStyle(
-                              color: Color(0xFF38BDF8),
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                  IconButton(
+                    icon: const Icon(Icons.search_rounded,
+                        color: Color(0xFF38BDF8), size: 20),
+                    tooltip: 'Search Planets & Islands',
+                    onPressed: _showCosmosPlanetSearchSheet,
+                    visualDensity: VisualDensity.compact,
+                    splashRadius: 18,
                   ),
-                  InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () {
-                      HapticFeedback.lightImpact();
-                      setState(() => _activeScreen = 0);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      margin: const EdgeInsets.only(right: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white12),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.public_rounded,
-                              color: Color(0xFF38BDF8), size: 14),
-                          SizedBox(width: 4),
-                          Text(
-                            'Orbit',
-                            style: TextStyle(
-                              color: Color(0xFF38BDF8),
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: _showCosmosLoopDialog,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 9, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFD700).withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                            color:
-                                const Color(0xFFFFD700).withValues(alpha: 0.6)),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.all_inclusive_rounded,
-                              color: Color(0xFFFFD700), size: 14),
-                          SizedBox(width: 4),
-                          Text(
-                            '1 Cr+ Loop',
-                            style: TextStyle(
-                              color: Color(0xFFFFD700),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 4),
                   Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

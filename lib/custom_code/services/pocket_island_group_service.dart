@@ -30,14 +30,13 @@ class PocketIslandGroupService {
     return const Uuid().v5(_kIslandNamespace, seed);
   }
 
-  /// Official Island Neighbors Group Name (Minimal & Clean)
+  /// Official Island Neighbors Group Name (Universal & Minimal)
   String getIslandGroupName({
     required String planetName,
     required int wave,
     String? islandName,
   }) {
-    final cleanPlanet = planetName.replaceAll(RegExp(r'[^\w\s]'), '').trim();
-    return '🏝️ $cleanPlanet Neighbors';
+    return '🏝️ Island Neighbors';
   }
 
   /// Checks if a group name or ID belongs to an Island Neighbors group
@@ -45,6 +44,7 @@ class PocketIslandGroupService {
     final nameLower = groupName.toLowerCase();
     final idLower = groupId.toLowerCase();
     return nameLower.contains('neighbors') ||
+        nameLower.contains('island') ||
         idLower.contains('cosmos_island_') ||
         nameLower.startsWith('🏝️');
   }
@@ -199,6 +199,8 @@ class PocketIslandGroupService {
       await prefs.setString('$_kUserJoinedGroupKey$userId', groupId);
       await prefs.setString('cosmos_user_island_group_id', groupId);
       await prefs.setString('cosmos_user_island_group_name', groupName);
+      await prefs.setString('cosmos_user_island_group_planet_code', planetCode);
+      await prefs.setInt('cosmos_user_island_group_wave', wave);
     } catch (e) {
       debugPrint('PocketIslandGroupService error: $e');
     }

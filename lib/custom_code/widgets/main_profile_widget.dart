@@ -1960,11 +1960,15 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             color: const Color(0xFFFFD700),
                             onPressed: () {
                               HapticFeedback.mediumImpact();
+                              final myCoords = _resolveUserCosmosCoordinates();
                               PocketCitadelAttackPage.openForUser(
                                 context,
                                 userId: userId,
                                 isDefenseMode: true,
                                 attackerDay: _getEffectiveDay(),
+                                preferredPlanetCode: myCoords['planetCode'] as String?,
+                                preferredPlotNumber: myCoords['plotNumber'] as int?,
+                                preferredWave: myCoords['wave'] as int?,
                               );
                             },
                             tooltip: 'Preview Attack Profile / Citadel Defense',
@@ -3291,11 +3295,15 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     ),
                     onPressed: () {
                       HapticFeedback.mediumImpact();
+                      final myCoords = _resolveUserCosmosCoordinates();
                       PocketCitadelAttackPage.openForUser(
                         context,
                         userId: userId,
                         isDefenseMode: true,
                         attackerDay: _getEffectiveDay(),
+                        preferredPlanetCode: myCoords['planetCode'] as String?,
+                        preferredPlotNumber: myCoords['plotNumber'] as int?,
+                        preferredWave: myCoords['wave'] as int?,
                       );
                     },
                     child: Column(

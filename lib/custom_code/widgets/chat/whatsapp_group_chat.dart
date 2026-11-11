@@ -226,7 +226,17 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   CelestialColonyInfo? get _islandColonyInfo {
     if (!_isIslandNeighborsGroup) return null;
     final planetName = PocketIslandGroupService.extractPlanetName(_currentGroupName);
-    return PoketCosmosAllocationService.instance.getColonyByPlanetName(planetName);
+    final byName = PoketCosmosAllocationService.instance.getColonyByPlanetName(planetName);
+    if (byName.code != 'EP' || planetName.toLowerCase().contains('earth')) {
+      return byName;
+    }
+    // Fallback: Check user's own birth plot colony if group name is generic "Island Neighbors"
+    final userPlot = PoketCosmosAllocationService.instance.getCachedUserPlot(_currentUserId) ??
+        PoketCosmosAllocationService.instance.currentBirthPlot;
+    if (userPlot != null) {
+      return PoketCosmosAllocationService.instance.getColonyByPlanetName(userPlot.planetName);
+    }
+    return byName;
   }
 
   /// Navigates directly to the user's specific island in PoketCosmosResidentIslandView
@@ -506,7 +516,12 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
               final targetId = widget.groupId.startsWith('p:')
                   ? widget.groupId.substring(2)
                   : widget.groupId;
-              PocketCitadelAttackPage.openForUser(context, userId: targetId);
+              PocketCitadelAttackPage.openForUser(
+                context,
+                userId: targetId,
+                preferredPlanetCode: _islandColonyInfo?.code,
+                preferredPlanetName: _islandColonyInfo?.planetName,
+              );
             },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
@@ -11099,7 +11114,12 @@ Draft: "$draft"''';
       }
 
       if (targetId.isNotEmpty) {
-        PocketCitadelAttackPage.openForUser(context, userId: targetId);
+        PocketCitadelAttackPage.openForUser(
+          context,
+          userId: targetId,
+          preferredPlanetCode: _islandColonyInfo?.code,
+          preferredPlanetName: _islandColonyInfo?.planetName,
+        );
       }
       return;
     }
@@ -11655,8 +11675,12 @@ Draft: "$draft"''';
                                 ),
                                 onTap: () {
                                   Navigator.pop(context);
-                                  PocketCitadelAttackPage.openForUser(context,
-                                      userId: robot.id);
+                                  PocketCitadelAttackPage.openForUser(
+                                    context,
+                                    userId: robot.id,
+                                    preferredPlanetCode: _islandColonyInfo?.code,
+                                    preferredPlanetName: _islandColonyInfo?.planetName,
+                                  );
                                 },
                               );
                             }),

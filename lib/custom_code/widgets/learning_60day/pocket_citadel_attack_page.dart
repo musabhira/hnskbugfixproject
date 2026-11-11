@@ -82,6 +82,10 @@ class PocketCitadelAttackPage extends StatefulWidget {
     String? paletteId,
     bool isDefenseMode = false,
     bool isKidMode = false,
+    String? preferredPlanetCode,
+    String? preferredPlanetName,
+    int? preferredPlotNumber,
+    int? preferredWave,
   }) async {
     // 🏛️ If target is The President of Pocket World, open the Sovereign Citadel living world!
     if (PocketPresidentService.isPresidentId(userId) ||
@@ -362,18 +366,34 @@ class PocketCitadelAttackPage extends StatefulWidget {
       }
     } else {
       // 🌌 Deterministic & Database-backed Cosmos Born Address Synchronization
-      final resolvedPlot =
-          await PoketCosmosAllocationService.instance.getUserPlot(
-        userId: userId,
-        fallbackName: p['first_name'] ?? p['name'] ?? targetName,
-      );
-      userPin = resolvedPlot.postalPinCode;
-      final parts = resolvedPlot.postalPinCode.split('-');
-      userPlanetCode = parts.length > 2 ? parts[2] : 'EP';
-      userPlotNum = resolvedPlot.plotNumber;
-      userPlanetName = resolvedPlot.planetName;
-      userIslandName = resolvedPlot.countryName;
-      userStreetName = resolvedPlot.streetName;
+      if (preferredPlanetCode != null && preferredPlanetCode.isNotEmpty) {
+        final colony = PoketCosmosAllocationService.instance
+            .getColonyByCode(preferredPlanetCode);
+        userPlanetCode = colony.code;
+        userPlanetName = colony.planetName;
+        userIslandName = colony.islandName;
+        userStreetName = colony.streetName;
+        userPlotNum = preferredPlotNumber ??
+            ((userId.hashCode.abs() ~/ 10) %
+                    PoketCosmosAllocationService.maxPlotsPerIsland) +
+                1;
+        final waveVal = preferredWave ?? 1;
+        userPin =
+            'PKT-W${waveVal.toString().padLeft(2, '0')}-$userPlanetCode-I${waveVal.toString().padLeft(2, '0')}-P${userPlotNum.toString().padLeft(2, '0')}';
+      } else {
+        final resolvedPlot =
+            await PoketCosmosAllocationService.instance.getUserPlot(
+          userId: userId,
+          fallbackName: p['first_name'] ?? p['name'] ?? targetName,
+        );
+        userPin = resolvedPlot.postalPinCode;
+        final parts = resolvedPlot.postalPinCode.split('-');
+        userPlanetCode = parts.length > 2 ? parts[2] : 'EP';
+        userPlotNum = resolvedPlot.plotNumber;
+        userPlanetName = resolvedPlot.planetName;
+        userIslandName = resolvedPlot.countryName;
+        userStreetName = resolvedPlot.streetName;
+      }
     }
 
     final userNeighbor = PocketNeighbor(
@@ -825,7 +845,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
           userName: widget.neighbor.name,
           targetPlanetCode: isPres ? 'EP' : widget.neighbor.effectivePlanetCode,
           targetPlotNumber: isPres ? 1 : widget.neighbor.effectivePlotNumber,
-          targetWave: 1,
+          targetWave: isPres ? 1 : widget.neighbor.effectiveWave,
           isPresidential: isPres,
         ),
       ),
