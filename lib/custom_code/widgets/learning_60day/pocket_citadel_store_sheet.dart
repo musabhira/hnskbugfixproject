@@ -206,38 +206,45 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
 
           // Header Bar
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Text('🏰', style: TextStyle(fontSize: 18)),
-                        const SizedBox(width: 6),
-                        Text(
-                          'CITADEL DEFENSE ARMORY',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.8,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('🏰', style: TextStyle(fontSize: 16)),
+                          const SizedBox(width: 5),
+                          Flexible(
+                            child: Text(
+                              'DEFENSE',
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Spend Pocket Score to fortify your Citadel gates',
-                      style: GoogleFonts.inter(
-                        color: Colors.white54,
-                        fontSize: 11,
+                        ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 2),
+                      Text(
+                        'Fortify your Citadel gates',
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          color: Colors.white54,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 8),
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -248,12 +255,12 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                           : _watchRewardedAd,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 5),
+                            horizontal: 7, vertical: 4.5),
                         decoration: BoxDecoration(
                           color: _rewardedRemaining > 0
                               ? const Color(0xFF10B981).withValues(alpha: 0.18)
                               : Colors.white10,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(10),
                           border: Border.all(
                             color: _rewardedRemaining > 0
                                 ? const Color(0xFF10B981).withValues(alpha: 0.6)
@@ -263,8 +270,8 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Text('📺', style: TextStyle(fontSize: 12)),
-                            const SizedBox(width: 4),
+                            const Text('📺', style: TextStyle(fontSize: 11)),
+                            const SizedBox(width: 3),
                             Text(
                               _rewardedRemaining > 0 ? '+50 PS' : '5/5 Done',
                               style: GoogleFonts.outfit(
@@ -272,32 +279,46 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                                     ? const Color(0xFF34D399)
                                     : Colors.white54,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 11.5,
+                                fontSize: 11,
                               ),
                             ),
                           ],
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6),
                     // Balance Badge
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 5),
+                          horizontal: 8, vertical: 4.5),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFD700).withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                             color:
                                 const Color(0xFFFFD700).withValues(alpha: 0.6)),
                       ),
                       child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text('🪙', style: TextStyle(fontSize: 13)),
-                          const SizedBox(width: 4),
+                          const Text('🪙', style: TextStyle(fontSize: 12)),
+                          const SizedBox(width: 3),
                           Text(
                             '$_currentPS PS',
                             style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFD700),
+                              fontWeight: FontWeight.w900,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
                               color: const Color(0xFFFFD700),
                               fontWeight: FontWeight.w900,
                               fontSize: 13,

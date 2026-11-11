@@ -342,9 +342,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   int _levelRivalShuffleSeed = 0;
 
   // Spacing & node dimensions for upward climbing roadmap with 90 English Houses
-  // User audio directive: "ഒരു വീട് കഴിഞ്ഞ് ഒരു ഗ്യാപ്പ് ഇട്ടിട്ട് ഗേറ്റ്. ഇപ്പോൾ ഭയങ്കര congested ആയി കിടക്കുന്നുണ്ട്. Distance double/triple ആക്കുക."
-  // Expanded node spacing to 880.0 so there is a generous, breathable gap after the Gate for the Native Ad Card before the next House!
-  static const double _nodeSpacingY = 880.0;
+  // User audio directive: "ഒരു വീട് കഴിഞ്ഞ് ഒരു ഗ്യാപ്പ് ഇട്ടിട്ട് ഗേറ്റ്... ഗേറ്റ് കഴിഞ്ഞ ഉടനെ കുറച്ച് ഗ്യാപ്പ് വേണം. എന്നിട്ട് ആഡിന്റെ ഇത് കഴിഞ്ഞിട്ട് പിന്നെയും കുറച്ച് ഗ്യാപ്പ് വേണം. അടുപ്പിച്ച് വേണ്ട കുറച്ച് ലൂസ് ആക്കുക. കുറച്ചുകൂടി ഗ്യാപ്പ് കൂട്ടുക. കുറച്ചുകൂടി നീളം വരും അപ്പോൾ നമ്മുടെ ടാർഗറ്റിലേക്ക്."
+  // Expanded node spacing to 1080.0 so there is a generous, loose, breathable gap after the Gate for the Native Ad Card before the next House!
+  static const double _nodeSpacingY = 1080.0;
   static const double _expandedActiveGap = 0.0;
   static const double _topPadding =
       480.0; // Summit apex spacing with Citadel Palace
@@ -6037,36 +6037,38 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
           );
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+              colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: const Color(0xFF38BDF8).withValues(alpha: 0.85),
-              width: 1.2,
+              color: Colors.white.withValues(alpha: 0.35),
+              width: 1.0,
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF38BDF8).withValues(alpha: 0.25),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+                color: const Color(0xFF6366F1).withValues(alpha: 0.35),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
               ),
             ],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('🏰', style: TextStyle(fontSize: 10)),
+              const Text('🏡', style: TextStyle(fontSize: 11)),
               const SizedBox(width: 4),
               Text(
                 'HOME VISIT',
                 style: GoogleFonts.outfit(
-                  color: const Color(0xFF38BDF8),
-                  fontSize: 9.5,
+                  color: Colors.white,
+                  fontSize: 10,
                   fontWeight: FontWeight.w900,
-                  letterSpacing: 0.5,
+                  letterSpacing: 0.6,
                 ),
               ),
             ],

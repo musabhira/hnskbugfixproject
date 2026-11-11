@@ -1585,6 +1585,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         myId: uid,
         otherUserId: otherUserId,
       ));
+      unawaited(PocketActionChatService.syncHistoricalPocketTalkRequestMessage(
+        myId: uid,
+        otherUserId: otherUserId,
+      ));
 
       if (mounted) {
         safeSetState(() {
@@ -3782,14 +3786,22 @@ Draft: "$draft"''';
             PocketMateService.addMateLocally(_currentUserId, otherUserId);
           }
         } else if (!_isMate) {
-          await PocketMateService.sendMateRequest(
-            senderId: _currentUserId,
-            receiverId: otherUserId,
-            message: text ?? 'Sent you a message request',
-          );
-          safeSetState(() {
-            _isOutgoingPendingRequest = true;
-          });
+          // If a request was not yet sent, trigger it in the background without blocking message flow
+          if (!_isOutgoingPendingRequest) {
+            PocketMateService.sendMateRequest(
+              senderId: _currentUserId,
+              receiverId: otherUserId,
+              message: text ?? 'Sent you a message request',
+            ).then((_) {
+              if (mounted) {
+                safeSetState(() {
+                  _isOutgoingPendingRequest = true;
+                });
+              }
+            }).catchError((err) {
+              debugPrint('Background mate request send: $err');
+            });
+          }
         }
       }
 
