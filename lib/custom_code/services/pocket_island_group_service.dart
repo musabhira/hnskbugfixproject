@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '/backend/supabase/supabase.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_models.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 
@@ -37,6 +38,80 @@ class PocketIslandGroupService {
   }) {
     final cleanPlanet = planetName.replaceAll(RegExp(r'[^\w\s]'), '').trim();
     return '🏝️ $cleanPlanet Neighbors';
+  }
+
+  /// Checks if a group name or ID belongs to an Island Neighbors group
+  static bool isIslandGroup(String groupId, String groupName) {
+    final nameLower = groupName.toLowerCase();
+    final idLower = groupId.toLowerCase();
+    return nameLower.contains('neighbors') ||
+        idLower.contains('cosmos_island_') ||
+        nameLower.startsWith('🏝️');
+  }
+
+  /// Extracts the planet name from an island group name or planet string
+  static String extractPlanetName(String groupName) {
+    // Expected patterns: '🏝️ Mercury Neighbors', 'Mercury Neighbors', '🏝️ Kepler-452b Neighbors'
+    String clean = groupName.replaceAll('🏝️', '').trim();
+    final match = RegExp(r'^(.*?)\s+Neighbors', caseSensitive: false).firstMatch(clean);
+    if (match != null) {
+      return match.group(1)?.trim() ?? clean;
+    }
+    return clean;
+  }
+
+  /// Returns the planetary theme color for an island group avatar aura
+  static Color getPlanetThemeColor(String groupName) {
+    final pName = extractPlanetName(groupName).toLowerCase();
+    if (pName.contains('mercury')) return const Color(0xFF94A3B8); // Slate / Silver
+    if (pName.contains('mars')) return const Color(0xFFEF4444); // Red
+    if (pName.contains('jupiter')) return const Color(0xFFF97316); // Amber Orange
+    if (pName.contains('saturn')) return const Color(0xFFEAB308); // Golden Yellow
+    if (pName.contains('moon')) return const Color(0xFFCBD5E1); // Silver White
+    if (pName.contains('europa')) return const Color(0xFF38BDF8); // Ice Cyan
+    if (pName.contains('venus')) return const Color(0xFFFBBF24); // Solar Gold
+    if (pName.contains('titan')) return const Color(0xFF10B981); // Emerald Teal
+    if (pName.contains('pluto')) return const Color(0xFFA855F7); // Cosmic Purple
+    if (pName.contains('neptune')) return const Color(0xFF2563EB); // Deep Ocean Blue
+    if (pName.contains('ganymede')) return const Color(0xFF0EA5E9); // Magnetic Azure
+    if (pName.contains('uranus')) return const Color(0xFF06B6D4); // Cyan Diamond
+    if (pName.contains('triton')) return const Color(0xFF6366F1); // Indigo
+    if (pName.contains('kepler')) return const Color(0xFF8B5CF6); // Bioluminescent Violet
+    return const Color(0xFF0284C7); // Earth Prime Azure
+  }
+
+  /// Returns a themed vector avatar config for an Island Neighbors group
+  static VectorAvatarConfig getIslandGroupAvatarConfig(String groupName) {
+    final pName = extractPlanetName(groupName).toLowerCase();
+    int stage = 30; // Default high celestial level
+    if (pName.contains('mercury')) {
+      stage = 1;
+    } else if (pName.contains('venus')) {
+      stage = 2;
+    } else if (pName.contains('mars')) {
+      stage = 4;
+    } else if (pName.contains('jupiter')) {
+      stage = 5;
+    } else if (pName.contains('saturn')) {
+      stage = 6;
+    } else if (pName.contains('uranus')) {
+      stage = 7;
+    } else if (pName.contains('neptune')) {
+      stage = 8;
+    } else if (pName.contains('pluto')) {
+      stage = 9;
+    } else if (pName.contains('kepler')) {
+      stage = 90;
+    } else if (pName.contains('moon')) {
+      stage = 30;
+    } else if (pName.contains('europa')) {
+      stage = 51;
+    } else if (pName.contains('ganymede')) {
+      stage = 52;
+    } else if (pName.contains('titan')) {
+      stage = 61;
+    }
+    return VectorAvatarConfig.getEvolutionAvatarForStage(stage);
   }
 
   /// Ensures the island group exists in Supabase `groups` table,

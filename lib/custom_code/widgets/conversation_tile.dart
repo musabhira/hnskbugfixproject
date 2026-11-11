@@ -21,6 +21,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/living_spreading_aur
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_island_group_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/group_sky_members_page.dart';
 
 
@@ -544,6 +545,23 @@ class _ConversationTileState extends State<ConversationTile> {
         child: ClipOval(
           child: VectorAvatarWidget(
             config: hubConfig,
+            size: 48,
+            showAura: true,
+          ),
+        ),
+      );
+    }
+
+    // 2.1 Island Neighbors Cosmos Group
+    if (PocketIslandGroupService.isIslandGroup(widget.conversation.id, widget.conversation.name)) {
+      final islandConfig = PocketIslandGroupService.getIslandGroupAvatarConfig(widget.conversation.name);
+      final islandColor = PocketIslandGroupService.getPlanetThemeColor(widget.conversation.name);
+      return LivingSpreadingAura(
+        color: islandColor,
+        size: 50,
+        child: ClipOval(
+          child: VectorAvatarWidget(
+            config: islandConfig,
             size: 48,
             showAura: true,
           ),

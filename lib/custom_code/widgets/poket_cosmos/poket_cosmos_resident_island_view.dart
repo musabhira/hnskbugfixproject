@@ -605,7 +605,7 @@ class _PoketCosmosResidentIslandViewState
             _buildFilterOption(
               ctx,
               id: 'all',
-              title: 'All 20 Island Parcels',
+              title: 'All 25 Island Parcels',
               subtitle:
                   'Show all houses, pre-booked countdowns, and vacant plots',
               icon: Icons.grid_view_rounded,

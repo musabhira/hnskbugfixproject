@@ -33,7 +33,11 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citad
 
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:pocket_mates_app/custom_code/services/pocket_island_group_service.dart';
+import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_island_inspector_modal.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_resident_island_view.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_models.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_talk_engine.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_guard_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_gang_group_language_service.dart';
@@ -208,6 +212,38 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         name.contains('english') ||
         id.contains('english') ||
         id.contains('hub');
+  }
+
+  /// 🏝️ Detects if the current conversation is an Island Neighbors Group
+  bool get _isIslandNeighborsGroup {
+    return PocketIslandGroupService.isIslandGroup(_currentGroupId, _currentGroupName);
+  }
+
+  /// Resolves the Celestial Colony for the current Island Neighbors Group
+  CelestialColonyInfo? get _islandColonyInfo {
+    if (!_isIslandNeighborsGroup) return null;
+    final planetName = PocketIslandGroupService.extractPlanetName(_currentGroupName);
+    return PoketCosmosAllocationService.instance.getColonyByPlanetName(planetName);
+  }
+
+  /// Navigates directly to the user's specific island in PoketCosmosResidentIslandView
+  void _openIslandMapDirectly() {
+    HapticFeedback.mediumImpact();
+    final colony = _islandColonyInfo;
+    if (colony != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PoketCosmosResidentIslandView(
+            targetPlanetCode: colony.code,
+            targetWave: 1,
+            userId: _currentUserId,
+          ),
+        ),
+      );
+    } else {
+      PoketCosmosIslandInspectorModal.show(context);
+    }
   }
 
   // 🤖 English Hub Autonomous Robot Simulation Timers & Rate Limiters
@@ -1302,6 +1338,43 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           'profile': profileData,
         };
       }).toList();
+
+      // 🏝️ If this is an Island Neighbors group, ensure all 25 plot residents (citizens, pioneers, and robot neighbors)
+      // are populated so neighbors can see each other and chat together!
+      if (_isIslandNeighborsGroup) {
+        final colony = _islandColonyInfo;
+        if (colony != null) {
+          try {
+            final occupiedPlots = await PoketCosmosAllocationService.instance
+                .getOccupiedPlotsForColony(colony, wave: 1);
+            for (final plot in occupiedPlots) {
+              if (plot.userId.isEmpty) continue;
+              final alreadyInList = members.any((m) => m['user_id'] == plot.userId);
+              if (!alreadyInList) {
+                members.add({
+                  'group_id': _currentGroupId,
+                  'user_id': plot.userId,
+                  'role': plot.isPresident ? 'admin' : 'member',
+                  'is_active': true,
+                  'joined_at': DateTime.now().toIso8601String(),
+                  'profile': {
+                    'name': plot.userName,
+                    'profile_image_url': plot.userAvatar.isNotEmpty && !plot.userAvatar.startsWith('assets') ? plot.userAvatar : null,
+                    'pocket_score': plot.pocketScore,
+                    'learning_stage': plot.day.clamp(1, 90),
+                    'stage': plot.day.clamp(1, 90),
+                    'level': plot.day.clamp(1, 90),
+                    'plot_number': plot.plotNumber,
+                    'is_pioneer': plot.userId.startsWith('pioneer_') || plot.userName.contains('Pioneer'),
+                  },
+                });
+              }
+            }
+          } catch (e) {
+            debugPrint('Error populating island neighbors in chat: $e');
+          }
+        }
+      }
 
       final myMember = members.firstWhere((m) => m['user_id'] == _currentUserId,
           orElse: () => {});
@@ -5221,30 +5294,49 @@ Draft: "$draft"''';
                                 ),
                               ),
                             )
-                          : (widget.groupImage != null
-                              ? CircleAvatar(
-                                  radius: 17,
-                                  backgroundColor: Colors.grey[800],
-                                  backgroundImage:
-                                      NetworkImage(widget.groupImage!),
-                                )
-                              : Container(
+                          : (_isIslandNeighborsGroup
+                              ? Container(
                                   width: 34,
                                   height: 34,
-                                  decoration: const BoxDecoration(
+                                  decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        Color(0xFF4F46E5),
-                                        Color(0xFF7C3AED)
-                                      ],
+                                    border: Border.all(
+                                      color: PocketIslandGroupService.getPlanetThemeColor(_currentGroupName),
+                                      width: 1.2,
                                     ),
                                   ),
-                                  child: const Center(
-                                    child: Icon(Icons.groups_rounded,
-                                        color: Colors.white, size: 18),
+                                  child: ClipOval(
+                                    child: VectorAvatarWidget(
+                                      config: PocketIslandGroupService.getIslandGroupAvatarConfig(_currentGroupName),
+                                      size: 34,
+                                      showAura: true,
+                                    ),
                                   ),
-                                ))),
+                                )
+                              : (widget.groupImage != null && !widget.groupImage!.startsWith('assets')
+                                  ? CircleAvatar(
+                                      radius: 17,
+                                      backgroundColor: Colors.grey[800],
+                                      backgroundImage:
+                                          NetworkImage(widget.groupImage!),
+                                    )
+                                  : Container(
+                                      width: 34,
+                                      height: 34,
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Color(0xFF4F46E5),
+                                            Color(0xFF7C3AED)
+                                          ],
+                                        ),
+                                      ),
+                                      child: const Center(
+                                        child: Icon(Icons.groups_rounded,
+                                            color: Colors.white, size: 18),
+                                      ),
+                                    )))),
                 ),
               ),
               const SizedBox(width: 10),
@@ -5461,6 +5553,24 @@ Draft: "$draft"''';
                         ),
                       );
                     }
+                    if (_isIslandNeighborsGroup) {
+                      final neighborCount = _groupMembers.length;
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 1.5),
+                        child: Text(
+                          neighborCount > 0
+                              ? '$neighborCount Neighbors • 25 Island Parcels'
+                              : 'Island Neighbors Group',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF38BDF8),
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
+                    }
                     final hubRobots = _isEnglishHubGroup
                         ? PocketRobotService.getRobotsForLevelBracket(
                             _hubMinLevel, _hubMaxLevel)
@@ -5566,14 +5676,11 @@ Draft: "$draft"''';
                       },
               ),
             ],
-            if (widget.groupName.contains('Neighbors') || _currentGroupName.contains('Neighbors'))
+            if (_isIslandNeighborsGroup)
               IconButton(
                 icon: const Icon(Icons.public_rounded, color: Color(0xFF38BDF8), size: 22),
                 tooltip: 'Island Map 🗺️',
-                onPressed: () {
-                  HapticFeedback.mediumImpact();
-                  PoketCosmosIslandInspectorModal.show(context);
-                },
+                onPressed: _openIslandMapDirectly,
               ),
             PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert, color: Colors.white),
@@ -10974,17 +11081,36 @@ Draft: "$draft"''';
                         children: [
                           Hero(
                             tag: 'group_avatar_info_${widget.groupId}',
-                            child: CircleAvatar(
-                              radius: 50,
-                              backgroundColor: Colors.grey[800],
-                              backgroundImage: widget.groupImage != null
-                                  ? NetworkImage(widget.groupImage!)
-                                  : null,
-                              child: widget.groupImage == null
-                                  ? const Icon(Icons.group,
-                                      color: Colors.white, size: 50)
-                                  : null,
-                            ),
+                            child: _isIslandNeighborsGroup
+                                ? Container(
+                                    width: 100,
+                                    height: 100,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: PocketIslandGroupService.getPlanetThemeColor(_currentGroupName),
+                                        width: 2.5,
+                                      ),
+                                    ),
+                                    child: ClipOval(
+                                      child: VectorAvatarWidget(
+                                        config: PocketIslandGroupService.getIslandGroupAvatarConfig(_currentGroupName),
+                                        size: 100,
+                                        showAura: true,
+                                      ),
+                                    ),
+                                  )
+                                : CircleAvatar(
+                                    radius: 50,
+                                    backgroundColor: Colors.grey[800],
+                                    backgroundImage: widget.groupImage != null && !widget.groupImage!.startsWith('assets')
+                                        ? NetworkImage(widget.groupImage!)
+                                        : null,
+                                    child: (widget.groupImage == null || widget.groupImage!.startsWith('assets'))
+                                        ? const Icon(Icons.group,
+                                            color: Colors.white, size: 50)
+                                        : null,
+                                  ),
                           ),
                           const SizedBox(height: 16),
                           Text(
@@ -10996,7 +11122,25 @@ Draft: "$draft"''';
                           ),
                           const SizedBox(height: 8),
                           Builder(builder: (context) {
-                            final hubRobots = _isEnglishHubGroup
+                            if (_isIslandNeighborsGroup) {
+                      final neighborCount = _groupMembers.length;
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 1.5),
+                        child: Text(
+                          neighborCount > 0
+                              ? '$neighborCount Neighbors • 25 Island Parcels'
+                              : 'Island Neighbors Group',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF38BDF8),
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
+                    }
+                    final hubRobots = _isEnglishHubGroup
                                 ? PocketRobotService.getRobotsForLevelBracket(
                                     _hubMinLevel, _hubMaxLevel)
                                 : <PocketRobot>[];
@@ -11013,7 +11157,7 @@ Draft: "$draft"''';
                     const SizedBox(height: 20),
 
                     // 🏝️ Celestial Island Map Card for Neighbors Groups
-                    if (widget.groupName.contains('Neighbors') || _currentGroupName.contains('Neighbors')) ...[
+                    if (_isIslandNeighborsGroup) ...[
                       Container(
                         margin: const EdgeInsets.only(bottom: 16),
                         padding: const EdgeInsets.all(16),
@@ -11066,7 +11210,7 @@ Draft: "$draft"''';
                               child: ElevatedButton.icon(
                                 onPressed: () {
                                   Navigator.pop(context);
-                                  PoketCosmosIslandInspectorModal.show(context);
+                                  _openIslandMapDirectly();
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF0284C7),
@@ -11204,9 +11348,11 @@ Draft: "$draft"''';
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                hubRobots.isNotEmpty
-                                    ? 'Learners (${_groupMembers.length})'
-                                    : '${_groupMembers.length} members',
+                                _isIslandNeighborsGroup
+                                    ? 'Island Neighbors (${_groupMembers.length})'
+                                    : (hubRobots.isNotEmpty
+                                        ? 'Learners (${_groupMembers.length})'
+                                        : '${_groupMembers.length} members'),
                                 style: const TextStyle(
                                     color: Colors.grey,
                                     fontWeight: FontWeight.bold),
@@ -11256,9 +11402,35 @@ Draft: "$draft"''';
                               contentPadding: EdgeInsets.zero,
                               leading:
                                   _buildParticipantAvatar(profile, size: 44),
-                              title: Text(
-                                isMe ? 'You' : (profile?['name'] ?? 'Unknown'),
-                                style: const TextStyle(color: Colors.white),
+                              title: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      isMe ? 'You' : (profile?['name'] ?? 'Unknown'),
+                                      style: const TextStyle(color: Colors.white),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  if (profile?['plot_number'] != null)
+                                    Container(
+                                      margin: const EdgeInsets.only(left: 6),
+                                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF0284C7).withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(4),
+                                        border: Border.all(color: const Color(0xFF38BDF8), width: 0.8),
+                                      ),
+                                      child: Text(
+                                        'Plot #${profile?['plot_number']}',
+                                        style: const TextStyle(
+                                          color: Color(0xFF38BDF8),
+                                          fontSize: 9.5,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
                               subtitle: Text(
                                 'Level $stage · ${profile?['bio'] ?? 'Active in Pocket World'}',
