@@ -16,6 +16,7 @@ on:
         required: false
         default: ''
       runner:
+        
         description: 'macOS runner label (e.g. macos-26, macos-15, macos-latest)'
         required: false
         default: 'macos-26'

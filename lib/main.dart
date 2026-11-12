@@ -24,6 +24,7 @@ import 'custom_code/services/pocket_language_service.dart';
 import 'custom_code/services/app_store_review_service.dart';
 import 'services/iap_service.dart';
 import 'custom_code/services/pocket_admob_service.dart';
+import 'custom_code/services/pocket_meta_ads_service.dart';
 import 'custom_code/services/pocket_personal_chat_language_service.dart';
 import 'custom_code/services/poket_cosmos_allocation_service.dart';
 
@@ -111,9 +112,10 @@ void main() {
         await IAPService().initialize();
       } catch (_) {}
 
-      // 5d. Initialize Google Mobile Ads / AdMob Servic3Le
+      // 5d. Initialize Google Mobile Ads & Meta Audience Network
       try {
         await PocketAdMobService.instance.initialize();
+        await PocketMetaAdsService.instance.initialize();
       } catch (_) {}
 
       // 5e. Initialize Personal Chat Background Language Check Worker (English-Only)

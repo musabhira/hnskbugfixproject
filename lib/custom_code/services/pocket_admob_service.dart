@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import '/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
+import 'pocket_meta_ads_service.dart';
 
 /// Placement types for AdMob units across Pocket Mates
 enum PocketAdPlacement {
@@ -375,9 +376,9 @@ class PocketAdMobService {
   DateTime? _lastInterstitialShownTime;
   static const Duration minInterstitialInterval = Duration(minutes: 3);
 
-  // 🛡️ Legal Google AdMob Policy Compliance & Rate Limiting for Rewarded Ads
+  // 🛡️ Legal Google AdMob & Meta Ads Compliance & Rate Limiting for Rewarded Ads
   static const int kMaxRewardedAdsPerDay =
-      5; // Prevents ad-farming & invalid traffic policy limits
+      10; // Expanded to 10 daily rewarded video unlocks per user directive
   static const Duration minRewardedInterval =
       Duration(seconds: 60); // 1-minute cooldown
   DateTime? _lastRewardedShownTime;
@@ -1353,6 +1354,18 @@ class PocketAdMobService {
         onUserEarnedReward(reward);
       });
     } else {
+      // 🚀 Dual-Network Fallback: Try Meta Audience Network Rewarded Ad!
+      final metaShown = await PocketMetaAdsService.instance.showRewardedAd(
+        onUserEarnedReward: () async {
+          await _recordRewardedAdCompletion();
+          onUserEarnedReward(RewardItem(50, 'bonus_pocket_score'));
+        },
+      );
+      if (metaShown) {
+        onAdClosed?.call();
+        return;
+      }
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1546,8 +1559,14 @@ class PocketAdMobService {
             );
             ad.show();
           },
-          onAdFailedToLoad: (err) {
+          onAdFailedToLoad: (err) async {
             _recordAdFailed(placement.name, err);
+            // 🚀 Dual-Network Fallback: Try Meta Interstitial Ad!
+            final metaShown =
+                await PocketMetaAdsService.instance.showInterstitialAd();
+            if (metaShown) {
+              _lastInterstitialShownTime = DateTime.now();
+            }
             onDismissed?.call();
             if (!completer.isCompleted) completer.complete();
           },

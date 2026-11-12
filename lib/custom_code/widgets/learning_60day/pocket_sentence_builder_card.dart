@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_meta_ads_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 
 class SentencePuzzleItem {
@@ -655,8 +656,8 @@ class _PocketSentenceBuilderCardState extends State<PocketSentenceBuilderCard> {
               if (!PocketKidsService.isKidsWorld &&
                   !PocketKidsService.isKidAccount) ...[
                 const SizedBox(height: 12),
-                const PocketBannerAdWidget(
-                  margin: EdgeInsets.symmetric(vertical: 4),
+                const PocketSmartDualBannerWidget(
+                  placement: PocketAdPlacement.banner,
                 ),
               ],
             ],

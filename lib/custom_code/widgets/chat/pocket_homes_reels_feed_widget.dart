@@ -11,6 +11,7 @@ import '../../services/pocket_mate_service.dart';
 import '../../services/pocket_trophy_service.dart';
 import '../learning_60day/pocket_fortress_defense_service.dart';
 import '../../services/pocket_admob_service.dart';
+import '../../services/pocket_meta_ads_service.dart';
 
 import '../../services/pocket_kids_service.dart';
 import '../kids/pocket_kids_robots_data.dart';
@@ -2203,29 +2204,29 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                 ),
               ),
 
-              // 📱 Centered High-Impact Native Ad Card
+              // 📱 Centered High-Impact Native Ad Card (Dual-Network: Meta Audience Network & Google AdMob)
               Center(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: PocketNativeAdCard(
-                    placement: PocketAdPlacement.reels,
-                    margin: EdgeInsets.zero,
-                    onStatusChange: (status, details) {
-                      if (status == 'FAILED' || status == 'VIP_BLOCKED') {
-                        // ⚡ If ad failed to load or user is VIP, automatically skip to next home!
-                        // Prevents showing an empty ad screen with just a button.
-                        // Guard with _skippedAdIndices so failure retry chain doesn't fire multiple skips!
-                        if (!_skippedAdIndices.contains(index)) {
-                          _skippedAdIndices.add(index);
-                          Future.delayed(const Duration(milliseconds: 250), () {
-                            if (mounted) {
-                              _scrollToNextReel();
+                  child: (index % 2 == 1)
+                      ? const PocketMetaNativeFeedCard()
+                      : PocketNativeAdCard(
+                          placement: PocketAdPlacement.reels,
+                          margin: EdgeInsets.zero,
+                          onStatusChange: (status, details) {
+                            if (status == 'FAILED' || status == 'VIP_BLOCKED') {
+                              if (!_skippedAdIndices.contains(index)) {
+                                _skippedAdIndices.add(index);
+                                Future.delayed(
+                                    const Duration(milliseconds: 250), () {
+                                  if (mounted) {
+                                    _scrollToNextReel();
+                                  }
+                                });
+                              }
                             }
-                          });
-                        }
-                      }
-                    },
-                  ),
+                          },
+                        ),
                 ),
               ),
 

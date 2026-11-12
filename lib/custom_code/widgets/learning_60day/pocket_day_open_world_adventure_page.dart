@@ -45,6 +45,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_mini_
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_review_card_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/student_letter_writing_game_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_meta_ads_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/student_diary_entry_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/student_bio_creator_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/student_notice_game_page.dart';
@@ -2050,12 +2051,14 @@ class _PocketDayOpenWorldAdventurePageState
                         ),
                       ],
                       const SizedBox(height: 14),
-                      // 🚀 Preloaded Minimal Native Ad inside Gate Conquered Alert Dialog
-                      const PocketNativeAdCard(
-                        placement: PocketAdPlacement.target,
-                        isCompact: true,
-                        margin: EdgeInsets.symmetric(vertical: 4),
-                      ),
+                      // 🚀 Dual-Network Preloaded Minimal Native Ad inside Gate Conquered Alert Dialog (AdMob & Meta Ads)
+                      (widget.day % 2 == 1)
+                          ? const PocketMetaNativeBannerWidget()
+                          : const PocketNativeAdCard(
+                              placement: PocketAdPlacement.target,
+                              isCompact: true,
+                              margin: EdgeInsets.symmetric(vertical: 4),
+                            ),
                       const SizedBox(height: 12),
                       SizedBox(
                         width: double.infinity,
