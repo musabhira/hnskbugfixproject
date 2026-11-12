@@ -145,10 +145,6 @@ dev_dependencies:
   lints: ^6.1.0
   flutter_test:
     sdk: flutter
-  riverpod_generator: ^4.0.0+1
-  build_runner: ^2.10.5
-  custom_lint: ^0.8.1
-  riverpod_lint: ^3.1.0
   flutter_launcher_icons: ^0.14.4
 
 # For information on the generic Dart part of this file, see the
@@ -197,6 +193,7 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+
 
 
 
