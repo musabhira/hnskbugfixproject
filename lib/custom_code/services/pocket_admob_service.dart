@@ -1218,6 +1218,27 @@ class PocketAdMobService {
       return;
     }
 
+    // 🎯 User Directive: Dual Network 2-by-2 Batching (Meta 2 -> AdMob 2 -> Meta 2 -> AdMob 2...)
+    final currentRewardedCount = await getRewardedDailyCount();
+    final bool preferMeta = ((currentRewardedCount ~/ 2) % 2 == 0);
+
+    if (preferMeta) {
+      debugPrint(
+          '🎬 [DualRewarded] Prioritizing Meta Rewarded Video (daily count: $currentRewardedCount, slot: ${(currentRewardedCount % 2) + 1}/2)');
+      final metaShown = await PocketMetaAdsService.instance.showRewardedAd(
+        onUserEarnedReward: () async {
+          await _recordRewardedAdCompletion();
+          onUserEarnedReward(RewardItem(50, 'bonus_pocket_score'));
+        },
+      );
+      if (metaShown) {
+        onAdClosed?.call();
+        return;
+      }
+      debugPrint(
+          '⚠️ [DualRewarded] Meta Rewarded Video not ready, seamlessly falling back to Google AdMob.');
+    }
+
     if (_rewardedAd != null) {
       _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
         onAdShowedFullScreenContent: (ad) {

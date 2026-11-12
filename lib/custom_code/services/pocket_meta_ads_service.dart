@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -201,6 +202,40 @@ class PocketMetaAdsService {
         if (kDebugMode) print('⚠️ Error showing Meta Rewarded: $e');
       }
     }
+
+    // ⚡ Try on-demand load if preloaded was not ready
+    try {
+      final completer = Completer<bool>();
+      final ad = RewardedAd(rewardedPlacementId);
+      ad.listener = RewardedAdListener(
+        onLoaded: () async {
+          _isRewardedLoaded = true;
+          ad.listener = RewardedAdListener(
+            onVideoComplete: () {
+              onUserEarnedReward();
+            },
+            onVideoClosed: () {
+              _isRewardedLoaded = false;
+              ad.destroy();
+              preloadRewarded();
+            },
+          );
+          await ad.show();
+          if (!completer.isCompleted) completer.complete(true);
+        },
+        onError: (code, message) {
+          if (kDebugMode) print('⚠️ Meta Rewarded on-demand error: code=$code, msg=$message');
+          if (!completer.isCompleted) completer.complete(false);
+        },
+      );
+      ad.load();
+      final shown = await completer.future.timeout(
+        const Duration(seconds: 4),
+        onTimeout: () => false,
+      );
+      if (shown) return true;
+    } catch (_) {}
+
     preloadRewarded();
     return false;
   }
