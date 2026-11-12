@@ -276,7 +276,7 @@ class PocketCitadelAttackPage extends StatefulWidget {
         final res = await SupaFlow.client
             .from('profile')
             .select(
-                'user_id, id, first_name, name, bio, learning_day, level, stage, streak, rank, palette_id, is_pocket_robo, pocket_score')
+                'user_id, id, first_name, name, bio, learning_day, level, stage, streak, rank, palette_id, is_pocket_robo, pocket_score, is_vip, is_premium, verified')
             .or('user_id.eq.$userId,id.eq.$userId')
             .maybeSingle();
         if (res != null) data = res;
@@ -411,6 +411,11 @@ class PocketCitadelAttackPage extends StatefulWidget {
       }
     }
 
+    final bool targetIsVip = (p['is_vip'] == true) ||
+        (p['is_premium'] == true) ||
+        (p['verified'] == true) ||
+        (neighbor?.isVip ?? false);
+
     final userNeighbor = PocketNeighbor(
       id: userId,
       name: p['first_name'] ??
@@ -427,6 +432,7 @@ class PocketCitadelAttackPage extends StatefulWidget {
       isPocketRobo: p['is_pocket_robo'] == true,
       hp: 100,
       maxHp: 100,
+      isVip: targetIsVip,
       planetCode: userPlanetCode,
       planetName: userPlanetName,
       islandName: userIslandName,
@@ -487,6 +493,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   int _incorrectCount = 0;
 
   // 🏛️ Presidential Escort vs Core Fortress Modes (User Audio Directive!)
+  bool _isDefenderVip = false;
   bool _isEscortMode = false;
   bool _isEscortDefeated = false;
   List<HouseShieldQuestion> _escortQuestions = [];
@@ -709,6 +716,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     WidgetsBinding.instance.addObserver(this);
     _attackerDay = widget.attackerDay;
     _isDefenderDamaged = widget.neighbor.isDamaged;
+    _isDefenderVip = widget.neighbor.isVip;
     _retriesRemaining =
         PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(
             widget.neighbor.day);
@@ -990,9 +998,30 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     final isDailyLimitReached =
         attacksUsed >= PocketFortressDefenseService.kDailyMaxAttacks;
 
-    final bool isAttackerVip = await PocketAdMobService.instance.isUserVip();
-    final bool isTargetVip = widget.neighbor.isVip;
-    final bool requireEscort = isAttackerVip || isTargetVip;
+    // 🛡️ User Directive: Escort defense belongs EXCLUSIVELY to User B (Defender) if they are VIP/Premium/Verified!
+    // The attacker's VIP status must NEVER trigger escort mode on a free or normal defender's house.
+    bool isTargetVip = widget.neighbor.isVip;
+    if (!isTargetVip &&
+        !widget.neighbor.isMe &&
+        !widget.neighbor.isPocketRobo &&
+        !widget.neighbor.id.startsWith('kid_bot_') &&
+        !widget.neighbor.id.startsWith('pioneer_') &&
+        !widget.neighbor.id.startsWith('pocket_robo') &&
+        !widget.neighbor.id.startsWith('rival_citadel')) {
+      try {
+        final prof = await SupaFlow.client
+            .from('profile')
+            .select('is_vip, is_premium, verified')
+            .or('user_id.eq.${widget.neighbor.id},id.eq.${widget.neighbor.id}')
+            .maybeSingle();
+        if (prof != null) {
+          isTargetVip = (prof['is_vip'] == true) ||
+              (prof['is_premium'] == true) ||
+              (prof['verified'] == true);
+        }
+      } catch (_) {}
+    }
+    final bool requireEscort = isTargetVip;
     final customArmed = await PocketFortressDefenseService.loadShieldQuestions(
       widget.neighbor.day,
       isNeighbor: true,
@@ -1067,6 +1096,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         }
         _attacksUsed = attacksUsed;
         _isDailyLimitReached = isDailyLimitReached;
+        _isDefenderVip = isTargetVip;
         _isEscortMode = (requireEscort && !_isEscortDefeated);
         _escortQuestions = escortQuestions;
         _fortressQuestions = fortressQuestions;
@@ -1815,7 +1845,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           if (!isPresident &&
                               (_isDefenderDamaged ||
                                   _isTargetProtected ||
-                                  widget.neighbor.isVip))
+                                  _isDefenderVip))
                             _buildPresidentialSecurityLayer(houseLeft, houseTop,
                                 houseW, houseH, groundY, worldW),
 
@@ -2434,19 +2464,19 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               // 2. Police Officers Standing Guard with Escort Signboard for VIP
               Positioned(
                 left: 36,
-                top: widget.neighbor.isVip ? 2 : 12,
+                top: _isDefenderVip ? 2 : 12,
                 child: _buildPoliceOfficerSprite(
-                    isLeft: true, hasEscortBoard: widget.neighbor.isVip),
+                    isLeft: true, hasEscortBoard: _isDefenderVip),
               ),
               Positioned(
                 right: 36,
-                top: widget.neighbor.isVip ? 2 : 12,
+                top: _isDefenderVip ? 2 : 12,
                 child: _buildPoliceOfficerSprite(
-                    isLeft: false, hasEscortBoard: widget.neighbor.isVip),
+                    isLeft: false, hasEscortBoard: _isDefenderVip),
               ),
 
               // 3. Presidential Military Escort Soldiers (VIP Houses Only)
-              if (widget.neighbor.isVip) ...[
+              if (_isDefenderVip) ...[
                 Positioned(
                   left: 114,
                   top: 24,
@@ -6229,7 +6259,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   ),
                 ),
               )
-            else if (widget.neighbor.isVip)
+            else if (_isDefenderVip)
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
