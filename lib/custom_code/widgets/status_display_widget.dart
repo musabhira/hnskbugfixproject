@@ -2336,14 +2336,27 @@ class _StatusViewerWrapperState extends State<StatusViewerWrapper> {
     _groupsWatchedSinceAd++;
 
     // Insert clean story ad after watching 2 status groups (bypassed if VIP)
+    // ⚡ ZERO-LAG & NO BLANK SCREEN:
+    // Only pause to show an ad IF an ad is ALREADY preloaded & instantly ready!
+    // If not ready, do NOT show an empty "Next Vibe" waiting screen - seamlessly show the next story
+    // and trigger background preloading for the next slot!
     if (!_isSubscribed && _groupsWatchedSinceAd >= 2 && !_showingAd) {
-      setState(() {
-        _showingAd = true;
-        _groupsWatchedSinceAd = 0;
-      });
-      // ⚡ Preload next story ad in background while this one renders
-      PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.vibes);
-      return;
+      final bool hasAdReady =
+          PocketAdPreloadManager.instance.hasPreloadedAd(PocketAdPlacement.vibes);
+      if (hasAdReady) {
+        setState(() {
+          _showingAd = true;
+          _groupsWatchedSinceAd = 0;
+        });
+        // Preload next story ad in background while this one renders
+        PocketAdPreloadManager.instance
+            .preloadForPlacement(PocketAdPlacement.vibes);
+        return;
+      } else {
+        // Preload in background so it's ready next time, but do not interrupt the story experience!
+        PocketAdPreloadManager.instance
+            .preloadForPlacement(PocketAdPlacement.vibes);
+      }
     }
 
     if (_currentGroupIndex < widget.allStatusGroups.length - 1) {

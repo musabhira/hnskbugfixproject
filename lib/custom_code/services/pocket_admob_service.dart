@@ -377,26 +377,37 @@ class PocketAdMobService {
   static const Duration minInterstitialInterval = Duration(minutes: 3);
 
   // 🛡️ Legal Google AdMob & Meta Ads Compliance & Rate Limiting for Rewarded Ads
-  static const int kMaxRewardedAdsPerDay =
-      10; // Expanded to 10 daily rewarded video unlocks per user directive
+  // 🎯 Rewarded Video Quotas (Google AdMob Policy Compliance & Account Safety)
+  // To avoid AdMob strikes & Invalid Traffic (IVT) flags, AdMob rewarded videos are strictly capped at 5/day.
+  // Up to 5 additional rewarded videos can be unlocked via Meta Audience Network (Total: 10/day).
+  // If Meta fails or is unavailable, AdMob stays locked at 5/day to protect the publisher account.
+  static const int kMaxAdMobRewardedPerDay = 5;
+  static const int kMaxMetaRewardedPerDay = 5;
+  static const int kMaxRewardedAdsPerDay = 10;
   static const Duration minRewardedInterval =
       Duration(seconds: 60); // 1-minute cooldown
   DateTime? _lastRewardedShownTime;
 
-  /// Checks daily limit & cooldown compliance for Rewarded Ads according to Google AdMob Policies
+  /// Checks daily limit & cooldown compliance for Rewarded Ads
   Future<Map<String, dynamic>> checkRewardedAdEligibility() async {
     final prefs = await SharedPreferences.getInstance();
     final today = DateTime.now().toIso8601String().split('T')[0];
     final storedDate = prefs.getString('admob_rewarded_date') ?? '';
-    int count = prefs.getInt('admob_rewarded_daily_count') ?? 0;
+    int admobCount = prefs.getInt('admob_rewarded_daily_count') ?? 0;
+    int metaCount = prefs.getInt('meta_rewarded_daily_count') ?? 0;
 
     if (storedDate != today) {
-      count = 0;
+      admobCount = 0;
+      metaCount = 0;
       await prefs.setString('admob_rewarded_date', today);
       await prefs.setInt('admob_rewarded_daily_count', 0);
+      await prefs.setInt('meta_rewarded_daily_count', 0);
     }
 
-    if (count >= kMaxRewardedAdsPerDay) {
+    final totalCount = admobCount + metaCount;
+
+    // Both networks exhausted
+    if (admobCount >= kMaxAdMobRewardedPerDay && metaCount >= kMaxMetaRewardedPerDay) {
       return {
         'allowed': false,
         'reason': 'limit',
@@ -420,7 +431,7 @@ class PocketAdMobService {
         return {
           'allowed': false,
           'reason': 'cooldown',
-          'remaining': kMaxRewardedAdsPerDay - count,
+          'remaining': kMaxRewardedAdsPerDay - totalCount,
           'wait': waitSec,
           'message':
               'Please wait ${waitSec}s before watching another sponsor video.',
@@ -430,7 +441,9 @@ class PocketAdMobService {
 
     return {
       'allowed': true,
-      'remaining': kMaxRewardedAdsPerDay - count,
+      'remaining': kMaxRewardedAdsPerDay - totalCount,
+      'admobRemaining': (kMaxAdMobRewardedPerDay - admobCount).clamp(0, kMaxAdMobRewardedPerDay),
+      'metaRemaining': (kMaxMetaRewardedPerDay - metaCount).clamp(0, kMaxMetaRewardedPerDay),
     };
   }
 
@@ -452,21 +465,42 @@ class PocketAdMobService {
     return 0;
   }
 
-  /// 🔋 Returns daily completed rewarded ad count for today (0 to 5)
-  Future<int> getRewardedDailyCount() async {
+  /// 🔋 Returns daily completed AdMob rewarded ad count for today (0 to 5)
+  Future<int> getAdMobRewardedDailyCount() async {
     final prefs = await SharedPreferences.getInstance();
     final today = DateTime.now().toIso8601String().split('T')[0];
     final storedDate = prefs.getString('admob_rewarded_date') ?? '';
-    int count = prefs.getInt('admob_rewarded_daily_count') ?? 0;
     if (storedDate != today) {
-      count = 0;
       await prefs.setString('admob_rewarded_date', today);
       await prefs.setInt('admob_rewarded_daily_count', 0);
+      await prefs.setInt('meta_rewarded_daily_count', 0);
+      return 0;
     }
-    return count.clamp(0, kMaxRewardedAdsPerDay);
+    return (prefs.getInt('admob_rewarded_daily_count') ?? 0).clamp(0, kMaxAdMobRewardedPerDay);
   }
 
-  /// 🔋 Returns daily remaining rewarded ad count for today (5 to 0)
+  /// 🔋 Returns daily completed Meta rewarded ad count for today (0 to 5)
+  Future<int> getMetaRewardedDailyCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    final today = DateTime.now().toIso8601String().split('T')[0];
+    final storedDate = prefs.getString('admob_rewarded_date') ?? '';
+    if (storedDate != today) {
+      await prefs.setString('admob_rewarded_date', today);
+      await prefs.setInt('admob_rewarded_daily_count', 0);
+      await prefs.setInt('meta_rewarded_daily_count', 0);
+      return 0;
+    }
+    return (prefs.getInt('meta_rewarded_daily_count') ?? 0).clamp(0, kMaxMetaRewardedPerDay);
+  }
+
+  /// 🔋 Returns daily completed rewarded ad count for today across both networks (0 to 10)
+  Future<int> getRewardedDailyCount() async {
+    final admobCount = await getAdMobRewardedDailyCount();
+    final metaCount = await getMetaRewardedDailyCount();
+    return (admobCount + metaCount).clamp(0, kMaxRewardedAdsPerDay);
+  }
+
+  /// 🔋 Returns daily remaining rewarded ad count for today (10 to 0)
   Future<int> getRewardedDailyRemaining() async {
     final count = await getRewardedDailyCount();
     return (kMaxRewardedAdsPerDay - count).clamp(0, kMaxRewardedAdsPerDay);
@@ -523,19 +557,25 @@ class PocketAdMobService {
   }
 
   /// Records successful rewarded ad completion for daily quota
-  Future<void> _recordRewardedAdCompletion() async {
+  Future<void> _recordRewardedAdCompletion({bool isMeta = false}) async {
     _lastRewardedShownTime = DateTime.now();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
         'admob_last_rewarded_time', _lastRewardedShownTime!.toIso8601String());
     final today = DateTime.now().toIso8601String().split('T')[0];
     final storedDate = prefs.getString('admob_rewarded_date') ?? '';
-    int count = prefs.getInt('admob_rewarded_daily_count') ?? 0;
+    int admobCount = prefs.getInt('admob_rewarded_daily_count') ?? 0;
+    int metaCount = prefs.getInt('meta_rewarded_daily_count') ?? 0;
     if (storedDate != today) {
-      count = 0;
+      admobCount = 0;
+      metaCount = 0;
       await prefs.setString('admob_rewarded_date', today);
     }
-    await prefs.setInt('admob_rewarded_daily_count', count + 1);
+    if (isMeta) {
+      await prefs.setInt('meta_rewarded_daily_count', metaCount + 1);
+    } else {
+      await prefs.setInt('admob_rewarded_daily_count', admobCount + 1);
+    }
   }
 
   // 📊 Live Telemetry Cache
@@ -1218,16 +1258,25 @@ class PocketAdMobService {
       return;
     }
 
-    // 🎯 10 Daily Rewarded Videos: 5 Google AdMob + 5 Meta Audience Network
-    final currentRewardedCount = await getRewardedDailyCount();
-    final bool preferMeta = (currentRewardedCount % 2 == 1);
+    // 🎯 10 Daily Rewarded Videos: Safe split (Max 5 Google AdMob + Max 5 Meta Audience Network)
+    // Account Protection Guarantee: AdMob will NEVER exceed 5 rewarded impressions/day!
+    final admobCount = await getAdMobRewardedDailyCount();
+    final metaCount = await getMetaRewardedDailyCount();
+    final currentRewardedCount = admobCount + metaCount;
 
-    if (preferMeta) {
+    // Determine network priority:
+    // If AdMob reached 5, strictly show Meta.
+    // If Meta reached 5, strictly show AdMob.
+    // Otherwise, alternate to distribute impressions.
+    final bool preferMeta = (admobCount >= kMaxAdMobRewardedPerDay) ||
+        (metaCount < kMaxMetaRewardedPerDay && (currentRewardedCount % 2 == 1));
+
+    if (preferMeta && metaCount < kMaxMetaRewardedPerDay) {
       debugPrint(
-          '🎬 [DualRewarded] Prioritizing Meta Rewarded Video (slot ${currentRewardedCount + 1}/10, Meta slot ${(currentRewardedCount ~/ 2) + 1}/5)');
+          '🎬 [DualRewarded] Prioritizing Meta Rewarded Video (Meta slot ${metaCount + 1}/5, Total ${currentRewardedCount + 1}/10)');
       final metaShown = await PocketMetaAdsService.instance.showRewardedAd(
         onUserEarnedReward: () async {
-          await _recordRewardedAdCompletion();
+          await _recordRewardedAdCompletion(isMeta: true);
           onUserEarnedReward(RewardItem(30, 'bonus_pocket_score'));
         },
       );
@@ -1236,7 +1285,64 @@ class PocketAdMobService {
         return;
       }
       debugPrint(
-          '⚠️ [DualRewarded] Meta Rewarded Video not ready, seamlessly falling back to Google AdMob.');
+          '⚠️ [DualRewarded] Meta Rewarded Video not ready.');
+      // 🛡️ CRITICAL POLICY GUARD: Only fallback to AdMob if AdMob daily count is STRICTLY under 5!
+      if (admobCount >= kMaxAdMobRewardedPerDay) {
+        debugPrint(
+            '🛡️ [DualRewarded] AdMob safety cap reached (5/5). Suppressing fallback to protect AdMob account.');
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Row(
+                children: [
+                  Icon(Icons.info_outline, color: Color(0xFFFFB300), size: 18),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Daily sponsor video limit for this provider reached. Please check back tomorrow! ⭐',
+                      style: TextStyle(color: Colors.white, fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: const Color(0xFF1E293B),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
+          );
+        }
+        onAdClosed?.call();
+        return;
+      }
+    } else if (admobCount >= kMaxAdMobRewardedPerDay) {
+      // Both or AdMob capped and Meta unavailable
+      debugPrint(
+          '🛡️ [DualRewarded] AdMob is strictly capped at 5/5 daily impressions to prevent policy strikes.');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.check_circle_outline, color: Color(0xFF10B981), size: 18),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Daily sponsor video quota completed! Earn more PS through learning quests! 🏆',
+                    style: TextStyle(color: Colors.white, fontSize: 13),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF1E293B),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+      onAdClosed?.call();
+      return;
     }
 
     if (_rewardedAd != null) {
@@ -1258,7 +1364,7 @@ class PocketAdMobService {
         },
       );
       _rewardedAd!.show(onUserEarnedReward: (_, reward) async {
-        await _recordRewardedAdCompletion();
+        await _recordRewardedAdCompletion(isMeta: false);
         onUserEarnedReward(reward);
       });
       return;
@@ -1371,14 +1477,14 @@ class PocketAdMobService {
         },
       );
       ad.show(onUserEarnedReward: (_, reward) async {
-        await _recordRewardedAdCompletion();
+        await _recordRewardedAdCompletion(isMeta: false);
         onUserEarnedReward(reward);
       });
     } else {
       // 🚀 Dual-Network Fallback: Try Meta Audience Network Rewarded Ad!
       final metaShown = await PocketMetaAdsService.instance.showRewardedAd(
         onUserEarnedReward: () async {
-          await _recordRewardedAdCompletion();
+          await _recordRewardedAdCompletion(isMeta: true);
           onUserEarnedReward(RewardItem(30, 'bonus_pocket_score'));
         },
       );

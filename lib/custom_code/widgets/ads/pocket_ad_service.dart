@@ -555,7 +555,7 @@ class _PocketVibesStoryAdWidgetState extends State<PocketVibesStoryAdWidget> {
                         },
                       ),
                       const SizedBox(height: 18),
-                      // Skip / Next Button (Modern floating glass pill)
+                      // Skip / Continue Button (Modern floating glass pill)
                       GestureDetector(
                         onTap: widget.onNext,
                         child: Container(
@@ -569,7 +569,7 @@ class _PocketVibesStoryAdWidgetState extends State<PocketVibesStoryAdWidget> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                'Next Vibe',
+                                'Skip',
                                 style: GoogleFonts.outfit(
                                   color: Colors.white,
                                   fontSize: 13,

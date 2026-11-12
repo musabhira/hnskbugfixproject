@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_audience_network/easy_audience_network.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 import 'pocket_admob_service.dart';
 
 /// 📘 Official Meta Audience Network (Facebook Ads) Integration for Pocket Mates
@@ -16,28 +17,39 @@ class PocketMetaAdsService {
   static const String appId = '1618397890087770';
 
   // 1. Banner (320x50)
-  static const String androidBannerPlacementId = '1618397890087770_1618398040087755';
-  static const String iosBannerPlacementId = '1618397890087770_1618398056754420';
+  static const String androidBannerPlacementId =
+      '1618397890087770_1618398040087755';
+  static const String iosBannerPlacementId =
+      '1618397890087770_1618398056754420';
 
   // 2. Interstitial (Full Screen)
-  static const String androidInterstitialPlacementId = '1618397890087770_1618398063421086';
-  static const String iosInterstitialPlacementId = '1618397890087770_1618398060087753';
+  static const String androidInterstitialPlacementId =
+      '1618397890087770_1618398063421086';
+  static const String iosInterstitialPlacementId =
+      '1618397890087770_1618398060087753';
 
   // 3. Medium Rectangle (MREC 300x250)
-  static const String androidMrecPlacementId = '1618397890087770_1618398066754419';
+  static const String androidMrecPlacementId =
+      '1618397890087770_1618398066754419';
   static const String iosMrecPlacementId = '1618397890087770_1618398070087752';
 
   // 4. Native Ads (Social / Feed Cards)
-  static const String androidNativePlacementId = '1618397890087770_1618398073421085';
-  static const String iosNativePlacementId = '1618397890087770_1618398043421088';
+  static const String androidNativePlacementId =
+      '1618397890087770_1618398073421085';
+  static const String iosNativePlacementId =
+      '1618397890087770_1618398043421088';
 
   // 5. Native Banner (Compact 100 height)
-  static const String androidNativeBannerPlacementId = '1618397890087770_1618398036754422';
-  static const String iosNativeBannerPlacementId = '1618397890087770_1618398053421087';
+  static const String androidNativeBannerPlacementId =
+      '1618397890087770_1618398036754422';
+  static const String iosNativeBannerPlacementId =
+      '1618397890087770_1618398053421087';
 
   // 6. Rewarded Interstitial
-  static const String androidRewardedPlacementId = '1618397890087770_1618398046754421';
-  static const String iosRewardedPlacementId = '1618397890087770_1618398050087754';
+  static const String androidRewardedPlacementId =
+      '1618397890087770_1618398046754421';
+  static const String iosRewardedPlacementId =
+      '1618397890087770_1618398050087754';
 
   static String lastStatus = 'Not requested';
   static String lastError = 'None';
@@ -60,8 +72,9 @@ class PocketMetaAdsService {
       Platform.isIOS ? iosBannerPlacementId : androidBannerPlacementId;
 
   /// Get platform-specific placement ID for Interstitial
-  static String get interstitialPlacementId =>
-      Platform.isIOS ? iosInterstitialPlacementId : androidInterstitialPlacementId;
+  static String get interstitialPlacementId => Platform.isIOS
+      ? iosInterstitialPlacementId
+      : androidInterstitialPlacementId;
 
   /// Get platform-specific placement ID for Medium Rectangle (MREC)
   static String get mrecPlacementId =>
@@ -72,8 +85,9 @@ class PocketMetaAdsService {
       Platform.isIOS ? iosNativePlacementId : androidNativePlacementId;
 
   /// Get platform-specific placement ID for Native Banner
-  static String get nativeBannerPlacementId =>
-      Platform.isIOS ? iosNativeBannerPlacementId : androidNativeBannerPlacementId;
+  static String get nativeBannerPlacementId => Platform.isIOS
+      ? iosNativeBannerPlacementId
+      : androidNativeBannerPlacementId;
 
   /// Get platform-specific placement ID for Rewarded
   static String get rewardedPlacementId =>
@@ -95,7 +109,8 @@ class PocketMetaAdsService {
       );
       _isInitialized = true;
       if (kDebugMode) {
-        print('✅ Meta Audience Network initialized successfully (testMode: $_isTestMode)');
+        print(
+            '✅ Meta Audience Network initialized successfully (testMode: $_isTestMode)');
       }
 
       // Preload full-screen ads in background
@@ -130,7 +145,8 @@ class PocketMetaAdsService {
           lastError = 'Interstitial ($code): $message';
           lastErrorCode = code;
           lastEventTime = DateTime.now();
-          if (kDebugMode) print('⚠️ Meta Interstitial Ad error: code=$code, msg=$message');
+          if (kDebugMode)
+            print('⚠️ Meta Interstitial Ad error: code=$code, msg=$message');
         },
         onDismissed: () {
           _isInterstitialLoaded = false;
@@ -184,7 +200,8 @@ class PocketMetaAdsService {
           lastError = 'Rewarded ($code): $message';
           lastErrorCode = code;
           lastEventTime = DateTime.now();
-          if (kDebugMode) print('⚠️ Meta Rewarded Ad error: code=$code, msg=$message');
+          if (kDebugMode)
+            print('⚠️ Meta Rewarded Ad error: code=$code, msg=$message');
         },
         onVideoClosed: () {
           _isRewardedLoaded = false;
@@ -200,7 +217,8 @@ class PocketMetaAdsService {
   }
 
   /// 🎁 Show Rewarded Ad with Reward Callback
-  Future<bool> showRewardedAd({required VoidCallback onUserEarnedReward}) async {
+  Future<bool> showRewardedAd(
+      {required VoidCallback onUserEarnedReward}) async {
     if (await PocketAdMobService.instance.isUserVip()) return false;
 
     if (_rewardedAd != null && _isRewardedLoaded) {
@@ -243,7 +261,8 @@ class PocketMetaAdsService {
           if (!completer.isCompleted) completer.complete(true);
         },
         onError: (code, message) {
-          if (kDebugMode) print('⚠️ Meta Rewarded on-demand error: code=$code, msg=$message');
+          if (kDebugMode)
+            print('⚠️ Meta Rewarded on-demand error: code=$code, msg=$message');
           if (!completer.isCompleted) completer.complete(false);
         },
       );
@@ -302,7 +321,8 @@ class PocketMetaNativeFeedCard extends StatefulWidget {
   });
 
   @override
-  State<PocketMetaNativeFeedCard> createState() => _PocketMetaNativeFeedCardState();
+  State<PocketMetaNativeFeedCard> createState() =>
+      _PocketMetaNativeFeedCardState();
 }
 
 class _PocketMetaNativeFeedCardState extends State<PocketMetaNativeFeedCard> {
@@ -319,7 +339,8 @@ class _PocketMetaNativeFeedCardState extends State<PocketMetaNativeFeedCard> {
       decoration: BoxDecoration(
         color: const Color(0xFF0F172A),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.35), width: 1.2),
+        border: Border.all(
+            color: const Color(0xFF38BDF8).withValues(alpha: 0.35), width: 1.2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.45),
@@ -339,7 +360,8 @@ class _PocketMetaNativeFeedCardState extends State<PocketMetaNativeFeedCard> {
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1E293B),
                     borderRadius: BorderRadius.circular(6),
@@ -348,7 +370,8 @@ class _PocketMetaNativeFeedCardState extends State<PocketMetaNativeFeedCard> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.star_rounded, size: 12, color: Color(0xFFFFD700)),
+                      const Icon(Icons.star_rounded,
+                          size: 12, color: Color(0xFFFFD700)),
                       const SizedBox(width: 4),
                       Text(
                         'SPONSORED',
@@ -401,7 +424,8 @@ class _PocketMetaNativeFeedCardState extends State<PocketMetaNativeFeedCard> {
                 PocketMetaAdsService.lastError = 'Native ($code): $message';
                 PocketMetaAdsService.lastErrorCode = code;
                 PocketMetaAdsService.lastEventTime = DateTime.now();
-                if (kDebugMode) print('Meta Native Ad error: code=$code, msg=$message');
+                if (kDebugMode)
+                  print('Meta Native Ad error: code=$code, msg=$message');
                 if (mounted) setState(() => _hasError = true);
                 widget.onError?.call();
               },
@@ -424,10 +448,12 @@ class PocketMetaNativeBannerWidget extends StatefulWidget {
   });
 
   @override
-  State<PocketMetaNativeBannerWidget> createState() => _PocketMetaNativeBannerWidgetState();
+  State<PocketMetaNativeBannerWidget> createState() =>
+      _PocketMetaNativeBannerWidgetState();
 }
 
-class _PocketMetaNativeBannerWidgetState extends State<PocketMetaNativeBannerWidget> {
+class _PocketMetaNativeBannerWidgetState
+    extends State<PocketMetaNativeBannerWidget> {
   bool _hasError = false;
 
   @override
@@ -453,7 +479,8 @@ class _PocketMetaNativeBannerWidgetState extends State<PocketMetaNativeBannerWid
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1E293B),
                     borderRadius: BorderRadius.circular(4),
@@ -474,7 +501,8 @@ class _PocketMetaNativeBannerWidgetState extends State<PocketMetaNativeBannerWid
                   behavior: HitTestBehavior.opaque,
                   child: const Padding(
                     padding: EdgeInsets.all(4.0),
-                    child: Icon(Icons.more_vert_rounded, color: Colors.white38, size: 16),
+                    child: Icon(Icons.more_vert_rounded,
+                        color: Colors.white38, size: 16),
                   ),
                 ),
               ],
@@ -498,7 +526,8 @@ class _PocketMetaNativeBannerWidgetState extends State<PocketMetaNativeBannerWid
               },
               onError: (code, message) {
                 PocketMetaAdsService.lastStatus = 'Native Banner Error $code';
-                PocketMetaAdsService.lastError = 'Native Banner ($code): $message';
+                PocketMetaAdsService.lastError =
+                    'Native Banner ($code): $message';
                 PocketMetaAdsService.lastErrorCode = code;
                 PocketMetaAdsService.lastEventTime = DateTime.now();
                 if (mounted) setState(() => _hasError = true);
@@ -598,10 +627,12 @@ class PocketSmartDualBannerWidget extends StatefulWidget {
   });
 
   @override
-  State<PocketSmartDualBannerWidget> createState() => _PocketSmartDualBannerWidgetState();
+  State<PocketSmartDualBannerWidget> createState() =>
+      _PocketSmartDualBannerWidgetState();
 }
 
-class _PocketSmartDualBannerWidgetState extends State<PocketSmartDualBannerWidget> {
+class _PocketSmartDualBannerWidgetState
+    extends State<PocketSmartDualBannerWidget> {
   late final bool _showMetaBanner;
 
   @override
@@ -647,10 +678,12 @@ class PocketUnifiedDualNativeAdWidget extends StatefulWidget {
   });
 
   @override
-  State<PocketUnifiedDualNativeAdWidget> createState() => _PocketUnifiedDualNativeAdWidgetState();
+  State<PocketUnifiedDualNativeAdWidget> createState() =>
+      _PocketUnifiedDualNativeAdWidgetState();
 }
 
-class _PocketUnifiedDualNativeAdWidgetState extends State<PocketUnifiedDualNativeAdWidget> {
+class _PocketUnifiedDualNativeAdWidgetState
+    extends State<PocketUnifiedDualNativeAdWidget> {
   late bool _preferMeta;
   bool _primaryFailed = false;
 
@@ -702,5 +735,3 @@ class _PocketUnifiedDualNativeAdWidgetState extends State<PocketUnifiedDualNativ
     );
   }
 }
-
-
