@@ -12528,6 +12528,14 @@ class _AIEnglishTutorSheetState extends State<AIEnglishTutorSheet> {
                 );
               },
             ),
+                        color: isMe ? Colors.black : Colors.white,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
           // Input area
           Container(

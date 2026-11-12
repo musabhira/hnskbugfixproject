@@ -7,17 +7,8 @@ on:
 #     - main
   workflow_dispatch:
     inputs:
-      version_name:
-        description: 'Marketing Version (e.g. 1.0.160, leave empty to read from pubspec.yaml)'
-        required: false
-        default: ''
-      build_number:
-        description: 'Build Number (e.g. 360, leave empty for automatic calculation)'
-        required: false
-        default: ''
       runner:
-        
-        description: 'macOS runner label (e.g. macos-26, macos-15, macos-latest)'
+        description: 'macOS runner label (macos-26, macos-15, macos-latest)'
         required: false
         default: 'macos-26'
 
@@ -78,24 +69,18 @@ jobs:
       - name: Determine Version and Build Number
         id: versioning
         run: |
-          # 1. Marketing Version (CFBundleShortVersionString)
-          VERSION_NAME="${{ inputs.version_name }}"
+          # 1. Marketing Version (CFBundleShortVersionString) automatically read from pubspec.yaml
+          VERSION_NAME=$(grep '^version:' pubspec.yaml | head -n 1 | sed 's/version: //' | sed 's/+.*//' | tr -d '\r\n ')
           if [ -z "$VERSION_NAME" ]; then
-            VERSION_NAME=$(grep '^version:' pubspec.yaml | head -n 1 | sed 's/version: //' | sed 's/+.*//' | tr -d '\r\n ')
-          fi
-          if [ -z "$VERSION_NAME" ]; then
-            VERSION_NAME="1.0.160"
+            VERSION_NAME="1.0.255"
           fi
 
-          # 2. Build Number (CFBundleVersion) - Monotonically increasing & retry-safe
-          BASE_BUILD=361
-          if [ -n "${{ inputs.build_number }}" ]; then
-            BUILD_NUMBER="${{ inputs.build_number }}"
+          # 2. Build Number (CFBundleVersion) - read from pubspec.yaml (+NUMBER) or calculate
+          PUBSPEC_BUILD=$(grep '^version:' pubspec.yaml | head -n 1 | grep '+' | sed 's/.*+//' | tr -d '\r\n ')
+          if [ -n "$PUBSPEC_BUILD" ]; then
+            BUILD_NUMBER="$PUBSPEC_BUILD"
           else
-            if [ -n "${{ vars.IOS_BUILD_NUMBER_BASE }}" ]; then
-              BASE_BUILD="${{ vars.IOS_BUILD_NUMBER_BASE }}"
-            fi
-            # Count commits since anchor commit dce649e
+            BASE_BUILD=458
             RAW_COMMIT_COUNT=$(git rev-list --count dce649e..HEAD 2>/dev/null || echo 1)
             COMMIT_OFFSET=$(( RAW_COMMIT_COUNT > 0 ? RAW_COMMIT_COUNT - 1 : 0 ))
             ATTEMPT_OFFSET=$(( GITHUB_RUN_ATTEMPT - 1 ))
