@@ -69,9 +69,9 @@ void main() {
       usePathUrlStrategy();
     }
 
-    // Initialize core application services sequentially to avoid race conditions
+    // Initialize critical core services required for immediate UI mount
     try {
-      debugPrint('Main: Starting core service initialization...');
+      debugPrint('Main: Starting ultra-fast core service initialization...');
       // 1. SupaFlow MUST be initialized first before anything accesses Supabase
       await SupaFlow.initialize()
           .then((_) => debugPrint('Main: SupaFlow initialized.'));
@@ -80,71 +80,62 @@ void main() {
       await FlutterFlowTheme.initialize()
           .then((_) => debugPrint('Main: FlutterFlowTheme initialized.'));
 
-      // 3. Initialize LocalSyncServer safely
+      // 3. Initialize Pocket Native Language service (fast local shared preferences read)
       try {
-        await LocalSyncServer()
-            .initialize()
-            .then((_) => debugPrint('Main: LocalSyncServer initialized.'));
+        await PocketLanguageService.init();
+      } catch (e) {
+        debugPrint('Main: PocketLanguageService initialization error: $e');
+      }
+
+      debugPrint('Main: Critical initialization complete. Mounting UI immediately.');
+    } catch (e) {
+      debugPrint('Core service initialization error: $e');
+    }
+
+    // 🚀 Non-blocking Background Service Initialization
+    // Prevents iOS Launch Screen freeze / white-screen hang caused by synchronous StoreKit, AdMob & network calls
+    unawaited(() async {
+      try {
+        // 4. Initialize LocalSyncServer & Notifications
+        await LocalSyncServer().initialize();
         InAppNotificationService.startListening();
       } catch (e) {
         debugPrint('Main: LocalSyncServer initialization error: $e');
       }
 
-      // 4. Initialize Pocket Robot progression epoch
       try {
-        await PocketRobotService.getGlobalElapsedDays();
+        // 5. Initialize IAPService (In-App Purchases for Google Play & Apple StoreKit)
+        await IAPService().initialize();
       } catch (e) {
-        debugPrint('Main: PocketRobotService initialization error: $e');
+        debugPrint('Main: IAPService initialization error: $e');
       }
 
-      // 5. Initialize Pocket Kids account mode
       try {
-        await PocketKidsService.initialize();
-      } catch (_) {}
-
-      // 5b. Initialize App Store / Play Store Review Mode & World Switch Guard
-      try {
-        await AppStoreReviewService.initialize();
-      } catch (_) {}
-
-      // 5c. Initialize IAPService (In-App Purchases for Google Play & Apple App Store)
-      try {
-        await IAPService().initialize();
-      } catch (_) {}
-
-      // 5d. Initialize Google Mobile Ads & Meta Audience Network
-      try {
+        // 6. Initialize Google Mobile Ads & Meta Audience Network
         await PocketAdMobService.instance.initialize();
         await PocketMetaAdsService.instance.initialize();
-      } catch (_) {}
-
-      // 5e. Initialize Personal Chat Background Language Check Worker (English-Only)
-      try {
-        PocketPersonalChatLanguageService.instance.startBackgroundWorker();
-      } catch (_) {}
-
-      // 5f. Initialize Poket Cosmos Born Address & Plot Allocation Engine
-      try {
-        PoketCosmosAllocationService.instance.ensureUserHasAllocatedPlot();
-        PoketCosmosAllocationService.instance.loadAllRegisteredProfiles();
-      } catch (_) {}
-
-      // 6. Initialize Pocket Native Language service (Hindi, Tamil, Malayalam, etc.)
-      try {
-        await PocketLanguageService.init();
-        debugPrint(
-            'Main: PocketLanguageService initialized: ${PocketLanguageService.currentLanguage}');
       } catch (e) {
-        debugPrint('Main: PocketLanguageService initialization error: $e');
+        debugPrint('Main: Ads service initialization error: $e');
       }
 
-      // Shorebird code push disabled per user requirement to prevent native startup crashes
-      // await ShorebirdService().initialize();
+      try {
+        // 7. Initialize Pocket Robot, Kids Mode & App Store Review Guard
+        await PocketRobotService.getGlobalElapsedDays();
+        await PocketKidsService.initialize();
+        await AppStoreReviewService.initialize();
+      } catch (e) {
+        debugPrint('Main: Robot/Kids initialization error: $e');
+      }
 
-      debugPrint('Main: Core service initialization complete.');
-    } catch (e) {
-      debugPrint('Core service initialization error: $e');
-    }
+      try {
+        // 8. Initialize Background Language Check Worker & Cosmos Allocation
+        PocketPersonalChatLanguageService.instance.startBackgroundWorker();
+        PoketCosmosAllocationService.instance.ensureUserHasAllocatedPlot();
+        PoketCosmosAllocationService.instance.loadAllRegisteredProfiles();
+      } catch (e) {
+        debugPrint('Main: Cosmos/Chat service error: $e');
+      }
+    }());
 
     // Initialize Firebase in the background safely without blocking the UI
     final isFirebaseSupported = !kIsWeb &&
@@ -229,10 +220,10 @@ class MyAppState extends State<MyApp> {
 
     _appStateNotifier = AppStateNotifier.instance;
     _router = createRouter(_appStateNotifier);
-    // Safety fallback: Ensure splash is dismissed after 5 seconds regardless of other events
-    Future.delayed(const Duration(seconds: 5), () {
+    // Safety fallback: Ensure splash is dismissed smoothly without prolonged delay
+    Future.delayed(const Duration(milliseconds: 2500), () {
       if (_appStateNotifier.showSplashImage) {
-        debugPrint('Main: Forcing splash dismissal after 5s safety timeout.');
+        debugPrint('Main: Forcing splash dismissal after 2.5s safety timeout.');
         _appStateNotifier.stopShowingSplashImage();
       }
     });

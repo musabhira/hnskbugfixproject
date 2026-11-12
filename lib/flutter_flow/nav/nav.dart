@@ -27,7 +27,7 @@ class AppStateNotifier extends ChangeNotifier {
   AppStateNotifier._() {
     // Safety fallback to ensure the app never hangs on the loading screen indefinitely.
     // Guideline 2.1(a) fix for "App kept loading indefinitely".
-    Future.delayed(const Duration(seconds: 4), () {
+    Future.delayed(const Duration(milliseconds: 2500), () {
       if (showSplashImage) {
         debugPrint('AppStateNotifier: Safety fallback forcing splash dismissal after 4s.');
         stopShowingSplashImage();
