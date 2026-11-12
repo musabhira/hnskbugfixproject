@@ -63,7 +63,15 @@ class _PoketCosmosResidentIslandViewState
   List<CitizenPlot> _islandPlots = [];
   Map<int, NeighborReservationPass> _reservations = {};
 
+  bool get _isViewingAnotherUserIsland {
+    final currentUid = SupaFlow.client.auth.currentUser?.id;
+    return widget.userId != null &&
+        widget.userId!.isNotEmpty &&
+        widget.userId != currentUid;
+  }
+
   bool get _isCurrentViewingUserHomeIsland {
+    if (_isViewingAnotherUserIsland) return false;
     final home = _actualUserHomePlot ??
         PoketCosmosAllocationService.instance.currentUserBirthPlot;
     if (home == null) return false;
@@ -142,6 +150,9 @@ class _PoketCosmosResidentIslandViewState
     final CelestialColonyInfo colony;
     final CitizenPlot plot;
     final int wave = math.max(1, widget.targetWave ?? 1);
+    final bool hasExplicitRealUser = widget.userId != null &&
+        widget.userId!.isNotEmpty &&
+        !widget.userId!.startsWith('plot_citizen_');
 
     // Direct planet colony & plot routing (fixes bug where all plots showed the same default island)
     if (widget.targetPlanetCode != null &&
@@ -172,8 +183,9 @@ class _PoketCosmosResidentIslandViewState
 
       plot = CitizenPlot(
         plotNumber: gNum,
-        userId: widget.userId ?? 'plot_citizen_$gNum',
-        userName: widget.userName ?? 'Citizen #$gNum',
+        userId: widget.userId ?? '',
+        userName: widget.userName ??
+            (hasExplicitRealUser ? 'Citizen #$gNum' : 'Plot #$gNum'),
         userAvatar: widget.userAvatar ?? '🏡',
         day: 1,
         pocketScore: 100,
@@ -187,7 +199,7 @@ class _PoketCosmosResidentIslandViewState
         isVip: false,
         isPresident: false,
         tier: (lNum <= 6 ? PlotDeedTier.beachfront : PlotDeedTier.standard),
-        status: PlotStatus.occupied,
+        status: hasExplicitRealUser ? PlotStatus.occupied : PlotStatus.vacant,
       );
     } else {
       // Load user-specific permanent plot
@@ -247,7 +259,7 @@ class _PoketCosmosResidentIslandViewState
             ? widget.userAvatar
             : existing.userAvatar,
       );
-    } else {
+    } else if (hasExplicitRealUser) {
       plotsMap[updatedPlot.plotNumber] = updatedPlot;
     }
 

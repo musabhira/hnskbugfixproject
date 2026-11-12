@@ -141,11 +141,11 @@ class _PocketRewardedScoreAlertModalState
       return;
     }
 
-    if (_dailyCount >= 5) {
+    if (_dailyCount >= 10) {
       HapticFeedback.selectionClick();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('🔋 Daily battery 100% full (5/5)! Resets tomorrow ☀️'),
+          content: Text('🔋 Daily battery 100% full (10/10)! Resets tomorrow ☀️'),
           backgroundColor: Color(0xFF0F172A),
           behavior: SnackBarBehavior.floating,
         ),
@@ -199,23 +199,23 @@ class _PocketRewardedScoreAlertModalState
 
   @override
   Widget build(BuildContext context) {
-    final remaining = (5 - _dailyCount).clamp(0, 5);
+    final remaining = (10 - _dailyCount).clamp(0, 10);
 
     // Color theme based on charge
     Color batteryColor;
     String statusTitle;
     if (_dailyCount == 0) {
       batteryColor = const Color(0xFFEF4444); // Red
-      statusTitle = 'Battery Low ⚠️ (0/5 Charged)';
-    } else if (_dailyCount <= 2) {
-      batteryColor = const Color(0xFFF97316); // Orange-Red
-      statusTitle = 'Low Battery ⚡ ($_dailyCount/5 Charged)';
+      statusTitle = 'Battery Low ⚠️ (0/10 Charged)';
     } else if (_dailyCount <= 4) {
+      batteryColor = const Color(0xFFF97316); // Orange-Red
+      statusTitle = 'Low Battery ⚡ ($_dailyCount/10 Charged)';
+    } else if (_dailyCount <= 8) {
       batteryColor = const Color(0xFFEAB308); // Amber/Yellow
-      statusTitle = 'Recharging 🔋 ($_dailyCount/5 Charged)';
+      statusTitle = 'Recharging 🔋 ($_dailyCount/10 Charged)';
     } else {
       batteryColor = const Color(0xFF10B981); // Emerald Green
-      statusTitle = 'Full Battery 🔋 (5/5 Complete!)';
+      statusTitle = 'Full Battery 🔋 (10/10 Complete!)';
     }
 
     return Dialog(
@@ -352,7 +352,7 @@ class _PocketRewardedScoreAlertModalState
 
                 // Description
                 Text(
-                  'Watch a short sponsor video to earn +50 Pocket Score instantly! Daily energy provides up to 5 videos (+250 PS) for Citadels, games & tools.',
+                  'Watch a short sponsor video to earn +50 Pocket Score instantly! Daily energy provides up to 10 videos (+500 PS) for Citadels, games & tools.',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     color: Colors.white70,
@@ -362,7 +362,7 @@ class _PocketRewardedScoreAlertModalState
                 ),
                 const SizedBox(height: 16),
 
-                // 🔋 5-Segment Battery Visual Indicator
+                // 🔋 10-Segment Battery Visual Indicator
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -384,7 +384,7 @@ class _PocketRewardedScoreAlertModalState
                                 fontWeight: FontWeight.w600),
                           ),
                           Text(
-                            '$_dailyCount / 5 Complete ($remaining left)',
+                            '$_dailyCount / 10 Complete ($remaining left)',
                             style: GoogleFonts.inter(
                                 color: batteryColor,
                                 fontSize: 11.5,
@@ -394,7 +394,7 @@ class _PocketRewardedScoreAlertModalState
                       ),
                       const SizedBox(height: 10),
 
-                      // Battery Shell & 5 Segments
+                      // Battery Shell & 10 Segments
                       Row(
                         children: [
                           Expanded(
@@ -408,12 +408,12 @@ class _PocketRewardedScoreAlertModalState
                                     Border.all(color: batteryColor, width: 1.5),
                               ),
                               child: Row(
-                                children: List.generate(5, (index) {
+                                children: List.generate(10, (index) {
                                   final isFilled = index < _dailyCount;
                                   return Expanded(
                                     child: Container(
                                       margin: EdgeInsets.only(
-                                          right: index < 4 ? 3.0 : 0),
+                                          right: index < 9 ? 2.0 : 0),
                                       decoration: BoxDecoration(
                                         color: isFilled
                                             ? batteryColor

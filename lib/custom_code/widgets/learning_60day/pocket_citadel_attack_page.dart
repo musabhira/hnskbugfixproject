@@ -1031,13 +1031,23 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         defenderScore = 99999;
       } else if (!widget.neighbor.id.startsWith('pocket_robo') &&
           !widget.neighbor.id.startsWith('rival_citadel')) {
-        final res = await SupaFlow.client
-            .from('pocket_homes')
-            .select('points, hp, stage')
-            .eq('user_id', widget.neighbor.id)
+        // 1. Primary lookup: Real Global Pocket Score from profile table!
+        final pRes = await SupaFlow.client
+            .from('profile')
+            .select('pocket_score, xp')
+            .or('user_id.eq.${widget.neighbor.id},id.eq.${widget.neighbor.id}')
             .maybeSingle();
-        if (res != null && res['points'] != null) {
-          defenderScore = (res['points'] as num).toInt();
+        if (pRes != null && pRes['pocket_score'] != null && (pRes['pocket_score'] as num).toInt() > 0) {
+          defenderScore = (pRes['pocket_score'] as num).toInt();
+        } else {
+          final res = await SupaFlow.client
+              .from('pocket_homes')
+              .select('points, hp, stage')
+              .eq('user_id', widget.neighbor.id)
+              .maybeSingle();
+          if (res != null && res['points'] != null) {
+            defenderScore = (res['points'] as num).toInt();
+          }
         }
       } else {
         final roboScore = await PocketFortressDefenseService.getRobotScore(
@@ -6947,6 +6957,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                 'first_name': widget.neighbor.name,
                                 'bio': widget.neighbor.statusMessage,
                                 'learning_day': widget.neighbor.day,
+                                'day': widget.neighbor.day,
+                                'pocket_score': _defenderScore,
                                 'streak': widget.neighbor.streak,
                                 'rank': widget.neighbor.rank,
                                 'palette_id': widget.neighbor.paletteId,

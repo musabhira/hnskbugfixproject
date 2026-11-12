@@ -19,6 +19,8 @@ import 'package:pocket_mates_app/custom_code/widgets/chat/pocket_thought_game_ca
 import 'package:pocket_mates_app/custom_code/widgets/chat/pocket_reels_game_engine.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_meta_ads_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 
 class ThoughtsFeedSection extends StatefulWidget {
   final String currentUserId;
@@ -199,7 +201,7 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
       }
 
       if (_activeTab == 'Following') {
-        // Get people I follow
+        // Get people I follow and my connected Pocket Mates
         final followingResponse = await supabase
             .from('follows')
             .select('followed_id')
@@ -207,6 +209,14 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
 
         final followedIds =
             followingResponse.map((e) => e['followed_id']).toList();
+        try {
+          final mateIds = await PocketMateService.getMatesList(widget.currentUserId);
+          for (final mid in mateIds) {
+            if (mid.isNotEmpty && !followedIds.contains(mid)) {
+              followedIds.add(mid);
+            }
+          }
+        } catch (_) {}
         if (_isKid) {
           final kidMateIds = PocketKidsService.mates.map((m) => m.id).toList();
           for (final mid in kidMateIds) {
@@ -403,7 +413,7 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
             dividerColor: Colors.transparent,
             tabs: [
               Tab(text: _isKid ? '💭 Thoughts' : 'Public'),
-              Tab(text: _isKid ? '🐾 My Gangs' : 'Following'),
+              Tab(text: _isKid ? '🐾 My Gangs' : 'Mates'),
             ],
           ),
         ),
@@ -599,9 +609,10 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const PocketNativeAdCard(
+              PocketUnifiedDualNativeAdWidget(
+                slotIndex: index ~/ 4,
                 placement: PocketAdPlacement.home,
-                margin: EdgeInsets.only(bottom: 12),
+                margin: const EdgeInsets.only(bottom: 12),
               ),
               card,
             ],

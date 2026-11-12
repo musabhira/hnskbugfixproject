@@ -60,13 +60,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
         String? sImg = r['avatar_url']?.toString() ?? r['sender_profile_image']?.toString();
         final sId = r['sender_id']?.toString() ?? r['source_id']?.toString() ?? '';
 
+        bool isVip = false;
         if (sName.isEmpty || sName == 'Pocket Mate' || sName == 'Poket Mate') {
           // 1. Primary lookup from profile table
           try {
             if (sId.isNotEmpty && !PocketRobotService.isRobotId(sId)) {
               final prof = await _supabase
                   .from('profile')
-                  .select('name, display_name, profile_image_url')
+                  .select('name, display_name, profile_image_url, is_vip, is_premium, verified')
                   .or('user_id.eq.$sId,id.eq.$sId')
                   .maybeSingle();
               if (prof != null) {
@@ -75,6 +76,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   sName = d.toString().trim();
                 }
                 sImg ??= prof['profile_image_url'];
+                isVip = prof['is_vip'] == true || prof['is_premium'] == true || prof['verified'] == true;
               }
             }
           } catch (_) {}
@@ -85,7 +87,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
               if (sId.isNotEmpty && !PocketRobotService.isRobotId(sId)) {
                 final u = await _supabase
                     .from('users')
-                    .select('display_name, name, username, photo_url, avatar_url')
+                    .select('display_name, name, username, photo_url, avatar_url, is_vip')
                     .eq('id', sId)
                     .maybeSingle();
                 if (u != null) {
@@ -94,10 +96,24 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     sName = d.toString().trim();
                   }
                   sImg ??= u['photo_url'] ?? u['avatar_url'];
+                  if (u['is_vip'] == true) isVip = true;
                 }
               }
             } catch (_) {}
           }
+        } else {
+          try {
+            if (sId.isNotEmpty && !PocketRobotService.isRobotId(sId)) {
+              final prof = await _supabase
+                  .from('profile')
+                  .select('is_vip, is_premium, verified')
+                  .or('user_id.eq.$sId,id.eq.$sId')
+                  .maybeSingle();
+              if (prof != null) {
+                isVip = prof['is_vip'] == true || prof['is_premium'] == true || prof['verified'] == true;
+              }
+            }
+          } catch (_) {}
         }
         if (sName.isEmpty) sName = 'Poket Mate';
 
@@ -109,6 +125,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           'message': r['message'] ?? 'Wants to become your Poket Mate.',
           'time': r['created_at'] ?? DateTime.now().toIso8601String(),
           'isRobot': r['is_robot'] == true || PocketRobotService.isRobotId(sId),
+          'isVip': isVip,
           'archetype': r['archetype'],
           'type': r['type'] ?? 'mate_request',
           'context_type': r['data'] is Map ? r['data']['context_type'] : r['context_type'],
@@ -457,22 +474,22 @@ class _NotificationsPageState extends State<NotificationsPage> {
       }
     } else if (type.contains('mate') || type.contains('friend')) {
       if (targetUid.isNotEmpty) {
-        Navigator.push(
+        PocketCitadelAttackPage.openForUser(
           context,
-          MaterialPageRoute(
-            builder: (_) => MainProfileWidget(userId: targetUid),
-          ),
+          userId: targetUid,
+          targetName: alert['title'] ?? 'Pocket Mate',
+          attackerDay: 1,
         );
       } else {
         setState(() => _selectedFilter = 1);
       }
     } else {
       if (targetUid.isNotEmpty) {
-        Navigator.push(
+        PocketCitadelAttackPage.openForUser(
           context,
-          MaterialPageRoute(
-            builder: (_) => MainProfileWidget(userId: targetUid),
-          ),
+          userId: targetUid,
+          targetName: alert['title'] ?? 'Opponent',
+          attackerDay: 1,
         );
       }
     }
@@ -1009,11 +1026,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                 onTap: () {
                                   final sId = req['senderId']?.toString() ?? '';
                                   if (sId.isNotEmpty) {
-                                    Navigator.push(
+                                    PocketCitadelAttackPage.openForUser(
                                       context,
-                                      MaterialPageRoute(
-                                        builder: (_) => MainProfileWidget(userId: sId),
-                                      ),
+                                      userId: sId,
+                                      targetName: req['senderName']?.toString() ?? 'Poket Mate',
+                                      attackerDay: 1,
                                     );
                                   }
                                 },
@@ -1127,8 +1144,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                                         ),
                                                       ),
                                                     )
-                                                  else
-                                                    Icon(Icons.verified, color: stage.tickColor, size: 14),
+                                                  else if (req['isVip'] == true)
+                                                    const Icon(Icons.verified, color: Color(0xFFFFD700), size: 14),
                                                 ],
                                               ),
                                               const SizedBox(height: 2),

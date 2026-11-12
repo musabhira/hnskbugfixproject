@@ -39,6 +39,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_meta_ads_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
@@ -1496,9 +1497,10 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
             mainAxisSize: MainAxisSize.min,
             children: [
               statusItem,
-              const PocketNativeAdCard(
+              PocketUnifiedDualNativeAdWidget(
+                slotIndex: index ~/ 3,
                 placement: PocketAdPlacement.vibes,
-                margin: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               ),
             ],
           );

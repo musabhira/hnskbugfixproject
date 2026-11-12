@@ -53,7 +53,7 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
         await PocketCitadelStoreService.instance.getEquippedDefenses();
     final eligibility =
         await PocketAdMobService.instance.checkRewardedAdEligibility();
-    final remaining = eligibility['remaining'] as int? ?? 5;
+    final remaining = eligibility['remaining'] as int? ?? 10;
 
     if (mounted) {
       setState(() {
@@ -73,7 +73,7 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content:
-              Text('Daily sponsor video limit (5/5) reached. Resets tomorrow!'),
+              Text('Daily sponsor video limit (10/10) reached. Resets tomorrow!'),
           backgroundColor: Color(0xFF0F172A),
           behavior: SnackBarBehavior.floating,
         ),
@@ -273,7 +273,7 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                             const Text('📺', style: TextStyle(fontSize: 11)),
                             const SizedBox(width: 3),
                             Text(
-                              _rewardedRemaining > 0 ? '+50 PS' : '5/5 Done',
+                              _rewardedRemaining > 0 ? '+50 PS' : '10/10 Done',
                               style: GoogleFonts.outfit(
                                 color: _rewardedRemaining > 0
                                     ? const Color(0xFF34D399)
@@ -372,8 +372,8 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                       ),
                       Text(
                         _rewardedRemaining > 0
-                            ? 'Daily Sponsor Reward ($_rewardedRemaining/5 available)'
-                            : 'Daily Sponsor Reward (5/5 Completed today)',
+                            ? 'Daily Sponsor Reward ($_rewardedRemaining/10 available)'
+                            : 'Daily Sponsor Reward (10/10 Completed today)',
                         style: GoogleFonts.inter(
                           color: _rewardedRemaining > 0
                               ? const Color(0xFF6EE7B7)

@@ -245,7 +245,14 @@ class PocketMetaAdsService {
 /// Blends seamlessly into Pocket Homes Reels, Thoughts Social Feed, and Explore
 class PocketMetaNativeFeedCard extends StatefulWidget {
   final VoidCallback? onAdClosed;
-  const PocketMetaNativeFeedCard({super.key, this.onAdClosed});
+  final VoidCallback? onError;
+  final EdgeInsetsGeometry margin;
+  const PocketMetaNativeFeedCard({
+    super.key,
+    this.onAdClosed,
+    this.onError,
+    this.margin = const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+  });
 
   @override
   State<PocketMetaNativeFeedCard> createState() => _PocketMetaNativeFeedCardState();
@@ -261,7 +268,7 @@ class _PocketMetaNativeFeedCardState extends State<PocketMetaNativeFeedCard> {
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      margin: widget.margin,
       decoration: BoxDecoration(
         color: const Color(0xFF0F172A),
         borderRadius: BorderRadius.circular(20),
@@ -279,7 +286,7 @@ class _PocketMetaNativeFeedCardState extends State<PocketMetaNativeFeedCard> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Header with Sponsored tag
+          // Header with Sponsored tag + Vertical 3-dots indicator for Meta
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             child: Row(
@@ -316,6 +323,13 @@ class _PocketMetaNativeFeedCardState extends State<PocketMetaNativeFeedCard> {
                     color: Colors.white54,
                   ),
                 ),
+                const SizedBox(width: 4),
+                // 3-dots vertical icon clearly distinguishes Meta from AdMob's horizontal 3-dots
+                const Icon(
+                  Icons.more_vert_rounded,
+                  color: Colors.white38,
+                  size: 18,
+                ),
               ],
             ),
           ),
@@ -335,6 +349,7 @@ class _PocketMetaNativeFeedCardState extends State<PocketMetaNativeFeedCard> {
               onError: (code, message) {
                 if (kDebugMode) print('Meta Native Ad error: code=$code, msg=$message');
                 if (mounted) setState(() => _hasError = true);
+                widget.onError?.call();
               },
             ),
           ),
@@ -346,7 +361,13 @@ class _PocketMetaNativeFeedCardState extends State<PocketMetaNativeFeedCard> {
 
 /// 📱 Compact Meta Native Banner Widget (ideal for Roadmap houses & Leaderboard)
 class PocketMetaNativeBannerWidget extends StatefulWidget {
-  const PocketMetaNativeBannerWidget({super.key});
+  final VoidCallback? onError;
+  final EdgeInsetsGeometry margin;
+  const PocketMetaNativeBannerWidget({
+    super.key,
+    this.onError,
+    this.margin = const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+  });
 
   @override
   State<PocketMetaNativeBannerWidget> createState() => _PocketMetaNativeBannerWidgetState();
@@ -362,29 +383,66 @@ class _PocketMetaNativeBannerWidgetState extends State<PocketMetaNativeBannerWid
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      margin: widget.margin,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: const Color(0xFF0F172A),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white12, width: 1.0),
       ),
-      child: NativeAd(
-        placementId: PocketMetaAdsService.nativeBannerPlacementId,
-        adType: NativeAdType.NATIVE_BANNER_AD,
-        bannerAdSize: NativeBannerAdSize.HEIGHT_100,
-        width: double.infinity,
-        backgroundColor: const Color(0xFF0F172A),
-        titleColor: Colors.white,
-        descriptionColor: Colors.white70,
-        buttonColor: const Color(0xFF10B981),
-        buttonTitleColor: Colors.white,
-        buttonBorderColor: Colors.transparent,
-        listener: NativeAdListener(
-          onError: (code, message) {
-            if (mounted) setState(() => _hasError = true);
-          },
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 4, 8, 2),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: Colors.white24, width: 0.6),
+                  ),
+                  child: Text(
+                    'AD',
+                    style: GoogleFonts.outfit(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFFFFD700),
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  'Meta Audience',
+                  style: GoogleFonts.outfit(fontSize: 10, color: Colors.white38),
+                ),
+                const SizedBox(width: 4),
+                const Icon(Icons.more_vert_rounded, color: Colors.white38, size: 16),
+              ],
+            ),
+          ),
+          NativeAd(
+            placementId: PocketMetaAdsService.nativeBannerPlacementId,
+            adType: NativeAdType.NATIVE_BANNER_AD,
+            bannerAdSize: NativeBannerAdSize.HEIGHT_100,
+            width: double.infinity,
+            backgroundColor: const Color(0xFF0F172A),
+            titleColor: Colors.white,
+            descriptionColor: Colors.white70,
+            buttonColor: const Color(0xFF10B981),
+            buttonTitleColor: Colors.white,
+            buttonBorderColor: Colors.transparent,
+            listener: NativeAdListener(
+              onError: (code, message) {
+                if (mounted) setState(() => _hasError = true);
+                widget.onError?.call();
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -504,4 +562,81 @@ class _PocketSmartDualBannerWidgetState extends State<PocketSmartDualBannerWidge
     );
   }
 }
+
+/// 🔄 Unified Dual Native Ad Widget (AdMob + Meta Audience Network)
+/// - Even slot index: Google AdMob Native Card (horizontal 3-dots icon)
+/// - Odd slot index: Meta Audience Network Native Card (vertical 3-dots icon)
+/// - Fallback: If one fails or has no fill, seamlessly falls back to the other network!
+/// - Suppressed automatically for VIPs.
+class PocketUnifiedDualNativeAdWidget extends StatefulWidget {
+  final int slotIndex;
+  final PocketAdPlacement placement;
+  final EdgeInsetsGeometry margin;
+  final bool isCompact;
+
+  const PocketUnifiedDualNativeAdWidget({
+    super.key,
+    this.slotIndex = 0,
+    this.placement = PocketAdPlacement.home,
+    this.margin = const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+    this.isCompact = false,
+  });
+
+  @override
+  State<PocketUnifiedDualNativeAdWidget> createState() => _PocketUnifiedDualNativeAdWidgetState();
+}
+
+class _PocketUnifiedDualNativeAdWidgetState extends State<PocketUnifiedDualNativeAdWidget> {
+  late bool _preferMeta;
+  bool _primaryFailed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Alternates between AdMob (even slot) and Meta (odd slot)
+    _preferMeta = widget.slotIndex.isOdd;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (PocketAdMobService.instance.isUserVipSync()) {
+      return const SizedBox.shrink();
+    }
+
+    final bool showMetaNow = _primaryFailed ? !_preferMeta : _preferMeta;
+
+    if (showMetaNow) {
+      if (widget.isCompact) {
+        return PocketMetaNativeBannerWidget(
+          margin: widget.margin,
+          onError: () {
+            if (mounted && !_primaryFailed) {
+              setState(() => _primaryFailed = true);
+            }
+          },
+        );
+      }
+      return PocketMetaNativeFeedCard(
+        margin: widget.margin,
+        onError: () {
+          if (mounted && !_primaryFailed) {
+            setState(() => _primaryFailed = true);
+          }
+        },
+      );
+    }
+
+    return PocketNativeAdCard(
+      placement: widget.placement,
+      margin: widget.margin,
+      isCompact: widget.isCompact,
+      onStatusChange: (status, _) {
+        if (status == 'FAILED' && mounted && !_primaryFailed) {
+          setState(() => _primaryFailed = true);
+        }
+      },
+    );
+  }
+}
+
 

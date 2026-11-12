@@ -3490,15 +3490,12 @@ class _PocketTrueNativeAdWidgetState extends State<PocketTrueNativeAdWidget> {
     }
 
     if (_nativeAd == null || !_isLoaded) {
-      // In web or desktop or while loading, fallback gracefully to in-feed container
-      if (kIsWeb || !Platform.isAndroid) {
-        return PocketNativeAdCard(
-          margin: widget.margin,
-          placement: widget.placement,
-          customAdUnitId: widget.customAdUnitId,
-        );
-      }
-      return const SizedBox.shrink();
+      // Fallback gracefully and reliably to PocketNativeAdCard on all platforms
+      return PocketNativeAdCard(
+        margin: widget.margin,
+        placement: widget.placement,
+        customAdUnitId: widget.customAdUnitId,
+      );
     }
 
     return Container(

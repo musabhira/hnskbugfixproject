@@ -876,12 +876,12 @@ class PocketTrophyService {
         await prefs.setStringList(datesKey, completedDates.toList());
       }
 
-      // Check trophy award status for sender (Requirements: 4 days chat + 1 attack + 1 fight)
+      // Check trophy award status for sender (Requirements: 4 days spoken chat in English)
       final trophyAwardedKey = 'pocket_pact_trophy_awarded_${pactId}_$senderId';
       final alreadyAwarded = prefs.getBool(trophyAwardedKey) ?? false;
       final hasAttacked = prefs.getBool('pocket_pact_attack_$pactId') ?? false;
       final hasFought = prefs.getBool('pocket_pact_fight_$pactId') ?? false;
-      final allConditionsMet = completedDates.length >= kPactRequiredDays && hasAttacked && hasFought;
+      final allConditionsMet = completedDates.length >= kPactRequiredDays;
       bool didUnlock = false;
 
       if (allConditionsMet && !alreadyAwarded) {

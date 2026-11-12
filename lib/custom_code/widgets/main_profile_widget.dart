@@ -6646,43 +6646,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             )
           : Row(
               children: [
-                Expanded(
-                  child: Container(
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: _isFollowing
-                          ? (rankTheme != null
-                              ? rankTheme.btnColor.withValues(alpha: 0.16)
-                              : const Color(0xFF262626))
-                          : btnColor,
-                      borderRadius: BorderRadius.circular(8),
-                      border: _isFollowing
-                          ? Border.all(
-                              color: (rankTheme?.borderColor ?? textColor)
-                                  .withValues(alpha: 0.3))
-                          : null,
-                    ),
-                    child: InkWell(
-                      onTap: _toggleFollow,
-                      borderRadius: BorderRadius.circular(8),
-                      child: Center(
-                        child: Text(
-                          _isFollowing
-                              ? "Following"
-                              : (_isRequested ? "Requested" : "Follow"),
-                          style: GoogleFonts.outfit(
-                            color: _isFollowing
-                                ? (rankTheme?.textColor ?? textColor)
-                                : btnTextColor,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
                 if (_isMate)
                   Expanded(
                     child: Container(
@@ -6725,7 +6688,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                 "Message",
                                 style: GoogleFonts.outfit(
                                   color: rankTheme?.textColor ?? textColor,
-                                  fontSize: 14,
+                                  fontSize: 13,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -6840,6 +6803,44 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       ),
                     ),
                   ),
+                const SizedBox(width: 8),
+                // ⚡ Pocket Talk 4-Day Spoken Pact Button
+                Expanded(
+                  child: Container(
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.5),
+                        width: 1.1,
+                      ),
+                    ),
+                    child: InkWell(
+                      onTap: () {
+                        _sendPocketTalkChallengeFromProfile();
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      child: Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('⚡', style: TextStyle(fontSize: 13)),
+                            const SizedBox(width: 4),
+                            Text(
+                              "Pocket Talk",
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFD700),
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Container(

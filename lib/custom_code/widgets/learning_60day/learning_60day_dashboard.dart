@@ -13,6 +13,8 @@ import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'pocket_citadel_attack_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_meta_ads_service.dart';
 
 /// Interactive Sheet & Dashboard for the 90-Day English Transformation & Profile Palette System
 class Learning60DayDashboardSheet extends StatefulWidget {
@@ -1123,7 +1125,7 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
         final isCurrent = currentDay == stage.day;
         final isCompletedToday = _lastCompletedDate == _todayDateStr && _lastCompletedDay == stage.day;
 
-        return InkWell(
+        final stageCard = InkWell(
           onTap: () {
             if (isStage91) {
               PocketCitadelAttackPage.openForUser(
@@ -1352,6 +1354,24 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
             ),
           ),
         );
+
+        // 📢 Interleaved Native Ad Card between Roadmap houses (alternates AdMob / Meta Audience Network)
+        if ((index + 1) % 3 == 0 && index < LearningMilestoneStage.allStages.length - 1) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              stageCard,
+              PocketUnifiedDualNativeAdWidget(
+                slotIndex: (index + 1) ~/ 3,
+                placement: PocketAdPlacement.target,
+                isCompact: true,
+                margin: const EdgeInsets.only(bottom: 12),
+              ),
+            ],
+          );
+        }
+
+        return stageCard;
       },
     );
   }
