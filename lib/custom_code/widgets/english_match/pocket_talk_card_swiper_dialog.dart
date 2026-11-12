@@ -582,30 +582,8 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
         }).eq('id', existing['id']);
       }
 
-      // Insert announcement row into messages table (without non-existent conversation_id column)
-      try {
-        final pactId = (myId.compareTo(candidate.userId) < 0)
-            ? 'pact_${myId}_${candidate.userId}'
-            : 'pact_${candidate.userId}_$myId';
-        await _supabase.from('messages').insert({
-          'sender_id': myId,
-          'receiver_id': candidate.userId,
-          'content': pactAnnouncement,
-          'message_text': pactAnnouncement,
-          'message_type': 'pocket_talk_request',
-          'metadata': {
-            'is_pocket_talk': true,
-            'type': 'pocket_talk_request',
-            'pact_id': pactId,
-            'sender_id': myId,
-            'receiver_id': candidate.userId,
-            'status': 'pending',
-            'timestamp': nowIso,
-          },
-        });
-      } catch (msgErr) {
-        debugPrint('Error inserting pocket_talk message: $msgErr');
-      }
+      // Note: PocketTrophyService.requestPact already sent the pocket_talk message and updated the conversation.
+      // We only ensure the candidate's last message preview in conversations here if needed.
     } catch (_) {}
 
     if (mounted) {

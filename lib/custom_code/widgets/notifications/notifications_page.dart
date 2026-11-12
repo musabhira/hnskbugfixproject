@@ -937,36 +937,104 @@ class _NotificationsPageState extends State<NotificationsPage> {
                             final rawAvatarUrl = req['avatarUrl'] ?? req['sender_profile_image'];
                             final hasRealAvatar = rawAvatarUrl != null && rawAvatarUrl.toString().trim().isNotEmpty;
 
-                            return GestureDetector(
-                              onTap: () {
-                                final sId = req['senderId']?.toString() ?? '';
-                                if (sId.isNotEmpty) {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => MainProfileWidget(userId: sId),
+                            return Dismissible(
+                              key: Key('conn_req_${req['id']}_${req['senderId']}'),
+                              direction: DismissDirection.endToStart,
+                              background: Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.only(right: 20),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.withValues(alpha: 0.8),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                alignment: Alignment.centerRight,
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Icon(Icons.delete_outline_rounded, color: Colors.white, size: 24),
+                                    SizedBox(width: 8),
+                                    Text('Clear', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                              ),
+                              onDismissed: (_) {
+                                _declineRequest(req);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Request cleared from ${req['senderName']}'),
+                                    duration: const Duration(seconds: 2),
+                                    backgroundColor: const Color(0xFF1E293B),
+                                  ),
+                                );
+                              },
+                              child: GestureDetector(
+                                onLongPress: () {
+                                  HapticFeedback.heavyImpact();
+                                  showModalBottomSheet(
+                                    context: context,
+                                    backgroundColor: const Color(0xFF131520),
+                                    shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                                    ),
+                                    builder: (ctx) => SafeArea(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(16.0),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              'Request from ${req['senderName']}',
+                                              style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                                            ),
+                                            const SizedBox(height: 16),
+                                            ListTile(
+                                              leading: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                                              title: const Text('Clear this request', style: TextStyle(color: Colors.redAccent)),
+                                              onTap: () {
+                                                Navigator.pop(ctx);
+                                                _declineRequest(req);
+                                              },
+                                            ),
+                                            ListTile(
+                                              leading: const Icon(Icons.close, color: Colors.white54),
+                                              title: const Text('Cancel', style: TextStyle(color: Colors.white70)),
+                                              onTap: () => Navigator.pop(ctx),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
                                     ),
                                   );
-                                }
-                              },
-                              child: Container(
-                                margin: const EdgeInsets.only(bottom: 12),
-                                padding: const EdgeInsets.all(14),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF131520),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: isPocketTalk
-                                        ? const Color(0xFFFFD700)
-                                        : isRobot
-                                            ? const Color(0xFF06B6D4).withValues(alpha: 0.3)
-                                            : const Color(0xFFFFFC00).withValues(alpha: 0.3),
-                                    width: isPocketTalk ? 1.5 : 1.2,
+                                },
+                                onTap: () {
+                                  final sId = req['senderId']?.toString() ?? '';
+                                  if (sId.isNotEmpty) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => MainProfileWidget(userId: sId),
+                                      ),
+                                    );
+                                  }
+                                },
+                                child: Container(
+                                  margin: const EdgeInsets.only(bottom: 12),
+                                  padding: const EdgeInsets.all(14),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF131520),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: isPocketTalk
+                                          ? const Color(0xFFFFD700)
+                                          : isRobot
+                                              ? const Color(0xFF06B6D4).withValues(alpha: 0.3)
+                                              : const Color(0xFFFFFC00).withValues(alpha: 0.3),
+                                      width: isPocketTalk ? 1.5 : 1.2,
+                                    ),
                                   ),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
                                     // Header type badge
                                     Row(
                                       children: [
@@ -1151,10 +1219,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                 ],
                               ),
                             ),
-                          );
-                        }),
-                        const SizedBox(height: 18),
-                      ],
+                          ),
+                        );
+                      }),
+                      const SizedBox(height: 18),
+                    ],
 
                       // ⚔️ Citadel Attacks & Raids (Requests Tab)
                       if (_selectedFilter == 1 && attackAlerts.isNotEmpty) ...[

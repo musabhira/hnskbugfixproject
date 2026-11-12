@@ -8406,7 +8406,7 @@ Draft: "$draft"''';
                                 const Text('1️⃣ ', style: TextStyle(fontSize: 11)),
                                 Expanded(
                                   child: Text(
-                                    'നാലു ദിവസവും നിർബന്ധമായും ഇംഗ്ലീഷിൽ സംസാരിച്ചിരിക്കണം (Speak daily in English). Non-English chat alerts the President.',
+                                    'Speak in English for 15 mins daily during all 4 days. Practicing in English activates your natural fluency.',
                                     style: GoogleFonts.inter(
                                       color: Colors.white.withValues(alpha: 0.9),
                                       fontSize: 11,
@@ -8424,7 +8424,7 @@ Draft: "$draft"''';
                                 const Text('2️⃣ ', style: TextStyle(fontSize: 11)),
                                 Expanded(
                                   child: Text(
-                                    'നാലു ദിവസത്തെ സ്ട്രീക്ക് പൂർത്തിയായാൽ പ്രൊഫൈലിൽ +1 Gold Trophy കൂടും (Towards 150-Trophy Master Certification)!',
+                                    'Complete the 4-day spoken streak to earn +1 Gold Trophy on your profile and master fluency!',
                                     style: GoogleFonts.inter(
                                       color: const Color(0xFFFDE047),
                                       fontSize: 11,
