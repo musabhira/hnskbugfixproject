@@ -2288,7 +2288,11 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard>
       SnackBar(
         content: Text(
           'Sponsored advertisement. Upgrade to Poket VIP to remove all ads.',
-          style: GoogleFonts.outfit(fontSize: 12),
+          style: GoogleFonts.outfit(
+            fontSize: 12.5,
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         backgroundColor: const Color(0xFF1E293B),
         duration: const Duration(seconds: 3),
@@ -3272,7 +3276,11 @@ class _LegacyDc50278NativeAdCardState extends State<LegacyDc50278NativeAdCard>
                       SnackBar(
                         content: Text(
                           'Sponsored advertisement. Upgrade to Pocket VIP to remove all ads.',
-                          style: GoogleFonts.outfit(fontSize: 12),
+                          style: GoogleFonts.outfit(
+                            fontSize: 12.5,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         backgroundColor: const Color(0xFF1E293B),
                         duration: const Duration(seconds: 3),

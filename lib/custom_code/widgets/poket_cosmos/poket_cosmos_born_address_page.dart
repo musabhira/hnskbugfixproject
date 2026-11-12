@@ -182,30 +182,31 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
       forceReallocate: widget.forceReallocate,
     );
 
-    final colony = PoketCosmosAllocationService.instance.getColonyByPlanetName(plot.planetName);
-    final island = PoketCountryMap(
-      id: colony.planetId * 100 + 1,
-      name: plot.countryName,
-      tag: '${colony.planetName} Living Colony',
-      landColor: colony.landColor,
-      waterColor: colony.waterColor,
-      totalSlots: PoketCosmosAllocationService.maxPlotsPerIsland,
-      filledSlots: math.min(plot.plotNumber + 3, PoketCosmosAllocationService.maxPlotsPerIsland),
-      climate: colony.climate,
-      climateIcon: Icons.water_drop_rounded,
-      shapeSeed: plot.plotNumber * 13,
-      shapeStyle: colony.shapeStyle,
+    final parsed =
+        PoketCosmosAllocationService.parseGlobalPlotNumber(plot.plotNumber);
+    final int wave = parsed['wave'] as int? ?? 1;
+    final CelestialColonyInfo colony =
+        parsed['colony'] as CelestialColonyInfo? ??
+            PoketCosmosAllocationService.instance
+                .getColonyByPlanetName(plot.planetName);
+    final int localPlot = parsed['localPlotNumber'] as int? ?? 1;
+
+    // Use generateProceduralIsland to get the TRUE dynamic island corresponding to this plot!
+    final island = PoketCosmosAllocationService.generateProceduralIsland(
+      colony: colony,
+      wave: wave,
     );
 
     final coords = IslandAerialPainter.get35PlotCoordinates(island.shapeStyle);
-    final localPlot = (plot.plotNumber >= 1 && plot.plotNumber <= 25)
-        ? plot.plotNumber
-        : (((plot.plotNumber - 1) % 25) + 1);
     final targetPos = (localPlot >= 1 && localPlot <= coords.length)
         ? coords[localPlot - 1]
         : coords.first;
 
-    final updatedPlot = plot.copyWith(coordinates: targetPos);
+    final updatedPlot = plot.copyWith(
+      coordinates: targetPos,
+      postOffice: island.name,
+      countryName: island.name,
+    );
 
     // Setup Solar System Game with Camera centered on assigned planet (or parent of satellite)
     final allPlanets = PoketCosmosNavigatorPage.buildCosmosPlanets();
@@ -269,9 +270,9 @@ class _PoketCosmosBornAddressPageState extends State<PoketCosmosBornAddressPage>
     const targetScale = 14.0;
 
     final coords = IslandAerialPainter.get35PlotCoordinates(_assignedIsland.shapeStyle);
-    final localPlot = (_assignedPlot.plotNumber >= 1 && _assignedPlot.plotNumber <= 25)
-        ? _assignedPlot.plotNumber
-        : (((_assignedPlot.plotNumber - 1) % 25) + 1);
+    final parsed =
+        PoketCosmosAllocationService.parseGlobalPlotNumber(_assignedPlot.plotNumber);
+    final localPlot = parsed['localPlotNumber'] as int? ?? 1;
     final targetPlotCoord = (localPlot >= 1 && localPlot <= coords.length)
         ? coords[localPlot - 1]
         : coords.first;

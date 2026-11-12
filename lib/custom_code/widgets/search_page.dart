@@ -234,9 +234,25 @@ class _SearchPageState extends State<SearchPage> {
     final query = _currentSearchQuery.trim().toLowerCase();
     final allPlanets = PoketCosmosNavigatorPage.buildCosmosPlanets();
 
+    // 🪐 Plot Number to Planet Resolution (User Directive)
+    final searchedPlotNum =
+        int.tryParse(RegExp(r'\d+').firstMatch(query)?.group(0) ?? '');
+    String? plotPlanetName;
+    if (searchedPlotNum != null && searchedPlotNum > 0) {
+      final parsed =
+          PoketCosmosAllocationService.parseGlobalPlotNumber(searchedPlotNum);
+      plotPlanetName = parsed['planetName']?.toString().toLowerCase();
+    }
+
     final filteredPlanets = allPlanets.where((p) {
       if (query.isEmpty) return true;
       final q = query.toLowerCase();
+      if (plotPlanetName != null &&
+          (p.name.toLowerCase() == plotPlanetName ||
+              p.satellites.any(
+                  (s) => s.name.toLowerCase() == plotPlanetName))) {
+        return true;
+      }
       final hasSatMatch = p.satellites.any((s) =>
           s.name.toLowerCase().contains(q) ||
           s.tagLine.toLowerCase().contains(q));
@@ -1324,11 +1340,38 @@ class _SearchPageState extends State<SearchPage> {
     final allIslands =
         PoketCosmosAllocationService.getAllIslandsCatalog(maxWaves: 2);
 
+    // 🏝️ Plot Number to Island Resolution (User Directive)
+    final searchedPlotNum =
+        int.tryParse(RegExp(r'\d+').firstMatch(query)?.group(0) ?? '');
+    String? plotIslandName;
+    String? plotPlanetCode;
+    int? plotWave;
+    if (searchedPlotNum != null && searchedPlotNum > 0) {
+      final parsed =
+          PoketCosmosAllocationService.parseGlobalPlotNumber(searchedPlotNum);
+      plotPlanetCode = parsed['planetCode']?.toString().toLowerCase();
+      plotWave = parsed['wave'] as int? ?? 1;
+      final colony = parsed['colony'] as CelestialColonyInfo;
+      plotIslandName = (plotWave == 1)
+          ? colony.islandName.toLowerCase()
+          : PoketCosmosAllocationService.generateInfiniteIslandName(
+                  colony.code, plotWave, plotWave)
+              .toLowerCase();
+    }
+
     final filteredIslands = allIslands.where((isl) {
       if (query.isEmpty) return true;
       final name = isl['islandName']?.toString().toLowerCase() ?? '';
       final planet = isl['planetName']?.toString().toLowerCase() ?? '';
       final code = isl['planetCode']?.toString().toLowerCase() ?? '';
+      final wave = isl['wave'] as int? ?? 1;
+
+      if (plotIslandName != null &&
+          (name.contains(plotIslandName) ||
+              (code == plotPlanetCode && wave == plotWave))) {
+        return true;
+      }
+
       return name.contains(query) ||
           planet.contains(query) ||
           code.contains(query);
@@ -1929,114 +1972,11 @@ class _SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          // 🏡 Button -1: All Homes Inspector (10-Planet "This is Your Home" Atmospheric Test Modal)
-          FloatingActionButton.extended(
-            heroTag: 'fab_search_cosmos_all_homes_inspector',
-            backgroundColor: const Color(0xFF0F2B48),
-            foregroundColor: const Color(0xFF34D399),
-            elevation: 8,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: const BorderSide(color: Color(0xFF34D399), width: 1.8),
-            ),
-            icon: const Text('🏡', style: TextStyle(fontSize: 18)),
-            label: const Text(
-              'INSPECT ALL HOMES 🏡',
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  letterSpacing: 0.5),
-            ),
-            onPressed: () {
-              HapticFeedback.mediumImpact();
-              PoketCosmosHomeInspectorModal.show(context);
-            },
-          ),
-          const SizedBox(height: 10),
-
-          // 🏝️ Button 0: All Islands Inspector (10-Planet Carousel)
-          FloatingActionButton.extended(
-            heroTag: 'fab_search_cosmos_all_islands_inspector',
-            backgroundColor: const Color(0xFF1E1B4B),
-            foregroundColor: const Color(0xFF38BDF8),
-            elevation: 8,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: const BorderSide(color: Color(0xFF38BDF8), width: 1.8),
-            ),
-            icon: const Text('🏝️', style: TextStyle(fontSize: 18)),
-            label: const Text(
-              'INSPECT ALL ISLANDS 🪐',
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  letterSpacing: 0.5),
-            ),
-            onPressed: () {
-              HapticFeedback.mediumImpact();
-              PoketCosmosIslandInspectorModal.show(context);
-            },
-          ),
-          const SizedBox(height: 10),
-
-          // 🪐 Button 1: Cosmos Test Lab & Born Ceremony (Positioned directly on top of Cosmos Map button!)
-          FloatingActionButton.extended(
-            heroTag: 'fab_search_cosmos_test_lab',
-            backgroundColor: const Color(0xFF0F172A),
-            foregroundColor: const Color(0xFFFFD700),
-            elevation: 8,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: const BorderSide(color: Color(0xFFFFD700), width: 1.8),
-            ),
-            icon: const Text('🪐', style: TextStyle(fontSize: 18)),
-            label: const Text(
-              'COSMOS TEST LAB 🧪',
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  letterSpacing: 0.5),
-            ),
-            onPressed: () {
-              HapticFeedback.mediumImpact();
-              PoketCosmosReferralGatewayPage.launch(
-                context,
-                userName: 'Learner',
-                userAvatar: '🦁',
-                userAge: 20,
-              );
-            },
-          ),
-          const SizedBox(height: 10),
-
-          // 🚀 Button 2: Poket Cosmos Map
-          FloatingActionButton.extended(
-            heroTag: 'fab_search_cosmos_map',
-            backgroundColor: const Color(0xFF0284C7),
-            foregroundColor: Colors.white,
-            elevation: 6,
-            icon: const Icon(Icons.satellite_alt_rounded, size: 20),
-            label: const Text(
-              'Poket Cosmos Map 🚀',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const PoketCosmosNavigatorPage(),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: Column(
+      body: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: SafeArea(
+          child: Column(
           children: [
             // Minimal Header
             Padding(
@@ -2153,8 +2093,9 @@ class _SearchPageState extends State<SearchPage> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   void _showSearchHistoryDialog() {
     showDialog(
@@ -2543,11 +2484,77 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
         };
       }
 
+      // 🌟 Plot Number Citizen Lookup (User Directive: show plot owner in Citizens tab!)
+      List<Map<String, dynamic>> plotOwnerMatches = [];
+      final searchedPlotNum =
+          int.tryParse(RegExp(r'\d+').firstMatch(cleanQ)?.group(0) ?? '');
+      if (searchedPlotNum != null && searchedPlotNum > 0 && !isRobotOnly) {
+        try {
+          // 1. Search bio in Supabase for cosmos pin matching this plot
+          final pinPadded2 = searchedPlotNum.toString().padLeft(2, '0');
+          final pinPadded3 = searchedPlotNum.toString().padLeft(3, '0');
+          final bioMatches = await _supabase
+              .from('profile')
+              .select(
+                  'profile_image_url, shop_name, verified, user_id, name, learning_day, daily_streak, avatar_config, bio')
+              .or('bio.ilike.%-P$searchedPlotNum%,bio.ilike.%-P$pinPadded2%,bio.ilike.%-P$pinPadded3%')
+              .limit(10);
+          if (bioMatches != null) {
+            for (final bm in (bioMatches as List)) {
+              final map = Map<String, dynamic>.from(bm as Map);
+              map['shop_name'] =
+                  map['shop_name'] ?? 'Plot #$searchedPlotNum Citizen';
+              plotOwnerMatches.add(map);
+            }
+          }
+
+          // 2. Also check wave plots catalog
+          final allPlots =
+              PoketCosmosAllocationService.getWavePlotsCatalog(maxWaves: 2);
+          Map<String, dynamic>? matchPlot;
+          for (final item in allPlots) {
+            if (item['globalPlotNumber'] == searchedPlotNum ||
+                item['localPlotNumber'] == searchedPlotNum) {
+              matchPlot = item;
+              break;
+            }
+          }
+          if (matchPlot != null && matchPlot['isOccupied'] == true) {
+            final uid = matchPlot['userId']?.toString() ?? '';
+            final oName =
+                matchPlot['ownerName']?.toString() ?? 'Citizen #$searchedPlotNum';
+            if (uid.isNotEmpty &&
+                !plotOwnerMatches.any((m) => m['user_id'] == uid)) {
+              final userProf = await _supabase
+                  .from('profile')
+                  .select(
+                      'profile_image_url, shop_name, verified, user_id, name, learning_day, daily_streak, avatar_config')
+                  .or('user_id.eq.$uid,id.eq.$uid')
+                  .maybeSingle();
+              if (userProf != null) {
+                final map = Map<String, dynamic>.from(userProf);
+                plotOwnerMatches.add(map);
+              } else {
+                plotOwnerMatches.add({
+                  'user_id': uid,
+                  'name': oName,
+                  'shop_name':
+                      '${matchPlot['planetName']} • Plot #$searchedPlotNum',
+                  'profile_image_url': matchPlot['avatar']?.toString() ?? '🦁',
+                  'verified': false,
+                });
+              }
+            }
+          }
+        } catch (_) {}
+      }
+
       safeSetState(() {
         var resultsToDisplay = List<Map<String, dynamic>>.from(response);
         _hasMoreData = response.length == _pageSize;
         _searchResults = [
           if (matchingPres != null) matchingPres,
+          ...plotOwnerMatches,
           ...robotMaps,
           ...resultsToDisplay
         ];

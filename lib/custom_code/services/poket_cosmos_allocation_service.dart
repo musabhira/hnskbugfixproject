@@ -1433,18 +1433,31 @@ class PoketCosmosAllocationService {
     if (inviteCode != null && inviteCode.trim().isNotEmpty) {
       final reservation = await validateNeighborInviteCode(inviteCode.trim());
       if (reservation != null) {
-        final colony = getColonyByPlanetName(reservation.planetName);
-        final activeWave = await getActiveWaveIndex();
+        final int globalPlotNum;
+        final int localPlotNum;
+        final int reservationWave;
+        final CelestialColonyInfo colony;
+
+        if (reservation.plotNumber > maxPlotsPerIsland) {
+          globalPlotNum = reservation.plotNumber;
+          final parsed = parseGlobalPlotNumber(globalPlotNum);
+          localPlotNum = parsed['localPlotNumber'] as int;
+          reservationWave = parsed['wave'] as int;
+          colony = parsed['colony'] as CelestialColonyInfo;
+        } else {
+          reservationWave = await getActiveWaveIndex();
+          localPlotNum = reservation.plotNumber;
+          colony = getColonyByPlanetName(reservation.planetName);
+          globalPlotNum = calculateGlobalPlotNumber(
+            wave: reservationWave,
+            planetCode: colony.code,
+            localPlotNumber: localPlotNum,
+          );
+        }
 
         // Mark the reserved plot occupied in this wave & colony
         await _markPlotOccupied(
-            activeWave, colony.code, reservation.plotNumber);
-
-        final globalPlotNum = calculateGlobalPlotNumber(
-          wave: activeWave,
-          planetCode: colony.code,
-          localPlotNumber: reservation.plotNumber,
-        );
+            reservationWave, colony.code, localPlotNum);
 
         final plot = CitizenPlot(
           plotNumber: globalPlotNum,
@@ -1456,10 +1469,10 @@ class PoketCosmosAllocationService {
           streetName: reservation.streetName,
           postOffice: reservation.islandName,
           countryName: reservation.islandName,
-          planetName: reservation.planetName,
+          planetName: colony.planetName,
           coordinates: Offset.zero,
           postalPinCode: reservation.cosmosPin,
-          tier: (reservation.plotNumber <= 6
+          tier: (localPlotNum <= 6
               ? PlotDeedTier.beachfront
               : PlotDeedTier.standard),
           status: PlotStatus.occupied,

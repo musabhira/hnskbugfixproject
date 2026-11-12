@@ -75,6 +75,10 @@ class _PoketCosmosResidentIslandViewState
     final home = _actualUserHomePlot ??
         PoketCosmosAllocationService.instance.currentUserBirthPlot;
     if (home == null) return false;
+    if (widget.targetPlotNumber != null &&
+        widget.targetPlotNumber != home.plotNumber) {
+      return false;
+    }
     final homeColony = PoketCosmosAllocationService.instance
         .getColonyByPlanetName(home.planetName);
     final isSamePlanet =

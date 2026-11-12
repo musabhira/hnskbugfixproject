@@ -986,45 +986,62 @@ class _PocketIslandAttackPageState extends State<PocketIslandAttackPage>
             bottom: bottomPad + 14,
             child: Row(
               children: [
-                // 💬 Island Neighbors Chat Button
-                SizedBox(
-                  height: 52,
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0F172A),
-                      foregroundColor: const Color(0xFF38BDF8),
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        side: const BorderSide(
-                          color: Color(0xFF38BDF8),
-                          width: 1.4,
+                // 💬 Island Neighbors Chat Button (User Directive: ONLY on user's own island!)
+                () {
+                  final myPlot = PoketCosmosAllocationService.instance.currentUserBirthPlot;
+                  final int myWave = myPlot != null
+                      ? (PoketCosmosAllocationService.parseGlobalPlotNumber(myPlot.plotNumber)['wave'] as int? ?? 1)
+                      : 1;
+                  final bool isMyIsland = myPlot != null &&
+                      myPlot.planetName.toLowerCase() == widget.colony.planetName.toLowerCase() &&
+                      widget.island.wave == myWave;
+
+                  if (!isMyIsland) return const SizedBox.shrink();
+
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        height: 52,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0F172A),
+                            foregroundColor: const Color(0xFF38BDF8),
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: const BorderSide(
+                                color: Color(0xFF38BDF8),
+                                width: 1.4,
+                              ),
+                            ),
+                            elevation: 4,
+                          ),
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+                            PocketIslandGroupService.instance.openIslandGroupChat(
+                              context,
+                              planetCode: widget.colony.code,
+                              planetName: widget.colony.planetName,
+                              wave: widget.island.wave,
+                              islandName: widget.island.name,
+                            );
+                          },
+                          icon: const Text('💬', style: TextStyle(fontSize: 18)),
+                          label: Text(
+                            'NEIGHBORS',
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 12,
+                              letterSpacing: 0.4,
+                            ),
+                          ),
                         ),
                       ),
-                      elevation: 4,
-                    ),
-                    onPressed: () {
-                      HapticFeedback.lightImpact();
-                      PocketIslandGroupService.instance.openIslandGroupChat(
-                        context,
-                        planetCode: widget.colony.code,
-                        planetName: widget.colony.planetName,
-                        wave: widget.island.wave,
-                        islandName: widget.island.name,
-                      );
-                    },
-                    icon: const Text('💬', style: TextStyle(fontSize: 18)),
-                    label: Text(
-                      'NEIGHBORS',
-                      style: GoogleFonts.outfit(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 12,
-                        letterSpacing: 0.4,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
+                      const SizedBox(width: 10),
+                    ],
+                  );
+                }(),
 
                 // 🏃 Big Runner Battle Button (Subway-Surfers 2D Runner)
                 Expanded(

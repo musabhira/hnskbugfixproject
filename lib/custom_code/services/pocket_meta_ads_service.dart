@@ -258,6 +258,34 @@ class PocketMetaAdsService {
     preloadRewarded();
     return false;
   }
+
+  /// 💬 Uniform Sponsored Ad Info SnackBar
+  static void showAdInfoSnackbar(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Sponsored advertisement. Upgrade to Poket VIP to remove all ads.',
+          style: GoogleFonts.outfit(
+            fontSize: 12.5,
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        backgroundColor: const Color(0xFF1E293B),
+        duration: const Duration(seconds: 3),
+        action: SnackBarAction(
+          label: 'Go VIP',
+          textColor: const Color(0xFFFFD700),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+            );
+          },
+        ),
+      ),
+    );
+  }
 }
 
 /// 🎨 Instagram / Reels Style Meta Native Ad Widget
@@ -336,10 +364,17 @@ class _PocketMetaNativeFeedCardState extends State<PocketMetaNativeFeedCard> {
                 ),
                 const Spacer(),
                 // 3-dots vertical icon clearly distinguishes Meta from AdMob's horizontal 3-dots
-                const Icon(
-                  Icons.more_vert_rounded,
-                  color: Colors.white38,
-                  size: 18,
+                GestureDetector(
+                  onTap: () => PocketMetaAdsService.showAdInfoSnackbar(context),
+                  behavior: HitTestBehavior.opaque,
+                  child: const Padding(
+                    padding: EdgeInsets.all(4.0),
+                    child: Icon(
+                      Icons.more_vert_rounded,
+                      color: Colors.white38,
+                      size: 18,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -434,7 +469,14 @@ class _PocketMetaNativeBannerWidgetState extends State<PocketMetaNativeBannerWid
                   ),
                 ),
                 const Spacer(),
-                const Icon(Icons.more_vert_rounded, color: Colors.white38, size: 16),
+                GestureDetector(
+                  onTap: () => PocketMetaAdsService.showAdInfoSnackbar(context),
+                  behavior: HitTestBehavior.opaque,
+                  child: const Padding(
+                    padding: EdgeInsets.all(4.0),
+                    child: Icon(Icons.more_vert_rounded, color: Colors.white38, size: 16),
+                  ),
+                ),
               ],
             ),
           ),

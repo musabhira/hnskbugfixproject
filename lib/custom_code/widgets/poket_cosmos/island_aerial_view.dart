@@ -171,7 +171,13 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
         for (final p in widget.plots) {
           if (p.plotNumber == localPlotNumber ||
               p.plotNumber == globalPlotNumber) {
-            occupiedPlot = p;
+            final isVacant = p.status == PlotStatus.vacant ||
+                p.userId.isEmpty ||
+                p.userName.toLowerCase() == 'available' ||
+                p.userName.startsWith('Plot #');
+            if (!isVacant) {
+              occupiedPlot = p;
+            }
             break;
           }
         }
@@ -3320,7 +3326,13 @@ class IslandAerialPainter extends CustomPainter {
       CitizenPlot? citizenPlot;
       for (final p in plots) {
         if (p.plotNumber == plotNumber || p.plotNumber == globalPlotNumber) {
-          citizenPlot = p;
+          final isVacant = p.status == PlotStatus.vacant ||
+              p.userId.isEmpty ||
+              p.userName.toLowerCase() == 'available' ||
+              p.userName.startsWith('Plot #');
+          if (!isVacant) {
+            citizenPlot = p;
+          }
           break;
         }
       }
