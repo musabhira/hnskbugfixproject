@@ -610,7 +610,7 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
             mainAxisSize: MainAxisSize.min,
             children: [
               PocketUnifiedDualNativeAdWidget(
-                slotIndex: index ~/ 4,
+                slotIndex: (index ~/ 4) - 1,
                 placement: PocketAdPlacement.home,
                 margin: const EdgeInsets.only(bottom: 12),
               ),

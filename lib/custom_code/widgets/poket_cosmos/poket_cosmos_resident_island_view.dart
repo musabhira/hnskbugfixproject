@@ -77,8 +77,10 @@ class _PoketCosmosResidentIslandViewState
     if (home == null) return false;
     final homeColony = PoketCosmosAllocationService.instance
         .getColonyByPlanetName(home.planetName);
-    final isSamePlanet = homeColony.code.toUpperCase() == _colony.code.toUpperCase();
-    final homeParsed = PoketCosmosAllocationService.parseGlobalPlotNumber(home.plotNumber);
+    final isSamePlanet =
+        homeColony.code.toUpperCase() == _colony.code.toUpperCase();
+    final homeParsed =
+        PoketCosmosAllocationService.parseGlobalPlotNumber(home.plotNumber);
     final homeWave = (homeParsed['wave'] as num?)?.toInt() ?? 1;
     final isSameWave = (_island.wave == homeWave);
     return isSamePlanet && isSameWave;
@@ -224,15 +226,14 @@ class _PoketCosmosResidentIslandViewState
     );
 
     // 4. Compute plot coordinates
-    final int lNum = (plot.plotNumber >
-            PoketCosmosAllocationService.maxPlotsPerIsland)
-        ? (PoketCosmosAllocationService.parseGlobalPlotNumber(plot.plotNumber)[
-            'localPlotNumber'] as int)
-        : plot.plotNumber;
+    final int lNum =
+        (plot.plotNumber > PoketCosmosAllocationService.maxPlotsPerIsland)
+            ? (PoketCosmosAllocationService.parseGlobalPlotNumber(
+                plot.plotNumber)['localPlotNumber'] as int)
+            : plot.plotNumber;
     final coords = IslandAerialPainter.get35PlotCoordinates(island.shapeStyle);
-    final targetPos = (lNum >= 1 && lNum <= coords.length)
-        ? coords[lNum - 1]
-        : Offset.zero;
+    final targetPos =
+        (lNum >= 1 && lNum <= coords.length) ? coords[lNum - 1] : Offset.zero;
 
     final updatedPlot = plot.copyWith(coordinates: targetPos);
 
@@ -360,7 +361,8 @@ class _PoketCosmosResidentIslandViewState
             decoration: const BoxDecoration(
               color: Color(0xFF0F172A),
               borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-              border: Border(top: BorderSide(color: Color(0xFF38BDF8), width: 1.5)),
+              border:
+                  Border(top: BorderSide(color: Color(0xFF38BDF8), width: 1.5)),
               boxShadow: [
                 BoxShadow(
                     color: Color(0x66000000),
@@ -394,7 +396,8 @@ class _PoketCosmosResidentIslandViewState
                     ),
                     const Spacer(),
                     IconButton(
-                      icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                      icon: const Icon(Icons.close_rounded,
+                          color: Colors.white70),
                       onPressed: () => Navigator.pop(ctx),
                     ),
                   ],
@@ -421,10 +424,12 @@ class _PoketCosmosResidentIslandViewState
                       const SizedBox(width: 10),
                       Expanded(
                         child: TextField(
-                          style: const TextStyle(color: Colors.white, fontSize: 13.5),
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 13.5),
                           decoration: const InputDecoration(
                             hintText: 'Search 15 Planets, Islands, or Codes...',
-                            hintStyle: TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                            hintStyle: TextStyle(
+                                color: Color(0xFF64748B), fontSize: 13),
                             border: InputBorder.none,
                             isDense: true,
                             contentPadding: EdgeInsets.symmetric(vertical: 12),
@@ -455,19 +460,23 @@ class _PoketCosmosResidentIslandViewState
                       ? Center(
                           child: Text(
                             'No celestial colony found matching "$searchQuery"',
-                            style: const TextStyle(color: Colors.white54, fontSize: 13),
+                            style: const TextStyle(
+                                color: Colors.white54, fontSize: 13),
                           ),
                         )
                       : ListView.separated(
                           physics: const BouncingScrollPhysics(),
                           itemCount: filtered.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 10),
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 10),
                           itemBuilder: (context, idx) {
                             final c = filtered[idx];
                             final isCurrent = c.code == _colony.code;
                             final int currentWave = _island.wave;
                             final planetIdx = allColonies.indexOf(c);
-                            final startPlot = ((currentWave - 1) * 375) + (planetIdx * 25) + 1;
+                            final startPlot = ((currentWave - 1) * 375) +
+                                (planetIdx * 25) +
+                                1;
                             final endPlot = startPlot + 24;
 
                             return InkWell(
@@ -488,7 +497,8 @@ class _PoketCosmosResidentIslandViewState
                                 padding: const EdgeInsets.all(14),
                                 decoration: BoxDecoration(
                                   color: isCurrent
-                                      ? const Color(0xFF0284C7).withValues(alpha: 0.22)
+                                      ? const Color(0xFF0284C7)
+                                          .withValues(alpha: 0.22)
                                       : const Color(0xFF1E293B),
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
@@ -521,7 +531,8 @@ class _PoketCosmosResidentIslandViewState
                                     const SizedBox(width: 14),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Row(
                                             children: [
@@ -536,19 +547,24 @@ class _PoketCosmosResidentIslandViewState
                                               if (isCurrent) ...[
                                                 const SizedBox(width: 8),
                                                 Container(
-                                                  padding: const EdgeInsets.symmetric(
-                                                      horizontal: 6, vertical: 2),
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 6,
+                                                      vertical: 2),
                                                   decoration: BoxDecoration(
-                                                    color: const Color(0xFF16A34A),
+                                                    color:
+                                                        const Color(0xFF16A34A),
                                                     borderRadius:
-                                                        BorderRadius.circular(6),
+                                                        BorderRadius.circular(
+                                                            6),
                                                   ),
                                                   child: Text(
                                                     'YOUR RESIDENCE',
                                                     style: GoogleFonts.outfit(
                                                       color: Colors.white,
                                                       fontSize: 9,
-                                                      fontWeight: FontWeight.bold,
+                                                      fontWeight:
+                                                          FontWeight.bold,
                                                     ),
                                                   ),
                                                 ),
@@ -771,8 +787,11 @@ class _PoketCosmosResidentIslandViewState
                               ? _myPlot.plotNumber
                               : null);
                       if (raw == null) return null;
-                      if (raw > PoketCosmosAllocationService.maxPlotsPerIsland) {
-                        return PoketCosmosAllocationService.parseGlobalPlotNumber(raw)['localPlotNumber'] as int;
+                      if (raw >
+                          PoketCosmosAllocationService.maxPlotsPerIsland) {
+                        return PoketCosmosAllocationService
+                                .parseGlobalPlotNumber(raw)['localPlotNumber']
+                            as int;
                       }
                       return raw;
                     }(),
@@ -793,7 +812,8 @@ class _PoketCosmosResidentIslandViewState
                         isMe: false,
                         hasActiveShield: true,
                         statusMessage: tappedPlot.postalPinCode,
-                        isPocketRobo: PocketRobotService.isRobotId(tappedPlot.userId),
+                        isPocketRobo:
+                            PocketRobotService.isRobotId(tappedPlot.userId),
                         hp: 100,
                         maxHp: 100,
                         planetCode: plotColony.code,
@@ -970,8 +990,8 @@ class _PoketCosmosResidentIslandViewState
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0284C7),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 11),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                     side: const BorderSide(
@@ -1012,8 +1032,8 @@ class _PoketCosmosResidentIslandViewState
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFEF4444),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 11),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                     side: const BorderSide(

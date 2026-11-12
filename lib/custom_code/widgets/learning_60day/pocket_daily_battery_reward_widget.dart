@@ -166,7 +166,7 @@ class _PocketDailyBatteryRewardWidgetState
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'VIP Instant Reward! +50 Pocket Score granted without ads (Total: $newScore PS) ⚡✨',
+                    'VIP Instant Reward! +30 Pocket Score granted without ads (Total: $newScore PS) ⚡✨',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -197,7 +197,7 @@ class _PocketDailyBatteryRewardWidgetState
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Battery recharged! +50 Pocket Score added (Total: $newScore PS) 🔋✨',
+                      'Battery recharged! +30 Pocket Score added (Total: $newScore PS) 🔋✨',
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -294,7 +294,7 @@ class _PocketDailyBatteryRewardWidgetState
         batteryColor = const Color(0xFF10B981);
       }
       topTitle = _isVip ? 'Claim Reward' : 'Watch Reward';
-      bottomSub = '+50 PS (${_dailyCount}/10)';
+      bottomSub = '+30 PS (${_dailyCount}/10)';
       subColor = const Color(0xFFFFD700); // Yellow/Golden score callout
     }
 

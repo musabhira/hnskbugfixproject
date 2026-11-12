@@ -1498,7 +1498,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
             children: [
               statusItem,
               PocketUnifiedDualNativeAdWidget(
-                slotIndex: index ~/ 3,
+                slotIndex: ((index + 1) ~/ 3) - 1,
                 placement: PocketAdPlacement.vibes,
                 margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               ),

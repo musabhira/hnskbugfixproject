@@ -1362,7 +1362,7 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
             children: [
               stageCard,
               PocketUnifiedDualNativeAdWidget(
-                slotIndex: (index + 1) ~/ 3,
+                slotIndex: ((index + 1) ~/ 3) - 1,
                 placement: PocketAdPlacement.target,
                 isCompact: true,
                 margin: const EdgeInsets.only(bottom: 12),

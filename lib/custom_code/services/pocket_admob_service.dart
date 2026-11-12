@@ -489,7 +489,7 @@ class PocketAdMobService {
           150;
     }
 
-    final newScore = currentScore + 50;
+    final newScore = currentScore + 30;
 
     // 1. Persist to universal and user-scoped keys so UI updates instantly everywhere
     await prefs.setInt('user_pocket_score', newScore);
@@ -1085,7 +1085,7 @@ class PocketAdMobService {
     if (vip && !forceShowForTesting) {
       debugPrint(
           '👑 [PocketAdMob] VIP user bypassed rewarded ad, granting bonus directly.');
-      onUserEarnedReward(RewardItem(50, 'PocketScore'));
+      onUserEarnedReward(RewardItem(30, 'PocketScore'));
       onAdClosed?.call();
       return;
     }
@@ -1211,24 +1211,24 @@ class PocketAdMobService {
         );
         if (watched == true) {
           await _recordRewardedAdCompletion();
-          onUserEarnedReward(RewardItem(50, 'bonus_pocket_score'));
+          onUserEarnedReward(RewardItem(30, 'bonus_pocket_score'));
         }
       }
       onAdClosed?.call();
       return;
     }
 
-    // 🎯 User Directive: Dual Network 2-by-2 Batching (Meta 2 -> AdMob 2 -> Meta 2 -> AdMob 2...)
+    // 🎯 10 Daily Rewarded Videos: 5 Google AdMob + 5 Meta Audience Network
     final currentRewardedCount = await getRewardedDailyCount();
-    final bool preferMeta = ((currentRewardedCount ~/ 2) % 2 == 0);
+    final bool preferMeta = (currentRewardedCount % 2 == 1);
 
     if (preferMeta) {
       debugPrint(
-          '🎬 [DualRewarded] Prioritizing Meta Rewarded Video (daily count: $currentRewardedCount, slot: ${(currentRewardedCount % 2) + 1}/2)');
+          '🎬 [DualRewarded] Prioritizing Meta Rewarded Video (slot ${currentRewardedCount + 1}/10, Meta slot ${(currentRewardedCount ~/ 2) + 1}/5)');
       final metaShown = await PocketMetaAdsService.instance.showRewardedAd(
         onUserEarnedReward: () async {
           await _recordRewardedAdCompletion();
-          onUserEarnedReward(RewardItem(50, 'bonus_pocket_score'));
+          onUserEarnedReward(RewardItem(30, 'bonus_pocket_score'));
         },
       );
       if (metaShown) {
@@ -1379,7 +1379,7 @@ class PocketAdMobService {
       final metaShown = await PocketMetaAdsService.instance.showRewardedAd(
         onUserEarnedReward: () async {
           await _recordRewardedAdCompletion();
-          onUserEarnedReward(RewardItem(50, 'bonus_pocket_score'));
+          onUserEarnedReward(RewardItem(30, 'bonus_pocket_score'));
         },
       );
       if (metaShown) {
@@ -3742,10 +3742,17 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
   bool _isLoaded = false;
   bool _isVip = false;
   bool _hasRetriedWithFallback = false;
+  bool _tryMetaFallback = false;
 
   @override
   void initState() {
     super.initState();
+    // ⚡ Fast synchronous check: if confirmed VIP, suppress immediately
+    if (PocketAdMobService.instance.isUserVipSync()) {
+      _isVip = true;
+      return;
+    }
+
     // ⚡ Try immediate instant render from Preloaded Ad Cache
     final preloaded = PocketAdPreloadManager.instance
         .consumePreloadedAd(PocketAdPlacement.banner);
@@ -3803,7 +3810,13 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
             _loadBanner(fallbackProdId);
             return;
           }
-          if (mounted) setState(() => _isLoaded = false);
+          // Seamless Tier-2 Fallback to Meta Audience Network Banner
+          if (mounted) {
+            setState(() {
+              _isLoaded = false;
+              _tryMetaFallback = true;
+            });
+          }
         },
         onAdImpression: (_) {
           PocketAdMobService.instance._recordAdImpression('standard_banner');
@@ -3836,8 +3849,12 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
       );
     }
 
-    // 📢 User Directive: If the ad did not load/fill, do NOT show test ad or placeholder box.
-    // Instead, collapse cleanly so the screen appears completely normal without ads.
+    // 🔄 Seamless Meta Audience Network Banner Fallback when AdMob has no fill
+    if (_tryMetaFallback) {
+      return PocketMetaBannerWidget();
+    }
+
+    // 📢 User Directive: If neither loaded, collapse cleanly without placeholder box.
     return const SizedBox.shrink();
   }
 }

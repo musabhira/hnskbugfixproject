@@ -39,6 +39,13 @@ class PocketMetaAdsService {
   static const String androidRewardedPlacementId = '1618397890087770_1618398046754421';
   static const String iosRewardedPlacementId = '1618397890087770_1618398050087754';
 
+  static String lastStatus = 'Not requested';
+  static String lastError = 'None';
+  static int lastErrorCode = 0;
+  static DateTime? lastEventTime;
+  static bool get isRewardedLoaded => instance._isRewardedLoaded;
+  static bool get isInterstitialLoaded => instance._isInterstitialLoaded;
+
   bool _isInitialized = false;
   bool _isTestMode = kDebugMode;
 
@@ -113,10 +120,16 @@ class PocketMetaAdsService {
       ad.listener = InterstitialAdListener(
         onLoaded: () {
           _isInterstitialLoaded = true;
+          lastStatus = 'Interstitial Loaded';
+          lastEventTime = DateTime.now();
           if (kDebugMode) print('✅ Meta Interstitial Ad loaded');
         },
         onError: (code, message) {
           _isInterstitialLoaded = false;
+          lastStatus = 'Interstitial Error $code';
+          lastError = 'Interstitial ($code): $message';
+          lastErrorCode = code;
+          lastEventTime = DateTime.now();
           if (kDebugMode) print('⚠️ Meta Interstitial Ad error: code=$code, msg=$message');
         },
         onDismissed: () {
@@ -161,10 +174,16 @@ class PocketMetaAdsService {
       ad.listener = RewardedAdListener(
         onLoaded: () {
           _isRewardedLoaded = true;
+          lastStatus = 'Rewarded Loaded';
+          lastEventTime = DateTime.now();
           if (kDebugMode) print('✅ Meta Rewarded Ad loaded');
         },
         onError: (code, message) {
           _isRewardedLoaded = false;
+          lastStatus = 'Rewarded Error $code';
+          lastError = 'Rewarded ($code): $message';
+          lastErrorCode = code;
+          lastEventTime = DateTime.now();
           if (kDebugMode) print('⚠️ Meta Rewarded Ad error: code=$code, msg=$message');
         },
         onVideoClosed: () {
@@ -346,7 +365,15 @@ class _PocketMetaNativeFeedCardState extends State<PocketMetaNativeFeedCard> {
             buttonTitleColor: Colors.white,
             buttonBorderColor: const Color(0xFF38BDF8),
             listener: NativeAdListener(
+              onLoaded: () {
+                PocketMetaAdsService.lastStatus = 'Native Feed Loaded';
+                PocketMetaAdsService.lastEventTime = DateTime.now();
+              },
               onError: (code, message) {
+                PocketMetaAdsService.lastStatus = 'Native Feed Error $code';
+                PocketMetaAdsService.lastError = 'Native ($code): $message';
+                PocketMetaAdsService.lastErrorCode = code;
+                PocketMetaAdsService.lastEventTime = DateTime.now();
                 if (kDebugMode) print('Meta Native Ad error: code=$code, msg=$message');
                 if (mounted) setState(() => _hasError = true);
                 widget.onError?.call();
@@ -436,7 +463,15 @@ class _PocketMetaNativeBannerWidgetState extends State<PocketMetaNativeBannerWid
             buttonTitleColor: Colors.white,
             buttonBorderColor: Colors.transparent,
             listener: NativeAdListener(
+              onLoaded: () {
+                PocketMetaAdsService.lastStatus = 'Native Banner Loaded';
+                PocketMetaAdsService.lastEventTime = DateTime.now();
+              },
               onError: (code, message) {
+                PocketMetaAdsService.lastStatus = 'Native Banner Error $code';
+                PocketMetaAdsService.lastError = 'Native Banner ($code): $message';
+                PocketMetaAdsService.lastErrorCode = code;
+                PocketMetaAdsService.lastEventTime = DateTime.now();
                 if (mounted) setState(() => _hasError = true);
                 widget.onError?.call();
               },

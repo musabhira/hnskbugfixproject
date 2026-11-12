@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_meta_ads_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 
 /// 🎬 Interactive Alert Modal for Daily Rewarded Video (+50 Pocket Score) with VIP Card CTA
@@ -172,7 +173,7 @@ class _PocketRewardedScoreAlertModalState
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        '+50 Pocket Score added! Total: $updatedPS PS 🛡️',
+                        '+30 Pocket Score added! Total: $updatedPS PS 🛡️',
                         style: const TextStyle(
                             fontWeight: FontWeight.bold, color: Colors.white),
                       ),
@@ -352,7 +353,7 @@ class _PocketRewardedScoreAlertModalState
 
                 // Description
                 Text(
-                  'Watch a short sponsor video to earn +50 Pocket Score instantly! Daily energy provides up to 10 videos (+500 PS) for Citadels, games & tools.',
+                  'Watch a short sponsor video to earn +30 Pocket Score instantly! Daily energy provides up to 10 videos (5 Google + 5 Meta, +300 PS total) for Citadels, games & tools.',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     color: Colors.white70,
@@ -457,45 +458,83 @@ class _PocketRewardedScoreAlertModalState
                 const SizedBox(height: 18),
 
                 // 🎬 Main Watch Video Action Button
-                if (_dailyCount < 5)
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _cooldownSeconds > 0
-                          ? const Color(0xFF334155)
-                          : const Color(0xFF10B981),
-                      foregroundColor: Colors.white,
-                      elevation: _cooldownSeconds > 0 ? 0 : 4,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                    onPressed: _isLoading || _isWatching ? null : _watchAdNow,
-                    icon: _isWatching
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white),
-                          )
-                        : Icon(
-                            _cooldownSeconds > 0
-                                ? Icons.timer_outlined
-                                : Icons.play_arrow_rounded,
-                            size: 20,
+                if (_dailyCount < 10)
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _cooldownSeconds > 0
+                              ? const Color(0xFF334155)
+                              : const Color(0xFF10B981),
+                          foregroundColor: Colors.white,
+                          elevation: _cooldownSeconds > 0 ? 0 : 4,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
                           ),
-                    label: Text(
-                      _isWatching
-                          ? 'Loading Video...'
-                          : (_cooldownSeconds > 0
-                              ? 'Next Video in ${_cooldownSeconds}s ⏳'
-                              : 'WATCH VIDEO (+50 PS) 🎬'),
-                      style: GoogleFonts.outfit(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.3,
+                        ),
+                        onPressed: _isLoading || _isWatching ? null : _watchAdNow,
+                        icon: _isWatching
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: Colors.white),
+                              )
+                            : Icon(
+                                _cooldownSeconds > 0
+                                    ? Icons.timer_outlined
+                                    : Icons.play_arrow_rounded,
+                                size: 20,
+                              ),
+                        label: Text(
+                          _isWatching
+                              ? 'Loading Video...'
+                              : (_cooldownSeconds > 0
+                                  ? 'Next Video in ${_cooldownSeconds}s ⏳'
+                                  : 'WATCH VIDEO (+30 PS) 🎬'),
+                          style: GoogleFonts.outfit(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 8),
+                      // Network & Slot Details
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            (_dailyCount % 2 == 1)
+                                ? Icons.more_vert_rounded
+                                : Icons.more_horiz_rounded,
+                            size: 14,
+                            color: Colors.white54,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            (_dailyCount % 2 == 1)
+                                ? 'Next: Meta Audience Network (Slot ${(_dailyCount ~/ 2) + 1}/5)'
+                                : 'Next: Google AdMob Network (Slot ${(_dailyCount ~/ 2) + 1}/5)',
+                            style: GoogleFonts.outfit(
+                              fontSize: 11,
+                              color: const Color(0xFFFFD700),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Live Status: AdMob 🟢 Active • Meta ${PocketMetaAdsService.lastErrorCode != 0 ? "⚠️ Code ${PocketMetaAdsService.lastErrorCode}" : "🟢 Ready"}',
+                        style: GoogleFonts.inter(
+                          fontSize: 10,
+                          color: Colors.white38,
+                        ),
+                      ),
+                    ],
                   )
                 else
                   Container(
@@ -512,7 +551,7 @@ class _PocketRewardedScoreAlertModalState
                             color: Color(0xFF10B981), size: 18),
                         const SizedBox(width: 8),
                         Text(
-                          'Daily Max Claimed (+250 PS) 🌟',
+                          'Daily Max Claimed (+300 PS) 🌟',
                           style: GoogleFonts.outfit(
                             color: const Color(0xFF10B981),
                             fontSize: 13,

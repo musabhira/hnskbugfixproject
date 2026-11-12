@@ -102,7 +102,7 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                   children: [
                     Text('🎉', style: TextStyle(fontSize: 18)),
                     SizedBox(width: 8),
-                    Text('+50 Pocket Score granted! 🛡️',
+                    Text('+30 Pocket Score granted! 🛡️',
                         style: TextStyle(fontWeight: FontWeight.bold)),
                   ],
                 ),
@@ -133,7 +133,7 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
           backgroundColor: const Color(0xFFEF4444),
           behavior: SnackBarBehavior.floating,
           action: SnackBarAction(
-            label: '📺 +50 PS',
+            label: '📺 +30 PS',
             textColor: const Color(0xFFFFD700),
             onPressed: _watchRewardedAd,
           ),
@@ -273,7 +273,7 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                             const Text('📺', style: TextStyle(fontSize: 11)),
                             const SizedBox(width: 3),
                             Text(
-                              _rewardedRemaining > 0 ? '+50 PS' : '10/10 Done',
+                              _rewardedRemaining > 0 ? '+30 PS' : '10/10 Done',
                               style: GoogleFonts.outfit(
                                 color: _rewardedRemaining > 0
                                     ? const Color(0xFF34D399)
@@ -363,7 +363,7 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Watch Video · Earn +50 PS Free',
+                        'Watch Video · Earn +30 PS Free',
                         style: GoogleFonts.outfit(
                           color: Colors.white,
                           fontSize: 13.5,
@@ -410,7 +410,7 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                               strokeWidth: 2, color: Colors.white),
                         )
                       : Text(
-                          _rewardedRemaining > 0 ? 'CLAIM +50' : 'CLAIMED',
+                          _rewardedRemaining > 0 ? 'CLAIM +30' : 'CLAIMED',
                           style: GoogleFonts.outfit(
                             fontWeight: FontWeight.w800,
                             fontSize: 11.5,
