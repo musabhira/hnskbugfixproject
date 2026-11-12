@@ -322,10 +322,9 @@ class PocketMateService {
           }
         }
 
-        if (convId != null && convId.isNotEmpty) {
+        if (myId.isNotEmpty && senderId.isNotEmpty) {
           try {
             await _supabase.from('messages').insert({
-              'conversation_id': convId,
               'sender_id': myId,
               'receiver_id': senderId,
               'content': '🎉 You are now Mates! Let\'s practice English!',
@@ -563,7 +562,7 @@ class PocketMateService {
               final resolvedName = ContactsNameService().getDisplayName(userId: receiverId, fallbackName: 'Learner');
               final profileRes = await _supabase
                   .from('profile')
-                  .select('name, display_name, profile_image_url, profile_picture_url, avatar_url')
+                  .select('name, display_name, profile_image_url')
                   .or('user_id.eq.$receiverId,id.eq.$receiverId')
                   .maybeSingle();
 
@@ -578,9 +577,7 @@ class PocketMateService {
               }
 
               if (profileRes != null) {
-                req['receiver_profile_image'] = profileRes['profile_image_url'] ??
-                    profileRes['profile_picture_url'] ??
-                    profileRes['avatar_url'];
+                req['receiver_profile_image'] = profileRes['profile_image_url'];
               }
             } catch (_) {
               req['receiver_name'] = 'Pocket Mate';
@@ -665,18 +662,16 @@ class PocketMateService {
               final prof = await _supabase
                   .from('profile')
                   .select(
-                      'name, display_name, profile_picture_url, avatar_url, avatar_config, day, learning_day, level, pocket_score')
-                  .eq('user_id', senderId)
+                      'name, display_name, profile_image_url, avatar_config, day, learning_day, level, pocket_score')
+                  .or('user_id.eq.$senderId,id.eq.$senderId')
                   .maybeSingle();
               if (prof != null) {
                 map['sender_name'] = prof['display_name'] ??
                     prof['name'] ??
                     map['sender_name'] ??
                     'Poket Mate';
-                map['sender_profile_image'] =
-                    prof['profile_picture_url'] ?? prof['avatar_url'];
-                map['avatar_url'] =
-                    prof['avatar_url'] ?? prof['profile_picture_url'];
+                map['sender_profile_image'] = prof['profile_image_url'];
+                map['avatar_url'] = prof['profile_image_url'];
                 map['avatar_config'] = prof['avatar_config'];
                 final rawDay = (prof['day'] as num?)?.toInt() ??
                     (prof['learning_day'] as num?)?.toInt() ??
@@ -827,16 +822,14 @@ class PocketMateService {
           final resolvedName = ContactsNameService().getDisplayName(userId: mateId, fallbackName: '');
           final profileRes = await _supabase
               .from('profile')
-              .select('name, display_name, profile_picture_url, profile_image_url, avatar_url, day, learning_day, level, pocket_score')
-              .eq('user_id', mateId)
+              .select('name, display_name, profile_image_url, day, learning_day, level, pocket_score')
+              .or('user_id.eq.$mateId,id.eq.$mateId')
               .maybeSingle();
 
           String displayName = resolvedName.isNotEmpty
               ? resolvedName
               : (profileRes?['display_name'] ?? profileRes?['name'] ?? 'Pocket Mate');
-          String? avatarUrl = profileRes?['profile_picture_url'] ??
-              profileRes?['profile_image_url'] ??
-              profileRes?['avatar_url'];
+          String? avatarUrl = profileRes?['profile_image_url'];
           final rawDay = (profileRes?['day'] as num?)?.toInt() ??
               (profileRes?['learning_day'] as num?)?.toInt() ??
               (profileRes?['level'] as num?)?.toInt() ??

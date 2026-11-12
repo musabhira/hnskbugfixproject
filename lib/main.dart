@@ -87,7 +87,8 @@ void main() {
         debugPrint('Main: PocketLanguageService initialization error: $e');
       }
 
-      debugPrint('Main: Critical initialization complete. Mounting UI immediately.');
+      debugPrint(
+          'Main: Critical initialization complete. Mounting UI immediately.');
     } catch (e) {
       debugPrint('Core service initialization error: $e');
     }

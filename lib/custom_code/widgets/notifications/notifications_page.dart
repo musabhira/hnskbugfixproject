@@ -61,23 +61,43 @@ class _NotificationsPageState extends State<NotificationsPage> {
         final sId = r['sender_id']?.toString() ?? r['source_id']?.toString() ?? '';
 
         if (sName.isEmpty || sName == 'Pocket Mate' || sName == 'Poket Mate') {
-          // Attempt fast lookup from users table
+          // 1. Primary lookup from profile table
           try {
             if (sId.isNotEmpty && !PocketRobotService.isRobotId(sId)) {
-              final u = await _supabase
-                  .from('users')
-                  .select('display_name, name, username, photo_url, avatar_url')
-                  .eq('id', sId)
+              final prof = await _supabase
+                  .from('profile')
+                  .select('name, display_name, profile_image_url')
+                  .or('user_id.eq.$sId,id.eq.$sId')
                   .maybeSingle();
-              if (u != null) {
-                final d = u['display_name'] ?? u['name'] ?? u['username'];
+              if (prof != null) {
+                final d = prof['display_name'] ?? prof['name'];
                 if (d != null && d.toString().trim().isNotEmpty) {
                   sName = d.toString().trim();
                 }
-                sImg ??= u['photo_url'] ?? u['avatar_url'];
+                sImg ??= prof['profile_image_url'];
               }
             }
           } catch (_) {}
+
+          // 2. Secondary fallback from users table
+          if (sName.isEmpty || sName == 'Pocket Mate' || sName == 'Poket Mate') {
+            try {
+              if (sId.isNotEmpty && !PocketRobotService.isRobotId(sId)) {
+                final u = await _supabase
+                    .from('users')
+                    .select('display_name, name, username, photo_url, avatar_url')
+                    .eq('id', sId)
+                    .maybeSingle();
+                if (u != null) {
+                  final d = u['display_name'] ?? u['name'] ?? u['username'];
+                  if (d != null && d.toString().trim().isNotEmpty) {
+                    sName = d.toString().trim();
+                  }
+                  sImg ??= u['photo_url'] ?? u['avatar_url'];
+                }
+              }
+            } catch (_) {}
+          }
         }
         if (sName.isEmpty) sName = 'Poket Mate';
 

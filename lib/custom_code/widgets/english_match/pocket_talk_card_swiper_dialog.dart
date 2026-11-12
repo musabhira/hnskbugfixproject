@@ -9,7 +9,6 @@ import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart'
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 import 'package:pocket_mates_app/custom_code/widgets/main_profile_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
@@ -535,24 +534,45 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
       final nowIso = DateTime.now().toIso8601String();
       const pactAnnouncement =
           '⚡ PocketTalk Request Sent 🤝 Waiting for acceptance (4-Day Spoken Pact • 15 mins/day)';
+      final u1 = myId.compareTo(candidate.userId) < 0 ? myId : candidate.userId;
+      final u2 = myId.compareTo(candidate.userId) < 0 ? candidate.userId : myId;
+
       final existing = await _supabase
           .from('conversations')
           .select('id')
-          .or('and(user1_id.eq.$myId,user2_id.eq.${candidate.userId}),and(user1_id.eq.${candidate.userId},user2_id.eq.$myId)')
+          .or('and(user1_id.eq.$u1,user2_id.eq.$u2),and(user1_id.eq.$u2,user2_id.eq.$u1)')
           .maybeSingle();
       dynamic convId = existing != null ? existing['id'] : null;
       if (existing == null) {
-        final inserted = await _supabase.from('conversations').insert({
-          'user1_id': myId,
-          'user2_id': candidate.userId,
-          'last_message': pactAnnouncement,
-          'last_message_time': nowIso,
-          'last_sender_id': myId,
-          'unread_count': 0,
-          'updated_at': nowIso,
-          'is_group': false,
-        }).select('id').maybeSingle();
-        if (inserted != null) convId = inserted['id'];
+        try {
+          final inserted = await _supabase.from('conversations').insert({
+            'user1_id': u1,
+            'user2_id': u2,
+            'last_message': pactAnnouncement,
+            'last_message_time': nowIso,
+            'last_sender_id': myId,
+            'unread_count': 0,
+            'updated_at': nowIso,
+            'is_group': false,
+          }).select('id').maybeSingle();
+          if (inserted != null) convId = inserted['id'];
+        } catch (_) {
+          // If concurrent insert or conflict occurred, fetch or update existing
+          final fallback = await _supabase
+              .from('conversations')
+              .select('id')
+              .or('and(user1_id.eq.$u1,user2_id.eq.$u2),and(user1_id.eq.$u2,user2_id.eq.$u1)')
+              .maybeSingle();
+          if (fallback != null) {
+            convId = fallback['id'];
+            await _supabase.from('conversations').update({
+              'last_message': pactAnnouncement,
+              'last_message_time': nowIso,
+              'last_sender_id': myId,
+              'updated_at': nowIso,
+            }).eq('id', convId);
+          }
+        }
       } else {
         await _supabase.from('conversations').update({
           'last_message': pactAnnouncement,
@@ -562,13 +582,12 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
         }).eq('id', existing['id']);
       }
 
-      // Insert announcement row into messages table
+      // Insert announcement row into messages table (without non-existent conversation_id column)
       try {
         final pactId = (myId.compareTo(candidate.userId) < 0)
             ? 'pact_${myId}_${candidate.userId}'
             : 'pact_${candidate.userId}_$myId';
         await _supabase.from('messages').insert({
-          if (convId != null) 'conversation_id': convId,
           'sender_id': myId,
           'receiver_id': candidate.userId,
           'content': pactAnnouncement,
@@ -584,7 +603,9 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
             'timestamp': nowIso,
           },
         });
-      } catch (_) {}
+      } catch (msgErr) {
+        debugPrint('Error inserting pocket_talk message: $msgErr');
+      }
     } catch (_) {}
 
     if (mounted) {

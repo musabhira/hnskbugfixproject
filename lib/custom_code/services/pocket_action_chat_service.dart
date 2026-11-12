@@ -22,6 +22,63 @@ class PocketActionChatService {
     ).hasMatch(id);
   }
 
+  /// Safely insert or update conversation row without triggering duplicate key 23505 errors
+  static Future<void> _safeUpsertConversation({
+    required String userA,
+    required String userB,
+    required String lastMessage,
+    required String lastSenderId,
+    int unreadIncrement = 1,
+  }) async {
+    if (!_isValidUuid(userA) || !_isValidUuid(userB)) return;
+    try {
+      final nowIso = DateTime.now().toUtc().toIso8601String();
+      final u1 = userA.compareTo(userB) < 0 ? userA : userB;
+      final u2 = userA.compareTo(userB) < 0 ? userB : userA;
+
+      // 1. Try to find existing conversation
+      final existing = await _supabase
+          .from('conversations')
+          .select('id')
+          .or('and(user1_id.eq.$u1,user2_id.eq.$u2),and(user1_id.eq.$u2,user2_id.eq.$u1)')
+          .limit(1);
+
+      if ((existing as List).isNotEmpty) {
+        final convId = existing.first['id'];
+        await _supabase.from('conversations').update({
+          'last_message': lastMessage,
+          'last_message_time': nowIso,
+          'updated_at': nowIso,
+          'last_sender_id': lastSenderId,
+        }).eq('id', convId);
+      } else {
+        // Try insert with normalized user1_id (LEAST), user2_id (GREATEST)
+        try {
+          await _supabase.from('conversations').insert({
+            'user1_id': u1,
+            'user2_id': u2,
+            'last_message': lastMessage,
+            'last_message_time': nowIso,
+            'updated_at': nowIso,
+            'last_sender_id': lastSenderId,
+            'unread_count': unreadIncrement,
+            'is_group': false,
+          });
+        } catch (_) {
+          // If conflict/duplicate constraint, update existing
+          await _supabase.from('conversations').update({
+            'last_message': lastMessage,
+            'last_message_time': nowIso,
+            'updated_at': nowIso,
+            'last_sender_id': lastSenderId,
+          }).or('and(user1_id.eq.$u1,user2_id.eq.$u2),and(user1_id.eq.$u2,user2_id.eq.$u1)');
+        }
+      }
+    } catch (e) {
+      debugPrint('safeUpsertConversation non-fatal: $e');
+    }
+  }
+
   // =========================================================================
   // 1. ATTACK ACTION
   // =========================================================================
@@ -115,32 +172,13 @@ class PocketActionChatService {
           debugPrint('Error inserting attack message into Supabase: $e');
         }
 
-        // Upsert conversation row
-        try {
-          final updateRes = await _supabase.from('conversations').update({
-            'last_message': displaySummary,
-            'last_message_time': DateTime.now().toUtc().toIso8601String(),
-            'updated_at': DateTime.now().toUtc().toIso8601String(),
-            'last_sender_id': attackerId,
-          }).or(
-            'and(user1_id.eq.$attackerId,user2_id.eq.$defenderId),and(user1_id.eq.$defenderId,user2_id.eq.$attackerId)',
-          ).select();
-
-          if (updateRes.isEmpty) {
-            await _supabase.from('conversations').insert({
-              'user1_id': attackerId,
-              'user2_id': defenderId,
-              'last_message': displaySummary,
-              'last_message_time': DateTime.now().toUtc().toIso8601String(),
-              'updated_at': DateTime.now().toUtc().toIso8601String(),
-              'last_sender_id': attackerId,
-              'unread_count': 1,
-              'is_group': false,
-            });
-          }
-        } catch (e) {
-          debugPrint('Error updating conversation for attack: $e');
-        }
+        // Upsert conversation row safely
+        await _safeUpsertConversation(
+          userA: attackerId,
+          userB: defenderId,
+          lastMessage: displaySummary,
+          lastSenderId: attackerId,
+        );
 
         // Send notification
         try {
@@ -232,32 +270,13 @@ class PocketActionChatService {
           debugPrint('Error inserting attack challenge text message: $e');
         }
 
-        // 2. Update conversation tile preview
-        try {
-          final updateRes = await _supabase.from('conversations').update({
-            'last_message': messageText.trim(),
-            'last_message_time': nowIso,
-            'updated_at': nowIso,
-            'last_sender_id': attackerId,
-          }).or(
-            'and(user1_id.eq.$attackerId,user2_id.eq.$defenderId),and(user1_id.eq.$defenderId,user2_id.eq.$attackerId)',
-          ).select();
-
-          if (updateRes.isEmpty) {
-            await _supabase.from('conversations').insert({
-              'user1_id': attackerId,
-              'user2_id': defenderId,
-              'last_message': messageText.trim(),
-              'last_message_time': nowIso,
-              'updated_at': nowIso,
-              'last_sender_id': attackerId,
-              'unread_count': 1,
-              'is_group': false,
-            });
-          }
-        } catch (e) {
-          debugPrint('Error updating conversation for challenge text: $e');
-        }
+        // 2. Update conversation tile preview safely
+        await _safeUpsertConversation(
+          userA: attackerId,
+          userB: defenderId,
+          lastMessage: messageText.trim(),
+          lastSenderId: attackerId,
+        );
       }
 
       // 3. If interacting with a Robot, save locally to robot history
@@ -355,32 +374,13 @@ class PocketActionChatService {
           debugPrint('Error inserting fight message into Supabase: $e');
         }
 
-        // Upsert conversation row
-        try {
-          final updateRes = await _supabase.from('conversations').update({
-            'last_message': displaySummary,
-            'last_message_time': DateTime.now().toUtc().toIso8601String(),
-            'updated_at': DateTime.now().toUtc().toIso8601String(),
-            'last_sender_id': challengerId,
-          }).or(
-            'and(user1_id.eq.$challengerId,user2_id.eq.$opponentId),and(user1_id.eq.$opponentId,user2_id.eq.$challengerId)',
-          ).select();
-
-          if (updateRes.isEmpty) {
-            await _supabase.from('conversations').insert({
-              'user1_id': challengerId,
-              'user2_id': opponentId,
-              'last_message': displaySummary,
-              'last_message_time': DateTime.now().toUtc().toIso8601String(),
-              'updated_at': DateTime.now().toUtc().toIso8601String(),
-              'last_sender_id': challengerId,
-              'unread_count': 1,
-              'is_group': false,
-            });
-          }
-        } catch (e) {
-          debugPrint('Error updating conversation for fight: $e');
-        }
+        // Upsert conversation row safely
+        await _safeUpsertConversation(
+          userA: challengerId,
+          userB: opponentId,
+          lastMessage: displaySummary,
+          lastSenderId: challengerId,
+        );
       }
 
       if (PocketRobotService.isRobotId(opponentId)) {
@@ -467,32 +467,13 @@ class PocketActionChatService {
           debugPrint('Error inserting mate_request message into Supabase: $e');
         }
 
-        // Upsert conversation row
-        try {
-          final updateRes = await _supabase.from('conversations').update({
-            'last_message': displaySummary,
-            'last_message_time': DateTime.now().toUtc().toIso8601String(),
-            'updated_at': DateTime.now().toUtc().toIso8601String(),
-            'last_sender_id': senderId,
-          }).or(
-            'and(user1_id.eq.$senderId,user2_id.eq.$receiverId),and(user1_id.eq.$receiverId,user2_id.eq.$senderId)',
-          ).select();
-
-          if (updateRes.isEmpty) {
-            await _supabase.from('conversations').insert({
-              'user1_id': senderId,
-              'user2_id': receiverId,
-              'last_message': displaySummary,
-              'last_message_time': DateTime.now().toUtc().toIso8601String(),
-              'updated_at': DateTime.now().toUtc().toIso8601String(),
-              'last_sender_id': senderId,
-              'unread_count': 1,
-              'is_group': false,
-            });
-          }
-        } catch (e) {
-          debugPrint('Error updating conversation for mate request: $e');
-        }
+        // Upsert conversation row safely
+        await _safeUpsertConversation(
+          userA: senderId,
+          userB: receiverId,
+          lastMessage: displaySummary,
+          lastSenderId: senderId,
+        );
       }
 
       if (PocketRobotService.isRobotId(receiverId)) {
@@ -551,6 +532,13 @@ class PocketActionChatService {
       if (notif != null) {
         final senderId = notif['sender_id']?.toString() ?? myId;
         final receiverId = notif['user_id']?.toString() ?? otherUserId;
+        
+        // Supabase RLS enforces auth.uid() == sender_id.
+        // If myId is not the sender, only the sender can insert their historical message into Supabase.
+        if (senderId != myId) {
+          return;
+        }
+
         final notifStatus = notif['status']?.toString() ?? 'pending';
         final createdAt = notif['created_at']?.toString() ?? DateTime.now().toUtc().toIso8601String();
 
@@ -559,7 +547,7 @@ class PocketActionChatService {
           final profileRes = await _supabase
               .from('profile')
               .select('name')
-              .eq('user_id', senderId)
+              .or('user_id.eq.$senderId,id.eq.$senderId')
               .maybeSingle();
           if (profileRes != null && profileRes['name'] != null) {
             sName = profileRes['name'].toString();
@@ -655,13 +643,19 @@ class PocketActionChatService {
         pactId = pactIdCandidate;
       }
 
+      // Supabase RLS enforces auth.uid() == sender_id.
+      // If myId is not the sender, only the sender can insert their historical message into Supabase.
+      if (senderId != myId) {
+        return;
+      }
+
       String sName = 'Pocket Mate';
       String? sAvatar;
       try {
         final profileRes = await _supabase
             .from('profile')
             .select('name, profile_image_url')
-            .eq('user_id', senderId)
+            .or('user_id.eq.$senderId,id.eq.$senderId')
             .maybeSingle();
         if (profileRes != null) {
           if (profileRes['name'] != null) sName = profileRes['name'].toString();
@@ -760,32 +754,13 @@ class PocketActionChatService {
           debugPrint('Error inserting pocket_talk message into Supabase: $e');
         }
 
-        // Upsert conversation row
-        try {
-          final updateRes = await _supabase.from('conversations').update({
-            'last_message': displaySummary,
-            'last_message_time': DateTime.now().toUtc().toIso8601String(),
-            'updated_at': DateTime.now().toUtc().toIso8601String(),
-            'last_sender_id': senderId,
-          }).or(
-            'and(user1_id.eq.$senderId,user2_id.eq.$receiverId),and(user1_id.eq.$receiverId,user2_id.eq.$senderId)',
-          ).select();
-
-          if (updateRes.isEmpty) {
-            await _supabase.from('conversations').insert({
-              'user1_id': senderId,
-              'user2_id': receiverId,
-              'last_message': displaySummary,
-              'last_message_time': DateTime.now().toUtc().toIso8601String(),
-              'updated_at': DateTime.now().toUtc().toIso8601String(),
-              'last_sender_id': senderId,
-              'unread_count': 1,
-              'is_group': false,
-            });
-          }
-        } catch (e) {
-          debugPrint('Error updating conversation for pocket talk: $e');
-        }
+        // Upsert conversation row safely
+        await _safeUpsertConversation(
+          userA: senderId,
+          userB: receiverId,
+          lastMessage: displaySummary,
+          lastSenderId: senderId,
+        );
       }
 
       if (PocketRobotService.isRobotId(receiverId)) {

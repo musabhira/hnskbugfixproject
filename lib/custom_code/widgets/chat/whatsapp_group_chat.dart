@@ -37,7 +37,6 @@ import 'package:pocket_mates_app/custom_code/services/pocket_island_group_servic
 import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_island_inspector_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_resident_island_view.dart';
-import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_models.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_talk_engine.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_guard_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_gang_group_language_service.dart';
@@ -6495,7 +6494,7 @@ Draft: "$draft"''';
                             );
                           }
 
-                          final filteredMessages = messages.where((m) {
+                          final rawFiltered = messages.where((m) {
                             return m.isOptimistic ||
                                 (m.messageText != null &&
                                     m.messageText!.isNotEmpty) ||
@@ -6503,6 +6502,69 @@ Draft: "$draft"''';
                                 (m.messageType != 'text' &&
                                     m.messageType != 'system');
                           }).toList();
+
+                          final filteredMessages = List<ChatMessage>.from(rawFiltered);
+
+                          if (_isPersonalChat) {
+                            final targetUserId = widget.groupId.startsWith('p:')
+                                ? widget.groupId.substring(2)
+                                : widget.groupId;
+
+                            // 1. Synthesize Pocket Talk bubble if pact exists but message is absent
+                            final hasPtMessage = filteredMessages.any((m) =>
+                                m.messageType == 'pocket_talk_request' ||
+                                m.metadata?['is_pocket_talk'] == true);
+                            if (!hasPtMessage && _activePocketTalkPact != null && !_activePocketTalkPact!.isForfeited) {
+                              filteredMessages.add(ChatMessage(
+                                id: 'synth_pt_${_activePocketTalkPact!.pactId}',
+                                senderId: _activePocketTalkPact!.initiatorId,
+                                receiverId: (_activePocketTalkPact!.initiatorId == _currentUserId)
+                                    ? targetUserId
+                                    : _currentUserId,
+                                messageText:
+                                    '⚡ Pocket Talk Challenge: Invited you to a 4-Day Spoken English Pact! Tap to accept and start Day 1.',
+                                messageType: 'pocket_talk_request',
+                                createdAt: _activePocketTalkPact!.startedAt,
+                                metadata: {
+                                  'is_pocket_talk': true,
+                                  'type': 'pocket_talk_request',
+                                  'pact_id': _activePocketTalkPact!.pactId,
+                                  'sender_id': _activePocketTalkPact!.initiatorId,
+                                  'receiver_id': (_activePocketTalkPact!.initiatorId == _currentUserId)
+                                      ? targetUserId
+                                      : _currentUserId,
+                                  'status': _activePocketTalkPact!.isAccepted ? 'accepted' : 'pending',
+                                  'timestamp': _activePocketTalkPact!.startedAt.toIso8601String(),
+                                },
+                              ));
+                            }
+
+                            // 2. Synthesize Mate Request bubble if request is pending but message is absent
+                            final hasMateMessage = filteredMessages.any((m) =>
+                                m.messageType == 'mate_request' ||
+                                m.metadata?['is_mate_request'] == true ||
+                                m.metadata?['type'] == 'mate_request');
+                            if (!hasMateMessage && (_incomingPendingRequest != null || _isOutgoingPendingRequest)) {
+                              final senderId = _incomingPendingRequest != null ? targetUserId : _currentUserId;
+                              final receiverId = _incomingPendingRequest != null ? _currentUserId : targetUserId;
+                              filteredMessages.add(ChatMessage(
+                                id: 'synth_mate_${senderId}_$receiverId',
+                                senderId: senderId,
+                                receiverId: receiverId,
+                                messageText: '🤝 Pocket Mate Request: Sent you a Mate connection request!',
+                                messageType: 'mate_request',
+                                createdAt: DateTime.now(),
+                                metadata: {
+                                  'is_mate_request': true,
+                                  'type': 'mate_request',
+                                  'status': 'pending',
+                                  'sender_id': senderId,
+                                  'receiver_id': receiverId,
+                                  'timestamp': DateTime.now().toIso8601String(),
+                                },
+                              ));
+                            }
+                          }
 
                           if (filteredMessages.isEmpty) {
                             return const Center(

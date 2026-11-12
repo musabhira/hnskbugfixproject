@@ -1117,23 +1117,28 @@ class ChatMessages extends _$ChatMessages {
             );
           }
 
+          final u1 = uid.compareTo(actualId) < 0 ? uid : actualId;
+          final u2 = uid.compareTo(actualId) < 0 ? actualId : uid;
+
           final updateRes = await _supabase.from(_conversationsTable).update({
             'last_message': displayMsg,
             'last_message_time': DateTime.now().toIso8601String(),
             'updated_at': DateTime.now().toIso8601String(),
             'last_sender_id': uid,
           }).or(
-              'and(user1_id.eq.$uid,user2_id.eq.$actualId),and(user1_id.eq.$actualId,user2_id.eq.$uid)').select();
+              'and(user1_id.eq.$u1,user2_id.eq.$u2),and(user1_id.eq.$u2,user2_id.eq.$u1)').select();
 
           if (updateRes.isEmpty) {
-            await _supabase.from(_conversationsTable).insert({
-              'user1_id': uid,
-              'user2_id': actualId,
-              'last_message': displayMsg,
-              'last_message_time': DateTime.now().toIso8601String(),
-              'last_sender_id': uid,
-              'unread_count': 1,
-            });
+            try {
+              await _supabase.from(_conversationsTable).insert({
+                'user1_id': u1,
+                'user2_id': u2,
+                'last_message': displayMsg,
+                'last_message_time': DateTime.now().toIso8601String(),
+                'last_sender_id': uid,
+                'unread_count': 1,
+              });
+            } catch (_) {}
           }
 
           if (_isKid) {

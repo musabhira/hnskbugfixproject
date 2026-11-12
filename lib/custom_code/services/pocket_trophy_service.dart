@@ -636,10 +636,9 @@ class PocketTrophyService {
         }
       }
 
-      if (convId != null && convId.isNotEmpty) {
+      if (myId.isNotEmpty && otherUserId.isNotEmpty) {
         try {
           await _supabase.from('messages').insert({
-            'conversation_id': convId,
             'sender_id': myId,
             'receiver_id': otherUserId,
             'content': '🎙️ Pocket Talk Spoken Pact Accepted! 4-Day Spoken English Pact is now active. Day 1 starts today!',

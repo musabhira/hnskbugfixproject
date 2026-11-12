@@ -139,6 +139,7 @@ class PocketIslandGroupService {
 
     try {
       final prefs = await SharedPreferences.getInstance();
+      final currentUserId = SupaFlow.client.auth.currentUser?.id ?? userId;
 
       // 1. Check/Create Group Record in `groups` table
       try {
@@ -155,6 +156,7 @@ class PocketIslandGroupService {
             'description':
                 'Official Neighborhood Group for the 25 residents of $planetName Island (Wave $wave). Real-time defense coordination & cosmos chats!',
             'group_image_url': 'assets/images/pocket_mates_logo.png',
+            'created_by': currentUserId,
             'is_active': true,
             'is_public': false,
             'max_members': 25,
@@ -263,12 +265,13 @@ class PocketIslandGroupService {
 
       // 3. Post System Notice in new group welcoming citizen
       try {
+        final currentUserId = SupaFlow.client.auth.currentUser?.id ?? userId;
         final userName =
             SupaFlow.client.auth.currentUser?.email?.split('@').first ??
                 'Citizen';
         await SupaFlow.client.from('group_messages').insert({
           'group_id': newGroupId,
-          'sender_id': 'system_cosmos_guard',
+          'sender_id': currentUserId,
           'sender_name': 'Cosmos Island Guard 🛡️',
           'message_text':
               '🚀 Citizen $userName has relocated to Plot #$newPlotNumber! Welcome your new island neighbor! 🏡✨',
@@ -307,6 +310,7 @@ class PocketIslandGroupService {
     if (validUids.isEmpty) return;
 
     try {
+      final currentUserId = SupaFlow.client.auth.currentUser?.id ?? validUids.first;
       // 1. Ensure group exists
       try {
         final existingGroup = await SupaFlow.client
@@ -322,6 +326,7 @@ class PocketIslandGroupService {
             'description':
                 'Official Neighborhood Group for the 25 residents of $planetName Island (Wave $wave).',
             'group_image_url': 'assets/images/pocket_mates_logo.png',
+            'created_by': currentUserId,
             'is_active': true,
             'is_public': false,
             'max_members': 25,
