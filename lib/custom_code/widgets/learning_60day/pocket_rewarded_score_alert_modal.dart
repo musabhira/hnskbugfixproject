@@ -353,7 +353,7 @@ class _PocketRewardedScoreAlertModalState
 
                 // Description
                 Text(
-                  'Watch a short sponsor video to earn +30 Pocket Score instantly! Daily energy provides up to 10 videos (5 Google + 5 Meta, +300 PS total) for Citadels, games & tools.',
+                  'Watch a short sponsor video to earn +30 Pocket Score instantly! Daily energy provides up to 10 videos (+300 PS total) for Citadels, games & tools.',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     color: Colors.white70,
@@ -502,7 +502,7 @@ class _PocketRewardedScoreAlertModalState
                         ),
                       ),
                       const SizedBox(height: 8),
-                      // Network & Slot Details
+                      // Clean User-Facing Sponsor Tag (No backend ad names shown to normal users)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -513,11 +513,9 @@ class _PocketRewardedScoreAlertModalState
                             size: 14,
                             color: Colors.white54,
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: 5),
                           Text(
-                            (_dailyCount % 2 == 1)
-                                ? 'Next: Meta Audience Network (Slot ${(_dailyCount ~/ 2) + 1}/5)'
-                                : 'Next: Google AdMob Network (Slot ${(_dailyCount ~/ 2) + 1}/5)',
+                            'Sponsor Energy Video • Slot ${_dailyCount + 1}/10 (+30 PS)',
                             style: GoogleFonts.outfit(
                               fontSize: 11,
                               color: const Color(0xFFFFD700),
@@ -525,14 +523,6 @@ class _PocketRewardedScoreAlertModalState
                             ),
                           ),
                         ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Live Status: AdMob 🟢 Active • Meta ${PocketMetaAdsService.lastErrorCode != 0 ? "⚠️ Code ${PocketMetaAdsService.lastErrorCode}" : "🟢 Ready"}',
-                        style: GoogleFonts.inter(
-                          fontSize: 10,
-                          color: Colors.white38,
-                        ),
                       ),
                     ],
                   )

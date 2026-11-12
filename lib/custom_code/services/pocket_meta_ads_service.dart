@@ -335,14 +335,6 @@ class _PocketMetaNativeFeedCardState extends State<PocketMetaNativeFeedCard> {
                   ),
                 ),
                 const Spacer(),
-                Text(
-                  'Meta Partner',
-                  style: GoogleFonts.outfit(
-                    fontSize: 11,
-                    color: Colors.white54,
-                  ),
-                ),
-                const SizedBox(width: 4),
                 // 3-dots vertical icon clearly distinguishes Meta from AdMob's horizontal 3-dots
                 const Icon(
                   Icons.more_vert_rounded,
@@ -442,11 +434,6 @@ class _PocketMetaNativeBannerWidgetState extends State<PocketMetaNativeBannerWid
                   ),
                 ),
                 const Spacer(),
-                Text(
-                  'Meta Audience',
-                  style: GoogleFonts.outfit(fontSize: 10, color: Colors.white38),
-                ),
-                const SizedBox(width: 4),
                 const Icon(Icons.more_vert_rounded, color: Colors.white38, size: 16),
               ],
             ),
