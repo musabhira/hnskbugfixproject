@@ -165,11 +165,28 @@ class PocketNeighbor {
     }
     final match = RegExp(r'PKT-W(\d+)-([A-Z]+)-I(\d+)-P(\d+)').firstMatch(statusMessage);
     if (match != null) {
-      return int.tryParse(match.group(4) ?? '1') ?? 1;
+      final waveNum = int.tryParse(match.group(1) ?? '1') ?? 1;
+      final code = match.group(2) ?? 'EP';
+      final localPlot = int.tryParse(match.group(4) ?? '1') ?? 1;
+      return (localPlot <= PoketCosmosAllocationService.maxPlotsPerIsland)
+          ? PoketCosmosAllocationService.calculateGlobalPlotNumber(
+              wave: waveNum,
+              planetCode: code,
+              localPlotNumber: localPlot,
+            )
+          : localPlot;
     }
     final cached = PoketCosmosAllocationService.instance.getCachedUserPlot(id);
     if (cached != null) return cached.plotNumber;
-    return (id.hashCode.abs() ~/ 10) % PoketCosmosAllocationService.maxPlotsPerIsland + 1;
+    final colonies = PoketCosmosAllocationService.colonies;
+    final colIndex = id.hashCode.abs() % colonies.length;
+    final colCode = colonies[colIndex].code;
+    final fallbackLocal = (id.hashCode.abs() ~/ 10) % PoketCosmosAllocationService.maxPlotsPerIsland + 1;
+    return PoketCosmosAllocationService.calculateGlobalPlotNumber(
+      wave: 1,
+      planetCode: colCode,
+      localPlotNumber: fallbackLocal,
+    );
   }
 
   int get effectiveWave {

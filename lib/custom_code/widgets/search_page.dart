@@ -2867,6 +2867,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                   ? PocketPresidentService.presidentId
                   : (profile['user_id'] ?? ''),
               targetName: isPresident ? 'The Sovereign President' : name,
+              targetDay: isPresident ? 90 : userDay,
               neighbor: robotNeighbor,
               preloadedProfile: profile,
             );

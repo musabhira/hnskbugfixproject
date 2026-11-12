@@ -335,6 +335,10 @@ class PocketCitadelAttackPage extends StatefulWidget {
       day: rawCourseDay,
       pocketScore: defenderScore,
     );
+    // 🛡️ User Direct Progress Protection: Never downgrade a remote user or valid profile below rawCourseDay
+    if (rawCourseDay > effectiveDay) {
+      effectiveDay = rawCourseDay;
+    }
     if (effectiveDay < 1) effectiveDay = 1;
     final palList = HousePalette.presets;
     final autoPal = palList[(effectiveDay - 1) % palList.length].id;
@@ -355,16 +359,26 @@ class PocketCitadelAttackPage extends StatefulWidget {
     String? userPin;
 
     if (pinMatch != null) {
+      final waveNum = int.tryParse(pinMatch.group(1) ?? '1') ?? 1;
+      final code = pinMatch.group(2) ?? 'EP';
+      final localPlot = int.tryParse(pinMatch.group(4) ?? '1') ?? 1;
+      final colony = PoketCosmosAllocationService.instance.getColonyByCode(code);
+      userPlanetCode = colony.code;
+      userPlanetName = colony.planetName;
+      userIslandName = (waveNum == 1)
+          ? colony.islandName
+          : PoketCosmosAllocationService.generateInfiniteIslandName(
+              colony.code, waveNum, waveNum);
+      userStreetName = colony.streetName;
+      // Guarantee TRUE global plot number
+      userPlotNum = (localPlot <= PoketCosmosAllocationService.maxPlotsPerIsland)
+          ? PoketCosmosAllocationService.calculateGlobalPlotNumber(
+              wave: waveNum,
+              planetCode: colony.code,
+              localPlotNumber: localPlot,
+            )
+          : localPlot;
       userPin = pinMatch.group(0);
-      userPlanetCode = pinMatch.group(2);
-      userPlotNum = int.tryParse(pinMatch.group(4) ?? '1');
-      if (userPlanetCode != null) {
-        final colony = PoketCosmosAllocationService.instance
-            .getColonyByCode(userPlanetCode);
-        userPlanetName = colony.planetName;
-        userIslandName = colony.islandName;
-        userStreetName = colony.streetName;
-      }
     } else {
       // 🌌 Deterministic & Database-backed Cosmos Born Address Synchronization
       if (preferredPlanetCode != null && preferredPlanetCode.isNotEmpty) {
@@ -838,15 +852,27 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     final bool isPres = widget.neighbor.isPresident ||
         PocketPresidentService.isPresidentId(widget.neighbor.id) ||
         widget.neighbor.id == 'pocket_president';
+    final int defPlot = isPres
+        ? 1
+        : ((widget.neighbor.plotNumber != null && widget.neighbor.plotNumber! > 0)
+            ? widget.neighbor.plotNumber!
+            : widget.neighbor.effectivePlotNumber);
+    final String defPlanet = isPres
+        ? 'EP'
+        : ((widget.neighbor.planetCode != null && widget.neighbor.planetCode!.isNotEmpty)
+            ? widget.neighbor.planetCode!
+            : widget.neighbor.effectivePlanetCode);
+    final int defWave = isPres ? 1 : widget.neighbor.effectiveWave;
+
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => PoketCosmosResidentIslandView(
           userId: widget.neighbor.id,
           userName: widget.neighbor.name,
-          targetPlanetCode: isPres ? 'EP' : widget.neighbor.effectivePlanetCode,
-          targetPlotNumber: isPres ? 1 : widget.neighbor.effectivePlotNumber,
-          targetWave: isPres ? 1 : widget.neighbor.effectiveWave,
+          targetPlanetCode: defPlanet,
+          targetPlotNumber: defPlot,
+          targetWave: defWave,
           isPresidential: isPres,
         ),
       ),

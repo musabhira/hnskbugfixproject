@@ -1,9 +1,10 @@
 name: iOS Release
 
 on:
-  push:
-    branches:
-      - main
+# Note: Automatic push trigger disabled per user request so builds can be triggered manually.
+# push:
+#   branches:
+#     - main
   workflow_dispatch:
     inputs:
       version_name:
