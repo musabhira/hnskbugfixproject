@@ -611,8 +611,10 @@ class PocketAdMobService {
     _telemetry.lastFailureTime = DateTime.now();
     final codeStr = error is LoadAdError ? error.code.toString() : 'UNKNOWN';
     final msgStr = error is LoadAdError ? error.message : error.toString();
+    final domainStr = error is LoadAdError ? error.domain : 'admob';
+    final platformStr = kIsWeb ? 'web' : Platform.operatingSystem;
     _telemetry.latestErrorCode = codeStr;
-    _telemetry.latestErrorMessage = msgStr;
+    _telemetry.latestErrorMessage = '[$domainStr][$platformStr] $msgStr';
     _telemetry.latestErrorPlacement = placementName;
     if (codeStr == '3') {
       _telemetry.totalNoFills++;
@@ -623,8 +625,10 @@ class PocketAdMobService {
     if (codeStr == '3') metric.noFills++;
     metric.lastFailedTime = DateTime.now();
     metric.lastErrorCode = codeStr;
-    metric.lastErrorMessage = msgStr;
+    metric.lastErrorMessage = '[$domainStr][$platformStr] $msgStr';
     _saveTelemetryLocally();
+    debugPrint(
+        '⚠️ [PocketAdMob Telemetry] Ad failed for placement "$placementName" on $platformStr: Code $codeStr (Domain: $domainStr) - $msgStr');
   }
 
   void _recordAdImpression(String placementName) {
@@ -691,7 +695,7 @@ class PocketAdMobService {
           'latest_error_message': _telemetry.latestErrorMessage,
           'latest_placement': _telemetry.latestErrorPlacement,
           'last_sync_time': DateTime.now().toIso8601String(),
-          'app_version': '1.0.156+331',
+          'app_version': '1.0.263+466',
         },
         'updated_at': DateTime.now().toIso8601String(),
       };
@@ -762,6 +766,9 @@ class PocketAdMobService {
     if (_isInitialized) return;
     try {
       await _loadTelemetryLocally();
+      // Fast local VIP entitlement check to prevent any ad flashes for paid VIP members
+      await _loadLocalVipEntitlement();
+
       if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
         _telemetry.sdkInitialized = true;
         _telemetry.sdkInitTime = DateTime.now();
@@ -867,6 +874,37 @@ class PocketAdMobService {
   // ⚡ User-Scoped In-memory instant VIP cache for 0ms latency ad loading
   String? _cachedVipUid;
   bool? _cachedIsVip;
+  DateTime? _cachedVipTimestamp;
+  Future<bool>? _inFlightVipCheck;
+  final ValueNotifier<bool> vipEntitlementNotifier = ValueNotifier<bool>(false);
+
+  /// Fast load of user-scoped VIP entitlement from local disk into memory
+  Future<void> _loadLocalVipEntitlement() async {
+    try {
+      final uid = SupaFlow.client.auth.currentUser?.id;
+      if (uid == null || uid.isEmpty) {
+        _cachedVipUid = null;
+        _cachedIsVip = false;
+        vipEntitlementNotifier.value = false;
+        return;
+      }
+      final prefs = await SharedPreferences.getInstance();
+      final isVip = prefs.getBool('is_vip_$uid');
+      final tier = prefs.getString('subscription_tier_$uid');
+      if (isVip != null) {
+        _cachedVipUid = uid;
+        _cachedIsVip = isVip;
+        _cachedVipTimestamp = DateTime.now();
+        vipEntitlementNotifier.value = isVip;
+      } else if (tier != null && tier.isNotEmpty) {
+        final isTrueVip = tier != 'free' && tier != 'none' && tier != 'null';
+        _cachedVipUid = uid;
+        _cachedIsVip = isTrueVip;
+        _cachedVipTimestamp = DateTime.now();
+        vipEntitlementNotifier.value = isTrueVip;
+      }
+    } catch (_) {}
+  }
 
   /// ⚡ Synchronous VIP status check matching the current logged-in user
   bool isUserVipSync() {
@@ -880,21 +918,46 @@ class PocketAdMobService {
   }
 
   void updateCachedVipStatus(bool isVip) {
-    _cachedVipUid = SupaFlow.client.auth.currentUser?.id;
+    final currentUid = SupaFlow.client.auth.currentUser?.id;
+    _cachedVipUid = currentUid;
     _cachedIsVip = isVip;
+    _cachedVipTimestamp = DateTime.now();
+    vipEntitlementNotifier.value = isVip;
+
+    if (isVip) {
+      // Immediately purge all preloaded cached ads so VIP never sees an ad
+      PocketAdPreloadManager.instance.disposePreloadedAds();
+    }
+
+    if (currentUid != null && currentUid.isNotEmpty) {
+      SharedPreferences.getInstance().then((prefs) {
+        prefs.setBool('is_vip_$currentUid', isVip);
+        if (isVip) {
+          prefs.setString('subscription_tier_$currentUid', 'vip_active');
+        } else {
+          prefs.setString('subscription_tier_$currentUid', 'free');
+        }
+      }).catchError((_) {});
+    }
   }
 
   /// 🔄 Called when an account is switched or signed in
   void onAccountSwitched(String? newUid) {
     _cachedVipUid = null;
     _cachedIsVip = null;
-    isUserVip();
+    _cachedVipTimestamp = null;
+    vipEntitlementNotifier.value = false;
+    _loadLocalVipEntitlement().then((_) {
+      isUserVip(forceRefresh: true);
+    });
   }
 
   /// 🚪 Called when user signs out
   void onUserSignedOut() {
     _cachedVipUid = null;
     _cachedIsVip = false;
+    _cachedVipTimestamp = null;
+    vipEntitlementNotifier.value = false;
     SharedPreferences.getInstance().then((prefs) {
       prefs.setBool('is_vip', false);
       prefs.setBool('is_premium', false);
@@ -905,105 +968,125 @@ class PocketAdMobService {
 
   /// 🛡️ Check if the current user is a VIP / Premium Member
   /// VIP Rule: Never show any ads to VIPs!
-  Future<bool> isUserVip() async {
+  /// Employs 5-minute memory caching + in-flight deduplication to avoid redundant DB queries.
+  Future<bool> isUserVip({bool forceRefresh = false}) async {
     // If admin enabled live test previewing in Admin Panel, temporarily allow ads to show for verification
     if (_adminAdPreviewOverride) {
       _cachedIsVip = false;
+      vipEntitlementNotifier.value = false;
       return false;
     }
 
+    final user = SupaFlow.client.auth.currentUser;
+    final uid = user?.id;
+
+    // Guest / Not logged in: Show ads
+    if (uid == null || uid.isEmpty) {
+      _cachedVipUid = null;
+      _cachedIsVip = false;
+      vipEntitlementNotifier.value = false;
+      return false;
+    }
+
+    // ⚡ Fast path: Return cached state if fresh (< 5 minutes) and not forceRefresh
+    final now = DateTime.now();
+    if (!forceRefresh &&
+        _cachedVipUid == uid &&
+        _cachedIsVip != null &&
+        _cachedVipTimestamp != null &&
+        now.difference(_cachedVipTimestamp!) < const Duration(minutes: 5)) {
+      return _cachedIsVip!;
+    }
+
+    // ⚡ Deduplicate concurrent in-flight checks (all callers await the exact same Future)
+    if (_inFlightVipCheck != null) {
+      return _inFlightVipCheck!;
+    }
+
+    _inFlightVipCheck = _performVipCheck(uid);
+    try {
+      final result = await _inFlightVipCheck!;
+      return result;
+    } finally {
+      _inFlightVipCheck = null;
+    }
+  }
+
+  Future<bool> _performVipCheck(String uid) async {
     try {
       final prefs = await SharedPreferences.getInstance();
 
       // 1. First check user's profile in Supabase to sync real-time database status
-      final user = SupaFlow.client.auth.currentUser;
-      final uid = user?.id;
-
-      // Guest / Not logged in: Show ads
-      if (uid == null || uid.isEmpty) {
-        _cachedVipUid = null;
-        _cachedIsVip = false;
-        return false;
-      }
-
+      dynamic profile;
       try {
-        dynamic profile;
+        profile = await SupaFlow.client
+            .from('profiles')
+            .select(
+                'is_vip, is_premium, is_subscribed, subscription_tier, role, verified')
+            .eq('id', uid)
+            .maybeSingle();
+      } catch (_) {}
+      if (profile == null) {
         try {
           profile = await SupaFlow.client
-              .from('profiles')
+              .from('profile')
               .select(
                   'is_vip, is_premium, is_subscribed, subscription_tier, role, verified')
-              .eq('id', uid)
+              .or('user_id.eq.$uid,id.eq.$uid')
               .maybeSingle();
         } catch (_) {}
-        if (profile == null) {
-          try {
-            profile = await SupaFlow.client
-                .from('profile')
-                .select(
-                    'is_vip, is_premium, is_subscribed, subscription_tier, role, verified')
-                .or('user_id.eq.$uid,id.eq.$uid')
-                .maybeSingle();
-          } catch (_) {}
+      }
+
+      if (profile != null) {
+        final role = profile['role']?.toString().toLowerCase().trim();
+        final tier =
+            profile['subscription_tier']?.toString().toLowerCase().trim();
+        final bool hasActivePaidTier = tier != null &&
+            tier.isNotEmpty &&
+            tier != 'free' &&
+            tier != 'none' &&
+            tier != 'null';
+
+        // Option B Single Source of Truth:
+        final bool isTrueVip = hasActivePaidTier ||
+            role == 'vip' ||
+            role == 'admin' ||
+            profile['is_vip'] == true ||
+            profile['is_subscribed'] == true;
+
+        debugPrint('🔍 [PocketAdMob] Genuine DB Check VIP for UID $uid: isTrueVip=$isTrueVip (Tier: $tier, Role: $role)');
+
+        if (isTrueVip) {
+          await prefs.setBool('is_vip_$uid', true);
+          await prefs.setString('subscription_tier_$uid', tier ?? 'monthly');
+
+          // Clear un-scoped global device flags to prevent cross-account leaks
+          await prefs.setBool('is_vip', false);
+          await prefs.setBool('is_premium', false);
+          await prefs.setBool('remove_ads', false);
+          await prefs.setString('handskill_plan', 'free');
+
+          _cachedVipUid = uid;
+          _cachedIsVip = true;
+          _cachedVipTimestamp = DateTime.now();
+          vipEntitlementNotifier.value = true;
+          PocketAdPreloadManager.instance.disposePreloadedAds();
+          return true;
+        } else {
+          await prefs.setBool('is_vip_$uid', false);
+          await prefs.setString('subscription_tier_$uid', 'free');
+
+          await prefs.setBool('is_vip', false);
+          await prefs.setBool('is_premium', false);
+          await prefs.setBool('remove_ads', false);
+          await prefs.setString('handskill_plan', 'free');
+
+          _cachedVipUid = uid;
+          _cachedIsVip = false;
+          _cachedVipTimestamp = DateTime.now();
+          vipEntitlementNotifier.value = false;
+          return false;
         }
-
-        if (profile != null) {
-          final role = profile['role']?.toString().toLowerCase().trim();
-          final tier =
-              profile['subscription_tier']?.toString().toLowerCase().trim();
-          final bool hasActivePaidTier = tier != null &&
-              tier.isNotEmpty &&
-              tier != 'free' &&
-              tier != 'none' &&
-              tier != 'null';
-
-          // Option B Single Source of Truth:
-          // A user is ONLY VIP if they have an active paid subscription tier
-          // (monthly, quarterly, yearly, vip_gold, etc.) OR role is admin/vip!
-          final bool isTrueVip = hasActivePaidTier ||
-              role == 'vip' ||
-              role == 'admin' ||
-              profile['is_vip'] == true ||
-              profile['is_subscribed'] == true;
-
-          debugPrint('🔍 [PocketAdMob] Genuine DB Check VIP for UID $uid:');
-          debugPrint(
-              '   -> DB Profile: subscription_tier=$tier, role=$role, hasActivePaidTier=$hasActivePaidTier => isTrueVip=$isTrueVip');
-
-          if (isTrueVip) {
-            debugPrint(
-                '   👑 [PocketAdMob] Result: USER IS VIP. All Ads Suppressed.');
-            await prefs.setBool('is_vip_$uid', true);
-            await prefs.setString('subscription_tier_$uid', tier ?? 'monthly');
-
-            // Clear un-scoped global device flags to prevent cross-account leaks
-            await prefs.setBool('is_vip', false);
-            await prefs.setBool('is_premium', false);
-            await prefs.setBool('remove_ads', false);
-            await prefs.setString('handskill_plan', 'free');
-
-            _cachedVipUid = uid;
-            _cachedIsVip = true;
-            return true;
-          } else {
-            debugPrint(
-                '   🟢 [PocketAdMob] Result: USER IS FREE. Ads Allowed. Cleared device VIP flags.');
-            await prefs.setBool('is_vip_$uid', false);
-            await prefs.setString('subscription_tier_$uid', 'free');
-
-            // Clear un-scoped global device flags so stale VIP never blocks free account ads
-            await prefs.setBool('is_vip', false);
-            await prefs.setBool('is_premium', false);
-            await prefs.setBool('remove_ads', false);
-            await prefs.setString('handskill_plan', 'free');
-
-            _cachedVipUid = uid;
-            _cachedIsVip = false;
-            return false;
-          }
-        }
-      } catch (e) {
-        debugPrint('[PocketAdMob] Error checking user profile VIP: $e');
       }
 
       // 2. Fallback to user-scoped local preferences if network is offline
@@ -1012,35 +1095,66 @@ class PocketAdMobService {
         final isVip = userScopedTier != 'free' && userScopedTier != 'none';
         _cachedVipUid = uid;
         _cachedIsVip = isVip;
+        _cachedVipTimestamp = DateTime.now();
+        vipEntitlementNotifier.value = isVip;
+        if (isVip) PocketAdPreloadManager.instance.disposePreloadedAds();
         return isVip;
       }
 
-      // 3. User is FREE by default! (never assume VIP)
+      // 3. User is FREE by default
       _cachedVipUid = uid;
       _cachedIsVip = false;
+      _cachedVipTimestamp = DateTime.now();
+      vipEntitlementNotifier.value = false;
       return false;
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[PocketAdMob] Error checking user profile VIP: $e');
+    }
 
     _cachedVipUid = SupaFlow.client.auth.currentUser?.id;
     _cachedIsVip = false;
+    _cachedVipTimestamp = DateTime.now();
+    vipEntitlementNotifier.value = false;
     return false;
   }
 
-  /// Preload Interstitial and Rewarded Ads in background
+  /// Preload Native, Interstitial and Rewarded Ads in background
   void preloadAds() {
     isUserVip().then((vip) {
       if (vip) return;
       _loadInterstitialAd();
       _loadRewardedAd();
-      // 🚀 Proactively preload Native/Banner ads for Home, Vibes, Target and Ranking so they appear instantly!
-      PocketAdPreloadManager.instance
-          .preloadForPlacement(PocketAdPlacement.home);
-      PocketAdPreloadManager.instance
-          .preloadForPlacement(PocketAdPlacement.vibes);
-      PocketAdPreloadManager.instance
-          .preloadForPlacement(PocketAdPlacement.target);
-      PocketAdPreloadManager.instance
-          .preloadForPlacement(PocketAdPlacement.ranking);
+
+      // 🚀 Prioritize preparing native ads for all key placements immediately!
+      // Stagger slightly so we don't hammer AdMob with simultaneous requests.
+      PocketAdPreloadManager.instance.preloadNativeAd(PocketAdPlacement.home);
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (!isUserVipSync()) {
+          PocketAdPreloadManager.instance
+              .preloadNativeAd(PocketAdPlacement.vibes);
+        }
+      });
+      Future.delayed(const Duration(milliseconds: 600), () {
+        if (!isUserVipSync()) {
+          PocketAdPreloadManager.instance
+              .preloadNativeAd(PocketAdPlacement.ranking);
+        }
+      });
+      Future.delayed(const Duration(milliseconds: 900), () {
+        if (!isUserVipSync()) {
+          PocketAdPreloadManager.instance
+              .preloadNativeAd(PocketAdPlacement.review);
+        }
+      });
+
+      // 📱 Also ensure Home banner and global standard banner are ready
+      PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.home);
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (!isUserVipSync()) {
+          PocketAdPreloadManager.instance
+              .preloadForPlacement(PocketAdPlacement.banner);
+        }
+      });
     });
   }
 
@@ -1985,6 +2099,229 @@ class PocketAdPreloadManager {
   final Map<PocketAdPlacement, List<BannerAd>> _reusableAdsPool = {};
   final Map<BannerAd, DateTime> _adCreatedAt = {};
   final Set<BannerAd> _activeMountedBanners = {};
+
+  // 🌟 High-performance Preloaded Native Ads Pool (Keyed by PocketAdPlacement)
+  final Map<PocketAdPlacement, NativeAd> _preloadedNativeAds = {};
+  final Map<PocketAdPlacement, DateTime> _nativeAdCreatedAt = {};
+  final Set<PocketAdPlacement> _loadingNativePlacements = {};
+  final Map<PocketAdPlacement, int> _nativeRetryAttempts = {};
+
+  /// Checks if a fresh preloaded NativeAd is currently available for this placement
+  bool hasPreloadedNativeAd(PocketAdPlacement placement) {
+    if (PocketAdMobService.instance.isUserVipSync()) return false;
+    final ad = _preloadedNativeAds[placement];
+    final created = _nativeAdCreatedAt[placement];
+    if (ad != null && created != null) {
+      if (DateTime.now().difference(created) > const Duration(minutes: 30)) {
+        // Expired ad (AdMob inventory freshness)
+        _preloadedNativeAds.remove(placement);
+        _nativeAdCreatedAt.remove(placement);
+        try {
+          ad.dispose();
+        } catch (_) {}
+        return false;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /// Gets a reference to the preloaded NativeAd without taking exclusive ownership
+  NativeAd? getPreloadedNativeAd(PocketAdPlacement placement) {
+    if (PocketAdMobService.instance.isUserVipSync()) return null;
+    if (hasPreloadedNativeAd(placement)) {
+      return _preloadedNativeAds[placement];
+    }
+    return null;
+  }
+
+  /// 🎯 Atomically takes exclusive ownership of the preloaded NativeAd for [placement].
+  /// Removes the ad from the cache so it can NEVER be mounted in another AdWidget!
+  /// Immediately triggers a background replenish for subsequent slots.
+  NativeAd? takePreloadedNativeAd(PocketAdPlacement placement) {
+    if (PocketAdMobService.instance.isUserVipSync()) {
+      disposePreloadedNativeAds();
+      return null;
+    }
+
+    if (hasPreloadedNativeAd(placement)) {
+      final ad = _preloadedNativeAds.remove(placement);
+      _nativeAdCreatedAt.remove(placement);
+      _nativeRetryAttempts.remove(placement);
+
+      // Trigger asynchronous replenishment so the next slot/page has an ad ready
+      replenishNativeAd(placement);
+
+      return ad;
+    }
+
+    // Trigger preload for future visibility
+    preloadNativeAd(placement);
+    return null;
+  }
+
+  /// Preload a NativeAd for a specific placement ahead of time.
+  /// Prevents duplicate concurrent loads for the same placement slot.
+  Future<void> preloadNativeAd(PocketAdPlacement placement, {
+    VoidCallback? onLoaded,
+    void Function(LoadAdError error)? onFailed,
+  }) async {
+    if (PocketAdMobService.instance.isUserVipSync()) return;
+    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return;
+
+    // Do not request if an ad is already ready or currently in-flight
+    if (hasPreloadedNativeAd(placement) || _loadingNativePlacements.contains(placement)) {
+      return;
+    }
+
+    _loadingNativePlacements.add(placement);
+    final unitId = PocketAdMobService.instance.getNativeAdUnitId(placement);
+    PocketAdMobService.instance._recordAdRequest('native_${placement.name}');
+
+    NativeAd? nativeAd;
+    nativeAd = NativeAd(
+      adUnitId: unitId,
+      factoryId: 'pocketNativeCardFactory',
+      request: const AdRequest(),
+      listener: NativeAdListener(
+        onAdLoaded: (ad) {
+          _loadingNativePlacements.remove(placement);
+          _nativeRetryAttempts.remove(placement);
+
+          // If user became VIP while the request was in flight, dispose immediately!
+          if (PocketAdMobService.instance.isUserVipSync()) {
+            ad.dispose();
+            return;
+          }
+
+          // Safe replacement: if previous ad exists in cache, dispose it
+          final oldAd = _preloadedNativeAds.remove(placement);
+          try {
+            oldAd?.dispose();
+          } catch (_) {}
+
+          _preloadedNativeAds[placement] = ad as NativeAd;
+          _nativeAdCreatedAt[placement] = DateTime.now();
+          PocketAdMobService.instance._recordAdLoaded('native_${placement.name}');
+          onLoaded?.call();
+        },
+        onAdFailedToLoad: (ad, err) {
+          _loadingNativePlacements.remove(placement);
+          try {
+            ad.dispose();
+          } catch (_) {}
+          PocketAdMobService.instance._recordAdFailed('native_${placement.name}', err);
+          onFailed?.call(err);
+
+          // Controlled single fallback retry if not in test mode
+          final attempts = _nativeRetryAttempts[placement] ?? 0;
+          if (attempts == 0 && !PocketAdMobService.instance._isTestMode) {
+            _nativeRetryAttempts[placement] = 1;
+            final fallbackUnitId = Platform.isIOS
+                ? PocketAdMobService.prodIosNativeRankingAdUnitId
+                : PocketAdMobService.prodNativeRankingAdUnitId;
+            if (unitId != fallbackUnitId) {
+              _preloadNativeFallback(placement, fallbackUnitId, onLoaded: onLoaded, onFailed: onFailed);
+            }
+          }
+        },
+        onAdImpression: (_) {
+          PocketAdMobService.instance._recordAdImpression('native_${placement.name}');
+        },
+      ),
+    );
+
+    nativeAd.load();
+  }
+
+  void _preloadNativeFallback(PocketAdPlacement placement, String fallbackUnitId, {
+    VoidCallback? onLoaded,
+    void Function(LoadAdError error)? onFailed,
+  }) {
+    if (PocketAdMobService.instance.isUserVipSync()) return;
+    if (hasPreloadedNativeAd(placement) || _loadingNativePlacements.contains(placement)) {
+      return;
+    }
+
+    _loadingNativePlacements.add(placement);
+    PocketAdMobService.instance._recordAdRequest('native_fallback_${placement.name}');
+
+    NativeAd? fallbackAd;
+    fallbackAd = NativeAd(
+      adUnitId: fallbackUnitId,
+      factoryId: 'pocketNativeCardFactory',
+      request: const AdRequest(),
+      listener: NativeAdListener(
+        onAdLoaded: (ad) {
+          _loadingNativePlacements.remove(placement);
+          if (PocketAdMobService.instance.isUserVipSync()) {
+            try {
+              ad.dispose();
+            } catch (_) {}
+            return;
+          }
+          final oldAd = _preloadedNativeAds.remove(placement);
+          try {
+            oldAd?.dispose();
+          } catch (_) {}
+
+          _preloadedNativeAds[placement] = ad as NativeAd;
+          _nativeAdCreatedAt[placement] = DateTime.now();
+          PocketAdMobService.instance._recordAdLoaded('native_fallback_${placement.name}');
+          onLoaded?.call();
+        },
+        onAdFailedToLoad: (ad, err) {
+          _loadingNativePlacements.remove(placement);
+          try {
+            ad.dispose();
+          } catch (_) {}
+          PocketAdMobService.instance._recordAdFailed('native_fallback_${placement.name}', err);
+          onFailed?.call(err);
+        },
+      ),
+    );
+
+    fallbackAd.load();
+  }
+
+  /// Replenishes the native ad cache in the background after an ad was consumed or disposed.
+  void replenishNativeAd(PocketAdPlacement placement) {
+    if (PocketAdMobService.instance.isUserVipSync()) return;
+    Future.microtask(() => preloadNativeAd(placement));
+  }
+
+  /// Disposes all preloaded NativeAds and clears the cache
+  void disposePreloadedNativeAds() {
+    for (final ad in _preloadedNativeAds.values) {
+      try {
+        ad.dispose();
+      } catch (_) {}
+    }
+    _preloadedNativeAds.clear();
+    _nativeAdCreatedAt.clear();
+    _loadingNativePlacements.clear();
+    _nativeRetryAttempts.clear();
+  }
+
+  /// Disposes all preloaded ads across both banners and natives (e.g. VIP activation)
+  void disposePreloadedAds() {
+    disposePreloadedNativeAds();
+    for (final ad in _preloadedBanners.values) {
+      try {
+        ad.dispose();
+      } catch (_) {}
+    }
+    _preloadedBanners.clear();
+    for (final list in _reusableAdsPool.values) {
+      for (final ad in list) {
+        try {
+          ad.dispose();
+        } catch (_) {}
+      }
+    }
+    _reusableAdsPool.clear();
+    _activeMountedBanners.clear();
+  }
 
   /// Acquires an active reusable BannerAd or a preloaded BannerAd for this placement.
   /// If available and currently unmounted, it attaches instantly with 0ms delay!
@@ -2963,7 +3300,9 @@ class _LegacyDc50278NativeAdCardState extends State<LegacyDc50278NativeAdCard>
 
   @override
   void dispose() {
-    _bannerAd?.dispose();
+    // Release back to the pool so the ad can be reused by other chat slots.
+    // If the ad was freshly loaded (not from pool), releaseAd handles dispose timing.
+    PocketAdPreloadManager.instance.releaseAd(PocketAdPlacement.home, _bannerAd);
     super.dispose();
   }
 
@@ -3476,10 +3815,32 @@ class _PocketTrueNativeAdWidgetState extends State<PocketTrueNativeAdWidget> {
   NativeAd? _nativeAd;
   bool _isLoaded = false;
   bool _isVip = false;
+  // Tracks whether we took this ad from the preload cache (so we return it properly)
+  bool _tookFromCache = false;
 
   @override
   void initState() {
     super.initState();
+
+    // ⚡ Fast synchronous VIP check — suppress immediately without async delay
+    if (PocketAdMobService.instance.isUserVipSync()) {
+      _isVip = true;
+      return;
+    }
+
+    // ⚡ Instant render: grab from preload cache with zero network round-trip!
+    if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+      final cached = PocketAdPreloadManager.instance
+          .takePreloadedNativeAd(widget.placement);
+      if (cached != null) {
+        _nativeAd = cached;
+        _isLoaded = true;
+        _tookFromCache = true;
+        return; // Ad is ready — build() shows it immediately!
+      }
+    }
+
+    // 🔄 Cache miss: do async VIP check then load fresh
     _checkVipAndLoad();
   }
 
@@ -3491,7 +3852,9 @@ class _PocketTrueNativeAdWidgetState extends State<PocketTrueNativeAdWidget> {
     }
 
     if (kIsWeb || !Platform.isAndroid) {
-      if (mounted) setState(() => _isLoaded = true);
+      // On web/desktop/iOS without Android NativeAd support, fall through to
+      // the PocketNativeAdCard fallback rendered in build().
+      if (mounted) setState(() => _isLoaded = false);
       return;
     }
 
@@ -3530,7 +3893,16 @@ class _PocketTrueNativeAdWidgetState extends State<PocketTrueNativeAdWidget> {
 
   @override
   void dispose() {
-    _nativeAd?.dispose();
+    // If we consumed a preloaded ad, dispose it via the manager so it's
+    // properly tracked and a replenishment is triggered.
+    if (_tookFromCache) {
+      // Already taken out of the cache; just dispose the object.
+      try {
+        _nativeAd?.dispose();
+      } catch (_) {}
+    } else {
+      _nativeAd?.dispose();
+    }
     super.dispose();
   }
 
@@ -3540,32 +3912,34 @@ class _PocketTrueNativeAdWidgetState extends State<PocketTrueNativeAdWidget> {
       return const SizedBox.shrink();
     }
 
-    if (_nativeAd == null || !_isLoaded) {
-      // Fallback gracefully and reliably to PocketNativeAdCard on all platforms
-      return PocketNativeAdCard(
+    // ✅ Native ad ready (from cache or fresh load on Android)
+    if (_nativeAd != null && _isLoaded) {
+      return Container(
         margin: widget.margin,
-        placement: widget.placement,
-        customAdUnitId: widget.customAdUnitId,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white12, width: 0.8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.25),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
+        height: 330, // Responsive height for PocketNativeAdFactory view
+        child: AdWidget(ad: _nativeAd!),
       );
     }
 
-    return Container(
+    // 🔄 Fallback: Use PocketNativeAdCard (banner-based) on non-Android platforms
+    // or while the NativeAd is still loading on Android.
+    return PocketNativeAdCard(
       margin: widget.margin,
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white12, width: 0.8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.25),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      clipBehavior: Clip.antiAlias,
-      height: 330, // Responsive height for PocketNativeAdFactory view
-      child: AdWidget(ad: _nativeAd!),
+      placement: widget.placement,
+      customAdUnitId: widget.customAdUnitId,
     );
   }
 }
@@ -3593,6 +3967,24 @@ class _PocketChatBubbleAdWidgetState extends State<PocketChatBubbleAdWidget> {
   @override
   void initState() {
     super.initState();
+
+    // ⚡ Fast synchronous VIP check — suppress immediately without async delay
+    if (PocketAdMobService.instance.isUserVipSync()) {
+      _isVip = true;
+      return;
+    }
+
+    // ⚡ Instant render: grab from the preload banner cache (home placement)!
+    if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+      final cached =
+          PocketAdPreloadManager.instance.acquireAd(PocketAdPlacement.home);
+      if (cached != null) {
+        _bannerAd = cached;
+        _isLoaded = true;
+        return; // Ad is ready — no network round-trip needed!
+      }
+    }
+
     _checkVipAndLoad();
   }
 
@@ -3652,7 +4044,9 @@ class _PocketChatBubbleAdWidgetState extends State<PocketChatBubbleAdWidget> {
 
   @override
   void dispose() {
-    _bannerAd?.dispose();
+    // Release back to the pool so the ad can be reused by other chat slots.
+    // If the ad was freshly loaded (not from pool), releaseAd handles dispose timing.
+    PocketAdPreloadManager.instance.releaseAd(PocketAdPlacement.home, _bannerAd);
     super.dispose();
   }
 
