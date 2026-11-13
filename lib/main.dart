@@ -24,7 +24,6 @@ import 'custom_code/services/pocket_language_service.dart';
 import 'custom_code/services/app_store_review_service.dart';
 import 'services/iap_service.dart';
 import 'custom_code/services/pocket_admob_service.dart';
-import 'custom_code/services/pocket_meta_ads_service.dart';
 import 'custom_code/services/pocket_personal_chat_language_service.dart';
 import 'custom_code/services/poket_cosmos_allocation_service.dart';
 
@@ -112,9 +111,8 @@ void main() {
       }
 
       try {
-        // 6. Initialize Google Mobile Ads & Meta Audience Network
+        // 6. Initialize Google Mobile Ads (AdMob 100% exclusive priority)
         await PocketAdMobService.instance.initialize();
-        await PocketMetaAdsService.instance.initialize();
       } catch (e) {
         debugPrint('Main: Ads service initialization error: $e');
       }

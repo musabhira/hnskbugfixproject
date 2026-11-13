@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
-import 'package:pocket_mates_app/custom_code/services/pocket_meta_ads_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 
 /// 🎬 Interactive Alert Modal for Daily Rewarded Video (+50 Pocket Score) with VIP Card CTA
@@ -142,11 +141,11 @@ class _PocketRewardedScoreAlertModalState
       return;
     }
 
-    if (_dailyCount >= 10) {
+    if (_dailyCount >= 5) {
       HapticFeedback.selectionClick();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('🔋 Daily battery 100% full (10/10)! Resets tomorrow ☀️'),
+          content: Text('🔋 Daily battery 100% full (5/5)! Resets tomorrow ☀️'),
           backgroundColor: Color(0xFF0F172A),
           behavior: SnackBarBehavior.floating,
         ),
@@ -173,7 +172,7 @@ class _PocketRewardedScoreAlertModalState
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        '+30 Pocket Score added! Total: $updatedPS PS 🛡️',
+                        '+50 Pocket Score added! Total: $updatedPS PS 🛡️',
                         style: const TextStyle(
                             fontWeight: FontWeight.bold, color: Colors.white),
                       ),
@@ -200,23 +199,23 @@ class _PocketRewardedScoreAlertModalState
 
   @override
   Widget build(BuildContext context) {
-    final remaining = (10 - _dailyCount).clamp(0, 10);
+    final remaining = (5 - _dailyCount).clamp(0, 5);
 
     // Color theme based on charge
     Color batteryColor;
     String statusTitle;
     if (_dailyCount == 0) {
       batteryColor = const Color(0xFFEF4444); // Red
-      statusTitle = 'Battery Low ⚠️ (0/10 Charged)';
-    } else if (_dailyCount <= 4) {
+      statusTitle = 'Battery Low ⚠️ (0/5 Charged)';
+    } else if (_dailyCount <= 2) {
       batteryColor = const Color(0xFFF97316); // Orange-Red
-      statusTitle = 'Low Battery ⚡ ($_dailyCount/10 Charged)';
-    } else if (_dailyCount <= 8) {
+      statusTitle = 'Low Battery ⚡ ($_dailyCount/5 Charged)';
+    } else if (_dailyCount <= 4) {
       batteryColor = const Color(0xFFEAB308); // Amber/Yellow
-      statusTitle = 'Recharging 🔋 ($_dailyCount/10 Charged)';
+      statusTitle = 'Recharging 🔋 ($_dailyCount/5 Charged)';
     } else {
       batteryColor = const Color(0xFF10B981); // Emerald Green
-      statusTitle = 'Full Battery 🔋 (10/10 Complete!)';
+      statusTitle = 'Full Battery 🔋 (5/5 Complete!)';
     }
 
     return Dialog(
@@ -353,7 +352,7 @@ class _PocketRewardedScoreAlertModalState
 
                 // Description
                 Text(
-                  'Watch a short sponsor video to earn +30 Pocket Score instantly! Daily energy provides up to 10 videos (+300 PS total) for Citadels, games & tools.',
+                  'Watch a short sponsor video to earn +50 Pocket Score instantly! Daily energy provides up to 5 videos (+250 PS total) for Citadels, games & tools.',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     color: Colors.white70,
@@ -363,7 +362,7 @@ class _PocketRewardedScoreAlertModalState
                 ),
                 const SizedBox(height: 16),
 
-                // 🔋 10-Segment Battery Visual Indicator
+                // 🔋 5-Segment Battery Visual Indicator
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -385,7 +384,7 @@ class _PocketRewardedScoreAlertModalState
                                 fontWeight: FontWeight.w600),
                           ),
                           Text(
-                            '$_dailyCount / 10 Complete ($remaining left)',
+                            '$_dailyCount / 5 Complete ($remaining left)',
                             style: GoogleFonts.inter(
                                 color: batteryColor,
                                 fontSize: 11.5,
@@ -395,7 +394,7 @@ class _PocketRewardedScoreAlertModalState
                       ),
                       const SizedBox(height: 10),
 
-                      // Battery Shell & 10 Segments
+                      // Battery Shell & 5 Segments
                       Row(
                         children: [
                           Expanded(
@@ -409,12 +408,12 @@ class _PocketRewardedScoreAlertModalState
                                     Border.all(color: batteryColor, width: 1.5),
                               ),
                               child: Row(
-                                children: List.generate(10, (index) {
+                                children: List.generate(5, (index) {
                                   final isFilled = index < _dailyCount;
                                   return Expanded(
                                     child: Container(
                                       margin: EdgeInsets.only(
-                                          right: index < 9 ? 2.0 : 0),
+                                          right: index < 4 ? 3.0 : 0),
                                       decoration: BoxDecoration(
                                         color: isFilled
                                             ? batteryColor
@@ -458,7 +457,7 @@ class _PocketRewardedScoreAlertModalState
                 const SizedBox(height: 18),
 
                 // 🎬 Main Watch Video Action Button
-                if (_dailyCount < 10)
+                if (_dailyCount < 5)
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -493,7 +492,7 @@ class _PocketRewardedScoreAlertModalState
                               ? 'Loading Video...'
                               : (_cooldownSeconds > 0
                                   ? 'Next Video in ${_cooldownSeconds}s ⏳'
-                                  : 'WATCH VIDEO (+30 PS) 🎬'),
+                                  : 'WATCH VIDEO (+50 PS) 🎬'),
                           style: GoogleFonts.outfit(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
@@ -506,16 +505,14 @@ class _PocketRewardedScoreAlertModalState
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            (_dailyCount % 2 == 1)
-                                ? Icons.more_vert_rounded
-                                : Icons.more_horiz_rounded,
+                          const Icon(
+                            Icons.more_horiz_rounded,
                             size: 14,
                             color: Colors.white54,
                           ),
                           const SizedBox(width: 5),
                           Text(
-                            'Sponsor Energy Video • Slot ${_dailyCount + 1}/10 (+30 PS)',
+                            'Sponsor Energy Video • Slot ${_dailyCount + 1}/5 (+50 PS)',
                             style: GoogleFonts.outfit(
                               fontSize: 11,
                               color: const Color(0xFFFFD700),
@@ -541,7 +538,7 @@ class _PocketRewardedScoreAlertModalState
                             color: Color(0xFF10B981), size: 18),
                         const SizedBox(width: 8),
                         Text(
-                          'Daily Max Claimed (+300 PS) 🌟',
+                          'Daily Max Claimed (+250 PS) 🌟',
                           style: GoogleFonts.outfit(
                             color: const Color(0xFF10B981),
                             fontSize: 13,

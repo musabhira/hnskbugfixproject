@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_citadel_store_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 
@@ -73,7 +72,7 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content:
-              Text('Daily sponsor video limit (10/10) reached. Resets tomorrow!'),
+              Text('Daily sponsor video limit (5/5) reached. Resets tomorrow!'),
           backgroundColor: Color(0xFF0F172A),
           behavior: SnackBarBehavior.floating,
         ),
@@ -102,7 +101,7 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                   children: [
                     Text('🎉', style: TextStyle(fontSize: 18)),
                     SizedBox(width: 8),
-                    Text('+30 Pocket Score granted! 🛡️',
+                    Text('+50 Pocket Score granted! 🛡️',
                         style: TextStyle(fontWeight: FontWeight.bold)),
                   ],
                 ),
@@ -133,7 +132,7 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
           backgroundColor: const Color(0xFFEF4444),
           behavior: SnackBarBehavior.floating,
           action: SnackBarAction(
-            label: '📺 +30 PS',
+            label: '📺 +50 PS',
             textColor: const Color(0xFFFFD700),
             onPressed: _watchRewardedAd,
           ),
@@ -273,7 +272,7 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                             const Text('📺', style: TextStyle(fontSize: 11)),
                             const SizedBox(width: 3),
                             Text(
-                              _rewardedRemaining > 0 ? '+30 PS' : '10/10 Done',
+                              _rewardedRemaining > 0 ? '+50 PS' : '5/5 Done',
                               style: GoogleFonts.outfit(
                                 color: _rewardedRemaining > 0
                                     ? const Color(0xFF34D399)
@@ -363,7 +362,7 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Watch Video · Earn +30 PS Free',
+                        'Watch Video · Earn +50 PS Free',
                         style: GoogleFonts.outfit(
                           color: Colors.white,
                           fontSize: 13.5,
@@ -372,8 +371,8 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                       ),
                       Text(
                         _rewardedRemaining > 0
-                            ? 'Daily Sponsor Reward ($_rewardedRemaining/10 available)'
-                            : 'Daily Sponsor Reward (10/10 Completed today)',
+                            ? 'Daily Sponsor Reward ($_rewardedRemaining/5 available)'
+                            : 'Daily Sponsor Reward (5/5 Completed today)',
                         style: GoogleFonts.inter(
                           color: _rewardedRemaining > 0
                               ? const Color(0xFF6EE7B7)
@@ -410,7 +409,7 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                               strokeWidth: 2, color: Colors.white),
                         )
                       : Text(
-                          _rewardedRemaining > 0 ? 'CLAIM +30' : 'CLAIMED',
+                          _rewardedRemaining > 0 ? 'CLAIM +50' : 'CLAIMED',
                           style: GoogleFonts.outfit(
                             fontWeight: FontWeight.w800,
                             fontSize: 11.5,

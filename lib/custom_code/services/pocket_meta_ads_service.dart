@@ -93,8 +93,12 @@ class PocketMetaAdsService {
   static String get rewardedPlacementId =>
       Platform.isIOS ? iosRewardedPlacementId : androidRewardedPlacementId;
 
+  /// 🚀 Policy Guard: Temporarily disable Meta Audience Network to focus 100% on Google AdMob
+  static bool enableMetaAds = false;
+
   /// 🚀 Initialize Meta Audience Network
   Future<void> initialize({bool? testMode}) async {
+    if (!enableMetaAds) return;
     if (_isInitialized) return;
     _isTestMode = testMode ?? kDebugMode;
 
@@ -125,6 +129,7 @@ class PocketMetaAdsService {
 
   /// 📥 Preload Interstitial Ad
   void preloadInterstitial() {
+    if (!enableMetaAds) return;
     if (PocketAdMobService.instance.isUserVipSync()) return;
 
     try {
@@ -163,6 +168,7 @@ class PocketMetaAdsService {
 
   /// 🎬 Show Interstitial Ad (returns true if shown, false otherwise)
   Future<bool> showInterstitialAd() async {
+    if (!enableMetaAds) return false;
     if (await PocketAdMobService.instance.isUserVip()) return false;
 
     if (_interstitialAd != null && _isInterstitialLoaded) {
@@ -180,6 +186,7 @@ class PocketMetaAdsService {
 
   /// 📥 Preload Rewarded Video Ad
   void preloadRewarded() {
+    if (!enableMetaAds) return;
     if (PocketAdMobService.instance.isUserVipSync()) return;
 
     try {
@@ -219,6 +226,7 @@ class PocketMetaAdsService {
   /// 🎁 Show Rewarded Ad with Reward Callback
   Future<bool> showRewardedAd(
       {required VoidCallback onUserEarnedReward}) async {
+    if (!enableMetaAds) return false;
     if (await PocketAdMobService.instance.isUserVip()) return false;
 
     if (_rewardedAd != null && _isRewardedLoaded) {
@@ -330,7 +338,9 @@ class _PocketMetaNativeFeedCardState extends State<PocketMetaNativeFeedCard> {
 
   @override
   Widget build(BuildContext context) {
-    if (PocketAdMobService.instance.isUserVipSync() || _hasError) {
+    if (!PocketMetaAdsService.enableMetaAds ||
+        PocketAdMobService.instance.isUserVipSync() ||
+        _hasError) {
       return const SizedBox.shrink();
     }
 
@@ -458,7 +468,9 @@ class _PocketMetaNativeBannerWidgetState
 
   @override
   Widget build(BuildContext context) {
-    if (PocketAdMobService.instance.isUserVipSync() || _hasError) {
+    if (!PocketMetaAdsService.enableMetaAds ||
+        PocketAdMobService.instance.isUserVipSync() ||
+        _hasError) {
       return const SizedBox.shrink();
     }
 
@@ -555,7 +567,9 @@ class _PocketMetaMrecWidgetState extends State<PocketMetaMrecWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (PocketAdMobService.instance.isUserVipSync() || _hasError) {
+    if (!PocketMetaAdsService.enableMetaAds ||
+        PocketAdMobService.instance.isUserVipSync() ||
+        _hasError) {
       return const SizedBox.shrink();
     }
 
@@ -594,7 +608,9 @@ class _PocketMetaBannerWidgetState extends State<PocketMetaBannerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (PocketAdMobService.instance.isUserVipSync() || _hasError) {
+    if (!PocketMetaAdsService.enableMetaAds ||
+        PocketAdMobService.instance.isUserVipSync() ||
+        _hasError) {
       return const SizedBox.shrink();
     }
 
@@ -684,54 +700,17 @@ class PocketUnifiedDualNativeAdWidget extends StatefulWidget {
 
 class _PocketUnifiedDualNativeAdWidgetState
     extends State<PocketUnifiedDualNativeAdWidget> {
-  late bool _preferMeta;
-  bool _primaryFailed = false;
-
-  @override
-  void initState() {
-    super.initState();
-    // Alternates between AdMob (even slot) and Meta (odd slot)
-    _preferMeta = widget.slotIndex.isOdd;
-  }
-
   @override
   Widget build(BuildContext context) {
     if (PocketAdMobService.instance.isUserVipSync()) {
       return const SizedBox.shrink();
     }
 
-    final bool showMetaNow = _primaryFailed ? !_preferMeta : _preferMeta;
-
-    if (showMetaNow) {
-      if (widget.isCompact) {
-        return PocketMetaNativeBannerWidget(
-          margin: widget.margin,
-          onError: () {
-            if (mounted && !_primaryFailed) {
-              setState(() => _primaryFailed = true);
-            }
-          },
-        );
-      }
-      return PocketMetaNativeFeedCard(
-        margin: widget.margin,
-        onError: () {
-          if (mounted && !_primaryFailed) {
-            setState(() => _primaryFailed = true);
-          }
-        },
-      );
-    }
-
+    // 🚀 Fast AdMob Native Card (Meta Ads dormant for maximum speed and 0 latency)
     return PocketNativeAdCard(
       placement: widget.placement,
       margin: widget.margin,
       isCompact: widget.isCompact,
-      onStatusChange: (status, _) {
-        if (status == 'FAILED' && mounted && !_primaryFailed) {
-          setState(() => _primaryFailed = true);
-        }
-      },
     );
   }
 }

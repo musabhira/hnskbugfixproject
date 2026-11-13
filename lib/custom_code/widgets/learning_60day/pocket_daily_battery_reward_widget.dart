@@ -128,7 +128,7 @@ class _PocketDailyBatteryRewardWidgetState
       return;
     }
 
-    if (_dailyCount >= 10) {
+    if (_dailyCount >= 5) {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -138,7 +138,7 @@ class _PocketDailyBatteryRewardWidgetState
               SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Daily battery 100% full (10/10)! Resets tomorrow morning ☀️',
+                  'Daily battery 100% full (5/5)! Resets tomorrow morning ☀️',
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
@@ -166,7 +166,7 @@ class _PocketDailyBatteryRewardWidgetState
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'VIP Instant Reward! +30 Pocket Score granted without ads (Total: $newScore PS) ⚡✨',
+                    'VIP Instant Reward! +50 Pocket Score granted without ads (Total: $newScore PS) ⚡✨',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -197,7 +197,7 @@ class _PocketDailyBatteryRewardWidgetState
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Battery recharged! +30 Pocket Score added (Total: $newScore PS) 🔋✨',
+                      'Battery recharged! +50 Pocket Score added (Total: $newScore PS) 🔋✨',
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -276,25 +276,25 @@ class _PocketDailyBatteryRewardWidgetState
       topTitle = 'Cooling ⏳';
       bottomSub = 'Wait ${_cooldownSeconds}s';
       subColor = const Color(0xFF38BDF8);
-    } else if (_dailyCount >= 10) {
+    } else if (_dailyCount >= 5) {
       batteryColor = const Color(0xFF22C55E); // Green Full
       topTitle = 'Daily Full 🔋';
-      bottomSub = '10/10 • Reset ☀️';
+      bottomSub = '5/5 • Reset ☀️';
       subColor = const Color(0xFF4ADE80);
     } else {
       // ⚡ Available to watch rewarded video for +50 PS!
       shouldPulse = true;
       if (_dailyCount == 0) {
         batteryColor = const Color(0xFFFFD700); // Golden Amber
-      } else if (_dailyCount <= 3) {
+      } else if (_dailyCount == 1) {
         batteryColor = const Color(0xFFF59E0B);
-      } else if (_dailyCount <= 6) {
+      } else if (_dailyCount == 2) {
         batteryColor = const Color(0xFFFBBF24);
       } else {
         batteryColor = const Color(0xFF10B981);
       }
       topTitle = _isVip ? 'Claim Reward' : 'Watch Reward';
-      bottomSub = '+30 PS (${_dailyCount}/10)';
+      bottomSub = '+50 PS ($_dailyCount/5)';
       subColor = const Color(0xFFFFD700); // Yellow/Golden score callout
     }
 
@@ -325,12 +325,12 @@ class _PocketDailyBatteryRewardWidgetState
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // 🔋 10-block battery icon
+          // 🔋 5-block battery icon
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 26,
+                width: 23,
                 height: 12,
                 padding: const EdgeInsets.all(1.2),
                 decoration: BoxDecoration(
@@ -338,11 +338,11 @@ class _PocketDailyBatteryRewardWidgetState
                   border: Border.all(color: batteryColor, width: 1.1),
                 ),
                 child: Row(
-                  children: List.generate(10, (index) {
+                  children: List.generate(5, (index) {
                     final isFilled = index < _dailyCount;
                     return Expanded(
                       child: Container(
-                        margin: EdgeInsets.only(right: index < 9 ? 0.6 : 0),
+                        margin: EdgeInsets.only(right: index < 4 ? 0.8 : 0),
                         decoration: BoxDecoration(
                           color: isFilled ? batteryColor : Colors.white12,
                           borderRadius: BorderRadius.circular(0.8),

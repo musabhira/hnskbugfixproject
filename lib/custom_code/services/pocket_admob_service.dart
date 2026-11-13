@@ -8,7 +8,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import '/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
-import 'pocket_meta_ads_service.dart';
 
 /// Placement types for AdMob units across Pocket Mates
 enum PocketAdPlacement {
@@ -362,6 +361,52 @@ class PocketAdMobService {
   }
 
   String get nativeAdUnitId => getNativeAdUnitId(PocketAdPlacement.home);
+
+  /// Dedicated resolver for Banner / In-Feed / Native display units (never returns an Interstitial unit!)
+  String getBannerOrNativeUnitIdForPlacement(PocketAdPlacement placement,
+      {bool isCompact = false}) {
+    if (_isTestMode) return testBannerId;
+
+    if (Platform.isIOS) {
+      if (isCompact || placement == PocketAdPlacement.banner) {
+        return prodIosStandardBannerAdUnitId;
+      }
+      switch (placement) {
+        case PocketAdPlacement.home:
+        case PocketAdPlacement.target:
+          return prodIosHomeAdUnitId;
+        case PocketAdPlacement.vibes:
+          return prodIosVibesAdUnitId;
+        case PocketAdPlacement.ranking:
+          return prodIosRankingAdUnitId;
+        case PocketAdPlacement.reels:
+          return prodIosReelsAdUnitId;
+        case PocketAdPlacement.review:
+        case PocketAdPlacement.learningStep:
+        default:
+          return prodIosReviewAdUnitId;
+      }
+    }
+
+    if (isCompact || placement == PocketAdPlacement.banner) {
+      return prodStandardBannerAdUnitId;
+    }
+    switch (placement) {
+      case PocketAdPlacement.home:
+      case PocketAdPlacement.target:
+        return prodHomeAdUnitId;
+      case PocketAdPlacement.vibes:
+        return prodVibesAdUnitId;
+      case PocketAdPlacement.ranking:
+        return prodRankingAdUnitId;
+      case PocketAdPlacement.reels:
+        return prodReelsAdUnitId;
+      case PocketAdPlacement.review:
+      case PocketAdPlacement.learningStep:
+      default:
+        return prodReviewAdUnitId;
+    }
+  }
   String get rewardedAdUnitId =>
       getUnitIdForPlacement(PocketAdPlacement.storeCoins);
   String get interstitialAdUnitId =>
@@ -376,14 +421,10 @@ class PocketAdMobService {
   DateTime? _lastInterstitialShownTime;
   static const Duration minInterstitialInterval = Duration(minutes: 3);
 
-  // 🛡️ Legal Google AdMob & Meta Ads Compliance & Rate Limiting for Rewarded Ads
+  // 🛡️ Legal Google AdMob Policy Compliance & Rate Limiting for Rewarded Ads
   // 🎯 Rewarded Video Quotas (Google AdMob Policy Compliance & Account Safety)
-  // To avoid AdMob strikes & Invalid Traffic (IVT) flags, AdMob rewarded videos are strictly capped at 5/day.
-  // Up to 5 additional rewarded videos can be unlocked via Meta Audience Network (Total: 10/day).
-  // If Meta fails or is unavailable, AdMob stays locked at 5/day to protect the publisher account.
-  static const int kMaxAdMobRewardedPerDay = 5;
-  static const int kMaxMetaRewardedPerDay = 5;
-  static const int kMaxRewardedAdsPerDay = 10;
+  // AdMob rewarded videos are strictly capped at 5/day.
+  static const int kMaxRewardedAdsPerDay = 5;
   static const Duration minRewardedInterval =
       Duration(seconds: 60); // 1-minute cooldown
   DateTime? _lastRewardedShownTime;
@@ -394,20 +435,15 @@ class PocketAdMobService {
     final today = DateTime.now().toIso8601String().split('T')[0];
     final storedDate = prefs.getString('admob_rewarded_date') ?? '';
     int admobCount = prefs.getInt('admob_rewarded_daily_count') ?? 0;
-    int metaCount = prefs.getInt('meta_rewarded_daily_count') ?? 0;
 
     if (storedDate != today) {
       admobCount = 0;
-      metaCount = 0;
       await prefs.setString('admob_rewarded_date', today);
       await prefs.setInt('admob_rewarded_daily_count', 0);
-      await prefs.setInt('meta_rewarded_daily_count', 0);
     }
 
-    final totalCount = admobCount + metaCount;
-
-    // Both networks exhausted
-    if (admobCount >= kMaxAdMobRewardedPerDay && metaCount >= kMaxMetaRewardedPerDay) {
+    // Daily limit exhausted
+    if (admobCount >= kMaxRewardedAdsPerDay) {
       return {
         'allowed': false,
         'reason': 'limit',
@@ -431,7 +467,7 @@ class PocketAdMobService {
         return {
           'allowed': false,
           'reason': 'cooldown',
-          'remaining': kMaxRewardedAdsPerDay - totalCount,
+          'remaining': kMaxRewardedAdsPerDay - admobCount,
           'wait': waitSec,
           'message':
               'Please wait ${waitSec}s before watching another sponsor video.',
@@ -441,9 +477,7 @@ class PocketAdMobService {
 
     return {
       'allowed': true,
-      'remaining': kMaxRewardedAdsPerDay - totalCount,
-      'admobRemaining': (kMaxAdMobRewardedPerDay - admobCount).clamp(0, kMaxAdMobRewardedPerDay),
-      'metaRemaining': (kMaxMetaRewardedPerDay - metaCount).clamp(0, kMaxMetaRewardedPerDay),
+      'remaining': kMaxRewardedAdsPerDay - admobCount,
     };
   }
 
@@ -466,41 +500,19 @@ class PocketAdMobService {
   }
 
   /// 🔋 Returns daily completed AdMob rewarded ad count for today (0 to 5)
-  Future<int> getAdMobRewardedDailyCount() async {
-    final prefs = await SharedPreferences.getInstance();
-    final today = DateTime.now().toIso8601String().split('T')[0];
-    final storedDate = prefs.getString('admob_rewarded_date') ?? '';
-    if (storedDate != today) {
-      await prefs.setString('admob_rewarded_date', today);
-      await prefs.setInt('admob_rewarded_daily_count', 0);
-      await prefs.setInt('meta_rewarded_daily_count', 0);
-      return 0;
-    }
-    return (prefs.getInt('admob_rewarded_daily_count') ?? 0).clamp(0, kMaxAdMobRewardedPerDay);
-  }
-
-  /// 🔋 Returns daily completed Meta rewarded ad count for today (0 to 5)
-  Future<int> getMetaRewardedDailyCount() async {
-    final prefs = await SharedPreferences.getInstance();
-    final today = DateTime.now().toIso8601String().split('T')[0];
-    final storedDate = prefs.getString('admob_rewarded_date') ?? '';
-    if (storedDate != today) {
-      await prefs.setString('admob_rewarded_date', today);
-      await prefs.setInt('admob_rewarded_daily_count', 0);
-      await prefs.setInt('meta_rewarded_daily_count', 0);
-      return 0;
-    }
-    return (prefs.getInt('meta_rewarded_daily_count') ?? 0).clamp(0, kMaxMetaRewardedPerDay);
-  }
-
-  /// 🔋 Returns daily completed rewarded ad count for today across both networks (0 to 10)
   Future<int> getRewardedDailyCount() async {
-    final admobCount = await getAdMobRewardedDailyCount();
-    final metaCount = await getMetaRewardedDailyCount();
-    return (admobCount + metaCount).clamp(0, kMaxRewardedAdsPerDay);
+    final prefs = await SharedPreferences.getInstance();
+    final today = DateTime.now().toIso8601String().split('T')[0];
+    final storedDate = prefs.getString('admob_rewarded_date') ?? '';
+    if (storedDate != today) {
+      await prefs.setString('admob_rewarded_date', today);
+      await prefs.setInt('admob_rewarded_daily_count', 0);
+      return 0;
+    }
+    return (prefs.getInt('admob_rewarded_daily_count') ?? 0).clamp(0, kMaxRewardedAdsPerDay);
   }
 
-  /// 🔋 Returns daily remaining rewarded ad count for today (10 to 0)
+  /// 🔋 Returns daily remaining rewarded ad count for today (5 to 0)
   Future<int> getRewardedDailyRemaining() async {
     final count = await getRewardedDailyCount();
     return (kMaxRewardedAdsPerDay - count).clamp(0, kMaxRewardedAdsPerDay);
@@ -523,7 +535,7 @@ class PocketAdMobService {
           150;
     }
 
-    final newScore = currentScore + 30;
+    final newScore = currentScore + 50;
 
     // 1. Persist to universal and user-scoped keys so UI updates instantly everywhere
     await prefs.setInt('user_pocket_score', newScore);
@@ -557,7 +569,7 @@ class PocketAdMobService {
   }
 
   /// Records successful rewarded ad completion for daily quota
-  Future<void> _recordRewardedAdCompletion({bool isMeta = false}) async {
+  Future<void> _recordRewardedAdCompletion() async {
     _lastRewardedShownTime = DateTime.now();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
@@ -565,17 +577,11 @@ class PocketAdMobService {
     final today = DateTime.now().toIso8601String().split('T')[0];
     final storedDate = prefs.getString('admob_rewarded_date') ?? '';
     int admobCount = prefs.getInt('admob_rewarded_daily_count') ?? 0;
-    int metaCount = prefs.getInt('meta_rewarded_daily_count') ?? 0;
     if (storedDate != today) {
       admobCount = 0;
-      metaCount = 0;
       await prefs.setString('admob_rewarded_date', today);
     }
-    if (isMeta) {
-      await prefs.setInt('meta_rewarded_daily_count', metaCount + 1);
-    } else {
-      await prefs.setInt('admob_rewarded_daily_count', admobCount + 1);
-    }
+    await prefs.setInt('admob_rewarded_daily_count', admobCount + 1);
   }
 
   // 📊 Live Telemetry Cache
@@ -1103,6 +1109,12 @@ class PocketAdMobService {
           _isRewardedLoading = false;
           _rewardedAd = null;
           _flushRewardedCompleters(null);
+          // 🔄 Auto-retry preload after 8s so an ad is always ready in advance
+          Future.delayed(const Duration(seconds: 8), () {
+            if (_rewardedAd == null && !_isRewardedLoading) {
+              _loadRewardedAd();
+            }
+          });
         },
       ),
     );
@@ -1258,120 +1270,33 @@ class PocketAdMobService {
       return;
     }
 
-    // 🎯 10 Daily Rewarded Videos: Safe split (Max 5 Google AdMob + Max 5 Meta Audience Network)
-    // Account Protection Guarantee: AdMob will NEVER exceed 5 rewarded impressions/day!
-    final admobCount = await getAdMobRewardedDailyCount();
-    final metaCount = await getMetaRewardedDailyCount();
-    final currentRewardedCount = admobCount + metaCount;
-
-    // Determine network priority:
-    // If AdMob reached 5, strictly show Meta.
-    // If Meta reached 5, strictly show AdMob.
-    // Otherwise, alternate to distribute impressions.
-    final bool preferMeta = (admobCount >= kMaxAdMobRewardedPerDay) ||
-        (metaCount < kMaxMetaRewardedPerDay && (currentRewardedCount % 2 == 1));
-
-    if (preferMeta && metaCount < kMaxMetaRewardedPerDay) {
-      debugPrint(
-          '🎬 [DualRewarded] Prioritizing Meta Rewarded Video (Meta slot ${metaCount + 1}/5, Total ${currentRewardedCount + 1}/10)');
-      final metaShown = await PocketMetaAdsService.instance.showRewardedAd(
-        onUserEarnedReward: () async {
-          await _recordRewardedAdCompletion(isMeta: true);
-          onUserEarnedReward(RewardItem(30, 'bonus_pocket_score'));
-        },
-      );
-      if (metaShown) {
-        onAdClosed?.call();
-        return;
-      }
-      debugPrint(
-          '⚠️ [DualRewarded] Meta Rewarded Video not ready.');
-      // 🛡️ CRITICAL POLICY GUARD: Only fallback to AdMob if AdMob daily count is STRICTLY under 5!
-      if (admobCount >= kMaxAdMobRewardedPerDay) {
-        debugPrint(
-            '🛡️ [DualRewarded] AdMob safety cap reached (5/5). Suppressing fallback to protect AdMob account.');
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Row(
-                children: [
-                  Icon(Icons.info_outline, color: Color(0xFFFFB300), size: 18),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Daily sponsor video limit for this provider reached. Please check back tomorrow! ⭐',
-                      style: TextStyle(color: Colors.white, fontSize: 13),
-                    ),
-                  ),
-                ],
-              ),
-              backgroundColor: const Color(0xFF1E293B),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-            ),
-          );
-        }
-        onAdClosed?.call();
-        return;
-      }
-    } else if (admobCount >= kMaxAdMobRewardedPerDay) {
-      // Both or AdMob capped and Meta unavailable
-      debugPrint(
-          '🛡️ [DualRewarded] AdMob is strictly capped at 5/5 daily impressions to prevent policy strikes.');
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Row(
-              children: [
-                Icon(Icons.check_circle_outline, color: Color(0xFF10B981), size: 18),
-                SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Daily sponsor video quota completed! Earn more PS through learning quests! 🏆',
-                    style: TextStyle(color: Colors.white, fontSize: 13),
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: const Color(0xFF1E293B),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12)),
-          ),
-        );
-      }
-      onAdClosed?.call();
-      return;
-    }
-
+    // 🚀 Fast Instant Show if already cached!
     if (_rewardedAd != null) {
-      _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
+      final adToShow = _rewardedAd!;
+      _rewardedAd = null;
+      adToShow.fullScreenContentCallback = FullScreenContentCallback(
         onAdShowedFullScreenContent: (ad) {
           _recordAdImpression('rewarded_coins');
         },
         onAdDismissedFullScreenContent: (ad) {
           ad.dispose();
-          _rewardedAd = null;
           _loadRewardedAd();
           onAdClosed?.call();
         },
         onAdFailedToShowFullScreenContent: (ad, err) {
           ad.dispose();
-          _rewardedAd = null;
           _loadRewardedAd();
           onAdClosed?.call();
         },
       );
-      _rewardedAd!.show(onUserEarnedReward: (_, reward) async {
-        await _recordRewardedAdCompletion(isMeta: false);
+      adToShow.show(onUserEarnedReward: (_, reward) async {
+        await _recordRewardedAdCompletion();
         onUserEarnedReward(reward);
       });
       return;
     }
 
-    // ⚡ If not loaded yet, do NOT grant free score without the video!
-    // Instead, show a brief loading dialog and wait for it to load on-demand.
+    // ⚡ If not loaded yet, show brief loading dialog and wait for it on-demand
     await _showRewardedAdWithLoadingDialog(
       context: context,
       onUserEarnedReward: onUserEarnedReward,
@@ -1436,9 +1361,9 @@ class PocketAdMobService {
 
     final completer = Completer<RewardedAd?>();
     _loadRewardedAd(completer: completer);
-    final deadline = DateTime.now().add(const Duration(seconds: 10));
+    final deadline = DateTime.now().add(const Duration(seconds: 8));
 
-    Timer.periodic(const Duration(milliseconds: 300), (timer) {
+    Timer.periodic(const Duration(milliseconds: 250), (timer) {
       if (_rewardedAd != null) {
         timer.cancel();
         if (!completer.isCompleted) completer.complete(_rewardedAd);
@@ -1459,53 +1384,40 @@ class PocketAdMobService {
     }
 
     if (ad != null) {
+      _rewardedAd = null;
       ad.fullScreenContentCallback = FullScreenContentCallback(
         onAdShowedFullScreenContent: (_) {
           _recordAdImpression('rewarded_coins');
         },
         onAdDismissedFullScreenContent: (dispAd) {
           dispAd.dispose();
-          _rewardedAd = null;
           _loadRewardedAd();
           onAdClosed?.call();
         },
         onAdFailedToShowFullScreenContent: (dispAd, err) {
           dispAd.dispose();
-          _rewardedAd = null;
           _loadRewardedAd();
           onAdClosed?.call();
         },
       );
       ad.show(onUserEarnedReward: (_, reward) async {
-        await _recordRewardedAdCompletion(isMeta: false);
+        await _recordRewardedAdCompletion();
         onUserEarnedReward(reward);
       });
     } else {
-      // 🚀 Dual-Network Fallback: Try Meta Audience Network Rewarded Ad!
-      final metaShown = await PocketMetaAdsService.instance.showRewardedAd(
-        onUserEarnedReward: () async {
-          await _recordRewardedAdCompletion(isMeta: true);
-          onUserEarnedReward(RewardItem(30, 'bonus_pocket_score'));
-        },
-      );
-      if (metaShown) {
-        onAdClosed?.call();
-        return;
-      }
-
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Row(
+            content: const Row(
               children: [
-                const Icon(Icons.info_outline,
+                Icon(Icons.info_outline,
                     color: Color(0xFFFFB300), size: 18),
-                const SizedBox(width: 8),
-                const Expanded(
+                SizedBox(width: 8),
+                Expanded(
                   child: Text(
-                    'Sponsor video is not ready yet. Please check your connection and try again!',
+                    'Sponsor video is preparing. Please try again in a moment!',
                     style:
-                        TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
+                        TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: Colors.white),
                   ),
                 ),
               ],
@@ -1686,14 +1598,8 @@ class PocketAdMobService {
             );
             ad.show();
           },
-          onAdFailedToLoad: (err) async {
+          onAdFailedToLoad: (err) {
             _recordAdFailed(placement.name, err);
-            // 🚀 Dual-Network Fallback: Try Meta Interstitial Ad!
-            final metaShown =
-                await PocketMetaAdsService.instance.showInterstitialAd();
-            if (metaShown) {
-              _lastInterstitialShownTime = DateTime.now();
-            }
             onDismissed?.call();
             if (!completer.isCompleted) completer.complete();
           },
@@ -2153,7 +2059,9 @@ class PocketAdPreloadManager {
     }
 
     _loadingPlacements.add(placement);
-    final unitId = PocketAdMobService.instance.getUnitIdForPlacement(placement);
+    final unitId = PocketAdMobService.instance
+        .getBannerOrNativeUnitIdForPlacement(placement,
+            isCompact: (placement == PocketAdPlacement.banner));
     final AdSize size = (placement == PocketAdPlacement.banner)
         ? AdSize.banner
         : AdSize.mediumRectangle;
@@ -2304,7 +2212,9 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard>
     }
 
     final targetUnitId = widget.customAdUnitId ??
-        PocketAdMobService.instance.getUnitIdForPlacement(widget.placement);
+        PocketAdMobService.instance.getBannerOrNativeUnitIdForPlacement(
+            widget.placement,
+            isCompact: _isCompact);
 
     _loadBanner(targetUnitId);
   }
@@ -2965,7 +2875,9 @@ class _LegacyDc50278NativeAdCardState extends State<LegacyDc50278NativeAdCard>
     }
 
     final targetUnitId = widget.customAdUnitId ??
-        PocketAdMobService.instance.getUnitIdForPlacement(widget.placement);
+        PocketAdMobService.instance.getBannerOrNativeUnitIdForPlacement(
+            widget.placement,
+            isCompact: false);
 
     _loadBanner(targetUnitId);
   }
@@ -3856,7 +3768,6 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
   bool _isLoaded = false;
   bool _isVip = false;
   bool _hasRetriedWithFallback = false;
-  bool _tryMetaFallback = false;
 
   @override
   void initState() {
@@ -3924,11 +3835,9 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
             _loadBanner(fallbackProdId);
             return;
           }
-          // Seamless Tier-2 Fallback to Meta Audience Network Banner
           if (mounted) {
             setState(() {
               _isLoaded = false;
-              _tryMetaFallback = true;
             });
           }
         },
@@ -3963,12 +3872,7 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
       );
     }
 
-    // 🔄 Seamless Meta Audience Network Banner Fallback when AdMob has no fill
-    if (_tryMetaFallback) {
-      return PocketMetaBannerWidget();
-    }
-
-    // 📢 User Directive: If neither loaded, collapse cleanly without placeholder box.
+    // 📢 User Directive: If not loaded, collapse cleanly without placeholder box.
     return const SizedBox.shrink();
   }
 }
