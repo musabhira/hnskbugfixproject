@@ -19,7 +19,6 @@ import 'pocket_world_game_rules_modal.dart';
 import 'pocket_citadel_fight_dialog.dart';
 import 'games/pocket_essential_spelling_game_page.dart';
 import 'games/pocket_citadel_runner_attack_page.dart';
-import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 import '../report_dailoge.dart';
 import 'pocket_citadel_store_sheet.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_top_rank_theme.dart';
@@ -200,7 +199,7 @@ class PocketCitadelAttackPage extends StatefulWidget {
         paletteId: paletteId ?? 'warm_cottage',
         isMe: false,
         hasActiveShield: true,
-        statusMessage: 'PKT-W$waveStr-${pColony.code}-I$waveStr-P$plotStr',
+        statusMessage: 'Cosmic Pioneer of ${pColony.planetName}',
         isPocketRobo: false,
         hp: 100,
         maxHp: 100,
@@ -428,7 +427,10 @@ class PocketCitadelAttackPage extends StatefulWidget {
       paletteId: chosenPalette,
       isMe: isMe,
       hasActiveShield: true,
-      statusMessage: p['bio']?.toString() ?? 'Learning English everyday!',
+      statusMessage: (p['bio'] != null &&
+              !p['bio'].toString().toUpperCase().startsWith('PKT-'))
+          ? p['bio'].toString()
+          : 'Learning English everyday!',
       isPocketRobo: p['is_pocket_robo'] == true,
       hp: 100,
       maxHp: 100,
@@ -6985,10 +6987,20 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                               preloadedProfile: {
                                 'user_id': widget.neighbor.id,
                                 'first_name': widget.neighbor.name,
-                                'bio': widget.neighbor.statusMessage,
+                                'name': widget.neighbor.name,
+                                'bio': (widget.neighbor.statusMessage
+                                        .toUpperCase()
+                                        .startsWith('PKT-'))
+                                    ? ''
+                                    : widget.neighbor.statusMessage,
                                 'learning_day': widget.neighbor.day,
                                 'day': widget.neighbor.day,
-                                'pocket_score': _defenderScore,
+                                'level': widget.neighbor.day,
+                                'pocket_score': _defenderScore > 0
+                                    ? _defenderScore
+                                    : PocketScoreLevelEngine
+                                        .getRequiredScoreForLevel(
+                                            widget.neighbor.day),
                                 'streak': widget.neighbor.streak,
                                 'rank': widget.neighbor.rank,
                                 'palette_id': widget.neighbor.paletteId,

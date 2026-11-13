@@ -150,24 +150,34 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       return _localUserStage.clamp(1, 90);
     }
 
-    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
-    final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
-    if (isRobot) {
-      final robot = PocketRobotService.getRobotById(userId) ??
-          PocketRobotService.getRobotByLevel(1);
-      return PocketRobotService.getDynamicLevel(robot);
-    }
-    // 📚 User Level is derived from course progress (day) with pass mark floor (pocket_score)
-    final lDay = (_profileData?['day'] as num?)?.toInt() ??
+    // 1. If explicit day/learning_day/level is provided in profile data, strictly respect it!
+    final explicitDay = (_profileData?['day'] as num?)?.toInt() ??
         (_profileData?['learning_day'] as num?)?.toInt() ??
-        (_profileData?['learning_stage'] as num?)?.toInt() ??
-        _localUserStage;
+        (_profileData?['level'] as num?)?.toInt() ??
+        (_profileData?['learning_stage'] as num?)?.toInt();
+    if (explicitDay != null && explicitDay > 0) {
+      return explicitDay.clamp(1, 90);
+    }
+
+    // 2. If it is a known robot ID, resolve its level
+    if (PocketRobotService.isRobotId(userId)) {
+      final robot = PocketRobotService.getRobotById(userId);
+      if (robot != null) {
+        return PocketRobotService.getDynamicLevel(robot).clamp(1, 90);
+      }
+    }
+
+    // 3. Fallback to local user stage / pocket score level
+    final lDay = _localUserStage > 0 ? _localUserStage : 1;
     final score =
         (_profileData?['pocket_score'] as num?)?.toInt() ?? _pocketScore;
-    return PocketScoreLevelEngine.calculateEffectiveLevel(
-      day: lDay,
-      pocketScore: score,
-    );
+    if (score > 0) {
+      return PocketScoreLevelEngine.calculateEffectiveLevel(
+        day: lDay,
+        pocketScore: score,
+      ).clamp(1, 90);
+    }
+    return lDay.clamp(1, 90);
   }
 
   Future<void> _loadLocalUserStage() async {
@@ -655,28 +665,31 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   void _applyProfileData(Map<String, dynamic> data) {
     _profileData = data;
-    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
-    final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
     int effectiveStage;
-    if (isRobot) {
-      final robot = PocketRobotService.getRobotById(userId) ??
-          PocketRobotService.getRobotByLevel(1);
-      effectiveStage = PocketRobotService.getDynamicLevel(robot);
+    final explicitDay = (data['day'] as num?)?.toInt() ??
+        (data['learning_day'] as num?)?.toInt() ??
+        (data['level'] as num?)?.toInt() ??
+        (data['learning_stage'] as num?)?.toInt();
+    if (explicitDay != null && explicitDay > 0) {
+      effectiveStage = explicitDay.clamp(1, 90);
+    } else if (PocketRobotService.isRobotId(userId)) {
+      final robot = PocketRobotService.getRobotById(userId);
+      effectiveStage = robot != null
+          ? PocketRobotService.getDynamicLevel(robot).clamp(1, 90)
+          : 1;
     } else {
       final rawScore = (data['pocket_score'] as num?)?.toInt() ?? 0;
       final xpScore = (data['xp'] as num?)?.toInt() ?? 0;
       final score = math.max(_pocketScore, math.max(rawScore, xpScore));
       _pocketScore = score;
       // 📚 Level is derived from course progress (day) with pass mark floor (pocket_score)
-      final lDay = (data['day'] as num?)?.toInt() ??
-          (data['learning_day'] as num?)?.toInt() ??
-          (data['learning_stage'] as num?)?.toInt() ??
-          (data['level'] as num?)?.toInt() ??
-          _localUserStage;
-      effectiveStage = PocketScoreLevelEngine.calculateEffectiveLevel(
-        day: lDay,
-        pocketScore: score,
-      );
+      final lDay = _localUserStage > 0 ? _localUserStage : 1;
+      effectiveStage = score > 0
+          ? PocketScoreLevelEngine.calculateEffectiveLevel(
+              day: lDay,
+              pocketScore: score,
+            )
+          : lDay;
     }
     if (!(_isTestingStage && isMe && _isAdminUser())) {
       _localUserStage = effectiveStage;
@@ -698,6 +711,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   Future<void> _fetchFreshData() async {
     try {
       if (mounted && _profileData == null) setState(() => _isLoading = true);
+
+      // If viewing another profile that was preloaded, preserve its values
+      if (widget.preloadedProfile != null && !isMe) {
+        _applyProfileData(widget.preloadedProfile!);
+        if (mounted) setState(() => _isLoading = false);
+        return;
+      }
 
       final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
       final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
@@ -6164,14 +6184,17 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           if (bio.isNotEmpty) ...[
             Builder(
               builder: (context) {
-                // Strip raw cosmic pin and default citizen tag from bio body to keep it clean
+                // Strip raw cosmic pin, PKT codes, and default citizen tag from bio body to keep it clean
                 final cleanBioText = bio
                     .replaceAll(
-                        RegExp(r'\s*(\n\n)?🏡\s*(Citizen\s+of\s+[^()\n]+(\([^)]+\))?|PKT-[^\n]+).*$', caseSensitive: false),
+                        RegExp(r'\s*(\n\n)?(🏡\s*)?(Citizen\s+of\s+[^()\n]+(\([^)]+\))?|PKT-[^\n]+).*$', caseSensitive: false),
                         '')
-                    .replaceAll(RegExp(r'\s*(\n\n)?🏡\s*PKT-W\d+-[A-Z]+-I\d+-P\d+.*$'), '')
+                    .replaceAll(RegExp(r'PKT-W\d+-[A-Za-z0-9]+(-I\d+)?-P\d+.*$', caseSensitive: false), '')
+                    .replaceAll(RegExp(r'^PKT-.*$', caseSensitive: false, multiLine: true), '')
                     .trim();
-                if (cleanBioText.isEmpty) return const SizedBox.shrink();
+                if (cleanBioText.isEmpty || cleanBioText.toUpperCase().startsWith('PKT-')) {
+                  return const SizedBox.shrink();
+                }
                 return Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
