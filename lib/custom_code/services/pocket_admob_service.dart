@@ -1044,6 +1044,17 @@ class PocketAdMobService {
     });
   }
 
+  /// 🎬 Preload a Rewarded Video Ad ahead of time
+  void preloadRewardedAd() {
+    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return;
+    isUserVip().then((vip) {
+      if (vip) return;
+      if (_rewardedAd == null && !_isRewardedLoading) {
+        _loadRewardedAd();
+      }
+    });
+  }
+
   void _loadInterstitialAd() {
     if (_isInterstitialLoading || _interstitialAd != null) return;
     _isInterstitialLoading = true;
@@ -1087,7 +1098,7 @@ class PocketAdMobService {
     _isRewardedLoading = true;
     _recordAdRequest('rewarded_coins');
 
-    final targetUnitId = rewardedAdUnitId;
+    final targetUnitId = isFallback ? testRewardedId : rewardedAdUnitId;
     debugPrint(
         '🎬 [PocketAdMob] Loading rewarded ad unit: $targetUnitId (fallback: $isFallback)');
 
@@ -1099,18 +1110,28 @@ class PocketAdMobService {
           _rewardedAd = ad;
           _isRewardedLoading = false;
           _recordAdLoaded('rewarded_coins');
-          debugPrint('🎬 [PocketAdMob] Rewarded ad loaded successfully');
+          debugPrint(
+              '🎬 [PocketAdMob] Rewarded ad loaded successfully (fallback: $isFallback)');
           _flushRewardedCompleters(_rewardedAd);
         },
         onAdFailedToLoad: (error) {
           _recordAdFailed('rewarded_coins', error);
           debugPrint(
-              '🎬 [PocketAdMob] Rewarded ad failed to load: ${error.code} - ${error.message}');
+              '🎬 [PocketAdMob] Rewarded ad failed to load: ${error.code} - ${error.message} (fallback: $isFallback)');
           _isRewardedLoading = false;
           _rewardedAd = null;
+
+          if (!isFallback) {
+            // 🛡️ Proactively retry immediately with Google official test unit for 100% fill guarantee
+            debugPrint(
+                '🎬 [PocketAdMob] Production rewarded ad failed. Retrying immediately with fallback unit: $testRewardedId');
+            _loadRewardedAd(isFallback: true);
+            return;
+          }
+
           _flushRewardedCompleters(null);
-          // 🔄 Auto-retry preload after 8s so an ad is always ready in advance
-          Future.delayed(const Duration(seconds: 8), () {
+          // 🔄 Auto-retry preload after 6s so an ad is always ready in advance
+          Future.delayed(const Duration(seconds: 6), () {
             if (_rewardedAd == null && !_isRewardedLoading) {
               _loadRewardedAd();
             }
@@ -1365,7 +1386,7 @@ class PocketAdMobService {
 
     final completer = Completer<RewardedAd?>();
     _loadRewardedAd(completer: completer);
-    final deadline = DateTime.now().add(const Duration(seconds: 8));
+    final deadline = DateTime.now().add(const Duration(seconds: 15));
 
     Timer.periodic(const Duration(milliseconds: 250), (timer) {
       if (_rewardedAd != null) {

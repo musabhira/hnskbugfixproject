@@ -31,6 +31,7 @@ class PocketRewardedScoreAlertModal extends StatefulWidget {
     }
 
     if (!context.mounted) return;
+    PocketAdMobService.instance.preloadRewardedAd();
     await showDialog(
       context: context,
       barrierDismissible: true,
@@ -63,6 +64,7 @@ class PocketRewardedScoreAlertModal extends StatefulWidget {
     await prefs.setInt('last_rewarded_modal_ts', nowTs);
 
     if (context.mounted) {
+      PocketAdMobService.instance.preloadRewardedAd();
       await show(context, onRewardClaimed: onRewardClaimed);
     }
   }
@@ -83,6 +85,7 @@ class _PocketRewardedScoreAlertModalState
   @override
   void initState() {
     super.initState();
+    PocketAdMobService.instance.preloadRewardedAd();
     _loadStatus();
   }
 

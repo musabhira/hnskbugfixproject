@@ -36,6 +36,7 @@ class _PocketDailyBatteryRewardWidgetState
   @override
   void initState() {
     super.initState();
+    PocketAdMobService.instance.preloadRewardedAd();
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
