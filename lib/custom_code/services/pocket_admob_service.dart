@@ -170,9 +170,11 @@ class PocketAdMobService {
   static String prodNativeVibesAdUnitId =
       'ca-app-pub-8489571803367790/2725690431';
   static String prodNativeLearningSummaryAdUnitId =
-      'ca-app-pub-8489571803367790/5519374733';
+      'ca-app-pub-8489571803367790/8223630945'; // PM_Android_Native_Learning_Step
   static String prodNativeRankingAdUnitId =
-      'ca-app-pub-8489571803367790/7490544913';
+      'ca-app-pub-8489571803367790/5316451914'; // PM_Android_Native_Ranking
+  static String prodNativeTargetAdUnitId =
+      'ca-app-pub-8489571803367790/8872553542'; // PM_Android_Native_Target
 
   // Interstitial Ad Units (Android)
   static String prodLearningStepInterstitialId =
@@ -202,9 +204,11 @@ class PocketAdMobService {
   static String prodIosNativeVibesAdUnitId =
       'ca-app-pub-8489571803367790/8805983242';
   static String prodIosNativeLearningSummaryAdUnitId =
-      'ca-app-pub-8489571803367790/2132376644';
+      'ca-app-pub-8489571803367790/8680981850'; // PM_iOS_Native_Learning_Step
   static String prodIosNativeRankingAdUnitId =
-      'ca-app-pub-8489571803367790/8043565915';
+      'ca-app-pub-8489571803367790/8162107102'; // PM_iOS_Native_Ranking
+  static String prodIosNativeTargetAdUnitId =
+      'ca-app-pub-8489571803367790/2307145198'; // PM_iOS_Native_Target
 
   // Interstitial Ad Units (iOS)
   static String prodIosLearningStepInterstitialId =
@@ -332,11 +336,13 @@ class PocketAdMobService {
     if (Platform.isIOS) {
       switch (placement) {
         case PocketAdPlacement.home:
-        case PocketAdPlacement.target:
           return prodIosNativeHomeAdUnitId;
+        case PocketAdPlacement.target:
+          return prodIosNativeTargetAdUnitId;
         case PocketAdPlacement.vibes:
           return prodIosNativeVibesAdUnitId;
         case PocketAdPlacement.review:
+        case PocketAdPlacement.learningStep:
           return prodIosNativeLearningSummaryAdUnitId;
         case PocketAdPlacement.ranking:
           return prodIosNativeRankingAdUnitId;
@@ -347,11 +353,13 @@ class PocketAdMobService {
 
     switch (placement) {
       case PocketAdPlacement.home:
-      case PocketAdPlacement.target:
         return prodNativeHomeAdUnitId;
+      case PocketAdPlacement.target:
+        return prodNativeTargetAdUnitId;
       case PocketAdPlacement.vibes:
         return prodNativeVibesAdUnitId;
       case PocketAdPlacement.review:
+      case PocketAdPlacement.learningStep:
         return prodNativeLearningSummaryAdUnitId;
       case PocketAdPlacement.ranking:
         return prodNativeRankingAdUnitId;
@@ -695,7 +703,7 @@ class PocketAdMobService {
           'latest_error_message': _telemetry.latestErrorMessage,
           'latest_placement': _telemetry.latestErrorPlacement,
           'last_sync_time': DateTime.now().toIso8601String(),
-          'app_version': '1.0.263+466',
+          'app_version': '1.0.264+467',
         },
         'updated_at': DateTime.now().toIso8601String(),
       };
@@ -1128,19 +1136,31 @@ class PocketAdMobService {
       // 🚀 Prioritize preparing native ads for all key placements immediately!
       // Stagger slightly so we don't hammer AdMob with simultaneous requests.
       PocketAdPreloadManager.instance.preloadNativeAd(PocketAdPlacement.home);
-      Future.delayed(const Duration(milliseconds: 300), () {
+      Future.delayed(const Duration(milliseconds: 250), () {
         if (!isUserVipSync()) {
           PocketAdPreloadManager.instance
-              .preloadNativeAd(PocketAdPlacement.vibes);
+              .preloadNativeAd(PocketAdPlacement.target);
         }
       });
-      Future.delayed(const Duration(milliseconds: 600), () {
+      Future.delayed(const Duration(milliseconds: 500), () {
         if (!isUserVipSync()) {
           PocketAdPreloadManager.instance
               .preloadNativeAd(PocketAdPlacement.ranking);
         }
       });
-      Future.delayed(const Duration(milliseconds: 900), () {
+      Future.delayed(const Duration(milliseconds: 750), () {
+        if (!isUserVipSync()) {
+          PocketAdPreloadManager.instance
+              .preloadNativeAd(PocketAdPlacement.vibes);
+        }
+      });
+      Future.delayed(const Duration(milliseconds: 1000), () {
+        if (!isUserVipSync()) {
+          PocketAdPreloadManager.instance
+              .preloadNativeAd(PocketAdPlacement.learningStep);
+        }
+      });
+      Future.delayed(const Duration(milliseconds: 1250), () {
         if (!isUserVipSync()) {
           PocketAdPreloadManager.instance
               .preloadNativeAd(PocketAdPlacement.review);
@@ -1149,7 +1169,7 @@ class PocketAdMobService {
 
       // 📱 Also ensure Home banner and global standard banner are ready
       PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.home);
-      Future.delayed(const Duration(milliseconds: 500), () {
+      Future.delayed(const Duration(milliseconds: 600), () {
         if (!isUserVipSync()) {
           PocketAdPreloadManager.instance
               .preloadForPlacement(PocketAdPlacement.banner);

@@ -336,7 +336,7 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         tile,
-                                        const PocketNativeAdCard(
+                                        const PocketTrueNativeAdWidget(
                                           placement: PocketAdPlacement.ranking,
                                           margin: EdgeInsets.only(bottom: 6),
                                         ),
