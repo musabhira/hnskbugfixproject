@@ -192,6 +192,394 @@ class ReelFeedItem {
         vocabCard = null;
 }
 
+/// 🪐 Multi-Planetary & Island Atmosphere Engine for Homes Reels Feed
+class _CosmicReelAtmosphere {
+  final String id;
+  final String planetName;
+  final String islandName;
+  final String badgeTitle;
+  final String badgeEmoji;
+  final Color badgeColor;
+  final Color badgeBorderColor;
+  final List<Color> skyGradient;
+  final List<Color> groundGradient;
+  final Widget skyProps;
+
+  const _CosmicReelAtmosphere({
+    required this.id,
+    required this.planetName,
+    required this.islandName,
+    required this.badgeTitle,
+    required this.badgeEmoji,
+    required this.badgeColor,
+    required this.badgeBorderColor,
+    required this.skyGradient,
+    required this.groundGradient,
+    required this.skyProps,
+  });
+}
+
+final List<_CosmicReelAtmosphere> _kCosmicAtmospheres = [
+  // 1. Earth Prime 🌍 (Day Meadow)
+  const _CosmicReelAtmosphere(
+    id: 'earth',
+    planetName: 'Earth Prime 🌍',
+    islandName: 'Genesis Valley 🏝️',
+    badgeTitle: 'EARTH PRIME MEADOW',
+    badgeEmoji: '🌍',
+    badgeColor: Color(0xFFFEF08A),
+    badgeBorderColor: Color(0xFFFDE047),
+    skyGradient: [
+      Color(0xFF38BDF8),
+      Color(0xFF7DD3FC),
+      Color(0xFF34D399),
+      Color(0xFF15803D),
+    ],
+    groundGradient: [
+      Color(0x5922C55E),
+      Color(0xB316A34A),
+      Color(0xFF14532D),
+    ],
+    skyProps: Row(
+      children: [
+        Text('☀️', style: TextStyle(fontSize: 24)),
+        SizedBox(width: 14),
+        Text('☁️', style: TextStyle(fontSize: 18)),
+        SizedBox(width: 20),
+        Text('🕊️', style: TextStyle(fontSize: 14)),
+      ],
+    ),
+  ),
+
+  // 2. Jupiter 🟠 (Storm Realm)
+  const _CosmicReelAtmosphere(
+    id: 'jupiter',
+    planetName: 'Jupiter 🟠',
+    islandName: 'Red Spot Atoll 🌪️',
+    badgeTitle: 'JUPITER STORM REALM',
+    badgeEmoji: '⚡',
+    badgeColor: Color(0xFFFDBA74),
+    badgeBorderColor: Color(0xFFF97316),
+    skyGradient: [
+      Color(0xFF3B0764),
+      Color(0xFF7C2D12),
+      Color(0xFFEA580C),
+      Color(0xFF9A3412),
+    ],
+    groundGradient: [
+      Color(0x59F97316),
+      Color(0xB3C2410C),
+      Color(0xFF431407),
+    ],
+    skyProps: Row(
+      children: [
+        Text('⚡', style: TextStyle(fontSize: 22)),
+        SizedBox(width: 10),
+        Text('🟠', style: TextStyle(fontSize: 26)),
+        SizedBox(width: 12),
+        Text('🌪️', style: TextStyle(fontSize: 16)),
+        SizedBox(width: 10),
+        Text('🪐', style: TextStyle(fontSize: 14)),
+      ],
+    ),
+  ),
+
+  // 3. Mars 🔴 (Red Dunes Bastion)
+  const _CosmicReelAtmosphere(
+    id: 'mars',
+    planetName: 'Mars 🔴',
+    islandName: 'Olympus Haven 🏜️',
+    badgeTitle: 'MARS CANYON OASIS',
+    badgeEmoji: '🔴',
+    badgeColor: Color(0xFFFCA5A5),
+    badgeBorderColor: Color(0xFFEF4444),
+    skyGradient: [
+      Color(0xFF450A0A),
+      Color(0xFF991B1B),
+      Color(0xFFDC2626),
+      Color(0xFFB45309),
+    ],
+    groundGradient: [
+      Color(0x59EF4444),
+      Color(0xB3B91C1C),
+      Color(0xFF7F1D1D),
+    ],
+    skyProps: Row(
+      children: [
+        Text('🔴', style: TextStyle(fontSize: 22)),
+        SizedBox(width: 12),
+        Text('🏜️', style: TextStyle(fontSize: 18)),
+        SizedBox(width: 12),
+        Text('🌪️', style: TextStyle(fontSize: 14)),
+        SizedBox(width: 8),
+        Text('☄️', style: TextStyle(fontSize: 12)),
+      ],
+    ),
+  ),
+
+  // 4. Tropical Archipelago Island 🏝️ (Crescent Lagoon)
+  const _CosmicReelAtmosphere(
+    id: 'island',
+    planetName: 'Tropical Island 🏝️',
+    islandName: 'Crescent Lagoon 🌴',
+    badgeTitle: 'CORAL LAGOON ISLAND',
+    badgeEmoji: '🏝️',
+    badgeColor: Color(0xFF67E8F9),
+    badgeBorderColor: Color(0xFF22D3EE),
+    skyGradient: [
+      Color(0xFF0284C7),
+      Color(0xFF38BDF8),
+      Color(0xFFF472B6),
+      Color(0xFFFB923C),
+    ],
+    groundGradient: [
+      Color(0x66FDE047),
+      Color(0xB3D97706),
+      Color(0xFF0D9488),
+    ],
+    skyProps: Row(
+      children: [
+        Text('☀️', style: TextStyle(fontSize: 22)),
+        SizedBox(width: 8),
+        Text('🌴', style: TextStyle(fontSize: 20)),
+        SizedBox(width: 10),
+        Text('⛵', style: TextStyle(fontSize: 16)),
+        SizedBox(width: 10),
+        Text('🌊', style: TextStyle(fontSize: 15)),
+        SizedBox(width: 8),
+        Text('🦜', style: TextStyle(fontSize: 13)),
+      ],
+    ),
+  ),
+
+  // 5. The Moon 🌕 (Tranquility Base)
+  const _CosmicReelAtmosphere(
+    id: 'moon',
+    planetName: 'The Moon 🌕',
+    islandName: 'Tranquility Base 🚀',
+    badgeTitle: 'LUNAR TRANQUILITY BASE',
+    badgeEmoji: '🌕',
+    badgeColor: Color(0xFFE2E8F0),
+    badgeBorderColor: Color(0xFF94A3B8),
+    skyGradient: [
+      Color(0xFF020617),
+      Color(0xFF0F172A),
+      Color(0xFF1E293B),
+      Color(0xFF334155),
+    ],
+    groundGradient: [
+      Color(0x5964748B),
+      Color(0xB3475569),
+      Color(0xFF0F172A),
+    ],
+    skyProps: Row(
+      children: [
+        Text('🌍', style: TextStyle(fontSize: 24)),
+        SizedBox(width: 12),
+        Text('✨', style: TextStyle(fontSize: 14)),
+        SizedBox(width: 14),
+        Text('⭐', style: TextStyle(fontSize: 11)),
+        SizedBox(width: 10),
+        Text('🛰️', style: TextStyle(fontSize: 15)),
+      ],
+    ),
+  ),
+
+  // 6. Saturn 🪐 (Golden Ring Citadel)
+  const _CosmicReelAtmosphere(
+    id: 'saturn',
+    planetName: 'Saturn 🪐',
+    islandName: 'Titan Methane Bay 💫',
+    badgeTitle: 'SATURN RING CITADEL',
+    badgeEmoji: '🪐',
+    badgeColor: Color(0xFFFDE047),
+    badgeBorderColor: Color(0xFFEAB308),
+    skyGradient: [
+      Color(0xFF1E1B4B),
+      Color(0xFF312E81),
+      Color(0xFF701A75),
+      Color(0xFFD97706),
+    ],
+    groundGradient: [
+      Color(0x59CA8A04),
+      Color(0xB3854D0E),
+      Color(0xFF3B0764),
+    ],
+    skyProps: Row(
+      children: [
+        Text('🪐', style: TextStyle(fontSize: 26)),
+        SizedBox(width: 10),
+        Text('💫', style: TextStyle(fontSize: 16)),
+        SizedBox(width: 12),
+        Text('✨', style: TextStyle(fontSize: 13)),
+        SizedBox(width: 8),
+        Text('⭐', style: TextStyle(fontSize: 10)),
+      ],
+    ),
+  ),
+
+  // 7. Venus 🟡 (Aphrodite Terra)
+  const _CosmicReelAtmosphere(
+    id: 'venus',
+    planetName: 'Venus 🟡',
+    islandName: 'Aphrodite Terra 🏺',
+    badgeTitle: 'VENUS AMBER CLOUDS',
+    badgeEmoji: '🟡',
+    badgeColor: Color(0xFFFEF08A),
+    badgeBorderColor: Color(0xFFF59E0B),
+    skyGradient: [
+      Color(0xFF78350F),
+      Color(0xFFB45309),
+      Color(0xFFD97706),
+      Color(0xFFFBBF24),
+    ],
+    groundGradient: [
+      Color(0x59F59E0B),
+      Color(0xB3B45309),
+      Color(0xFF451A03),
+    ],
+    skyProps: Row(
+      children: [
+        Text('🟡', style: TextStyle(fontSize: 22)),
+        SizedBox(width: 10),
+        Text('⛅', style: TextStyle(fontSize: 18)),
+        SizedBox(width: 12),
+        Text('✨', style: TextStyle(fontSize: 15)),
+        SizedBox(width: 8),
+        Text('🏺', style: TextStyle(fontSize: 14)),
+      ],
+    ),
+  ),
+
+  // 8. Europa 🧊 (Jovian Ice Ocean)
+  const _CosmicReelAtmosphere(
+    id: 'europa',
+    planetName: 'Europa 🧊',
+    islandName: 'Galilean Ice Shelf 🌌',
+    badgeTitle: 'EUROPA ICE CHASM',
+    badgeEmoji: '🧊',
+    badgeColor: Color(0xFFA5F3FC),
+    badgeBorderColor: Color(0xFF06B6D4),
+    skyGradient: [
+      Color(0xFF082F49),
+      Color(0xFF0369A1),
+      Color(0xFF06B6D4),
+      Color(0xFF67E8F9),
+    ],
+    groundGradient: [
+      Color(0x5922D3EE),
+      Color(0xB30891B2),
+      Color(0xFF164E63),
+    ],
+    skyProps: Row(
+      children: [
+        Text('🌌', style: TextStyle(fontSize: 20)),
+        SizedBox(width: 10),
+        Text('🧊', style: TextStyle(fontSize: 18)),
+        SizedBox(width: 10),
+        Text('🟠', style: TextStyle(fontSize: 20)),
+        SizedBox(width: 8),
+        Text('❄️', style: TextStyle(fontSize: 13)),
+      ],
+    ),
+  ),
+
+  // 9. Neptune 🌊 (Triton Cryo Sound)
+  const _CosmicReelAtmosphere(
+    id: 'neptune',
+    planetName: 'Neptune 🌊',
+    islandName: 'Triton Cryo Sound 🌀',
+    badgeTitle: 'NEPTUNE AZURE ABYSS',
+    badgeEmoji: '🌊',
+    badgeColor: Color(0xFF7DD3FC),
+    badgeBorderColor: Color(0xFF0284C7),
+    skyGradient: [
+      Color(0xFF020617),
+      Color(0xFF0C4A6E),
+      Color(0xFF0284C7),
+      Color(0xFF38BDF8),
+    ],
+    groundGradient: [
+      Color(0x590EA5E9),
+      Color(0xB30369A1),
+      Color(0xFF082F49),
+    ],
+    skyProps: Row(
+      children: [
+        Text('🌀', style: TextStyle(fontSize: 20)),
+        SizedBox(width: 10),
+        Text('🌊', style: TextStyle(fontSize: 18)),
+        SizedBox(width: 10),
+        Text('🔱', style: TextStyle(fontSize: 16)),
+        SizedBox(width: 8),
+        Text('💎', style: TextStyle(fontSize: 13)),
+      ],
+    ),
+  ),
+
+  // 10. Mercury ⚪ (Caloris Crater)
+  const _CosmicReelAtmosphere(
+    id: 'mercury',
+    planetName: 'Mercury ⚪',
+    islandName: 'Caloris Crater 🌋',
+    badgeTitle: 'MERCURY SOLAR BASIN',
+    badgeEmoji: '⚪',
+    badgeColor: Color(0xFFF1F5F9),
+    badgeBorderColor: Color(0xFFCBD5E1),
+    skyGradient: [
+      Color(0xFF030712),
+      Color(0xFF1F2937),
+      Color(0xFF9A3412),
+      Color(0xFFF97316),
+    ],
+    groundGradient: [
+      Color(0x5994A3B8),
+      Color(0xB3475569),
+      Color(0xFF1E293B),
+    ],
+    skyProps: Row(
+      children: [
+        Text('☀️', style: TextStyle(fontSize: 26)),
+        SizedBox(width: 10),
+        Text('☄️', style: TextStyle(fontSize: 16)),
+        SizedBox(width: 12),
+        Text('🌋', style: TextStyle(fontSize: 15)),
+        SizedBox(width: 8),
+        Text('✨', style: TextStyle(fontSize: 11)),
+      ],
+    ),
+  ),
+];
+
+_CosmicReelAtmosphere _getCosmicAtmosphere(
+    PocketNeighbor neighbor, int index) {
+  if (neighbor.planetCode != null) {
+    switch (neighbor.planetCode!.toUpperCase()) {
+      case 'JUP':
+        return _kCosmicAtmospheres[1];
+      case 'MAR':
+        return _kCosmicAtmospheres[2];
+      case 'ISL':
+        return _kCosmicAtmospheres[3];
+      case 'LUN':
+        return _kCosmicAtmospheres[4];
+      case 'SAT':
+        return _kCosmicAtmospheres[5];
+      case 'VEN':
+        return _kCosmicAtmospheres[6];
+      case 'EUR':
+        return _kCosmicAtmospheres[7];
+      case 'NEP':
+        return _kCosmicAtmospheres[8];
+      case 'MER':
+        return _kCosmicAtmospheres[9];
+      case 'EAR':
+        return _kCosmicAtmospheres[0];
+    }
+  }
+  return _kCosmicAtmospheres[index % _kCosmicAtmospheres.length];
+}
+
 /// 🏰 PocketHomesReelsFeedWidget
 /// Instagram Reels / TikTok style vertical swipeable feed for Homesteads & Citadel Houses.
 /// Interleaves interactive English mini-games (Sentence Builder, Smart Reply, Spot Error, Vocab)
@@ -2288,32 +2676,20 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
   Widget _buildHouseReelSlide(PocketNeighbor neighbor, int index) {
     final screenH = MediaQuery.of(context).size.height;
     final isPresident = neighbor.id == 'pocket_president';
-    final isDaytime = (index % 2 == 0); // Alternating light and dark modes
+    final atmosphere = _getCosmicAtmosphere(neighbor, index);
 
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: _scrollToNextReel,
       child: Stack(
         children: [
-          // 🌄 1. Living Citadel Scenery (Alternates between Day Sunlit Meadow and Night Twilight)
+          // 🌄 1. Dynamic Planetary / Island Celestial Scenery (Jupiter, Mars, Earth, Moon, etc.)
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: isDaytime
-                      ? const [
-                          Color(0xFF38BDF8), // Azure sunny sky
-                          Color(0xFF7DD3FC), // Horizon bright morning
-                          Color(0xFF34D399), // Sunlit green foothills
-                          Color(0xFF15803D), // Lush emerald ground
-                        ]
-                      : const [
-                          Color(0xFF0F172A), // Deep navy sky
-                          Color(0xFF1E293B), // Horizon twilight
-                          Color(0xFF1B4D3E), // Emerald foothills
-                          Color(0xFF0B251E), // Lush lawn ground
-                        ],
-                  stops: const [0.0, 0.40, 0.60, 1.0],
+                  colors: atmosphere.skyGradient,
+                  stops: const [0.0, 0.40, 0.65, 1.0],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -2324,26 +2700,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                     top: 35,
                     right: 25,
                     child: Opacity(
-                      opacity: isDaytime ? 0.9 : 0.7,
-                      child: isDaytime
-                          ? Row(
-                              children: const [
-                                Text('☀️', style: TextStyle(fontSize: 24)),
-                                SizedBox(width: 14),
-                                Text('☁️', style: TextStyle(fontSize: 18)),
-                                SizedBox(width: 24),
-                                Text('🕊️', style: TextStyle(fontSize: 14)),
-                              ],
-                            )
-                          : Row(
-                              children: const [
-                                Text('🌙', style: TextStyle(fontSize: 20)),
-                                SizedBox(width: 20),
-                                Text('✨', style: TextStyle(fontSize: 14)),
-                                SizedBox(width: 30),
-                                Text('⭐', style: TextStyle(fontSize: 10)),
-                              ],
-                            ),
+                      opacity: 0.9,
+                      child: atmosphere.skyProps,
                     ),
                   ),
                   Positioned(
@@ -2354,21 +2712,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                     child: Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: isDaytime
-                              ? [
-                                  const Color(0xFF22C55E)
-                                      .withValues(alpha: 0.35),
-                                  const Color(0xFF16A34A)
-                                      .withValues(alpha: 0.7),
-                                  const Color(0xFF14532D),
-                                ]
-                              : [
-                                  const Color(0xFF10B981)
-                                      .withValues(alpha: 0.15),
-                                  const Color(0xFF064E3B)
-                                      .withValues(alpha: 0.5),
-                                  const Color(0xFF022C22),
-                                ],
+                          colors: atmosphere.groundGradient,
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                         ),
@@ -2384,34 +2728,37 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
             ),
           ),
 
-          // ☀️/🌙 Day vs Night Atmosphere Mode Pill
+          // 🪐 Cosmic Planet / Island Atmosphere Mode Pill
           Positioned(
             top: MediaQuery.of(context).padding.top + 16,
             right: 18,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.5),
+                color: Colors.black.withValues(alpha: 0.65),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: isDaytime
-                      ? const Color(0xFFFDE047).withValues(alpha: 0.7)
-                      : const Color(0xFF818CF8).withValues(alpha: 0.7),
+                  color: atmosphere.badgeBorderColor.withValues(alpha: 0.8),
                   width: 1.2,
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: atmosphere.badgeBorderColor.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(isDaytime ? '☀️' : '🌙',
-                      style: const TextStyle(fontSize: 12)),
+                  Text(atmosphere.badgeEmoji,
+                      style: const TextStyle(fontSize: 12.5)),
                   const SizedBox(width: 5),
                   Text(
-                    isDaytime ? 'DAY MEADOW' : 'STARLIGHT NIGHT',
+                    atmosphere.badgeTitle,
                     style: GoogleFonts.outfit(
-                      color: isDaytime
-                          ? const Color(0xFFFEF08A)
-                          : const Color(0xFFC7D2FE),
+                      color: atmosphere.badgeColor,
                       fontSize: 9.5,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.6,
@@ -2867,6 +3214,27 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                                 style: const TextStyle(
                                   color: Colors.white70,
                                   fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 3),
+                          Row(
+                            children: [
+                              const Icon(Icons.location_on_rounded,
+                                  size: 11.5, color: Color(0xFFFFD700)),
+                              const SizedBox(width: 3),
+                              Flexible(
+                                child: Text(
+                                  '${atmosphere.planetName} • ${atmosphere.islandName}',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFFFFD700)
+                                        .withValues(alpha: 0.95),
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
