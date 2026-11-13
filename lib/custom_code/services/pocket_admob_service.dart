@@ -426,7 +426,7 @@ class PocketAdMobService {
   // AdMob rewarded videos are strictly capped at 5/day.
   static const int kMaxRewardedAdsPerDay = 5;
   static const Duration minRewardedInterval =
-      Duration(seconds: 60); // 1-minute cooldown
+      Duration(seconds: 55); // 55s cooldown as requested
   DateTime? _lastRewardedShownTime;
 
   /// Checks daily limit & cooldown compliance for Rewarded Ads
@@ -481,7 +481,7 @@ class PocketAdMobService {
     };
   }
 
-  /// ⏱️ Returns remaining seconds in the 60-second cooldown period (0 if ready)
+  /// ⏱️ Returns remaining seconds in the 55-second cooldown period (0 if ready)
   Future<int> getRewardedCooldownRemainingSeconds() async {
     final prefs = await SharedPreferences.getInstance();
     if (_lastRewardedShownTime == null) {
@@ -1297,6 +1297,10 @@ class PocketAdMobService {
     }
 
     // ⚡ If not loaded yet, show brief loading dialog and wait for it on-demand
+    if (!context.mounted) {
+      onAdClosed?.call();
+      return;
+    }
     await _showRewardedAdWithLoadingDialog(
       context: context,
       onUserEarnedReward: onUserEarnedReward,

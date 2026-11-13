@@ -9,6 +9,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:pocket_mates_app/custom_code/services/anonymous_match_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
@@ -1138,7 +1139,7 @@ class _AnonymousEnglishChatPageState extends State<AnonymousEnglishChatPage>
                 );
               }
 
-              return Align(
+              final bubble = Align(
                 alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
                 child: Container(
                   margin: const EdgeInsets.only(bottom: 10),
@@ -1163,6 +1164,22 @@ class _AnonymousEnglishChatPageState extends State<AnonymousEnglishChatPage>
                   ),
                 ),
               );
+
+              // 📢 Minimal chat bubble native ad placed non-intrusively under incoming peer messages
+              final showAdBubble = !isMe && index > 0 && (index + 1) % 5 == 0;
+              if (showAdBubble) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    bubble,
+                    const PocketChatBubbleAdWidget(
+                      margin: EdgeInsets.only(bottom: 10),
+                    ),
+                  ],
+                );
+              }
+              return bubble;
             },
           ),
         ),

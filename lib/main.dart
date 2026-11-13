@@ -219,10 +219,10 @@ class MyAppState extends State<MyApp> {
 
     _appStateNotifier = AppStateNotifier.instance;
     _router = createRouter(_appStateNotifier);
-    // Safety fallback: Ensure splash is dismissed smoothly without prolonged delay
-    Future.delayed(const Duration(milliseconds: 2500), () {
+    // Safety fallback: Ensure splash is dismissed smoothly without prolonged delay (fast login)
+    Future.delayed(const Duration(milliseconds: 1000), () {
       if (_appStateNotifier.showSplashImage) {
-        debugPrint('Main: Forcing splash dismissal after 2.5s safety timeout.');
+        debugPrint('Main: Forcing splash dismissal after 1.0s fast timeout.');
         _appStateNotifier.stopShowingSplashImage();
       }
     });
@@ -236,6 +236,8 @@ class MyAppState extends State<MyApp> {
           debugPrint('Main: User is logged in. Dismissing splash.');
           _appStateNotifier.stopShowingSplashImage();
           InAppNotificationService.startListening();
+          // 🚀 Fast ad warmup: Preload AdMob ads right away so ads are ready upon login
+          PocketAdMobService.instance.preloadAds();
           try {
             PushNotificationService.initialize();
             PushNotificationService.syncCurrentUserToken();

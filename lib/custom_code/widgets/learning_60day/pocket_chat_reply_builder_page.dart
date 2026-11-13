@@ -442,12 +442,25 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
                 itemBuilder: (context, index) {
                   final msg = _chatHistory[index];
                   final isUser = msg['isUser'] as bool;
-                  return _buildChatBubble(
+                  final bubble = _buildChatBubble(
                     text: msg['text'] as String,
                     ml: msg['ml'] as String,
                     isUser: isUser,
                     tag: msg['tag'] as String?,
                   );
+                  // 📢 Minimal chat bubble native ad placed unobtrusively in conversation flow
+                  if (index == 1 && _chatHistory.length >= 2) {
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        bubble,
+                        const PocketChatBubbleAdWidget(
+                          margin: EdgeInsets.only(top: 2, bottom: 12),
+                        ),
+                      ],
+                    );
+                  }
+                  return bubble;
                 },
               ),
             ),

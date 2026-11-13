@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 
 /// 📚 POCKET WORLD READING LIBRARY & LITERARY REPOSITORY
 ///
@@ -705,7 +706,22 @@ class _PocketReadingLibraryModalState extends State<PocketReadingLibraryModal> {
             itemCount: filtered.length,
             itemBuilder: (context, idx) {
               final item = filtered[idx];
-              return _buildReadingCard(item);
+              final card = _buildReadingCard(item);
+              // 📢 Minimal native ad inserted seamlessly into the reading catalog
+              if (idx == 1 && filtered.length >= 2) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    card,
+                    const PocketNativeAdCard(
+                      placement: PocketAdPlacement.learningStep,
+                      isCompact: true,
+                      margin: EdgeInsets.symmetric(vertical: 8),
+                    ),
+                  ],
+                );
+              }
+              return card;
             },
           ),
         ),
@@ -1116,7 +1132,16 @@ class _PocketReadingLibraryModalState extends State<PocketReadingLibraryModal> {
                 // Key Vocabulary Card
                 _buildVocabGlossary(item.vocabNotes),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
+
+                // 📢 Compact Native Ad Card in Reading Room
+                const PocketNativeAdCard(
+                  placement: PocketAdPlacement.learningStep,
+                  isCompact: true,
+                  margin: EdgeInsets.symmetric(vertical: 6),
+                ),
+
+                const SizedBox(height: 14),
 
                 // Quick Reflection / Comprehension Check
                 _buildReflectionQuiz(item),

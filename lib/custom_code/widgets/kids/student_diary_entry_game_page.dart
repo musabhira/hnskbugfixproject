@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
@@ -83,6 +82,7 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
   int _xp = 30;
   int _placedCount = 0;
   int _wrongCount = 0;
+  int _currentSentencePhase = 1;
   late List<String> _bankTiles;
   late final AnimationController _shakeCtrl =
       AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
@@ -116,10 +116,12 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
   }
 
   void _setupRound() {
-    final targets = _currentRound.allWords;
-    final all = [...targets, ..._currentRound.distractors]..shuffle();
+    _currentSentencePhase = 1;
+    final halfDistractorsCount = (_currentRound.distractors.length / 2).ceil();
+    final s1Distractors = _currentRound.distractors.take(halfDistractorsCount).toList();
+    final s1Bank = [..._currentRound.sentence1Words, ...s1Distractors]..shuffle();
     setState(() {
-      _bankTiles = all;
+      _bankTiles = s1Bank;
       _placedCount = 0;
       _wrongCount = 0;
     });
@@ -148,6 +150,15 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
       setState(() {
         _placedCount++;
         _bankTiles.remove(word);
+
+        // Transition from Sentence 1 (Today's highlight) to Sentence 2 (Tomorrow's wish)
+        if (_placedCount == _currentRound.sentence1Words.length &&
+            _currentRound.sentence2Words.isNotEmpty) {
+          _currentSentencePhase = 2;
+          final halfDistractorsCount = (_currentRound.distractors.length / 2).ceil();
+          final s2Distractors = _currentRound.distractors.skip(halfDistractorsCount).toList();
+          _bankTiles = [..._currentRound.sentence2Words, ...s2Distractors]..shuffle();
+        }
       });
 
       if (_placedCount == expectedWords.length) {
@@ -461,7 +472,9 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
                 decoration: BoxDecoration(
                   color: kDCard,
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                  border: Border.all(color: kDGold.withValues(alpha: 0.35)),
+                  border: Border.all(
+                    color: (_currentSentencePhase == 1 ? kDGold : kDEm).withValues(alpha: 0.35),
+                  ),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.5),
@@ -476,14 +489,44 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.touch_app_rounded, color: kDGold, size: 16),
+                        Icon(
+                          Icons.touch_app_rounded,
+                          color: _currentSentencePhase == 1 ? kDGold : kDEm,
+                          size: 16,
+                        ),
                         const SizedBox(width: 6),
-                        Text(
-                          'Word Bank (Tap to fill the diary)',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white70,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 12.5,
+                        Expanded(
+                          child: Text(
+                            _currentSentencePhase == 1
+                                ? "Word Bank: 1. Today's Highlight"
+                                : "Word Bank: 2. Tomorrow's Wish",
+                            style: GoogleFonts.outfit(
+                              color: _currentSentencePhase == 1
+                                  ? const Color(0xFFFEF08A)
+                                  : const Color(0xFFBBF7D0),
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12.5,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: (_currentSentencePhase == 1 ? kDGold : kDEm)
+                                .withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: _currentSentencePhase == 1 ? kDGold : kDEm,
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            _currentSentencePhase == 1 ? 'Part 1 of 2' : 'Part 2 of 2',
+                            style: GoogleFonts.outfit(
+                              color: _currentSentencePhase == 1 ? kDGold : kDEm,
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],

@@ -569,7 +569,16 @@ class _PocketMiniSpeechPracticePageState
                           ),
                         ),
 
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 14),
+
+                        // 📢 Minimal Native Ad Spot (Compact & Non-Intrusive)
+                        const PocketNativeAdCard(
+                          placement: PocketAdPlacement.learningStep,
+                          isCompact: true,
+                          margin: EdgeInsets.symmetric(vertical: 4),
+                        ),
+
+                        const SizedBox(height: 14),
 
                         // Big Glowing Microphone Button
                         Center(
