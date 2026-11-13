@@ -361,6 +361,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   }
 
   bool _hasInitiallyScrolled = false;
+  final Set<int> _activeRoadmapAdDays = {};
   int? _adminSelectedDay;
 
   /// 🔐 Master Admin check for musabthonippadam@gmail.com (Audio Directive: all days, gates, steps unlocked)
@@ -423,6 +424,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   @override
   void dispose() {
     PocketGameAudioService.instance.pause();
+    _activeRoadmapAdDays.clear();
     _targetTabPageController.dispose();
     _midnightTicker?.cancel();
     _bobController.dispose();
@@ -704,10 +706,35 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   bool _isRoadmapAdInViewport(int day, double minY, double maxY) {
     if (!_hasInitiallyScrolled) return false;
     // Spaced along mountain trail at alternate gates (Day 1, 3, 5, 7, 9...)
-    // so ads repeat persistently without overlapping houses or wipeouts
+    // so ads repeat persistently without overlapping houses
     if (day % 2 == 0) return false;
     final adY = _getNodeY(day) - (_nodeSpacingY * 0.68);
-    return (adY >= minY - 360.0) && (adY <= maxY + 360.0);
+
+    // 🛡️ Hysteresis Culling Window (Anti-Wipeout & Anti-Flicker):
+    // Enter buffer (1400px): Mounts smoothly ~1.5 screens before user arrives.
+    // Exit buffer (2600px): Unmounts ONLY after user scrolls ~2.5–3 screens away.
+    // When the user scrolls slightly up or down to inspect the ad, it NEVER unmounts or vanishes!
+    final bool isCurrentlyActive = _activeRoadmapAdDays.contains(day);
+    const double enterBuffer = 1400.0;
+    const double exitBuffer = 2600.0;
+
+    if (isCurrentlyActive) {
+      final bool stillInRange =
+          (adY >= minY - exitBuffer) && (adY <= maxY + exitBuffer);
+      if (!stillInRange) {
+        _activeRoadmapAdDays.remove(day);
+        return false;
+      }
+      return true;
+    } else {
+      final bool shouldEnter =
+          (adY >= minY - enterBuffer) && (adY <= maxY + enterBuffer);
+      if (shouldEnter) {
+        _activeRoadmapAdDays.add(day);
+        return true;
+      }
+      return false;
+    }
   }
 
   void _scrollToRule({bool animate = false}) {
