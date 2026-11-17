@@ -8,14 +8,14 @@ import android.widget.TextView
 import com.google.android.gms.ads.nativead.MediaView
 import com.google.android.gms.ads.nativead.NativeAd
 import com.google.android.gms.ads.nativead.NativeAdView
-import io.flutter.plugins.googlemobileads.GoogleMobileAdsPlugin
+import io.flutter.plugins.googlemobileads.NativeAdFactory
 
 /**
  * Custom NativeAdFactory for POKET Mates App.
  * Inflates pocket_native_ad_card.xml and binds the native ad components.
- * Uses GoogleMobileAdsPlugin.NativeAdFactory (google_mobile_ads v5.x+ / v9.x compatible).
+ * Uses io.flutter.plugins.googlemobileads.NativeAdFactory (google_mobile_ads v5.x+ / v9.x compatible).
  */
-class PocketNativeAdFactory(private val layoutInflater: LayoutInflater) : GoogleMobileAdsPlugin.NativeAdFactory {
+class PocketNativeAdFactory(private val layoutInflater: LayoutInflater) : NativeAdFactory {
 
     override fun createNativeAd(
         nativeAd: NativeAd,

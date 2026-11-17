@@ -15,6 +15,25 @@ class IAPService {
   static const String vipYearlyProductId = 'poketmates_vip_yearly';
   static const String certificateProductId = 'poketmates_c2_certificate';
 
+  static const List<String> allVipProductIds = [
+    vipMonthlyProductId,
+    'poket_vip_monthly',
+    'com.poketmates.app.vip.monthly',
+    'vip_monthly',
+    vipQuarterlyProductId,
+    'poket_vip_quarterly',
+    'poketmates_vip_90day',
+    'poket_vip_90day',
+    'com.poketmates.app.vip.quarterly',
+    'vip_quarterly',
+    vipYearlyProductId,
+    'poket_vip_yearly',
+    'com.poketmates.app.vip.yearly',
+    'vip_yearly',
+    certificateProductId,
+    'poket_c2_certificate',
+  ];
+
   InAppPurchase? _iapInstance;
   InAppPurchase get _iap => _iapInstance ??= InAppPurchase.instance;
   StreamSubscription<List<PurchaseDetails>>? _subscription;
@@ -62,12 +81,7 @@ class IAPService {
       );
 
       // Pre-fetch default VIP subscriptions and certificate
-      await fetchProducts([
-        vipMonthlyProductId,
-        vipQuarterlyProductId,
-        vipYearlyProductId,
-        certificateProductId,
-      ]);
+      await fetchProducts(allVipProductIds);
     } catch (e) {
       debugPrint('IAPService initialize exception: $e');
     }
@@ -90,11 +104,32 @@ class IAPService {
   }
 
   ProductDetails? getProduct(String productId) {
+    if (_products.isEmpty) return null;
+    // 1. Direct exact match
     try {
       return _products.firstWhere((p) => p.id == productId);
-    } catch (_) {
-      return null;
-    }
+    } catch (_) {}
+
+    // 2. Fuzzy match based on keywords
+    final targetLower = productId.toLowerCase();
+    try {
+      if (targetLower.contains('cert')) {
+        return _products.firstWhere((p) => p.id.toLowerCase().contains('cert'));
+      } else if (targetLower.contains('quarter') || targetLower.contains('90day') || targetLower.contains('pass')) {
+        return _products.firstWhere((p) =>
+            p.id.toLowerCase().contains('quarter') ||
+            p.id.toLowerCase().contains('90day') ||
+            p.id.toLowerCase().contains('pass'));
+      } else if (targetLower.contains('year') || targetLower.contains('annual')) {
+        return _products.firstWhere((p) =>
+            p.id.toLowerCase().contains('year') ||
+            p.id.toLowerCase().contains('annual'));
+      } else if (targetLower.contains('month')) {
+        return _products.firstWhere((p) => p.id.toLowerCase().contains('month'));
+      }
+    } catch (_) {}
+
+    return null;
   }
 
   /// Initiates subscription purchase through Google Play or Apple App Store
@@ -125,12 +160,7 @@ class IAPService {
 
       // Refresh products if not cached or targetId not present
       if (_products.isEmpty || getProduct(targetId) == null) {
-        await fetchProducts([
-          vipMonthlyProductId,
-          vipQuarterlyProductId,
-          vipYearlyProductId,
-          certificateProductId,
-        ]);
+        await fetchProducts(allVipProductIds);
       }
 
       final product = getProduct(targetId);
@@ -190,11 +220,16 @@ class IAPService {
 
   Future<void> _verifyAndGrantAccess(PurchaseDetails purchase) async {
     try {
-      final isVipProduct = purchase.productID == vipMonthlyProductId ||
-          purchase.productID == vipQuarterlyProductId ||
-          purchase.productID == vipYearlyProductId;
-      final isCertificateProduct = purchase.productID == certificateProductId ||
-          purchase.productID == 'poketmates_certificate_c2';
+      final pid = purchase.productID.toLowerCase();
+      final isCertificateProduct = pid.contains('cert');
+      final isVipProduct = !isCertificateProduct && (
+          pid.contains('vip') ||
+          pid.contains('month') ||
+          pid.contains('quarter') ||
+          pid.contains('year') ||
+          pid.contains('pass') ||
+          pid.contains('annual')
+      );
 
       final prefs = await SharedPreferences.getInstance();
       final supabase = SupaFlow.client;
@@ -230,9 +265,9 @@ class IAPService {
         // 2. Sync to Supabase user profile & entitlements (both 'profiles' and 'profile')
         if (userId != null) {
           String planName = 'monthly';
-          if (purchase.productID == vipQuarterlyProductId) {
+          if (pid.contains('quarter') || pid.contains('90day') || pid.contains('pass')) {
             planName = 'quarterly';
-          } else if (purchase.productID == vipYearlyProductId) {
+          } else if (pid.contains('year') || pid.contains('annual')) {
             planName = 'yearly';
           }
 
@@ -254,9 +289,9 @@ class IAPService {
           // Record transaction in user_subscriptions table if exists
           try {
             String planName = 'monthly';
-            if (purchase.productID == vipQuarterlyProductId) {
+            if (pid.contains('quarter') || pid.contains('90day') || pid.contains('pass')) {
               planName = 'quarterly_90day';
-            } else if (purchase.productID == vipYearlyProductId) {
+            } else if (pid.contains('year') || pid.contains('annual')) {
               planName = 'annual';
             }
             await supabase.from('user_subscriptions').upsert({

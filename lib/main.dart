@@ -307,11 +307,37 @@ class MyAppState extends State<MyApp> {
             brightness: Brightness.dark,
             primarySwatch: Colors.blue,
             scaffoldBackgroundColor: Colors.black,
+            snackBarTheme: const SnackBarThemeData(
+              backgroundColor: Color(0xFF0F172A),
+              contentTextStyle: TextStyle(
+                color: Colors.white,
+                fontSize: 13.5,
+                fontWeight: FontWeight.w500,
+              ),
+              actionTextColor: Color(0xFFFFD700),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(12)),
+              ),
+            ),
           ),
           darkTheme: ThemeData(
             brightness: Brightness.dark,
             primarySwatch: Colors.blue,
             scaffoldBackgroundColor: Colors.black,
+            snackBarTheme: const SnackBarThemeData(
+              backgroundColor: Color(0xFF0F172A),
+              contentTextStyle: TextStyle(
+                color: Colors.white,
+                fontSize: 13.5,
+                fontWeight: FontWeight.w500,
+              ),
+              actionTextColor: Color(0xFFFFD700),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(12)),
+              ),
+            ),
           ),
           themeMode: _themeMode,
           routerConfig: _router,

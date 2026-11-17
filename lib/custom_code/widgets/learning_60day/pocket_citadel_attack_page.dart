@@ -234,13 +234,36 @@ class PocketCitadelAttackPage extends StatefulWidget {
           targetDay ?? PocketRobotService.getDynamicLevel(robot);
       final palList = HousePalette.presets;
       final autoPal = palList[(dynamicLevel - 1) % palList.length].id;
+      final targetPlanetCode = (preferredPlanetCode != null && preferredPlanetCode.isNotEmpty)
+          ? preferredPlanetCode
+          : (neighbor?.planetCode != null && neighbor!.planetCode!.isNotEmpty)
+              ? neighbor.planetCode!
+              : robot.planetCode;
+      final colony = (targetPlanetCode.isNotEmpty)
+          ? PoketCosmosAllocationService.instance.getColonyByCode(targetPlanetCode)
+          : null;
+      final targetPlanetName = preferredPlanetName ??
+          neighbor?.planetName ??
+          colony?.planetName ??
+          robot.planetName;
+      final targetIslandName =
+          neighbor?.islandName ?? colony?.islandName ?? robot.islandName;
+      final targetStreetName =
+          neighbor?.streetName ?? colony?.streetName ?? robot.streetName;
+      final targetPlotNumber =
+          preferredPlotNumber ?? neighbor?.plotNumber ?? robot.plotNumber;
+      final targetPin = (colony != null)
+          ? 'PKT-W01-${colony.code}-I01-P${targetPlotNumber.toString().padLeft(2, '0')}'
+          : (neighbor?.cosmosPin ?? robot.cosmosPin);
+
       final robotNeighbor = PocketNeighbor(
         id: robot.id,
-        name: targetName ?? robot.name,
+        name: targetName ?? neighbor?.name ?? robot.name,
         day: dynamicLevel,
         streak: dynamicLevel,
         rank: robot.cefrRank,
         paletteId: paletteId ??
+            neighbor?.paletteId ??
             (robot.housePalette.isNotEmpty ? robot.housePalette : autoPal),
         isMe: false,
         hasActiveShield: true,
@@ -248,12 +271,12 @@ class PocketCitadelAttackPage extends StatefulWidget {
         isPocketRobo: true,
         hp: 100,
         maxHp: 100,
-        planetCode: robot.planetCode,
-        planetName: robot.planetName,
-        islandName: robot.islandName,
-        streetName: robot.streetName,
-        plotNumber: robot.plotNumber,
-        cosmosPin: robot.cosmosPin,
+        planetCode: colony?.code ?? targetPlanetCode,
+        planetName: targetPlanetName,
+        islandName: targetIslandName,
+        streetName: targetStreetName,
+        plotNumber: targetPlotNumber,
+        cosmosPin: targetPin,
       );
       if (!context.mounted) return null;
       return await Navigator.push(
@@ -357,7 +380,28 @@ class PocketCitadelAttackPage extends StatefulWidget {
     int? userPlotNum;
     String? userPin;
 
-    if (pinMatch != null) {
+    final explicitPlanetCode = (preferredPlanetCode != null && preferredPlanetCode.isNotEmpty)
+        ? preferredPlanetCode
+        : (neighbor?.planetCode != null && neighbor!.planetCode!.isNotEmpty)
+            ? neighbor.planetCode
+            : null;
+
+    if (explicitPlanetCode != null) {
+      final colony = PoketCosmosAllocationService.instance
+          .getColonyByCode(explicitPlanetCode);
+      userPlanetCode = colony.code;
+      userPlanetName = preferredPlanetName ?? neighbor?.planetName ?? colony.planetName;
+      userIslandName = neighbor?.islandName ?? colony.islandName;
+      userStreetName = neighbor?.streetName ?? colony.streetName;
+      userPlotNum = preferredPlotNumber ??
+          neighbor?.plotNumber ??
+          ((userId.hashCode.abs() ~/ 10) %
+                  PoketCosmosAllocationService.maxPlotsPerIsland) +
+              1;
+      final waveVal = preferredWave ?? neighbor?.effectiveWave ?? 1;
+      userPin = neighbor?.cosmosPin ??
+          'PKT-W${waveVal.toString().padLeft(2, '0')}-$userPlanetCode-I${waveVal.toString().padLeft(2, '0')}-P${userPlotNum.toString().padLeft(2, '0')}';
+    } else if (pinMatch != null) {
       final waveNum = int.tryParse(pinMatch.group(1) ?? '1') ?? 1;
       final code = pinMatch.group(2) ?? 'EP';
       final localPlot = int.tryParse(pinMatch.group(4) ?? '1') ?? 1;
@@ -380,34 +424,18 @@ class PocketCitadelAttackPage extends StatefulWidget {
       userPin = pinMatch.group(0);
     } else {
       // 🌌 Deterministic & Database-backed Cosmos Born Address Synchronization
-      if (preferredPlanetCode != null && preferredPlanetCode.isNotEmpty) {
-        final colony = PoketCosmosAllocationService.instance
-            .getColonyByCode(preferredPlanetCode);
-        userPlanetCode = colony.code;
-        userPlanetName = colony.planetName;
-        userIslandName = colony.islandName;
-        userStreetName = colony.streetName;
-        userPlotNum = preferredPlotNumber ??
-            ((userId.hashCode.abs() ~/ 10) %
-                    PoketCosmosAllocationService.maxPlotsPerIsland) +
-                1;
-        final waveVal = preferredWave ?? 1;
-        userPin =
-            'PKT-W${waveVal.toString().padLeft(2, '0')}-$userPlanetCode-I${waveVal.toString().padLeft(2, '0')}-P${userPlotNum.toString().padLeft(2, '0')}';
-      } else {
-        final resolvedPlot =
-            await PoketCosmosAllocationService.instance.getUserPlot(
-          userId: userId,
-          fallbackName: p['first_name'] ?? p['name'] ?? targetName,
-        );
-        userPin = resolvedPlot.postalPinCode;
-        final parts = resolvedPlot.postalPinCode.split('-');
-        userPlanetCode = parts.length > 2 ? parts[2] : 'EP';
-        userPlotNum = resolvedPlot.plotNumber;
-        userPlanetName = resolvedPlot.planetName;
-        userIslandName = resolvedPlot.countryName;
-        userStreetName = resolvedPlot.streetName;
-      }
+      final resolvedPlot =
+          await PoketCosmosAllocationService.instance.getUserPlot(
+        userId: userId,
+        fallbackName: p['first_name'] ?? p['name'] ?? targetName,
+      );
+      userPin = resolvedPlot.postalPinCode;
+      final parts = resolvedPlot.postalPinCode.split('-');
+      userPlanetCode = parts.length > 2 ? parts[2] : 'EP';
+      userPlotNum = resolvedPlot.plotNumber;
+      userPlanetName = resolvedPlot.planetName;
+      userIslandName = resolvedPlot.countryName;
+      userStreetName = resolvedPlot.streetName;
     }
 
     final bool targetIsVip = (p['is_vip'] == true) ||

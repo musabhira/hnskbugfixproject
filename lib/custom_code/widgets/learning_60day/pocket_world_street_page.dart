@@ -68,6 +68,56 @@ class PocketNeighbor {
     this.cosmosPin,
   });
 
+  PocketNeighbor copyWith({
+    String? id,
+    String? name,
+    int? day,
+    int? streak,
+    String? rank,
+    String? paletteId,
+    bool? isMe,
+    bool? hasActiveShield,
+    String? statusMessage,
+    bool? isBanned,
+    String? banReason,
+    bool? isPocketRobo,
+    bool? isDamaged,
+    int? hp,
+    int? maxHp,
+    bool? isVip,
+    String? planetCode,
+    String? planetName,
+    String? islandName,
+    String? streetName,
+    int? plotNumber,
+    String? cosmosPin,
+  }) {
+    return PocketNeighbor(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      day: day ?? this.day,
+      streak: streak ?? this.streak,
+      rank: rank ?? this.rank,
+      paletteId: paletteId ?? this.paletteId,
+      isMe: isMe ?? this.isMe,
+      hasActiveShield: hasActiveShield ?? this.hasActiveShield,
+      statusMessage: statusMessage ?? this.statusMessage,
+      isBanned: isBanned ?? this.isBanned,
+      banReason: banReason ?? this.banReason,
+      isPocketRobo: isPocketRobo ?? this.isPocketRobo,
+      isDamaged: isDamaged ?? this.isDamaged,
+      hp: hp ?? this.hp,
+      maxHp: maxHp ?? this.maxHp,
+      isVip: isVip ?? this.isVip,
+      planetCode: planetCode ?? this.planetCode,
+      planetName: planetName ?? this.planetName,
+      islandName: islandName ?? this.islandName,
+      streetName: streetName ?? this.streetName,
+      plotNumber: plotNumber ?? this.plotNumber,
+      cosmosPin: cosmosPin ?? this.cosmosPin,
+    );
+  }
+
   /// 🏛️ Official Sovereign Citadel Neighbor representation for The President
   static PocketNeighbor createPresident() {
     return const PocketNeighbor(

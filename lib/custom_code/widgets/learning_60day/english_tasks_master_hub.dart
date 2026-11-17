@@ -5055,11 +5055,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     children: [
                       Text(
                         PocketLanguageService.localize(
-                          en: 'Ideas & Feedback • Startup Engine',
-                          ml: 'ഐഡിയകളും ഫീഡ്ബാക്കും • Ideas',
-                          hi: 'सुझाव और फ़ीडबैक • Ideas',
-                          ta: 'கருத்துக்கள் & யோசனைகள் • Ideas',
-                          te: 'ఆలోచనలు & అభిప్రాయం • Ideas',
+                          en: 'Feedback & Suggestions',
+                          ml: 'ഫീഡ്ബാക്ക് & ആശയങ്ങൾ',
+                          hi: 'फ़ीडबैक और सुझाव',
+                          ta: 'கருத்துகள் & யோசனைகள்',
+                          te: 'అభిప్రాయాలు & ఆలోచనలు',
                         ),
                         style: GoogleFonts.outfit(
                           color: const Color(0xFFFFD700),
@@ -5068,7 +5068,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         ),
                       ),
                       Text(
-                        'Suggest Step • Share Your Ideas',
+                        PocketLanguageService.localize(
+                          en: 'Help us make Pocket Mates better',
+                          ml: 'ആപ്പ് മികച്ചതാക്കാൻ സഹായിക്കൂ',
+                          hi: 'ऐप को और बेहतर बनाने में मदद करें',
+                          ta: 'ஆப் மேம்படுத்த உதவுங்கள்',
+                          te: 'యాప్ మెరుగుపరచడంలో సహాయపడండి',
+                        ),
                         style: GoogleFonts.outfit(
                           color: Colors.white70,
                           fontSize: 10,

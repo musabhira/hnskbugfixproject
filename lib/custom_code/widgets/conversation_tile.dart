@@ -23,6 +23,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_island_group_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/group_sky_members_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dart';
 
 
 class ConversationTile extends StatefulWidget {
@@ -58,6 +59,9 @@ class _ConversationTileState extends State<ConversationTile> {
   PocketTalkPact? _cachedPact;
   bool _isSendingPocketTalk = false;
   bool _canInitiatePact = true;
+  int? _globalRank;
+  bool _showRank = false;
+  async.Timer? _rankCycleTimer;
 
   bool get _hasUnwatchedStatus {
     if (!widget.conversation.hasStatus) return false;
@@ -139,6 +143,7 @@ class _ConversationTileState extends State<ConversationTile> {
     ContactsNameService().syncNotifier.addListener(_onContactsSyncChanged);
     _checkPendingSent();
     _loadPocketTalkPact();
+    _loadGlobalRank();
   }
 
   void _checkPendingSent() {
@@ -184,6 +189,60 @@ class _ConversationTileState extends State<ConversationTile> {
         }
       });
     }
+  }
+
+  void _loadGlobalRank() {
+    final convId = widget.conversation.id;
+    if (convId.isEmpty ||
+        widget.conversation.isGroup ||
+        widget.conversation.isTool ||
+        widget.conversation.isNotification ||
+        widget.conversation.isActiveTimer ||
+        PocketPresidentService.isPresidentId(convId) ||
+        convId == 'pocket_president') {
+      return;
+    }
+
+    final cached = PocketRankingService.getCachedGlobalRank(convId);
+    if (cached != null && cached > 0) {
+      _globalRank = cached;
+      _startRankCycle();
+      return;
+    }
+
+    PocketRankingService.fetchUserGlobalRank(convId).then((rank) {
+      if (mounted && rank > 0) {
+        setState(() => _globalRank = rank);
+        _startRankCycle();
+      }
+    }).catchError((_) {});
+  }
+
+  void _startRankCycle() {
+    _rankCycleTimer?.cancel();
+    if (_globalRank == null || _globalRank! <= 0) return;
+
+    // Stagger initial cycle start so tiles don't transition synchronously
+    final staggerMs = 2000 + (widget.conversation.id.hashCode.abs() % 3500);
+    _rankCycleTimer = async.Timer(Duration(milliseconds: staggerMs), () {
+      _runRankCycle();
+    });
+  }
+
+  void _runRankCycle() {
+    if (!mounted || _globalRank == null) return;
+    setState(() => _showRank = true);
+
+    // Show Global Rank badge for 10 seconds
+    _rankCycleTimer = async.Timer(const Duration(seconds: 10), () {
+      if (!mounted) return;
+      setState(() => _showRank = false);
+
+      // Show latest message for 3 seconds, then cycle back
+      _rankCycleTimer = async.Timer(const Duration(seconds: 3), () {
+        _runRankCycle();
+      });
+    });
   }
 
   Future<void> _sendPocketTalkRequest() async {
@@ -317,11 +376,13 @@ class _ConversationTileState extends State<ConversationTile> {
     if (oldWidget.conversation.id != widget.conversation.id) {
       _checkPendingSent();
       _loadPocketTalkPact();
+      _loadGlobalRank();
     }
   }
 
   @override
   void dispose() {
+    _rankCycleTimer?.cancel();
     VibesSeenService.seenEpochNotifier.removeListener(_onVibesSeenChanged);
     ContactsNameService().syncNotifier.removeListener(_onContactsSyncChanged);
     super.dispose();
@@ -1251,30 +1312,94 @@ class _ConversationTileState extends State<ConversationTile> {
                                   );
                                 }
 
-                                return Text(
-                                  widget.conversation.isActiveTimer
-                                      ? (widget.conversation.taskTitle ??
-                                          'Active Task')
-                                      : (widget.conversation.lastMessage ??
-                                          (widget.conversation.isGroup
-                                              ? 'No messages yet'
-                                              : 'Start chatting')),
-                                  style: GoogleFonts.outfit(
-                                    color: widget.conversation.unreadCount >
-                                                0 ||
-                                            widget.conversation.isActiveTimer
-                                        ? unreadTextColor
-                                        : secondaryTextColor,
-                                    fontSize: 13.5,
-                                    fontWeight:
-                                        widget.conversation.unreadCount > 0 ||
-                                                widget
-                                                    .conversation.isActiveTimer
-                                            ? FontWeight.w500
-                                            : FontWeight.normal,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                                final bool shouldShowRank = _showRank &&
+                                    _globalRank != null &&
+                                    !isMentioned &&
+                                    !widget.conversation.isActiveTimer &&
+                                    !widget.conversation.isGroup &&
+                                    !PocketPresidentService.isPresidentId(
+                                        widget.conversation.id);
+
+                                return AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 300),
+                                  transitionBuilder: (child, animation) =>
+                                      FadeTransition(
+                                          opacity: animation, child: child),
+                                  child: shouldShowRank
+                                      ? Row(
+                                          key: ValueKey('rank_$_globalRank'),
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Container(
+                                              margin: const EdgeInsets.only(
+                                                  right: 6),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 6,
+                                                      vertical: 1.5),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFFFFD700)
+                                                    .withValues(alpha: 0.14),
+                                                borderRadius:
+                                                    BorderRadius.circular(5),
+                                                border: Border.all(
+                                                  color: const Color(0xFFFFD700)
+                                                      .withValues(alpha: 0.5),
+                                                  width: 0.8,
+                                                ),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  const Text('🏆',
+                                                      style: TextStyle(
+                                                          fontSize: 10)),
+                                                  const SizedBox(width: 3.5),
+                                                  Text(
+                                                    'GLOBAL RANK #$_globalRank',
+                                                    style: GoogleFonts.outfit(
+                                                      color: const Color(
+                                                          0xFFFFD700),
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                      fontSize: 10.5,
+                                                      letterSpacing: 0.3,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        )
+                                      : Text(
+                                          key: const ValueKey('normal_msg_sub'),
+                                          widget.conversation.isActiveTimer
+                                              ? (widget.conversation.taskTitle ??
+                                                  'Active Task')
+                                              : (widget.conversation.lastMessage ??
+                                                  (widget.conversation.isGroup
+                                                      ? 'No messages yet'
+                                                      : 'Start chatting')),
+                                          style: GoogleFonts.outfit(
+                                            color: widget.conversation
+                                                            .unreadCount >
+                                                        0 ||
+                                                    widget.conversation
+                                                        .isActiveTimer
+                                                ? unreadTextColor
+                                                : secondaryTextColor,
+                                            fontSize: 13.5,
+                                            fontWeight: widget.conversation
+                                                            .unreadCount >
+                                                        0 ||
+                                                    widget.conversation
+                                                        .isActiveTimer
+                                                ? FontWeight.w500
+                                                : FontWeight.normal,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                 );
                               },
                             ),

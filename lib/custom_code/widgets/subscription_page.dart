@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:pocket_mates_app/services/iap_service.dart';
 import 'package:pocket_mates_app/custom_code/services/monetization_service.dart';
+import '/backend/supabase/supabase.dart';
 
 class SubscriptionPage extends StatefulWidget {
   final double? width;
@@ -22,7 +23,7 @@ class SubscriptionPage extends StatefulWidget {
 class _SubscriptionPageState extends State<SubscriptionPage>
     with TickerProviderStateMixin {
   String _currentPlan = 'free';
-  bool _isYearly = false;
+  final bool _isYearly = false;
   late AnimationController _shimmerController;
 
   final List<Map<String, dynamic>> _plans = [
@@ -163,9 +164,15 @@ class _SubscriptionPageState extends State<SubscriptionPage>
         _loadCurrentPlan();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('🎉 Poket VIP Successfully Activated!'),
-              backgroundColor: Color(0xFF10B981),
+            SnackBar(
+              content: Text(
+                '🎉 Poket VIP Successfully Activated!',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              backgroundColor: const Color(0xFF10B981),
             ),
           );
         }
@@ -183,9 +190,46 @@ class _SubscriptionPageState extends State<SubscriptionPage>
   Future<void> _loadCurrentPlan() async {
     final prefs = await SharedPreferences.getInstance();
     final campaign = await MonetizationService().getActiveCampaign();
+
+    // Sync directly from Supabase profile to ensure local cache matches DB
+    String loadedPlan = prefs.getString('handskill_plan') ?? 'free';
+    try {
+      final supabase = SupaFlow.client;
+      final user = supabase.auth.currentUser;
+      if (user != null) {
+        final profile = await supabase
+            .from('profile')
+            .select('is_vip, subscription_tier, subscription_status')
+            .eq('user_id', user.id)
+            .maybeSingle();
+        if (profile != null) {
+          final isVip = profile['is_vip'] == true &&
+              profile['subscription_status'] != 'inactive';
+          if (!isVip) {
+            loadedPlan = 'free';
+            await prefs.setString('handskill_plan', 'free');
+            await prefs.setBool('is_vip', false);
+          } else {
+            final tier = profile['subscription_tier']?.toString();
+            if (tier == 'yearly' || tier == 'annual') {
+              loadedPlan = 'yearly';
+            } else if (tier == 'quarterly' || tier == 'quarterly_90day') {
+              loadedPlan = 'quarterly';
+            } else {
+              loadedPlan = 'monthly';
+            }
+            await prefs.setString('handskill_plan', loadedPlan);
+            await prefs.setBool('is_vip', true);
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error syncing profile plan in subscription page: $e');
+    }
+
     if (mounted) {
       setState(() {
-        _currentPlan = prefs.getString('handskill_plan') ?? 'free';
+        _currentPlan = loadedPlan;
         // Dynamically reflect active prices from admin campaign
         for (final p in _plans) {
           if (p['id'] == 'monthly') {
@@ -221,7 +265,7 @@ class _SubscriptionPageState extends State<SubscriptionPage>
 
     if (!mounted) return;
 
-    // Google Play Store Policy: Must use Google Play In-App Billing for digital goods
+    // Google Play & Apple App Store Policy: Must use official In-App Purchases for digital goods
     if (!_allowDirectUpi) {
       final messenger = ScaffoldMessenger.of(context);
       HapticFeedback.mediumImpact();
@@ -239,9 +283,15 @@ class _SubscriptionPageState extends State<SubscriptionPage>
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(Platform.isIOS
-                    ? 'Connecting to Apple Pay & App Store...'
-                    : 'Connecting to Google Play In-App Billing...'),
+                child: Text(
+                  Platform.isIOS
+                      ? 'Connecting to App Store In-App Purchases...'
+                      : 'Connecting to Google Play In-App Billing...',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
             ],
           ),
@@ -258,27 +308,17 @@ class _SubscriptionPageState extends State<SubscriptionPage>
         messenger.hideCurrentSnackBar();
         messenger.showSnackBar(
           SnackBar(
-            content: Text(Platform.isIOS
-                ? '⚠️ App Store product is syncing or store sandbox is offline.'
-                : '⚠️ Google Play In-App Billing could not be reached. Please check your network connection.'),
-            backgroundColor: const Color(0xFF1E293B),
-            duration: const Duration(seconds: 6),
-            action: SnackBarAction(
-              label: 'Activate Test VIP 👑',
-              textColor: const Color(0xFFFFD700),
-              onPressed: () async {
-                await IAPService().grantSimulatedVip(planId: planType);
-                if (mounted) {
-                  _loadCurrentPlan();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('🎉 Poket VIP Activated for Testing!'),
-                      backgroundColor: Color(0xFF10B981),
-                    ),
-                  );
-                }
-              },
+            content: Text(
+              Platform.isIOS
+                  ? '⚠️ Unable to connect to App Store In-App Purchases. Please check your internet connection or Apple ID.'
+                  : '⚠️ Google Play In-App Billing could not be reached. Please check your network connection.',
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
             ),
+            backgroundColor: const Color(0xFF1E293B),
+            duration: const Duration(seconds: 4),
           ),
         );
       }
@@ -340,9 +380,15 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                   if (!initiated && mounted) {
                     messenger.showSnackBar(
                       SnackBar(
-                        content: Text(Platform.isIOS
-                            ? 'Connecting to App Store In-App Purchases...'
-                            : 'Google Play Billing loading... You can also use Direct UPI below.'),
+                        content: Text(
+                          Platform.isIOS
+                              ? 'Connecting to App Store In-App Purchases...'
+                              : 'Google Play Billing loading... You can also use Direct UPI below.',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                         backgroundColor: const Color(0xFF1E293B),
                       ),
                     );
@@ -682,9 +728,16 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                         final val = phoneController.text.trim();
                         if (val.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text(
-                                    'Please enter phone number or UPI ID')),
+                            SnackBar(
+                              content: Text(
+                                'Please enter phone number or UPI ID',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              backgroundColor: const Color(0xFF1E293B),
+                            ),
                           );
                           return;
                         }
@@ -961,7 +1014,9 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                                 content: Text(
                                   '🎉 Payment Successful! ${plan['name']} VIP Activated!',
                                   style: GoogleFonts.outfit(
-                                      fontWeight: FontWeight.bold),
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                                 backgroundColor: const Color(0xFF10B981),
                                 duration: const Duration(seconds: 3),
@@ -1174,11 +1229,16 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                     onPressed: () async {
                       HapticFeedback.lightImpact();
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content:
-                              Text('Checking store for previous purchases...'),
-                          backgroundColor: Color(0xFF1E293B),
-                          duration: Duration(seconds: 2),
+                        SnackBar(
+                          content: Text(
+                            'Checking store for previous purchases...',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          backgroundColor: const Color(0xFF1E293B),
+                          duration: const Duration(seconds: 2),
                         ),
                       );
                       await IAPService().restorePurchases();

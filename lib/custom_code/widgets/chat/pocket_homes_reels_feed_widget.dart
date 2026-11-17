@@ -195,6 +195,7 @@ class ReelFeedItem {
 /// 🪐 Multi-Planetary & Island Atmosphere Engine for Homes Reels Feed
 class _CosmicReelAtmosphere {
   final String id;
+  final String planetCode;
   final String planetName;
   final String islandName;
   final String badgeTitle;
@@ -207,6 +208,7 @@ class _CosmicReelAtmosphere {
 
   const _CosmicReelAtmosphere({
     required this.id,
+    required this.planetCode,
     required this.planetName,
     required this.islandName,
     required this.badgeTitle,
@@ -223,6 +225,7 @@ final List<_CosmicReelAtmosphere> _kCosmicAtmospheres = [
   // 1. Earth Prime 🌍 (Day Meadow)
   const _CosmicReelAtmosphere(
     id: 'earth',
+    planetCode: 'EP',
     planetName: 'Earth Prime 🌍',
     islandName: 'Genesis Valley 🏝️',
     badgeTitle: 'EARTH PRIME MEADOW',
@@ -254,6 +257,7 @@ final List<_CosmicReelAtmosphere> _kCosmicAtmospheres = [
   // 2. Jupiter 🟠 (Storm Realm)
   const _CosmicReelAtmosphere(
     id: 'jupiter',
+    planetCode: 'JUP',
     planetName: 'Jupiter 🟠',
     islandName: 'Red Spot Atoll 🌪️',
     badgeTitle: 'JUPITER STORM REALM',
@@ -287,6 +291,7 @@ final List<_CosmicReelAtmosphere> _kCosmicAtmospheres = [
   // 3. Mars 🔴 (Red Dunes Bastion)
   const _CosmicReelAtmosphere(
     id: 'mars',
+    planetCode: 'MAR',
     planetName: 'Mars 🔴',
     islandName: 'Olympus Haven 🏜️',
     badgeTitle: 'MARS CANYON OASIS',
@@ -320,6 +325,7 @@ final List<_CosmicReelAtmosphere> _kCosmicAtmospheres = [
   // 4. Tropical Archipelago Island 🏝️ (Crescent Lagoon)
   const _CosmicReelAtmosphere(
     id: 'island',
+    planetCode: 'EP',
     planetName: 'Tropical Island 🏝️',
     islandName: 'Crescent Lagoon 🌴',
     badgeTitle: 'CORAL LAGOON ISLAND',
@@ -355,6 +361,7 @@ final List<_CosmicReelAtmosphere> _kCosmicAtmospheres = [
   // 5. The Moon 🌕 (Tranquility Base)
   const _CosmicReelAtmosphere(
     id: 'moon',
+    planetCode: 'LUN',
     planetName: 'The Moon 🌕',
     islandName: 'Tranquility Base 🚀',
     badgeTitle: 'LUNAR TRANQUILITY BASE',
@@ -388,6 +395,7 @@ final List<_CosmicReelAtmosphere> _kCosmicAtmospheres = [
   // 6. Saturn 🪐 (Golden Ring Citadel)
   const _CosmicReelAtmosphere(
     id: 'saturn',
+    planetCode: 'SAT',
     planetName: 'Saturn 🪐',
     islandName: 'Titan Methane Bay 💫',
     badgeTitle: 'SATURN RING CITADEL',
@@ -421,6 +429,7 @@ final List<_CosmicReelAtmosphere> _kCosmicAtmospheres = [
   // 7. Venus 🟡 (Aphrodite Terra)
   const _CosmicReelAtmosphere(
     id: 'venus',
+    planetCode: 'VEN',
     planetName: 'Venus 🟡',
     islandName: 'Aphrodite Terra 🏺',
     badgeTitle: 'VENUS AMBER CLOUDS',
@@ -454,6 +463,7 @@ final List<_CosmicReelAtmosphere> _kCosmicAtmospheres = [
   // 8. Europa 🧊 (Jovian Ice Ocean)
   const _CosmicReelAtmosphere(
     id: 'europa',
+    planetCode: 'EUR',
     planetName: 'Europa 🧊',
     islandName: 'Galilean Ice Shelf 🌌',
     badgeTitle: 'EUROPA ICE CHASM',
@@ -487,6 +497,7 @@ final List<_CosmicReelAtmosphere> _kCosmicAtmospheres = [
   // 9. Neptune 🌊 (Triton Cryo Sound)
   const _CosmicReelAtmosphere(
     id: 'neptune',
+    planetCode: 'NEP',
     planetName: 'Neptune 🌊',
     islandName: 'Triton Cryo Sound 🌀',
     badgeTitle: 'NEPTUNE AZURE ABYSS',
@@ -520,6 +531,7 @@ final List<_CosmicReelAtmosphere> _kCosmicAtmospheres = [
   // 10. Mercury ⚪ (Caloris Crater)
   const _CosmicReelAtmosphere(
     id: 'mercury',
+    planetCode: 'MER',
     planetName: 'Mercury ⚪',
     islandName: 'Caloris Crater 🌋',
     badgeTitle: 'MERCURY SOLAR BASIN',
@@ -574,6 +586,7 @@ _CosmicReelAtmosphere _getCosmicAtmosphere(
       case 'MER':
         return _kCosmicAtmospheres[9];
       case 'EAR':
+      case 'EP':
         return _kCosmicAtmospheres[0];
     }
   }
@@ -1962,7 +1975,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     return palettes[day % palettes.length];
   }
 
-  void _onAttackTapped(PocketNeighbor neighbor) async {
+  void _onAttackTapped(PocketNeighbor neighbor, _CosmicReelAtmosphere atmosphere) async {
     if (_protectedHomeIds.contains(neighbor.id)) {
       HapticFeedback.heavyImpact();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1993,11 +2006,30 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     }
 
     HapticFeedback.heavyImpact();
+    // 🪐 Guarantee Citadel page loads the exact planet shown on this reel slide (Venus, Neptune, Mars, etc.)
+    final effectivePlanetCode = (neighbor.planetCode != null && neighbor.planetCode!.isNotEmpty)
+        ? neighbor.planetCode!
+        : atmosphere.planetCode;
+    final effectivePlanetName = (neighbor.planetName != null && neighbor.planetName!.isNotEmpty)
+        ? neighbor.planetName!
+        : atmosphere.planetName;
+    final effectiveIslandName = (neighbor.islandName != null && neighbor.islandName!.isNotEmpty)
+        ? neighbor.islandName!
+        : atmosphere.islandName;
+
+    final updatedNeighbor = neighbor.copyWith(
+      planetCode: effectivePlanetCode,
+      planetName: effectivePlanetName,
+      islandName: effectiveIslandName,
+    );
+
     await PocketCitadelAttackPage.openForUser(
       context,
       userId: neighbor.id,
-      neighbor: neighbor,
+      neighbor: updatedNeighbor,
       attackerDay: widget.userLevel,
+      preferredPlanetCode: effectivePlanetCode,
+      preferredPlanetName: effectivePlanetName,
     );
     if (mounted && _currentlyPlayingHouseId != null) {
       _playHomeMusic(_currentlyPlayingHouseId!);
@@ -2868,7 +2900,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                     return Transform.scale(
                       scale: scale,
                       child: GestureDetector(
-                        onTap: () => _onAttackTapped(neighbor),
+                        onTap: () => _onAttackTapped(neighbor, atmosphere),
                         child: Container(
                           width: 58,
                           height: 58,

@@ -82,6 +82,15 @@ class PocketFeedbackService {
               .maybeSingle();
           if (res != null) {
             userName = res['first_name'] ?? res['name'] ?? 'Learner';
+          } else {
+            final userRes = await _supabase
+                .from('users')
+                .select('name, display_name')
+                .eq('id', user.id)
+                .maybeSingle();
+            if (userRes != null) {
+              userName = userRes['display_name'] ?? userRes['name'] ?? 'Learner';
+            }
           }
         } catch (_) {}
       }
@@ -196,69 +205,13 @@ class _FeedbackBottomSheetContent extends StatefulWidget {
 
 class _FeedbackBottomSheetContentState
     extends State<_FeedbackBottomSheetContent> {
-  late String _selectedType;
   int _rating = 5;
   final TextEditingController _textController = TextEditingController();
-  final TextEditingController _stepController = TextEditingController();
   bool _isSubmitting = false;
-
-  List<Map<String, String>> get _categories => [
-        {
-          'id': 'roadmap_idea',
-          'label': PocketLanguageService.localize(
-            en: '💡 Suggest Step / Idea',
-            ml: '💡 പുതിയ സ്റ്റെപ്പ് / ആശയം',
-            hi: '💡 नया स्टेप / सुझाव',
-            ta: '💡 புதிய படி / யோசனை',
-            te: '💡 కొత్త దశ / ఆలోచన',
-          ),
-          'sub': 'Suggest New Step / Roadmap',
-        },
-        {
-          'id': 'day_completion',
-          'label': PocketLanguageService.localize(
-            en: '🌟 Day Completion Review',
-            ml: '🌟 ഡേ ഫീഡ്ബാക്ക്',
-            hi: '🌟 दिन की समीक्षा',
-            ta: '🌟 நாள் கருத்து',
-            te: '🌟 రోజు సమీక్ష',
-          ),
-          'sub': 'Day Review & Experience',
-        },
-        {
-          'id': 'feature_request',
-          'label': PocketLanguageService.localize(
-            en: '🚀 Feature Request',
-            ml: '🚀 പുതിയ ഫീച്ചർ വേണം',
-            hi: '🚀 नया फीचर अनुरोध',
-            ta: '🚀 புதிய அம்சம் கோரிக்கை',
-            te: '🚀 కొత్త ఫీచర్ అభ్యర్థన',
-          ),
-          'sub': 'Feature Request',
-        },
-        {
-          'id': 'bug_report',
-          'label': PocketLanguageService.localize(
-            en: '🐞 Report Bug / Issue',
-            ml: '🐞 പ്രശ്നം റിപ്പോർട്ട് ചെയ്യാം',
-            hi: '🐞 समस्या रिपोर्ट करें',
-            ta: '🐞 பிழை அறிக்கை',
-            te: '🐞 సమస్య నివేదిక',
-          ),
-          'sub': 'Bug / Issue Report',
-        },
-      ];
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedType = widget.initialType;
-  }
 
   @override
   void dispose() {
     _textController.dispose();
-    _stepController.dispose();
     super.dispose();
   }
 
@@ -270,9 +223,9 @@ class _FeedbackBottomSheetContentState
         SnackBar(
           content: Text(
             PocketLanguageService.localize(
-              en: 'Please enter your feedback or suggestions.',
+              en: 'Please enter your feedback.',
               ml: 'ദയവായി നിങ്ങളുടെ അഭിപ്രായം രേഖപ്പെടുത്തൂ.',
-              hi: 'कृपया अपनी प्रतिक्रिया या सुझाव दर्ज करें।',
+              hi: 'कृपया अपनी प्रतिक्रिया दर्ज करें।',
               ta: 'தயவுசெய்து உங்கள் கருத்தை பதிவு செய்யவும்.',
               te: 'దయచేసి మీ అభిప్రాయాన్ని నమోదు చేయండి.',
             ),
@@ -290,10 +243,9 @@ class _FeedbackBottomSheetContentState
 
     final success = await PocketFeedbackService.instance.submitFeedback(
       text: text,
-      suggestedStep: _stepController.text.trim(),
       dayNumber: widget.initialDayNumber,
       rating: _rating,
-      type: _selectedType,
+      type: widget.initialType,
     );
 
     if (!mounted) return;
@@ -303,75 +255,37 @@ class _FeedbackBottomSheetContentState
       HapticFeedback.heavyImpact();
       Navigator.of(context).pop();
 
-      // Show warm celebratory confirmation in user's native language
-      showDialog(
-        context: context,
-        builder: (dialogCtx) => AlertDialog(
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
           backgroundColor: const Color(0xFF0F172A),
+          behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: const BorderSide(color: Color(0xFF10B981), width: 1.5),
+            borderRadius: BorderRadius.circular(12),
+            side: const BorderSide(color: Color(0xFF10B981), width: 1.2),
           ),
-          title: Row(
+          content: Row(
             children: [
-              const Text('🚀', style: TextStyle(fontSize: 24)),
-              const SizedBox(width: 8),
+              const Text('❤️', style: TextStyle(fontSize: 18)),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   PocketLanguageService.localize(
-                    en: 'Thank you! Received ❤️',
-                    ml: 'നന്ദി! ലഭിച്ചു ❤️',
-                    hi: 'धन्यवाद! प्राप्त हुआ ❤️',
-                    ta: 'நன்றி! பெறப்பட்டது ❤️',
-                    te: 'ధన్యవాదాలు! అందింది ❤️',
+                    en: 'Thank you! Your feedback helps us make Pocket Mates better.',
+                    ml: 'നന്ദി! നിങ്ങളുടെ അഭിപ്രായം ലഭിച്ചു ❤️',
+                    hi: 'धन्यवाद! आपकी प्रतिक्रिया प्राप्त हुई ❤️',
+                    ta: 'நன்றி! உங்கள் கருத்து பெறப்பட்டது ❤️',
+                    te: 'ధన్యవాదాలు! మీ అభిప్రాయం అందింది ❤️',
                   ),
                   style: GoogleFonts.outfit(
                     color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
                   ),
                 ),
               ),
             ],
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                PocketLanguageService.localize(
-                  en: 'Your valuable suggestions and ideas will be reviewed by our startup team. We will integrate your suggested steps into our upcoming syllabus updates!',
-                  ml: 'നിങ്ങളുടെ വിലയേറിയ നിർദ്ദേശങ്ങളും അഭിപ്രായങ്ങളും ഞങ്ങളുടെ ടീം പരിശോധിക്കും. നിങ്ങൾ നിർദ്ദേശിച്ച സ്റ്റെപ്പുകൾ അടുത്ത അപ്‌ഡേറ്റുകളിൽ ഉൾപ്പെടുത്താൻ ഞങ്ങൾ പരമാവധി ശ്രമിക്കും!',
-                  hi: 'आपकी मूल्यवान प्रतिक्रिया और सुझावों की समीक्षा की जाएगी। हम आपके सुझावों को आगामी अपडेट में शामिल करने का पूरा प्रयास करेंगे!',
-                  ta: 'உங்கள் மதிப்புமிக்க கருத்துக்கள் பரிசீலிக்கப்படும். அடுத்த புதுப்பிப்புகளில் அவற்றைச் சேர்க்க முயற்சிப்போம்!',
-                  te: 'మీ విలువైన సలహాలను మా బృందం సమీక్షిస్తుంది. రాబోయే అప్‌డేట్‌లలో మీ సూచనలను చేర్చడానికి మేము ప్రయత్నిస్తాము!',
-                ),
-                style: GoogleFonts.outfit(
-                  color: Colors.white70,
-                  fontSize: 13,
-                  height: 1.5,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogCtx).pop(),
-              child: Text(
-                PocketLanguageService.localize(
-                  en: 'Done 👍',
-                  ml: 'സന്തോഷം 👍',
-                  hi: 'ठीक है 👍',
-                  ta: 'சரி 👍',
-                  te: 'సరే 👍',
-                ),
-                style: GoogleFonts.outfit(
-                  color: const Color(0xFF10B981),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
+          duration: const Duration(seconds: 3),
         ),
       );
     } else {
@@ -388,6 +302,7 @@ class _FeedbackBottomSheetContentState
             style: GoogleFonts.outfit(color: Colors.white),
           ),
           backgroundColor: const Color(0xFFDC2626),
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }
@@ -401,14 +316,14 @@ class _FeedbackBottomSheetContentState
       padding: EdgeInsets.only(
         left: 20,
         right: 20,
-        top: 20,
-        bottom: bottomInset + 24,
+        top: 14,
+        bottom: bottomInset + 20,
       ),
       decoration: const BoxDecoration(
         color: Color(0xFF0F172A),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         border: Border(
-          top: BorderSide(color: Color(0xFF38BDF8), width: 1.4),
+          top: BorderSide(color: Color(0xFFFFD700), width: 1.2),
           left: BorderSide(color: Colors.white12, width: 0.5),
           right: BorderSide(color: Colors.white12, width: 0.5),
         ),
@@ -421,7 +336,7 @@ class _FeedbackBottomSheetContentState
             // Drag handle
             Center(
               child: Container(
-                width: 44,
+                width: 38,
                 height: 4,
                 decoration: BoxDecoration(
                   color: Colors.white24,
@@ -429,333 +344,173 @@ class _FeedbackBottomSheetContentState
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
 
-            // Startup Badge & Title
+            // Header Row: Title & Subtitle + Close Button
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0284C7).withValues(alpha: 0.25),
-                    borderRadius: BorderRadius.circular(8),
-                    border:
-                        Border.all(color: const Color(0xFF38BDF8), width: 1),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('💡', style: TextStyle(fontSize: 12)),
-                      const SizedBox(width: 5),
+                      Row(
+                        children: [
+                          const Text('💬', style: TextStyle(fontSize: 18)),
+                          const SizedBox(width: 8),
+                          Text(
+                            PocketLanguageService.localize(
+                              en: 'Feedback',
+                              ml: 'ഫീഡ്ബാക്ക്',
+                              hi: 'फ़ीडबैक',
+                              ta: 'கருத்து',
+                              te: 'అభిప్రాయం',
+                            ),
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
                       Text(
-                        'FEEDBACK ENGINE',
+                        PocketLanguageService.localize(
+                          en: 'Your feedback helps us make Pocket Mates better.',
+                          ml: 'നിങ്ങളുടെ അഭിപ്രായം Pocket Mates കൂടുതൽ മികച്ചതാക്കാൻ സഹായിക്കും.',
+                          hi: 'आपकी प्रतिक्रिया पॉकेट मेट्स को और बेहतर बनाने में मदद करती है।',
+                          ta: 'உங்கள் கருத்து Pocket Mates-ஐ மேலும் சிறந்ததாக்க உதவும்.',
+                          te: 'మీ అభిప్రాయం Pocket Mates ను మరింత మెరుగుపరచడానికి సహాయపడుతుంది.',
+                        ),
                         style: GoogleFonts.outfit(
-                          color: const Color(0xFF38BDF8),
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.0,
+                          color: Colors.white70,
+                          fontSize: 12.5,
+                          height: 1.35,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const Spacer(),
                 IconButton(
-                  icon: const Icon(Icons.close_rounded, color: Colors.white60),
+                  icon: const Icon(Icons.close_rounded, color: Colors.white54, size: 22),
                   onPressed: () => Navigator.of(context).pop(),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 16),
 
-            Text(
-              'Your Ideas & Feedback 🚀',
-              style: GoogleFonts.outfit(
-                color: Colors.white,
-                fontSize: 19,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              'Share Your Ideas & Suggest Steps',
-              style: GoogleFonts.outfit(
-                color: const Color(0xFF94A3B8),
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 8),
-
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E293B),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.4),
-                  width: 1,
-                ),
-              ),
+            // Minimal Star Rating
+            Center(
               child: Row(
-                children: [
-                  const Text('🌿', style: TextStyle(fontSize: 20)),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Suggest new learning steps or topics here. We will integrate your ideas directly into upcoming syllabus updates!',
-                      style: GoogleFonts.outfit(
-                        color: const Color(0xFFA7F3D0),
-                        fontSize: 11.5,
-                        height: 1.4,
+                mainAxisSize: MainAxisSize.min,
+                children: List.generate(5, (index) {
+                  final starNum = index + 1;
+                  return GestureDetector(
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      setState(() => _rating = starNum);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      child: Icon(
+                        starNum <= _rating
+                            ? Icons.star_rounded
+                            : Icons.star_outline_rounded,
+                        color: starNum <= _rating
+                            ? const Color(0xFFFFD700)
+                            : Colors.white24,
+                        size: 32,
                       ),
                     ),
-                  ),
-                ],
+                  );
+                }),
               ),
             ),
             const SizedBox(height: 16),
 
-            // Category Selector Chips
-            Text(
-              PocketLanguageService.localize(
-                en: 'Select Category:',
-                ml: 'വിഭാഗം തിരഞ്ഞെടുക്കുക:',
-                hi: 'श्रेणी चुनें:',
-                ta: 'வகையைத் தேர்ந்தெடுக்கவும்:',
-                te: 'వర్గాన్ని ఎంచుకోండి:',
-              ),
-              style: GoogleFonts.outfit(
-                color: Colors.white70,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _categories.map((cat) {
-                final isSelected = _selectedType == cat['id'];
-                return ChoiceChip(
-                  label: Text(
-                    cat['label']!,
-                    style: GoogleFonts.outfit(
-                      color: isSelected ? Colors.black : Colors.white,
-                      fontWeight:
-                          isSelected ? FontWeight.bold : FontWeight.w500,
-                      fontSize: 12,
-                    ),
-                  ),
-                  selected: isSelected,
-                  selectedColor: const Color(0xFFFFD700),
-                  backgroundColor: const Color(0xFF1E293B),
-                  side: BorderSide(
-                    color:
-                        isSelected ? const Color(0xFFFFD700) : Colors.white24,
-                    width: 1,
-                  ),
-                  onSelected: (selected) {
-                    if (selected) {
-                      setState(() => _selectedType = cat['id']!);
-                    }
-                  },
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 16),
-
-            // Star Rating (1 to 5)
-            Row(
-              children: [
-                Text(
-                  PocketLanguageService.localize(
-                    en: 'Rating:',
-                    ml: 'റേറ്റിംഗ്:',
-                    hi: 'रेटिंग:',
-                    ta: 'மதிப்பீடு:',
-                    te: 'రేటింగ్:',
-                  ),
-                  style: GoogleFonts.outfit(
-                    color: Colors.white70,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Row(
-                  children: List.generate(5, (index) {
-                    final starNum = index + 1;
-                    return GestureDetector(
-                      onTap: () {
-                        HapticFeedback.selectionClick();
-                        setState(() => _rating = starNum);
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: Icon(
-                          starNum <= _rating
-                              ? Icons.star_rounded
-                              : Icons.star_outline_rounded,
-                          color: starNum <= _rating
-                              ? const Color(0xFFFFD700)
-                              : Colors.white30,
-                          size: 26,
-                        ),
-                      ),
-                    );
-                  }),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-
-            // Optional: Suggested Step Input
-            if (_selectedType == 'roadmap_idea' ||
-                _selectedType == 'feature_request') ...[
-              Text(
-                PocketLanguageService.localize(
-                  en: 'Suggested Step Title (e.g. Job Interview Practice):',
-                  ml: 'നിർദ്ദേശിക്കുന്ന സ്റ്റെപ്പ് / പേര് (ഉദാ: Job Interview Practice):',
-                  hi: 'सुझाए गए स्टेप का नाम (उदा: Job Interview Practice):',
-                  ta: 'பரிந்துரைக்கப்பட்ட படி தலைப்பு (எ.கா: Job Interview):',
-                  te: 'సూచించిన దశ శీర్షిక (ఉదా: Job Interview Practice):',
-                ),
-                style: GoogleFonts.outfit(
-                  color: Colors.white70,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 6),
-              TextField(
-                controller: _stepController,
-                style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
-                decoration: InputDecoration(
-                  hintText: PocketLanguageService.localize(
-                    en: 'e.g. Shopping English, Airport Dialogues, Phonics...',
-                    ml: 'ഉദാ: ഷോപ്പിംഗ് ഇംഗ്ലീഷ്, എയർപോർട്ട് സംഭാഷണം...',
-                    hi: 'उदा: शॉपिंग इंग्लिश, एयरपोर्ट बातचीत...',
-                    ta: 'எ.கா: ஷாப்பிங் ஆங்கிலம், விமான நிலைய உரையாடல்...',
-                    te: 'ఉదా: షాపింగ్ ఇంగ్లీష్, ఎయిర్‌పోర్ట్ సంభాషణ...',
-                  ),
-                  hintStyle:
-                      GoogleFonts.outfit(color: Colors.white38, fontSize: 12),
-                  filled: true,
-                  fillColor: const Color(0xFF1E293B),
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.white24),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.white24),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide:
-                        const BorderSide(color: Color(0xFF38BDF8), width: 1.5),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-            ],
-
-            // Main Feedback Details
-            Text(
-              PocketLanguageService.localize(
-                en: 'Feedback / Details:',
-                ml: 'നിങ്ങളുടെ അഭിപ്രായം:',
-                hi: 'आपकी प्रतिक्रिया / विवरण:',
-                ta: 'உங்கள் கருத்து / விவரங்கள்:',
-                te: 'మీ అభిప్రాయం / వివరాలు:',
-              ),
-              style: GoogleFonts.outfit(
-                color: Colors.white70,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 6),
+            // Single Feedback Box
             TextField(
               controller: _textController,
-              maxLines: 4,
-              minLines: 3,
-              style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
+              maxLines: 5,
+              minLines: 4,
+              style: GoogleFonts.outfit(color: Colors.white, fontSize: 13.5),
               decoration: InputDecoration(
                 hintText: PocketLanguageService.localize(
-                  en: 'Describe your idea, what you loved, or how we can improve...',
-                  ml: 'നിങ്ങളുടെ അഭിപ്രായം, അനുഭവങ്ങൾ അല്ലെങ്കിൽ ആശയങ്ങൾ തുറന്നെഴുതാം...',
-                  hi: 'अपना विचार, सुझाव या सुधार यहाँ विस्तार से लिखें...',
-                  ta: 'உங்கள் யோசனை அல்லது பரிந்துரைகளை இங்கே எழுதுங்கள்...',
-                  te: 'మీ ఆలోచన లేదా సూచనలను ఇక్కడ రాయండి...',
+                  en: 'Write your thoughts, suggestions, or issues here...',
+                  ml: 'നിങ്ങളുടെ അഭിപ്രായങ്ങളും നിർദ്ദേശങ്ങളും ഇവിടെ എഴുതാം...',
+                  hi: 'अपने विचार, सुझाव या समस्या यहाँ लिखें...',
+                  ta: 'உங்கள் கருத்துகள் அல்லது ஆலோசனைகளை இங்கே எழுதுங்கள்...',
+                  te: 'మీ ఆలోచనలు లేదా సూచనలను ఇక్కడ రాయండి...',
                 ),
-                hintStyle:
-                    GoogleFonts.outfit(color: Colors.white38, fontSize: 12),
+                hintStyle: GoogleFonts.outfit(
+                  color: Colors.white38,
+                  fontSize: 12.5,
+                ),
                 filled: true,
                 fillColor: const Color(0xFF1E293B),
-                contentPadding: const EdgeInsets.all(12),
+                contentPadding: const EdgeInsets.all(14),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Colors.white24),
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: Colors.white12),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Colors.white24),
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: Colors.white12),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide:
-                      const BorderSide(color: Color(0xFF10B981), width: 1.5),
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(
+                    color: Color(0xFFFFD700),
+                    width: 1.2,
+                  ),
                 ),
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 16),
 
-            // Submit Button
+            // Minimal Send Button
             SizedBox(
               width: double.infinity,
               height: 48,
               child: ElevatedButton(
                 onPressed: _isSubmitting ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF10B981),
-                  foregroundColor: Colors.white,
-                  elevation: 4,
+                  backgroundColor: const Color(0xFFFFD700),
+                  foregroundColor: Colors.black,
+                  elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
                 child: _isSubmitting
                     ? const SizedBox(
-                        width: 22,
-                        height: 22,
+                        width: 20,
+                        height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
                         ),
                       )
                     : Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.send_rounded, size: 18),
+                          const Icon(Icons.send_rounded, size: 17, color: Colors.black),
                           const SizedBox(width: 8),
                           Text(
                             PocketLanguageService.localize(
-                              en: 'Submit Feedback 🚀',
-                              ml: 'ഫീഡ്ബാക്ക് അയക്കാം 🚀',
-                              hi: 'फ़ीडबैक भेजें 🚀',
-                              ta: 'கருத்து அனுப்பவும் 🚀',
-                              te: 'అభిప్రాయం పంపండి 🚀',
+                              en: 'Send Feedback',
+                              ml: 'ഫീഡ്ബാക്ക് അയക്കാം',
+                              hi: 'फ़ीडबैक भेजें',
+                              ta: 'கருத்து அனுப்பவும்',
+                              te: 'అభిప్రాయం పంపండి',
                             ),
                             style: GoogleFonts.outfit(
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
+                              color: Colors.black,
                             ),
                           ),
                         ],

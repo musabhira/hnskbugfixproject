@@ -150,11 +150,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       return _localUserStage.clamp(1, 90);
     }
 
-    // 1. If explicit day/learning_day/level is provided in profile data, strictly respect it!
-    final explicitDay = (_profileData?['day'] as num?)?.toInt() ??
-        (_profileData?['learning_day'] as num?)?.toInt() ??
+    // 1. If explicit learning_day/learning_stage/level is provided in profile data, strictly respect it!
+    // ⚠️ DO NOT use 'day' because in Supabase 'day' stores the user's Date of Birth (DOB) day!
+    final explicitDay = (_profileData?['learning_day'] as num?)?.toInt() ??
+        (_profileData?['learning_stage'] as num?)?.toInt() ??
         (_profileData?['level'] as num?)?.toInt() ??
-        (_profileData?['learning_stage'] as num?)?.toInt();
+        (_profileData?['stage'] as num?)?.toInt();
     if (explicitDay != null && explicitDay > 0) {
       return explicitDay.clamp(1, 90);
     }
@@ -203,11 +204,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       }
       final score = await PocketFortressDefenseService.getUnifiedScore(userId);
       final prefs = await SharedPreferences.getInstance();
-      final courseDay = prefs.getInt('day_$userId') ??
-          prefs.getInt('learning_day_$userId') ??
-          (_profileData?['day'] as num?)?.toInt() ??
+      final courseDay = prefs.getInt('learning_day_$userId') ??
+          prefs.getInt('day_$userId') ??
           (_profileData?['learning_day'] as num?)?.toInt() ??
           (_profileData?['learning_stage'] as num?)?.toInt() ??
+          (_profileData?['level'] as num?)?.toInt() ??
           1;
       final effectiveLevel = PocketScoreLevelEngine.calculateEffectiveLevel(
         day: courseDay,
@@ -666,10 +667,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   void _applyProfileData(Map<String, dynamic> data) {
     _profileData = data;
     int effectiveStage;
-    final explicitDay = (data['day'] as num?)?.toInt() ??
-        (data['learning_day'] as num?)?.toInt() ??
+    // ⚠️ DO NOT use 'day' because in Supabase 'day' stores the user's Date of Birth (DOB) day!
+    final explicitDay = (data['learning_day'] as num?)?.toInt() ??
+        (data['learning_stage'] as num?)?.toInt() ??
         (data['level'] as num?)?.toInt() ??
-        (data['learning_stage'] as num?)?.toInt();
+        (data['stage'] as num?)?.toInt();
     if (explicitDay != null && explicitDay > 0) {
       effectiveStage = explicitDay.clamp(1, 90);
     } else if (PocketRobotService.isRobotId(userId)) {
@@ -4596,7 +4598,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             border: Border.all(color: Colors.white24, width: 0.9),
           ),
           child: Text(
-            'Stage ${activeStage.stageNumber}',
+            'Level ${activeStage.stageNumber}',
             style: GoogleFonts.outfit(
               color: Colors.white,
               fontWeight: FontWeight.w800,
@@ -5211,7 +5213,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         style: const TextStyle(fontSize: 12)),
                     const SizedBox(width: 5),
                     Text(
-                      'STAGE ${activeStage.stageNumber}/90',
+                      'LEVEL ${activeStage.stageNumber}/90',
                       style: GoogleFonts.outfit(
                         color: accentColor,
                         fontWeight: FontWeight.w900,
@@ -7018,8 +7020,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           const SizedBox(width: 4),
           Text(
             trophyCount > 0
-                ? 'STAGE ${stage.stageNumber}/90 🏆x$trophyCount'
-                : 'STAGE ${stage.stageNumber}/90',
+                ? 'LEVEL ${stage.stageNumber}/90 🏆x$trophyCount'
+                : 'LEVEL ${stage.stageNumber}/90',
             style: GoogleFonts.outfit(
               color: accent,
               fontWeight: FontWeight.w900,
