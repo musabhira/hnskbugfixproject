@@ -893,10 +893,12 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   void _scheduleEnglishHubIdleRobotCheck({bool initial = false}) {
     _hubRobotIdleConversationTimer?.cancel();
     if (!_isEnglishHubRobotsEnabled) return;
-    // Fast initial check: 2-3s so users immediately see lively conversation upon entering
+    // ⏱️ Gentle, natural robot intervals (25 - 50 minutes) so robots never flood the chat:
+    // Some intervals ~30 mins, some ~45-50 mins.
+    // On first open, wait 25-45 minutes or random between 1500s and 3000s (25-50 minutes).
     final delaySeconds = initial
-        ? (2 + math.Random().nextInt(2))
-        : (14 + math.Random().nextInt(10));
+        ? (25 * 60 + math.Random().nextInt(20 * 60)) // 25 to 45 minutes
+        : (30 * 60 + math.Random().nextInt(25 * 60)); // 30 to 55 minutes
     _hubRobotIdleConversationTimer =
         Timer(Duration(seconds: delaySeconds), () async {
       if (!mounted || !_isEnglishHubGroup || !_isEnglishHubRobotsEnabled) return;
@@ -907,7 +909,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     });
   }
 
-  /// 🤖 Posts a natural 2 or 3 robot conversational combo dialogue with real typing indicators
+  /// 🤖 Posts a natural gentle robot conversation (single topic turn) with real typing indicators
   Future<void> _postAutonomousRobotComboDialogueIfIdle() async {
     try {
       if (!mounted || !_isEnglishHubGroup || !_isEnglishHubRobotsEnabled) return;
@@ -915,11 +917,11 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           ref.read(chatMessagesProvider(widget.groupId)).value ?? [];
       final now = DateTime.now();
 
-      // If a human just messaged in the last 15 seconds, yield floor to the human
+      // If a human just messaged in the last 15 minutes, completely yield the floor to human learners
       if (messages.isNotEmpty) {
         final lastMsg = messages.first;
         if (!PocketRobotService.isRobotId(lastMsg.senderId) &&
-            now.difference(lastMsg.createdAt).inSeconds < 15) {
+            now.difference(lastMsg.createdAt).inMinutes < 15) {
           return;
         }
       }
@@ -1130,8 +1132,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       } catch (e) {
         debugPrint('Error generating polite robot reply in hub: $e');
       } finally {
-        // Enforce 14-second cooldown so robots never flood the chat
-        _hubRobotReplyCooldownTimer = Timer(const Duration(seconds: 14), () {
+        // Enforce 30-minute cooldown so robots never flood the chat after replying
+        _hubRobotReplyCooldownTimer = Timer(const Duration(minutes: 30), () {
           _isRobotReplyingToHuman = false;
         });
       }
