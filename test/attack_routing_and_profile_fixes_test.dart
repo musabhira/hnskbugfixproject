@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_daily_mission_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_street_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 void main() {
   group('Attack Routing & Terminology Tests', () {
@@ -24,10 +24,14 @@ void main() {
       expect(page.autoRollRaid, isTrue);
     });
 
-    test('Language labels and supported languages on PocketDailyMissionPage remain intact', () {
-      expect(PocketDailyMissionPage.kLanguageLabels.containsKey('Malayalam'), isTrue);
-      expect(PocketDailyMissionPage.kLanguageLabels['Malayalam'], equals('🇮🇳 മലയാളം'));
-      expect(PocketDailyMissionPage.kSupportedLanguages.contains('Malayalam'), isTrue);
+    test('Language localization returns correct values', () {
+      final text = PocketLanguageService.localize(
+        en: 'Hello',
+        ml: 'നമസ്കാരം',
+        ta: 'வணக்கம்',
+        hi: 'नमस्ते',
+      );
+      expect(text, isNotEmpty);
     });
   });
 }

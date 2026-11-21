@@ -210,6 +210,24 @@ class _ConversationTileState extends State<ConversationTile> {
       return;
     }
 
+    if (PocketRobotService.isRobotId(convId)) {
+      final robot = PocketRobotService.getRobotById(convId) ??
+          PocketRobotService.getRobotByLevel(1);
+      final dynLvl = PocketRobotService.getDynamicLevel(robot);
+      final rScore = PocketRankingService.getSimulatedBotScore(
+        botId: robot.id,
+        baseLevel: dynLvl,
+        isUnder17: false,
+      );
+      PocketRankingService.fetchUserGlobalRank(convId, rScore).then((rank) {
+        if (mounted && rank > 0) {
+          setState(() => _globalRank = rank);
+          _startRankCycle();
+        }
+      }).catchError((_) {});
+      return;
+    }
+
     PocketRankingService.fetchUserGlobalRank(convId).then((rank) {
       if (mounted && rank > 0) {
         setState(() => _globalRank = rank);
@@ -1135,25 +1153,8 @@ class _ConversationTileState extends State<ConversationTile> {
                       ),
                       const SizedBox(height: 3),
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          if (!widget.conversation.isGroup &&
-                              !widget.conversation.isActiveTimer &&
-                              widget.conversation.lastSenderId ==
-                                  widget.currentUserId)
-                            Padding(
-                              padding: const EdgeInsets.only(right: 5),
-                              child: Icon(
-                                widget.conversation.otherUnreadCount == 0
-                                    ? material.Icons.done_all_rounded
-                                    : material.Icons.check,
-                                size: 14,
-                                color: widget.conversation.otherUnreadCount == 0
-                                    ? material.Colors.blue
-                                        .withValues(alpha: 0.8)
-                                    : material.Colors.grey
-                                        .withValues(alpha: 0.7),
-                              ),
-                            ),
                           Expanded(
                             child: Builder(
                               builder: (context) {
@@ -1322,54 +1323,30 @@ class _ConversationTileState extends State<ConversationTile> {
 
                                 return AnimatedSwitcher(
                                   duration: const Duration(milliseconds: 300),
+                                  layoutBuilder: (currentChild, previousChildren) {
+                                    return Stack(
+                                      alignment: Alignment.centerLeft,
+                                      children: <Widget>[
+                                        ...previousChildren,
+                                        if (currentChild != null) currentChild,
+                                      ],
+                                    );
+                                  },
                                   transitionBuilder: (child, animation) =>
                                       FadeTransition(
                                           opacity: animation, child: child),
                                   child: shouldShowRank
-                                      ? Row(
+                                      ? Text(
+                                          'Global Rank #$_globalRank',
                                           key: ValueKey('rank_$_globalRank'),
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Container(
-                                              margin: const EdgeInsets.only(
-                                                  right: 6),
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 6,
-                                                      vertical: 1.5),
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xFFFFD700)
-                                                    .withValues(alpha: 0.14),
-                                                borderRadius:
-                                                    BorderRadius.circular(5),
-                                                border: Border.all(
-                                                  color: const Color(0xFFFFD700)
-                                                      .withValues(alpha: 0.5),
-                                                  width: 0.8,
-                                                ),
-                                              ),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  const Text('🏆',
-                                                      style: TextStyle(
-                                                          fontSize: 10)),
-                                                  const SizedBox(width: 3.5),
-                                                  Text(
-                                                    'GLOBAL RANK #$_globalRank',
-                                                    style: GoogleFonts.outfit(
-                                                      color: const Color(
-                                                          0xFFFFD700),
-                                                      fontWeight:
-                                                          FontWeight.w700,
-                                                      fontSize: 10.5,
-                                                      letterSpacing: 0.3,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
+                                          style: GoogleFonts.outfit(
+                                            color: const Color(0xFFFFD700),
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 13.5,
+                                            letterSpacing: 0.1,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         )
                                       : Text(
                                           key: const ValueKey('normal_msg_sub'),

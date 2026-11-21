@@ -897,7 +897,7 @@ class PocketAdMobService {
         return;
       }
       final prefs = await SharedPreferences.getInstance();
-      final isVip = prefs.getBool('is_vip_$uid');
+      final isVip = prefs.getBool('is_vip_$uid') ?? prefs.getBool('is_premium_$uid');
       final tier = prefs.getString('subscription_tier_$uid');
       if (isVip != null) {
         _cachedVipUid = uid;
@@ -940,6 +940,7 @@ class PocketAdMobService {
     if (currentUid != null && currentUid.isNotEmpty) {
       SharedPreferences.getInstance().then((prefs) {
         prefs.setBool('is_vip_$currentUid', isVip);
+        prefs.setBool('is_premium_$currentUid', isVip);
         if (isVip) {
           prefs.setString('subscription_tier_$currentUid', 'vip_active');
         } else {
@@ -1060,12 +1061,14 @@ class PocketAdMobService {
             role == 'vip' ||
             role == 'admin' ||
             profile['is_vip'] == true ||
+            profile['is_premium'] == true ||
             profile['is_subscribed'] == true;
 
-        debugPrint('🔍 [PocketAdMob] Genuine DB Check VIP for UID $uid: isTrueVip=$isTrueVip (Tier: $tier, Role: $role)');
+        debugPrint('🔍 [PocketAdMob] Genuine DB Check VIP for UID $uid: isTrueVip=$isTrueVip (Tier: $tier, Role: $role, is_premium: ${profile['is_premium']}, is_vip: ${profile['is_vip']})');
 
         if (isTrueVip) {
           await prefs.setBool('is_vip_$uid', true);
+          await prefs.setBool('is_premium_$uid', true);
           await prefs.setString('subscription_tier_$uid', tier ?? 'monthly');
 
           // Clear un-scoped global device flags to prevent cross-account leaks
@@ -1082,6 +1085,7 @@ class PocketAdMobService {
           return true;
         } else {
           await prefs.setBool('is_vip_$uid', false);
+          await prefs.setBool('is_premium_$uid', false);
           await prefs.setString('subscription_tier_$uid', 'free');
 
           await prefs.setBool('is_vip', false);
@@ -1255,10 +1259,10 @@ class PocketAdMobService {
           _isRewardedLoading = false;
           _rewardedAd = null;
 
-          if (!isFallback) {
-            // 🛡️ Proactively retry immediately with Google official test unit for 100% fill guarantee
+          if (!isFallback && _isTestMode) {
+            // 🛡️ In explicit test mode only, retry with Google official test unit
             debugPrint(
-                '🎬 [PocketAdMob] Production rewarded ad failed. Retrying immediately with fallback unit: $testRewardedId');
+                '🎬 [PocketAdMob] Test rewarded ad failed. Retrying with fallback test unit: $testRewardedId');
             _loadRewardedAd(isFallback: true);
             return;
           }
