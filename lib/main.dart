@@ -25,6 +25,7 @@ import 'custom_code/services/pocket_language_service.dart';
 import 'custom_code/services/app_store_review_service.dart';
 import 'services/iap_service.dart';
 import 'custom_code/services/pocket_admob_service.dart';
+import 'custom_code/services/contacts_name_service.dart';
 import 'custom_code/services/pocket_personal_chat_language_service.dart';
 import 'custom_code/services/poket_cosmos_allocation_service.dart';
 
@@ -242,6 +243,8 @@ class MyAppState extends State<MyApp> {
           try {
             PushNotificationService.initialize();
             PushNotificationService.syncCurrentUserToken();
+            // 📱 Initialize Contacts Name Sync & Discover Registered Contacts
+            ContactsNameService().initialize();
             // ⏰ Setup / Refresh multi-slot daily study reminders for active user's current day
             final uid = user.uid;
             if (uid != null && uid.isNotEmpty) {

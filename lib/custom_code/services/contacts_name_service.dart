@@ -202,19 +202,24 @@ class ContactsNameService {
           _matchedProfiles.add(matchedEntry);
 
           // 📣 Snapchat/Telegram-style "Contact Joined / On Pocket Mates" Viral Notification
+          // Staggers notifications so user is not spammed all at once, creating organic attraction
           if (notifyNewContacts &&
               uid != currentUserId &&
               !notifiedSet.contains(uid)) {
             newlyNotified.add(uid);
             notifiedSet.add(uid);
 
-            PushNotificationService.showInstantNotification(
-              id: uid.hashCode.abs() % 100000,
-              title: '👋 $savedContactName is on Poket Mates!',
-              body:
-                  '$savedContactName from your contacts is on Poket Mates. Tap to say hello and start chatting!',
-              payload: 'chat_p:$uid',
-            );
+            // Stagger notifications across gentle intervals (e.g. 1st friend immediately, next after 40s, 80s...)
+            final staggerDelay = Duration(seconds: newlyNotified.length <= 1 ? 2 : (newlyNotified.length * 35));
+            Future.delayed(staggerDelay, () {
+              PushNotificationService.showInstantNotification(
+                id: uid.hashCode.abs() % 100000,
+                title: '👋 $savedContactName is on Poket Mates!',
+                body:
+                    '$savedContactName from your contacts is on Poket Mates. Tap to say hello and start chatting!',
+                payload: 'chat_p:$uid',
+              );
+            });
           }
         }
       }

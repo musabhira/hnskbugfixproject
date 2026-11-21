@@ -12003,12 +12003,6 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
       if (q.isNotEmpty && !text.contains(q) && !name.contains(q)) {
         return false;
       }
-      if (_presidentInquiryStatusFilter == 1 && inq['status'] != 'pending') {
-        return false;
-      }
-      if (_presidentInquiryStatusFilter == 2 && inq['status'] != 'resolved') {
-        return false;
-      }
       if (_presidentInquiryStatusFilter == 3 &&
           !text.contains('question report') &&
           inq['report_type'] != 'fake_citadel_defense' &&
