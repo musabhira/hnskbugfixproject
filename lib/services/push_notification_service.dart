@@ -405,6 +405,59 @@ class PushNotificationService {
     }
   }
 
+  /// 🚀 Dispatches a background FCM push notification to the receiver or group members
+  /// when a message is sent. Runs safely as a non-blocking background task.
+  static void dispatchChatMessagePushNotification({
+    required String senderId,
+    required String senderName,
+    required String messageText,
+    String? receiverId,
+    String? groupId,
+    String? groupName,
+  }) {
+    if (kIsWeb) return;
+
+    // Do not dispatch push notifications for robots or system IDs
+    if (receiverId != null &&
+        (receiverId.startsWith('robot_') || receiverId == 'the_president_ai')) {
+      return;
+    }
+
+    Future.microtask(() async {
+      try {
+        final Map<String, dynamic> payload = {};
+
+        if (receiverId != null && receiverId.isNotEmpty) {
+          // 1-on-1 direct message
+          payload['table'] = 'messages';
+          payload['record'] = {
+            'sender_id': senderId,
+            'receiver_id': receiverId,
+            'message_text': messageText,
+          };
+        } else if (groupId != null && groupId.isNotEmpty) {
+          // Group message
+          payload['table'] = 'group_messages';
+          payload['record'] = {
+            'sender_id': senderId,
+            'group_id': groupId,
+            'message_text': messageText,
+          };
+        }
+
+        if (payload.isNotEmpty) {
+          await SupaFlow.client.functions.invoke(
+            'send-push-notification',
+            body: payload,
+          );
+          debugPrint('PushNotificationService: Dispatched FCM push for chat to Edge function.');
+        }
+      } catch (e) {
+        debugPrint('PushNotificationService: Note dispatching push notification: $e');
+      }
+    });
+  }
+
   /// 🌅 Show instant local notification
   static Future<void> showInstantNotification({
     required int id,
@@ -512,11 +565,54 @@ class PushNotificationService {
     await scheduleDailyNotification(
       id: 9000 + day,
       title: '🌅 Day $day Mission Ready!',
-      body: "Good morning! Today's daily English challenge is ready. Complete it to keep your streak!",
+      body: "Good morning! Day $day English challenge is unlocked. Complete it to build fluency and protect your streak!",
       hour: targetHour,
       minute: targetMinute,
       payload: 'mission_$day',
     );
+  }
+
+  /// ⏰ Multi-Slot Dynamic Daily Reminders (Morning, Afternoon & Evening)
+  /// Keeps learners motivated and engaged at optimal daily habits!
+  static Future<void> scheduleMultiSlotDailyReminders({
+    required int currentDay,
+  }) async {
+    if (kIsWeb) return;
+
+    // 1. Morning Kickoff (8:30 AM)
+    await scheduleDailyNotification(
+      id: 9101,
+      title: '🌅 Day $currentDay English Mission is Live!',
+      body: 'Good morning! Spend 5 minutes today on Day $currentDay to keep your daily streak alive! 🔥',
+      hour: 8,
+      minute: 30,
+      payload: 'mission_$currentDay',
+      isAlarm: true,
+    );
+
+    // 2. Afternoon Quick Speaking Break (2:15 PM)
+    await scheduleDailyNotification(
+      id: 9102,
+      title: '☕ Quick 5-Min Spoken Break • Day $currentDay',
+      body: 'Take a quick break! Speak 3 English sentences with your mate or in the English Hub today 🎙️',
+      hour: 14,
+      minute: 15,
+      payload: 'mission_$currentDay',
+      isAlarm: false,
+    );
+
+    // 3. Evening Victory Reminder (8:00 PM)
+    await scheduleDailyNotification(
+      id: 9103,
+      title: '🌙 Day $currentDay Completion Challenge!',
+      body: 'The day is almost over! Complete Day $currentDay now to unlock Day ${currentDay + 1} for tomorrow! 🚀',
+      hour: 20,
+      minute: 0,
+      payload: 'mission_$currentDay',
+      isAlarm: false,
+    );
+
+    debugPrint('PushNotificationService: Scheduled multi-slot study reminders for Day $currentDay (8:30 AM, 2:15 PM, 8:00 PM).');
   }
 
   /// Cancel a specific notification

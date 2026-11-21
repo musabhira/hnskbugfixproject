@@ -17,6 +17,7 @@ import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_grou
 import 'chat_models.dart';
 
 import 'package:pocket_mates_app/custom_code/services/pocket_personal_chat_language_service.dart';
+import 'package:pocket_mates_app/services/push_notification_service.dart';
 
 part 'chat_provider.g.dart';
 
@@ -1094,15 +1095,15 @@ class ChatMessages extends _$ChatMessages {
       });
 
       // Update relevant metadata for the chat list
-      try {
-        final displayMsg = text.isNotEmpty
-            ? text
-            : (messageType == 'voice'
-                ? '🎤 Voice Message'
-                : (messageType == 'snap'
-                    ? '⚡ Pocket Snap'
-                    : (messageType == 'gallery' ? '🎨 Artwork' : 'Attachment')));
+      final displayMsg = text.isNotEmpty
+          ? text
+          : (messageType == 'voice'
+              ? '🎤 Voice Message'
+              : (messageType == 'snap'
+                  ? '⚡ Pocket Snap'
+                  : (messageType == 'gallery' ? '🎨 Artwork' : 'Attachment')));
 
+      try {
         if (isPersonal) {
           // 🌐 Schedule delayed (2-3 mins) background language check for personal chat (English-only)
           if (text.isNotEmpty &&
@@ -1181,6 +1182,20 @@ class ChatMessages extends _$ChatMessages {
         }
       } catch (metaError) {
         debugPrint('Error updating metadata: $metaError');
+      }
+
+      // 🔔 Dispatch Real-Time FCM Push Notification to recipient device
+      try {
+        final senderName = (senderProfile?['name'] ?? 'Mate').toString();
+        PushNotificationService.dispatchChatMessagePushNotification(
+          senderId: uid,
+          senderName: senderName,
+          messageText: displayMsg,
+          receiverId: isPersonal ? actualId : null,
+          groupId: isPersonal ? null : actualId,
+        );
+      } catch (pushErr) {
+        debugPrint('Note sending push notification from chat: $pushErr');
       }
 
       return fullMessage;

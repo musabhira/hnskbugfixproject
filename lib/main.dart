@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 
@@ -241,6 +242,16 @@ class MyAppState extends State<MyApp> {
           try {
             PushNotificationService.initialize();
             PushNotificationService.syncCurrentUserToken();
+            // ⏰ Setup / Refresh multi-slot daily study reminders for active user's current day
+            final uid = user.uid;
+            if (uid != null && uid.isNotEmpty) {
+              SharedPreferences.getInstance().then((prefs) {
+                final currentDay = prefs.getInt('learning_last_completed_day_$uid') ??
+                    prefs.getInt('user_learning_day_$uid') ??
+                    1;
+                PushNotificationService.scheduleMultiSlotDailyReminders(currentDay: currentDay);
+              }).catchError((_) {});
+            }
           } catch (e) {
             debugPrint('Main: PushNotificationService error on login: $e');
           }

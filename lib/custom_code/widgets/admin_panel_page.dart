@@ -250,7 +250,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 22, vsync: this);
+    _tabController = TabController(length: 23, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showPasswordDialog();
       _loadRobotCycleData();
@@ -1230,6 +1230,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                         icon: Icon(Icons.ads_click_rounded, size: 16),
                         text: 'AdMob & Ads 📺'),
                     Tab(
+                        icon: Icon(Icons.notifications_active_rounded, size: 16),
+                        text: 'Notifications 🔔'),
+                    Tab(
                         icon: Icon(Icons.public_rounded, size: 16),
                         text: 'Cosmos 🌌'),
                     Tab(
@@ -1265,6 +1268,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           _buildCertificatesTab(),
           _buildPremiumUsersTab(),
           const AdminAdsManagementTab(),
+          _buildDedicatedNotificationsTab(),
           _buildCosmosAdminTab(),
           _buildFeedbacksTab(),
         ],
@@ -16874,6 +16878,387 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
             fontSize: 11,
             fontWeight: selected ? FontWeight.bold : FontWeight.normal,
           ),
+        ),
+      ),
+    );
+  }
+
+  // =========================================================================
+  // 🔔 DEDICATED NOTIFICATIONS & BROADCAST TAB (ADMIN)
+  // =========================================================================
+  Widget _buildDedicatedNotificationsTab() {
+    return Container(
+      color: const Color(0xFF0A0F1D),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Header Card
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.12),
+                    blurRadius: 18,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.notifications_active_rounded,
+                          color: Color(0xFF38BDF8),
+                          size: 26,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Notifications & Broadcast Center 🔔',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              'Dispatch instant lock-screen FCM push alerts to all app users or individual citizens',
+                              style: GoogleFonts.inter(
+                                color: Colors.white60,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  // Target Selection Pills
+                  Row(
+                    children: [
+                      ChoiceChip(
+                        label: const Text('📢 Broadcast to All Users'),
+                        selected: _pushNotificationTarget == 'broadcast',
+                        selectedColor: const Color(0xFF38BDF8),
+                        labelStyle: TextStyle(
+                          color: _pushNotificationTarget == 'broadcast'
+                              ? Colors.black
+                              : Colors.white70,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12.5,
+                        ),
+                        onSelected: (selected) {
+                          if (selected) {
+                            setState(() => _pushNotificationTarget = 'broadcast');
+                          }
+                        },
+                      ),
+                      const SizedBox(width: 10),
+                      ChoiceChip(
+                        label: const Text('👤 Individual Citizen'),
+                        selected: _pushNotificationTarget == 'individual',
+                        selectedColor: const Color(0xFF38BDF8),
+                        labelStyle: TextStyle(
+                          color: _pushNotificationTarget == 'individual'
+                              ? Colors.black
+                              : Colors.white70,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12.5,
+                        ),
+                        onSelected: (selected) {
+                          if (selected) {
+                            setState(() => _pushNotificationTarget = 'individual');
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 18),
+
+            // Form Card
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFF111827),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.1),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (_pushNotificationTarget == 'individual') ...[
+                    Text(
+                      'Target Citizen User ID (UUID):',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white70,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _pushNotificationUserIdController,
+                      style: const TextStyle(color: Colors.white, fontSize: 13.5),
+                      decoration: InputDecoration(
+                        hintText: 'e.g. 1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d',
+                        hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
+                        filled: true,
+                        fillColor: const Color(0xFF0F172A),
+                        prefixIcon: const Icon(Icons.person_pin_rounded, color: Color(0xFF38BDF8), size: 18),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
+                  Text(
+                    'Notification Title:',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white70,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _pushNotificationTitleController,
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: 'e.g. Today\'s English Mission is Live! 🔥',
+                      hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
+                      filled: true,
+                      fillColor: const Color(0xFF0F172A),
+                      prefixIcon: const Icon(Icons.title_rounded, color: Color(0xFF38BDF8), size: 18),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  Text(
+                    'Notification Message / Body:',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white70,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _pushNotificationBodyController,
+                    maxLines: 3,
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: 'e.g. Come in, practice speaking for 5 minutes, and climb the Sovereign World Ranking!',
+                      hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
+                      filled: true,
+                      fillColor: const Color(0xFF0F172A),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+
+                  // Quick Suggest Templates
+                  Text(
+                    '💡 Quick Announcement Templates:',
+                    style: GoogleFonts.inter(
+                      color: Colors.white54,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      ActionChip(
+                        backgroundColor: const Color(0xFF1E293B),
+                        avatar: const Text('🌅'),
+                        label: const Text('Daily Mission Reminder', style: TextStyle(color: Colors.white70, fontSize: 11)),
+                        onPressed: () {
+                          _pushNotificationTitleController.text = '🌅 Your Daily English Mission is Waiting!';
+                          _pushNotificationBodyController.text = 'Complete today\'s challenge to build fluency and protect your streak!';
+                        },
+                      ),
+                      ActionChip(
+                        backgroundColor: const Color(0xFF1E293B),
+                        avatar: const Text('⚔️'),
+                        label: const Text('Citadel Raid Alert', style: TextStyle(color: Colors.white70, fontSize: 11)),
+                        onPressed: () {
+                          _pushNotificationTitleController.text = '⚔️ Citadel Gate Defense!';
+                          _pushNotificationBodyController.text = 'Your mates are waiting in the arena. Defend your fortress today!';
+                        },
+                      ),
+                      ActionChip(
+                        backgroundColor: const Color(0xFF1E293B),
+                        avatar: const Text('🚀'),
+                        label: const Text('New App Update', style: TextStyle(color: Colors.white70, fontSize: 11)),
+                        onPressed: () {
+                          _pushNotificationTitleController.text = '🚀 Exciting New Update Available!';
+                          _pushNotificationBodyController.text = 'Check out fresh speaking tasks, faster games, and new fluency badges now!';
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Dispatch Action Button
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF38BDF8),
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    icon: _isSendingPushNotification
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                          )
+                        : const Icon(Icons.send_rounded, size: 18),
+                    label: Text(
+                      _isSendingPushNotification
+                          ? 'Dispatching FCM Push Notification...'
+                          : (_pushNotificationTarget == 'broadcast'
+                              ? 'DISPATCH BROADCAST TO ALL CITIZENS 📢'
+                              : 'SEND PUSH TO SPECIFIC CITIZEN 📲'),
+                      style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    onPressed: _isSendingPushNotification
+                        ? null
+                        : () async {
+                            final title = _pushNotificationTitleController.text.trim();
+                            final body = _pushNotificationBodyController.text.trim();
+                            final targetUid = _pushNotificationUserIdController.text.trim();
+
+                            if (title.isEmpty || body.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Please provide both title and message.'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              return;
+                            }
+
+                            if (_pushNotificationTarget == 'individual' && targetUid.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Please enter a target User ID.'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              return;
+                            }
+
+                            setState(() => _isSendingPushNotification = true);
+
+                            try {
+                              final Map<String, dynamic> payload = {
+                                'action': _pushNotificationTarget,
+                                'title': title,
+                                'body': body,
+                                'data': {
+                                  'type': 'admin_manual_push',
+                                  'timestamp': DateTime.now().toIso8601String(),
+                                },
+                              };
+                              if (_pushNotificationTarget == 'individual') {
+                                payload['user_id'] = targetUid;
+                              }
+
+                              final response = await SupaFlow.client.functions.invoke(
+                                'send-push-notification',
+                                body: payload,
+                              );
+
+                              if (!mounted) return;
+
+                              if (response.status == 200) {
+                                _pushNotificationTitleController.clear();
+                                _pushNotificationBodyController.clear();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Push notification dispatched successfully! 🔔'),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Push dispatch returned status ${response.status}'),
+                                    backgroundColor: Colors.orange,
+                                  ),
+                                );
+                              }
+                            } catch (e) {
+                              if (!mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Push dispatch failed: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            } finally {
+                              if (mounted) {
+                                setState(() => _isSendingPushNotification = false);
+                              }
+                            }
+                          },
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

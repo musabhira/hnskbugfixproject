@@ -422,9 +422,9 @@ class Learning60DayService {
     await prefs.setInt('learning_day_${userId}_${day}_completed_timestamp', now.millisecondsSinceEpoch);
     await prefs.setInt('learning_last_completed_day_$userId', day);
 
-    // 2. Schedule morning notification for next day (at 8:30 AM)
+    // 2. Schedule multi-slot daily reminders for next day (at 8:30 AM, 2:15 PM, 8:00 PM)
     final nextDay = (day < 90) ? day + 1 : 90;
-    await PushNotificationService.scheduleMorningMissionNotification(day: nextDay);
+    await PushNotificationService.scheduleMultiSlotDailyReminders(currentDay: nextDay);
 
     // If advanceToNextDay is explicitly true (e.g. in developer test / fast forward), unlock nextDay immediately
     if (advanceToNextDay) {
