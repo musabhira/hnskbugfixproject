@@ -61,7 +61,7 @@ class _SearchPageState extends State<SearchPage> {
   String _plotStatusFilter = 'all'; // 'all', 'booked', 'available'
   String _plotPlanetFilter =
       'all'; // 'all', 'EP', 'MAR', 'JUP', 'SAT', 'LUN', 'EUR', 'VEN', 'TTN', 'PLT', 'NEP'
-  int _activeWaveCount = 2;
+  int _activeWaveCount = 3;
 
   @override
   void initState() {
@@ -2521,8 +2521,10 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
           }
 
           // 2. Also check wave plots catalog
+          final activeWaves =
+              await PoketCosmosAllocationService.instance.getActiveWaveIndex();
           final allPlots =
-              PoketCosmosAllocationService.getWavePlotsCatalog(maxWaves: 2);
+              PoketCosmosAllocationService.getWavePlotsCatalog(maxWaves: activeWaves);
           Map<String, dynamic>? matchPlot;
           for (final item in allPlots) {
             if (item['globalPlotNumber'] == searchedPlotNum ||

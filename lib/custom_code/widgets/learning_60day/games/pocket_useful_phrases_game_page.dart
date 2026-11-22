@@ -16,21 +16,24 @@ class _PhraseTile {
   final int id;
   final String word;
   final int correctIndex;
+  final bool isLocked;
 
   _PhraseTile({
     required this.id,
     required this.word,
     required this.correctIndex,
+    this.isLocked = false,
   });
 }
 
 /// 🌟 Dedicated Useful English Phrases Game Page (Step 6)
 ///
 /// Features:
-/// - Minimal, eye-pleasing modern deep navy/teal gradient
-/// - Day-specific anchor phrase theme (How, Who, When, Where, Why, etc.) across all 90 Days
-/// - Native translations across Malayalam, Tamil, Hindi, and Kannada
-/// - Interactive word assembly, TTS pronunciation, hint system, and gamified XP rewards
+/// - Sentence-builder interactive game format
+/// - Pre-placed & locked Anchor word (e.g. "How") as the conversational starter
+/// - Global language synchronization (Malayalam, Tamil, Hindi, Kannada)
+/// - Top Teacher's Concept Tip explaining the anchor phrase
+/// - Rich visual glowing cards, empty word target slots, and tactile SFX/haptics
 class PocketUsefulPhrasesGamePage extends StatefulWidget {
   final int day;
   final String? userId;
@@ -67,7 +70,8 @@ class PocketUsefulPhrasesGamePage extends StatefulWidget {
 }
 
 class _PocketUsefulPhrasesGamePageState
-    extends State<PocketUsefulPhrasesGamePage> with SingleTickerProviderStateMixin {
+    extends State<PocketUsefulPhrasesGamePage>
+    with SingleTickerProviderStateMixin {
   late DayUsefulPhrases _dayData;
   int _currentPhraseIdx = 0;
 
@@ -77,20 +81,19 @@ class _PocketUsefulPhrasesGamePageState
   bool _isRoundCompleted = false;
   int? _shakingTileId;
   int? _hintTileId;
+  bool _isTipExpanded = false;
 
   late AnimationController _shakeController;
   final FlutterTts _tts = FlutterTts();
-  String _selectedLang = 'ml';
 
   @override
   void initState() {
     super.initState();
     _dayData = Pocket90DayUsefulPhrasesData.getDayPhrases(widget.day);
-    _selectedLang = PocketLanguageService.languageCode;
 
     _shakeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 380),
     );
 
     _initTts();
@@ -100,7 +103,7 @@ class _PocketUsefulPhrasesGamePageState
   Future<void> _initTts() async {
     try {
       await _tts.setLanguage('en-US');
-      await _tts.setSpeechRate(0.48);
+      await _tts.setSpeechRate(0.46);
       await _tts.setVolume(1.0);
       await _tts.setPitch(1.0);
     } catch (_) {}
@@ -118,34 +121,50 @@ class _PocketUsefulPhrasesGamePageState
     final item = _dayData.phrases[index];
     final words = item.words;
 
-    final tiles = <_PhraseTile>[];
-    for (int i = 0; i < words.length; i++) {
-      tiles.add(_PhraseTile(
+    // Anchor word is the first word (words[0])
+    // Pre-place words[0] as a locked starter tile in the assembly area
+    final starterTile = _PhraseTile(
+      id: 0,
+      word: words.isNotEmpty ? words[0] : _dayData.anchorWord,
+      correctIndex: 0,
+      isLocked: true,
+    );
+
+    // Remaining words go into the bank
+    final bankList = <_PhraseTile>[];
+    for (int i = 1; i < words.length; i++) {
+      bankList.add(_PhraseTile(
         id: i,
         word: words[i],
         correctIndex: i,
+        isLocked: false,
       ));
     }
 
-    // Shuffle for bank
-    final shuffled = List<_PhraseTile>.from(tiles);
+    // Shuffle bank tiles so they aren't in exact order
+    final shuffled = List<_PhraseTile>.from(bankList);
     final rand = math.Random();
     shuffled.shuffle(rand);
-    // Guarantee shuffled isn't accidentally in exact solved order if length > 1
-    if (tiles.length > 1 &&
-        List.generate(tiles.length, (i) => tiles[i].id).toString() ==
+    if (bankList.length > 1 &&
+        List.generate(bankList.length, (i) => bankList[i].id).toString() ==
             List.generate(shuffled.length, (i) => shuffled[i].id).toString()) {
       shuffled.shuffle(rand);
     }
 
     setState(() {
       _placedTiles.clear();
+      _placedTiles.add(starterTile);
       _bankTiles.clear();
       _bankTiles.addAll(shuffled);
       _isRoundCompleted = false;
       _hintTileId = null;
       _shakingTileId = null;
     });
+
+    // If single-word phrase (rare edge case), auto-complete
+    if (words.length <= 1) {
+      _handlePhraseCompleted();
+    }
   }
 
   void _onBankTileTapped(_PhraseTile tile) {
@@ -153,7 +172,7 @@ class _PocketUsefulPhrasesGamePageState
 
     final expectedNextIndex = _placedTiles.length;
     if (tile.correctIndex == expectedNextIndex) {
-      // Correct tile placement!
+      // Correct tile selected!
       PocketGameSfx.instance.playTilePop();
       HapticFeedback.lightImpact();
 
@@ -164,13 +183,13 @@ class _PocketUsefulPhrasesGamePageState
         _shakingTileId = null;
       });
 
-      // Check if phrase is complete
+      // Check if entire phrase is assembled
       final item = _dayData.phrases[_currentPhraseIdx];
       if (_placedTiles.length == item.words.length) {
         _handlePhraseCompleted();
       }
     } else {
-      // Wrong tile tapped
+      // Incorrect tile tapped
       PocketGameSfx.instance.playErrorBuzz();
       HapticFeedback.heavyImpact();
 
@@ -186,7 +205,13 @@ class _PocketUsefulPhrasesGamePageState
   void _onPlacedTileTapped(_PhraseTile tile) {
     if (_isRoundCompleted) return;
 
-    // Send back to bank
+    // Anchor starter tile is permanently locked in place!
+    if (tile.isLocked) {
+      HapticFeedback.selectionClick();
+      return;
+    }
+
+    // Return tapped tile back to bank
     PocketGameSfx.instance.playClick();
     HapticFeedback.selectionClick();
 
@@ -256,7 +281,7 @@ class _PocketUsefulPhrasesGamePageState
         backgroundColor: const Color(0xFF0F172A),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
-          side: const BorderSide(color: Color(0xFF06B6D4), width: 2),
+          side: const BorderSide(color: Color(0xFF00E5FF), width: 2),
         ),
         title: Row(
           children: [
@@ -279,7 +304,7 @@ class _PocketUsefulPhrasesGamePageState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Awesome work! You mastered all ${_dayData.phrases.length} practical English phrases starting with ${_dayData.anchorWord}!',
+              'Awesome work! You completed all ${_dayData.phrases.length} practical English phrases starting with ${_dayData.anchorWord}!',
               style: GoogleFonts.inter(color: Colors.white70, fontSize: 13.5),
             ),
             const SizedBox(height: 14),
@@ -310,7 +335,7 @@ class _PocketUsefulPhrasesGamePageState
         actions: [
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF06B6D4),
+              backgroundColor: const Color(0xFF00E5FF),
               foregroundColor: Colors.black,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
@@ -346,16 +371,15 @@ class _PocketUsefulPhrasesGamePageState
     final currentPhrase = _dayData.phrases[_currentPhraseIdx];
 
     return Scaffold(
-      // Minimal, eye-soothing deep midnight slate/navy gradient
-      backgroundColor: const Color(0xFF0A0F1D),
+      backgroundColor: const Color(0xFF070B14),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xFF0F172A), // Deep Slate Navy
-              Color(0xFF131D31),
-              Color(0xFF0E1626),
-              Color(0xFF0A0F1D), // Bottom deep
+              Color(0xFF0B132B),
+              Color(0xFF1C2541),
+              Color(0xFF0B132B),
+              Color(0xFF070B14),
             ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -364,42 +388,45 @@ class _PocketUsefulPhrasesGamePageState
         child: SafeArea(
           child: Column(
             children: [
-              // 1. Top Header with responsive center title and hint bulb
+              // 1. Top App Header & Progress
               _buildTopHeader(),
 
-              const SizedBox(height: 8),
+              // 2. Anchor Lesson Banner (explaining the concept and why we use it)
+              _buildAnchorLessonBanner(),
 
-              // 2. Assembly Board (Native meaning & assembled phrase slots)
+              const SizedBox(height: 6),
+
+              // 3. Sentence Assembly Board (Meaning + Locked Anchor + Word Slots)
               Expanded(
                 flex: 5,
-                child: _buildTopAssemblyBoard(currentPhrase),
+                child: _buildAssemblyBoard(currentPhrase),
               ),
 
-              // 3. Subtle Center Divider
+              // 4. Subtle Divider with neon cyan glow
               Container(
-                height: 4,
-                margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                height: 3,
+                margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
                       Colors.transparent,
-                      const Color(0xFF06B6D4).withValues(alpha: 0.5),
+                      const Color(0xFF00E5FF).withValues(alpha: 0.6),
                       Colors.transparent,
                     ],
                   ),
                 ),
               ),
 
-              // 4. Bottom Word Bank with scrambled tiles
+              // 5. Bottom Word Bank (only remaining words to complete the phrase)
               Expanded(
                 flex: 5,
                 child: _buildBottomWordBank(),
               ),
 
-              // 5. Completion Bottom Bar
+              // 6. Completion Footer
               if (_isRoundCompleted) _buildCompletionFooter(currentPhrase),
 
-              // 6. Zero-blank Banner Ad
+              // 7. Banner Ad
               PocketBannerAdWidget(
                 margin: const EdgeInsets.symmetric(vertical: 4),
               ),
@@ -412,7 +439,7 @@ class _PocketUsefulPhrasesGamePageState
 
   Widget _buildTopHeader() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -422,7 +449,7 @@ class _PocketUsefulPhrasesGamePageState
               PocketGameSfx.instance.playClick();
               Navigator.pop(context);
             },
-            icon: const Icon(Icons.close_rounded, color: Colors.white, size: 30),
+            icon: const Icon(Icons.close_rounded, color: Colors.white, size: 28),
           ),
 
           // Title & Progress Dots
@@ -436,10 +463,10 @@ class _PocketUsefulPhrasesGamePageState
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.outfit(
-                    color: const Color(0xFF06B6D4),
+                    color: const Color(0xFF00E5FF),
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
-                    letterSpacing: 0.5,
+                    letterSpacing: 0.8,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -458,13 +485,13 @@ class _PocketUsefulPhrasesGamePageState
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: isDone || isCurrent
-                                  ? const Color(0xFF06B6D4)
+                                  ? const Color(0xFF00E5FF)
                                   : Colors.white24,
                               boxShadow: isCurrent
                                   ? [
                                       BoxShadow(
-                                        color: const Color(0xFF06B6D4)
-                                            .withValues(alpha: 0.6),
+                                        color: const Color(0xFF00E5FF)
+                                            .withValues(alpha: 0.7),
                                         blurRadius: 8,
                                       ),
                                     ]
@@ -476,7 +503,7 @@ class _PocketUsefulPhrasesGamePageState
                               width: 8,
                               height: 2,
                               color: isDone
-                                  ? const Color(0xFF06B6D4)
+                                  ? const Color(0xFF00E5FF)
                                   : Colors.white24,
                             ),
                         ],
@@ -495,13 +522,15 @@ class _PocketUsefulPhrasesGamePageState
               padding: const EdgeInsets.all(7),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.10),
-                border: Border.all(color: Colors.white24),
+                color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                border: Border.all(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.5),
+                ),
               ),
               child: const Icon(
-                Icons.lightbulb_outline_rounded,
-                color: Colors.white,
-                size: 22,
+                Icons.lightbulb_rounded,
+                color: Color(0xFFFFD700),
+                size: 20,
               ),
             ),
           ),
@@ -510,135 +539,202 @@ class _PocketUsefulPhrasesGamePageState
     );
   }
 
-  Widget _buildTopAssemblyBoard(UsefulPhraseItem phrase) {
-    final nativeMeaning = _getTranslationForLang(phrase, _selectedLang);
+  Widget _buildAnchorLessonBanner() {
+    final isMl = PocketLanguageService.languageCode == 'ml';
+    final note = isMl
+        ? (_dayData.lessonNoteMl ?? _dayData.descriptionMl)
+        : (_dayData.lessonNoteEn ?? _dayData.descriptionEn);
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B).withValues(alpha: 0.75),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF00E5FF).withValues(alpha: 0.35),
+          width: 1.2,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00E5FF).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '${_dayData.emoji} ANCHOR: ${_dayData.anchorWord.toUpperCase()}',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFF00E5FF),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+              const Spacer(),
+              GestureDetector(
+                onTap: () => setState(() => _isTipExpanded = !_isTipExpanded),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _isTipExpanded ? 'Less' : 'Lesson Tip',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white70,
+                        fontSize: 11.5,
+                      ),
+                    ),
+                    Icon(
+                      _isTipExpanded
+                          ? Icons.keyboard_arrow_up_rounded
+                          : Icons.keyboard_arrow_down_rounded,
+                      color: Colors.white70,
+                      size: 16,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            note,
+            maxLines: _isTipExpanded ? 8 : 2,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(
+              color: Colors.white.withValues(alpha: 0.88),
+              fontSize: 12.5,
+              height: 1.35,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAssemblyBoard(UsefulPhraseItem phrase) {
+    // Automatically uses global language setting (Malayalam, Tamil, Hindi, etc.)
+    final nativeMeaning = phrase.getLocalizedMeaning();
+    final totalWords = phrase.words.length;
+    final remainingSlots = math.max(0, totalWords - _placedTiles.length);
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Center(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Anchor badge
-              Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF06B6D4).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: const Color(0xFF06B6D4).withValues(alpha: 0.35),
-                  ),
-                ),
-                child: Text(
-                  '${_dayData.emoji} ${_dayData.anchorTheme}',
-                  style: GoogleFonts.outfit(
-                    color: const Color(0xFF38BDF8),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.8,
-                  ),
-                ),
-              ),
-
-              // Native Meaning Card
+              // 1. Meaning Card with Speaker Icon
               Container(
                 margin: const EdgeInsets.only(bottom: 16),
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
-                    width: 1.2,
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                    width: 1.4,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
+                      color: Colors.black.withValues(alpha: 0.4),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
+                child: Row(
                   children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            nativeMeaning,
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFFFFD700),
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                    Expanded(
+                      child: Text(
+                        nativeMeaning,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 19,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.3,
                         ),
-                        const SizedBox(width: 8),
-                        IconButton(
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          icon: const Icon(
-                            Icons.volume_up_rounded,
-                            color: Color(0xFF38BDF8),
-                            size: 22,
-                          ),
-                          onPressed: () => _speak(phrase.phraseEn),
-                        ),
-                      ],
+                      ),
                     ),
-                    const SizedBox(height: 6),
-                    // Language Switcher Chips
-                    _buildLanguageSwitcher(),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      icon: Container(
+                        padding: const EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.volume_up_rounded,
+                          color: Color(0xFF00E5FF),
+                          size: 22,
+                        ),
+                      ),
+                      onPressed: () => _speak(phrase.phraseEn),
+                    ),
                   ],
                 ),
               ),
 
-              // Dropped Phrase Word Tiles
+              // 2. Sentence Construction Area (Locked Anchor + Placed Tiles + Dashed Empty Slots)
               Wrap(
-                spacing: 10,
-                runSpacing: 12,
+                spacing: 8,
+                runSpacing: 10,
                 alignment: WrapAlignment.center,
                 crossAxisAlignment: WrapCrossAlignment.center,
-                children: _placedTiles.isEmpty
-                    ? [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 18, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.04),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.white24),
-                          ),
-                          child: Text(
-                            'Tap the words below to build the phrase',
-                            style: GoogleFonts.outfit(
-                              color: Colors.white54,
-                              fontSize: 13.5,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
+                children: [
+                  // Placed Tiles (Index 0 is locked Anchor)
+                  ..._placedTiles.map((tile) {
+                    return GestureDetector(
+                      onTap: () => _onPlacedTileTapped(tile),
+                      child: _buildTile(
+                        tile: tile,
+                        isPlaced: true,
+                        isShaking: false,
+                        isHint: false,
+                      ),
+                    );
+                  }),
+
+                  // Dashed Placeholder Slots for remaining words
+                  ...List.generate(remainingSlots, (i) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.03),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: const Color(0xFF00E5FF).withValues(alpha: 0.3),
+                          width: 1.5,
                         ),
-                      ]
-                    : _placedTiles.map((tile) {
-                        return GestureDetector(
-                          onTap: () => _onPlacedTileTapped(tile),
-                          child: _buildTile(
-                            tile: tile,
-                            isPlaced: true,
-                            isShaking: false,
-                            isHint: false,
-                          ),
-                        );
-                      }).toList(),
+                      ),
+                      child: Text(
+                        '••••',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white24,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    );
+                  }),
+                ],
               ),
             ],
           ),
@@ -647,92 +743,57 @@ class _PocketUsefulPhrasesGamePageState
     );
   }
 
-  Widget _buildLanguageSwitcher() {
-    final langs = [
-      {'code': 'ml', 'label': 'മലയാളം'},
-      {'code': 'ta', 'label': 'தமிழ்'},
-      {'code': 'hi', 'label': 'हिंदी'},
-      {'code': 'kn', 'label': 'ಕನ್ನಡ'},
-    ];
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: langs.map((l) {
-        final isSelected = _selectedLang == l['code'];
-        return GestureDetector(
-          onTap: () {
-            PocketGameSfx.instance.playClick();
-            setState(() => _selectedLang = l['code']!);
-          },
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? const Color(0xFF06B6D4).withValues(alpha: 0.25)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: isSelected
-                    ? const Color(0xFF06B6D4)
-                    : Colors.white24,
-                width: 1,
-              ),
-            ),
-            child: Text(
-              l['label']!,
-              style: GoogleFonts.outfit(
-                color: isSelected ? Colors.white : Colors.white60,
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  String _getTranslationForLang(UsefulPhraseItem p, String code) {
-    switch (code) {
-      case 'ta':
-        return p.meaningTa;
-      case 'hi':
-        return p.meaningHi;
-      case 'kn':
-        return p.meaningKn;
-      case 'ml':
-      default:
-        return p.meaningMl;
-    }
-  }
-
   Widget _buildBottomWordBank() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
       child: Center(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
-          child: Wrap(
-            spacing: 12,
-            runSpacing: 14,
-            alignment: WrapAlignment.center,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: _bankTiles.map((tile) {
-              final isShaking = _shakingTileId == tile.id;
-              final isHint = _hintTileId == tile.id;
-
-              return GestureDetector(
-                onTap: () => _onBankTileTapped(tile),
-                child: _buildTile(
-                  tile: tile,
-                  isPlaced: false,
-                  isShaking: isShaking,
-                  isHint: isHint,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Word Bank Label
+              Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              );
-            }).toList(),
+                child: Text(
+                  'TAP WORDS TO COMPLETE PHRASE ⬇',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white54,
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+
+              // Word Bank Tiles
+              Wrap(
+                spacing: 10,
+                runSpacing: 12,
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: _bankTiles.map((tile) {
+                  final isShaking = _shakingTileId == tile.id;
+                  final isHint = _hintTileId == tile.id;
+
+                  return GestureDetector(
+                    onTap: () => _onBankTileTapped(tile),
+                    child: _buildTile(
+                      tile: tile,
+                      isPlaced: false,
+                      isShaking: isShaking,
+                      isHint: isHint,
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
           ),
         ),
       ),
@@ -745,41 +806,64 @@ class _PocketUsefulPhrasesGamePageState
     required bool isShaking,
     required bool isHint,
   }) {
+    final isLockedStarter = tile.isLocked;
+
     Widget tileBox = AnimatedContainer(
       duration: const Duration(milliseconds: 200),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
       decoration: BoxDecoration(
-        color: isPlaced
-            ? const Color(0xFF06B6D4)
-            : isHint
-                ? const Color(0xFFFFD700)
-                : const Color(0xFF1E293B),
+        color: isLockedStarter
+            ? const Color(0xFF0284C7) // Anchor starter color
+            : isPlaced
+                ? const Color(0xFF00E5FF) // User placed tile
+                : isHint
+                    ? const Color(0xFFFFD700)
+                    : const Color(0xFF1E293B),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isPlaced
-              ? const Color(0xFF22D3EE)
-              : isHint
-                  ? Colors.white
-                  : const Color(0xFF38BDF8).withValues(alpha: 0.4),
-          width: isPlaced || isHint ? 1.8 : 1.2,
+          color: isLockedStarter
+              ? const Color(0xFF38BDF8)
+              : isPlaced
+                  ? const Color(0xFF67E8F9)
+                  : isHint
+                      ? Colors.white
+                      : const Color(0xFF00E5FF).withValues(alpha: 0.45),
+          width: isPlaced || isHint || isLockedStarter ? 1.8 : 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: (isPlaced ? const Color(0xFF06B6D4) : Colors.black)
-                .withValues(alpha: isPlaced ? 0.35 : 0.25),
-            blurRadius: isPlaced ? 8 : 4,
+            color: (isLockedStarter
+                    ? const Color(0xFF0284C7)
+                    : isPlaced
+                        ? const Color(0xFF00E5FF)
+                        : Colors.black)
+                .withValues(alpha: isPlaced || isLockedStarter ? 0.35 : 0.25),
+            blurRadius: isPlaced || isLockedStarter ? 8 : 4,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Text(
-        tile.word,
-        style: GoogleFonts.outfit(
-          color: isPlaced || isHint ? Colors.black : Colors.white,
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 0.3,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (isLockedStarter) ...[
+            const Icon(Icons.lock_rounded, size: 14, color: Colors.white),
+            const SizedBox(width: 5),
+          ],
+          Text(
+            tile.word,
+            style: GoogleFonts.outfit(
+              color: isLockedStarter
+                  ? Colors.white
+                  : isPlaced || isHint
+                      ? const Color(0xFF070B14)
+                      : Colors.white,
+              fontSize: 16.5,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ],
       ),
     );
 
@@ -807,10 +891,10 @@ class _PocketUsefulPhrasesGamePageState
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
+        color: const Color(0xFF0B132B),
         border: Border(
           top: BorderSide(
-            color: const Color(0xFF06B6D4).withValues(alpha: 0.5),
+            color: const Color(0xFF00E5FF).withValues(alpha: 0.5),
             width: 1.5,
           ),
         ),
@@ -822,13 +906,13 @@ class _PocketUsefulPhrasesGamePageState
             onPressed: () => _speak(phrase.phraseEn),
             icon: const Icon(
               Icons.replay_rounded,
-              color: Color(0xFF06B6D4),
+              color: Color(0xFF00E5FF),
               size: 26,
             ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF06B6D4),
+              backgroundColor: const Color(0xFF00E5FF),
               foregroundColor: Colors.black,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),

@@ -34,14 +34,17 @@ void main() {
     test('Day 1 contains How phrases matching user specification', () {
       final day1 = Pocket90DayUsefulPhrasesData.getDayPhrases(1);
       expect(day1.anchorWord, equals('How'));
-      final phrasesEn = day1.phrases.map((p) => p.phraseEn).toList();
-      expect(phrasesEn, contains('How many times'));
-      expect(phrasesEn, contains('How often'));
-      expect(phrasesEn, contains('How long'));
-      expect(phrasesEn, contains('How far'));
+      expect(day1.lessonNoteEn, isNotNull);
+      expect(day1.lessonNoteMl, isNotNull);
 
-      final howManyTimes = day1.phrases.firstWhere((p) => p.phraseEn == 'How many times');
-      expect(howManyTimes.meaningMl, contains('എത്ര തവണ'));
+      final phrasesEn = day1.phrases.map((p) => p.phraseEn).toList();
+      expect(phrasesEn, contains('How are you doing today'));
+      expect(phrasesEn, contains('How can I help you'));
+      expect(phrasesEn, contains('How long will it take'));
+      expect(phrasesEn, contains('How much does this cost'));
+
+      final howDoing = day1.phrases.firstWhere((p) => p.phraseEn == 'How are you doing today');
+      expect(howDoing.meaningMl, contains('സുഖമാണോ'));
     });
 
     test('Open world step positioning supports 21 steps including Step 6', () {

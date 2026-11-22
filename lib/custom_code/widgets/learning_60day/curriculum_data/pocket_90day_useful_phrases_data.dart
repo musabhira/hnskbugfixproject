@@ -43,6 +43,8 @@ class DayUsefulPhrases {
   final String emoji;
   final String descriptionEn;
   final String descriptionMl;
+  final String? lessonNoteEn;
+  final String? lessonNoteMl;
   final List<UsefulPhraseItem> phrases;
 
   const DayUsefulPhrases({
@@ -52,6 +54,8 @@ class DayUsefulPhrases {
     required this.emoji,
     required this.descriptionEn,
     required this.descriptionMl,
+    this.lessonNoteEn,
+    this.lessonNoteMl,
     required this.phrases,
   });
 }
@@ -65,53 +69,57 @@ class Pocket90DayUsefulPhrasesData {
       emoji: '❓',
       descriptionEn: 'Essential questions starting with How',
       descriptionMl: 'How ഉപയോഗിച്ചുള്ള പ്രധാന ചോദ്യങ്ങളും ഫ്രെയിസുകളും',
+      lessonNoteEn:
+          "'How' is one of the most essential question starters in English! It asks about method, state, quantity, or feeling. We've pre-placed the anchor word 'How' for you — now build the rest of the conversational sentence below!",
+      lessonNoteMl:
+          "ഇംഗ്ലീഷ് സംഭാഷണങ്ങളിൽ ഏറ്റവും കൂടുതൽ ഉപയോഗിക്കുന്ന പ്രധാന ചോദ്യവാക്കാണ് 'How' (എങ്ങനെ / എത്ര / എങ്ങനെയുണ്ട്). രീതികൾ, അവസ്ഥകൾ, അളവുകൾ എന്നിവ ചോദിക്കാൻ 'How' ഉപയോഗിക്കുന്നു.\nആദ്യ വാക്ക് 'How' ഇതിനകം ലോക്ക് ചെയ്ത് നൽകിയിട്ടുണ്ട്. ബാക്കി വാക്കുകൾ താഴെ നിന്ന് ടാപ്പ് ചെയ്ത് വാക്യം പൂർത്തിയാക്കൂ!",
       phrases: [
         UsefulPhraseItem(
-          phraseEn: 'How many times',
-          meaningMl: 'എത്ര തവണ',
-          meaningTa: 'எத்தனை முறை',
-          meaningHi: 'कितनी बार',
-          meaningKn: 'ಎಷ್ಟು ಬಾರಿ',
+          phraseEn: 'How are you doing today',
+          meaningMl: 'നിങ്ങൾക്ക് ഇന്ന് സുഖമാണോ',
+          meaningTa: 'இன்று நீங்கள் எப்படி இருக்கிறீர்கள்',
+          meaningHi: 'आज आप कैसे हैं',
+          meaningKn: 'ಇಂದು ನೀವು ಹೇಗಿದ್ದೀರಿ',
           anchorWord: 'How',
         ),
         UsefulPhraseItem(
-          phraseEn: 'How often',
-          meaningMl: 'എത്ര ഇടവിട്ട്',
-          meaningTa: 'எவ்வளவு அடிக்கடி',
-          meaningHi: 'कितनी बार',
-          meaningKn: 'ಎಷ್ಟು ಆಗಾಗ್ಗೆ',
+          phraseEn: 'How can I help you',
+          meaningMl: 'എനിക്ക് നിങ്ങളെ എങ്ങനെ സഹായിക്കാനാകും',
+          meaningTa: 'நான் உங்களுக்கு எவ்வாறு உதவ முடியும்',
+          meaningHi: 'मैं आपकी कैसे मदद कर सकता हूँ',
+          meaningKn: 'ನಾನು ನಿಮಗೆ ಹೇಗೆ ಸಹಾಯ ಮಾಡಲಿ',
           anchorWord: 'How',
         ),
         UsefulPhraseItem(
-          phraseEn: 'How long',
-          meaningMl: 'എത്ര നേരം',
-          meaningTa: 'எவ்வளவு நேரம்',
-          meaningHi: 'कितनी देर',
-          meaningKn: 'ಎಷ್ಟು ಸಮಯ',
+          phraseEn: 'How long will it take',
+          meaningMl: 'ഇതിന് എത്ര സമയമെടുക്കും',
+          meaningTa: 'இதற்கு எவ்வளவு நேரம் ஆகும்',
+          meaningHi: 'इसमें कितना समय लगेगा',
+          meaningKn: 'ಇದಕ್ಕೆ ಎಷ್ಟು ಸಮಯ ಬೇಕಾಗುತ್ತದೆ',
           anchorWord: 'How',
         ),
         UsefulPhraseItem(
-          phraseEn: 'How far',
-          meaningMl: 'എത്ര ദൂരം',
-          meaningTa: 'எவ்வளவு தூரம்',
-          meaningHi: 'कितनी दूर',
-          meaningKn: 'ಎಷ್ಟು ದೂರ',
+          phraseEn: 'How much does this cost',
+          meaningMl: 'ഇതിന് എത്ര വിലയാകും',
+          meaningTa: 'இதன் விலை எவ்வளவு',
+          meaningHi: 'इसकी कीमत कितनी है',
+          meaningKn: 'ಇದರ ಬೆಲೆ ಎಷ್ಟು',
           anchorWord: 'How',
         ),
         UsefulPhraseItem(
-          phraseEn: 'How much',
-          meaningMl: 'എത്ര രൂപ അല്ലെങ്കിൽ എത്ര അളവ്',
-          meaningTa: 'எவ்வளவு விலை',
-          meaningHi: 'कितना मूल्य',
-          meaningKn: 'ಎಷ್ಟು ಬೆಲೆ',
+          phraseEn: 'How was your practice session',
+          meaningMl: 'നിങ്ങളുടെ പ്രാക്ടീസ് സെഷൻ എങ്ങനെയുണ്ടായിരുന്നു',
+          meaningTa: 'உங்கள் பயிற்சி அமர்வு எப்படி இருந்தது',
+          meaningHi: 'आपका अभ्यास सत्र कैसा रहा',
+          meaningKn: 'ನಿಮ್ಮ ಅಭ್ಯಾಸದ ಅವಧಿ ಹೇಗಿತ್ತು',
           anchorWord: 'How',
         ),
         UsefulPhraseItem(
-          phraseEn: 'How soon',
-          meaningMl: 'എത്രയും പെട്ടെന്ന് അല്ലെങ്കിൽ എത്ര വേഗം',
-          meaningTa: 'எவ்வளவு விரைவில்',
-          meaningHi: 'कितनी जल्दी',
-          meaningKn: 'ಎಷ್ಟು ಬೇಗನೆ',
+          phraseEn: 'How do you go there',
+          meaningMl: 'നിങ്ങൾ എങ്ങനെയാണ് അവിടെ പോകുന്നത്',
+          meaningTa: 'நீங்கள் அங்கே எப்படி செல்கிறீர்கள்',
+          meaningHi: 'आप वहाँ कैसे जाते हैं',
+          meaningKn: 'ನೀವು ಅಲ್ಲಿಗೆ ಹೇಗೆ ಹೋಗುತ್ತೀರಿ',
           anchorWord: 'How',
         ),
       ],
