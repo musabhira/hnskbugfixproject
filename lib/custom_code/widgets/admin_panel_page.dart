@@ -23,6 +23,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortr
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
+import 'package:pocket_mates_app/custom_code/widgets/admin/admin_sentence_marketing_studio.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin_games_hub_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/app_store_review_service.dart';
@@ -250,7 +251,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 23, vsync: this);
+    _tabController = TabController(length: 24, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showPasswordDialog();
       _loadRobotCycleData();
@@ -1238,6 +1239,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                     Tab(
                         icon: Icon(Icons.lightbulb_rounded, size: 16),
                         text: 'Feedbacks 💡'),
+                    Tab(
+                        icon: Icon(Icons.movie_creation_rounded, size: 16),
+                        text: 'Marketing Studio 🎬'),
                   ],
                 ),
               ),
@@ -1271,6 +1275,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           _buildDedicatedNotificationsTab(),
           _buildCosmosAdminTab(),
           _buildFeedbacksTab(),
+          const AdminSentenceMarketingStudioTab(),
         ],
       ),
     );
