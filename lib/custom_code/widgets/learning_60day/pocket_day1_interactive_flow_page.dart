@@ -51,6 +51,7 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/student_bio_creator_ga
 import 'package:pocket_mates_app/custom_code/widgets/kids/student_notice_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/student_email_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/student_spelling_detective_game_page.dart';
+import 'games/pocket_useful_phrases_game_page.dart';
 import 'pocket_chat_reply_builder_page.dart';
 import 'pocket_negative_sentence_builder_page.dart';
 import 'pocket_mini_speech_practice_page.dart';
@@ -458,7 +459,7 @@ class _PocketDay1InteractiveFlowPageState
       ),
     );
 
-    if (stepIndex >= 19) {
+    if (stepIndex >= 20) {
       await _onDay1FullyCompleted();
     } else {
       if (widget.singleStepOnly) {
@@ -710,19 +711,18 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
-    // ✍️ Step 6: Letter Writing Game
+    // 💬 Step 6: Useful English Phrases (NEW!)
     if (_activeStep == 6) {
-      return StudentLetterWritingGamePage(
+      return PocketUsefulPhrasesGamePage(
         day: widget.day,
-        stepIndex: 6,
         userId: widget.userId,
         onStepFinished: (finishedStep) => _markStepCompleted(6),
       );
     }
 
-    // 📔 Step 7: Diary Entry Game
+    // ✍️ Step 7: Letter Writing Game
     if (_activeStep == 7) {
-      return StudentDiaryEntryGamePage(
+      return StudentLetterWritingGamePage(
         day: widget.day,
         stepIndex: 7,
         userId: widget.userId,
@@ -730,9 +730,9 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
-    // 🌟 Step 8: Student Bio Creator
+    // 📔 Step 8: Diary Entry Game
     if (_activeStep == 8) {
-      return StudentBioCreatorGamePage(
+      return StudentDiaryEntryGamePage(
         day: widget.day,
         stepIndex: 8,
         userId: widget.userId,
@@ -740,9 +740,9 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
-    // 📢 Step 9: School Notice Game
+    // 🌟 Step 9: Student Bio Creator
     if (_activeStep == 9) {
-      return StudentNoticeGamePage(
+      return StudentBioCreatorGamePage(
         day: widget.day,
         stepIndex: 9,
         userId: widget.userId,
@@ -750,9 +750,9 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
-    // 📧 Step 10: Email Writing Game
+    // 📢 Step 10: School Notice Game
     if (_activeStep == 10) {
-      return StudentEmailGamePage(
+      return StudentNoticeGamePage(
         day: widget.day,
         stepIndex: 10,
         userId: widget.userId,
@@ -760,9 +760,9 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
-    // 🕵️ Step 11: Spelling Detective Challenge
+    // 📧 Step 11: Email Writing Game
     if (_activeStep == 11) {
-      return StudentSpellingDetectiveGamePage(
+      return StudentEmailGamePage(
         day: widget.day,
         stepIndex: 11,
         userId: widget.userId,
@@ -770,84 +770,94 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
-    // 🎙️ Step 12: Spoken English Practice / Speech Simulator
+    // 🕵️ Step 12: Spelling Detective Challenge
     if (_activeStep == 12) {
+      return StudentSpellingDetectiveGamePage(
+        day: widget.day,
+        stepIndex: 12,
+        userId: widget.userId,
+        onStepFinished: (finishedStep) => _markStepCompleted(12),
+      );
+    }
+
+    // 🎙️ Step 13: Spoken English Practice / Speech Simulator
+    if (_activeStep == 13) {
       if (widget.day == 1) {
         return PocketDay1Step4AvatarChatPage(
           day: widget.day,
           userId: widget.userId,
-          onStepFinished: (finishedStep) => _markStepCompleted(12),
+          onStepFinished: (finishedStep) => _markStepCompleted(13),
         );
       } else {
         return PocketSpokenAvatarSimulatorPage(
           day: widget.day,
-          onCompleted: () => _markStepCompleted(12),
+          onCompleted: () => _markStepCompleted(13),
         );
       }
     }
 
-    // 📖 Step 13: Reading Room & Comprehension
-    if (_activeStep == 13) {
+    // 📖 Step 14: Reading Room & Comprehension
+    if (_activeStep == 14) {
       return PocketDay1Step5AvatarChatPage(
         day: widget.day,
-        stepIndex: 13,
-        userId: widget.userId,
-        onStepFinished: (finishedStep) => _markStepCompleted(13),
-      );
-    }
-
-    // ⏳ Step 14: 3-Tier Time Machine Builder (Past, Present, Future)
-    if (_activeStep == 14) {
-      return PocketVerbTimelineGamePage(
-        day: widget.day,
+        stepIndex: 14,
         userId: widget.userId,
         onStepFinished: (finishedStep) => _markStepCompleted(14),
       );
     }
 
-    // 💬 Step 15: Chat Reply Builder (Real-World Quick Responses)
+    // ⏳ Step 15: 3-Tier Time Machine Builder (Past, Present, Future)
     if (_activeStep == 15) {
-      return PocketChatReplyBuilderPage(
+      return PocketVerbTimelineGamePage(
         day: widget.day,
         userId: widget.userId,
         onStepFinished: (finishedStep) => _markStepCompleted(15),
       );
     }
 
-    // 🚫 Step 16: Negative & Question Converter (Mastering Don't / Won't)
+    // 💬 Step 16: Chat Reply Builder (Real-World Quick Responses)
     if (_activeStep == 16) {
-      return PocketNegativeSentenceBuilderPage(
+      return PocketChatReplyBuilderPage(
         day: widget.day,
         userId: widget.userId,
         onStepFinished: (finishedStep) => _markStepCompleted(16),
       );
     }
 
-    // 🎤 Step 17: Mini Speech Practice (60-Sec Self Talk Challenge)
+    // 🚫 Step 17: Negative & Question Converter (Mastering Don't / Won't)
     if (_activeStep == 17) {
-      return PocketMiniSpeechPracticePage(
+      return PocketNegativeSentenceBuilderPage(
         day: widget.day,
         userId: widget.userId,
         onStepFinished: (finishedStep) => _markStepCompleted(17),
       );
     }
 
-    // ⚔️ Step 18: House Attack Quest (Raid Rival Citadel)
+    // 🎤 Step 18: Mini Speech Practice (60-Sec Self Talk Challenge)
     if (_activeStep == 18) {
-      return PocketHouseAttackPage(
+      return PocketMiniSpeechPracticePage(
         day: widget.day,
-        stepIndex: 18,
         userId: widget.userId,
         onStepFinished: (finishedStep) => _markStepCompleted(18),
       );
     }
 
-    // 🏆 Step 19: Day Review & Victory Card
+    // ⚔️ Step 19: House Attack Quest (Raid Rival Citadel)
     if (_activeStep == 19) {
+      return PocketHouseAttackPage(
+        day: widget.day,
+        stepIndex: 19,
+        userId: widget.userId,
+        onStepFinished: (finishedStep) => _markStepCompleted(19),
+      );
+    }
+
+    // 🏆 Step 20: Day Review & Victory Card
+    if (_activeStep == 20) {
       return PocketDay1ReviewCardPage(
         day: widget.day,
         userId: widget.userId,
-        onProceedToNextDay: () async => _markStepCompleted(19),
+        onProceedToNextDay: () async => _markStepCompleted(20),
       );
     }
 

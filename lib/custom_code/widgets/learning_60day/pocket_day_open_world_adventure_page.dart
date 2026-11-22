@@ -51,6 +51,7 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/student_bio_creator_ga
 import 'package:pocket_mates_app/custom_code/widgets/kids/student_notice_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/student_email_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/student_spelling_detective_game_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/pocket_useful_phrases_game_page.dart';
 
 /// 🏔️ Dedicated Open-World Level Adventure Page (Light Mode Hill-Climb Adventure!)
 ///
@@ -82,6 +83,10 @@ class PocketDayOpenWorldAdventurePage extends StatefulWidget {
     this.userId,
     this.onCompleted,
   });
+
+  static Offset getStepPosition(int stepIndex, {int totalSteps = 21}) =>
+      _PocketDayOpenWorldAdventurePageState.getStepPosition(stepIndex,
+          totalSteps: totalSteps);
 
   @override
   State<PocketDayOpenWorldAdventurePage> createState() =>
@@ -240,21 +245,21 @@ class _PocketDayOpenWorldAdventurePageState
   // ignore: unused_field
   Day1Track _day1Track = Day1Track.middle;
   bool _isGateExamPassed = false;
-  int get _totalSteps => 20;
+  int get _totalSteps => 21;
 
   /// Exact coordinate of milestone step on the mountain slope (User Audio Directive: Ample gap after Today's Lesson billboard)
-  static Offset getStepPosition(int stepIndex, {int totalSteps = 20}) {
+  static Offset getStepPosition(int stepIndex, {int totalSteps = 21}) {
     if (stepIndex == totalSteps) {
       // Summit Review Milestone right past the Gate!
       const x = 4350.0;
       return Offset(x, getGroundY(x));
     }
     if (stepIndex == totalSteps - 1) {
-      // Step 19: Dedicated Spoken English Gate Exam
+      // Step 20: Dedicated Spoken English Gate Exam
       const x = 4220.0;
       return Offset(x, getGroundY(x));
     }
-    final stepsForSlope = totalSteps - 2; // Steps 1 to 18 along the scenic slope
+    final stepsForSlope = totalSteps - 2; // Steps 1 to 19 along the scenic slope
     final denominator = (stepsForSlope > 1) ? (stepsForSlope - 1).toDouble() : 1.0;
     final progress = (stepIndex - 1) / denominator;
     const startX = 1040.0;
@@ -277,7 +282,6 @@ class _PocketDayOpenWorldAdventurePageState
     final gatePassed = prefs.getBool(gatePassedKey) ?? false;
 
     final Map<String, bool> flags = {};
-    bool previousStepDone = true;
     for (int step = 1; step <= _totalSteps; step++) {
       final userKey = uid != null ? 'pocket_day_${uid}_${widget.day}_step_${step}_done' : null;
       final guestKey = 'pocket_day_guest_${widget.day}_step_${step}_done';
@@ -292,11 +296,29 @@ class _PocketDayOpenWorldAdventurePageState
         rawDone = (prefs.getBool(guestKey) == true) ||
             (step == 1 && prefs.getBool('pocket_day_guest_${widget.day}_step_1_completed') == true);
       }
+      flags['step_$step'] = rawDone;
+    }
 
-      // Enforce strict sequential order: Step N can only be marked done if Step N-1 was completed!
-      final isDone = rawDone && previousStepDone;
-      flags['step_$step'] = isDone;
-      previousStepDone = isDone;
+    // Step 6 is an add-on step: if user has already advanced to higher steps or completed day, keep them unlocked!
+    final bool hasAdvancedBeyond6 = (flags['step_7'] == true) ||
+        (flags['step_8'] == true) ||
+        (flags['step_21'] == true) ||
+        gatePassed;
+
+    bool previousStepDone = true;
+    for (int step = 1; step <= _totalSteps; step++) {
+      final rawDone = flags['step_$step'] ?? false;
+      if (step == 6) {
+        // Step 6 is an add-on; it does not block subsequent steps for existing learners
+        flags['step_6'] = rawDone;
+      } else if (step > 6 && hasAdvancedBeyond6) {
+        flags['step_$step'] = rawDone;
+        previousStepDone = rawDone;
+      } else {
+        final isDone = rawDone && (step == 7 ? (previousStepDone || (flags['step_5'] == true)) : previousStepDone);
+        flags['step_$step'] = isDone;
+        previousStepDone = isDone;
+      }
     }
 
     if (mounted) {
@@ -327,9 +349,14 @@ class _PocketDayOpenWorldAdventurePageState
   }
 
   int _findFirstIncompleteStep(Map<String, bool> flags) {
+    final hasAdvancedBeyond6 = (flags['step_7'] == true) || (flags['step_8'] == true);
     for (int s = 1; s <= _totalSteps; s++) {
+      if (s == 6 && hasAdvancedBeyond6 && !(flags['step_6'] ?? false)) {
+        continue;
+      }
       if (!(flags['step_$s'] ?? false)) return s;
     }
+    if (!(flags['step_6'] ?? false)) return 6;
     return _totalSteps;
   }
 
@@ -561,10 +588,10 @@ class _PocketDayOpenWorldAdventurePageState
 
         // 🎯 Strategic Transition Ads:
         // 1. Interstitial Ad after completing configured learning step frequency (default every 6 steps)
-        // ⚠️ NOTE: Exclude Step 18 — Step 18 (House / Guest Citadel Attack Quest) already contains its own dedicated in-activity raid interstitial ad (PocketAdPlacement.attack).
+        // ⚠️ NOTE: Exclude Step 19 — Step 19 (House / Guest Citadel Attack Quest) already contains its own dedicated in-activity raid interstitial ad (PocketAdPlacement.attack).
         // Excluded from the generic modulo-6 rule to prevent duplicate ads on activity exit and step completion.
         if (stepIndex > 0 &&
-            stepIndex != 18 &&
+            stepIndex != 19 &&
             stepIndex % PocketAdMobService.interstitialStepFrequency == 0 &&
             stepIndex < _totalSteps) {
           Future.delayed(const Duration(milliseconds: 600), () {
@@ -1953,17 +1980,17 @@ class _PocketDayOpenWorldAdventurePageState
               final isPassed = correctCount >= (questions.length >= 6 ? 4 : (questions.length >= 4 ? 3 : 1)); // 60%+ pass threshold
 
               if (isPassed && !_isGateExamPassed) {
-                // Award points & unlock Step 20
+                // Award points & unlock Step 21 (Daily Summary)
                 final uid = widget.userId ?? _supabase.auth.currentUser?.id;
                 SharedPreferences.getInstance().then((prefs) async {
                   await prefs.setBool('pocket_day_${uid ?? "guest"}_${widget.day}_gate_exam_passed', true);
-                  await prefs.setBool('pocket_day_${uid ?? "guest"}_${widget.day}_step_19_done', true);
+                  await prefs.setBool('pocket_day_${uid ?? "guest"}_${widget.day}_step_20_done', true);
                   await PocketFortressDefenseService.recordTrainingPoints(100, uid);
                   if (mounted) {
                     setState(() {
                       _isGateExamPassed = true;
                     });
-                    await _onStepCompleted(19);
+                    await _onStepCompleted(20);
                   }
                 });
               }
@@ -2668,9 +2695,16 @@ class _PocketDayOpenWorldAdventurePageState
     final pos = getStepPosition(stepIndex, totalSteps: _totalSteps);
     final isDone = _subStepFlags['step_$stepIndex'] ?? false;
     final isPrevDone = (stepIndex == 1 || (_subStepFlags['step_${stepIndex - 1}'] ?? false));
-    // Strict sequential unlocking:
-    // A step is ONLY visually unlocked if the immediate previous step is done.
-    final isUnlocked = isPrevDone;
+    // Step 6 is an add-on step: always accessible if step 5 is cleared or higher steps reached!
+    final bool isUnlocked;
+    if (stepIndex == 6) {
+      isUnlocked = isPrevDone || (_subStepFlags['step_5'] ?? false) || (_subStepFlags['step_7'] ?? false);
+    } else if (stepIndex == 7) {
+      isUnlocked = isPrevDone || (_subStepFlags['step_5'] ?? false) || (_subStepFlags['step_7'] ?? false);
+    } else {
+      final hasHigherDone = List.generate(_totalSteps - stepIndex, (i) => _subStepFlags['step_${stepIndex + 1 + i}'] ?? false).contains(true);
+      isUnlocked = isPrevDone || hasHigherDone;
+    }
     final isCurrent = isUnlocked && !isDone;
     const nodeSize = 54.0;
     const containerWidth = 200.0;
@@ -2864,6 +2898,24 @@ class _PocketDayOpenWorldAdventurePageState
                           ),
                         ),
                       ),
+                      if (stepInfo.isNew && !isDone) ...[
+                        const SizedBox(width: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF06B6D4),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Text(
+                            'NEW',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 8,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                      ],
                       if (isDone) ...[
                         const SizedBox(width: 4),
                         Container(
@@ -3044,89 +3096,96 @@ class _PocketDayOpenWorldAdventurePageState
         );
       case 6:
         return _StepInfo(
+          'Useful English Phrases',
+          '💬',
+          const Color(0xFF06B6D4),
+          isNew: true,
+        );
+      case 7:
+        return _StepInfo(
           'Letter Writing Quest',
           '✉️',
           const Color(0xFF38BDF8),
         );
-      case 7:
+      case 8:
         return _StepInfo(
           'Diary Entry Adventure',
           '📖',
           const Color(0xFFFFD700),
         );
-      case 8:
+      case 9:
         return _StepInfo(
           'Legend Bio Creator',
           '👤',
           const Color(0xFF10B981),
         );
-      case 9:
+      case 10:
         return _StepInfo(
           'Notice Masterclass',
           '📢',
           const Color(0xFFEF4444),
         );
-      case 10:
+      case 11:
         return _StepInfo(
           'Email Etiquette',
           '📧',
           const Color(0xFF38BDF8),
         );
-      case 11:
+      case 12:
         return _StepInfo(
           'Spelling Detective',
           '🔍',
           const Color(0xFFFFD700),
         );
-      case 12:
+      case 13:
         return _StepInfo(
           widget.day == 1 ? 'Spoken English Chat' : '20-Turn Spoken Simulator',
           '🎙️',
           const Color(0xFFEC4899),
         );
-      case 13:
+      case 14:
         return _StepInfo(
           widget.day == 1 ? 'Reading Room: The Crow' : 'Open-World Vocab Quest',
           '📖',
           const Color(0xFF60A5FA),
         );
-      case 14:
+      case 15:
         return _StepInfo(
           'Verb Timeline Arcade',
           '⏳',
           const Color(0xFFFF9100),
         );
-      case 15:
+      case 16:
         return _StepInfo(
           'Chat Reply Builder',
           '💬',
           const Color(0xFF00E676),
         );
-      case 16:
+      case 17:
         return _StepInfo(
           'Negative Sentence Builder',
           '🔄',
           const Color(0xFFA855F7),
         );
-      case 17:
+      case 18:
         return _StepInfo(
           'Mini Speech Practice',
           '📢',
           const Color(0xFFE11D48),
         );
-      case 18:
+      case 19:
         return _StepInfo(
           'House Attack Quest: Citadel Raid',
           '⚔️',
           const Color(0xFFEF4444),
         );
-      case 19:
+      case 20:
         return _StepInfo(
           'Spoken English Gate Exam',
           '🎙️',
           const Color(0xFF10B981),
         );
-      case 20:
+      case 21:
         return _StepInfo(
           'Day ${widget.day} Summary & Review',
           '🏆',
@@ -3268,10 +3327,9 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
       if (s == 6) {
-        await StudentLetterWritingGamePage.show(
+        await PocketUsefulPhrasesGamePage.show(
           context,
           day: day,
-          stepIndex: 6,
           userId: uid,
           onStepFinished: (_) => _onStepCompleted(6),
         );
@@ -3280,7 +3338,7 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
       if (s == 7) {
-        await StudentDiaryEntryGamePage.show(
+        await StudentLetterWritingGamePage.show(
           context,
           day: day,
           stepIndex: 7,
@@ -3292,7 +3350,7 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
       if (s == 8) {
-        await StudentBioCreatorGamePage.show(
+        await StudentDiaryEntryGamePage.show(
           context,
           day: day,
           stepIndex: 8,
@@ -3304,7 +3362,7 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
       if (s == 9) {
-        await StudentNoticeGamePage.show(
+        await StudentBioCreatorGamePage.show(
           context,
           day: day,
           stepIndex: 9,
@@ -3316,7 +3374,7 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
       if (s == 10) {
-        await StudentEmailGamePage.show(
+        await StudentNoticeGamePage.show(
           context,
           day: day,
           stepIndex: 10,
@@ -3328,7 +3386,7 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
       if (s == 11) {
-        await StudentSpellingDetectiveGamePage.show(
+        await StudentEmailGamePage.show(
           context,
           day: day,
           stepIndex: 11,
@@ -3340,31 +3398,20 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
       if (s == 12) {
-        if (day == 1) {
-          await PocketDay1Step4AvatarChatPage.show(
-            context,
-            day: day,
-            stepIndex: 12,
-            userId: uid,
-            onStepFinished: (_) => _onStepCompleted(12),
-          );
-        } else {
-          final res = await PocketSpokenAvatarSimulatorPage.launch(
-            context,
-            day: day,
-            onCompleted: () => _onStepCompleted(12),
-          );
-          if (res == true) {
-            await _onStepCompleted(12);
-          }
-        }
+        await StudentSpellingDetectiveGamePage.show(
+          context,
+          day: day,
+          stepIndex: 12,
+          userId: uid,
+          onStepFinished: (_) => _onStepCompleted(12),
+        );
         await _syncStepCompletionIfDone(12);
         await _loadState(preserveCarPosition: true);
         return;
       }
       if (s == 13) {
         if (day == 1) {
-          await PocketDay1Step5AvatarChatPage.show(
+          await PocketDay1Step4AvatarChatPage.show(
             context,
             day: day,
             stepIndex: 13,
@@ -3372,31 +3419,43 @@ class _PocketDayOpenWorldAdventurePageState
             onStepFinished: (_) => _onStepCompleted(13),
           );
         } else {
-          await PocketVocabOpenWorldDrivePage.show(
+          final res = await PocketSpokenAvatarSimulatorPage.launch(
             context,
             day: day,
-            stepIndex: 13,
-            userId: uid,
             onCompleted: () => _onStepCompleted(13),
           );
+          if (res == true) {
+            await _onStepCompleted(13);
+          }
         }
         await _syncStepCompletionIfDone(13);
         await _loadState(preserveCarPosition: true);
         return;
       }
       if (s == 14) {
-        await PocketVerbTimelineGamePage.show(
-          context,
-          day: day,
-          userId: uid,
-          onStepFinished: (_) => _onStepCompleted(14),
-        );
+        if (day == 1) {
+          await PocketDay1Step5AvatarChatPage.show(
+            context,
+            day: day,
+            stepIndex: 14,
+            userId: uid,
+            onStepFinished: (_) => _onStepCompleted(14),
+          );
+        } else {
+          await PocketVocabOpenWorldDrivePage.show(
+            context,
+            day: day,
+            stepIndex: 14,
+            userId: uid,
+            onCompleted: () => _onStepCompleted(14),
+          );
+        }
         await _syncStepCompletionIfDone(14);
         await _loadState(preserveCarPosition: true);
         return;
       }
       if (s == 15) {
-        await PocketChatReplyBuilderPage.show(
+        await PocketVerbTimelineGamePage.show(
           context,
           day: day,
           userId: uid,
@@ -3407,7 +3466,7 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
       if (s == 16) {
-        await PocketNegativeSentenceBuilderPage.show(
+        await PocketChatReplyBuilderPage.show(
           context,
           day: day,
           userId: uid,
@@ -3418,7 +3477,7 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
       if (s == 17) {
-        await PocketMiniSpeechPracticePage.show(
+        await PocketNegativeSentenceBuilderPage.show(
           context,
           day: day,
           userId: uid,
@@ -3429,10 +3488,9 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
       if (s == 18) {
-        await PocketHouseAttackPage.show(
+        await PocketMiniSpeechPracticePage.show(
           context,
           day: day,
-          stepIndex: 18,
           userId: uid,
           onStepFinished: (_) => _onStepCompleted(18),
         );
@@ -3441,30 +3499,42 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
       if (s == 19) {
-        // Step 19: Dedicated Spoken English Gate Exam
-        _showSpokenGateExamModal();
+        await PocketHouseAttackPage.show(
+          context,
+          day: day,
+          stepIndex: 19,
+          userId: uid,
+          onStepFinished: (_) => _onStepCompleted(19),
+        );
+        await _syncStepCompletionIfDone(19);
+        await _loadState(preserveCarPosition: true);
         return;
       }
       if (s == 20) {
-        // Step 20: Daily Summary & Review
+        // Step 20: Dedicated Spoken English Gate Exam
+        _showSpokenGateExamModal();
+        return;
+      }
+      if (s == 21) {
+        // Step 21: Daily Summary & Review
         final res = await PocketDay1ReviewCardPage.showBottomSheet(
           context,
           day: day,
           userId: uid,
           onProceedToNextDay: () async {
-            await _onStepCompleted(20);
+            await _onStepCompleted(21);
             widget.onCompleted?.call();
           },
         );
         if (res == true) {
-          await _syncStepCompletionIfDone(20);
+          await _syncStepCompletionIfDone(21);
           widget.onCompleted?.call();
           if (mounted) {
             Navigator.pop(context, true);
           }
           return;
         }
-        await _syncStepCompletionIfDone(20);
+        await _syncStepCompletionIfDone(21);
         await _loadState(preserveCarPosition: true);
         return;
       }
@@ -3479,8 +3549,9 @@ class _StepInfo {
   final String title;
   final String icon;
   final Color color;
+  final bool isNew;
 
-  const _StepInfo(this.title, this.icon, this.color);
+  const _StepInfo(this.title, this.icon, this.color, {this.isNew = false});
 }
 
 /// 🎨 100% Daytime / Light Mode Open World Mountain & Living Ocean Painter
