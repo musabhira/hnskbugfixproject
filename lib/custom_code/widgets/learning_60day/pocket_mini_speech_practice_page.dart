@@ -367,7 +367,7 @@ class _PocketMiniSpeechPracticePageState
               ],
             ),
             Text(
-              'Step 11 • Day ${widget.day}',
+              'Day ${widget.day}',
               style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
             ),
           ],
@@ -667,7 +667,7 @@ class _PocketMiniSpeechPracticePageState
                               child: Text(
                                 _currentTopicIndex + 1 < _topics.length
                                     ? 'NEXT MINI SPEECH ➔'
-                                    : 'COMPLETE STEP 11 & PROCEED ➔',
+                                    : 'COMPLETE & PROCEED ➔',
                                 style: GoogleFonts.outfit(
                                   fontWeight: FontWeight.w900,
                                   fontSize: 14,

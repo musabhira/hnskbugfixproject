@@ -680,7 +680,7 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      '+35 Fluency XP • Step 8 Complete!\nStep 9: English Hub Community Chat Unlocked! 💬',
+                      '+35 Fluency XP • Challenge Complete!\nEnglish Hub Community Chat Unlocked! 💬',
                       style: GoogleFonts.outfit(
                         color: const Color(0xFFFFD700),
                         fontWeight: FontWeight.w700,
@@ -706,7 +706,7 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
               Navigator.of(context).pop(true);
             },
             child: Text(
-              'CONTINUE TO STEP 9 (ENGLISH HUB) ➔',
+              'CONTINUE ➔',
               style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13),
             ),
           ),
@@ -1383,7 +1383,7 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
             ),
             onPressed: _proceedNextVerb,
             child: Text(
-              _currentIndex + 1 < _items.length ? 'Next Verb Challenge ➔' : 'Complete Step 8 🏆',
+              _currentIndex + 1 < _items.length ? 'Next Verb Challenge ➔' : 'Complete 🏆',
               style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 15),
             ),
           ),

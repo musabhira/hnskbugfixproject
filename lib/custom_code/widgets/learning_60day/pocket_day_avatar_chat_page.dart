@@ -3462,7 +3462,7 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Day ${widget.day} • Step 1: Concept Room 🏛️',
+                  'Day ${widget.day} • Concept Room 🏛️',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,

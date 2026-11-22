@@ -901,7 +901,7 @@ class _PocketVocabOpenWorldDrivePageState
                   Text(modeEmojis[_currentRideMode] ?? '🏎️', style: const TextStyle(fontSize: 14)),
                   const SizedBox(width: 6),
                   Text(
-                    'Day ${widget.day} • Step ${widget.stepIndex}',
+                    'Day ${widget.day}',
                     style: GoogleFonts.outfit(
                       color: Colors.white,
                       fontSize: 13,
@@ -1495,7 +1495,7 @@ class _PocketVocabOpenWorldDrivePageState
                   ),
                   alignment: Alignment.center,
                   child: Text(
-                    '🚗 COMPLETE STEP 2 ➔',
+                    '🚗 COMPLETE ➔',
                     style: GoogleFonts.outfit(
                       color: Colors.white,
                       fontSize: 14,

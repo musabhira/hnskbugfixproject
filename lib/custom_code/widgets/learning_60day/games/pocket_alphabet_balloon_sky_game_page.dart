@@ -856,7 +856,7 @@ class _PocketAlphabetBalloonSkyGamePageState
                   ),
                   alignment: Alignment.center,
                   child: Text(
-                    '🚗 COMPLETE STEP 1 ➔',
+                    '🚗 COMPLETE ➔',
                     style: GoogleFonts.outfit(
                       color: Colors.white,
                       fontSize: 14,

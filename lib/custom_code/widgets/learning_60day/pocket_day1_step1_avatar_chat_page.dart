@@ -1601,7 +1601,7 @@ class _PocketDay1Step1AvatarChatPageState
                 Row(
                   children: [
                     Text(
-                      'DAY 1 • STEP 1',
+                      'DAY 1 • ALPHABET 🔤',
                       style: GoogleFonts.outfit(
                         color: const Color(0xFFFFD700),
                         fontSize: 11.5,

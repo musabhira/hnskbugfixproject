@@ -305,7 +305,7 @@ class _PocketNegativeSentenceBuilderPageState
                     Navigator.pop(context);
                   },
                   child: Text(
-                    'PROCEED TO STEP 11 ➔',
+                    'CONTINUE ➔',
                     style: GoogleFonts.outfit(
                       color: Colors.white,
                       fontWeight: FontWeight.w900,
@@ -380,7 +380,7 @@ class _PocketNegativeSentenceBuilderPageState
                     ),
                   ),
                   Text(
-                    'Step 10 • Day ${widget.day}',
+                    'Day ${widget.day}',
                     style: GoogleFonts.inter(
                         color: Colors.white54, fontSize: 10.5),
                   ),

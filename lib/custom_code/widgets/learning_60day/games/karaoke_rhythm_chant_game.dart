@@ -821,7 +821,7 @@ class _PocketKaraokeRhythmChantPageState
                   ),
                   icon: const Icon(Icons.check_circle, size: 24),
                   label: Text(
-                    'Submit Song & Complete Step 9 🚀',
+                    'Submit Song & Complete 🚀',
                     style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 15.5),
                   ),
                   onPressed: _completeStep,

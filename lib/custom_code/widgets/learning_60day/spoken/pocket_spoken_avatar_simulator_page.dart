@@ -488,7 +488,7 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Day ${widget.day} • Step 6: Spoken Simulator 🗣️',
+              'Day ${widget.day} • Spoken Simulator 🗣️',
               style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
             ),
             Text(

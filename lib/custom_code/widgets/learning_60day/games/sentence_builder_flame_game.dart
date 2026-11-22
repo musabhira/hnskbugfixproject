@@ -579,7 +579,7 @@ class _PocketSentenceBuilderGamePageState
             child: Text(
               widget.isKidsMode
                   ? 'AWESOME! CONTINUE ➔'
-                  : 'CONTINUE TO STEP 3 ➔',
+                  : 'CONTINUE ➔',
               style:
                   GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14),
             ),
@@ -602,18 +602,6 @@ class _PocketSentenceBuilderGamePageState
 
     return Scaffold(
       backgroundColor: const Color(0xFF250529),
-      bottomNavigationBar:
-          (!widget.isKidsMode && !PocketKidsService.isKidsWorld)
-              ? Container(
-                  color: const Color(0xFF16031B),
-                  child: const SafeArea(
-                    top: false,
-                    child: PocketBannerAdWidget(
-                      margin: EdgeInsets.symmetric(vertical: 4),
-                    ),
-                  ),
-                )
-              : null,
       body: Stack(
         children: [
           // 1. Deep magenta / plum background gradient matching Screenshots 3 & 4
@@ -681,6 +669,12 @@ class _PocketSentenceBuilderGamePageState
 
                 // Bottom Completed Sentence Bar / Next Button
                 if (_isRoundCompleted) _buildCompletionFooter(currentRound),
+
+                // Banner ad directly collapses to zero height when no ad is loaded (no blank bar)
+                if (!widget.isKidsMode && !PocketKidsService.isKidsWorld)
+                  const PocketBannerAdWidget(
+                    margin: EdgeInsets.symmetric(vertical: 4),
+                  ),
               ],
             ),
           ),
@@ -707,57 +701,65 @@ class _PocketSentenceBuilderGamePageState
           ),
 
           // Difficulty title + progress indicator dots
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'DAY ${widget.day} • STEP 2: SENTENCE BUILDER 🧩',
-                style: GoogleFonts.outfit(
-                  color: const Color(0xFF00E5FF),
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                  letterSpacing: 0.5,
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'DAY ${widget.day} • SENTENCE BUILDER 🧩',
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFF00E5FF),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    letterSpacing: 0.5,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 6),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: List.generate(_rounds.length, (idx) {
-                  final isDone = idx < _currentRoundIdx;
-                  final isCurrent = idx == _currentRoundIdx;
-                  return Row(
-                    children: [
-                      Container(
-                        width: isCurrent ? 14 : 10,
-                        height: isCurrent ? 14 : 10,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: isDone || isCurrent
-                              ? const Color(0xFF00E5FF)
-                              : Colors.white24,
-                          boxShadow: isCurrent
-                              ? [
-                                  BoxShadow(
-                                    color: const Color(0xFF00E5FF)
-                                        .withValues(alpha: 0.6),
-                                    blurRadius: 8,
-                                  ),
-                                ]
-                              : null,
-                        ),
-                      ),
-                      if (idx < _rounds.length - 1)
-                        Container(
-                          width: 8,
-                          height: 2,
-                          color:
-                              isDone ? const Color(0xFF00E5FF) : Colors.white24,
-                        ),
-                    ],
-                  );
-                }),
-              ),
-            ],
+                const SizedBox(height: 6),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(_rounds.length, (idx) {
+                      final isDone = idx < _currentRoundIdx;
+                      final isCurrent = idx == _currentRoundIdx;
+                      return Row(
+                        children: [
+                          Container(
+                            width: isCurrent ? 14 : 10,
+                            height: isCurrent ? 14 : 10,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: isDone || isCurrent
+                                  ? const Color(0xFF00E5FF)
+                                  : Colors.white24,
+                              boxShadow: isCurrent
+                                  ? [
+                                      BoxShadow(
+                                        color: const Color(0xFF00E5FF)
+                                            .withValues(alpha: 0.6),
+                                        blurRadius: 8,
+                                      ),
+                                    ]
+                                  : null,
+                            ),
+                          ),
+                          if (idx < _rounds.length - 1)
+                            Container(
+                              width: 8,
+                              height: 2,
+                              color:
+                                  isDone ? const Color(0xFF00E5FF) : Colors.white24,
+                            ),
+                        ],
+                      );
+                    }),
+                  ),
+                ),
+              ],
+            ),
           ),
 
           // Hint Bulb button 💡

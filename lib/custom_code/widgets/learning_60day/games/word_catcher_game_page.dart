@@ -1501,7 +1501,7 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
                               color: Colors.white, size: 24),
                           const SizedBox(width: 8),
                           Text(
-                            'COMPLETE & CLAIM STEP 4 ✓',
+                            'COMPLETE & CLAIM ✓',
                             style: GoogleFonts.outfit(
                               color: Colors.white,
                               fontSize: 15,

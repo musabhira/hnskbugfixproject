@@ -1012,8 +1012,8 @@ class _PocketDay1Step3AvatarChatPageState
                     children: [
                       Text(
                         isDay1
-                            ? 'DAY 1 STEP 3: PHONICS HUNT 🔤'
-                            : 'DAY ${widget.day} STEP 3: ${gameSpec.title.toUpperCase()}',
+                            ? 'DAY 1 • PHONICS HUNT 🔤'
+                            : 'DAY ${widget.day} • ${gameSpec.title.toUpperCase()}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.outfit(

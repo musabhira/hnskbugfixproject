@@ -1185,7 +1185,7 @@ class _PocketDay1Step4AvatarChatPageState
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'DAY ${widget.day} • STEP 4: SPOKEN ENGLISH 🎙️',
+                  'DAY ${widget.day} • SPOKEN ENGLISH 🎙️',
                   style: GoogleFonts.outfit(
                     color: const Color(0xFFFFD700),
                     fontSize: 12,

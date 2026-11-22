@@ -1650,7 +1650,7 @@ class _PocketDay1Step2AvatarChatPageState
                 Row(
                   children: [
                     Text(
-                      'DAY 1 • STEP ${widget.stepIndex}',
+                      'DAY 1 • VOCABULARY 📚',
                       style: GoogleFonts.outfit(
                         color: const Color(0xFFFFD700),
                         fontSize: 11.5,

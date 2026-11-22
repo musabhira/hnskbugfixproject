@@ -1095,7 +1095,7 @@ class _PocketDay1Step5AvatarChatPageState
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'DAY ${widget.day} • STEP ${widget.stepIndex}: READING ROOM',
+                  'DAY ${widget.day} • READING ROOM 📖',
                   style: GoogleFonts.outfit(
                     color: const Color(0xFFFFD700),
                     fontSize: 12,

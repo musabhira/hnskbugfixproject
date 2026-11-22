@@ -789,7 +789,7 @@ class _PocketEssentialSpellingPageState
               Navigator.pop(context, true);
             },
             child: Text(
-              widget.isKidsMode ? 'AWESOME! CONTINUE ➔' : 'CONTINUE TO STEP 4 ➔',
+              widget.isKidsMode ? 'AWESOME! CONTINUE ➔' : 'CONTINUE ➔',
               style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15),
             ),
           ),
@@ -907,8 +907,8 @@ class _PocketEssentialSpellingPageState
                 ),
                 child: Text(
                   _isPracticeExamMode
-                      ? 'DAY ${widget.day} • STEP 3: SPELLING EXAM 🎮'
-                      : 'DAY ${widget.day} • STEP 3: SPELLING 🔤',
+                      ? 'DAY ${widget.day} • SPELLING EXAM 🎮'
+                      : 'DAY ${widget.day} • SPELLING 🔤',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,

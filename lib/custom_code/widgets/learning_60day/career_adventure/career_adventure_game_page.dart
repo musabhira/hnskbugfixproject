@@ -1265,7 +1265,7 @@ class _CareerAdventureGamePageState extends State<CareerAdventureGamePage>
                           const Icon(Icons.check_circle_rounded, color: Colors.white, size: 22),
                           const SizedBox(width: 8),
                           Text(
-                            'CLAIM REWARDS & COMPLETE STEP 4 ✓',
+                            'CLAIM REWARDS & COMPLETE ✓',
                             style: GoogleFonts.outfit(
                               color: Colors.white,
                               fontSize: 14,

@@ -672,7 +672,7 @@ class _PocketDay2Step4AvatarChatPageState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Day 2 • Step 4: Spoken English 🎙️',
+                    'Day 2 • Spoken English 🎙️',
                     style: GoogleFonts.outfit(
                       color: Colors.white,
                       fontSize: 15,

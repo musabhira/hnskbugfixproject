@@ -330,7 +330,7 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
                     Navigator.pop(context);
                   },
                   child: Text(
-                    'CONTINUE TO NEXT STEP ➔',
+                    'CONTINUE ➔',
                     style: GoogleFonts.outfit(
                       color: Colors.white,
                       fontWeight: FontWeight.w900,
@@ -388,7 +388,7 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
               ],
             ),
             Text(
-              'Step 9 • Day ${widget.day}',
+              'Day ${widget.day}',
               style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
             ),
           ],
