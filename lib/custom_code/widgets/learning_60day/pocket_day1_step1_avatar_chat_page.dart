@@ -200,8 +200,8 @@ class _PocketDay1Step1AvatarChatPageState
 
   void _initUserName() {
     final user = SupaFlow.client.auth.currentUser;
-    final metaName = user?.userMetadata?['display_name'] ??
-        user?.userMetadata?['full_name'];
+    final metaName =
+        user?.userMetadata?['display_name'] ?? user?.userMetadata?['full_name'];
     if (metaName != null && metaName.toString().trim().isNotEmpty) {
       _userName = metaName.toString().trim();
       return;
@@ -370,10 +370,12 @@ class _PocketDay1Step1AvatarChatPageState
           inBubbleOptions: [
             Step1InBubbleOption(
               labelEn: '✅ YES, LET\'S LEARN ABCD!',
-              labelNative: PocketLanguageService.getAppPhrase('lets_learn_abcd', fallback: '✅ Learn! 🔤'),
+              labelNative: PocketLanguageService.getAppPhrase('lets_learn_abcd',
+                  fallback: '✅ Learn! 🔤'),
               icon: '✅',
               isHighlightedAnswer: true,
-              backgroundColor: const Color(0xFF047857), // Distinct Emerald Green
+              backgroundColor:
+                  const Color(0xFF047857), // Distinct Emerald Green
               borderColor: const Color(0xFF34D399),
               textColor: Colors.white,
               onTap: () => _handleTextSubmission(
@@ -383,7 +385,8 @@ class _PocketDay1Step1AvatarChatPageState
             ),
             Step1InBubbleOption(
               labelEn: '⚡ SKIP TO LEVEL 2',
-              labelNative: PocketLanguageService.getAppPhrase('know_next_level', fallback: '⚡ Next Level ➔'),
+              labelNative: PocketLanguageService.getAppPhrase('know_next_level',
+                  fallback: '⚡ Next Level ➔'),
               icon: '⚡',
               isHighlightedAnswer: false,
               backgroundColor: const Color(0xFF1E293B),
@@ -399,7 +402,8 @@ class _PocketDay1Step1AvatarChatPageState
       );
     });
 
-    _speak('Hi $_userName! I am CyberCat. Shall we learn the English Alphabet today?');
+    _speak(
+        'Hi $_userName! I am CyberCat. Shall we learn the English Alphabet today?');
     _scrollToBottom();
   }
 
@@ -436,7 +440,9 @@ class _PocketDay1Step1AvatarChatPageState
           inBubbleOptions: [
             Step1InBubbleOption(
               labelEn: '🚗 PROCEED TO LEVEL 2 (NEXT) ➔',
-              labelNative: PocketLanguageService.getAppPhrase('drive_to_level_2', fallback: 'Drive to Level 2 🚗'),
+              labelNative: PocketLanguageService.getAppPhrase(
+                  'drive_to_level_2',
+                  fallback: 'Drive to Level 2 🚗'),
               icon: '🏎️',
               isHighlightedAnswer: true,
               backgroundColor: const Color(0xFF047857),
@@ -481,7 +487,9 @@ class _PocketDay1Step1AvatarChatPageState
           inBubbleOptions: [
             Step1InBubbleOption(
               labelEn: '🎈 PLAY BALLOON GAME',
-              labelNative: PocketLanguageService.getAppPhrase('balloon_pop_learn', fallback: 'Pop Balloons! 💥'),
+              labelNative: PocketLanguageService.getAppPhrase(
+                  'balloon_pop_learn',
+                  fallback: 'Pop Balloons! 💥'),
               icon: '🎈',
               isHighlightedAnswer: true,
               backgroundColor: const Color(0xFF9333EA), // Vibrant Purple
@@ -494,7 +502,8 @@ class _PocketDay1Step1AvatarChatPageState
             ),
             Step1InBubbleOption(
               labelEn: '🗣️ SPEAKING CHAT',
-              labelNative: PocketLanguageService.getAppPhrase('speak_to_learn', fallback: 'Speak & Learn! 🎙️'),
+              labelNative: PocketLanguageService.getAppPhrase('speak_to_learn',
+                  fallback: 'Speak & Learn! 🎙️'),
               icon: '🗣️',
               isHighlightedAnswer: true,
               backgroundColor: const Color(0xFF0284C7), // Vibrant Cyan Blue
@@ -510,7 +519,8 @@ class _PocketDay1Step1AvatarChatPageState
       );
     });
 
-    _speak('Would you like to play the Balloon Pop game, or practice speaking in chat?');
+    _speak(
+        'Would you like to play the Balloon Pop game, or practice speaking in chat?');
     _scrollToBottom();
   }
 
@@ -550,7 +560,9 @@ class _PocketDay1Step1AvatarChatPageState
           inBubbleOptions: [
             Step1InBubbleOption(
               labelEn: '🚀 START BALLOON SKY POP ADVENTURE 🎈',
-              labelNative: PocketLanguageService.getAppPhrase('start_fullscreen_game', fallback: 'Start Game ➔'),
+              labelNative: PocketLanguageService.getAppPhrase(
+                  'start_fullscreen_game',
+                  fallback: 'Start Game ➔'),
               icon: '🎈',
               isHighlightedAnswer: true,
               backgroundColor: const Color(0xFF047857),
@@ -560,7 +572,9 @@ class _PocketDay1Step1AvatarChatPageState
             ),
             Step1InBubbleOption(
               labelEn: '🗣️ SWITCH TO SPEAKING CHAT',
-              labelNative: PocketLanguageService.getAppPhrase('switch_to_speaking', fallback: 'Switch to Speaking'),
+              labelNative: PocketLanguageService.getAppPhrase(
+                  'switch_to_speaking',
+                  fallback: 'Switch to Speaking'),
               icon: '💬',
               isHighlightedAnswer: false,
               backgroundColor: const Color(0xFF1E293B),
@@ -576,7 +590,8 @@ class _PocketDay1Step1AvatarChatPageState
       );
     });
 
-    _speak('Ready for the Balloon Sky Pop Adventure, $_userName? Tap the button below to launch into the open sky!');
+    _speak(
+        'Ready for the Balloon Sky Pop Adventure, $_userName? Tap the button below to launch into the open sky!');
     _scrollToBottom();
   }
 
@@ -778,7 +793,8 @@ class _PocketDay1Step1AvatarChatPageState
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFC084FC).withValues(alpha: 0.5), width: 1.5),
+        border: Border.all(
+            color: const Color(0xFFC084FC).withValues(alpha: 0.5), width: 1.5),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF9333EA).withValues(alpha: 0.25),
@@ -853,11 +869,13 @@ class _PocketDay1Step1AvatarChatPageState
 
               return Container(
                 margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 decoration: BoxDecoration(
                   color: const Color(0xFF0F172A),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+                  border:
+                      Border.all(color: const Color(0xFFFFD700), width: 1.2),
                 ),
                 child: Row(
                   children: [
@@ -947,7 +965,10 @@ class _PocketDay1Step1AvatarChatPageState
                           decoration: BoxDecoration(
                             gradient: isPopped
                                 ? const LinearGradient(
-                                    colors: [Color(0xFF334155), Color(0xFF1E293B)],
+                                    colors: [
+                                      Color(0xFF334155),
+                                      Color(0xFF1E293B)
+                                    ],
                                   )
                                 : LinearGradient(
                                     colors: [
@@ -991,7 +1012,8 @@ class _PocketDay1Step1AvatarChatPageState
                                     height: 10,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: Colors.white.withValues(alpha: 0.5),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.5),
                                     ),
                                   ),
                                 ),
@@ -1011,7 +1033,8 @@ class _PocketDay1Step1AvatarChatPageState
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: GoogleFonts.inter(
-                                      color: Colors.white.withValues(alpha: 0.9),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.9),
                                       fontSize: 10,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -1080,7 +1103,8 @@ class _PocketDay1Step1AvatarChatPageState
           textNative: replyNative,
           audioText: '$letter! Repeat after me: $letter for $word!',
           speakThisPrompt: '🎙️ Tap the mic below & say: "$letter for $word"',
-          inBubbleOptions: null, // NO tap answer button - learner must speak into mic!
+          inBubbleOptions:
+              null, // NO tap answer button - learner must speak into mic!
         ),
       );
     });
@@ -1126,11 +1150,14 @@ class _PocketDay1Step1AvatarChatPageState
             isCompact: true,
             margin: EdgeInsets.symmetric(vertical: 8),
           ),
-          speakThisPrompt: 'Tap below to exit to mountain map & drive to Level 2 🚗',
+          speakThisPrompt:
+              'Tap below to exit to mountain map & drive to Level 2 🚗',
           inBubbleOptions: [
             Step1InBubbleOption(
               labelEn: '🚗 DRIVE TO LEVEL 2 (NEXT) ➔',
-              labelNative: PocketLanguageService.getAppPhrase('drive_to_level_2', fallback: 'Drive to Level 2 🚗'),
+              labelNative: PocketLanguageService.getAppPhrase(
+                  'drive_to_level_2',
+                  fallback: 'Drive to Level 2 🚗'),
               icon: '🏎️',
               isHighlightedAnswer: true,
               backgroundColor: const Color(0xFF047857),
@@ -1160,7 +1187,8 @@ class _PocketDay1Step1AvatarChatPageState
       );
     });
 
-    _speak('Congratulations, $_userName! You completed Step 1! Let\'s drive to Level 2!');
+    _speak(
+        'Congratulations, $_userName! You completed Step 1! Let\'s drive to Level 2!');
     _scrollToBottom();
   }
 
@@ -1343,7 +1371,10 @@ class _PocketDay1Step1AvatarChatPageState
     // 1. First greeting step: checking for yes (knows) vs teach me
     if (_messages.length <= 1) {
       final lower = spokenText.toLowerCase();
-      if (lower.contains('yes') || lower.contains('know') || lower.contains('skip') || lower.contains('next')) {
+      if (lower.contains('yes') ||
+          lower.contains('know') ||
+          lower.contains('skip') ||
+          lower.contains('next')) {
         _handleVoiceSubmission(
           voiceText: spokenText,
           action: _onUserAlreadyKnowsAlphabet,
@@ -1361,7 +1392,9 @@ class _PocketDay1Step1AvatarChatPageState
     // 2. Preference step: checking for game vs speaking
     if (_currentExpectedVoicePhrase.contains('Game or Speaking')) {
       final lower = spokenText.toLowerCase();
-      if (lower.contains('game') || lower.contains('balloon') || lower.contains('play')) {
+      if (lower.contains('game') ||
+          lower.contains('balloon') ||
+          lower.contains('play')) {
         _handleVoiceSubmission(
           voiceText: spokenText,
           action: _startBalloonGameMode,
@@ -1636,11 +1669,15 @@ class _PocketDay1Step1AvatarChatPageState
             builder: (context, isBgmMuted, _) {
               return IconButton(
                 icon: Icon(
-                  isBgmMuted ? Icons.music_off_rounded : Icons.music_note_rounded,
+                  isBgmMuted
+                      ? Icons.music_off_rounded
+                      : Icons.music_note_rounded,
                   color: isBgmMuted ? Colors.white38 : const Color(0xFF38BDF8),
                   size: 21,
                 ),
-                tooltip: isBgmMuted ? 'Unmute Background Music' : 'Mute Background Music',
+                tooltip: isBgmMuted
+                    ? 'Unmute Background Music'
+                    : 'Mute Background Music',
                 onPressed: () {
                   HapticFeedback.lightImpact();
                   PocketGameAudioService.instance.toggleMute();
@@ -1652,7 +1689,9 @@ class _PocketDay1Step1AvatarChatPageState
           // Sound Toggle Button (Speaker on/off)
           IconButton(
             icon: Icon(
-              _isSoundMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
+              _isSoundMuted
+                  ? Icons.volume_off_rounded
+                  : Icons.volume_up_rounded,
               color: _isSoundMuted ? Colors.white38 : const Color(0xFFFFD700),
               size: 22,
             ),
@@ -1745,7 +1784,8 @@ class _PocketDay1Step1AvatarChatPageState
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF0284C7).withValues(alpha: 0.35),
+                            color:
+                                const Color(0xFF0284C7).withValues(alpha: 0.35),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
@@ -1785,17 +1825,20 @@ class _PocketDay1Step1AvatarChatPageState
                                 horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: _isSpeaking
-                                  ? const Color(0xFFEF4444).withValues(alpha: 0.22)
+                                  ? const Color(0xFFEF4444)
+                                      .withValues(alpha: 0.22)
                                   : (_isSoundMuted
                                       ? Colors.white.withValues(alpha: 0.08)
-                                      : const Color(0xFF10B981).withValues(alpha: 0.18)),
+                                      : const Color(0xFF10B981)
+                                          .withValues(alpha: 0.18)),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
                                 color: _isSpeaking
                                     ? const Color(0xFFEF4444)
                                     : (_isSoundMuted
                                         ? Colors.white24
-                                        : const Color(0xFF10B981).withValues(alpha: 0.6)),
+                                        : const Color(0xFF10B981)
+                                            .withValues(alpha: 0.6)),
                                 width: 0.8,
                               ),
                             ),
@@ -1857,10 +1900,12 @@ class _PocketDay1Step1AvatarChatPageState
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0F172A).withValues(alpha: 0.85),
+                          color:
+                              const Color(0xFF0F172A).withValues(alpha: 0.85),
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                            color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
+                            color:
+                                const Color(0xFFF59E0B).withValues(alpha: 0.4),
                             width: 1.0,
                           ),
                         ),
@@ -1907,7 +1952,8 @@ class _PocketDay1Step1AvatarChatPageState
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                              color: const Color(0xFFFFD700)
+                                  .withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
@@ -1993,7 +2039,8 @@ class _PocketDay1Step1AvatarChatPageState
                                       opt.isHighlightedAnswer
                                           ? Icons.mic_rounded
                                           : Icons.arrow_forward_rounded,
-                                      color: opt.textColor.withValues(alpha: 0.9),
+                                      color:
+                                          opt.textColor.withValues(alpha: 0.9),
                                       size: 18,
                                     ),
                                   ],
@@ -2027,8 +2074,8 @@ class _PocketDay1Step1AvatarChatPageState
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Color(0xFF047857), Color(0xFF065F46)],
@@ -2047,7 +2094,8 @@ class _PocketDay1Step1AvatarChatPageState
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF059669).withValues(alpha: 0.35),
+                            color:
+                                const Color(0xFF059669).withValues(alpha: 0.35),
                             blurRadius: 10,
                             offset: const Offset(0, 3),
                           ),
@@ -2065,7 +2113,8 @@ class _PocketDay1Step1AvatarChatPageState
                     ),
                     if (msg.evaluationResult != null) ...[
                       const SizedBox(height: 4),
-                      PocketPronunciationInlineBadge(result: msg.evaluationResult!),
+                      PocketPronunciationInlineBadge(
+                          result: msg.evaluationResult!),
                     ],
                   ],
                 ),
@@ -2103,7 +2152,8 @@ class _PocketDay1Step1AvatarChatPageState
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [Color(0xFF065F46), Color(0xFF047857)],
@@ -2122,7 +2172,8 @@ class _PocketDay1Step1AvatarChatPageState
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF059669).withValues(alpha: 0.35),
+                          color:
+                              const Color(0xFF059669).withValues(alpha: 0.35),
                           blurRadius: 10,
                           offset: const Offset(0, 3),
                         ),
@@ -2143,7 +2194,8 @@ class _PocketDay1Step1AvatarChatPageState
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: Colors.white.withValues(alpha: 0.2),
-                              border: Border.all(color: Colors.white, width: 1.2),
+                              border:
+                                  Border.all(color: Colors.white, width: 1.2),
                             ),
                             child: const Center(
                               child: Icon(
@@ -2175,7 +2227,8 @@ class _PocketDay1Step1AvatarChatPageState
                               Container(
                                 width: 3,
                                 height: h,
-                                margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 1.5),
                                 decoration: BoxDecoration(
                                   color: Colors.white.withValues(alpha: 0.85),
                                   borderRadius: BorderRadius.circular(2),
@@ -2212,7 +2265,8 @@ class _PocketDay1Step1AvatarChatPageState
                   ),
                   if (msg.evaluationResult != null) ...[
                     const SizedBox(height: 4),
-                    PocketPronunciationInlineBadge(result: msg.evaluationResult!),
+                    PocketPronunciationInlineBadge(
+                        result: msg.evaluationResult!),
                   ],
                 ],
               ),
@@ -2298,12 +2352,14 @@ class _PocketDay1Step1AvatarChatPageState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 2),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFD700).withValues(alpha: 0.16),
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
-                            color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
+                            color:
+                                const Color(0xFFFFD700).withValues(alpha: 0.5)),
                       ),
                       child: Text(
                         'Sound: $sound',
@@ -2728,7 +2784,8 @@ class _PocketDay1Step1AvatarChatPageState
                           color: const Color(0xFF1E293B),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                              color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+                              color: const Color(0xFF38BDF8)
+                                  .withValues(alpha: 0.4)),
                         ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,

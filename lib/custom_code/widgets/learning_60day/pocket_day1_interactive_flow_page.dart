@@ -354,9 +354,32 @@ class _PocketDay1InteractiveFlowPageState
     }
 
     final Map<int, bool> completed = {};
+    int firstIncomplete = 1;
     for (int s = 1; s <= 12; s++) {
-      final key = 'pocket_day_${uid}_${widget.day}_step_${s}_done';
-      completed[s] = (uid.isNotEmpty) ? (prefs.getBool(key) ?? false) : false;
+      final userKey = 'pocket_day_${uid}_${widget.day}_step_${s}_done';
+      final guestKey = 'pocket_day_guest_${widget.day}_step_${s}_done';
+
+      final bool userDone = uid.isNotEmpty && (
+        (prefs.getBool(userKey) == true) ||
+        (prefs.getBool('pocket_day_${uid}_${widget.day}_step_${s}_completed') == true) ||
+        (s == 1 && prefs.getBool('pocket_day_${uid}_${widget.day}_step_1_completed') == true)
+      );
+      final bool guestDone = (prefs.getBool(guestKey) == true) ||
+        (prefs.getBool('pocket_day_guest_${widget.day}_step_${s}_completed') == true) ||
+        (s == 1 && prefs.getBool('pocket_day_guest_${widget.day}_step_1_completed') == true);
+
+      final bool isDone = userDone || guestDone;
+      completed[s] = isDone;
+
+      if (!isDone && firstIncomplete == 1 && s > 1) {
+        firstIncomplete = s;
+      }
+
+      // Auto self-heal: sync guest progress to user's profile key
+      if (isDone && uid.isNotEmpty && !userDone) {
+        prefs.setBool(userKey, true);
+        prefs.setBool('pocket_day_${uid}_${widget.day}_step_${s}_completed', true);
+      }
     }
 
     if (mounted) {
@@ -364,6 +387,9 @@ class _PocketDay1InteractiveFlowPageState
         _nativeLanguage = lang;
         _currentTrack = resolved;
         _completedSteps.addAll(completed);
+        if (widget.initialStep <= 1 && firstIncomplete > 1) {
+          _activeStep = firstIncomplete;
+        }
       });
     }
   }
@@ -430,8 +456,11 @@ class _PocketDay1InteractiveFlowPageState
     if (uid.isNotEmpty) {
       final key = 'pocket_day_${uid}_${widget.day}_step_${stepIndex}_done';
       await prefs.setBool(key, true);
+      await prefs.setBool('pocket_day_${uid}_${widget.day}_step_${stepIndex}_completed', true);
       await PocketFortressDefenseService.recordTrainingPoints(xp, uid);
     }
+    await prefs.setBool('pocket_day_guest_${widget.day}_step_${stepIndex}_done', true);
+    await prefs.setBool('pocket_day_guest_${widget.day}_step_${stepIndex}_completed', true);
 
     widget.onStepFinished?.call(stepIndex);
 

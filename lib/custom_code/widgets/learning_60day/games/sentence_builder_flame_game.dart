@@ -485,8 +485,12 @@ class _PocketSentenceBuilderGamePageState
       final uid =
           widget.userId ?? Supabase.instance.client.auth.currentUser?.id;
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(
-          'pocket_day_${uid ?? "guest"}_${widget.day}_step_2_done', true);
+      if (uid != null && uid.isNotEmpty) {
+        await prefs.setBool('pocket_day_${uid}_${widget.day}_step_2_done', true);
+        await prefs.setBool('pocket_day_${uid}_${widget.day}_step_2_completed', true);
+      }
+      await prefs.setBool('pocket_day_guest_${widget.day}_step_2_done', true);
+      await prefs.setBool('pocket_day_guest_${widget.day}_step_2_completed', true);
       await PocketFortressDefenseService.recordTrainingPoints(30, uid);
     }
 
@@ -577,9 +581,7 @@ class _PocketSentenceBuilderGamePageState
               Navigator.pop(context);
             },
             child: Text(
-              widget.isKidsMode
-                  ? 'AWESOME! CONTINUE ➔'
-                  : 'CONTINUE ➔',
+              widget.isKidsMode ? 'AWESOME! CONTINUE ➔' : 'CONTINUE ➔',
               style:
                   GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14),
             ),
@@ -750,8 +752,9 @@ class _PocketSentenceBuilderGamePageState
                             Container(
                               width: 8,
                               height: 2,
-                              color:
-                                  isDone ? const Color(0xFF00E5FF) : Colors.white24,
+                              color: isDone
+                                  ? const Color(0xFF00E5FF)
+                                  : Colors.white24,
                             ),
                         ],
                       );

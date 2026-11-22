@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/flame_icon_widget.dart';
 
@@ -179,6 +180,17 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
 
     final roundXp = math.max(15, 30 - (_wrongCount * 5));
     setState(() => _xp += roundXp);
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final uid = widget.userId;
+      if (uid != null && uid.isNotEmpty) {
+        await prefs.setBool('pocket_day_${uid}_${widget.day}_step_${widget.stepIndex}_done', true);
+        await prefs.setBool('pocket_day_${uid}_${widget.day}_step_${widget.stepIndex}_completed', true);
+      }
+      await prefs.setBool('pocket_day_guest_${widget.day}_step_${widget.stepIndex}_done', true);
+      await prefs.setBool('pocket_day_guest_${widget.day}_step_${widget.stepIndex}_completed', true);
+    } catch (_) {}
 
     widget.onStepFinished?.call(widget.stepIndex);
 

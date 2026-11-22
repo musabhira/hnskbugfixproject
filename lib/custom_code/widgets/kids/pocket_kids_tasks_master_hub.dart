@@ -516,8 +516,17 @@ class _PocketKidsTasksMasterHubPageState
           'pocket_kids_day_${uid}_${calculatedCurrentDay}_step_${step}_done';
       final altKey =
           'pocket_day_${uid}_${calculatedCurrentDay}_step_${step}_done';
+      final guestKey =
+          'pocket_day_guest_${calculatedCurrentDay}_step_${step}_done';
+      final guestKidsKey =
+          'pocket_kids_day_guest_${calculatedCurrentDay}_step_${step}_done';
       subFlags['step_$step'] =
-          (prefs.getBool(flagKey) ?? false) || (prefs.getBool(altKey) ?? false);
+          (prefs.getBool(flagKey) ?? false) ||
+          (prefs.getBool(altKey) ?? false) ||
+          (prefs.getBool(guestKey) ?? false) ||
+          (prefs.getBool(guestKidsKey) ?? false) ||
+          (prefs.getBool('pocket_day_${uid}_${calculatedCurrentDay}_step_${step}_completed') ?? false) ||
+          (prefs.getBool('pocket_day_guest_${calculatedCurrentDay}_step_${step}_completed') ?? false);
     }
 
     if (mounted) {

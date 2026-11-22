@@ -1977,22 +1977,40 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       centerTitle: false,
                       actions: [
                         if (isMe) ...[
-                          material.IconButton(
-                            icon: const Text('🏝️',
-                                style: TextStyle(fontSize: 18)),
-                            color: const Color(0xFF38BDF8),
-                            onPressed: () {
-                              HapticFeedback.mediumImpact();
-                              _profileHorizontalPageController.animateToPage(
-                                1,
-                                duration: const Duration(milliseconds: 350),
-                                curve: Curves.easeInOutCubic,
-                              );
-                            },
-                            tooltip: 'My Island',
-                            constraints: const BoxConstraints(
-                                maxWidth: 36, maxHeight: 36),
-                            padding: const EdgeInsets.all(6),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 4),
+                            child: material.Tooltip(
+                              message: 'My Island 🏝️',
+                              child: material.InkWell(
+                                borderRadius: BorderRadius.circular(10),
+                                onTap: () {
+                                  HapticFeedback.mediumImpact();
+                                  _profileHorizontalPageController.animateToPage(
+                                    1,
+                                    duration: const Duration(milliseconds: 350),
+                                    curve: Curves.easeInOutCubic,
+                                  );
+                                },
+                                child: Container(
+                                  width: 36,
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF38BDF8).withValues(alpha: 0.14),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: const Color(0xFF38BDF8).withValues(alpha: 0.40),
+                                      width: 1.2,
+                                    ),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: const Icon(
+                                    material.Icons.landscape_rounded,
+                                    size: 19,
+                                    color: Color(0xFF38BDF8),
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                           material.IconButton(
                             icon: const Icon(material.Icons.gps_fixed_rounded,
@@ -2029,19 +2047,40 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           ),
                         ],
                         if (!isMe) ...[
-                          material.IconButton(
-                            icon: const Icon(material.Icons.map_rounded,
-                                size: 22),
-                            color: const Color(0xFF38BDF8),
-                            tooltip: "View Citizen's Island Plot 🗺️",
-                            onPressed: () {
-                              HapticFeedback.mediumImpact();
-                              _profileHorizontalPageController.animateToPage(
-                                1,
-                                duration: const Duration(milliseconds: 350),
-                                curve: Curves.easeInOutCubic,
-                              );
-                            },
+                          Padding(
+                            padding: const EdgeInsets.only(right: 4),
+                            child: material.Tooltip(
+                              message: "View Citizen's Island Plot 🗺️",
+                              child: material.InkWell(
+                                borderRadius: BorderRadius.circular(10),
+                                onTap: () {
+                                  HapticFeedback.mediumImpact();
+                                  _profileHorizontalPageController.animateToPage(
+                                    1,
+                                    duration: const Duration(milliseconds: 350),
+                                    curve: Curves.easeInOutCubic,
+                                  );
+                                },
+                                child: Container(
+                                  width: 36,
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF38BDF8).withValues(alpha: 0.14),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: const Color(0xFF38BDF8).withValues(alpha: 0.40),
+                                      width: 1.2,
+                                    ),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: const Icon(
+                                    material.Icons.landscape_rounded,
+                                    size: 19,
+                                    color: Color(0xFF38BDF8),
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                           PopupMenuButton<String>(
                             icon: const Icon(material.Icons.more_vert),
@@ -2169,10 +2208,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                 Icon(material.Icons.grid_on_rounded, size: 22),
                           ),
                           material.Tab(
-                            icon: Icon(material.Icons.forum_outlined, size: 22),
+                            icon: Icon(material.Icons.fort_rounded, size: 22),
                           ),
                           material.Tab(
-                            icon: Icon(material.Icons.fort_rounded, size: 22),
+                            icon: Icon(material.Icons.forum_outlined, size: 22),
                           ),
                           material.Tab(
                             icon: Icon(
@@ -2193,13 +2232,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   controller: _profileTabController,
                   children: [
                     _buildAdultCardsTab(textColor, bgColor),
+                    _buildCitadelHouseTab(textColor, btnColor, isMe),
                     _ThreadsTab(
                       items: _threadItems,
                       textColor: textColor,
                       btnColor: btnColor,
                       btnTextColor: btnTextColor,
                     ),
-                    _buildCitadelHouseTab(textColor, btnColor, isMe),
                     _buildCompanionsMilestoneTab(textColor, btnColor, isMe),
                   ],
                 ),

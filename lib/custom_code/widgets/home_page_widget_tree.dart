@@ -5742,7 +5742,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   }
 
   Widget _buildBottomNavigationBar(BuildContext context) {
-    final bottomPadding = material.MediaQuery.of(context).padding.bottom;
+    final rawBottomPadding = material.MediaQuery.of(context).padding.bottom;
+    // Android navigation bar protection: If device has 0 or negligible inset (e.g. 3-button nav bar),
+    // provide a minimum 8px bottom clearance and comfortable 64px base height so icons never feel cramped.
+    final effectiveBottomPadding =
+        rawBottomPadding > 0 ? rawBottomPadding : 8.0;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final navBgColor =
         isDark ? const Color(0xFF0B0D13) : const Color(0xFFFFFFFF);
@@ -5759,8 +5763,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         const PocketFloatingAudioBar(),
         _buildDailyPracticeTimerStrip(context),
         Container(
-          height: 60 + bottomPadding,
-          padding: EdgeInsets.only(bottom: bottomPadding),
+          height: 64 + effectiveBottomPadding,
+          padding: EdgeInsets.only(bottom: effectiveBottomPadding),
           decoration: BoxDecoration(
             color: navBgColor,
             border: Border(
@@ -6188,7 +6192,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       },
       borderRadius: BorderRadius.circular(16),
       child: SizedBox(
-        height: 58,
+        height: 62,
         width: 62,
         child: Center(
           child: AnimatedScale(
@@ -6198,7 +6202,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             child: Icon(
               icon,
               color: isSelected ? themeYellow : unselectedColor,
-              size: 24,
+              size: 25,
             ),
           ),
         ),

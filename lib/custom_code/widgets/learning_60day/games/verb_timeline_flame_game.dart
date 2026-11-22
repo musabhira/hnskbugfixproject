@@ -90,7 +90,8 @@ class VerbTimelineFlameGame extends FlameGame {
       final speed = 80.0 + _rng.nextDouble() * 160.0;
       final p = VerbParticleSparkle(
         position: pos.clone(),
-        velocity: Vector2(math.cos(angle) * speed, math.sin(angle) * speed - 50),
+        velocity:
+            Vector2(math.cos(angle) * speed, math.sin(angle) * speed - 50),
         color: i % 2 == 0 ? tileColor : const Color(0xFFFFD700),
         radius: 2.5 + _rng.nextDouble() * 3.5,
         decay: 1.4 + _rng.nextDouble() * 0.8,
@@ -113,7 +114,8 @@ class VerbTimelineFlameGame extends FlameGame {
       final c = colors[i % colors.length];
       final p = VerbParticleSparkle(
         position: center.clone(),
-        velocity: Vector2(math.cos(angle) * speed, math.sin(angle) * speed - 80),
+        velocity:
+            Vector2(math.cos(angle) * speed, math.sin(angle) * speed - 80),
         color: c,
         radius: 3.0 + _rng.nextDouble() * 4.0,
         decay: 1.1 + _rng.nextDouble() * 0.6,
@@ -209,7 +211,8 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
       await _flutterTts.setLanguage("en-IN");
       await _flutterTts.setSpeechRate(0.48);
       await _flutterTts.setPitch(1.05);
-      await PocketVoiceService.instance.configureOptimalFemaleVoice(_flutterTts);
+      await PocketVoiceService.instance
+          .configureOptimalFemaleVoice(_flutterTts);
     } catch (_) {}
   }
 
@@ -419,7 +422,8 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
               child: Container(
                 decoration: BoxDecoration(
                   color: const Color(0xFF1E0E38),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(24)),
                   border: Border.all(color: tenseColor.withValues(alpha: 0.4)),
                 ),
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
@@ -446,7 +450,8 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
                             color: tenseColor.withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(Icons.edit_rounded, color: tenseColor, size: 16),
+                          child: Icon(Icons.edit_rounded,
+                              color: tenseColor, size: 16),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -580,7 +585,9 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
   }
 
   void _checkRoundCompletion() {
-    if (_placedPast != null && _placedPresent != null && _placedFuture != null) {
+    if (_placedPast != null &&
+        _placedPresent != null &&
+        _placedFuture != null) {
       _onAllSlotsFilled();
     }
   }
@@ -627,7 +634,14 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
   Future<void> _showCompletionDialog() async {
     final uid = widget.userId ?? Supabase.instance.client.auth.currentUser?.id;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('pocket_day_${uid ?? "guest"}_${widget.day}_verb_timeline_done', true);
+    if (uid != null && uid.isNotEmpty) {
+      await prefs.setBool('pocket_day_${uid}_${widget.day}_verb_timeline_done', true);
+      await prefs.setBool('pocket_day_${uid}_${widget.day}_step_8_done', true);
+      await prefs.setBool('pocket_day_${uid}_${widget.day}_step_8_completed', true);
+    }
+    await prefs.setBool('pocket_day_guest_${widget.day}_verb_timeline_done', true);
+    await prefs.setBool('pocket_day_guest_${widget.day}_step_8_done', true);
+    await prefs.setBool('pocket_day_guest_${widget.day}_step_8_completed', true);
     await PocketFortressDefenseService.recordTrainingPoints(35, uid);
 
     widget.onStepFinished?.call(8);
@@ -672,7 +686,8 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
               decoration: BoxDecoration(
                 color: const Color(0xFF38083E),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
+                border: Border.all(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
               ),
               child: Row(
                 children: [
@@ -698,7 +713,8 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF00E5FF),
               foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14)),
               padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
             ),
             onPressed: () {
@@ -707,7 +723,8 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
             },
             child: Text(
               'CONTINUE ➔',
-              style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13),
+              style:
+                  GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13),
             ),
           ),
         ],
@@ -790,7 +807,8 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
+            icon: const Icon(Icons.arrow_back_ios_new,
+                color: Colors.white, size: 20),
             onPressed: () => Navigator.of(context).pop(),
           ),
           const SizedBox(width: 4),
@@ -814,7 +832,8 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
                     value: progress,
                     minHeight: 6,
                     backgroundColor: Colors.white12,
-                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF00E5FF)),
+                    valueColor:
+                        const AlwaysStoppedAnimation<Color>(Color(0xFF00E5FF)),
                   ),
                 ),
               ],
@@ -997,9 +1016,8 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: isFilled
-            ? color.withValues(alpha: 0.12)
-            : const Color(0xFF131722),
+        color:
+            isFilled ? color.withValues(alpha: 0.12) : const Color(0xFF131722),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isFilled ? color : Colors.white12,
@@ -1054,16 +1072,19 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
               ),
               if (isAnchor)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFD700).withValues(alpha: 0.18),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFFFFD700), width: 1.0),
+                    border:
+                        Border.all(color: const Color(0xFFFFD700), width: 1.0),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.star_rounded, color: Color(0xFFFFD700), size: 12),
+                      const Icon(Icons.star_rounded,
+                          color: Color(0xFFFFD700), size: 12),
                       const SizedBox(width: 3),
                       Text(
                         'GIVEN',
@@ -1087,7 +1108,8 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
               onTap: () => _onPlacedWordTapped(tense),
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.25),
                   borderRadius: BorderRadius.circular(12),
@@ -1113,7 +1135,8 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
                         const Spacer(),
                         if (!isAnchor && !_isRoundCompleted)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
                               color: Colors.black38,
                               borderRadius: BorderRadius.circular(6),
@@ -1121,7 +1144,8 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.close_rounded, size: 12, color: Colors.white70),
+                                const Icon(Icons.close_rounded,
+                                    size: 12, color: Colors.white70),
                                 const SizedBox(width: 3),
                                 Text(
                                   'Tap to remove',
@@ -1136,7 +1160,9 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
                           )
                         else
                           Icon(
-                            isAnchor ? Icons.lock_outline_rounded : Icons.check_circle_rounded,
+                            isAnchor
+                                ? Icons.lock_outline_rounded
+                                : Icons.check_circle_rounded,
                             size: 16,
                             color: isAnchor ? const Color(0xFFFFD700) : color,
                           ),
@@ -1147,14 +1173,16 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
                     GestureDetector(
                       onTap: () => _speak(sentence),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
                           color: Colors.black.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.volume_up_rounded, size: 16, color: color),
+                            Icon(Icons.volume_up_rounded,
+                                size: 16, color: color),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
@@ -1179,7 +1207,8 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
               onTap: () => _promptTypeWord(tense),
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.02),
                   borderRadius: BorderRadius.circular(12),
@@ -1193,7 +1222,8 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.edit_note_rounded, size: 16, color: color.withValues(alpha: 0.9)),
+                    Icon(Icons.edit_note_rounded,
+                        size: 16, color: color.withValues(alpha: 0.9)),
                     const SizedBox(width: 6),
                     Flexible(
                       child: Text(
@@ -1214,7 +1244,6 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
       ),
     );
   }
-
 
   /// 📚 Word Bank with direct downward Wrap (NO horizontal scroll)
   /// User Audio Directive:
@@ -1265,7 +1294,9 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
                 builder: (ctx, child) {
                   double offset = 0.0;
                   if (isShaking) {
-                    offset = math.sin(_shakeAnimController.value * math.pi * 6) * 8.0;
+                    offset =
+                        math.sin(_shakeAnimController.value * math.pi * 6) *
+                            8.0;
                   }
                   return Transform.translate(
                     offset: Offset(offset, 0),
@@ -1275,13 +1306,17 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
                 child: GestureDetector(
                   onTap: () => _onCardTapped(word),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 12),
                     decoration: BoxDecoration(
                       color: tileColor,
                       borderRadius: BorderRadius.circular(10),
                       border: isShaking
                           ? Border.all(color: Colors.redAccent, width: 2.2)
-                          : Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.5), width: 1.2),
+                          : Border.all(
+                              color: const Color(0xFF8B5CF6)
+                                  .withValues(alpha: 0.5),
+                              width: 1.2),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.6),
@@ -1342,18 +1377,22 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
             ],
           ),
           const SizedBox(height: 12),
-          _buildSummarySentenceRow('⏪ Yesterday', item.pastSentence, const Color(0xFFE91E63)),
+          _buildSummarySentenceRow(
+              '⏪ Yesterday', item.pastSentence, const Color(0xFFE91E63)),
           const SizedBox(height: 6),
-          _buildSummarySentenceRow('☀️ Today', item.presentSentence, const Color(0xFF00E676)),
+          _buildSummarySentenceRow(
+              '☀️ Today', item.presentSentence, const Color(0xFF00E676)),
           const SizedBox(height: 6),
-          _buildSummarySentenceRow('🚀 Tomorrow', item.futureSentence, const Color(0xFF00E5FF)),
+          _buildSummarySentenceRow(
+              '🚀 Tomorrow', item.futureSentence, const Color(0xFF00E5FF)),
           const SizedBox(height: 10),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: const Color(0xFFFFD700).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.35)),
+              border: Border.all(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.35)),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1378,13 +1417,17 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF00E676),
               foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14)),
               padding: const EdgeInsets.symmetric(vertical: 14),
             ),
             onPressed: _proceedNextVerb,
             child: Text(
-              _currentIndex + 1 < _items.length ? 'Next Verb Challenge ➔' : 'Complete 🏆',
-              style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 15),
+              _currentIndex + 1 < _items.length
+                  ? 'Next Verb Challenge ➔'
+                  : 'Complete 🏆',
+              style:
+                  GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 15),
             ),
           ),
         ],
@@ -1403,13 +1446,17 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
         children: [
           Text(
             label,
-            style: GoogleFonts.outfit(color: color, fontWeight: FontWeight.bold, fontSize: 12),
+            style: GoogleFonts.outfit(
+                color: color, fontWeight: FontWeight.bold, fontSize: 12),
           ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               sentence,
-              style: GoogleFonts.outfit(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+              style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600),
             ),
           ),
         ],

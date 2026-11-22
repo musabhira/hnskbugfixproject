@@ -286,39 +286,33 @@ class _PocketDayOpenWorldAdventurePageState
       final userKey = uid != null ? 'pocket_day_${uid}_${widget.day}_step_${step}_done' : null;
       final guestKey = 'pocket_day_guest_${widget.day}_step_${step}_done';
 
-      // If user is logged in, prioritize userKey. Only check guestKey if uid is absent.
-      final bool rawDone;
-      if (uid != null && uid.isNotEmpty) {
-        rawDone = (prefs.getBool(userKey!) == true) ||
-            (prefs.getBool('pocket_day_${uid}_${widget.day}_step_${step}_done') == true) ||
-            (step == 1 && prefs.getBool('pocket_day_${uid}_${widget.day}_step_1_completed') == true);
-      } else {
-        rawDone = (prefs.getBool(guestKey) == true) ||
-            (step == 1 && prefs.getBool('pocket_day_guest_${widget.day}_step_1_completed') == true);
-      }
+      // Always check BOTH user-scoped keys and fallback guest keys, as well as _completed variants!
+      // This ensures that when a learner completes steps 1-5 and exits, takes a phone call, or backgrounds
+      // the app, all completed steps are 100% reliably remembered regardless of auth initialization speed.
+      final bool userDone = (uid != null && uid.isNotEmpty) && (
+        (prefs.getBool(userKey!) == true) ||
+        (prefs.getBool('pocket_day_${uid}_${widget.day}_step_${step}_completed') == true) ||
+        (step == 1 && prefs.getBool('pocket_day_${uid}_${widget.day}_step_1_completed') == true)
+      );
+      final bool guestDone = (prefs.getBool(guestKey) == true) ||
+        (prefs.getBool('pocket_day_guest_${widget.day}_step_${step}_completed') == true) ||
+        (step == 1 && prefs.getBool('pocket_day_guest_${widget.day}_step_1_completed') == true);
+
+      final bool rawDone = userDone || guestDone;
       flags['step_$step'] = rawDone;
+
+      // Auto self-heal: sync guest progress to user's profile key
+      if (rawDone && uid != null && uid.isNotEmpty && !userDone) {
+        prefs.setBool(userKey!, true);
+        prefs.setBool('pocket_day_${uid}_${widget.day}_step_${step}_completed', true);
+      }
     }
 
-    // Step 6 is an add-on step: if user has already advanced to higher steps or completed day, keep them unlocked!
-    final bool hasAdvancedBeyond6 = (flags['step_7'] == true) ||
-        (flags['step_8'] == true) ||
-        (flags['step_21'] == true) ||
-        gatePassed;
-
-    bool previousStepDone = true;
+    // Step 6 is an add-on step: keep completed flags intact without destructive wiping!
+    // Completed steps must NEVER be reset to false.
     for (int step = 1; step <= _totalSteps; step++) {
       final rawDone = flags['step_$step'] ?? false;
-      if (step == 6) {
-        // Step 6 is an add-on; it does not block subsequent steps for existing learners
-        flags['step_6'] = rawDone;
-      } else if (step > 6 && hasAdvancedBeyond6) {
-        flags['step_$step'] = rawDone;
-        previousStepDone = rawDone;
-      } else {
-        final isDone = rawDone && (step == 7 ? (previousStepDone || (flags['step_5'] == true)) : previousStepDone);
-        flags['step_$step'] = isDone;
-        previousStepDone = isDone;
-      }
+      flags['step_$step'] = rawDone;
     }
 
     if (mounted) {
@@ -511,6 +505,7 @@ class _PocketDayOpenWorldAdventurePageState
       final key = 'pocket_day_${uid}_${widget.day}_step_${stepIndex}_done';
       final alreadyDone = prefs.getBool(key) == true;
       await prefs.setBool(key, true);
+      await prefs.setBool('pocket_day_${uid}_${widget.day}_step_${stepIndex}_completed', true);
 
       if (!alreadyDone) {
         await PocketFortressDefenseService.recordTrainingPoints(pointsAwarded, uid);
@@ -547,6 +542,7 @@ class _PocketDayOpenWorldAdventurePageState
 
     // Always persist to fallback guest key as well
     await prefs.setBool('pocket_day_guest_${widget.day}_step_${stepIndex}_done', true);
+    await prefs.setBool('pocket_day_guest_${widget.day}_step_${stepIndex}_completed', true);
     if (stepIndex == _totalSteps) {
       await prefs.setBool('pocket_day_guest_${widget.day}_steps_completed', true);
       await prefs.setBool('pocket_day_guest_${widget.day}_step_${_totalSteps}_done', true);
@@ -3207,14 +3203,13 @@ class _PocketDayOpenWorldAdventurePageState
     final userKey = uid != null ? 'pocket_day_${uid}_${widget.day}_step_${s}_done' : null;
     final guestKey = 'pocket_day_guest_${widget.day}_step_${s}_done';
 
-    final bool isDone;
-    if (uid != null && uid.isNotEmpty) {
-      isDone = (prefs.getBool(userKey!) == true) ||
-          (prefs.getBool('pocket_day_${uid}_${widget.day}_step_${s}_completed') == true);
-    } else {
-      isDone = (prefs.getBool(guestKey) == true) ||
-          (prefs.getBool('pocket_day_guest_${widget.day}_step_${s}_completed') == true);
-    }
+    final bool userDone = (uid != null && uid.isNotEmpty) && (
+      (prefs.getBool(userKey!) == true) ||
+      (prefs.getBool('pocket_day_${uid}_${widget.day}_step_${s}_completed') == true)
+    );
+    final bool guestDone = (prefs.getBool(guestKey) == true) ||
+        (prefs.getBool('pocket_day_guest_${widget.day}_step_${s}_completed') == true);
+    final bool isDone = userDone || guestDone;
 
     if (isDone) {
       await _onStepCompleted(s);

@@ -199,8 +199,8 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
     // Handle Smooth Character Walking
     if (_walkDir != 0) {
       final speed = 0.65; // screen width per second
-      _characterNormalizedX = (_characterNormalizedX + _walkDir * speed * dt)
-          .clamp(0.08, 0.92);
+      _characterNormalizedX =
+          (_characterNormalizedX + _walkDir * speed * dt).clamp(0.08, 0.92);
       _animState = _walkDir < 0
           ? CharacterAnimState.walkingLeft
           : CharacterAnimState.walkingRight;
@@ -244,7 +244,7 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
         break;
       }
 
-    // If fallen past pathway without catch
+      // If fallen past pathway without catch
       if (item.y > size.height * 0.84) {
         _fallingItems.removeAt(i);
       }
@@ -318,11 +318,13 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
       _spawnSparkles(charX, charY, const Color(0xFFFFD700));
 
       _lastCaughtItem = caught.item;
-      _speakText('${caught.item.word}. ${caught.item.word} means ${caught.item.getNativeMeaning(_activeLanguage)}');
+      _speakText(
+          '${caught.item.word}. ${caught.item.word} means ${caught.item.getNativeMeaning(_activeLanguage)}');
 
       if (_screenState == GameScreenState.finalChallenge) {
         _finalChallengeStreak++;
-        if (_finalChallengeStreak >= widget.levelData.finalChallengeTargetStreak) {
+        if (_finalChallengeStreak >=
+            widget.levelData.finalChallengeTargetStreak) {
           _triggerLevelComplete();
         } else {
           _fallingItems.clear();
@@ -384,7 +386,8 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
               backgroundColor: const Color(0xFFDC2626),
               duration: const Duration(seconds: 2),
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
           );
         });
@@ -397,7 +400,8 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
   void _triggerLevelComplete() {
     _screenState = GameScreenState.levelComplete;
     HapticFeedback.heavyImpact();
-    _speakText('Congratulations! Level one complete! You learned ten new English words!');
+    _speakText(
+        'Congratulations! Level one complete! You learned ten new English words!');
     final size = _screenSize;
     for (int i = 0; i < 40; i++) {
       _spawnSparkles(
@@ -470,8 +474,7 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
             _buildBottomControls(),
 
           // 7. Layer: Interactive Overlays
-          if (_screenState == GameScreenState.intro)
-            _buildIntroOverlay(),
+          if (_screenState == GameScreenState.intro) _buildIntroOverlay(),
 
           if (_screenState == GameScreenState.learningMoment &&
               _lastCaughtItem != null)
@@ -480,8 +483,7 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
           if (_screenState == GameScreenState.finalChallengeIntro)
             _buildFinalChallengeIntroOverlay(),
 
-          if (_screenState == GameScreenState.tryAgain)
-            _buildTryAgainOverlay(),
+          if (_screenState == GameScreenState.tryAgain) _buildTryAgainOverlay(),
 
           if (_screenState == GameScreenState.levelComplete)
             _buildLevelCompleteOverlay(),
@@ -520,7 +522,8 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
             ),
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
-              color: isTarget ? const Color(0xFFFFD700) : const Color(0xFF94A3B8),
+              color:
+                  isTarget ? const Color(0xFFFFD700) : const Color(0xFF94A3B8),
               width: isTarget ? 3.0 : 2.0,
             ),
             boxShadow: [
@@ -571,9 +574,9 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
       child: GestureDetector(
         onHorizontalDragUpdate: (details) {
           setState(() {
-            _characterNormalizedX = (_characterNormalizedX +
-                    details.delta.dx / size.width)
-                .clamp(0.08, 0.92);
+            _characterNormalizedX =
+                (_characterNormalizedX + details.delta.dx / size.width)
+                    .clamp(0.08, 0.92);
           });
         },
         child: SizedBox(
@@ -898,7 +901,8 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
 
               // Drag Hint in center
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(16),
@@ -1010,7 +1014,8 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
                     decoration: BoxDecoration(
                       color: const Color(0xFF1E293B),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF38BDF8), width: 1),
+                      border:
+                          Border.all(color: const Color(0xFF38BDF8), width: 1),
                     ),
                     child: Row(
                       children: [
@@ -1055,8 +1060,8 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
                           decoration: BoxDecoration(
                             color: const Color(0xFF1E293B),
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                                color: Colors.white24, width: 1.2),
+                            border:
+                                Border.all(color: Colors.white24, width: 1.2),
                           ),
                           child: Column(
                             children: [
@@ -1265,7 +1270,8 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
                       _fallingItems.clear();
                       _lastSpawnTime = _gameTime;
                     });
-                    _speakText('Final challenge! Catch ${_currentTargetWord.word}');
+                    _speakText(
+                        'Final challenge! Catch ${_currentTargetWord.word}');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFF59E0B),
@@ -1411,9 +1417,12 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildStatBox('⭐ XP EARNED', '+$_xpScore', const Color(0xFF10B981)),
-                      _buildStatBox('🔥 BEST STREAK', '$_bestStreak', const Color(0xFFF97316)),
-                      _buildStatBox('📚 WORDS', '10/10', const Color(0xFF38BDF8)),
+                      _buildStatBox(
+                          '⭐ XP EARNED', '+$_xpScore', const Color(0xFF10B981)),
+                      _buildStatBox('🔥 BEST STREAK', '$_bestStreak',
+                          const Color(0xFFF97316)),
+                      _buildStatBox(
+                          '📚 WORDS', '10/10', const Color(0xFF38BDF8)),
                     ],
                   ),
 
@@ -1441,7 +1450,8 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
                       return InkWell(
                         onTap: () {
                           HapticFeedback.selectionClick();
-                          _speakText('${item.word}. ${item.getNativeMeaning(_activeLanguage)}');
+                          _speakText(
+                              '${item.word}. ${item.getNativeMeaning(_activeLanguage)}');
                         },
                         borderRadius: BorderRadius.circular(14),
                         child: Container(
@@ -1455,7 +1465,8 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(item.emoji, style: const TextStyle(fontSize: 18)),
+                              Text(item.emoji,
+                                  style: const TextStyle(fontSize: 18)),
                               const SizedBox(width: 6),
                               Text(
                                 item.word,
@@ -1587,8 +1598,13 @@ class _ParkEnvironmentPainter extends CustomPainter {
     canvas.drawCircle(sunCenter, 28, sunPaint);
 
     // 3. Drifting Puffy Clouds
-    _drawCloud(canvas, (size.width * 0.2 + cloudsOffset) % (size.width + 120) - 60, 60, 30);
-    _drawCloud(canvas, (size.width * 0.65 + cloudsOffset * 0.7) % (size.width + 120) - 60, 110, 24);
+    _drawCloud(canvas,
+        (size.width * 0.2 + cloudsOffset) % (size.width + 120) - 60, 60, 30);
+    _drawCloud(
+        canvas,
+        (size.width * 0.65 + cloudsOffset * 0.7) % (size.width + 120) - 60,
+        110,
+        24);
 
     // 4. Distant Rolling Green Hills
     final hillPaintFar = Paint()..color = const Color(0xFF86EFAC);
@@ -1596,8 +1612,8 @@ class _ParkEnvironmentPainter extends CustomPainter {
       ..moveTo(0, size.height * 0.68)
       ..quadraticBezierTo(size.width * 0.3, size.height * 0.62,
           size.width * 0.6, size.height * 0.69)
-      ..quadraticBezierTo(size.width * 0.85, size.height * 0.74, size.width,
-          size.height * 0.66)
+      ..quadraticBezierTo(
+          size.width * 0.85, size.height * 0.74, size.width, size.height * 0.66)
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
       ..close();
@@ -1609,8 +1625,8 @@ class _ParkEnvironmentPainter extends CustomPainter {
       ..moveTo(0, size.height * 0.74)
       ..quadraticBezierTo(size.width * 0.4, size.height * 0.70,
           size.width * 0.7, size.height * 0.76)
-      ..quadraticBezierTo(size.width * 0.9, size.height * 0.79, size.width,
-          size.height * 0.75)
+      ..quadraticBezierTo(
+          size.width * 0.9, size.height * 0.79, size.width, size.height * 0.75)
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
       ..close();
@@ -1655,22 +1671,26 @@ class _ParkEnvironmentPainter extends CustomPainter {
   void _drawCloud(Canvas canvas, double x, double y, double radius) {
     final cloudPaint = Paint()..color = Colors.white.withValues(alpha: 0.88);
     canvas.drawCircle(Offset(x, y), radius, cloudPaint);
-    canvas.drawCircle(Offset(x + radius * 0.8, y - radius * 0.2),
-        radius * 0.75, cloudPaint);
-    canvas.drawCircle(Offset(x - radius * 0.7, y + radius * 0.1),
-        radius * 0.65, cloudPaint);
-    canvas.drawCircle(Offset(x + radius * 1.5, y + radius * 0.1),
-        radius * 0.6, cloudPaint);
+    canvas.drawCircle(
+        Offset(x + radius * 0.8, y - radius * 0.2), radius * 0.75, cloudPaint);
+    canvas.drawCircle(
+        Offset(x - radius * 0.7, y + radius * 0.1), radius * 0.65, cloudPaint);
+    canvas.drawCircle(
+        Offset(x + radius * 1.5, y + radius * 0.1), radius * 0.6, cloudPaint);
   }
 
   void _drawTree(Canvas canvas, double x, double y, double height) {
     final trunkPaint = Paint()..color = const Color(0xFF78350F);
-    canvas.drawRect(Rect.fromLTWH(x - 3, y - height * 0.4, 6, height * 0.4), trunkPaint);
+    canvas.drawRect(
+        Rect.fromLTWH(x - 3, y - height * 0.4, 6, height * 0.4), trunkPaint);
 
     final foliagePaint = Paint()..color = const Color(0xFF15803D);
-    canvas.drawCircle(Offset(x, y - height * 0.55), height * 0.35, foliagePaint);
-    canvas.drawCircle(Offset(x - 6, y - height * 0.45), height * 0.25, foliagePaint);
-    canvas.drawCircle(Offset(x + 6, y - height * 0.45), height * 0.25, foliagePaint);
+    canvas.drawCircle(
+        Offset(x, y - height * 0.55), height * 0.35, foliagePaint);
+    canvas.drawCircle(
+        Offset(x - 6, y - height * 0.45), height * 0.25, foliagePaint);
+    canvas.drawCircle(
+        Offset(x + 6, y - height * 0.45), height * 0.25, foliagePaint);
   }
 
   void _drawCottage(Canvas canvas, double x, double y) {
@@ -1688,8 +1708,10 @@ class _ParkEnvironmentPainter extends CustomPainter {
     canvas.drawPath(roofPath, roofPaint);
 
     // Door & Window
-    canvas.drawRect(Rect.fromLTWH(x - 4, y - 10, 8, 10), Paint()..color = const Color(0xFF92400E));
-    canvas.drawRect(Rect.fromLTWH(x + 6, y - 14, 5, 5), Paint()..color = const Color(0xFF38BDF8));
+    canvas.drawRect(Rect.fromLTWH(x - 4, y - 10, 8, 10),
+        Paint()..color = const Color(0xFF92400E));
+    canvas.drawRect(Rect.fromLTWH(x + 6, y - 14, 5, 5),
+        Paint()..color = const Color(0xFF38BDF8));
   }
 
   @override
@@ -1789,10 +1811,10 @@ class _CharacterPainter extends CustomPainter {
     if (animState == CharacterAnimState.catching ||
         animState == CharacterAnimState.happy) {
       // Arms raised high to catch or celebrate!
-      canvas.drawLine(
-          Offset(cx - 14, cy + bobY), Offset(cx - 24, cy - 24 + bobY), armPaint);
-      canvas.drawLine(
-          Offset(cx + 14, cy + bobY), Offset(cx + 24, cy - 24 + bobY), armPaint);
+      canvas.drawLine(Offset(cx - 14, cy + bobY),
+          Offset(cx - 24, cy - 24 + bobY), armPaint);
+      canvas.drawLine(Offset(cx + 14, cy + bobY),
+          Offset(cx + 24, cy - 24 + bobY), armPaint);
     } else {
       // Arms down / swinging
       canvas.drawLine(Offset(cx - 14, cy + 2 + bobY),

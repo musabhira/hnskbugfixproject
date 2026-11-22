@@ -575,14 +575,27 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final savedLevel = await PocketSyllabusRepository.getSavedLevel();
 
     final Map<String, bool> subFlags = {};
-    bool previousStepDone = true;
     for (int step = 1; step <= 20; step++) {
-      final flagKey =
-          'pocket_day_${uid}_${calculatedCurrentDay}_step_${step}_done';
-      final rawDone = prefs.getBool(flagKey) ?? false;
-      final isDone = rawDone && previousStepDone;
+      final userKey = 'pocket_day_${uid}_${calculatedCurrentDay}_step_${step}_done';
+      final guestKey = 'pocket_day_guest_${calculatedCurrentDay}_step_${step}_done';
+
+      final bool userDone = uid.isNotEmpty && (
+        (prefs.getBool(userKey) == true) ||
+        (prefs.getBool('pocket_day_${uid}_${calculatedCurrentDay}_step_${step}_completed') == true) ||
+        (step == 1 && prefs.getBool('pocket_day_${uid}_${calculatedCurrentDay}_step_1_completed') == true)
+      );
+      final bool guestDone = (prefs.getBool(guestKey) == true) ||
+        (prefs.getBool('pocket_day_guest_${calculatedCurrentDay}_step_${step}_completed') == true) ||
+        (step == 1 && prefs.getBool('pocket_day_guest_${calculatedCurrentDay}_step_1_completed') == true);
+
+      final bool isDone = userDone || guestDone;
       subFlags['step_$step'] = isDone;
-      previousStepDone = isDone;
+
+      // Auto self-heal: sync guest progress to user's profile key
+      if (isDone && uid.isNotEmpty && !userDone) {
+        prefs.setBool(userKey, true);
+        prefs.setBool('pocket_day_${uid}_${calculatedCurrentDay}_step_${step}_completed', true);
+      }
     }
 
     if (mounted) {
@@ -780,13 +793,15 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   Future<void> _onSubStepFinished(int day, int stepIndex) async {
     final uid = widget.userId ?? _supabase.auth.currentUser?.id;
     int pointsAwarded = (stepIndex == 17) ? 120 : 30;
+    final prefs = await SharedPreferences.getInstance();
     if (uid != null && uid.isNotEmpty) {
-      final prefs = await SharedPreferences.getInstance();
       final alreadyDone =
           prefs.getBool('pocket_day_${uid}_${day}_step_${stepIndex}_done') ==
               true;
       await prefs.setBool(
           'pocket_day_${uid}_${day}_step_${stepIndex}_done', true);
+      await prefs.setBool(
+          'pocket_day_${uid}_${day}_step_${stepIndex}_completed', true);
 
       // Award marks / Pocket Score for each step (User audio directive: 500-600 PS per day)
       // Steps 1 to 16 = 30 PS each, Step 17 Mastery Exam = 120 PS bonus (Total: 600 PS/day)
@@ -823,6 +838,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
           }).eq('user_id', uid);
         } catch (_) {}
       }
+    }
+    // Always persist to fallback guest keys as well
+    await prefs.setBool('pocket_day_guest_${day}_step_${stepIndex}_done', true);
+    await prefs.setBool('pocket_day_guest_${day}_step_${stepIndex}_completed', true);
+    if (stepIndex == 17) {
+      await prefs.setBool('pocket_day_guest_${day}_steps_completed', true);
     }
     HapticFeedback.heavyImpact();
     await _loadData();
