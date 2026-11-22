@@ -2071,6 +2071,13 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               icon: Icons.groups_rounded,
               isDark: isDark,
             ),
+            const SizedBox(width: 6),
+            _buildCategoryChipItem(
+              title: 'Invite',
+              index: 7,
+              icon: Icons.person_add_rounded,
+              isDark: isDark,
+            ),
           ],
         ),
       ),
@@ -2409,6 +2416,95 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildInviteFriendsQuickTile(bool isDark) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 2, 14, 8),
+        child: GestureDetector(
+          onTap: () {
+            HapticFeedback.selectionClick();
+            setState(() {
+              _chatCategoryFilterIndex = 7;
+            });
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: isDark
+                    ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
+                    : [const Color(0xFFEFF6FF), const Color(0xFFDBEAFE)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFC00),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.person_add_rounded,
+                    color: Colors.black,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Invite Friends to Learn English',
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13.5,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        'Practice together and improve speaking skills',
+                        style: GoogleFonts.outfit(
+                          fontSize: 11.5,
+                          color: isDark ? Colors.white60 : Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFC00),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    'Invite',
+                    style: GoogleFonts.outfit(
+                      color: Colors.black,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -5117,10 +5213,16 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 // Requests View (Strangers, Marketplace inquiries, Anonymous chat requests)
                 _buildRequestsSubTabToggle(isDark),
                 _buildPendingRequestsSliver(),
+              ] else if (_chatCategoryFilterIndex == 7) ...[
+                // 👥 Dedicated Invite Friends & Contacts Sync View
+                SliverToBoxAdapter(
+                  child: ContactsSyncWidget(currentUserId: _currentUserId ?? ''),
+                ),
               ] else ...[
                 if (_chatCategoryFilterIndex == 0) ...[
                   _buildAllTabChatActionButtons(isDark),
                   _buildVibeUploadStatusTile(isDark),
+                  _buildInviteFriendsQuickTile(isDark),
                 ],
                 if (_pendingRequests.isNotEmpty &&
                     _chatCategoryFilterIndex == 0)
@@ -5612,10 +5714,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 ),
               ],
             ],
-            if (_currentUserId != null && _searchQuery.isEmpty)
-              SliverToBoxAdapter(
-                child: ContactsSyncWidget(currentUserId: _currentUserId!),
-              ),
+
             // 📢 Native Ad at the very bottom of the chat list (User Audio Directive)
             const SliverToBoxAdapter(
               child: Padding(

@@ -1212,10 +1212,7 @@ class _PocketStudentChatHubWidgetState
                 ),
               ],
             ],
-            if (_currentUserId != null && _searchQuery.isEmpty && !PocketKidsService.isKidAccount)
-              SliverToBoxAdapter(
-                child: ContactsSyncWidget(currentUserId: _currentUserId!),
-              ),
+
           ],
         );
       },
