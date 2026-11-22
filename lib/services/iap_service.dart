@@ -16,6 +16,7 @@ class IAPService {
   static const String certificateProductId = 'poketmates_c2_certificate';
 
   static const List<String> allVipProductIds = [
+    // Standard Poket IDs
     vipMonthlyProductId,
     'poket_vip_monthly',
     'com.poketmates.app.vip.monthly',
@@ -32,6 +33,36 @@ class IAPService {
     'vip_yearly',
     certificateProductId,
     'poket_c2_certificate',
+
+    // iOS Bundle Identifier (com.handskill.friends) matches
+    'com.handskill.friends.vip_monthly',
+    'com.handskill.friends.monthly',
+    'com.handskill.friends.vip.monthly',
+    'com.handskill.friends.vip_quarterly',
+    'com.handskill.friends.quarterly',
+    'com.handskill.friends.vip.quarterly',
+    'com.handskill.friends.vip_90day',
+    'com.handskill.friends.vip_yearly',
+    'com.handskill.friends.yearly',
+    'com.handskill.friends.annual',
+    'com.handskill.friends.vip.yearly',
+    'com.handskill.friends.c2_certificate',
+    'com.handskill.friends.certificate',
+    'handskill_vip_monthly',
+    'handskill_vip_quarterly',
+    'handskill_vip_yearly',
+
+    // Pocket (with 'c') variations
+    'pocketmates_vip_monthly',
+    'pocket_vip_monthly',
+    'pocketmates_vip_quarterly',
+    'pocket_vip_quarterly',
+    'pocketmates_vip_90day',
+    'pocket_vip_90day',
+    'pocketmates_vip_yearly',
+    'pocket_vip_yearly',
+    'pocketmates_c2_certificate',
+    'pocket_c2_certificate',
   ];
 
   InAppPurchase? _iapInstance;
@@ -41,6 +72,7 @@ class IAPService {
   List<ProductDetails> _products = [];
   bool _available = false;
   bool _isVipActive = false;
+  String? lastError;
 
   List<ProductDetails> get products => _products;
   bool get isAvailable => _available;
@@ -94,11 +126,16 @@ class IAPService {
           await _iap.queryProductDetails(productIds.toSet());
       if (response.error == null) {
         _products = response.productDetails;
-        debugPrint('IAPService: Loaded ${_products.length} products');
+        debugPrint('IAPService: Loaded ${_products.length} products: ${_products.map((e) => e.id).toList()}');
+        if (response.notFoundIDs.isNotEmpty) {
+          debugPrint('IAPService: Products not found by store: ${response.notFoundIDs}');
+        }
       } else {
+        lastError = 'StoreKit query error: ${response.error?.message} (code: ${response.error?.code})';
         debugPrint('IAPService query error: ${response.error}');
       }
     } catch (e) {
+      lastError = 'Exception fetching products: $e';
       debugPrint('IAPService fetchProducts exception: $e');
     }
   }
@@ -154,6 +191,7 @@ class IAPService {
       }
 
       if (!_available) {
+        lastError = 'Store billing is not available on this device or has been restricted in iOS settings.';
         debugPrint('IAPService: Store billing not available');
         return false;
       }
@@ -165,13 +203,17 @@ class IAPService {
 
       final product = getProduct(targetId);
       if (product == null) {
-        debugPrint('IAPService: Product $targetId not found in store catalog yet');
+        lastError = _products.isEmpty
+            ? 'No in-app products returned by App Store. Verify Paid Applications Agreement and Sandbox Account.'
+            : 'Product $targetId not found among loaded products: ${_products.map((p) => p.id).toList()}';
+        debugPrint('IAPService: Product $targetId not found in store catalog yet. Loaded: ${_products.map((e) => e.id).toList()}');
         return false;
       }
 
       final PurchaseParam purchaseParam = PurchaseParam(productDetails: product);
       return await _iap.buyNonConsumable(purchaseParam: purchaseParam);
     } catch (e) {
+      lastError = 'Purchase initiation failed: $e';
       debugPrint('IAPService buyVipSubscription error: $e');
       return false;
     }

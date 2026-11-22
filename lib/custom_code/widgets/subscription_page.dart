@@ -305,12 +305,15 @@ class _SubscriptionPageState extends State<SubscriptionPage>
         planType: planType,
       );
       if (!initiated && mounted) {
+        final errorDetail = IAPService().lastError;
         messenger.hideCurrentSnackBar();
         messenger.showSnackBar(
           SnackBar(
             content: Text(
               Platform.isIOS
-                  ? '⚠️ Unable to connect to App Store In-App Purchases. Please check your internet connection or Apple ID.'
+                  ? (errorDetail != null
+                      ? '⚠️ App Store IAP: $errorDetail'
+                      : '⚠️ Unable to connect to App Store In-App Purchases. Please check your internet connection or Apple ID.')
                   : '⚠️ Google Play In-App Billing could not be reached. Please check your network connection.',
               style: GoogleFonts.outfit(
                 color: Colors.white,
@@ -318,7 +321,7 @@ class _SubscriptionPageState extends State<SubscriptionPage>
               ),
             ),
             backgroundColor: const Color(0xFF1E293B),
-            duration: const Duration(seconds: 4),
+            duration: const Duration(seconds: 5),
           ),
         );
       }
