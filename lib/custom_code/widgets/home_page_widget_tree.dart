@@ -5222,7 +5222,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 if (_chatCategoryFilterIndex == 0) ...[
                   _buildAllTabChatActionButtons(isDark),
                   _buildVibeUploadStatusTile(isDark),
-                  _buildInviteFriendsQuickTile(isDark),
                 ],
                 if (_pendingRequests.isNotEmpty &&
                     _chatCategoryFilterIndex == 0)

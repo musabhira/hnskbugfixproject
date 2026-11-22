@@ -4783,21 +4783,6 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
               ),
             ),
           ),
-
-          const SizedBox(height: 4),
-
-          TextButton(
-            onPressed: _finishAsGuest,
-            child: Text(
-              'CONTINUE AS GUEST 🚀',
-              style: GoogleFonts.inter(
-                color: const Color(0xFFFACC15),
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ),
         ],
       ),
       onContinue: () {
