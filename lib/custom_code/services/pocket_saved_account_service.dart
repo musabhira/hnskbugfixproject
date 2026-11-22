@@ -10,6 +10,7 @@ import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 import 'package:pocket_mates_app/auth_page/auth_page_widget.dart';
 import 'package:pocket_mates_app/main.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
+import 'package:pocket_mates_app/auth/supabase_auth/auth_util.dart';
 
 /// 👤 Represents an account saved locally on the device for fast 1-tap switching.
 class SavedLoginAccount {
@@ -319,21 +320,23 @@ class PocketSavedAccountService {
       await SupaFlow.client.auth.signOut();
       GoRouter.of(context).clearRedirectLocation();
 
-      // 3. Sign into target account
-      final res = await SupaFlow.client.auth.signInWithPassword(
-        email: targetAccount.email,
-        password: pwd,
+      // 3. Sign into target account via authManager to synchronize FlutterFlow state
+      final authUser = await authManager.signInWithEmail(
+        context,
+        targetAccount.email,
+        pwd,
       );
 
-      if (res.user == null) {
+      final uid = authUser?.uid ?? SupaFlow.client.auth.currentUser?.id;
+      if (uid == null || uid.isEmpty) {
         throw Exception('Authentication failed for ${targetAccount.email}');
       }
 
       // 4. Update Kids vs Adult mode & AdMob
       try {
-        await PocketKidsService.syncAndVerifyUserAccountType(res.user!.id);
+        await PocketKidsService.syncAndVerifyUserAccountType(uid);
       } catch (_) {}
-      PocketAdMobService.instance.onAccountSwitched(res.user!.id);
+      PocketAdMobService.instance.onAccountSwitched(uid);
 
       // Update target account last active in saved list
       await saveOrUpdateAccount(
