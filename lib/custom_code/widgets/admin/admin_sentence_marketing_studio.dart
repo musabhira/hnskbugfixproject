@@ -919,6 +919,7 @@ class _AdminSentenceBuilderSimulatorPageState
   final FlutterTts _flutterTts = FlutterTts();
   late int _currentIndex;
   bool _isRoundCompleted = false;
+  bool _isSpeaking = false;
 
   final List<_SimTile> _placedTiles = [];
   final List<_SimTile> _remainingTiles = [];
@@ -930,7 +931,6 @@ class _AdminSentenceBuilderSimulatorPageState
     Color(0xFFE91E63), // Vibrant Pink / Magenta
     Color(0xFF00E676), // Vibrant Green
     Color(0xFF00E5FF), // Vibrant Sky Cyan
-    Color(0xFFFFB300), // Vibrant Amber / Yellow
   ];
 
   @override
@@ -939,7 +939,7 @@ class _AdminSentenceBuilderSimulatorPageState
     _currentIndex = widget.initialIndex;
     _shakeAnimController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 380),
+      duration: const Duration(milliseconds: 400),
     );
     _initTts();
     _loadRound(_currentIndex);
@@ -984,7 +984,7 @@ class _AdminSentenceBuilderSimulatorPageState
       );
     }
 
-    // Add distractors if provided, or default distractors
+    // Add distractors if provided
     List<String> distractors = [];
     if (currentSentence.extraDistractors.isNotEmpty) {
       distractors = currentSentence.extraDistractors
@@ -1004,7 +1004,7 @@ class _AdminSentenceBuilderSimulatorPageState
       );
     }
 
-    // Shuffle the tiles so they are scrambled in the bottom word bank
+    // Shuffle tiles into bottom word bank
     allTiles.shuffle(math.Random());
 
     setState(() {
@@ -1019,9 +1019,13 @@ class _AdminSentenceBuilderSimulatorPageState
 
   Future<void> _speakText(String text) async {
     try {
+      if (mounted) setState(() => _isSpeaking = true);
       await _flutterTts.stop();
       await _flutterTts.speak(text);
-    } catch (_) {}
+      if (mounted) setState(() => _isSpeaking = false);
+    } catch (_) {
+      if (mounted) setState(() => _isSpeaking = false);
+    }
   }
 
   void _onTileTapped(_SimTile tile) {
@@ -1062,7 +1066,7 @@ class _AdminSentenceBuilderSimulatorPageState
     } else {
       // ❌ WRONG TILE!
       PocketGameSfx.instance.playErrorBuzz();
-      HapticFeedback.heavyImpact(); // Strong error vibration!
+      HapticFeedback.heavyImpact(); // Strong error vibration
 
       setState(() {
         _shakingTileId = tile.id;
@@ -1075,6 +1079,20 @@ class _AdminSentenceBuilderSimulatorPageState
           });
         }
       });
+
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '⚠️ Try another word to begin or continue the sentence!',
+            style: GoogleFonts.outfit(
+                color: Colors.white, fontWeight: FontWeight.w600),
+          ),
+          backgroundColor: const Color(0xFFE11D48),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(milliseconds: 900),
+        ),
+      );
     }
   }
 
@@ -1121,403 +1139,462 @@ class _AdminSentenceBuilderSimulatorPageState
   @override
   Widget build(BuildContext context) {
     final currentSentence = widget.sentences[_currentIndex];
-    final targetWords = currentSentence.englishSentence
-        .split(' ')
-        .where((w) => w.trim().isNotEmpty)
-        .toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF070B14),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Top Bar with Controls
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.close_rounded,
-                        color: Colors.white70, size: 24),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Sentence Builder',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          '${_currentIndex + 1} of ${widget.sentences.length}',
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFFFFD700),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Prev
-                  IconButton(
-                    icon: const Icon(Icons.skip_previous_rounded,
-                        color: Colors.white70, size: 24),
-                    onPressed: _currentIndex > 0 ? _prevSentence : null,
-                  ),
-                  // Restart (Great for reels if you misclick!)
-                  IconButton(
-                    icon: const Icon(Icons.refresh_rounded,
-                        color: Color(0xFFFFD700), size: 22),
-                    tooltip: 'Restart Sentence',
-                    onPressed: _restartCurrentSentence,
-                  ),
-                  // Next
-                  IconButton(
-                    icon: const Icon(Icons.skip_next_rounded,
-                        color: Colors.white70, size: 24),
-                    onPressed: _nextSentence,
-                  ),
-                ],
-              ),
-            ),
-
-            // Progress Bar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: LinearProgressIndicator(
-                  value: (_currentIndex + 1) / widget.sentences.length,
-                  backgroundColor: Colors.white12,
-                  valueColor:
-                      const AlwaysStoppedAnimation<Color>(Color(0xFFFFD700)),
-                  minHeight: 5,
+      backgroundColor: const Color(0xFF250529),
+      body: Stack(
+        children: [
+          // 1. Authentic deep magenta/plum gradient identical to Sentence Builder Game
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFF4A0E4E), // Top rich plum / magenta
+                    Color(0xFF3A083C),
+                    Color(0xFF250529), // Deep shadow plum
+                    Color(0xFF16031B), // Bottom dark
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+          ),
 
-            // Big Bold Prompt Card (Native Meaning)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18),
-              child: Container(
-                width: double.infinity,
+          // 2. Main Gameplay Layout
+          SafeArea(
+            child: Column(
+              children: [
+                // Top Header with Close, Progress Dots, Navigation & Restart
+                _buildTopHeader(),
+
+                const SizedBox(height: 6),
+
+                // TOP AREA: Sentence Assembly Board with Native Prompt
+                Expanded(
+                  flex: 5,
+                  child: _buildTopAssemblyBoard(currentSentence),
+                ),
+
+                // Center Divider Line identical to PocketSentenceBuilderGamePage
+                Container(
+                  height: 12,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.85),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.6),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // BOTTOM AREA: Word Bank with Scrambled Tiles
+                Expanded(
+                  flex: 6,
+                  child: _buildBottomWordBank(),
+                ),
+
+                // Bottom Completed Sentence Bar / Next Button
+                if (_isRoundCompleted) _buildCompletionFooter(currentSentence),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Top Status Bar matching game design with admin controls for recording
+  Widget _buildTopHeader() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Close button ✕
+          IconButton(
+            onPressed: () {
+              PocketGameSfx.instance.playClick();
+              Navigator.pop(context);
+            },
+            icon:
+                const Icon(Icons.close_rounded, color: Colors.white, size: 36),
+          ),
+
+          // Title + Progress Indicator Dots
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'SENTENCE BUILDER 🧩',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFF00E5FF),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: List.generate(
+                  math.min(widget.sentences.length, 12),
+                  (idx) {
+                    final isDone = idx < _currentIndex;
+                    final isCurrent = idx == _currentIndex;
+                    return Row(
+                      children: [
+                        Container(
+                          width: isCurrent ? 14 : 10,
+                          height: isCurrent ? 14 : 10,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isDone || isCurrent
+                                ? const Color(0xFF00E5FF)
+                                : Colors.white24,
+                            boxShadow: isCurrent
+                                ? [
+                                    BoxShadow(
+                                      color: const Color(0xFF00E5FF)
+                                          .withValues(alpha: 0.6),
+                                      blurRadius: 8,
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                        ),
+                        if (idx < math.min(widget.sentences.length, 12) - 1)
+                          Container(
+                            width: 6,
+                            height: 2,
+                            color: isDone
+                                ? const Color(0xFF00E5FF)
+                                : Colors.white24,
+                          ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+
+          // Action controls: Restart + Navigation
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                tooltip: 'Restart Sentence',
+                onPressed: _restartCurrentSentence,
+                icon: Container(
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.12),
+                    border: Border.all(color: Colors.white30),
+                  ),
+                  child: const Icon(Icons.refresh_rounded,
+                      color: Color(0xFFFFD700), size: 20),
+                ),
+              ),
+              IconButton(
+                tooltip: 'Next Sentence',
+                onPressed: _nextSentence,
+                icon: Container(
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.12),
+                    border: Border.all(color: Colors.white30),
+                  ),
+                  child: const Icon(Icons.skip_next_rounded,
+                      color: Colors.white, size: 20),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Top assembly drop board where correct words sit in neat sentence order
+  Widget _buildTopAssemblyBoard(AdminMarketingSentence sentence) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: Center(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // 🎯 Prominent Native Prompt Challenge Banner
+              Container(
+                margin: const EdgeInsets.only(bottom: 14),
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF38083E), Color(0xFF580C62)],
                   ),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: const Color(0xFFFFD700).withValues(alpha: 0.4),
-                    width: 1.5,
+                    color: const Color(0xFF00E5FF).withValues(alpha: 0.5),
+                    width: 1.2,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFFFD700).withValues(alpha: 0.12),
-                      blurRadius: 18,
-                      offset: const Offset(0, 4),
+                      color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-                child: Column(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.translate_rounded,
-                            color: Color(0xFFFFD700), size: 18),
-                        const SizedBox(width: 8),
-                        Text(
-                          'TRANSLATE THIS SENTENCE',
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFFFFD700),
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.0,
-                          ),
+                    const Text('🎯 ', style: TextStyle(fontSize: 16)),
+                    Flexible(
+                      child: Text(
+                        sentence.prompt,
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      currentSentence.prompt,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        height: 1.35,
+                        textAlign: TextAlign.center,
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: 30),
 
-            // Assembled Sentence Area (Placed Tiles)
-            Expanded(
-              flex: 3,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF131A2A),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                      color: _isRoundCompleted
-                          ? const Color(0xFF22C55E)
-                          : Colors.white12,
-                      width: _isRoundCompleted ? 2.0 : 1.0,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            _isRoundCompleted
-                                ? Icons.check_circle_rounded
-                                : Icons.dashboard_customize_rounded,
-                            size: 16,
-                            color: _isRoundCompleted
-                                ? const Color(0xFF22C55E)
-                                : Colors.white38,
+              // Dropped Sentence Word Tiles
+              Wrap(
+                spacing: 12,
+                runSpacing: 14,
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: _placedTiles.isEmpty
+                    ? [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.05),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                                color: Colors.white24,
+                                style: BorderStyle.solid),
                           ),
-                          const SizedBox(width: 6),
-                          Text(
-                            _isRoundCompleted
-                                ? 'EXCELLENT! COMPLETED 🎉'
-                                : 'TAP WORDS IN CORRECT ORDER',
+                          child: Text(
+                            'Tap the word tiles below in order',
                             style: GoogleFonts.outfit(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.8,
-                              color: _isRoundCompleted
-                                  ? const Color(0xFF22C55E)
-                                  : Colors.white38,
-                            ),
-                          ),
-                          const Spacer(),
-                          IconButton(
-                            icon: const Icon(Icons.volume_up_rounded,
-                                color: Color(0xFFFFD700), size: 20),
-                            onPressed: () => _speakText(
-                                currentSentence.englishSentence),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 14),
-                      Expanded(
-                        child: Center(
-                          child: SingleChildScrollView(
-                            child: Wrap(
-                              spacing: 8,
-                              runSpacing: 10,
-                              alignment: WrapAlignment.center,
-                              children: [
-                                ..._placedTiles.map((tile) {
-                                  return GestureDetector(
-                                    onTap: () => _onPlacedTileTapped(tile),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16, vertical: 10),
-                                      decoration: BoxDecoration(
-                                        color: tile.color,
-                                        borderRadius:
-                                            BorderRadius.circular(14),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: tile.color
-                                                .withValues(alpha: 0.4),
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 3),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Text(
-                                        tile.word,
-                                        style: GoogleFonts.outfit(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 17,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }),
-                                // Dotted slots for remaining words
-                                if (!_isRoundCompleted)
-                                  ...List.generate(
-                                    targetWords.length - _placedTiles.length,
-                                    (i) => Container(
-                                      width: 48,
-                                      height: 38,
-                                      margin: const EdgeInsets.symmetric(
-                                          horizontal: 4),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: 0.04),
-                                        borderRadius:
-                                            BorderRadius.circular(10),
-                                        border: Border.all(
-                                          color: Colors.white24,
-                                          style: BorderStyle.solid,
-                                          width: 1.2,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                              ],
+                              color: Colors.white60,
+                              fontSize: 14,
+                              fontStyle: FontStyle.italic,
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
+                      ]
+                    : _placedTiles.map((tile) {
+                        return GestureDetector(
+                          onTap: () => _onPlacedTileTapped(tile),
+                          child: _buildTileWidget(
+                            tile: tile,
+                            isPlaced: true,
+                            isShaking: false,
+                          ),
+                        );
+                      }).toList(),
               ),
-            ),
-            const SizedBox(height: 20),
-
-            // Bottom Word Bank Area
-            Expanded(
-              flex: 4,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(18, 20, 18, 16),
-                decoration: const BoxDecoration(
-                  color: Color(0xFF0F172A),
-                  borderRadius:
-                      BorderRadius.vertical(top: Radius.circular(28)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black45,
-                      blurRadius: 20,
-                      offset: Offset(0, -5),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      'AVAILABLE WORDS',
-                      style: GoogleFonts.outfit(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.0,
-                        color: Colors.white38,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: Wrap(
-                          spacing: 10,
-                          runSpacing: 12,
-                          alignment: WrapAlignment.center,
-                          children: _remainingTiles.map((tile) {
-                            final isShaking = _shakingTileId == tile.id;
-                            Widget tileWidget = GestureDetector(
-                              onTap: () => _onTileTapped(tile),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 18, vertical: 12),
-                                decoration: BoxDecoration(
-                                  color: isShaking
-                                      ? Colors.redAccent
-                                      : tile.color,
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: (isShaking
-                                              ? Colors.redAccent
-                                              : tile.color)
-                                          .withValues(alpha: 0.35),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 3),
-                                    ),
-                                  ],
-                                ),
-                                child: Text(
-                                  tile.word,
-                                  style: GoogleFonts.outfit(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 17,
-                                  ),
-                                ),
-                              ),
-                            );
-
-                            if (isShaking) {
-                              return AnimatedBuilder(
-                                animation: _shakeAnimController,
-                                builder: (context, child) {
-                                  final offset = math.sin(
-                                          _shakeAnimController.value *
-                                              math.pi *
-                                              6) *
-                                      8;
-                                  return Transform.translate(
-                                    offset: Offset(offset, 0),
-                                    child: child,
-                                  );
-                                },
-                                child: tileWidget,
-                              );
-                            }
-
-                            return tileWidget;
-                          }).toList(),
-                        ),
-                      ),
-                    ),
-                    if (_isRoundCompleted) ...[
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF22C55E),
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            elevation: 4,
-                          ),
-                          icon: const Icon(Icons.arrow_forward_rounded,
-                              size: 20),
-                          label: Text(
-                            'Next Sentence ->',
-                            style: GoogleFonts.outfit(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            ),
-                          ),
-                          onPressed: _nextSentence,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  /// Bottom word bank where scrambled tiles are displayed
+  Widget _buildBottomWordBank() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      child: Center(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Wrap(
+            spacing: 14,
+            runSpacing: 16,
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: _remainingTiles.map((tile) {
+              final isShaking = _shakingTileId == tile.id;
+
+              return GestureDetector(
+                onTap: () => _onTileTapped(tile),
+                child: _buildTileWidget(
+                  tile: tile,
+                  isPlaced: false,
+                  isShaking: isShaking,
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Reusable Tile Widget styled precisely like screenshots and Flame game
+  Widget _buildTileWidget({
+    required _SimTile tile,
+    required bool isPlaced,
+    required bool isShaking,
+  }) {
+    Widget tileBox = AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      padding: EdgeInsets.symmetric(
+        horizontal: tile.word.length == 1 ? 16 : 18,
+        vertical: 12,
+      ),
+      decoration: BoxDecoration(
+        color: tile.color,
+        borderRadius: BorderRadius.circular(10),
+        border: isShaking
+            ? Border.all(color: Colors.redAccent, width: 2.5)
+            : null,
+        boxShadow: [
+          // Pronounced drop shadow matching screenshots
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isPlaced ? 0.45 : 0.6),
+            blurRadius: isPlaced ? 10 : 14,
+            offset: Offset(isPlaced ? 2 : 4, isPlaced ? 4 : 8),
+          ),
+        ],
+      ),
+      child: Text(
+        tile.word,
+        style: GoogleFonts.outfit(
+          color: tile.textColor,
+          fontSize: 22,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.4,
+        ),
+      ),
+    );
+
+    // Apply shake animation if wrong tile was tapped
+    if (isShaking) {
+      return AnimatedBuilder(
+        animation: _shakeAnimController,
+        builder: (context, child) {
+          final offset =
+              math.sin(_shakeAnimController.value * math.pi * 5) * 8.0;
+          return Transform.translate(
+            offset: Offset(offset, 0),
+            child: child,
+          );
+        },
+        child: tileBox,
+      );
+    }
+
+    return tileBox;
+  }
+
+  /// Completion footer with translation and Next button
+  Widget _buildCompletionFooter(AdminMarketingSentence sentence) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF16031B),
+        border: const Border(
+          top: BorderSide(color: Color(0xFF00E5FF), width: 1.5),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF00E5FF).withValues(alpha: 0.25),
+            blurRadius: 12,
+            offset: const Offset(0, -3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Audio speaker button
+          IconButton(
+            onPressed: () => _speakText(sentence.englishSentence),
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _isSpeaking
+                    ? const Color(0xFF00E5FF)
+                    : const Color(0xFF38083E),
+              ),
+              child: Icon(
+                Icons.volume_up_rounded,
+                color: _isSpeaking ? Colors.black : const Color(0xFF00E5FF),
+                size: 22,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+
+          // Meaning and english text
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  sentence.englishSentence,
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFF00E5FF),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                Text(
+                  sentence.prompt,
+                  style: GoogleFonts.inter(
+                    color: Colors.white70,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Next Button
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF00E5FF),
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+            ),
+            onPressed: _nextSentence,
+            child: Text(
+              'NEXT SENTENCE ➔',
+              style: GoogleFonts.outfit(
+                fontWeight: FontWeight.bold,
+                fontSize: 13.5,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1533,4 +1610,6 @@ class _SimTile {
     required this.word,
     required this.color,
   });
+
+  Color get textColor => Colors.white;
 }

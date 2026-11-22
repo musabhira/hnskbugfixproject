@@ -809,8 +809,12 @@ class PoketCosmosAllocationService {
   /// 🌐 Returns all plots across waves for Search Page Plots Grid with real owner info
   static List<Map<String, dynamic>> getWavePlotsCatalog({int maxWaves = 2}) {
     final List<Map<String, dynamic>> list = [];
-    final int endPlot = math.max(1, maxWaves) * waveCapacity;
     final profiles = instance._allRegisteredProfiles;
+    final int neededWaves = profiles.isNotEmpty
+        ? (profiles.length / waveCapacity).ceil()
+        : 1;
+    final int effectiveMaxWaves = math.max(maxWaves, neededWaves);
+    final int endPlot = effectiveMaxWaves * waveCapacity;
 
     // Map globalPlotNumber -> Real User Profile
     final Map<int, Map<String, dynamic>> plotToProfile = {};
@@ -835,13 +839,15 @@ class PoketCosmosAllocationService {
       }
     }
 
-    // Allocate remaining users to their deterministic round-robin slot
+    // Allocate remaining users to their deterministic unoccupied slot (no user dropped!)
+    int nextSlot = 1;
     for (int i = 0; i < profiles.length; i++) {
       if (!relocatedUserIndices.contains(i)) {
-        final g = i + 1;
-        if (!plotToProfile.containsKey(g)) {
-          plotToProfile[g] = profiles[i];
+        while (plotToProfile.containsKey(nextSlot)) {
+          nextSlot++;
         }
+        plotToProfile[nextSlot] = profiles[i];
+        nextSlot++;
       }
     }
 

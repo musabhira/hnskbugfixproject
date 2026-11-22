@@ -815,6 +815,15 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
+  String _formatPlotCount(int count) {
+    if (count >= 1000000) {
+      return '${(count / 1000000).toStringAsFixed(1).replaceAll('.0', '')}M';
+    } else if (count >= 10000) {
+      return '${(count / 1000).toStringAsFixed(1).replaceAll('.0', '')}k';
+    }
+    return '$count';
+  }
+
   /// 🏡 Dedicated Plots Tab: Reverse Infinite Grid (Plot #1 at bottom, highest at top, lazy loaded)
   Widget _buildPlotsTab() {
     final query = _currentSearchQuery.trim().toLowerCase();
@@ -916,7 +925,7 @@ class _SearchPageState extends State<SearchPage> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '$totalPlotsCount',
+                        _formatPlotCount(totalPlotsCount),
                         style: GoogleFonts.outfit(
                           color: Colors.white,
                           fontSize: 16,
@@ -952,7 +961,7 @@ class _SearchPageState extends State<SearchPage> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '$bookedCount',
+                          _formatPlotCount(bookedCount),
                           style: GoogleFonts.outfit(
                             color: const Color(0xFF34D399),
                             fontSize: 16,
@@ -989,7 +998,7 @@ class _SearchPageState extends State<SearchPage> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '$availableCount',
+                          _formatPlotCount(availableCount),
                           style: GoogleFonts.outfit(
                             color: const Color(0xFF38BDF8),
                             fontSize: 16,
@@ -1047,12 +1056,15 @@ class _SearchPageState extends State<SearchPage> {
           padding: const EdgeInsets.symmetric(horizontal: 14),
           child: Row(
             children: [
-              _buildPlotStatusFilterChip('all', 'All ($totalPlotsCount)'),
+              _buildPlotStatusFilterChip(
+                  'all', 'All (${_formatPlotCount(totalPlotsCount)})'),
               const SizedBox(width: 6),
-              _buildPlotStatusFilterChip('booked', 'Claimed ($bookedCount)',
+              _buildPlotStatusFilterChip(
+                  'booked', 'Claimed (${_formatPlotCount(bookedCount)})',
                   activeColor: const Color(0xFF10B981)),
               const SizedBox(width: 6),
-              _buildPlotStatusFilterChip('available', 'Free ($availableCount)',
+              _buildPlotStatusFilterChip(
+                  'available', 'Free (${_formatPlotCount(availableCount)})',
                   activeColor: const Color(0xFF0284C7)),
             ],
           ),
