@@ -31,6 +31,7 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_onboarding
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
 import 'onboarding/why_no_c_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_saved_account_service.dart';
 
 enum WelcomeMode {
   welcome,
@@ -1246,6 +1247,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           await prefs.setBool('just_created_account_${user.uid}', true);
           await prefs.setString(
               'saved_pm_password_${cleanEmail.toLowerCase()}', rawPassword);
+          await PocketSavedAccountService.saveCurrentLoggedInUser(
+              password: rawPassword);
           setState(() {
             _loadingMessage = 'Account created! Starting profile setup...';
           });
@@ -1270,6 +1273,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           await prefs.remove('just_created_account_${user.uid}');
           await prefs.setString(
               'saved_pm_password_${cleanEmail.toLowerCase()}', rawPassword);
+          await PocketSavedAccountService.saveCurrentLoggedInUser(
+              password: rawPassword);
 
           // Restore paired kid profile progress from parent's cloud account
           await PocketKidsService.loadKidProgressFromParentCloud();
@@ -1350,6 +1355,33 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           ? const Color(0xFF0284C7)
           : const Color(0xFF080C16),
       resizeToAvoidBottomInset: false,
+      floatingActionButton: _mode == WelcomeMode.signIn
+          ? FutureBuilder<List<SavedLoginAccount>>(
+              future: PocketSavedAccountService.getSavedAccounts(),
+              builder: (context, snapshot) {
+                final list = snapshot.data ?? [];
+                if (list.isEmpty) return const SizedBox.shrink();
+                return FloatingActionButton.extended(
+                  heroTag: 'saved_accounts_fab',
+                  backgroundColor: const Color(0xFFFFFC00),
+                  foregroundColor: Colors.black,
+                  elevation: 6,
+                  icon: const Icon(Icons.manage_accounts_rounded, size: 20),
+                  label: Text(
+                    'Saved Accounts (${list.length})',
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                  onPressed: () {
+                    HapticFeedback.mediumImpact();
+                    PocketSavedAccountService.showLoginInfoBottomSheet(context);
+                  },
+                );
+              },
+            )
+          : null,
       body: Stack(
         children: [
           AnimatedSwitcher(
@@ -5038,6 +5070,85 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                               ),
                               const SizedBox(height: 18),
                             ],
+
+                            // 📱 Instagram-Style Saved Accounts Switcher Quick Banner
+                            if (!_isSignUpMode)
+                              FutureBuilder<List<SavedLoginAccount>>(
+                                future:
+                                    PocketSavedAccountService.getSavedAccounts(),
+                                builder: (context, snapshot) {
+                                  final saved = snapshot.data ?? [];
+                                  if (saved.isEmpty) return const SizedBox.shrink();
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 14),
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        HapticFeedback.selectionClick();
+                                        PocketSavedAccountService
+                                            .showLoginInfoBottomSheet(context);
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 14, vertical: 10),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF1E293B),
+                                          borderRadius: BorderRadius.circular(14),
+                                          border: Border.all(
+                                            color: const Color(0xFFFFFC00)
+                                                .withValues(alpha: 0.4),
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.all(7),
+                                              decoration: const BoxDecoration(
+                                                color: Color(0xFFFFFC00),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: const Icon(
+                                                Icons.manage_accounts_rounded,
+                                                color: Colors.black,
+                                                size: 18,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 10),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    'Saved Accounts (${saved.length})',
+                                                    style: GoogleFonts.outfit(
+                                                      color: Colors.white,
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 13.5,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    'Tap to 1-tap switch or log in',
+                                                    style: GoogleFonts.outfit(
+                                                      color: Colors.white60,
+                                                      fontSize: 11.5,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            const Icon(
+                                              Icons.arrow_forward_ios_rounded,
+                                              color: Color(0xFFFFFC00),
+                                              size: 14,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
 
                             // Error Message Banner
                             if (_errorMessage != null) ...[

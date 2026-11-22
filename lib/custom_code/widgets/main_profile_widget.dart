@@ -33,6 +33,7 @@ import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_se
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_challenge_generator.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_saved_account_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/settings_page.dart';
@@ -666,6 +667,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   void _applyProfileData(Map<String, dynamic> data) {
     _profileData = data;
+    if (isMe) {
+      PocketSavedAccountService.saveCurrentLoggedInUser(profileData: data);
+    }
     int effectiveStage;
     // ⚠️ DO NOT use 'day' because in Supabase 'day' stores the user's Date of Birth (DOB) day!
     final explicitDay = (data['learning_day'] as num?)?.toInt() ??
@@ -1923,22 +1927,61 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         color: textColor,
                         onPressed: () => Navigator.of(context).pop(),
                       ),
-                      title: Text(
-                        _profileData?['username'] ??
-                            _profileData?['shop_name'] ??
-                            _profileData?['name'] ??
-                            '',
-                        style: GoogleFonts.outfit(
-                          color: textColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
+                      title: isMe
+                          ? GestureDetector(
+                              onTap: () {
+                                HapticFeedback.selectionClick();
+                                PocketSavedAccountService
+                                    .showLoginInfoBottomSheet(context);
+                              },
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      _profileData?['username'] ??
+                                          _profileData?['shop_name'] ??
+                                          _profileData?['name'] ??
+                                          '',
+                                      style: GoogleFonts.outfit(
+                                        color: textColor,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 17,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Icon(
+                                    Icons.keyboard_arrow_down_rounded,
+                                    size: 20,
+                                    color: textColor.withValues(alpha: 0.8),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : Text(
+                              _profileData?['username'] ??
+                                  _profileData?['shop_name'] ??
+                                  _profileData?['name'] ??
+                                  '',
+                              style: GoogleFonts.outfit(
+                                color: textColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                       centerTitle: false,
                       actions: [
                         if (isMe) ...[
-                          material.InkWell(
-                            onTap: () {
+                          material.IconButton(
+                            icon: const Text('🏝️',
+                                style: TextStyle(fontSize: 18)),
+                            color: const Color(0xFF38BDF8),
+                            onPressed: () {
                               HapticFeedback.mediumImpact();
                               _profileHorizontalPageController.animateToPage(
                                 1,
@@ -1946,35 +1989,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                 curve: Curves.easeInOutCubic,
                               );
                             },
-                            borderRadius: BorderRadius.circular(16),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 5),
-                              margin: const EdgeInsets.symmetric(vertical: 8),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF0284C7)
-                                    .withValues(alpha: 0.25),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                    color: const Color(0xFF38BDF8), width: 1.0),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Text('🏝️',
-                                      style: TextStyle(fontSize: 13)),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'My Island',
-                                    style: GoogleFonts.outfit(
-                                      color: const Color(0xFF38BDF8),
-                                      fontSize: 11.5,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                            tooltip: 'My Island',
+                            constraints: const BoxConstraints(
+                                maxWidth: 36, maxHeight: 36),
+                            padding: const EdgeInsets.all(6),
                           ),
                           material.IconButton(
                             icon: const Icon(material.Icons.gps_fixed_rounded,
