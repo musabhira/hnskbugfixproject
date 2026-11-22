@@ -249,8 +249,8 @@ class _SearchPageState extends State<SearchPage> {
       final q = query.toLowerCase();
       if (plotPlanetName != null &&
           (p.name.toLowerCase() == plotPlanetName ||
-              p.satellites.any(
-                  (s) => s.name.toLowerCase() == plotPlanetName))) {
+              p.satellites
+                  .any((s) => s.name.toLowerCase() == plotPlanetName))) {
         return true;
       }
       final hasSatMatch = p.satellites.any((s) =>
@@ -828,8 +828,8 @@ class _SearchPageState extends State<SearchPage> {
   Widget _buildPlotsTab() {
     final query = _currentSearchQuery.trim().toLowerCase();
     // Wave catalog supports infinite loops (Wave 1: 1..375, Wave 2: 376..750, etc.)
-    final allPlots =
-        PoketCosmosAllocationService.getWavePlotsCatalog(maxWaves: _activeWaveCount);
+    final allPlots = PoketCosmosAllocationService.getWavePlotsCatalog(
+        maxWaves: _activeWaveCount);
 
     // Dashboard metrics
     final int totalPlotsCount = allPlots.length;
@@ -1989,125 +1989,126 @@ class _SearchPageState extends State<SearchPage> {
         onTap: () => FocusScope.of(context).unfocus(),
         child: SafeArea(
           child: Column(
-          children: [
-            // Minimal Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                children: [
-                  InkWell(
-                    onTap: () => Navigator.of(context).pop(),
-                    borderRadius: BorderRadius.circular(8),
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.white10),
+            children: [
+              // Minimal Header
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  children: [
+                    InkWell(
+                      onTap: () => Navigator.of(context).pop(),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.white10),
+                        ),
+                        child: const Icon(Icons.arrow_back_ios_new_rounded,
+                            color: Colors.white, size: 15),
                       ),
-                      child: const Icon(Icons.arrow_back_ios_new_rounded,
-                          color: Colors.white, size: 15),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Search',
-                    style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontSize: 19,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: -0.3,
-                    ),
-                  ),
-                  const Spacer(),
-                  if (_searchHistory.isNotEmpty)
-                    IconButton(
-                      icon: const Icon(Icons.history_rounded,
-                          color: Colors.white54, size: 20),
-                      onPressed: _showSearchHistoryDialog,
-                      visualDensity: VisualDensity.compact,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                  if (_searchHistory.isNotEmpty) ...[
                     const SizedBox(width: 12),
-                    IconButton(
-                      icon: const Icon(Icons.cleaning_services_rounded,
-                          color: Colors.white54, size: 18),
-                      onPressed: _showClearHistoryDialog,
-                      visualDensity: VisualDensity.compact,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
+                    Text(
+                      'Search',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 19,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.3,
+                      ),
                     ),
+                    const Spacer(),
+                    if (_searchHistory.isNotEmpty)
+                      IconButton(
+                        icon: const Icon(Icons.history_rounded,
+                            color: Colors.white54, size: 20),
+                        onPressed: _showSearchHistoryDialog,
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    if (_searchHistory.isNotEmpty) ...[
+                      const SizedBox(width: 12),
+                      IconButton(
+                        icon: const Icon(Icons.cleaning_services_rounded,
+                            color: Colors.white54, size: 18),
+                        onPressed: _showClearHistoryDialog,
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
 
-            // Sleek Minimal Search Bar
-            CustomSearchWidget(
-              onSearchChanged: _handleSearchChanged,
-            ),
+              // Sleek Minimal Search Bar
+              CustomSearchWidget(
+                onSearchChanged: _handleSearchChanged,
+              ),
 
-            // Top 4 Cosmic Tabs: Citizens, Planets, Plots, Islands
-            _buildTopTabs(),
+              // Top 4 Cosmic Tabs: Citizens, Planets, Plots, Islands
+              _buildTopTabs(),
 
-            if (_selectedTab == 'people') ...[
-              // Quick Minimal Filter Chips (All, Humans, Robots)
-              _buildMinimalFilterChips(),
+              if (_selectedTab == 'people') ...[
+                // Quick Minimal Filter Chips (All, Humans, Robots)
+                _buildMinimalFilterChips(),
 
-              // Results Counter / Status
-              if (_hasSearched)
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 18.0, vertical: 2.0),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      _searchStatus,
-                      style: GoogleFonts.inter(
-                        color: Colors.white38,
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 0.1,
+                // Results Counter / Status
+                if (_hasSearched)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18.0, vertical: 2.0),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        _searchStatus,
+                        style: GoogleFonts.inter(
+                          color: Colors.white38,
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 0.1,
+                        ),
                       ),
                     ),
                   ),
-                ),
 
-              // People Content
-              Expanded(
-                child: SearchResultsWidget(
-                  searchQuery: _effectiveSearchQuery,
-                  onResultsChanged: _handleResultsChanged,
+                // People Content
+                Expanded(
+                  child: SearchResultsWidget(
+                    searchQuery: _effectiveSearchQuery,
+                    onResultsChanged: _handleResultsChanged,
+                  ),
                 ),
-              ),
-            ] else if (_selectedTab == 'planets') ...[
-              Expanded(
-                child: _buildPlanetsTab(),
-              ),
-            ] else if (_selectedTab == 'plots') ...[
-              Expanded(
-                child: _buildPlotsTab(),
-              ),
-            ] else if (_selectedTab == 'islands') ...[
-              Expanded(
-                child: _buildIslandsTab(),
-              ),
-            ] else ...[
-              // Fallback Market Content
-              Expanded(
-                child: MarketSearchResultsWidget(
-                  searchQuery: _currentSearchQuery,
+              ] else if (_selectedTab == 'planets') ...[
+                Expanded(
+                  child: _buildPlanetsTab(),
                 ),
-              ),
+              ] else if (_selectedTab == 'plots') ...[
+                Expanded(
+                  child: _buildPlotsTab(),
+                ),
+              ] else if (_selectedTab == 'islands') ...[
+                Expanded(
+                  child: _buildIslandsTab(),
+                ),
+              ] else ...[
+                // Fallback Market Content
+                Expanded(
+                  child: MarketSearchResultsWidget(
+                    searchQuery: _currentSearchQuery,
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   void _showSearchHistoryDialog() {
     showDialog(
@@ -2523,8 +2524,8 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
           // 2. Also check wave plots catalog
           final activeWaves =
               await PoketCosmosAllocationService.instance.getActiveWaveIndex();
-          final allPlots =
-              PoketCosmosAllocationService.getWavePlotsCatalog(maxWaves: activeWaves);
+          final allPlots = PoketCosmosAllocationService.getWavePlotsCatalog(
+              maxWaves: activeWaves);
           Map<String, dynamic>? matchPlot;
           for (final item in allPlots) {
             if (item['globalPlotNumber'] == searchedPlotNum ||
@@ -2535,8 +2536,8 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
           }
           if (matchPlot != null && matchPlot['isOccupied'] == true) {
             final uid = matchPlot['userId']?.toString() ?? '';
-            final oName =
-                matchPlot['ownerName']?.toString() ?? 'Citizen #$searchedPlotNum';
+            final oName = matchPlot['ownerName']?.toString() ??
+                'Citizen #$searchedPlotNum';
             if (uid.isNotEmpty &&
                 !plotOwnerMatches.any((m) => m['user_id'] == uid)) {
               final userProf = await _supabase
@@ -2752,7 +2753,10 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
             isPresident ? 'The President' : (profile['name'] ?? 'Partner');
         final shopName = profile['shop_name'];
         final targetName = name.toLowerCase();
-        final tier = (profile['subscription_tier'] ?? '').toString().toLowerCase().trim();
+        final tier = (profile['subscription_tier'] ?? '')
+            .toString()
+            .toLowerCase()
+            .trim();
         final bool isSub = tier.isNotEmpty && tier != 'free' && tier != 'none';
         final isVerified = isPresident ||
             profile['verified'] == true ||

@@ -114,8 +114,7 @@ class PocketGameAudioService with WidgetsBindingObserver {
         isPlayingNotifier.value = (state == PlayerState.playing);
       });
 
-      // Background discover dynamic music from Supabase storage
-      _fetchDynamicMusicFromSupabase();
+      // Local asset audio engine active (Zero Supabase Egress)
 
       _initCompleter?.complete();
     } catch (e) {
@@ -159,165 +158,83 @@ class PocketGameAudioService with WidgetsBindingObserver {
   }
 
   // =========================================================================
-  // 🎼 MASTER TRACK REPERTOIRE (SUPABASE STORAGE BUCKET 'music')
+  // 🎼 MASTER TRACK REPERTOIRE (LOCAL BUNDLED ZERO-EGRESS ASSETS)
   // =========================================================================
 
   /// 🏡 Homes & Reels & App Ambient Tracks (Happy, Cozy, Chill, Relaxing)
   static final List<PocketMusicTrack> homeTracks = [
-    PocketMusicTrack(
-      id: 'supa_whistler',
+    const PocketMusicTrack(
+      id: 'local_whistler',
       title: 'Happy Whistler 🌾',
       genre: 'Uplifting Acoustic',
-      url: '${_kSupabaseStorageBase}kaazoom-the-happy-whistler-1-min-edit-532435.mp3',
+      url: 'audio/bgm/happy_whistler.mp3',
       mood: 'happy',
     ),
-    PocketMusicTrack(
-      id: 'supa_hiphop_fun',
-      title: 'Fun Energy Hop ⚡',
-      genre: 'Uplifting Chill Hop',
-      url:
-          '${_kSupabaseStorageBase}white_records-fun-background-hip-hop-short-music-27-sec-energetic-vlog-music-148916.mp3',
-      mood: 'happy',
-    ),
-    PocketMusicTrack(
-      id: 'supa_sailor',
+    const PocketMusicTrack(
+      id: 'local_sailor',
       title: 'Pocket Town Sailor ⛵',
       genre: 'Cozy Acoustic',
-      url: '${_kSupabaseStorageBase}nojisuma-sailor-256509.mp3',
+      url: 'audio/bgm/pocket_sailor.mp3',
       mood: 'cozy',
     ),
-    PocketMusicTrack(
-      id: 'supa_stardust',
+    const PocketMusicTrack(
+      id: 'local_stardust',
       title: 'Dancing in the Stardust ✨',
       genre: 'Dreamy Pop',
-      url:
-          '${_kSupabaseStorageBase}freesoundserver-dancing-in-the-stardust-free-music-no-copyright-203603.mp3',
+      url: 'audio/bgm/dancing_stardust.mp3',
       mood: 'happy',
     ),
-    PocketMusicTrack(
-      id: 'supa_relaxing',
-      title: 'Fireside Relaxation ☕',
-      genre: 'Chill Ambient',
-      url: '${_kSupabaseStorageBase}andriig-relaxing-relaxing-music-572285.mp3',
-      mood: 'cozy',
-    ),
-    PocketMusicTrack(
-      id: 'supa_lullaby',
+    const PocketMusicTrack(
+      id: 'local_lullaby',
       title: 'Peaceful Citadel Stroll 🌸',
       genre: 'Warm Acoustic Lullaby',
-      url: '${_kSupabaseStorageBase}live_art-lullaby-160470.mp3',
+      url: 'audio/bgm/peaceful_lullaby.mp3',
       mood: 'cozy',
     ),
-    PocketMusicTrack(
-      id: 'supa_free_musica',
-      title: 'Sunny Day Joy 🎸',
-      genre: 'Latin Acoustic Pop',
-      url:
-          '${_kSupabaseStorageBase}tudo_free-music-free-musica-free-musica-no-copyright-musicas-gratuita-294095.mp3',
+    const PocketMusicTrack(
+      id: 'local_market',
+      title: 'Market Square Daytime 🎪',
+      genre: 'RPG Town Stinger',
+      url: 'audio/bgm/market_square.mp3',
       mood: 'happy',
-    ),
-    PocketMusicTrack(
-      id: 'supa_rain_relax',
-      title: 'Gentle Rain Sleep 🌧️',
-      genre: 'Rain Nature Ambient',
-      url:
-          '${_kSupabaseStorageBase}karim_alaoui-gentle-rain-sounds-for-relaxation-and-sleep-585942.mp3',
-      mood: 'cozy',
-    ),
-    PocketMusicTrack(
-      id: 'supa_slice_rain',
-      title: 'Lofi Rain Study 📖',
-      genre: 'Chill Lofi Beats',
-      url: '${_kSupabaseStorageBase}slicebeats-rain-7508.mp3',
-      mood: 'cozy',
     ),
   ];
 
   /// ⚔️ Battle & Attack Mode Tracks (Energetic, Arcade, Epic, Quirky)
   static final List<PocketMusicTrack> attackTracks = [
-    PocketMusicTrack(
-      id: 'supa_gaming_beat',
-      title: 'Citadel Gaming Arena 🎮',
-      genre: 'Electronic Arcade',
-      url:
-          '${_kSupabaseStorageBase}mfcc-gaming-game-video-game-music-522352.mp3',
-      mood: 'battle',
-    ),
-    PocketMusicTrack(
-      id: 'supa_loop_13',
-      title: 'Fortress Battle Drums ⚔️',
-      genre: 'Cinematic Battle Loop',
-      url:
-          '${_kSupabaseStorageBase}xtremefreddy-game-music-loop-13-147206.mp3',
-      mood: 'battle',
-    ),
-    PocketMusicTrack(
-      id: 'supa_loop_19',
-      title: 'Boss Raid Heavy Beat 🔥',
-      genre: 'Energetic Boss Battle',
-      url:
-          '${_kSupabaseStorageBase}xtremefreddy-game-music-loop-19-153393.mp3',
-      mood: 'battle',
-    ),
-    PocketMusicTrack(
-      id: 'supa_loop_18',
-      title: '8-Bit Retro Chiptune Blitz 👾',
-      genre: 'Retro Chiptune',
-      url:
-          '${_kSupabaseStorageBase}xtremefreddy-game-music-loop-18-153392.mp3',
-      mood: 'arcade',
-    ),
-    PocketMusicTrack(
-      id: 'supa_loop_16',
-      title: 'Speedy Platform Duel ⚡',
-      genre: 'Action Platformer Loop',
-      url:
-          '${_kSupabaseStorageBase}xtremefreddy-game-music-loop-16-153389.mp3',
-      mood: 'arcade',
-    ),
-    PocketMusicTrack(
-      id: 'supa_loop_9',
+    const PocketMusicTrack(
+      id: 'local_citadel_defense',
       title: 'Epic Citadel Defense 🛡️',
       genre: 'Orchestral Defense',
-      url: '${_kSupabaseStorageBase}xtremefreddy-game-music-loop-9-145494.mp3',
+      url: 'audio/bgm/citadel_defense.mp3',
       mood: 'epic',
     ),
-    PocketMusicTrack(
-      id: 'supa_run_catch',
+    const PocketMusicTrack(
+      id: 'local_speedy_duel',
+      title: 'Speedy Platform Duel ⚡',
+      genre: 'Action Platformer Loop',
+      url: 'audio/bgm/speedy_duel.mp3',
+      mood: 'arcade',
+    ),
+    const PocketMusicTrack(
+      id: 'local_run_catch',
       title: 'Retro Platform Run & Catch 🏃',
       genre: 'Retro Platform Arcade',
-      url:
-          '${_kSupabaseStorageBase}kaazoom-run-and-catch-x27em-46-sec-loopable-retro-platform-game-music-442979.mp3',
+      url: 'audio/bgm/run_and_catch.mp3',
       mood: 'arcade',
     ),
-    PocketMusicTrack(
-      id: 'supa_adventure_theme',
+    const PocketMusicTrack(
+      id: 'local_adventure_quest',
       title: 'Adventure Quest Anthem 🏆',
       genre: 'Action Game Beat',
-      url: '${_kSupabaseStorageBase}u_l065ve68l2-game-music-202227.mp3',
-      mood: 'epic',
+      url: 'audio/bgm/adventure_quest.mp3',
+      mood: 'battle',
     ),
-    PocketMusicTrack(
-      id: 'supa_market_square',
-      title: 'Market Square RPG Stinger 🏰',
-      genre: 'Fantasy Town RPG',
-      url:
-          '${_kSupabaseStorageBase}kaazoom-the-market-square-daytime-15-sec-stinger-rpg-game-music-519315.mp3',
-      mood: 'happy',
-    ),
-    PocketMusicTrack(
-      id: 'supa_arcade_short',
-      title: 'Arcade Pop Sprint 🎯',
-      genre: 'Short Arcade Theme',
-      url:
-          '${_kSupabaseStorageBase}moodmode-that-game-arcade-short-236108.mp3',
-      mood: 'arcade',
-    ),
-    PocketMusicTrack(
-      id: 'supa_mfcc_game',
-      title: 'Playful Arcade Spin 🎭',
-      genre: 'Chiptune Game Beat',
-      url: '${_kSupabaseStorageBase}mfcc-game-game-music-603130.mp3',
+    const PocketMusicTrack(
+      id: 'local_arcade_short',
+      title: 'Citadel Gaming Arena 🎮',
+      genre: 'Electronic Arcade',
+      url: 'audio/bgm/arcade_short.mp3',
       mood: 'arcade',
     ),
   ];
@@ -328,9 +245,9 @@ class PocketGameAudioService with WidgetsBindingObserver {
 
   /// 🎯 Target Recon & Street Exploration Tracks
   static List<PocketMusicTrack> get targetTracks => [
-        homeTracks[1],
-        attackTracks[8],
-        attackTracks[1],
+        homeTracks[1 % homeTracks.length],
+        attackTracks[0],
+        attackTracks[1 % attackTracks.length],
       ];
 
   // =========================================================================
@@ -351,12 +268,12 @@ class PocketGameAudioService with WidgetsBindingObserver {
     final arcKey = archetypeId ?? robot?.archetype.name.toLowerCase() ?? '';
 
     if (arcKey.contains('grumpy')) {
-      return attackTracks[2]; // Boss Raid Heavy Beat
+      return attackTracks[0];
     } else if (arcKey.contains('intellectual') ||
         arcKey.contains('trendsetter')) {
-      return attackTracks[3]; // 8-Bit Retro Chiptune Blitz
+      return attackTracks[1 % attackTracks.length];
     } else if (targetDay >= 30) {
-      return attackTracks[5]; // Epic Citadel Defense
+      return attackTracks[2 % attackTracks.length];
     }
 
     final hash = targetId.codeUnits.fold<int>(0, (sum, c) => sum + c);
@@ -372,7 +289,7 @@ class PocketGameAudioService with WidgetsBindingObserver {
   /// Pick a random or persona-fitting track for a robot's vibe
   static PocketMusicTrack getRandomVibeTrack({String? persona}) {
     if (persona == 'student') {
-      return homeTracks[4]; // Fireside Relaxation
+      return homeTracks[3 % homeTracks.length]; // Peaceful Citadel Stroll
     } else if (persona == 'work' || persona == 'professional') {
       return homeTracks[0]; // Happy Whistler
     }
@@ -473,14 +390,25 @@ class PocketGameAudioService with WidgetsBindingObserver {
     await playTrack(track, volume: kDefaultBgmVolume);
   }
 
-  /// 🛡️ Disk Cache audio files to prevent runaway Supabase Cached Egress
-  Future<Source> _resolveAudioSource(String url) async {
+  /// 🛡️ Zero-Egress Audio Source Resolver:
+  /// Plays directly from bundled app assets (0 bytes network egress).
+  /// Falls back to disk cache if a legacy remote URL is passed.
+  Future<Source> _resolveAudioSource(String pathOrUrl) async {
+    // 1. If it's a bundled local asset (no http/https prefix)
+    if (!pathOrUrl.startsWith('http://') && !pathOrUrl.startsWith('https://')) {
+      final cleanPath = pathOrUrl.startsWith('assets/')
+          ? pathOrUrl.substring('assets/'.length)
+          : pathOrUrl;
+      return AssetSource(cleanPath);
+    }
+
+    // 2. Legacy remote URL fallback (cached to disk)
     try {
-      final file = await DefaultCacheManager().getSingleFile(url);
+      final file = await DefaultCacheManager().getSingleFile(pathOrUrl);
       return DeviceFileSource(file.path);
     } catch (e) {
       debugPrint('⚠️ Audio cache notice: $e, falling back to direct network stream');
-      return UrlSource(url);
+      return UrlSource(pathOrUrl);
     }
   }
 
