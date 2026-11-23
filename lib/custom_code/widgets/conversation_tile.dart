@@ -24,6 +24,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citad
 import 'package:pocket_mates_app/custom_code/services/pocket_island_group_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/group_sky_members_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
 
 
 class ConversationTile extends StatefulWidget {
@@ -207,6 +208,23 @@ class _ConversationTileState extends State<ConversationTile> {
     if (cached != null && cached > 0) {
       _globalRank = cached;
       _startRankCycle();
+      return;
+    }
+
+    final animal = PocketKidsRobotsData.getAnimalById(convId);
+    if (animal != null) {
+      final dynLvl = animal.dayLevel;
+      final rScore = PocketRankingService.getSimulatedBotScore(
+        botId: animal.id,
+        baseLevel: dynLvl,
+        isUnder17: true,
+      );
+      PocketRankingService.fetchUserGlobalRank(convId, rScore).then((rank) {
+        if (mounted && rank > 0) {
+          setState(() => _globalRank = rank);
+          _startRankCycle();
+        }
+      }).catchError((_) {});
       return;
     }
 
@@ -1336,18 +1354,32 @@ class _ConversationTileState extends State<ConversationTile> {
                                       FadeTransition(
                                           opacity: animation, child: child),
                                   child: shouldShowRank
-                                      ? Text(
-                                          'Global Rank #$_globalRank',
-                                          key: ValueKey('rank_$_globalRank'),
-                                          style: GoogleFonts.outfit(
-                                            color: const Color(0xFFFFD700),
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 13.5,
-                                            letterSpacing: 0.1,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        )
+                                      ? () {
+                                          final convId = widget.conversation.id;
+                                          final isAnimal = PocketKidsRobotsData.getAnimalById(convId) != null;
+                                          final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(convId);
+                                          final isRobot = !isAnimal && (PocketRobotService.isRobotId(convId) || !isUuid);
+                                          final String rankLabel;
+                                          if (isAnimal) {
+                                            rankLabel = 'Animal Rank #$_globalRank';
+                                          } else if (isRobot) {
+                                            rankLabel = 'Robot Rank #$_globalRank';
+                                          } else {
+                                            rankLabel = 'Global Rank #$_globalRank';
+                                          }
+                                          return Text(
+                                            rankLabel,
+                                            key: ValueKey('rank_${rankLabel}_$_globalRank'),
+                                            style: GoogleFonts.outfit(
+                                              color: const Color(0xFFFFD700),
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 13.5,
+                                              letterSpacing: 0.1,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          );
+                                        }()
                                       : Text(
                                           key: const ValueKey('normal_msg_sub'),
                                           widget.conversation.isActiveTimer

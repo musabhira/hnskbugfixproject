@@ -16,23 +16,54 @@ class IAPService {
   static const String certificateProductId = 'poketmates_c2_certificate';
 
   static const List<String> allVipProductIds = [
-    // Standard Poket IDs
+    // Standard Poket IDs (Monthly)
     vipMonthlyProductId,
     'poket_vip_monthly',
+    'poketmates_monthly',
     'com.poketmates.app.vip.monthly',
     'vip_monthly',
+
+    // Standard Poket IDs (Quarterly / 90 Days / Fluency Pass)
     vipQuarterlyProductId,
     'poket_vip_quarterly',
+    'poketmates_quarterly',
     'poketmates_vip_90day',
+    'poketmates_vip_90days',
+    'poketmates_90day',
+    'poketmates_90days',
     'poket_vip_90day',
+    'poket_vip_90days',
+    'poket_90day',
+    'poket_90days',
+    'poketmates_fluency_pass',
+    'poketmates_vip_fluency_pass',
+    'poket_fluency_pass',
+    'fluency_pass',
+    'vip_fluency_pass',
     'com.poketmates.app.vip.quarterly',
+    'com.poketmates.app.vip.90day',
     'vip_quarterly',
+    'vip_90day',
+
+    // Standard Poket IDs (Yearly / Annual)
     vipYearlyProductId,
     'poket_vip_yearly',
+    'poketmates_yearly',
+    'poketmates_vip_annual',
+    'poketmates_annual',
+    'poket_vip_annual',
+    'poket_annual',
+    'poketmates_vip_1year',
+    'poketmates_1year',
     'com.poketmates.app.vip.yearly',
+    'com.poketmates.app.vip.annual',
     'vip_yearly',
+    'vip_annual',
+
+    // Certificate
     certificateProductId,
     'poket_c2_certificate',
+    'poketmates_certificate',
 
     // iOS Bundle Identifier (com.handskill.friends) matches
     'com.handskill.friends.vip_monthly',
@@ -42,25 +73,52 @@ class IAPService {
     'com.handskill.friends.quarterly',
     'com.handskill.friends.vip.quarterly',
     'com.handskill.friends.vip_90day',
+    'com.handskill.friends.vip_90days',
+    'com.handskill.friends.90day',
+    'com.handskill.friends.90days',
+    'com.handskill.friends.vip_fluency_pass',
+    'com.handskill.friends.fluencypass',
+    'com.handskill.friends.fluency_pass',
     'com.handskill.friends.vip_yearly',
     'com.handskill.friends.yearly',
     'com.handskill.friends.annual',
+    'com.handskill.friends.vip_annual',
     'com.handskill.friends.vip.yearly',
+    'com.handskill.friends.vip.annual',
     'com.handskill.friends.c2_certificate',
     'com.handskill.friends.certificate',
     'handskill_vip_monthly',
+    'handskill_monthly',
     'handskill_vip_quarterly',
+    'handskill_quarterly',
+    'handskill_vip_90day',
     'handskill_vip_yearly',
+    'handskill_yearly',
+    'handskill_vip_annual',
+    'handskill_annual',
 
     // Pocket (with 'c') variations
     'pocketmates_vip_monthly',
     'pocket_vip_monthly',
+    'pocketmates_monthly',
     'pocketmates_vip_quarterly',
     'pocket_vip_quarterly',
+    'pocketmates_quarterly',
     'pocketmates_vip_90day',
+    'pocketmates_vip_90days',
+    'pocketmates_90day',
+    'pocketmates_90days',
     'pocket_vip_90day',
+    'pocket_vip_90days',
+    'pocketmates_fluency_pass',
+    'pocketmates_vip_fluency_pass',
     'pocketmates_vip_yearly',
     'pocket_vip_yearly',
+    'pocketmates_yearly',
+    'pocketmates_vip_annual',
+    'pocketmates_annual',
+    'pocket_vip_annual',
+    'pocketmates_vip_1year',
     'pocketmates_c2_certificate',
     'pocket_c2_certificate',
   ];
@@ -147,22 +205,75 @@ class IAPService {
       return _products.firstWhere((p) => p.id == productId);
     } catch (_) {}
 
-    // 2. Fuzzy match based on keywords
+    // 2. Case-insensitive exact match
+    try {
+      return _products.firstWhere((p) => p.id.toLowerCase() == productId.toLowerCase());
+    } catch (_) {}
+
+    // 3. Fuzzy match based on keywords in product ID
     final targetLower = productId.toLowerCase();
     try {
       if (targetLower.contains('cert')) {
         return _products.firstWhere((p) => p.id.toLowerCase().contains('cert'));
-      } else if (targetLower.contains('quarter') || targetLower.contains('90day') || targetLower.contains('pass')) {
-        return _products.firstWhere((p) =>
-            p.id.toLowerCase().contains('quarter') ||
-            p.id.toLowerCase().contains('90day') ||
-            p.id.toLowerCase().contains('pass'));
-      } else if (targetLower.contains('year') || targetLower.contains('annual')) {
-        return _products.firstWhere((p) =>
-            p.id.toLowerCase().contains('year') ||
-            p.id.toLowerCase().contains('annual'));
+      } else if (targetLower.contains('quarter') ||
+          targetLower.contains('90') ||
+          targetLower.contains('pass') ||
+          targetLower.contains('fluency')) {
+        return _products.firstWhere((p) {
+          final id = p.id.toLowerCase();
+          return id.contains('quarter') ||
+              id.contains('90') ||
+              id.contains('pass') ||
+              id.contains('fluency') ||
+              id.contains('3month');
+        });
+      } else if (targetLower.contains('year') ||
+          targetLower.contains('annual') ||
+          targetLower.contains('12month')) {
+        return _products.firstWhere((p) {
+          final id = p.id.toLowerCase();
+          return id.contains('year') || id.contains('annual') || id.contains('12month');
+        });
       } else if (targetLower.contains('month')) {
-        return _products.firstWhere((p) => p.id.toLowerCase().contains('month'));
+        return _products.firstWhere((p) {
+          final id = p.id.toLowerCase();
+          return id.contains('month') && !id.contains('12month') && !id.contains('3month');
+        });
+      }
+    } catch (_) {}
+
+    // 4. Fuzzy match based on product title & description from App Store
+    try {
+      if (targetLower.contains('cert')) {
+        return _products.firstWhere((p) =>
+            ('${p.title} ${p.description}').toLowerCase().contains('cert'));
+      } else if (targetLower.contains('quarter') ||
+          targetLower.contains('90') ||
+          targetLower.contains('pass') ||
+          targetLower.contains('fluency')) {
+        return _products.firstWhere((p) {
+          final text = ('${p.title} ${p.description}').toLowerCase();
+          return text.contains('quarter') ||
+              text.contains('90') ||
+              text.contains('pass') ||
+              text.contains('fluency') ||
+              text.contains('3 month');
+        });
+      } else if (targetLower.contains('year') ||
+          targetLower.contains('annual')) {
+        return _products.firstWhere((p) {
+          final text = ('${p.title} ${p.description}').toLowerCase();
+          return text.contains('year') ||
+              text.contains('annual') ||
+              text.contains('12 month');
+        });
+      } else if (targetLower.contains('month')) {
+        return _products.firstWhere((p) {
+          final text = ('${p.title} ${p.description}').toLowerCase();
+          return text.contains('month') &&
+              !text.contains('12 month') &&
+              !text.contains('3 month');
+        });
       }
     } catch (_) {}
 
@@ -172,11 +283,17 @@ class IAPService {
   /// Initiates subscription purchase through Google Play or Apple App Store
   Future<bool> buyVipSubscription({bool isYearly = false, String planType = 'monthly'}) async {
     String targetId = vipMonthlyProductId;
-    if (planType == 'quarterly') {
+    final lowerPlan = planType.toLowerCase();
+    if (lowerPlan.contains('quarter') ||
+        lowerPlan.contains('90') ||
+        lowerPlan.contains('pass') ||
+        lowerPlan.contains('fluency')) {
       targetId = vipQuarterlyProductId;
-    } else if (planType == 'yearly' || isYearly) {
+    } else if (lowerPlan.contains('year') ||
+        lowerPlan.contains('annual') ||
+        isYearly) {
       targetId = vipYearlyProductId;
-    } else if (planType == 'certificate') {
+    } else if (lowerPlan.contains('cert')) {
       targetId = certificateProductId;
     }
 
