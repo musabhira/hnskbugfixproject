@@ -908,6 +908,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       if (uid != null && uid.isNotEmpty) {
         await PocketPresidentService.checkAndDeliverInstalledReleaseNotes(uid);
         await PocketPresidentService.checkAndDeliverFeedbackPrompt(uid);
+        await PocketPresidentService.checkAndDeliverBirthdayWish(uid);
       }
     } catch (e) {
       debugPrint('Update check error: $e');

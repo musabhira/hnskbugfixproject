@@ -1985,7 +1985,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                 borderRadius: BorderRadius.circular(10),
                                 onTap: () {
                                   HapticFeedback.mediumImpact();
-                                  _profileHorizontalPageController.animateToPage(
+                                  _profileHorizontalPageController
+                                      .animateToPage(
                                     1,
                                     duration: const Duration(milliseconds: 350),
                                     curve: Curves.easeInOutCubic,
@@ -1995,10 +1996,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                   width: 36,
                                   height: 36,
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF38BDF8).withValues(alpha: 0.14),
+                                    color: const Color(0xFF38BDF8)
+                                        .withValues(alpha: 0.14),
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
-                                      color: const Color(0xFF38BDF8).withValues(alpha: 0.40),
+                                      color: const Color(0xFF38BDF8)
+                                          .withValues(alpha: 0.40),
                                       width: 1.2,
                                     ),
                                   ),
@@ -2024,8 +2027,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                 userId: userId,
                                 isDefenseMode: true,
                                 attackerDay: _getEffectiveDay(),
-                                preferredPlanetCode: myCoords['planetCode'] as String?,
-                                preferredPlotNumber: myCoords['plotNumber'] as int?,
+                                preferredPlanetCode:
+                                    myCoords['planetCode'] as String?,
+                                preferredPlotNumber:
+                                    myCoords['plotNumber'] as int?,
                                 preferredWave: myCoords['wave'] as int?,
                               );
                             },
@@ -2055,7 +2060,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                 borderRadius: BorderRadius.circular(10),
                                 onTap: () {
                                   HapticFeedback.mediumImpact();
-                                  _profileHorizontalPageController.animateToPage(
+                                  _profileHorizontalPageController
+                                      .animateToPage(
                                     1,
                                     duration: const Duration(milliseconds: 350),
                                     curve: Curves.easeInOutCubic,
@@ -2065,10 +2071,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                   width: 36,
                                   height: 36,
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF38BDF8).withValues(alpha: 0.14),
+                                    color: const Color(0xFF38BDF8)
+                                        .withValues(alpha: 0.14),
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
-                                      color: const Color(0xFF38BDF8).withValues(alpha: 0.40),
+                                      color: const Color(0xFF38BDF8)
+                                          .withValues(alpha: 0.40),
                                       width: 1.2,
                                     ),
                                   ),
@@ -3726,8 +3734,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
               return Column(
                 children: validRaids.map((entry) {
-                  final timeDiff =
-                      DateTime.now().difference(entry.timestamp);
+                  final timeDiff = DateTime.now().difference(entry.timestamp);
                   final timeText = timeDiff.inHours < 1
                       ? '${timeDiff.inMinutes.clamp(1, 60)}m ago'
                       : (timeDiff.inHours < 24
@@ -3735,203 +3742,199 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           : '${timeDiff.inDays}d ago');
 
                   final displayAttackerName = entry.attackerName.trim();
-                  final displayAttackerAvatar =
-                      entry.attackerAvatar.isNotEmpty
-                          ? entry.attackerAvatar
-                          : '⚔️';
+                  final displayAttackerAvatar = entry.attackerAvatar.isNotEmpty
+                      ? entry.attackerAvatar
+                      : '⚔️';
 
-                      Widget attackerAvatarWidget;
-                      if (displayAttackerAvatar.startsWith('http')) {
-                        attackerAvatarWidget = ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: CachedNetworkImage(
-                            imageUrl: displayAttackerAvatar,
-                            width: 44,
-                            height: 44,
-                            fit: BoxFit.cover,
-                            placeholder: (_, __) => const Center(
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 1.5, color: Color(0xFFEF4444)),
-                            ),
-                            errorWidget: (_, __, ___) => const Center(
-                              child: Text('⚔️', style: TextStyle(fontSize: 22)),
-                            ),
-                          ),
-                        );
-                      } else {
-                        attackerAvatarWidget = Center(
-                          child: Text(
-                            displayAttackerAvatar,
-                            style: const TextStyle(fontSize: 22),
-                          ),
-                        );
-                      }
-
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 10),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1E293B),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color:
-                                const Color(0xFFEF4444).withValues(alpha: 0.35),
-                            width: 1.2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.3),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
+                  Widget attackerAvatarWidget;
+                  if (displayAttackerAvatar.startsWith('http')) {
+                    attackerAvatarWidget = ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: CachedNetworkImage(
+                        imageUrl: displayAttackerAvatar,
+                        width: 44,
+                        height: 44,
+                        fit: BoxFit.cover,
+                        placeholder: (_, __) => const Center(
+                          child: CircularProgressIndicator(
+                              strokeWidth: 1.5, color: Color(0xFFEF4444)),
                         ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            // Attacker Avatar
-                            Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF0F172A),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: const Color(0xFFEF4444),
-                                  width: 1.2,
-                                ),
-                              ),
-                              child: attackerAvatarWidget,
+                        errorWidget: (_, __, ___) => const Center(
+                          child: Text('⚔️', style: TextStyle(fontSize: 22)),
+                        ),
+                      ),
+                    );
+                  } else {
+                    attackerAvatarWidget = Center(
+                      child: Text(
+                        displayAttackerAvatar,
+                        style: const TextStyle(fontSize: 22),
+                      ),
+                    );
+                  }
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E293B),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: const Color(0xFFEF4444).withValues(alpha: 0.35),
+                        width: 1.2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Attacker Avatar
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0F172A),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: const Color(0xFFEF4444),
+                              width: 1.2,
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                          ),
+                          child: attackerAvatarWidget,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                displayAttackerName,
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 3),
+                              Row(
                                 children: [
+                                  const Icon(Icons.flash_on_rounded,
+                                      size: 12, color: Colors.amber),
+                                  const SizedBox(width: 3),
+                                  Flexible(
+                                    child: Text(
+                                      'Weapon: ${entry.attackerWeapon}',
+                                      style: GoogleFonts.inter(
+                                        color: Colors.amber.shade300,
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
                                   Text(
-                                    displayAttackerName,
+                                    '• $timeText',
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white54,
+                                      fontSize: 10.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // ⚡ REVENGE ATTACK Button
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(10),
+                            onTap: () async {
+                              HapticFeedback.heavyImpact();
+                              String targetId = entry.attackerId;
+                              String targetName = displayAttackerName;
+                              if (targetId.isEmpty ||
+                                  targetId == userId ||
+                                  targetId == 'me' ||
+                                  entry.attackerName.trim().toLowerCase() ==
+                                      'you') {
+                                final rival = await PocketFortressDefenseService
+                                    .getRecommendedRivalTarget(
+                                        userDay: _getEffectiveDay());
+                                targetId = rival.id;
+                                targetName = rival.name;
+                              }
+
+                              if (context.mounted) {
+                                PocketCitadelAttackPage.openForUser(
+                                  context,
+                                  userId: targetId,
+                                  targetName: targetName,
+                                  attackerDay: _getEffectiveDay(),
+                                ).then((_) {
+                                  _loadPocketScore();
+                                  _loadFortressDefenseData();
+                                  _loadGlobalRank();
+                                });
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 8),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFFDC2626),
+                                    Color(0xFFB91C1C)
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                    color: const Color(0xFFFCA5A5), width: 1.2),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFDC2626)
+                                        .withValues(alpha: 0.45),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Text('⚔️',
+                                      style: TextStyle(fontSize: 12)),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'REVENGE',
                                     style: GoogleFonts.outfit(
                                       color: Colors.white,
-                                      fontSize: 13.5,
-                                      fontWeight: FontWeight.bold,
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 0.5,
                                     ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 3),
-                                  Row(
-                                    children: [
-                                      const Icon(Icons.flash_on_rounded,
-                                          size: 12, color: Colors.amber),
-                                      const SizedBox(width: 3),
-                                      Flexible(
-                                        child: Text(
-                                          'Weapon: ${entry.attackerWeapon}',
-                                          style: GoogleFonts.inter(
-                                            color: Colors.amber.shade300,
-                                            fontSize: 10.5,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        '• $timeText',
-                                        style: GoogleFonts.inter(
-                                          color: Colors.white54,
-                                          fontSize: 10.5,
-                                        ),
-                                      ),
-                                    ],
                                   ),
                                 ],
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            // ⚡ REVENGE ATTACK Button
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(10),
-                                onTap: () async {
-                                  HapticFeedback.heavyImpact();
-                                  String targetId = entry.attackerId;
-                                  String targetName = displayAttackerName;
-                                  if (targetId.isEmpty ||
-                                      targetId == userId ||
-                                      targetId == 'me' ||
-                                      entry.attackerName.trim().toLowerCase() ==
-                                          'you') {
-                                    final rival =
-                                        await PocketFortressDefenseService
-                                            .getRecommendedRivalTarget(
-                                                userDay: _getEffectiveDay());
-                                    targetId = rival.id;
-                                    targetName = rival.name;
-                                  }
-
-                                  if (context.mounted) {
-                                    PocketCitadelAttackPage.openForUser(
-                                      context,
-                                      userId: targetId,
-                                      targetName: targetName,
-                                      attackerDay: _getEffectiveDay(),
-                                    ).then((_) {
-                                      _loadPocketScore();
-                                      _loadFortressDefenseData();
-                                      _loadGlobalRank();
-                                    });
-                                  }
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 8),
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      colors: [
-                                        Color(0xFFDC2626),
-                                        Color(0xFFB91C1C)
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                        color: const Color(0xFFFCA5A5),
-                                        width: 1.2),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: const Color(0xFFDC2626)
-                                            .withValues(alpha: 0.45),
-                                        blurRadius: 6,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Text('⚔️',
-                                          style: TextStyle(fontSize: 12)),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        'REVENGE',
-                                        style: GoogleFonts.outfit(
-                                          color: Colors.white,
-                                          fontSize: 10.5,
-                                          fontWeight: FontWeight.w900,
-                                          letterSpacing: 0.5,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                      );
-                    }).toList(),
+                      ],
+                    ),
                   );
-                }(),
+                }).toList(),
+              );
+            }(),
           ),
         ],
       ),
@@ -6246,12 +6249,21 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 // Strip raw cosmic pin, PKT codes, and default citizen tag from bio body to keep it clean
                 final cleanBioText = bio
                     .replaceAll(
-                        RegExp(r'\s*(\n\n)?(🏡\s*)?(Citizen\s+of\s+[^()\n]+(\([^)]+\))?|PKT-[^\n]+).*$', caseSensitive: false),
+                        RegExp(
+                            r'\s*(\n\n)?(🏡\s*)?(Citizen\s+of\s+[^()\n]+(\([^)]+\))?|PKT-[^\n]+).*$',
+                            caseSensitive: false),
                         '')
-                    .replaceAll(RegExp(r'PKT-W\d+-[A-Za-z0-9]+(-I\d+)?-P\d+.*$', caseSensitive: false), '')
-                    .replaceAll(RegExp(r'^PKT-.*$', caseSensitive: false, multiLine: true), '')
+                    .replaceAll(
+                        RegExp(r'PKT-W\d+-[A-Za-z0-9]+(-I\d+)?-P\d+.*$',
+                            caseSensitive: false),
+                        '')
+                    .replaceAll(
+                        RegExp(r'^PKT-.*$',
+                            caseSensitive: false, multiLine: true),
+                        '')
                     .trim();
-                if (cleanBioText.isEmpty || cleanBioText.toUpperCase().startsWith('PKT-')) {
+                if (cleanBioText.isEmpty ||
+                    cleanBioText.toUpperCase().startsWith('PKT-')) {
                   return const SizedBox.shrink();
                 }
                 return Padding(
@@ -6410,14 +6422,16 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       final wave = int.tryParse(match.group(1) ?? '1') ?? 1;
       final code = match.group(2) ?? 'EP';
       final plot = int.tryParse(match.group(4) ?? '1') ?? 1;
-      final colony = PoketCosmosAllocationService.instance.getColonyByCode(code);
-      final globalPlot = (plot <= PoketCosmosAllocationService.maxPlotsPerIsland)
-          ? PoketCosmosAllocationService.calculateGlobalPlotNumber(
-              wave: wave,
-              planetCode: colony.code,
-              localPlotNumber: plot,
-            )
-          : plot;
+      final colony =
+          PoketCosmosAllocationService.instance.getColonyByCode(code);
+      final globalPlot =
+          (plot <= PoketCosmosAllocationService.maxPlotsPerIsland)
+              ? PoketCosmosAllocationService.calculateGlobalPlotNumber(
+                  wave: wave,
+                  planetCode: colony.code,
+                  localPlotNumber: plot,
+                )
+              : plot;
       return {
         'planetCode': colony.code,
         'plotNumber': globalPlot,
