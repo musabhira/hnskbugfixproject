@@ -248,10 +248,12 @@ jobs:
 
           mkdir -p ~/Library/MobileDevice/"Provisioning Profiles"
           cp "$PP_PATH" ~/Library/MobileDevice/"Provisioning Profiles"/
-          UUID=$(security cms -D -i "$PP_PATH" 2>/dev/null | /usr/libexec/PlistBuddy -c "Print :UUID" /dev/stdin 2>/dev/null || echo "")
-          if [ -n "$UUID" ]; then
+
+          # Extract UUID cleanly from the profile
+          UUID=$(grep -A1 -a '<key>UUID</key>' "$PP_PATH" 2>/dev/null | grep '<string>' | sed -e 's/.*<string>//' -e 's/<\/string>.*//' | tr -d '\r\n ' || echo "")
+          if [ -n "$UUID" ] && [ "$UUID" != "/dev/stdin" ]; then
             cp "$PP_PATH" ~/Library/MobileDevice/"Provisioning Profiles"/$UUID.mobileprovision
-            echo "Installed profile with UUID: $UUID"
+            echo "✅ Installed profile with UUID: $UUID"
           fi
           echo "✅ Provisioning profile installed."
 
