@@ -19,6 +19,52 @@ class PocketMateService {
 
   static final _supabase = SupaFlow.client;
 
+  /// Resolves the real username/display name for a user, never falling back to generic 'Pocket Mate'
+  static String resolveRealUserName({
+    required String userId,
+    String? preferredName,
+    Map<String, dynamic>? profileMap,
+  }) {
+    if (preferredName != null) {
+      final p = preferredName.trim();
+      if (p.isNotEmpty &&
+          p != 'Pocket Mate' &&
+          p != 'Poket Mate' &&
+          p != 'User' &&
+          p != 'Mate') {
+        return p;
+      }
+    }
+    final fromContacts = ContactsNameService().getDisplayName(userId: userId, fallbackName: '');
+    if (fromContacts.isNotEmpty &&
+        fromContacts != 'Pocket Mate' &&
+        fromContacts != 'Poket Mate' &&
+        fromContacts != 'User' &&
+        fromContacts != 'Learner' &&
+        fromContacts != 'Mate') {
+      return fromContacts;
+    }
+    if (profileMap != null) {
+      final dn = (profileMap['display_name'] ??
+              profileMap['name'] ??
+              profileMap['shop_name'] ??
+              '')
+          .toString()
+          .trim();
+      if (dn.isNotEmpty &&
+          dn != 'Pocket Mate' &&
+          dn != 'Poket Mate' &&
+          dn != 'User' &&
+          dn != 'Mate') {
+        return dn;
+      }
+    }
+    if (userId.length >= 6) {
+      return 'Learner ${userId.substring(0, 6)}';
+    }
+    return 'Learner';
+  }
+
   /// Check if two users are mutual Mates
   static Future<bool> isMate(String myId, String otherUserId) async {
     if (myId.isEmpty || otherUserId.isEmpty || myId == otherUserId) return true;
@@ -126,7 +172,7 @@ class PocketMateService {
             'sender_id': senderId,
             'receiver_name': receiverName ??
                 (PocketRobotService.getRobotById(receiverId)?.name ??
-                    'Pocket Mate'),
+                    resolveRealUserName(userId: receiverId)),
             'receiver_profile_image': receiverAvatarUrl ??
                 PocketRobotService.getRobotById(receiverId)?.avatarUrl,
             'type': 'mate_request',
@@ -143,14 +189,21 @@ class PocketMateService {
       }
 
       // Get sender name if not passed
-      String name = senderName ?? 'Pocket Mate';
-      if (senderName == null || senderName.isEmpty) {
+      String name = senderName ?? '';
+      if (name.isEmpty || name == 'Pocket Mate' || name == 'Poket Mate') {
+        name = resolveRealUserName(userId: senderId);
+      }
+      if (name.isEmpty || name == 'Learner') {
         final profileRes = await _supabase
             .from('profile')
-            .select('name')
+            .select('name, display_name, shop_name')
             .eq('user_id', senderId)
             .maybeSingle();
-        name = profileRes?['name'] ?? 'Pocket Mate';
+        name = resolveRealUserName(
+          userId: senderId,
+          preferredName: name,
+          profileMap: profileRes,
+        );
       }
 
       final notifType = (contextType == 'pocket_talk' || contextType == 'poket_talk')
@@ -555,32 +608,28 @@ class PocketMateService {
 
           if (PocketRobotService.isRobotId(receiverId)) {
             final bot = PocketRobotService.getRobotById(receiverId);
-            req['receiver_name'] = bot?.name ?? 'Pocket Mate';
+            req['receiver_name'] = bot?.name ?? 'Robot Mate';
             req['receiver_profile_image'] = bot?.avatarUrl;
           } else {
             try {
-              final resolvedName = ContactsNameService().getDisplayName(userId: receiverId, fallbackName: 'Learner');
+              final resolvedName = ContactsNameService().getDisplayName(userId: receiverId, fallbackName: '');
               final profileRes = await _supabase
                   .from('profile')
-                  .select('name, display_name, profile_image_url')
+                  .select('name, display_name, shop_name, profile_image_url')
                   .or('user_id.eq.$receiverId,id.eq.$receiverId')
                   .maybeSingle();
 
-              if (resolvedName.isNotEmpty && resolvedName != 'Learner') {
-                req['receiver_name'] = resolvedName;
-              } else if (profileRes != null) {
-                req['receiver_name'] = profileRes['display_name'] ??
-                    profileRes['name'] ??
-                    'Pocket Mate';
-              } else {
-                req['receiver_name'] = 'Pocket Mate';
-              }
+              req['receiver_name'] = resolveRealUserName(
+                userId: receiverId,
+                preferredName: resolvedName,
+                profileMap: profileRes,
+              );
 
               if (profileRes != null) {
                 req['receiver_profile_image'] = profileRes['profile_image_url'];
               }
             } catch (_) {
-              req['receiver_name'] = 'Pocket Mate';
+              req['receiver_name'] = resolveRealUserName(userId: receiverId);
             }
           }
         }
@@ -666,10 +715,11 @@ class PocketMateService {
                   .or('user_id.eq.$senderId,id.eq.$senderId')
                   .maybeSingle();
               if (prof != null) {
-                map['sender_name'] = prof['display_name'] ??
-                    prof['name'] ??
-                    map['sender_name'] ??
-                    'Poket Mate';
+                map['sender_name'] = resolveRealUserName(
+                  userId: senderId,
+                  preferredName: map['sender_name'],
+                  profileMap: prof,
+                );
                 map['sender_profile_image'] = prof['profile_image_url'];
                 map['avatar_url'] = prof['profile_image_url'];
                 map['avatar_config'] = prof['avatar_config'];
@@ -685,7 +735,10 @@ class PocketMateService {
               }
             }
           } catch (_) {
-            map['sender_name'] ??= 'Poket Mate';
+            map['sender_name'] = resolveRealUserName(
+              userId: senderId,
+              preferredName: map['sender_name'],
+            );
           }
         }
         requests.add(map);
@@ -826,9 +879,11 @@ class PocketMateService {
               .or('user_id.eq.$mateId,id.eq.$mateId')
               .maybeSingle();
 
-          String displayName = resolvedName.isNotEmpty
-              ? resolvedName
-              : (profileRes?['display_name'] ?? profileRes?['name'] ?? 'Pocket Mate');
+          String displayName = resolveRealUserName(
+            userId: mateId,
+            preferredName: resolvedName,
+            profileMap: profileRes,
+          );
           String? avatarUrl = profileRes?['profile_image_url'];
           final rawDay = (profileRes?['day'] as num?)?.toInt() ??
               (profileRes?['learning_day'] as num?)?.toInt() ??
@@ -854,12 +909,12 @@ class PocketMateService {
           detailedMates.add({
             'id': mateId,
             'user_id': mateId,
-            'name': 'Pocket Mate',
+            'name': resolveRealUserName(userId: mateId),
             'avatar_url': null,
             'is_robot': false,
             'is_president': false,
             'stage': 1,
-            'subtitle': 'Pocket Mate 🌟',
+            'subtitle': 'Day 1 Learner 🌟',
           });
         }
       }

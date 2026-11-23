@@ -696,8 +696,10 @@ class ChatMessages extends _$ChatMessages {
 
     // 🏛️ The President chat: handle via PocketPresidentService
     if (PocketPresidentService.isPresidentId(actualId)) {
+      final now = DateTime.now();
+      final msgId = 'pres_msg_${now.millisecondsSinceEpoch}';
       final userMessage = ChatMessage(
-        id: 'pres_msg_${DateTime.now().millisecondsSinceEpoch}',
+        id: msgId,
         receiverId: actualId,
         senderId: uid,
         messageText: text,
@@ -705,7 +707,7 @@ class ChatMessages extends _$ChatMessages {
         fileUrl: fileUrl,
         voiceDuration: voiceDuration,
         replyToMessageId: replyToId,
-        createdAt: DateTime.now(),
+        createdAt: now,
         isOptimistic: false,
         isRead: true,
       );
@@ -716,11 +718,12 @@ class ChatMessages extends _$ChatMessages {
         messageText: text.isNotEmpty ? text : (messageType == 'voice' ? '🎤 Voice Note' : 'Media Attachment'),
         messageType: messageType,
         fileUrl: fileUrl,
+        existingMessageId: msgId,
       );
 
       // Update state immediately
       state.whenData((messages) {
-        final updated = [userMessage, ...messages];
+        final updated = [userMessage, ...messages.where((m) => m.id != userMessage.id)];
         state = AsyncData(updated);
         _saveToCache(updated);
       });
@@ -755,19 +758,23 @@ class ChatMessages extends _$ChatMessages {
             currentUserId: uid,
           );
 
+          final replyNow = DateTime.now();
+          final replyId = 'pres_reply_${replyNow.millisecondsSinceEpoch}';
+
           await PocketPresidentService.sendPresidentReplyToUser(
             targetUserId: uid,
             replyText: replyText,
             adminName: 'Presidential AI Desk',
+            existingMessageId: replyId,
           );
 
           final replyMsg = ChatMessage(
-            id: 'pres_reply_${DateTime.now().millisecondsSinceEpoch}',
+            id: replyId,
             receiverId: uid,
             senderId: PocketPresidentService.presidentId,
             messageText: replyText,
             messageType: 'text',
-            createdAt: DateTime.now(),
+            createdAt: replyNow,
             isOptimistic: false,
             isRead: false,
           );
@@ -777,7 +784,7 @@ class ChatMessages extends _$ChatMessages {
           ref.read(conversationsProvider.notifier).updateLastMessage(
             conversationId: PocketPresidentService.presidentId,
             message: replyText,
-            time: DateTime.now(),
+            time: replyNow,
             senderId: PocketPresidentService.presidentId,
           );
         } catch (e) {
@@ -1363,6 +1370,16 @@ class ChatMessages extends _$ChatMessages {
   Future<List<ChatMessage>> _loadFromCache() async {
     final uid = ref.read(currentUserIdProvider);
     if (uid.isEmpty) return [];
+
+    final isPersonal = groupId.startsWith('p:') || groupId.startsWith('m:');
+    final actualId = isPersonal ? groupId.substring(2) : groupId;
+    if (PocketPresidentService.isPresidentId(actualId)) {
+      final presHistory = await PocketPresidentService.getPresidentChatHistory(uid);
+      if (presHistory.isNotEmpty) {
+        return presHistory.map((data) => ChatMessage.fromJson(data)).toList();
+      }
+    }
+
     final prefix = _isKid ? 'kids_' : 'adult_';
     final cachedData = LocalSyncServer().getCachedMessages(uid, groupId, prefix: prefix);
     final allMessages = cachedData
@@ -1408,6 +1425,14 @@ class ChatMessages extends _$ChatMessages {
     if (_isEnglishHubGroup) {
       final localCutoff = DateTime.now().subtract(const Duration(minutes: 35));
       toSave = messages.where((m) => m.createdAt.isAfter(localCutoff)).toList();
+    }
+    final isPersonal = groupId.startsWith('p:') || groupId.startsWith('m:');
+    final actualId = isPersonal ? groupId.substring(2) : groupId;
+    if (PocketPresidentService.isPresidentId(actualId)) {
+      unawaited(PocketPresidentService.savePresidentChatMessages(
+        uid,
+        messages.map((m) => m.toJson()).toList(),
+      ));
     }
     await LocalSyncServer().saveMessages(uid, groupId, toSave, prefix: prefix);
   }

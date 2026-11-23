@@ -2,9 +2,11 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
+import 'package:pocket_mates_app/custom_code/services/local_sync_server.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_release_service.dart';
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
@@ -47,20 +49,74 @@ class PocketPresidentService {
         lower == 'pres_official';
   }
 
-  /// Fetch full chat history for a specific user with The President
-  static Future<List<Map<String, dynamic>>> getPresidentChatHistory(String userId) async {
+  /// Persist President chat messages across both SharedPreferences and LocalSyncServer
+  static Future<void> savePresidentChatMessages(String userId, List<dynamic> messages) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final key = '$_kPresidentChatPrefix$userId';
-      final raw = prefs.getString(key);
+      final List<Map<String, dynamic>> cleanList = [];
+      for (final m in messages) {
+        if (m is Map) {
+          final map = Map<String, dynamic>.from(m);
+          if (map['created_at'] is DateTime) {
+            map['created_at'] = (map['created_at'] as DateTime).toIso8601String();
+          }
+          cleanList.add(map);
+        }
+      }
+      await prefs.setString(key, jsonEncode(cleanList));
 
-      List<Map<String, dynamic>> historyList = [];
+      // Also persist to LocalSyncServer both with and without prefix
+      unawaited(LocalSyncServer().saveMessages(userId, 'p:$presidentId', cleanList));
+      unawaited(LocalSyncServer().saveMessages(userId, presidentId, cleanList));
+    } catch (e) {
+      debugPrint('Error saving President chat messages: $e');
+    }
+  }
+
+  /// Fetch full chat history for a specific user with The President
+  static Future<List<Map<String, dynamic>>> getPresidentChatHistory(String userId) async {
+    List<Map<String, dynamic>> historyList = [];
+    final prefs = await SharedPreferences.getInstance();
+    final key = '$_kPresidentChatPrefix$userId';
+
+    try {
+      final raw = prefs.getString(key);
       if (raw != null && raw.isNotEmpty) {
         try {
           final List<dynamic> decoded = jsonDecode(raw);
-          historyList = decoded.map((e) => Map<String, dynamic>.from(e)).toList();
+          historyList = decoded.map((e) {
+            final m = Map<String, dynamic>.from(e);
+            if (m['created_at'] is DateTime) {
+              m['created_at'] = (m['created_at'] as DateTime).toIso8601String();
+            }
+            return m;
+          }).toList();
         } catch (_) {}
       }
+
+      // Also recover any messages saved in LocalSyncServer (fail-safe)
+      try {
+        final cachedFromSync = LocalSyncServer().getCachedMessages(userId, 'p:$presidentId');
+        for (final item in cachedFromSync) {
+          Map<String, dynamic>? map;
+          if (item is Map) {
+            map = Map<String, dynamic>.from(item);
+          } else {
+            try {
+              map = Map<String, dynamic>.from((item as dynamic).toJson());
+            } catch (_) {}
+          }
+          if (map == null) continue;
+          final mid = map['id']?.toString() ?? '';
+          if (mid.isNotEmpty && !historyList.any((h) => h['id'] == mid)) {
+            if (map['created_at'] is DateTime) {
+              map['created_at'] = (map['created_at'] as DateTime).toIso8601String();
+            }
+            historyList.add(map);
+          }
+        }
+      } catch (_) {}
 
       // Sync any remote messages or replies from Supabase reports
       try {
@@ -114,46 +170,48 @@ class PocketPresidentService {
         debugPrint('Error syncing President chat messages from Supabase: $e');
       }
 
-      // Merge any broadcast announcements into user's chat history so all citizens receive presidential broadcasts
-      final rawAnn = prefs.getString(_kPresidentAnnouncementsKey);
-      if (rawAnn != null && rawAnn.isNotEmpty) {
-        final List<dynamic> annList = jsonDecode(rawAnn);
-        bool addedNew = false;
-        for (var ann in annList) {
-          final annId = ann['id']?.toString() ?? '';
-          final alreadyInChat = historyList.any((m) => m['id'] == 'pres_broadcast_$annId');
-          if (!alreadyInChat) {
-            final mediaUrl = ann['media_url']?.toString();
-            final hasMedia = mediaUrl != null && mediaUrl.isNotEmpty;
-            historyList.add({
-              'id': 'pres_broadcast_$annId',
-              'sender_id': presidentId,
-              'receiver_id': userId,
-              'message_text': '🏛️ [PRESIDENTIAL BROADCAST: ${ann['title']}]\n\n${ann['content']}',
-              'message_type': hasMedia ? 'image' : 'text',
-              'file_url': mediaUrl,
-              'created_at': ann['created_at'] ?? DateTime.now().toIso8601String(),
-              'is_read': false,
-              'metadata': {
-                'is_official': true,
-                'is_president': true,
-                'golden_tick': true,
-                'is_broadcast': true,
-                'media_url': mediaUrl,
-              }
+      // Merge any broadcast announcements into user's chat history safely
+      try {
+        final rawAnn = prefs.getString(_kPresidentAnnouncementsKey);
+        if (rawAnn != null && rawAnn.isNotEmpty) {
+          final List<dynamic> annList = jsonDecode(rawAnn);
+          bool addedNew = false;
+          for (var ann in annList) {
+            final annId = ann['id']?.toString() ?? '';
+            final alreadyInChat = historyList.any((m) => m['id'] == 'pres_broadcast_$annId');
+            if (!alreadyInChat) {
+              final mediaUrl = ann['media_url']?.toString();
+              final hasMedia = mediaUrl != null && mediaUrl.isNotEmpty;
+              historyList.add({
+                'id': 'pres_broadcast_$annId',
+                'sender_id': presidentId,
+                'receiver_id': userId,
+                'message_text': '🏛️ [PRESIDENTIAL BROADCAST: ${ann['title']}]\n\n${ann['content']}',
+                'message_type': hasMedia ? 'image' : 'text',
+                'file_url': mediaUrl,
+                'created_at': ann['created_at'] ?? DateTime.now().toIso8601String(),
+                'is_read': false,
+                'metadata': {
+                  'is_official': true,
+                  'is_president': true,
+                  'golden_tick': true,
+                  'is_broadcast': true,
+                  'media_url': mediaUrl,
+                }
+              });
+              addedNew = true;
+            }
+          }
+          if (addedNew) {
+            historyList.sort((a, b) {
+              final tA = DateTime.tryParse(a['created_at']?.toString() ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+              final tB = DateTime.tryParse(b['created_at']?.toString() ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+              return tB.compareTo(tA);
             });
-            addedNew = true;
+            await prefs.setString(key, jsonEncode(historyList));
           }
         }
-        if (addedNew) {
-          historyList.sort((a, b) {
-            final tA = DateTime.tryParse(a['created_at']?.toString() ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
-            final tB = DateTime.tryParse(b['created_at']?.toString() ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
-            return tB.compareTo(tA);
-          });
-          await prefs.setString(key, jsonEncode(historyList));
-        }
-      }
+      } catch (_) {}
 
       if (historyList.isEmpty) {
         final welcomeMsg = {
@@ -184,7 +242,7 @@ class PocketPresidentService {
       return historyList;
     } catch (e) {
       debugPrint('Error getting President chat history: $e');
-      return [];
+      return historyList.isNotEmpty ? historyList : [];
     }
   }
 
@@ -245,9 +303,10 @@ class PocketPresidentService {
     String messageType = 'text',
     String? fileUrl,
     Map<String, dynamic>? metadata,
+    String? existingMessageId,
   }) async {
     final now = DateTime.now();
-    final messageId = 'pres_msg_${now.millisecondsSinceEpoch}';
+    final messageId = existingMessageId ?? 'pres_msg_${now.millisecondsSinceEpoch}';
 
     final message = {
       'id': messageId,
@@ -261,7 +320,7 @@ class PocketPresidentService {
       'metadata': metadata ?? {},
     };
 
-    // 1. Save locally in user's chat history
+    // 1. Save locally in user's chat history across both SharedPreferences & LocalSyncServer
     final prefs = await SharedPreferences.getInstance();
     final key = '$_kPresidentChatPrefix$userId';
     final history = await getPresidentChatHistory(userId);
@@ -274,6 +333,8 @@ class PocketPresidentService {
       updatedHistory = [message, ...history];
     }
     await prefs.setString(key, jsonEncode(updatedHistory));
+    unawaited(LocalSyncServer().saveMessages(userId, 'p:$presidentId', updatedHistory));
+    unawaited(LocalSyncServer().saveMessages(userId, presidentId, updatedHistory));
 
     // 2. Fetch sender profile details & auth credentials to enrich report metadata
     String userName = ContactsNameService().getDisplayName(userId: userId, fallbackName: '');
@@ -416,9 +477,10 @@ class PocketPresidentService {
     required String targetUserId,
     required String replyText,
     String? adminName,
+    String? existingMessageId,
   }) async {
     final now = DateTime.now();
-    final messageId = 'pres_reply_${now.millisecondsSinceEpoch}';
+    final messageId = existingMessageId ?? 'pres_reply_${now.millisecondsSinceEpoch}';
 
     final reply = {
       'id': messageId,
@@ -436,7 +498,7 @@ class PocketPresidentService {
       },
     };
 
-    // 1. Save in user's chat history locally (for when running on same device)
+    // 1. Save in user's chat history locally across both SharedPreferences & LocalSyncServer
     final prefs = await SharedPreferences.getInstance();
     final key = '$_kPresidentChatPrefix$targetUserId';
     final history = await getPresidentChatHistory(targetUserId);
@@ -449,6 +511,8 @@ class PocketPresidentService {
       updated = [reply, ...history];
     }
     await prefs.setString(key, jsonEncode(updated));
+    unawaited(LocalSyncServer().saveMessages(targetUserId, 'p:$presidentId', updated));
+    unawaited(LocalSyncServer().saveMessages(targetUserId, presidentId, updated));
 
     // 2. Update master inquiries status to replied locally
     await _markMasterInquiryReplied(targetUserId, replyText);
@@ -900,6 +964,45 @@ class PocketPresidentService {
       allVibes.insert(0, dailyVibe);
     }
 
+    // 🏛️ Presidential App Feedback & Quality Improvement Story
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      String myUid = '';
+      try {
+        myUid = SupaFlow.client.auth.currentUser?.id ?? '';
+      } catch (_) {}
+      final feedbackGiven = myUid.isNotEmpty
+          ? (prefs.getBool('president_feedback_given_$myUid') ?? false)
+          : false;
+      if (!feedbackGiven) {
+        final feedbackVibe = {
+          'id': 'pres_vibe_feedback_prompt',
+          'user_id': presidentId,
+          'profile_id': presidentId,
+          'media_type': 'text',
+          'media_url': '',
+          'caption':
+              '🏛️ Presidential Public Survey: Help Us Improve Poket Mates! 🌟\n\nHow can we improve the app quality and your English learning experience? Tap below or type your suggestions to share your feedback directly with The President! ✍️',
+          'duration': 12,
+          'created_at': DateTime.now().subtract(const Duration(minutes: 15)).toIso8601String(),
+          'expires_at': DateTime.now().add(const Duration(hours: 48)).toIso8601String(),
+          'is_active': true,
+          'views_count': 382,
+          'is_feedback_vibe': true,
+          'profile': {
+            'id': presidentId,
+            'name': presidentName,
+            'profile_image_url': presidentAvatarUrl,
+            'is_president': true,
+            'golden_tick': true,
+          },
+        };
+        if (!allVibes.any((v) => v['id'] == 'pres_vibe_feedback_prompt')) {
+          allVibes.insert(0, feedbackVibe);
+        }
+      }
+    } catch (_) {}
+
     if (allVibes.isEmpty) {
       return [
         dailyVibe,
@@ -928,6 +1031,69 @@ class PocketPresidentService {
     }
 
     return allVibes;
+  }
+
+  /// 📝 Submit citizen feedback & suggestions directly to the President
+  static Future<void> submitCitizenFeedback({
+    required String userId,
+    required String feedback,
+  }) async {
+    final clean = feedback.trim();
+    if (clean.isEmpty) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('president_feedback_given_$userId', true);
+
+    // Save user's feedback into President chat
+    final userMsgId = 'pres_feedback_${DateTime.now().millisecondsSinceEpoch}';
+    await sendUserMessageToPresident(
+      userId: userId,
+      messageText: '📝 [CITIZEN FEEDBACK & SUGGESTIONS]:\n$clean',
+      messageType: 'text',
+      existingMessageId: userMsgId,
+      metadata: {
+        'is_feedback': true,
+        'feedback_text': clean,
+      },
+    );
+
+    // Automatically send official presidential appreciation message back
+    Future.delayed(const Duration(milliseconds: 900), () async {
+      await sendPresidentReplyToUser(
+        targetUserId: userId,
+        replyText:
+            'Thank you, Citizen! 🏛️ Your valuable feedback and suggestions have been officially registered at the Presidential Desk. Together, we are elevating Pocket World\'s English learning experience! 🌟✍️',
+        adminName: 'Presidential Oversight',
+      );
+    });
+  }
+
+  /// 📩 If the citizen hasn't submitted feedback, gently drop a periodic check-in in their chat
+  static Future<void> checkAndDeliverFeedbackPrompt(String userId) async {
+    try {
+      if (userId.isEmpty) return;
+      final prefs = await SharedPreferences.getInstance();
+      final hasGivenFeedback =
+          prefs.getBool('president_feedback_given_$userId') ?? false;
+      if (hasGivenFeedback) return;
+
+      final lastPromptTime =
+          prefs.getInt('president_feedback_prompt_ts_$userId') ?? 0;
+      final now = DateTime.now().millisecondsSinceEpoch;
+      // Send at most once every 3 days
+      if (now - lastPromptTime < 3 * 24 * 60 * 60 * 1000) return;
+
+      await prefs.setInt('president_feedback_prompt_ts_$userId', now);
+
+      await sendPresidentReplyToUser(
+        targetUserId: userId,
+        replyText:
+            'Greetings Citizen! 🏛️ The President\'s Office is dedicated to giving you the best English learning experience. How has your journey in Pocket World been so far? We would love to hear your thoughts or suggestions on app quality and English learning! ✍️🌟',
+        adminName: 'Presidential Office',
+      );
+    } catch (e) {
+      debugPrint('Error checking feedback prompt: $e');
+    }
   }
 
   /// Broadcast an official Presidential Announcement / House Ad to all citizens

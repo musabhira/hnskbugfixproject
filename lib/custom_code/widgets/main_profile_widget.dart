@@ -2204,11 +2204,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         indicatorWeight: 1.5,
                         tabs: const [
                           material.Tab(
-                            icon:
-                                Icon(material.Icons.grid_on_rounded, size: 22),
+                            icon: Icon(material.Icons.fort_rounded, size: 22),
                           ),
                           material.Tab(
-                            icon: Icon(material.Icons.fort_rounded, size: 22),
+                            icon:
+                                Icon(material.Icons.grid_on_rounded, size: 22),
                           ),
                           material.Tab(
                             icon: Icon(material.Icons.forum_outlined, size: 22),
@@ -2231,8 +2231,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   key: ValueKey('tab_view_profile_$isMe'),
                   controller: _profileTabController,
                   children: [
-                    _buildAdultCardsTab(textColor, bgColor),
                     _buildCitadelHouseTab(textColor, btnColor, isMe),
+                    _buildAdultCardsTab(textColor, bgColor),
                     _ThreadsTab(
                       items: _threadItems,
                       textColor: textColor,

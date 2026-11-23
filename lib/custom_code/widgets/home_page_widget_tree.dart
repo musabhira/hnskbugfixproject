@@ -907,6 +907,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       final uid = SupaFlow.client.auth.currentUser?.id;
       if (uid != null && uid.isNotEmpty) {
         await PocketPresidentService.checkAndDeliverInstalledReleaseNotes(uid);
+        await PocketPresidentService.checkAndDeliverFeedbackPrompt(uid);
       }
     } catch (e) {
       debugPrint('Update check error: $e');
@@ -2000,14 +2001,18 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final robotsCount =
         conversations.where((c) => PocketRobotService.isRobotId(c.id)).length;
-    final humansCount = conversations
-        .where((c) =>
-            !PocketRobotService.isRobotId(c.id) &&
-            !c.isGroup &&
-            !c.isTool &&
-            !c.isNotification &&
-            !c.isActiveTimer)
-        .length;
+    final humansCount = conversations.where((c) {
+      if (PocketRobotService.isRobotId(c.id) ||
+          c.isGroup ||
+          c.isTool ||
+          c.isNotification ||
+          c.isActiveTimer) {
+        return false;
+      }
+      return _localMateIds.contains(c.id) ||
+          _pocketTalkActivePeerIds.contains(c.id) ||
+          PocketPresidentService.isPresidentId(c.id);
+    }).length;
     final unreadCount = conversations.where((c) => c.unreadCount > 0).length;
     final groupsCount = conversations.where((c) => c.isGroup).length;
 // Poket Talk category removed as requested
@@ -2829,7 +2834,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       return const SliverToBoxAdapter(child: SizedBox.shrink());
 
     final topReq = _pendingRequests.first;
-    final senderName = topReq['sender_name'] ?? 'Pocket Mate';
+    final senderName = PocketMateService.resolveRealUserName(
+      userId: topReq['sender_id']?.toString() ?? topReq['user_id']?.toString() ?? '',
+      preferredName: topReq['sender_name'],
+    );
     final msg = topReq['message'] ?? 'wants to connect as your Mate';
     final hasMultiple = _pendingRequests.length > 1;
 
@@ -3186,8 +3194,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         final dt = DateTime.tryParse(sReq['created_at']?.toString() ?? '') ??
             DateTime.now();
         final map = Map<String, dynamic>.from(sReq);
+        final recId = sReq['receiver_id']?.toString() ?? sReq['user_id']?.toString() ?? '';
         map['is_sent'] = true;
-        map['sender_name'] = map['receiver_name'] ?? 'Poket Mate';
+        map['sender_name'] = PocketMateService.resolveRealUserName(
+          userId: recId,
+          preferredName: map['receiver_name'],
+        );
         map['sender_profile_image'] =
             map['receiver_profile_image'] ?? map['receiver_avatar'];
         map['avatar_url'] =
@@ -3511,7 +3523,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 children: [
                   Flexible(
                     child: Text(
-                      req['sender_name'] ?? 'Poket Mate',
+                      PocketMateService.resolveRealUserName(
+                        userId: req['sender_id']?.toString() ?? req['user_id']?.toString() ?? '',
+                        preferredName: req['sender_name'],
+                      ),
                       style: GoogleFonts.outfit(
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
@@ -3988,7 +4003,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     final conversations = unified
         .map((item) {
           String peerId = '';
-          String peerName = 'Poket Mate';
+          String peerName = 'Learner';
           String? peerAvatar;
           Map<String, dynamic>? avatarConfig;
           String lastMsg = '';
@@ -4002,9 +4017,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   req['target_id']?.toString() ??
                   req['user_id']?.toString() ??
                   '';
-              peerName = req['receiver_name']?.toString() ??
-                  req['sender_name']?.toString() ??
-                  'Poket Mate';
+              peerName = PocketMateService.resolveRealUserName(
+                userId: peerId,
+                preferredName: req['receiver_name']?.toString() ?? req['sender_name']?.toString(),
+              );
               peerAvatar = req['receiver_profile_image']?.toString() ??
                   req['receiver_avatar']?.toString() ??
                   req['avatar_url']?.toString();
@@ -4014,7 +4030,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               peerId = req['sender_id']?.toString() ??
                   req['source_id']?.toString() ??
                   '';
-              peerName = req['sender_name']?.toString() ?? 'Poket Mate';
+              peerName = PocketMateService.resolveRealUserName(
+                userId: peerId,
+                preferredName: req['sender_name']?.toString(),
+              );
               peerAvatar = req['sender_profile_image']?.toString() ??
                   req['sender_avatar']?.toString() ??
                   req['avatar_url']?.toString();
@@ -5290,14 +5309,18 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                           .where((c) => PocketRobotService.isRobotId(c.id))
                           .toList();
                     } else if (_chatCategoryFilterIndex == 2) {
-                      activeFiltered = activeFiltered
-                          .where((c) =>
-                              !PocketRobotService.isRobotId(c.id) &&
-                              !c.isGroup &&
-                              !c.isTool &&
-                              !c.isNotification &&
-                              !c.isActiveTimer)
-                          .toList();
+                      activeFiltered = activeFiltered.where((c) {
+                        if (PocketRobotService.isRobotId(c.id) ||
+                            c.isGroup ||
+                            c.isTool ||
+                            c.isNotification ||
+                            c.isActiveTimer) {
+                          return false;
+                        }
+                        return _localMateIds.contains(c.id) ||
+                            _pocketTalkActivePeerIds.contains(c.id) ||
+                            PocketPresidentService.isPresidentId(c.id);
+                      }).toList();
                     } else if (_chatCategoryFilterIndex == 4) {
                       activeFiltered = activeFiltered
                           .where((c) => c.unreadCount > 0)

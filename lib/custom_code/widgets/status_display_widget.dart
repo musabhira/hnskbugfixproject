@@ -2779,6 +2779,148 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         .hasMatch(id);
   }
 
+  void _showPresidentFeedbackBottomSheet(BuildContext context) {
+    final TextEditingController feedbackCtrl = TextEditingController();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 20,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+          ),
+          decoration: const BoxDecoration(
+            color: Color(0xFF18181B),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFFD700),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.account_balance_rounded,
+                        color: Colors.black, size: 22),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Presidential Citizen Feedback 🏛️',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'Help us improve app quality & English learning experience',
+                          style: GoogleFonts.inter(
+                            color: Colors.white60,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: feedbackCtrl,
+                maxLines: 4,
+                autofocus: true,
+                style: const TextStyle(color: Colors.white, fontSize: 14),
+                decoration: InputDecoration(
+                  hintText:
+                      'Share your feedback, report an issue, or suggest improvements...',
+                  hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
+                  filled: true,
+                  fillColor: const Color(0xFF27272A),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.all(16),
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFD700),
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 0,
+                  ),
+                  onPressed: () async {
+                    final text = feedbackCtrl.text.trim();
+                    if (text.isEmpty) return;
+                    Navigator.pop(ctx);
+                    await PocketPresidentService.submitCitizenFeedback(
+                      userId: widget.currentUserId,
+                      feedback: text,
+                    );
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            '✨ Thank you! Your feedback has been sent directly to The President.',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          backgroundColor: Color(0xFF10B981),
+                          duration: Duration(seconds: 3),
+                        ),
+                      );
+                      if (_isPaused) _togglePause();
+                    }
+                  },
+                  child: Text(
+                    'Submit Feedback ✍️',
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    ).then((_) {
+      if (mounted && _isPaused) _togglePause();
+    });
+  }
+
   Future<void> _loadLikeStatus(String statusId) async {
     if (!_isUuid(statusId)) {
       try {
@@ -3022,19 +3164,27 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
           statusCaption: status['caption']?.toString(),
         );
       } else if (PocketPresidentService.isPresidentId(receiverUserId)) {
-        await PocketPresidentService.sendUserMessageToPresident(
-          userId: widget.currentUserId,
-          messageText: vibeReplySummary,
-          messageType: 'text',
-          metadata: {
-            'reply_type': 'status_reply',
-            'replied_to_status_id': status['id'],
-            'status_media_url': status['media_url'],
-            'status_media_type': status['media_type'],
-            'status_caption': status['caption'],
-            'user_reply': originalText,
-          },
-        );
+        if (status['is_feedback_vibe'] == true ||
+            status['id'] == 'pres_vibe_feedback_prompt') {
+          await PocketPresidentService.submitCitizenFeedback(
+            userId: widget.currentUserId,
+            feedback: originalText,
+          );
+        } else {
+          await PocketPresidentService.sendUserMessageToPresident(
+            userId: widget.currentUserId,
+            messageText: vibeReplySummary,
+            messageType: 'text',
+            metadata: {
+              'reply_type': 'status_reply',
+              'replied_to_status_id': status['id'],
+              'status_media_url': status['media_url'],
+              'status_media_type': status['media_type'],
+              'status_caption': status['caption'],
+              'user_reply': originalText,
+            },
+          );
+        }
       } else if (!areMates) {
         // Non-Mates: also send mate request
         await PocketMateService.sendMateRequest(
@@ -6245,55 +6395,100 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
               ),
             ),
 
-            // Bottom Glowing Action Button: "⚔️ Enter Battle / Visit Citadel"
-            Positioned(
-              bottom: MediaQuery.of(context).padding.bottom + 115,
-              child: GestureDetector(
-                onTap: () {
-                  _togglePause();
-                  PocketCitadelAttackPage.openForUser(
-                    context,
-                    userId: targetUserId,
-                  ).then((_) {
-                    if (mounted && _isPaused) _togglePause();
-                  });
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: isPresident
-                          ? const [Color(0xFFFFD700), Color(0xFFF59E0B)]
-                          : const [Color(0xFFEF4444), Color(0xFFDC2626)],
-                    ),
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: (isPresident ? const Color(0xFFFFD700) : const Color(0xFFEF4444)).withValues(alpha: 0.5),
-                        blurRadius: 18,
-                        offset: const Offset(0, 4),
+            if (isPresident &&
+                (status['is_feedback_vibe'] == true ||
+                    status['id'] == 'pres_vibe_feedback_prompt'))
+              Positioned(
+                bottom: MediaQuery.of(context).padding.bottom + 115,
+                child: GestureDetector(
+                  onTap: () {
+                    _togglePause();
+                    _showPresidentFeedbackBottomSheet(context);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFFFD700), Color(0xFFF59E0B)],
                       ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.shield_rounded, color: Colors.white, size: 20),
-                      const SizedBox(width: 8),
-                      Text(
-                        isPresident ? '⚔️ VISIT SOVEREIGN PALACE' : '⚔️ RAID / VISIT CITADEL',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 14,
-                          letterSpacing: 0.6,
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.55),
+                          blurRadius: 18,
+                          offset: const Offset(0, 4),
                         ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.rate_review_rounded, color: Colors.black, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          '✍️ GIVE APP FEEDBACK & SUGGESTIONS',
+                          style: GoogleFonts.outfit(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 13,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              )
+            else
+              // Bottom Glowing Action Button: "⚔️ Enter Battle / Visit Citadel"
+              Positioned(
+                bottom: MediaQuery.of(context).padding.bottom + 115,
+                child: GestureDetector(
+                  onTap: () {
+                    _togglePause();
+                    PocketCitadelAttackPage.openForUser(
+                      context,
+                      userId: targetUserId,
+                    ).then((_) {
+                      if (mounted && _isPaused) _togglePause();
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: isPresident
+                            ? const [Color(0xFFFFD700), Color(0xFFF59E0B)]
+                            : const [Color(0xFFEF4444), Color(0xFFDC2626)],
                       ),
-                    ],
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: (isPresident ? const Color(0xFFFFD700) : const Color(0xFFEF4444)).withValues(alpha: 0.5),
+                          blurRadius: 18,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.shield_rounded, color: Colors.white, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          isPresident ? '⚔️ VISIT SOVEREIGN PALACE' : '⚔️ RAID / VISIT CITADEL',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 14,
+                            letterSpacing: 0.6,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
           ],
         ),
       );

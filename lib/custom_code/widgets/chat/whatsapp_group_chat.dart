@@ -5242,11 +5242,9 @@ Draft: "$draft"''';
                   if (_isPersonalChat) {
                     final targetId = _personalPeerId;
                     if (targetId.isNotEmpty) {
-                      Navigator.push(
+                      PocketCitadelAttackPage.openForUser(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => MainProfileWidget(userId: targetId),
-                        ),
+                        userId: targetId,
                       );
                     }
                     return;
@@ -5377,11 +5375,9 @@ Draft: "$draft"''';
               if (_isPersonalChat) {
                 final targetId = _personalPeerId;
                 if (targetId.isNotEmpty) {
-                  Navigator.push(
+                  PocketCitadelAttackPage.openForUser(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => MainProfileWidget(userId: targetId),
-                    ),
+                    userId: targetId,
                   );
                 }
               } else {
