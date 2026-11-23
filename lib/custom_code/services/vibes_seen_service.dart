@@ -33,6 +33,7 @@ class VibesSeenService {
   }
 
   static Future<void> _syncFromSupabase(String currentUserId) async {
+    if (!RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(currentUserId)) return;
     try {
       final client = Supabase.instance.client;
       final viewsRes = await client

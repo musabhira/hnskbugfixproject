@@ -320,36 +320,44 @@ class FFRoute {
           final child = ListenableBuilder(
             listenable: appStateNotifier,
             builder: (context, _) {
-              if (appStateNotifier.loading) {
-                return m.Material(
-                  color: const m.Color(0xFF0A0E1A),
-                  child: Stack(
-                    children: [
-                      const PoketMatesBrandSplashScreen(),
-                      // Hidden "Force Continue" button that appears after a safety timeout
-                      Align(
-                        alignment: Alignment.bottomCenter,
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 24.0),
-                          child: FutureBuilder(
-                            future: Future.delayed(const Duration(seconds: 5)),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState == ConnectionState.done) {
-                                return m.TextButton(
-                                  onPressed: () => appStateNotifier.stopShowingSplashImage(),
-                                  child: const Text('Continue ➔', style: TextStyle(color: m.Colors.white38, fontSize: 12)),
-                                );
-                              }
-                              return const SizedBox.shrink();
-                            },
-                          ),
+              return m.AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                switchInCurve: m.Curves.easeInOut,
+                switchOutCurve: m.Curves.easeInOut,
+                child: appStateNotifier.loading
+                    ? m.Material(
+                        key: const m.ValueKey('app_splash_loading_view'),
+                        color: const m.Color(0xFF0A0E1A),
+                        child: Stack(
+                          children: [
+                            const PoketMatesBrandSplashScreen(),
+                            // Hidden "Force Continue" button that appears after a safety timeout
+                            Align(
+                              alignment: Alignment.bottomCenter,
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 24.0),
+                                child: FutureBuilder(
+                                  future: Future.delayed(const Duration(seconds: 5)),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState == ConnectionState.done) {
+                                      return m.TextButton(
+                                        onPressed: () => appStateNotifier.stopShowingSplashImage(),
+                                        child: const Text('Continue ➔', style: TextStyle(color: m.Colors.white38, fontSize: 12)),
+                                      );
+                                    }
+                                    return const SizedBox.shrink();
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
+                      )
+                    : m.KeyedSubtree(
+                        key: const m.ValueKey('app_main_page_view'),
+                        child: page,
                       ),
-                    ],
-                  ),
-                );
-              }
-              return page;
+              );
             },
           );
 

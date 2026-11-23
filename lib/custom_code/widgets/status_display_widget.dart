@@ -368,11 +368,16 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
             });
 
       // 3.5 Fetch viewed status IDs for the current user
-      final viewsRes = await supabase
-          .from('status_views')
-          .select('status_id')
-          .eq('viewer_user_id', widget.currentUserId);
-      final viewedStatusIds = Set<String>.from(viewsRes.map((e) => e['status_id'].toString()));
+      Set<String> viewedStatusIds = {};
+      if (_isUuid(widget.currentUserId)) {
+        try {
+          final viewsRes = await supabase
+              .from('status_views')
+              .select('status_id')
+              .eq('viewer_user_id', widget.currentUserId);
+          viewedStatusIds = Set<String>.from(viewsRes.map((e) => e['status_id'].toString()));
+        } catch (_) {}
+      }
 
       // 3.6 Load hidden user IDs for stories (Instagram-style Hide)
       final hiddenUserIds = (prefs.getStringList('hidden_vibe_user_ids') ?? []).toSet();
@@ -3433,6 +3438,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
   }
 
   Future<void> _markStatusAsViewed(String statusId) async {
+    // 🛡️ UUID Guard: robot/animal/bot IDs are not real UUIDs — skip Supabase calls to avoid 22P02 errors
+    if (!_isUuid(statusId)) return;
     try {
       // Check if already viewed
       final existingView = await supabase
@@ -3461,6 +3468,14 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
   }
 
   Future<void> _loadViewCount(String statusId, {String? createdAtStr}) async {
+    // 🛡️ UUID Guard: robot/animal/bot IDs are not real UUIDs — skip Supabase calls to avoid 22P02 errors
+    if (!_isUuid(statusId)) {
+      DateTime? dt;
+      if (createdAtStr != null) dt = DateTime.tryParse(createdAtStr);
+      final robotViews = PocketRobotService.getSimulatedRobotViewers(statusId, statusCreatedAt: dt).length;
+      if (mounted) setState(() => _currentViewCount = robotViews);
+      return;
+    }
     try {
       // Get view count
       final response = await supabase
@@ -3495,6 +3510,20 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
             dt = DateTime.tryParse(s['created_at'].toString());
           }
         }
+      }
+
+      // 🛡️ UUID Guard: For simulated robot / animal vibes, show simulated viewers without Supabase query
+      if (!_isUuid(statusId)) {
+        final robotViewers = PocketRobotService.getSimulatedRobotViewers(
+          statusId,
+          statusCreatedAt: dt,
+        );
+        setState(() {
+          _currentViewers = robotViewers;
+          _currentViewCount = _currentViewers.length;
+        });
+        _showViewersSheet(statusId, <String>{});
+        return;
       }
 
       // Get all viewers with their profile info

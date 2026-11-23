@@ -16,6 +16,7 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_dat
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_avatar_system.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_spoken_dialogue_catalog.dart';
 import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 
 
 /// 🎭 Archetypes for Pocket Robot Personalities
@@ -369,10 +370,12 @@ class PocketRobotService {
   /// Check if an ID belongs to a Pocket Robot
   static bool isRobotId(String id) {
     if (id.isEmpty) return false;
+    // 🏛️ The President is NOT a robot!
+    if (PocketPresidentService.isPresidentId(id)) return false;
     return id.startsWith('pocket_robot_') ||
         id.startsWith('robot_') ||
         id.startsWith('pocket_robo_') ||
-        id.startsWith('pocket_') ||
+        (id.startsWith('pocket_') && !id.contains('president')) ||
         id.startsWith('kid_bot_') ||
         id == 'pocket' ||
         _baseRobots.any((r) => r.id == id);
@@ -706,9 +709,9 @@ class PocketRobotService {
       final nowMs = DateTime.now().millisecondsSinceEpoch;
       final hoursPassed = (nowMs - lastReqTime) / (1000 * 60 * 60);
 
-      // Only introduce a new robot if user has fewer than 5 robot mates and 24h passed (or first time)
+      // Only introduce a new robot if user has fewer than 5 robot mates and 24h passed (or first time / requests empty)
       final robotMatesCount = mates.where((m) => isRobotId(m)).length;
-      if (robotMatesCount < 5 && (lastReqTime == 0 || hoursPassed >= 24.0)) {
+      if (robotMatesCount < 5 && (lastReqTime == 0 || hoursPassed >= 24.0 || requests.isEmpty)) {
         final candidates = getAllRobots()
             .where((r) => !mates.contains(r.id) && !declined.contains(r.id))
             .toList();

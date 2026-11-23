@@ -266,6 +266,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     if (uid == null || uid.isEmpty) return;
     if (mounted) setState(() => _isLoadingRequests = true);
     try {
+      await PocketRobotService.ensureIncomingRobotRequests(uid, 1);
       await PocketRobotService.runAutonomousHumanEngine(uid);
       final reqs = await PocketMateService.getPendingRequests(uid);
       final sentReqs = await PocketMateService.getSentRequests(uid);
@@ -2030,7 +2031,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     final groupsCount = conversations.where((c) => c.isGroup).length;
 // Poket Talk category removed as requested
 
-    final totalIncomingRequests = _pendingRequests.length +
+    final validPendingRequests = _pendingRequests.where((r) {
+      final sId = r['sender_id']?.toString() ?? r['source_id']?.toString() ?? '';
+      return sId.isNotEmpty && !_localMateIds.contains(sId);
+    }).length;
+
+    final totalIncomingRequests = validPendingRequests +
         _pendingIncomingPacts.length +
         _pendingFightChallenges.length +
         _pendingAttacks.length;
@@ -2746,14 +2752,19 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   }
 
   Widget _buildRequestsSubTabToggle(bool isDark) {
-    final totalCount = _pendingRequests.length +
+    final validPendingRequests = _pendingRequests.where((r) {
+      final sId = r['sender_id']?.toString() ?? r['source_id']?.toString() ?? '';
+      return sId.isNotEmpty && !_localMateIds.contains(sId);
+    }).length;
+
+    final totalCount = validPendingRequests +
         _pendingIncomingPacts.length +
         _pendingFightChallenges.length +
         _pendingAttacks.length;
 
     final subTabs = [
       {'label': 'All', 'count': totalCount},
-      {'label': '🤝 Mates', 'count': _pendingRequests.length},
+      {'label': '🤝 Mates', 'count': validPendingRequests},
       {'label': '🎙️ PocketTalk', 'count': _pendingIncomingPacts.length},
       {'label': '🥊 Fight', 'count': _pendingFightChallenges.length},
       {'label': '⚔️ Attack', 'count': _pendingAttacks.length},
@@ -3198,6 +3209,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     // Mate requests (show under All or Mates tab)
     if (_requestsSubTab == 0 || _requestsSubTab == 1) {
       for (final req in _pendingRequests) {
+        final sId = req['sender_id']?.toString() ?? req['source_id']?.toString() ?? '';
+        // If already a mate, they belong to 'All' category, not Requests page
+        if (sId.isNotEmpty && _localMateIds.contains(sId)) {
+          continue;
+        }
         final id = req['id']?.toString() ?? UniqueKey().toString();
         final dt = DateTime.tryParse(req['created_at']?.toString() ?? '') ??
             DateTime.now();

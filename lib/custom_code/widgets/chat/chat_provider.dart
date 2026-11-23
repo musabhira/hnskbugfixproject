@@ -434,15 +434,6 @@ class ChatMessages extends _$ChatMessages {
     final actualId = isPersonal ? groupId.substring(2) : groupId;
     final uid = ref.read(currentUserIdProvider);
 
-    // 🤖 Pocket Robot: load messages from local storage
-    if (PocketRobotService.isRobotId(actualId)) {
-      final robotHistory = await PocketRobotService.getRobotChatHistory(uid, actualId);
-      final List<ChatMessage> robotMessages = robotHistory.map((data) {
-        return ChatMessage.fromJson(data);
-      }).toList();
-      return robotMessages;
-    }
-
     // 🏛️ The President: load messages from PocketPresidentService
     if (PocketPresidentService.isPresidentId(actualId)) {
       final presHistory = await PocketPresidentService.getPresidentChatHistory(uid);
@@ -450,6 +441,15 @@ class ChatMessages extends _$ChatMessages {
         return ChatMessage.fromJson(data);
       }).toList();
       return presMessages;
+    }
+
+    // 🤖 Pocket Robot: load messages from local storage
+    if (PocketRobotService.isRobotId(actualId)) {
+      final robotHistory = await PocketRobotService.getRobotChatHistory(uid, actualId);
+      final List<ChatMessage> robotMessages = robotHistory.map((data) {
+        return ChatMessage.fromJson(data);
+      }).toList();
+      return robotMessages;
     }
 
     // If forcing latest (polling), we temporarily look at page 0 without resetting main pagination state

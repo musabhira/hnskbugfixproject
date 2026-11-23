@@ -599,8 +599,8 @@ class ReportHelper {
         await prefs.setStringList('pocket_mates_$myId', mates);
 
         final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(targetUserId);
-        final isRobot = PocketRobotService.isRobotId(targetUserId) || !isUuid;
-        if (!isRobot) {
+        final isRobot = PocketRobotService.isRobotId(targetUserId);
+        if (!isRobot && isUuid) {
           try {
             await _supabase.from('blocks').insert({
               'blocker_id': myId,

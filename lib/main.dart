@@ -222,10 +222,27 @@ class MyAppState extends State<MyApp> {
 
     _appStateNotifier = AppStateNotifier.instance;
     _router = createRouter(_appStateNotifier);
-    // Safety fallback: Ensure splash is dismissed smoothly without prolonged delay (fast login)
-    Future.delayed(const Duration(milliseconds: 1000), () {
+    final splashStartTime = DateTime.now();
+
+    void dismissSplashSmoothly() {
+      final elapsed =
+          DateTime.now().difference(splashStartTime).inMilliseconds;
+      final remaining = 900 - elapsed;
+      if (remaining > 0) {
+        Future.delayed(Duration(milliseconds: remaining), () {
+          if (_appStateNotifier.showSplashImage) {
+            _appStateNotifier.stopShowingSplashImage();
+          }
+        });
+      } else {
+        _appStateNotifier.stopShowingSplashImage();
+      }
+    }
+
+    // Safety fallback: Ensure splash is dismissed smoothly without prolonged delay
+    Future.delayed(const Duration(milliseconds: 2500), () {
       if (_appStateNotifier.showSplashImage) {
-        debugPrint('Main: Forcing splash dismissal after 1.0s fast timeout.');
+        debugPrint('Main: Forcing splash dismissal after 2.5s fallback timeout.');
         _appStateNotifier.stopShowingSplashImage();
       }
     });
@@ -236,8 +253,8 @@ class MyAppState extends State<MyApp> {
         _appStateNotifier.update(user);
 
         if (user.loggedIn) {
-          debugPrint('Main: User is logged in. Dismissing splash.');
-          _appStateNotifier.stopShowingSplashImage();
+          debugPrint('Main: User is logged in. Dismissing splash smoothly.');
+          dismissSplashSmoothly();
           InAppNotificationService.startListening();
           // 🚀 Fast ad warmup: Preload AdMob ads right away so ads are ready upon login
           PocketAdMobService.instance.preloadAds();
@@ -267,8 +284,8 @@ class MyAppState extends State<MyApp> {
             if (!_appStateNotifier.loggedIn &&
                 _appStateNotifier.showSplashImage) {
               debugPrint(
-                  'Main: User is confirmed logged out. Dismissing splash.');
-              _appStateNotifier.stopShowingSplashImage();
+                  'Main: User is confirmed logged out. Dismissing splash smoothly.');
+              dismissSplashSmoothly();
             }
           });
         }

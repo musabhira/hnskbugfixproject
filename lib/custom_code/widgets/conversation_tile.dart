@@ -24,6 +24,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citad
 import 'package:pocket_mates_app/custom_code/services/pocket_island_group_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/group_sky_members_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
 
 
@@ -253,7 +254,6 @@ class _ConversationTileState extends State<ConversationTile> {
       }
     }).catchError((_) {});
   }
-
   void _startRankCycle() {
     _rankCycleTimer?.cancel();
     if (_globalRank == null || _globalRank! <= 0) return;
@@ -1363,15 +1363,17 @@ class _ConversationTileState extends State<ConversationTile> {
                                       ? () {
                                           final convId = widget.conversation.id;
                                           final isAnimal = PocketKidsRobotsData.getAnimalById(convId) != null;
-                                          final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(convId);
-                                          final isRobot = !isAnimal && (PocketRobotService.isRobotId(convId) || !isUuid);
+                                          final isRobot = !isAnimal && PocketRobotService.isRobotId(convId);
                                           final String rankLabel;
                                           if (isAnimal) {
                                             rankLabel = 'Animal Rank #$_globalRank';
                                           } else if (isRobot) {
                                             rankLabel = 'Robot Rank #$_globalRank';
                                           } else {
-                                            rankLabel = 'Global Rank #$_globalRank';
+                                            final isStudent = PocketKidsService.isKidAccount;
+                                            rankLabel = isStudent
+                                                ? 'Student Rank #$_globalRank'
+                                                : 'Global Rank #$_globalRank';
                                           }
                                           return Text(
                                             rankLabel,

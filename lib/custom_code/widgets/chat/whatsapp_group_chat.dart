@@ -129,6 +129,20 @@ class WhatsAppGroupChat extends ConsumerStatefulWidget {
 
 class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     with TickerProviderStateMixin {
+  final Set<String> _pendingRankFetchUserIds = {};
+  void _fetchUserRankAsync(String targetId) {
+    if (targetId.isEmpty || _pendingRankFetchUserIds.contains(targetId)) return;
+    if (PocketRobotService.isRobotId(targetId) ||
+        PocketPresidentService.isPresidentId(targetId)) return;
+    _pendingRankFetchUserIds.add(targetId);
+    PocketRankingService.fetchUserGlobalRank(targetId).then((rank) {
+      if (mounted && rank > 0) {
+        safeSetState(() {});
+      }
+    }).catchError((_) {}).whenComplete(() {
+      _pendingRankFetchUserIds.remove(targetId);
+    });
+  }
   static const Color accentColor = Color(0xFFFFFC00);
   static const Color appBarColor = Color(0xFF121B22);
   final _supabase = Supabase.instance.client;
@@ -5647,13 +5661,20 @@ Draft: "$draft"''';
                             );
                           }
                           if (_isPersonalChat) {
-                            final stage = _userPocketStageCache[targetId];
+                            final stage = _userPocketStageCache[targetId] ?? 1;
+                            final rank = PocketRankingService.getCachedGlobalRank(targetId);
+                            if (rank == null && targetId.isNotEmpty) {
+                              _fetchUserRankAsync(targetId);
+                            }
+                            final isStudent = PocketKidsService.isKidAccount;
+                            final rankPrefix = isStudent ? 'Student Rank' : 'Global Rank';
+                            final rankText = rank != null && rank > 0
+                                ? '$rankPrefix #$rank'
+                                : '$rankPrefix #--';
                             return Padding(
                               padding: const EdgeInsets.only(top: 1.5),
                               child: Text(
-                                stage != null && stage > 0
-                                    ? 'Stage $stage • Pocket Mate'
-                                    : 'Pocket Mate',
+                                'Lvl $stage • $rankText',
                                 style: const TextStyle(
                                   fontSize: 11,
                                   color: Color(0xFF38BDF8),
@@ -7274,32 +7295,13 @@ Draft: "$draft"''';
           border: Border.all(
               color: const Color(0xFFFFD700).withValues(alpha: 0.4), width: 0.6),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Lvl 90',
-              style: GoogleFonts.outfit(
-                color: const Color(0xFF38BDF8),
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              width: 1,
-              height: 8,
-              color: Colors.white24,
-            ),
-            Text(
-              '👑 Global Rank #1',
-              style: GoogleFonts.outfit(
-                color: const Color(0xFFFFD700),
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
+        child: Text(
+          'President',
+          style: GoogleFonts.outfit(
+            color: const Color(0xFFFFD700),
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       );
     }
@@ -7343,11 +7345,11 @@ Draft: "$draft"''';
       );
     }
 
-    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(senderId);
+    // 🤖 AI Robot Check: ONLY true robots, NEVER based on !isUuid!
     final robot = PocketRobotService.getRobotById(senderId);
-    final isRobot = robot != null || PocketRobotService.isRobotId(senderId) || !isUuid;
+    final isRobot = robot != null || PocketRobotService.isRobotId(senderId);
     if (isRobot) {
-      final lvl = robot?.level ?? robot?.baseLevel ?? 1;
+      final lvl = robot != null ? PocketRobotService.getDynamicLevel(robot) : 1;
       final cachedRank = PocketRankingService.getCachedGlobalRank(senderId);
       final rankStr = cachedRank != null && cachedRank > 0 ? '$cachedRank' : '$lvl';
       return Container(
@@ -7386,23 +7388,67 @@ Draft: "$draft"''';
       );
     }
 
-    // Real Human user
-    final cached = PocketRankingService.getCachedUser(senderId);
-    int level = cached?.level ?? 1;
-    int? rank = cached?.globalRank ?? PocketRankingService.getCachedGlobalRank(senderId);
+    // 👤 Real Human user: ALWAYS Global Rank, NEVER Robot Rank!
+    int level = 1;
+    int? rank;
 
-    if (level == 1 || rank == null) {
+    if (senderId == _currentUserId) {
+      final cachedRank = PocketRankingService.getCachedGlobalRank(_currentUserId);
+      rank = cachedRank;
+      final cached = PocketRankingService.getCachedUser(_currentUserId);
+      if (cached != null) {
+        level = cached.level;
+        rank ??= cached.globalRank;
+      }
+    } else {
+      final cached = PocketRankingService.getCachedUser(senderId);
+      if (cached != null) {
+        level = cached.level;
+        rank = cached.globalRank;
+      } else {
+        rank = PocketRankingService.getCachedGlobalRank(senderId);
+      }
+    }
+
+    // Fallback: check _groupMembers profile data
+    if (level <= 1 || rank == null) {
       final member = _groupMembers.firstWhere(
         (m) => m['user_id'] == senderId || m['id'] == senderId,
         orElse: () => {},
       );
       if (member.isNotEmpty) {
-        if (member['level'] != null) level = (member['level'] as num).toInt();
-        if (member['day_level'] != null) level = (member['day_level'] as num).toInt();
-        if (rank == null && member['global_rank'] != null) {
-          rank = (member['global_rank'] as num).toInt();
+        final prof = (member['profile'] as Map<String, dynamic>?) ?? member;
+        final rawDay = (prof['day'] as num?)?.toInt() ??
+            (prof['learning_day'] as num?)?.toInt() ??
+            (prof['learning_stage'] as num?)?.toInt() ??
+            (prof['stage'] as num?)?.toInt() ??
+            (prof['level'] as num?)?.toInt() ??
+            (member['day_level'] as num?)?.toInt() ??
+            1;
+        final score = (prof['pocket_score'] as num?)?.toInt() ??
+            (prof['learning_points'] as num?)?.toInt() ??
+            (prof['xp'] as num?)?.toInt() ??
+            0;
+        final calcLvl = PocketScoreLevelEngine.calculateEffectiveLevel(
+          day: rawDay,
+          pocketScore: score,
+        );
+        if (calcLvl > 0) level = calcLvl;
+        if (rank == null) {
+          rank = (prof['global_rank'] as num?)?.toInt() ??
+              (member['global_rank'] as num?)?.toInt();
         }
       }
+    }
+
+    // Fallback: check cached personal stage
+    if (level <= 1 && _userPocketStageCache.containsKey(senderId)) {
+      level = _userPocketStageCache[senderId] ?? 1;
+    }
+
+    // Asynchronously fetch rank if not cached
+    if (rank == null && senderId.isNotEmpty) {
+      _fetchUserRankAsync(senderId);
     }
 
     final isStudent = PocketKidsService.isKidAccount;

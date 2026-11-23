@@ -41,6 +41,7 @@ import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_friendship_score_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/cards/pop_art_cards_viewer_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/cards/pop_art_card_flame_game.dart';
@@ -187,8 +188,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     if (_isTestingStage && isMe && _isAdminUser()) return;
 
     try {
-      final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
-      final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
+      final isRobot = PocketRobotService.isRobotId(userId);
       if (isRobot) {
         final robot = PocketRobotService.getRobotById(userId) ??
             PocketRobotService.getRobotByLevel(1);
@@ -378,8 +378,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       final sScore = await PocketKidsService.getStudentScore(userId);
       if (mounted) setState(() => _studentScore = sScore);
 
-      final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
-      final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
+      final isRobot = PocketRobotService.isRobotId(userId);
       if (isRobot) {
         final robot = PocketRobotService.getRobotById(userId) ??
             PocketRobotService.getRobotByLevel(1);
@@ -725,8 +724,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         return;
       }
 
-      final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
-      final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
+      final isRobot = PocketRobotService.isRobotId(userId);
 
       if (isRobot) {
         final robot = PocketRobotService.getRobotById(userId) ??
@@ -1205,8 +1203,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final myId = _supabase.auth.currentUser?.id;
     if (myId == null) return;
 
-    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
-    final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
+    final isRobot = PocketRobotService.isRobotId(userId);
 
     if (isRobot) {
       final robot = PocketRobotService.getRobotById(userId) ??
@@ -1816,10 +1813,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   int _getUserGlobalRank() {
     final targetId =
         widget.userId ?? SupaFlow.client.auth.currentUser?.id ?? '';
-    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(targetId);
-    final isRobot = PocketRobotService.isRobotId(targetId) || !isUuid;
+    final isRobot = PocketRobotService.isRobotId(targetId);
     final isPresident = _profileData?['is_president'] == true ||
-        _profileData?['role'] == 'president';
+        _profileData?['role'] == 'president' ||
+        PocketPresidentService.isPresidentId(targetId);
     if (isPresident) return 1;
     if (isRobot) {
       final dynLvl = _getEffectiveDay();
@@ -2380,46 +2377,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             onDayChanged: (d) => _jumpToDay(d),
           ),
           if (!isMe) ...[
-            const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: SizedBox(
-                width: double.infinity,
-                height: 46,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFDC2626),
-                    foregroundColor: Colors.white,
-                    elevation: 6,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
-                  ),
-                  onPressed: () {
-                    final day = _getEffectiveDay();
-                    final streak =
-                        (_profileData?['daily_streak'] as num?)?.toInt() ?? 1;
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => PocketWorldStreetPage(
-                          currentDay: day,
-                          streak: streak,
-                        ),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.flash_on_rounded, size: 20),
-                  label: Text(
-                    'VISIT ON STREET & RAID CITADEL ⚔️',
-                    style: GoogleFonts.outfit(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13.5,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
-              ),
-            ),
             const SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -4571,10 +4528,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   Widget _buildProfileGlobalRankBadge(LearningMilestoneStage activeStage) {
     final targetId =
         widget.userId ?? SupaFlow.client.auth.currentUser?.id ?? '';
-    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(targetId);
-    final isRobot = PocketRobotService.isRobotId(targetId) || !isUuid;
+    final isRobot = PocketRobotService.isRobotId(targetId);
     final isPresident = _profileData?['is_president'] == true ||
-        _profileData?['role'] == 'president';
+        _profileData?['role'] == 'president' ||
+        PocketPresidentService.isPresidentId(targetId);
     final isStudent = _isStudentProfile;
 
     final int rank;
@@ -4583,7 +4540,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final Color borderColor;
     final Color textColor;
 
-    if (isStudent) {
+    if (isPresident) {
+      rank = 1;
+      label = 'President';
+      badgeColor = const Color(0xFFFFD700).withValues(alpha: 0.18);
+      borderColor = const Color(0xFFFFD700).withValues(alpha: 0.65);
+      textColor = const Color(0xFFFFD700);
+    } else if (isStudent) {
       // 🎓 Strictly Student Rank (Ages up to 17) - isolated from adult leaderboard
       rank = PocketKidsService.getStudentGlobalRank(
           _studentScore, activeStage.day, targetId);
@@ -4601,10 +4564,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       final activeRank = _getUserGlobalRank();
       if (activeRank > 0) {
         rank = activeRank;
-        label = 'Rank #$rank';
+        label = 'Global Rank #$rank';
       } else {
         rank = 0;
-        label = 'Rank #--';
+        label = 'Global Rank #--';
       }
       final isTop3 = (rank > 0 && rank <= 3) || isPresident;
       final isTop10 = (rank > 0 && rank <= 10) || isPresident;
@@ -5285,8 +5248,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 ),
               ),
               () {
-                final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
-                final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
+                final isRobot = PocketRobotService.isRobotId(userId);
                 if (!isRobot) return const SizedBox.shrink();
                 final robot = PocketRobotService.getRobotById(userId) ??
                     PocketRobotService.getRobotByLevel(activeStage.day);
@@ -7059,8 +7021,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   Widget _buildProfileStageBadge(LearningMilestoneStage stage) {
     final accent = stage.buttonColor;
-    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
-    final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
+    final isRobot = PocketRobotService.isRobotId(userId);
     int trophyCount = 0;
     if (isRobot) {
       final robot = PocketRobotService.getRobotById(userId) ??
@@ -7783,8 +7744,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   /// 🪙 Pocket Score Stat Item (Highest Priority Hero Stat on User Profile)
   /// User audio directive: "പോക്കറ്റ് സ്കോർ വെച്ചിട്ടാണ് നമ്മുടെ അക്കൗണ്ടിൽ പോക്കറ്റ് സ്കോർ മേലെ തന്നെ വരണം... പോക്കറ്റ് സ്കോറിനാണ് ഇവിടെ ഹൈ പ്രയോറിറ്റി വരുന്നത്!"
   Widget _buildPocketScoreStatItem(int score, LearningMilestoneStage stage) {
-    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
-    final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
+    final isRobot = PocketRobotService.isRobotId(userId);
     final currentLvl =
         isRobot ? stage.day : PocketScoreLevelEngine.getLevelFromScore(score);
     final remainingForNext = isRobot
@@ -7882,8 +7842,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   Widget _buildAchievementsStatItem(
       Color textColor, LearningMilestoneStage stage, int day) {
-    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
-    final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
+    final isRobot = PocketRobotService.isRobotId(userId);
     int unlockedCount;
     if (isRobot) {
       final robot = PocketRobotService.getRobotById(userId) ??

@@ -694,19 +694,35 @@ class PocketMateService {
   static Future<List<Map<String, dynamic>>> getPendingRequests(
       String userId) async {
     if (userId.isEmpty) return [];
+    final List<Map<String, dynamic>> requests = [];
+    final prefs = await SharedPreferences.getInstance();
+    final matesList = prefs.getStringList('pocket_mates_$userId') ?? [];
+
     try {
       final response = await _supabase
           .from('notifications')
           .select('*')
           .eq('user_id', userId)
-          .inFilter('type', ['mate_request', 'pocket_talk', 'poket_talk'])
-          .eq('status', 'pending')
+          .inFilter('type', [
+            'mate_request',
+            'pocket_talk',
+            'poket_talk',
+            'follow_request',
+            'friend_request',
+            'citadel_fight',
+            'citadel_attack'
+          ])
+          .or('status.eq.pending,status.eq.unread,status.is.null')
           .order('created_at', ascending: false);
 
-      final List<Map<String, dynamic>> requests = [];
       for (final item in (response as List)) {
         final map = Map<String, dynamic>.from(item);
         final senderId = map['sender_id']?.toString() ?? '';
+
+        // Exclude if already connected as a Pocket Mate
+        if (senderId.isNotEmpty && matesList.contains(senderId)) {
+          continue;
+        }
 
         if (senderId.isNotEmpty && PocketRobotService.isRobotId(senderId)) {
           final robot = PocketRobotService.getRobotById(senderId) ??
@@ -780,44 +796,46 @@ class PocketMateService {
         }
         requests.add(map);
       }
+    } catch (e) {
+      debugPrint('Error fetching pending notifications from Supabase: $e');
+    }
 
-      // Merge with local robot requests
-      final prefs = await SharedPreferences.getInstance();
+    // Merge with local robot requests
+    try {
+      await PocketRobotService.ensureIncomingRobotRequests(userId, 1);
       final localStr = prefs.getString('pending_pocket_requests_$userId');
       if (localStr != null && localStr.isNotEmpty) {
-        try {
-          final localReqs =
-              List<Map<String, dynamic>>.from(json.decode(localStr));
-          for (final lr in localReqs) {
-            final senderId =
-                lr['senderId']?.toString() ?? lr['id']?.toString() ?? '';
-            final robot = PocketRobotService.getRobotById(senderId) ??
-                PocketRobotService.getRobotByLevel(1);
-            if (!requests.any((x) =>
-                x['id'] == lr['id'] || (x['sender_id'] == senderId))) {
-              requests.add({
-                'id': lr['id'],
-                'sender_id': senderId,
-                'sender_name': lr['senderName'] ?? robot.name,
-                'sender_profile_image': robot.avatarUrl,
-                'avatar_url': robot.avatarUrl,
-                'avatar_config': lr['avatarConfig'],
-                'message': lr['message'],
-                'created_at': lr['time'] ?? DateTime.now().toIso8601String(),
-                'is_robot': true,
-                'stage': robot.level,
-                'archetype': lr['archetype'] ?? robot.archetype.name,
-              });
-            }
+        final localReqs =
+            List<Map<String, dynamic>>.from(json.decode(localStr));
+        for (final lr in localReqs) {
+          final senderId =
+              lr['senderId']?.toString() ?? lr['id']?.toString() ?? '';
+          if (senderId.isNotEmpty && matesList.contains(senderId)) {
+            continue;
           }
-        } catch (_) {}
+          final robot = PocketRobotService.getRobotById(senderId) ??
+              PocketRobotService.getRobotByLevel(1);
+          if (!requests.any((x) =>
+              x['id'] == lr['id'] || (x['sender_id'] == senderId))) {
+            requests.add({
+              'id': lr['id'],
+              'sender_id': senderId,
+              'sender_name': lr['senderName'] ?? robot.name,
+              'sender_profile_image': robot.avatarUrl,
+              'avatar_url': robot.avatarUrl,
+              'avatar_config': lr['avatarConfig'],
+              'message': lr['message'],
+              'created_at': lr['time'] ?? DateTime.now().toIso8601String(),
+              'is_robot': true,
+              'stage': robot.level,
+              'archetype': lr['archetype'] ?? robot.archetype.name,
+            });
+          }
+        }
       }
+    } catch (_) {}
 
-      return requests;
-    } catch (e) {
-      debugPrint('Error fetching pending requests: $e');
-      return [];
-    }
+    return requests;
   }
 
   /// Toggle Pinned Conversation status

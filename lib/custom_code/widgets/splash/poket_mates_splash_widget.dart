@@ -74,42 +74,39 @@ class _PoketMatesBrandSplashScreenState
                 children: [
                   const Spacer(flex: 3),
 
-                  // 🌟 App Icon with soft ambient aura
-                  FadeTransition(
-                    opacity: _fadeAnim,
-                    child: Container(
-                      width: 90,
-                      height: 90,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFFF59E0B).withValues(alpha: 0.22),
-                            blurRadius: 36,
-                            spreadRadius: 4,
-                            offset: const Offset(0, 10),
+                  // 🌟 App Icon with soft ambient aura (Solid 100% opacity from frame 0 to match native iOS/Android splash seamlessly without black flash)
+                  Container(
+                    width: 90,
+                    height: 90,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFF59E0B).withValues(alpha: 0.22),
+                          blurRadius: 36,
+                          spreadRadius: 4,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: Image.asset(
+                        'assets/images/pocket_mates_logo.png',
+                        width: 90,
+                        height: 90,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => Container(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(24),
                           ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(24),
-                        child: Image.asset(
-                          'assets/images/pocket_mates_logo.png',
-                          width: 90,
-                          height: 90,
-                          fit: BoxFit.contain,
-                          errorBuilder: (_, __, ___) => Container(
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                            child: const Center(
-                              child: Text('⚡', style: TextStyle(fontSize: 42)),
-                            ),
+                          child: const Center(
+                            child: Text('⚡', style: TextStyle(fontSize: 42)),
                           ),
                         ),
                       ),
