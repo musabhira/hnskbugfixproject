@@ -1753,15 +1753,26 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     if (PocketRobotService.isRobotId(peerId)) {
       return PocketRobotService.getRobotById(peerId)?.name ?? 'Pocket Robot';
     }
+    final contactName = ContactsNameService().getDisplayName(userId: peerId, fallbackName: '');
+    if (contactName.isNotEmpty &&
+        contactName != 'Learner' &&
+        !contactName.startsWith('Learner ')) {
+      return contactName;
+    }
     try {
       final convs = ref.read(conversationsProvider).asData?.value;
       if (convs != null) {
         for (final c in convs) {
-          if (c.id == peerId && c.name.isNotEmpty) return c.name;
+          if (c.id == peerId &&
+              c.name.isNotEmpty &&
+              c.name != 'Learner' &&
+              !c.name.startsWith('Learner ')) {
+            return c.name;
+          }
         }
       }
     } catch (_) {}
-    return 'Pocket Companion';
+    return PocketMateService.resolveRealUserName(userId: peerId);
   }
 
   String? _getPactPeerAvatar(String peerId) {
@@ -4003,7 +4014,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     final conversations = unified
         .map((item) {
           String peerId = '';
-          String peerName = 'Learner';
+          String peerName = '';
           String? peerAvatar;
           Map<String, dynamic>? avatarConfig;
           String lastMsg = '';
@@ -4075,7 +4086,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           } else if (item.type == 'fight') {
             final duel = item.data as CitadelFightChallenge;
             peerId = duel.challengerId;
-            peerName = duel.challengerName;
+            peerName = PocketMateService.resolveRealUserName(
+              userId: peerId,
+              preferredName: duel.challengerName,
+            );
             peerAvatar = duel.challengerAvatar;
             lastMsg =
                 '🥊 Citadel Fight Challenge (${duel.questionCount} Questions)';
@@ -4085,15 +4099,23 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             peerId = isSent
                 ? (atk['defender_id']?.toString() ?? '')
                 : (atk['attacker_id']?.toString() ?? '');
-            peerName = isSent
-                ? (atk['defender_name']?.toString() ?? 'Opponent')
-                : (atk['attacker_name']?.toString() ?? 'Attacker');
+            final rawName = isSent
+                ? (atk['defender_name']?.toString() ?? '')
+                : (atk['attacker_name']?.toString() ?? '');
+            peerName = PocketMateService.resolveRealUserName(
+              userId: peerId,
+              preferredName: rawName,
+            );
             peerAvatar = isSent
                 ? atk['defender_avatar']?.toString()
                 : atk['attacker_avatar']?.toString();
             lastMsg = isSent
                 ? '⚔️ You attacked Citadel defenses (${atk['weapon_name'] ?? 'Weapon'})'
                 : '⚔️ $peerName attacked your Citadel (${atk['weapon_name'] ?? 'Weapon'})';
+          }
+
+          if (peerName.isEmpty) {
+            peerName = PocketMateService.resolveRealUserName(userId: peerId);
           }
 
           return ChatConversation(
@@ -4175,16 +4197,24 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return conversationsAsync.when(
       data: (conversations) {
-        final chatConversations = conversations.where((c) {
-          if (c.isNotification) return false;
+        // 🏝️ Deduplicate Island Neighbors groups: ensure at most ONE island group is shown
+        final seenIslandGroups = <String>{};
+        final chatConversations = <ChatConversation>[];
+        for (final c in conversations) {
+          if (c.isNotification) continue;
           final lowerName = c.name.toLowerCase();
           if (lowerName.contains('english hub') ||
               lowerName.contains('english learning') ||
               lowerName.contains('english practice')) {
-            return false;
+            continue;
           }
-          return true;
-        }).toList();
+          if (lowerName.contains('island neighbors') ||
+              (c.isGroup && lowerName.contains('neighbors'))) {
+            if (seenIslandGroups.isNotEmpty) continue; // Skip duplicate!
+            seenIslandGroups.add(c.id);
+          }
+          chatConversations.add(c);
+        }
         List<ChatConversation> combined = [...chatConversations];
 
         // Sort by pinned status then last message time

@@ -811,9 +811,32 @@ class Conversations extends _$Conversations {
               islandName: colony.islandName,
             );
 
-            // If not already fetched in updatedGroups from group_members query, inject it!
-            final alreadyInGroups = updatedGroups.any((g) => g.id == islandGroupId);
-            if (!alreadyInGroups) {
+            // 🏝️ Strict Single-Island Group Enforcement (Prevent Duplicate Island Neighbors groups)
+            final existingIslandIdx = updatedGroups.indexWhere(
+                (g) => g.id == islandGroupId || PocketIslandGroupService.isIslandGroup(g.id, g.name));
+
+            if (existingIslandIdx != -1) {
+              final existing = updatedGroups[existingIslandIdx];
+              updatedGroups.removeAt(existingIslandIdx);
+              // Remove any other duplicate island groups that might have existed
+              updatedGroups.removeWhere((g) =>
+                  PocketIslandGroupService.isIslandGroup(g.id, g.name));
+              updatedGroups.insert(
+                0,
+                ChatConversation(
+                  id: islandGroupId,
+                  name: islandGroupName,
+                  imageUrl: existing.imageUrl ?? 'assets/images/pocket_mates_logo.png',
+                  lastMessage: existing.lastMessage ?? 'Official Neighborhood Group for ${colony.planetName} Island',
+                  lastMessageTime: existing.lastMessageTime ?? DateTime.now(),
+                  unreadCount: existing.unreadCount,
+                  isGroup: true,
+                  isPinned: existing.isPinned || pinnedIds.contains(islandGroupId),
+                ),
+              );
+            } else {
+              // Also ensure no lingering island groups before inserting
+              updatedGroups.removeWhere((g) => PocketIslandGroupService.isIslandGroup(g.id, g.name));
               updatedGroups.insert(
                 0,
                 ChatConversation(
@@ -842,6 +865,17 @@ class Conversations extends _$Conversations {
         ...updatedPersonal,
         ...toolChats
       ];
+
+      // 🏝️ Guaranteed Single Island Neighbors Group Deduplication in combined list
+      bool hasEncounteredIsland = false;
+      combined.removeWhere((c) {
+        if (PocketIslandGroupService.isIslandGroup(c.id, c.name)) {
+          if (hasEncounteredIsland) return true; // Drop any duplicate
+          hasEncounteredIsland = true;
+          return false;
+        }
+        return false;
+      });
 
       // Inject default welcoming chat item for Muss'ab 'Ab Hira if combined is empty
       if (combined.isEmpty) {

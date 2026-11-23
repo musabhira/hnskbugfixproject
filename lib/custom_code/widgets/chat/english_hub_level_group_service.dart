@@ -129,13 +129,35 @@ class EnglishHubLevelGroupService {
     return VectorAvatarConfig.getEvolutionAvatarForStage(targetLevel);
   }
 
+  /// Helper to convert long bracket names (e.g. English Hub (Lvl 1 - 5) or All Learners) into clean concise names like English Hub #1, English Hub #2
+  static String cleanHubName(String name, [int? order]) {
+    if (order != null && order > 0) {
+      return 'English Hub #$order';
+    }
+    final trimmed = name.trim();
+    if (trimmed.toLowerCase().contains('english hub')) {
+      final numMatch = RegExp(r'#(\d+)').firstMatch(trimmed);
+      if (numMatch != null) {
+        return 'English Hub #${numMatch.group(1)}';
+      }
+      final lvlMatch = RegExp(r'lvl\s*(\d+)', caseSensitive: false).firstMatch(trimmed);
+      if (lvlMatch != null) {
+        final startLvl = int.tryParse(lvlMatch.group(1) ?? '1') ?? 1;
+        final calcOrder = ((startLvl - 1) ~/ 5) + 1;
+        return 'English Hub #$calcOrder';
+      }
+      return 'English Hub #1';
+    }
+    return name;
+  }
+
   /// Default bracket specifications as defined in user audio directives:
   /// - Level 1 to 6
   /// - Level 6 to 11
   /// - 12 onwards in 5-level increments up to Day 90
   static const List<Map<String, dynamic>> kDefaultBrackets = [
     {
-      'name': 'English Hub (Lvl 1 - 5)',
+      'name': 'English Hub #1',
       'min': 1,
       'max': 5,
       'title': 'Rookie Foundations',
@@ -144,7 +166,7 @@ class EnglishHubLevelGroupService {
       'order': 1,
     },
     {
-      'name': 'English Hub (Lvl 6 - 11)',
+      'name': 'English Hub #2',
       'min': 6,
       'max': 11,
       'title': 'Intermediate Grammar',
@@ -153,7 +175,7 @@ class EnglishHubLevelGroupService {
       'order': 2,
     },
     {
-      'name': 'English Hub (Lvl 12 - 16)',
+      'name': 'English Hub #3',
       'min': 12,
       'max': 16,
       'title': 'Conversational Agility',
@@ -162,7 +184,7 @@ class EnglishHubLevelGroupService {
       'order': 3,
     },
     {
-      'name': 'English Hub (Lvl 17 - 21)',
+      'name': 'English Hub #4',
       'min': 17,
       'max': 21,
       'title': 'Public Speaking & Logic',
@@ -171,7 +193,7 @@ class EnglishHubLevelGroupService {
       'order': 4,
     },
     {
-      'name': 'English Hub (Lvl 22 - 26)',
+      'name': 'English Hub #5',
       'min': 22,
       'max': 26,
       'title': 'Idioms & Natural Flow',
@@ -180,7 +202,7 @@ class EnglishHubLevelGroupService {
       'order': 5,
     },
     {
-      'name': 'English Hub (Lvl 27 - 31)',
+      'name': 'English Hub #6',
       'min': 27,
       'max': 31,
       'title': 'Spontaneous Discourse',
@@ -189,7 +211,7 @@ class EnglishHubLevelGroupService {
       'order': 6,
     },
     {
-      'name': 'English Hub (Lvl 32 - 36)',
+      'name': 'English Hub #7',
       'min': 32,
       'max': 36,
       'title': 'Professional Oratory',
@@ -198,7 +220,7 @@ class EnglishHubLevelGroupService {
       'order': 7,
     },
     {
-      'name': 'English Hub (Lvl 37 - 41)',
+      'name': 'English Hub #8',
       'min': 37,
       'max': 41,
       'title': 'Rhetorical Eloquence',
@@ -207,7 +229,7 @@ class EnglishHubLevelGroupService {
       'order': 8,
     },
     {
-      'name': 'English Hub (Lvl 42 - 46)',
+      'name': 'English Hub #9',
       'min': 42,
       'max': 46,
       'title': 'Dialectic & Debate',
@@ -216,7 +238,7 @@ class EnglishHubLevelGroupService {
       'order': 9,
     },
     {
-      'name': 'English Hub (Lvl 47 - 51)',
+      'name': 'English Hub #10',
       'min': 47,
       'max': 51,
       'title': 'Literature & Nuance',
@@ -225,7 +247,7 @@ class EnglishHubLevelGroupService {
       'order': 10,
     },
     {
-      'name': 'English Hub (Lvl 52 - 56)',
+      'name': 'English Hub #11',
       'min': 52,
       'max': 56,
       'title': 'Master Communicator',
@@ -234,7 +256,7 @@ class EnglishHubLevelGroupService {
       'order': 11,
     },
     {
-      'name': 'English Hub (Lvl 57 - 61)',
+      'name': 'English Hub #12',
       'min': 57,
       'max': 61,
       'title': 'Executive Statecraft',
@@ -243,7 +265,7 @@ class EnglishHubLevelGroupService {
       'order': 12,
     },
     {
-      'name': 'English Hub (Lvl 62 - 66)',
+      'name': 'English Hub #13',
       'min': 62,
       'max': 66,
       'title': 'Diplomatic Summit',
@@ -409,7 +431,7 @@ class EnglishHubLevelGroupService {
     return const EnglishHubLevelGroup(
       id: 'default',
       groupId: 'english_hub_all_learners',
-      groupName: 'English Hub (All Learners • Lvl 1 - 90)',
+      groupName: 'English Hub #1',
       minLevel: 1,
       maxLevel: 90,
       stageTitle: 'The Sovereign English Commonwealth',

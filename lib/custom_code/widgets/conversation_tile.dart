@@ -258,10 +258,16 @@ class _ConversationTileState extends State<ConversationTile> {
     _rankCycleTimer?.cancel();
     if (_globalRank == null || _globalRank! <= 0) return;
 
-    // Stagger initial cycle start so tiles don't transition synchronously
-    final staggerMs = 2000 + (widget.conversation.id.hashCode.abs() % 3500);
-    _rankCycleTimer = async.Timer(Duration(milliseconds: staggerMs), () {
-      _runRankCycle();
+    // Show Rank immediately once resolved so users always see Global / Robot / Animal rank
+    if (mounted) setState(() => _showRank = true);
+
+    _rankCycleTimer = async.Timer(const Duration(seconds: 10), () {
+      if (!mounted) return;
+      setState(() => _showRank = false);
+
+      _rankCycleTimer = async.Timer(const Duration(seconds: 3), () {
+        _runRankCycle();
+      });
     });
   }
 
@@ -1717,31 +1723,27 @@ class _ConversationTileState extends State<ConversationTile> {
         !_cachedPact!.isAccepted &&
         _cachedPact!.initiatorId == widget.currentUserId;
     if (isPendingByMe) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFFD600).withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFFFD600).withValues(alpha: 0.6)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
+      // Sleek compact icon badge so peer title / username is never crowded out or truncated
+      return Tooltip(
+        message: 'Request Sent ⏳',
+        child: Container(
+          width: 30,
+          height: 30,
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFD600).withValues(alpha: 0.15),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: const Color(0xFFFFD600).withValues(alpha: 0.6),
+              width: 1,
+            ),
+          ),
+          child: const Center(
+            child: Icon(
               material.Icons.hourglass_top_rounded,
               color: Color(0xFFFFD600),
-              size: 13,
+              size: 15,
             ),
-            const SizedBox(width: 4),
-            Text(
-              'Request Sent',
-              style: GoogleFonts.outfit(
-                color: const Color(0xFFFFD600),
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
+          ),
         ),
       );
     }

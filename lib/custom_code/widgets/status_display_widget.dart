@@ -55,6 +55,7 @@ import 'package:pocket_mates_app/custom_code/widgets/chat/pocket_reels_game_engi
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/president/presidential_security_forces.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/flame_english_house_game.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocket_mates_suggested_grid_card.dart';
 import 'dart:async';
 
 class StatusDisplayWidget extends StatefulWidget {
@@ -1489,19 +1490,25 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
               listOverride: onlyGroups),
         );
 
-        // 📢 Native Ad Card inserted every 3 vibes (matches Global Ranking standard)
+        // 📢 Native Ad Card & 4-Mates Grid ("Instagram Follow-style") inserted between vibes for non-VIP users
         if (widget.isVertical && index > 0 && (index + 1) % 3 == 0) {
+          final isAdSlot = ((index + 1) ~/ 3) % 2 == 1;
           // ⚡ Preload upcoming native ad 2 cards ahead of scroll
           PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.vibes);
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               statusItem,
-              PocketUnifiedDualNativeAdWidget(
-                slotIndex: ((index + 1) ~/ 3) - 1,
-                placement: PocketAdPlacement.vibes,
-                margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              ),
+              if (isAdSlot && !PocketAdMobService.instance.isUserVipSync())
+                PocketUnifiedDualNativeAdWidget(
+                  slotIndex: ((index + 1) ~/ 3) - 1,
+                  placement: PocketAdPlacement.vibes,
+                  margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                )
+              else if (!PocketAdMobService.instance.isUserVipSync())
+                PocketMatesSuggestedGridCard(
+                  currentUserId: widget.currentUserId,
+                ),
             ],
           );
         }

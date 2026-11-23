@@ -251,7 +251,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 24, vsync: this);
+    _tabController = TabController(length: 23, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showPasswordDialog();
       _loadRobotCycleData();
@@ -1172,9 +1172,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                         icon: Icon(Icons.account_balance_rounded, size: 16),
                         text: 'President Desk 🏛️'),
                     Tab(
-                        icon: Icon(Icons.pets_rounded, size: 16),
-                        text: 'Lion Desk 🦁'),
-                    Tab(
                         icon: Icon(Icons.dashboard_outlined, size: 16),
                         text: 'Insight 📊'),
                     Tab(
@@ -1253,7 +1250,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         controller: _tabController,
         children: [
           _buildPresidentDeskTab(),
-          _buildLionKidsDeskTab(),
           _buildInsightTab(),
           _buildUserTab(),
           _buildRequestsTab(),
@@ -11963,14 +11959,9 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                 index: 2,
               ),
               _buildPresidentSubNavButton(
-                label: 'Broadcast',
-                icon: Icons.campaign_rounded,
+                label: 'Notifications 🔔',
+                icon: Icons.notifications_active_rounded,
                 index: 3,
-              ),
-              _buildPresidentSubNavButton(
-                label: 'Shield 24h',
-                icon: Icons.security_rounded,
-                index: 4,
               ),
             ],
           ),
@@ -11983,9 +11974,7 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                   ? _buildReportsTab()
                   : _presidentSubTab == 2
                       ? _buildPresidentVibeSubTab()
-                      : _presidentSubTab == 3
-                          ? _buildPresidentAnnouncementsSubTab()
-                          : _buildPresidentProtectionSubTab(),
+                      : _buildPresidentAnnouncementsSubTab(),
         ),
       ],
     );

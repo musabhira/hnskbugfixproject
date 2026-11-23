@@ -1,5 +1,6 @@
 import 'pocket_pinned_conversations_service.dart';
 import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
@@ -19,7 +20,7 @@ class PocketMateService {
 
   static final _supabase = SupaFlow.client;
 
-  /// Resolves the real username/display name for a user, never falling back to generic 'Pocket Mate'
+  /// Resolves the real username/display name for a user, never falling back to generic 'Learner' or 'Pocket Mate'
   static String resolveRealUserName({
     required String userId,
     String? preferredName,
@@ -31,22 +32,48 @@ class PocketMateService {
           p != 'Pocket Mate' &&
           p != 'Poket Mate' &&
           p != 'User' &&
-          p != 'Mate') {
+          p != 'Mate' &&
+          p != 'Learner' &&
+          !p.startsWith('Learner ') &&
+          p != 'Challenger' &&
+          p != 'Attacker' &&
+          p != 'Opponent') {
         return p;
       }
     }
+    // Check animal mentor
+    final animal = PocketKidsRobotsData.getAnimalById(userId);
+    if (animal != null && animal.name.isNotEmpty) {
+      return animal.name;
+    }
+    // Check AI Robot
+    if (PocketRobotService.isRobotId(userId)) {
+      final bot = PocketRobotService.getRobotById(userId);
+      if (bot != null && bot.name.isNotEmpty) {
+        return bot.name;
+      }
+    }
+    // Check President
+    if (PocketPresidentService.isPresidentId(userId)) {
+      return 'The President 🏛️';
+    }
+    // Check user phone contacts sync
     final fromContacts = ContactsNameService().getDisplayName(userId: userId, fallbackName: '');
     if (fromContacts.isNotEmpty &&
         fromContacts != 'Pocket Mate' &&
         fromContacts != 'Poket Mate' &&
         fromContacts != 'User' &&
         fromContacts != 'Learner' &&
+        !fromContacts.startsWith('Learner ') &&
         fromContacts != 'Mate') {
       return fromContacts;
     }
+    // Check profile map
     if (profileMap != null) {
       final dn = (profileMap['display_name'] ??
               profileMap['name'] ??
+              profileMap['first_name'] ??
+              profileMap['username'] ??
               profileMap['shop_name'] ??
               '')
           .toString()
@@ -55,14 +82,16 @@ class PocketMateService {
           dn != 'Pocket Mate' &&
           dn != 'Poket Mate' &&
           dn != 'User' &&
-          dn != 'Mate') {
+          dn != 'Mate' &&
+          dn != 'Learner' &&
+          !dn.startsWith('Learner ')) {
         return dn;
       }
     }
-    if (userId.length >= 6) {
-      return 'Learner ${userId.substring(0, 6)}';
+    if (userId.length >= 4) {
+      return 'Mate #${userId.substring(0, 4).toUpperCase()}';
     }
-    return 'Learner';
+    return 'Mate';
   }
 
   /// Check if two users are mutual Mates
@@ -690,51 +719,59 @@ class PocketMateService {
           map['archetype'] = robot.archetype.name;
         } else if (senderId.isNotEmpty) {
           try {
-            // 1. Query 'users' table first for real sender profile
-            final userRes = await _supabase
-                .from('users')
-                .select('id, display_name, name, username, photo_url, avatar_url, avatar_config, level, learning_day')
-                .eq('id', senderId)
+            // 1. Query 'profile' table first (primary Supabase profile table)
+            final prof = await _supabase
+                .from('profile')
+                .select(
+                    'name, display_name, profile_image_url, avatar_config, day, learning_day, level, pocket_score')
+                .or('user_id.eq.$senderId,id.eq.$senderId')
                 .maybeSingle();
-            if (userRes != null) {
-              final dName = userRes['display_name'] ?? userRes['name'] ?? userRes['username'];
-              if (dName != null && dName.toString().trim().isNotEmpty) {
-                map['sender_name'] = dName.toString().trim();
-              }
-              map['sender_profile_image'] = userRes['photo_url'] ?? userRes['avatar_url'];
-              map['avatar_url'] = userRes['avatar_url'] ?? userRes['photo_url'];
-              map['avatar_config'] = userRes['avatar_config'];
-              final rawDay = (userRes['learning_day'] as num?)?.toInt() ?? (userRes['level'] as num?)?.toInt() ?? 1;
-              map['stage'] = rawDay;
+            if (prof != null) {
+              map['sender_name'] = resolveRealUserName(
+                userId: senderId,
+                preferredName: map['sender_name'],
+                profileMap: prof,
+              );
+              map['sender_profile_image'] = prof['profile_image_url'];
+              map['avatar_url'] = prof['profile_image_url'];
+              map['avatar_config'] = prof['avatar_config'];
+              final rawDay = (prof['day'] as num?)?.toInt() ??
+                  (prof['learning_day'] as num?)?.toInt() ??
+                  (prof['level'] as num?)?.toInt() ??
+                  1;
+              final score = (prof['pocket_score'] as num?)?.toInt() ?? 0;
+              map['stage'] = PocketScoreLevelEngine.calculateEffectiveLevel(
+                day: rawDay,
+                pocketScore: score,
+              );
+              map['pocket_score'] = score;
             } else {
-              // 2. Secondary fallback to 'profile' table
-              final prof = await _supabase
-                  .from('profile')
-                  .select(
-                      'name, display_name, profile_image_url, avatar_config, day, learning_day, level, pocket_score')
-                  .or('user_id.eq.$senderId,id.eq.$senderId')
-                  .maybeSingle();
-              if (prof != null) {
-                map['sender_name'] = resolveRealUserName(
-                  userId: senderId,
-                  preferredName: map['sender_name'],
-                  profileMap: prof,
-                );
-                map['sender_profile_image'] = prof['profile_image_url'];
-                map['avatar_url'] = prof['profile_image_url'];
-                map['avatar_config'] = prof['avatar_config'];
-                final rawDay = (prof['day'] as num?)?.toInt() ??
-                    (prof['learning_day'] as num?)?.toInt() ??
-                    (prof['level'] as num?)?.toInt() ??
-                    1;
-                final score = (prof['pocket_score'] as num?)?.toInt() ?? 0;
-                map['stage'] = PocketScoreLevelEngine.calculateEffectiveLevel(
-                  day: rawDay,
-                  pocketScore: score,
-                );
-              }
+              // 2. Secondary fallback to 'users' table
+              try {
+                final userRes = await _supabase
+                    .from('users')
+                    .select('id, display_name, name, username, photo_url, avatar_url, avatar_config, level, learning_day')
+                    .eq('id', senderId)
+                    .maybeSingle();
+                if (userRes != null) {
+                  final dName = userRes['display_name'] ?? userRes['name'] ?? userRes['username'];
+                  if (dName != null && dName.toString().trim().isNotEmpty) {
+                    map['sender_name'] = dName.toString().trim();
+                  }
+                  map['sender_profile_image'] = userRes['photo_url'] ?? userRes['avatar_url'];
+                  map['avatar_url'] = userRes['avatar_url'] ?? userRes['photo_url'];
+                  map['avatar_config'] = userRes['avatar_config'];
+                  final rawDay = (userRes['learning_day'] as num?)?.toInt() ?? (userRes['level'] as num?)?.toInt() ?? 1;
+                  map['stage'] = rawDay;
+                }
+              } catch (_) {}
             }
-          } catch (_) {
+          } catch (_) {}
+
+          if (map['sender_name'] == null ||
+              map['sender_name'].toString().trim().isEmpty ||
+              map['sender_name'] == 'Learner' ||
+              map['sender_name'].toString().startsWith('Learner ')) {
             map['sender_name'] = resolveRealUserName(
               userId: senderId,
               preferredName: map['sender_name'],

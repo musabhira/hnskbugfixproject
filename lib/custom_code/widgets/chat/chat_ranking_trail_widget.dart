@@ -383,6 +383,14 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
       context,
       userId: member.userId,
       targetName: member.name,
+      targetDay: member.level,
+      preloadedProfile: {
+        'name': member.name,
+        'profile_image_url': member.profileImageUrl,
+        'pocket_score': member.pocketScore,
+        'level': member.level,
+        'learning_day': member.level,
+      },
     );
   }
 
