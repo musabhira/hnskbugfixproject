@@ -74,10 +74,16 @@ class _SettingsPageState extends State<SettingsPage> {
               .or('user_id.eq.$uid,id.eq.$uid')
               .maybeSingle();
           if (res != null) {
-            final tier = res['subscription_tier']?.toString().toLowerCase().trim();
-            if (tier != null && tier.isNotEmpty && tier != 'free' && tier != 'none') {
+            final tier =
+                res['subscription_tier']?.toString().toLowerCase().trim();
+            if (tier != null &&
+                tier.isNotEmpty &&
+                tier != 'free' &&
+                tier != 'none') {
               userPlan = tier;
-            } else if (res['is_vip'] == true || res['is_subscribed'] == true || res['verified'] == true) {
+            } else if (res['is_vip'] == true ||
+                res['is_subscribed'] == true ||
+                res['verified'] == true) {
               userPlan = 'vip_active';
             }
           }
@@ -88,11 +94,14 @@ class _SettingsPageState extends State<SettingsPage> {
       setState(() {
         _isVip = isVip;
         _userPlan = userPlan;
-        _selectedLanguage = prefs.getString('preferred_language') ?? PocketLanguageService.currentLanguage;
+        _selectedLanguage = prefs.getString('preferred_language') ??
+            PocketLanguageService.currentLanguage;
         _isPowerSaving = prefs.getBool('power_saving_mode') ?? false;
-        _isNotificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
+        _isNotificationsEnabled =
+            prefs.getBool('notifications_enabled') ?? true;
         _voiceSpeed = prefs.getDouble('voice_speed') ?? 1.0;
-        _voicePersona = prefs.getString(PocketVoiceService.prefKeyVoicePersona) ?? 'female';
+        _voicePersona =
+            prefs.getString(PocketVoiceService.prefKeyVoicePersona) ?? 'female';
         _onlineStatusVisible = prefs.getBool('online_status_visible') ?? true;
       });
     }
@@ -115,7 +124,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _handleLogout() async {
     if (_isProcessing) return;
     setState(() => _isProcessing = true);
-    
+
     try {
       PocketKidsService.resetSession();
       PocketAdMobService.instance.onUserSignedOut();
@@ -134,7 +143,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _handleDeleteAccount() async {
     if (_isProcessing) return;
-    
+
     // Show confirmation dialog
     final confirmed = await showDialog<bool>(
       context: context,
@@ -240,7 +249,9 @@ class _SettingsPageState extends State<SettingsPage> {
                         children: [
                           Flexible(
                             child: Text(
-                              _isVip ? 'Poket VIP Active' : 'Upgrade to Poket VIP',
+                              _isVip
+                                  ? 'Poket VIP Active'
+                                  : 'Upgrade to Poket VIP',
                               style: GoogleFonts.outfit(
                                 color: const Color(0xFFFFD700),
                                 fontWeight: FontWeight.bold,
@@ -251,16 +262,20 @@ class _SettingsPageState extends State<SettingsPage> {
                           ),
                           const SizedBox(width: 6),
                           Icon(
-                            _isVip ? Icons.verified_rounded : Icons.bolt_rounded,
+                            _isVip
+                                ? Icons.verified_rounded
+                                : Icons.bolt_rounded,
                             color: const Color(0xFFFFD700),
                             size: 16,
                           ),
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 7, vertical: 2.5),
                             decoration: BoxDecoration(
                               color: _isVip
-                                  ? const Color(0xFFFFD700).withValues(alpha: 0.2)
+                                  ? const Color(0xFFFFD700)
+                                      .withValues(alpha: 0.2)
                                   : Colors.white.withValues(alpha: 0.08),
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
@@ -279,7 +294,9 @@ class _SettingsPageState extends State<SettingsPage> {
                                           : 'VIP ACTIVE')
                                   : 'FREE PLAN',
                               style: GoogleFonts.outfit(
-                                color: _isVip ? const Color(0xFFFFD700) : Colors.white60,
+                                color: _isVip
+                                    ? const Color(0xFFFFD700)
+                                    : Colors.white60,
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: 0.5,
@@ -293,13 +310,15 @@ class _SettingsPageState extends State<SettingsPage> {
                         _isVip
                             ? 'Instant Binge Mode • 100% Ad-Free • Golden Verified • Presidential Guard'
                             : 'Unlock Instant Binge Mode, Zero Ads & Golden Verified Tick (from ₹249)',
-                        style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                        style: GoogleFonts.inter(
+                            color: Colors.white70, fontSize: 12),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(width: 8),
-                const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFFFD700), size: 14),
+                const Icon(Icons.arrow_forward_ios_rounded,
+                    color: Color(0xFFFFD700), size: 14),
               ],
             ),
           ),
@@ -354,12 +373,14 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.shield_rounded, color: Color(0xFF10B981), size: 20),
+                    const Icon(Icons.shield_rounded,
+                        color: Color(0xFF10B981), size: 20),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         'Adult chats & stranger matches are hidden. You can return anytime using the Parental Lock PIN.',
-                        style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                        style: GoogleFonts.inter(
+                            color: Colors.white70, fontSize: 12),
                       ),
                     ),
                   ],
@@ -370,14 +391,17 @@ class _SettingsPageState extends State<SettingsPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: Text('Cancel', style: GoogleFonts.outfit(color: Colors.white54)),
+              child: Text('Cancel',
+                  style: GoogleFonts.outfit(color: Colors.white54)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF38BDF8),
                 foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
               ),
               onPressed: () async {
                 Navigator.pop(ctx);
@@ -420,7 +444,8 @@ class _SettingsPageState extends State<SettingsPage> {
                     color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.pattern_rounded, color: Color(0xFFF59E0B), size: 24),
+                  child: const Icon(Icons.pattern_rounded,
+                      color: Color(0xFFF59E0B), size: 24),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -429,12 +454,19 @@ class _SettingsPageState extends State<SettingsPage> {
                     children: [
                       Text(
                         'Parental Security Lock 🔒',
-                        style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                        style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold),
                       ),
                       Text(
-                        hasPattern ? 'Pattern Lock is Active & Configured' : 'No Pattern Lock Set Yet',
+                        hasPattern
+                            ? 'Pattern Lock is Active & Configured'
+                            : 'No Pattern Lock Set Yet',
                         style: GoogleFonts.inter(
-                          color: hasPattern ? const Color(0xFF10B981) : Colors.amber,
+                          color: hasPattern
+                              ? const Color(0xFF10B981)
+                              : Colors.amber,
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
@@ -447,7 +479,8 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 16),
             Text(
               'A 3x3 security pattern lock protects Kids and Student World, preventing children from switching into Adult Mode without your permission.',
-              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13, height: 1.4),
+              style: GoogleFonts.inter(
+                  color: Colors.white70, fontSize: 13, height: 1.4),
             ),
             const SizedBox(height: 22),
             if (hasPattern) ...[
@@ -458,14 +491,17 @@ class _SettingsPageState extends State<SettingsPage> {
                     backgroundColor: const Color(0xFF38BDF8),
                     foregroundColor: Colors.black,
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                   ),
                   onPressed: () async {
                     Navigator.pop(ctx);
-                    final success = await PocketParentalPatternLock.showSetupDialog(
+                    final success =
+                        await PocketParentalPatternLock.showSetupDialog(
                       context,
                       title: 'Reset Pattern Lock 🔒',
-                      subtitle: 'Draw a new 3x3 pattern to replace your existing lock.',
+                      subtitle:
+                          'Draw a new 3x3 pattern to replace your existing lock.',
                     );
                     if (success && mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -477,7 +513,9 @@ class _SettingsPageState extends State<SettingsPage> {
                     }
                   },
                   icon: const Icon(Icons.refresh_rounded, size: 20),
-                  label: Text('Change / Reset Pattern Lock', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14)),
+                  label: Text('Change / Reset Pattern Lock',
+                      style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.bold, fontSize: 14)),
                 ),
               ),
               const SizedBox(height: 10),
@@ -488,11 +526,13 @@ class _SettingsPageState extends State<SettingsPage> {
                     foregroundColor: Colors.redAccent,
                     side: const BorderSide(color: Colors.redAccent),
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                   ),
                   onPressed: () async {
                     Navigator.pop(ctx);
-                    final verified = await PocketParentalPatternLock.verifyOrSetup(
+                    final verified =
+                        await PocketParentalPatternLock.verifyOrSetup(
                       context,
                       title: 'Confirm Lock Removal 🔒',
                       subtitle: 'Draw pattern lock to confirm removal.',
@@ -502,7 +542,8 @@ class _SettingsPageState extends State<SettingsPage> {
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Parental Lock removed. You can set a new one anytime.'),
+                            content: Text(
+                                'Parental Lock removed. You can set a new one anytime.'),
                             backgroundColor: Color(0xFFEF4444),
                           ),
                         );
@@ -510,7 +551,9 @@ class _SettingsPageState extends State<SettingsPage> {
                     }
                   },
                   icon: const Icon(Icons.delete_outline_rounded, size: 18),
-                  label: Text('Remove Pattern Lock', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13)),
+                  label: Text('Remove Pattern Lock',
+                      style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.bold, fontSize: 13)),
                 ),
               ),
             ] else ...[
@@ -521,11 +564,13 @@ class _SettingsPageState extends State<SettingsPage> {
                     backgroundColor: const Color(0xFF10B981),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                   ),
                   onPressed: () async {
                     Navigator.pop(ctx);
-                    final success = await PocketParentalPatternLock.showSetupDialog(
+                    final success =
+                        await PocketParentalPatternLock.showSetupDialog(
                       context,
                       title: 'Create Parental Pattern 🔒',
                       subtitle: 'Draw a 3x3 pattern (connect at least 4 dots)',
@@ -533,14 +578,17 @@ class _SettingsPageState extends State<SettingsPage> {
                     if (success && mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Parental Pattern Lock configured! 🔒✅'),
+                          content:
+                              Text('Parental Pattern Lock configured! 🔒✅'),
                           backgroundColor: Color(0xFF10B981),
                         ),
                       );
                     }
                   },
                   icon: const Icon(Icons.add_moderator_rounded, size: 20),
-                  label: Text('Setup Pattern Lock Now 🔒', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14)),
+                  label: Text('Setup Pattern Lock Now 🔒',
+                      style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.bold, fontSize: 14)),
                 ),
               ),
             ],
@@ -566,11 +614,15 @@ class _SettingsPageState extends State<SettingsPage> {
           children: [
             Row(
               children: [
-                const Icon(Icons.bookmark_added_rounded, color: Color(0xFF38BDF8), size: 24),
+                const Icon(Icons.bookmark_added_rounded,
+                    color: Color(0xFF38BDF8), size: 24),
                 const SizedBox(width: 10),
                 Text(
                   'Saved Notes & Vocabulary',
-                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -589,12 +641,14 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.auto_awesome_rounded, color: Color(0xFFFFD700), size: 20),
+                  const Icon(Icons.auto_awesome_rounded,
+                      color: Color(0xFFFFD700), size: 20),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       'All saved vocabulary items sync automatically with your Daily Vocab Trainer.',
-                      style: GoogleFonts.inter(color: Colors.white, fontSize: 12.5),
+                      style: GoogleFonts.inter(
+                          color: Colors.white, fontSize: 12.5),
                     ),
                   ),
                 ],
@@ -607,10 +661,12 @@ class _SettingsPageState extends State<SettingsPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF38BDF8),
                   foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('Done', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text('Done',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
           ],
@@ -627,11 +683,15 @@ class _SettingsPageState extends State<SettingsPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
-            const Icon(Icons.warning_amber_rounded, color: Color(0xFFEF4444), size: 28),
+            const Icon(Icons.warning_amber_rounded,
+                color: Color(0xFFEF4444), size: 28),
             const SizedBox(width: 10),
             Text(
               'Reset Target Progress',
-              style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+              style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18),
             ),
           ],
         ),
@@ -639,18 +699,22 @@ class _SettingsPageState extends State<SettingsPage> {
           'Are you sure you want to restart from Day 1?\n\n'
           'This will reset your POKET Score (PS) to 0, return your 90-day learning trail back to Day 1, and clear your unlocked house stages.\n\n'
           'This action cannot be undone.',
-          style: GoogleFonts.inter(color: Colors.white70, fontSize: 13.5, height: 1.4),
+          style: GoogleFonts.inter(
+              color: Colors.white70, fontSize: 13.5, height: 1.4),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel', style: GoogleFonts.outfit(color: Colors.white54, fontWeight: FontWeight.w600)),
+            child: Text('Cancel',
+                style: GoogleFonts.outfit(
+                    color: Colors.white54, fontWeight: FontWeight.w600)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF4444),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
             onPressed: () async {
               Navigator.pop(ctx);
@@ -695,30 +759,39 @@ class _SettingsPageState extends State<SettingsPage> {
                     context: context,
                     builder: (alertCtx) => AlertDialog(
                       backgroundColor: const Color(0xFF1E293B),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
                       title: Row(
                         children: [
-                          const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 26),
+                          const Icon(Icons.check_circle_rounded,
+                              color: Color(0xFF10B981), size: 26),
                           const SizedBox(width: 10),
                           Text(
                             'Progress Reset',
-                            style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                            style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18),
                           ),
                         ],
                       ),
                       content: Text(
                         'Your target progress and POKET Score have been successfully reset to 0. You are now at Day 1 Step 1.',
-                        style: GoogleFonts.inter(color: Colors.white70, fontSize: 14, height: 1.4),
+                        style: GoogleFonts.inter(
+                            color: Colors.white70, fontSize: 14, height: 1.4),
                       ),
                       actions: [
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF3B82F6),
                             foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
                           ),
                           onPressed: () => Navigator.pop(alertCtx),
-                          child: Text('OK', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+                          child: Text('OK',
+                              style: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.bold)),
                         ),
                       ],
                     ),
@@ -737,7 +810,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 if (mounted) setState(() => _isProcessing = false);
               }
             },
-            child: Text('Reset Progress', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+            child: Text('Reset Progress',
+                style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -752,11 +826,15 @@ class _SettingsPageState extends State<SettingsPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
-            const Icon(Icons.child_care_rounded, color: Color(0xFFFF9500), size: 28),
+            const Icon(Icons.child_care_rounded,
+                color: Color(0xFFFF9500), size: 28),
             const SizedBox(width: 10),
             Text(
               'Reset Kids Progress',
-              style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+              style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18),
             ),
           ],
         ),
@@ -764,18 +842,22 @@ class _SettingsPageState extends State<SettingsPage> {
           'Are you sure you want to reset Kids World progress?\n\n'
           'This will return all games and daily modules to Day 1, reset Kids Score (KS) to 0, and clear collected stars.\n\n'
           'This action cannot be undone.',
-          style: GoogleFonts.inter(color: Colors.white70, fontSize: 13.5, height: 1.4),
+          style: GoogleFonts.inter(
+              color: Colors.white70, fontSize: 13.5, height: 1.4),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel', style: GoogleFonts.outfit(color: Colors.white54, fontWeight: FontWeight.w600)),
+            child: Text('Cancel',
+                style: GoogleFonts.outfit(
+                    color: Colors.white54, fontWeight: FontWeight.w600)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFFF9500),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
             onPressed: () async {
               Navigator.pop(ctx);
@@ -785,7 +867,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Kids World progress has been reset to Day 1.'),
+                      content:
+                          Text('Kids World progress has been reset to Day 1.'),
                       backgroundColor: Color(0xFF10B981),
                     ),
                   );
@@ -803,7 +886,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 if (mounted) setState(() => _isProcessing = false);
               }
             },
-            child: Text('Reset Kids', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+            child: Text('Reset Kids',
+                style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -825,11 +909,15 @@ class _SettingsPageState extends State<SettingsPage> {
           children: [
             Row(
               children: [
-                const Icon(Icons.devices_rounded, color: Color(0xFF10B981), size: 24),
+                const Icon(Icons.devices_rounded,
+                    color: Color(0xFF10B981), size: 24),
                 const SizedBox(width: 10),
                 Text(
                   'Devices & Active Sessions',
-                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -849,7 +937,9 @@ class _SettingsPageState extends State<SettingsPage> {
               child: Row(
                 children: [
                   Icon(
-                    Platform.isIOS ? Icons.phone_iphone_rounded : Icons.phone_android_rounded,
+                    Platform.isIOS
+                        ? Icons.phone_iphone_rounded
+                        : Icons.phone_android_rounded,
                     color: const Color(0xFF10B981),
                     size: 28,
                   ),
@@ -859,12 +949,18 @@ class _SettingsPageState extends State<SettingsPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          Platform.isIOS ? 'Apple iPhone / iPad' : 'Android Mobile Device',
-                          style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                          Platform.isIOS
+                              ? 'Apple iPhone / iPad'
+                              : 'Android Mobile Device',
+                          style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14),
                         ),
                         Text(
                           'Current Active Session • Online Now',
-                          style: GoogleFonts.inter(color: const Color(0xFF10B981), fontSize: 12),
+                          style: GoogleFonts.inter(
+                              color: const Color(0xFF10B981), fontSize: 12),
                         ),
                       ],
                     ),
@@ -879,10 +975,12 @@ class _SettingsPageState extends State<SettingsPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF10B981),
                   foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('Close', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text('Close',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
           ],
@@ -907,20 +1005,28 @@ class _SettingsPageState extends State<SettingsPage> {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.security_rounded, color: Color(0xFFA855F7), size: 24),
+                  const Icon(Icons.security_rounded,
+                      color: Color(0xFFA855F7), size: 24),
                   const SizedBox(width: 10),
                   Text(
                     'Privacy & Security',
-                    style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                secondary: const Icon(Icons.visibility_rounded, color: Color(0xFFA855F7)),
-                title: const Text('Show Online Status in World Street', style: TextStyle(color: Colors.white, fontSize: 14)),
-                subtitle: const Text('Allows neighbors to see your active English practice presence', style: TextStyle(color: Colors.white54, fontSize: 11.5)),
+                secondary: const Icon(Icons.visibility_rounded,
+                    color: Color(0xFFA855F7)),
+                title: const Text('Show Online Status in World Street',
+                    style: TextStyle(color: Colors.white, fontSize: 14)),
+                subtitle: const Text(
+                    'Allows neighbors to see your active English practice presence',
+                    style: TextStyle(color: Colors.white54, fontSize: 11.5)),
                 activeThumbColor: const Color(0xFFA855F7),
                 value: _onlineStatusVisible,
                 onChanged: (val) async {
@@ -934,12 +1040,16 @@ class _SettingsPageState extends State<SettingsPage> {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.block_rounded, color: Colors.white70),
-                title: const Text('Blocked Neighbors & Peers', style: TextStyle(color: Colors.white, fontSize: 14)),
-                subtitle: const Text('0 blocked users', style: TextStyle(color: Colors.white54, fontSize: 11.5)),
-                trailing: const Icon(Icons.chevron_right, color: Colors.white24),
+                title: const Text('Blocked Neighbors & Peers',
+                    style: TextStyle(color: Colors.white, fontSize: 14)),
+                subtitle: const Text('0 blocked users',
+                    style: TextStyle(color: Colors.white54, fontSize: 11.5)),
+                trailing:
+                    const Icon(Icons.chevron_right, color: Colors.white24),
                 onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('No users are currently blocked.')),
+                    const SnackBar(
+                        content: Text('No users are currently blocked.')),
                   );
                 },
               ),
@@ -950,10 +1060,12 @@ class _SettingsPageState extends State<SettingsPage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFA855F7),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Done', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: const Text('Done',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -1034,15 +1146,20 @@ class _SettingsPageState extends State<SettingsPage> {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.record_voice_over_rounded, color: Color(0xFF38BDF8), size: 22),
+                  const Icon(Icons.record_voice_over_rounded,
+                      color: Color(0xFF38BDF8), size: 22),
                   const SizedBox(width: 8),
                   Text(
                     'Tutor Character Voice',
-                    style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold),
                   ),
                   const Spacer(),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded, color: Colors.white54, size: 22),
+                    icon: const Icon(Icons.close_rounded,
+                        color: Colors.white54, size: 22),
                     tooltip: 'Close',
                     onPressed: () {
                       PocketVoiceService.instance.stopPreview();
@@ -1070,47 +1187,58 @@ class _SettingsPageState extends State<SettingsPage> {
                             : Colors.white.withValues(alpha: 0.04),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: isSelected ? const Color(0xFF38BDF8) : Colors.white12,
+                          color: isSelected
+                              ? const Color(0xFF38BDF8)
+                              : Colors.white12,
                           width: isSelected ? 1.5 : 1.0,
                         ),
                       ),
                       child: ListTile(
-                        leading: Text(p['icon']!, style: const TextStyle(fontSize: 24)),
+                        leading: Text(p['icon']!,
+                            style: const TextStyle(fontSize: 24)),
                         title: Text(
                           p['name']!,
                           style: GoogleFonts.outfit(
-                            color: isSelected ? const Color(0xFF38BDF8) : Colors.white,
+                            color: isSelected
+                                ? const Color(0xFF38BDF8)
+                                : Colors.white,
                             fontWeight: FontWeight.bold,
                             fontSize: 14.5,
                           ),
                         ),
                         subtitle: Text(
                           p['desc']!,
-                          style: const TextStyle(color: Colors.white70, fontSize: 11.5),
+                          style: const TextStyle(
+                              color: Colors.white70, fontSize: 11.5),
                         ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.volume_up_rounded, color: Color(0xFF38BDF8), size: 20),
+                              icon: const Icon(Icons.volume_up_rounded,
+                                  color: Color(0xFF38BDF8), size: 20),
                               tooltip: 'Listen to sample',
-                              onPressed: () => PocketVoiceService.instance.previewPersona(p['id']!),
+                              onPressed: () => PocketVoiceService.instance
+                                  .previewPersona(p['id']!),
                             ),
                             if (isSelected)
-                              const Icon(Icons.check_circle_rounded, color: Color(0xFFFFD700)),
+                              const Icon(Icons.check_circle_rounded,
+                                  color: Color(0xFFFFD700)),
                           ],
                         ),
                         onTap: () async {
                           HapticFeedback.mediumImpact();
                           // Stop any running preview immediately before closing
                           await PocketVoiceService.instance.stopPreview();
-                          await PocketVoiceService.instance.setPersona(p['id']!);
+                          await PocketVoiceService.instance
+                              .setPersona(p['id']!);
                           setState(() => _voicePersona = p['id']!);
                           if (ctx.mounted) Navigator.pop(ctx);
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('✨ Tutor voice set to ${p["name"]}!'),
+                                content:
+                                    Text('✨ Tutor voice set to ${p["name"]}!'),
                                 backgroundColor: const Color(0xFF0284C7),
                                 duration: const Duration(seconds: 2),
                               ),
@@ -1147,7 +1275,10 @@ class _SettingsPageState extends State<SettingsPage> {
           children: [
             Text(
               'Select AI Voice Coach Speed',
-              style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+              style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             ...[0.8, 1.0, 1.2].map((speed) {
@@ -1158,8 +1289,13 @@ class _SettingsPageState extends State<SettingsPage> {
                       ? '1.0x • Natural Native Conversational (Default)'
                       : '1.2x • Fast Fluent Accent';
               return ListTile(
-                title: Text(label, style: const TextStyle(color: Colors.white, fontSize: 13.5)),
-                trailing: isSelected ? const Icon(Icons.check_circle_rounded, color: Color(0xFFFFFC00)) : null,
+                title: Text(label,
+                    style:
+                        const TextStyle(color: Colors.white, fontSize: 13.5)),
+                trailing: isSelected
+                    ? const Icon(Icons.check_circle_rounded,
+                        color: Color(0xFFFFFC00))
+                    : null,
                 onTap: () async {
                   final prefs = await SharedPreferences.getInstance();
                   await prefs.setDouble('voice_speed', speed);
@@ -1198,18 +1334,26 @@ class _SettingsPageState extends State<SettingsPage> {
           children: [
             Text(
               'Choose App Interface Language',
-              style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+              style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             ...languages.map((lang) {
               final isSelected = _selectedLanguage == lang['name'];
               return ListTile(
-                title: Text('${lang['name']} (${lang['native']})', style: const TextStyle(color: Colors.white, fontSize: 14)),
-                trailing: isSelected ? const Icon(Icons.check_circle_rounded, color: Color(0xFFFFFC00)) : null,
+                title: Text('${lang['name']} (${lang['native']})',
+                    style: const TextStyle(color: Colors.white, fontSize: 14)),
+                trailing: isSelected
+                    ? const Icon(Icons.check_circle_rounded,
+                        color: Color(0xFFFFFC00))
+                    : null,
                 onTap: () async {
                   final langName = lang['name']!;
                   final uid = SupaFlow.client.auth.currentUser?.id;
-                  await PocketLanguageService.setNativeLanguage(langName, userId: uid);
+                  await PocketLanguageService.setNativeLanguage(langName,
+                      userId: uid);
                   if (mounted) setState(() => _selectedLanguage = langName);
                   if (ctx.mounted) Navigator.pop(ctx);
                 },
@@ -1265,14 +1409,19 @@ class _SettingsPageState extends State<SettingsPage> {
 
           return AlertDialog(
             backgroundColor: const Color(0xFF0F172A),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             title: Row(
               children: [
-                const Icon(Icons.cleaning_services_rounded, color: Color(0xFFEC4899), size: 22),
+                const Icon(Icons.cleaning_services_rounded,
+                    color: Color(0xFFEC4899), size: 22),
                 const SizedBox(width: 8),
                 Text(
                   'Data & Storage Cleaner',
-                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                  style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16),
                 ),
               ],
             ),
@@ -1295,18 +1444,23 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Live Disk Cache:', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                      const Text('Live Disk Cache:',
+                          style:
+                              TextStyle(color: Colors.white70, fontSize: 13)),
                       if (isCalculating)
                         const SizedBox(
                           width: 14,
                           height: 14,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFEC4899)),
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Color(0xFFEC4899)),
                         )
                       else
                         Text(
                           displaySize,
                           style: GoogleFonts.outfit(
-                            color: currentCacheMb < 0.01 ? Colors.greenAccent : const Color(0xFFEC4899),
+                            color: currentCacheMb < 0.01
+                                ? Colors.greenAccent
+                                : const Color(0xFFEC4899),
                             fontWeight: FontWeight.bold,
                             fontSize: 15,
                           ),
@@ -1324,13 +1478,15 @@ class _SettingsPageState extends State<SettingsPage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(dCtx),
-                child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+                child: const Text('Cancel',
+                    style: TextStyle(color: Colors.white54)),
               ),
               OutlinedButton(
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFFEC4899),
                   side: const BorderSide(color: Color(0xFFEC4899)),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                 ),
                 onPressed: () async {
                   HapticFeedback.lightImpact();
@@ -1340,7 +1496,9 @@ class _SettingsPageState extends State<SettingsPage> {
                     final tempDir = await getTemporaryDirectory();
                     if (tempDir.existsSync()) {
                       tempDir.listSync().forEach((f) {
-                        try { f.deleteSync(recursive: true); } catch (_) {}
+                        try {
+                          f.deleteSync(recursive: true);
+                        } catch (_) {}
                       });
                     }
                   } catch (_) {}
@@ -1365,7 +1523,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFFD700),
                   foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                 ),
                 onPressed: () async {
                   HapticFeedback.heavyImpact();
@@ -1375,7 +1534,9 @@ class _SettingsPageState extends State<SettingsPage> {
                     final tempDir = await getTemporaryDirectory();
                     if (tempDir.existsSync()) {
                       tempDir.listSync().forEach((f) {
-                        try { f.deleteSync(recursive: true); } catch (_) {}
+                        try {
+                          f.deleteSync(recursive: true);
+                        } catch (_) {}
                       });
                     }
                   } catch (_) {}
@@ -1403,14 +1564,16 @@ class _SettingsPageState extends State<SettingsPage> {
                     setState(() => _isVip = false);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('🧹 Full Deep Reset Complete! All VIP & Storage Cache Wiped.'),
+                        content: Text(
+                            '🧹 Full Deep Reset Complete! All VIP & Storage Cache Wiped.'),
                         backgroundColor: Color(0xFF10B981),
                         duration: Duration(seconds: 3),
                       ),
                     );
                   }
                 },
-                child: const Text('⚡ Deep Reset All Cache & VIP', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text('⚡ Deep Reset All Cache & VIP',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ],
           );
@@ -1428,11 +1591,15 @@ class _SettingsPageState extends State<SettingsPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            const Icon(Icons.support_agent_rounded, color: Color(0xFFFFFC00), size: 24),
+            const Icon(Icons.support_agent_rounded,
+                color: Color(0xFFFFFC00), size: 24),
             const SizedBox(width: 10),
             Text(
               'Official Support Desk',
-              style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17),
+              style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 17),
             ),
           ],
         ),
@@ -1454,12 +1621,16 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.email_outlined, color: Color(0xFFFFFC00), size: 18),
+                  const Icon(Icons.email_outlined,
+                      color: Color(0xFFFFFC00), size: 18),
                   const SizedBox(width: 8),
                   Expanded(
                     child: SelectableText(
                       'support@pocketmatesapp.com',
-                      style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                      style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13),
                     ),
                   ),
                 ],
@@ -1475,7 +1646,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 hintStyle: const TextStyle(color: Colors.white38, fontSize: 12),
                 filled: true,
                 fillColor: const Color(0xFF1E293B),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
               ),
             ),
           ],
@@ -1483,24 +1655,28 @@ class _SettingsPageState extends State<SettingsPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            child:
+                const Text('Cancel', style: TextStyle(color: Colors.white54)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFFFFC00),
               foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
             onPressed: () {
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('📬 Support ticket dispatched to support@pocketmatesapp.com!'),
+                  content: Text(
+                      '📬 Support ticket dispatched to support@pocketmatesapp.com!'),
                   backgroundColor: Color(0xFF0F172A),
                 ),
               );
             },
-            child: const Text('Send Ticket', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text('Send Ticket',
+                style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -1523,7 +1699,10 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(width: 10),
             Text(
               'Ask The President',
-              style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontWeight: FontWeight.bold, fontSize: 16),
+              style: GoogleFonts.outfit(
+                  color: const Color(0xFFFFD700),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16),
             ),
           ],
         ),
@@ -1545,7 +1724,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 hintStyle: const TextStyle(color: Colors.white38, fontSize: 12),
                 filled: true,
                 fillColor: const Color(0xFF1E293B),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
               ),
             ),
           ],
@@ -1553,19 +1733,22 @@ class _SettingsPageState extends State<SettingsPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            child:
+                const Text('Cancel', style: TextStyle(color: Colors.white54)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFFFD700),
               foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
             onPressed: () async {
               final text = inquiryCtrl.text.trim();
               if (text.isEmpty) return;
               Navigator.pop(ctx);
-              final userId = SupaFlow.client.auth.currentUser?.id ?? 'guest_user';
+              final userId =
+                  SupaFlow.client.auth.currentUser?.id ?? 'guest_user';
               await PocketPresidentService.sendUserMessageToPresident(
                 userId: userId,
                 messageText: text,
@@ -1573,13 +1756,15 @@ class _SettingsPageState extends State<SettingsPage> {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('🏛️ Message received at the Presidential Palace!'),
+                    content: Text(
+                        '🏛️ Message received at the Presidential Palace!'),
                     backgroundColor: Color(0xFF0F172A),
                   ),
                 );
               }
             },
-            child: const Text('Dispatch', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text('Dispatch',
+                style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -1590,19 +1775,23 @@ class _SettingsPageState extends State<SettingsPage> {
     final faqs = [
       {
         'q': 'How does the 90-Day English Course work?',
-        'a': 'The course is structured across 90 immersive Houses. Free learners unlock 1 house per day at midnight. Poket VIP members get Instant Binge Mode to unlock all 90 houses consecutively.'
+        'a':
+            'The course is structured across 90 immersive Houses. Free learners unlock 1 house per day at midnight. Poket VIP members get Instant Binge Mode to unlock all 90 houses consecutively.'
       },
       {
         'q': 'What are Presidential Escort Guards in Citadel Battles?',
-        'a': 'When an attacker raids a Poket VIP house, they must answer 10 Presidential Escort Guard questions before breaching core fortress defenses.'
+        'a':
+            'When an attacker raids a Poket VIP house, they must answer 10 Presidential Escort Guard questions before breaching core fortress defenses.'
       },
       {
         'q': 'How do I receive the Day 90 CEFR C2 Diploma?',
-        'a': 'Upon completing all 90 learning houses, Poket VIP members unlock the cryptographic C2 Diploma 100% free. Free users who complete all 90 days with ads can unlock it for ₹149.'
+        'a':
+            'Upon completing all 90 learning houses, Poket VIP members unlock the cryptographic C2 Diploma 100% free. Free users who complete all 90 days with ads can unlock it for ₹149.'
       },
       {
         'q': 'What happens if I miss a daily streak?',
-        'a': 'You can use a Streak Freeze or practice in the Review Hub to revive your streak. Poket VIP accounts include 24/7 streak protection.'
+        'a':
+            'You can use a Streak Freeze or practice in the Review Hub to revive your streak. Poket VIP accounts include 24/7 streak protection.'
       },
     ];
 
@@ -1625,11 +1814,15 @@ class _SettingsPageState extends State<SettingsPage> {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.help_outline_rounded, color: Color(0xFF38BDF8), size: 24),
+                  const Icon(Icons.help_outline_rounded,
+                      color: Color(0xFF38BDF8), size: 24),
                   const SizedBox(width: 10),
                   Text(
                     'FAQ & Course Guide',
-                    style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -1646,9 +1839,15 @@ class _SettingsPageState extends State<SettingsPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(f['q']!, style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(f['q']!,
+                              style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFFD700),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14)),
                           const SizedBox(height: 6),
-                          Text(f['a']!, style: GoogleFonts.inter(color: Colors.white70, fontSize: 12.5)),
+                          Text(f['a']!,
+                              style: GoogleFonts.inter(
+                                  color: Colors.white70, fontSize: 12.5)),
                         ],
                       ),
                     ),
@@ -1661,11 +1860,13 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _showInviteFriendsModal() {
-    Clipboard.setData(const ClipboardData(text: 'https://pocketmatesapp.com/invite'));
+    Clipboard.setData(
+        const ClipboardData(text: 'https://pocketmatesapp.com/invite'));
     HapticFeedback.mediumImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('🔗 Invite link copied: https://pocketmatesapp.com/invite'),
+        content:
+            Text('🔗 Invite link copied: https://pocketmatesapp.com/invite'),
         backgroundColor: Color(0xFF10B981),
       ),
     );
@@ -1679,7 +1880,8 @@ class _SettingsPageState extends State<SettingsPage> {
           backgroundColor: Colors.black, // Dark theme background
           appBar: AppBar(
             backgroundColor: Colors.black,
-            title: const Text('Settings', style: TextStyle(color: Colors.white)),
+            title:
+                const Text('Settings', style: TextStyle(color: Colors.white)),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.white),
               onPressed: () => Navigator.pop(context),
@@ -1695,9 +1897,11 @@ class _SettingsPageState extends State<SettingsPage> {
               // 👤 Account & Communication
               const _SectionHeader(title: 'Account & Communication'),
               ValueListenableBuilder<bool>(
-                valueListenable: AppStoreReviewService.worldSwitchVisibleNotifier,
+                valueListenable:
+                    AppStoreReviewService.worldSwitchVisibleNotifier,
                 builder: (context, isVisible, _) {
-                  if (!isVisible || !AppStoreReviewService.isWorldSwitchVisible) return const SizedBox.shrink();
+                  if (!isVisible || !AppStoreReviewService.isWorldSwitchVisible)
+                    return const SizedBox.shrink();
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -1705,14 +1909,16 @@ class _SettingsPageState extends State<SettingsPage> {
                         icon: Icons.child_care_rounded,
                         iconColor: const Color(0xFFFF69B4),
                         title: 'Switch to Student & Kids Mode',
-                        subtitle: 'Gamified 100-Day English Adventure with 100 Animal Companions',
+                        subtitle:
+                            'Gamified 100-Day English Adventure with 100 Animal Companions',
                         onTap: _showSwitchToKidsDialog,
                       ),
                       _SettingsTile(
                         icon: Icons.pattern_rounded,
                         iconColor: const Color(0xFFF59E0B),
                         title: 'Parental Security Lock 🔒',
-                        subtitle: 'Configure or reset 3x3 pattern lock for Kids Mode',
+                        subtitle:
+                            'Configure or reset 3x3 pattern lock for Kids Mode',
                         onTap: _showParentalLockSettingsModal,
                       ),
                     ],
@@ -1764,7 +1970,8 @@ class _SettingsPageState extends State<SettingsPage> {
                                             ? 'High Energy Coach (Motivating pace)'
                                             : 'Smooth Female (Natural & warm)',
                 trailingWidget: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
@@ -1785,7 +1992,10 @@ class _SettingsPageState extends State<SettingsPage> {
                                             : _voicePersona == 'coach'
                                                 ? 'Coach ⚡'
                                                 : 'Female 👩‍🏫',
-                    style: const TextStyle(color: Color(0xFF38BDF8), fontWeight: FontWeight.bold, fontSize: 12),
+                    style: const TextStyle(
+                        color: Color(0xFF38BDF8),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12),
                   ),
                 ),
                 onTap: _showVoicePersonaPicker,
@@ -1796,17 +2006,23 @@ class _SettingsPageState extends State<SettingsPage> {
                 title: 'AI Voice Coach Speed',
                 subtitle: '${_voiceSpeed}x speed for pronunciation playback',
                 trailingWidget: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Text('${_voiceSpeed}x', style: const TextStyle(color: Color(0xFFFFFC00), fontWeight: FontWeight.bold, fontSize: 13)),
+                  child: Text('${_voiceSpeed}x',
+                      style: const TextStyle(
+                          color: Color(0xFFFFFC00),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13)),
                 ),
                 onTap: _showVoiceSpeedPicker,
               ),
               ValueListenableBuilder<bool>(
-                valueListenable: PocketGameAudioService.instance.isMutedNotifier,
+                valueListenable:
+                    PocketGameAudioService.instance.isMutedNotifier,
                 builder: (context, isMuted, child) {
                   return SwitchListTile(
                     contentPadding: EdgeInsets.zero,
@@ -1826,7 +2042,8 @@ class _SettingsPageState extends State<SettingsPage> {
                       isMuted
                           ? 'Background music muted'
                           : 'Playing ambient music in homesteads & streets',
-                      style: const TextStyle(color: Colors.white54, fontSize: 12),
+                      style:
+                          const TextStyle(color: Colors.white54, fontSize: 12),
                     ),
                     activeThumbColor: const Color(0xFFFFFC00),
                     value: !isMuted,
@@ -1848,16 +2065,23 @@ class _SettingsPageState extends State<SettingsPage> {
                 subtitle: _selectedLanguage,
                 trailingWidget: Text(
                   _selectedLanguage,
-                  style: const TextStyle(color: Color(0xFFFFFC00), fontWeight: FontWeight.bold, fontSize: 13),
+                  style: const TextStyle(
+                      color: Color(0xFFFFFC00),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13),
                 ),
                 onTap: _showLanguagePicker,
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                secondary: const Icon(Icons.bolt_rounded, color: Color(0xFF22C55E)),
+                secondary:
+                    const Icon(Icons.bolt_rounded, color: Color(0xFF22C55E)),
                 title: const Text(
                   'Power Saving & Battery Mode',
-                  style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500),
                 ),
                 subtitle: const Text(
                   'Reduces background particles and 3D animations',
@@ -1873,10 +2097,14 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                secondary: const Icon(Icons.notifications_active_outlined, color: Color(0xFFF97316)),
+                secondary: const Icon(Icons.notifications_active_outlined,
+                    color: Color(0xFFF97316)),
                 title: const Text(
                   'Study Streak Reminders',
-                  style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500),
                 ),
                 subtitle: const Text(
                   'Daily reminder before midnight to keep your streak',
@@ -1912,7 +2140,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 icon: Icons.account_balance_rounded,
                 iconColor: const Color(0xFFFFD700),
                 title: 'Ask The President',
-                subtitle: 'Direct high-priority communication with President Mus\'ab',
+                subtitle:
+                    'Direct high-priority communication with President Mus\'ab',
                 onTap: _showAskPresidentModal,
               ),
               _SettingsTile(
@@ -1937,7 +2166,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 icon: Icons.restart_alt_rounded,
                 iconColor: const Color(0xFFEF4444),
                 title: 'Reset Target Progress & POKET Score',
-                subtitle: 'Restart 90-day learning trail from Day 1 and reset POKET Score to 0',
+                subtitle:
+                    'Restart 90-day learning trail from Day 1 and reset POKET Score to 0',
                 onTap: _showResetAdultProgressDialog,
                 textColor: Colors.white,
               ),
@@ -1945,7 +2175,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 icon: Icons.child_care_rounded,
                 iconColor: const Color(0xFFFF9500),
                 title: 'Reset Kids World Progress',
-                subtitle: 'Return Kids syllabus to Day 1 and reset Kids Score (KS) & stars to 0',
+                subtitle:
+                    'Return Kids syllabus to Day 1 and reset Kids Score (KS) & stars to 0',
                 onTap: _showResetKidsProgressDialog,
                 textColor: Colors.white,
               ),
@@ -1957,14 +2188,16 @@ class _SettingsPageState extends State<SettingsPage> {
                 icon: Icons.privacy_tip_outlined,
                 title: 'Privacy Policy',
                 onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => const PrivacyPolicyPage()),
+                  MaterialPageRoute(
+                      builder: (context) => const PrivacyPolicyPage()),
                 ),
               ),
               _SettingsTile(
                 icon: Icons.description_outlined,
                 title: 'Terms of Service',
                 onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => const TermsOfServicePage()),
+                  MaterialPageRoute(
+                      builder: (context) => const TermsOfServicePage()),
                 ),
               ),
               _SettingsTile(
@@ -1977,7 +2210,8 @@ class _SettingsPageState extends State<SettingsPage> {
               _SettingsTile(
                 icon: Icons.delete_forever,
                 title: 'Delete Account',
-                subtitle: 'Permanently remove your profile and all data (irreversible)',
+                subtitle:
+                    'Permanently remove your profile and all data (irreversible)',
                 onTap: _handleDeleteAccount,
                 textColor: Colors.redAccent,
                 iconColor: Colors.redAccent,
@@ -1991,11 +2225,13 @@ class _SettingsPageState extends State<SettingsPage> {
                 leading: const Icon(Icons.info_outline, color: Colors.white54),
                 title: const Text(
                   'App Version',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w500),
                 ),
                 trailing: Text(
                   'v$_appVersion',
-                  style: const TextStyle(color: Color(0xFFFFFC00), fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      color: Color(0xFFFFFC00), fontWeight: FontWeight.bold),
                 ),
               ),
               if (_canAccessAdmin) ...[
@@ -2005,7 +2241,6 @@ class _SettingsPageState extends State<SettingsPage> {
             ],
           ),
         ),
-
         if (_isProcessing)
           Container(
             color: Colors.black54,
@@ -2017,7 +2252,6 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 }
-
 
 class _SectionHeader extends StatelessWidget {
   final String title;
@@ -2085,7 +2319,8 @@ class _SettingsTile extends StatelessWidget {
               style: const TextStyle(color: Colors.white54, fontSize: 12),
             )
           : null,
-      trailing: trailingWidget ?? const Icon(Icons.chevron_right, color: Colors.white24, size: 20),
+      trailing: trailingWidget ??
+          const Icon(Icons.chevron_right, color: Colors.white24, size: 20),
       onTap: onTap,
     );
   }
@@ -2131,7 +2366,16 @@ class _PresidentAndAdminSettingsSectionState
   void _showReplyModal(Map<String, dynamic> inquiry) {
     final replyController = TextEditingController();
     final targetUserId = inquiry['user_id']?.toString() ?? '';
-    final citizenName = inquiry['user_name'] != null && inquiry['user_name'].toString().isNotEmpty && inquiry['user_name'] != 'Citizen' ? inquiry['user_name'].toString() : (ContactsNameService().getDisplayName(userId: targetUserId, fallbackName: 'Learner').isNotEmpty ? ContactsNameService().getDisplayName(userId: targetUserId, fallbackName: 'Learner') : 'Learner');
+    final citizenName = inquiry['user_name'] != null &&
+            inquiry['user_name'].toString().isNotEmpty &&
+            inquiry['user_name'] != 'Citizen'
+        ? inquiry['user_name'].toString()
+        : (ContactsNameService()
+                .getDisplayName(userId: targetUserId, fallbackName: 'Learner')
+                .isNotEmpty
+            ? ContactsNameService()
+                .getDisplayName(userId: targetUserId, fallbackName: 'Learner')
+            : 'Learner');
     bool isSending = false;
 
     showModalBottomSheet(
@@ -2208,8 +2452,10 @@ class _PresidentAndAdminSettingsSectionState
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        inquiry['last_message']?.toString() ?? '(Empty message)',
-                        style: const TextStyle(color: Colors.white, fontSize: 13),
+                        inquiry['last_message']?.toString() ??
+                            '(Empty message)',
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 13),
                       ),
                     ],
                   ),
@@ -2221,17 +2467,21 @@ class _PresidentAndAdminSettingsSectionState
                   autofocus: true,
                   style: const TextStyle(color: Colors.white, fontSize: 14),
                   decoration: InputDecoration(
-                    hintText: 'Type your official Presidential response in English...',
-                    hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
+                    hintText:
+                        'Type your official Presidential response in English...',
+                    hintStyle:
+                        const TextStyle(color: Colors.white38, fontSize: 13),
                     filled: true,
                     fillColor: const Color(0xFF1E293B),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFFFFD700), width: 1),
+                      borderSide:
+                          const BorderSide(color: Color(0xFFFFD700), width: 1),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFFFFD700), width: 1.5),
+                      borderSide: const BorderSide(
+                          color: Color(0xFFFFD700), width: 1.5),
                     ),
                   ),
                 ),
@@ -2253,7 +2503,8 @@ class _PresidentAndAdminSettingsSectionState
                             final text = replyController.text.trim();
                             if (text.isEmpty) return;
                             setModalState(() => isSending = true);
-                            await PocketPresidentService.sendPresidentReplyToUser(
+                            await PocketPresidentService
+                                .sendPresidentReplyToUser(
                               targetUserId: targetUserId,
                               replyText: text,
                               adminName: 'President Mus\'ab',
@@ -2265,7 +2516,8 @@ class _PresidentAndAdminSettingsSectionState
                               _fetchInquiries();
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('✨ Presidential reply sent successfully!'),
+                                  content: Text(
+                                      '✨ Presidential reply sent successfully!'),
                                   backgroundColor: Color(0xFF0F172A),
                                 ),
                               );
@@ -2339,7 +2591,8 @@ class _PresidentAndAdminSettingsSectionState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dCtx),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            child:
+                const Text('Cancel', style: TextStyle(color: Colors.white54)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -2354,7 +2607,8 @@ class _PresidentAndAdminSettingsSectionState
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('👑 Presidential Vibe posted with Golden Aura!'),
+                    content:
+                        Text('👑 Presidential Vibe posted with Golden Aura!'),
                     backgroundColor: Color(0xFF0F172A),
                   ),
                 );
@@ -2431,7 +2685,8 @@ class _PresidentAndAdminSettingsSectionState
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.refresh_rounded, color: Color(0xFFFFD700), size: 20),
+                icon: const Icon(Icons.refresh_rounded,
+                    color: Color(0xFFFFD700), size: 20),
                 onPressed: _fetchInquiries,
                 tooltip: 'Refresh citizen inquiries',
               ),
@@ -2498,7 +2753,8 @@ class _PresidentAndAdminSettingsSectionState
               ),
               child: Row(
                 children: const [
-                  Icon(Icons.mark_email_read_rounded, color: Colors.white38, size: 20),
+                  Icon(Icons.mark_email_read_rounded,
+                      color: Colors.white38, size: 20),
                   SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -2517,7 +2773,13 @@ class _PresidentAndAdminSettingsSectionState
               separatorBuilder: (_, __) => const SizedBox(height: 8),
               itemBuilder: (context, index) {
                 final inq = _inquiries[index];
-                final name = (inq['user_name'] != null && inq['user_name'].toString().isNotEmpty && inq['user_name'] != 'Citizen') ? inq['user_name'] : ContactsNameService().getDisplayName(userId: inq['user_id']?.toString() ?? '', fallbackName: 'Learner');
+                final name = (inq['user_name'] != null &&
+                        inq['user_name'].toString().isNotEmpty &&
+                        inq['user_name'] != 'Citizen')
+                    ? inq['user_name']
+                    : ContactsNameService().getDisplayName(
+                        userId: inq['user_id']?.toString() ?? '',
+                        fallbackName: 'Learner');
                 final msg = inq['last_message'] ?? '';
                 final status = inq['status'] ?? 'pending';
                 final isPending = status == 'pending';
@@ -2604,8 +2866,10 @@ class _PresidentAndAdminSettingsSectionState
                       const SizedBox(width: 8),
                       TextButton(
                         style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          backgroundColor: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          backgroundColor:
+                              const Color(0xFFFFD700).withValues(alpha: 0.15),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -2716,7 +2980,8 @@ class _PresidentAndAdminSettingsSectionState
                 ),
                 padding: const EdgeInsets.symmetric(vertical: 10),
               ),
-              icon: const Icon(Icons.stars_rounded, color: Color(0xFFFFD700), size: 18),
+              icon: const Icon(Icons.stars_rounded,
+                  color: Color(0xFFFFD700), size: 18),
               label: Text(
                 'Post Official President Vibe',
                 style: GoogleFonts.outfit(
@@ -2733,5 +2998,3 @@ class _PresidentAndAdminSettingsSectionState
     );
   }
 }
-
-

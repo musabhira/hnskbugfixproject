@@ -117,6 +117,33 @@ void main() {
       expect(prefs.getBool('is_vip'), isNull);
     });
 
+    test('Switching from Premium account to Free account immediately enables ads (no stale VIP caching)', () async {
+      final prefs = await SharedPreferences.getInstance();
+      const premiumUser = 'user_premium_vip_1';
+      const freeUser = 'user_standard_free_2';
+      const brandNewUser = 'user_new_fresh_3';
+
+      // 1. Premium user has active VIP flags
+      await prefs.setBool('is_vip_$premiumUser', true);
+      await prefs.setBool('is_verified_$premiumUser', true);
+      await prefs.setString('subscription_tier_$premiumUser', 'yearly');
+
+      // 2. Free user has free status
+      await prefs.setBool('is_vip_$freeUser', false);
+      await prefs.setBool('is_verified_$freeUser', false);
+      await prefs.setString('subscription_tier_$freeUser', 'free');
+
+      // Verify Premium user evaluates to VIP (ad-free)
+      expect(evaluateVipFromPrefs(prefs, premiumUser), isTrue);
+
+      // Verify switching to Free user immediately returns false (ads enabled)
+      expect(evaluateVipFromPrefs(prefs, freeUser), isFalse);
+
+      // Verify a completely new/unregistered user with zero prefs also evaluates to false (ads enabled)
+      expect(evaluateVipFromPrefs(prefs, brandNewUser), isFalse,
+          reason: 'Brand new or unconfigured user MUST default to false so ads show for 95% free users');
+    });
+
     test('Admin panel DOB and user filtering logic works correctly', () {
       final mockProfiles = [
         {

@@ -887,9 +887,9 @@ class PocketAdMobService {
   final ValueNotifier<bool> vipEntitlementNotifier = ValueNotifier<bool>(false);
 
   /// Fast load of user-scoped VIP entitlement from local disk into memory
-  Future<void> _loadLocalVipEntitlement() async {
+  Future<void> _loadLocalVipEntitlement([String? overrideUid]) async {
     try {
-      final uid = SupaFlow.client.auth.currentUser?.id;
+      final uid = overrideUid ?? SupaFlow.client.auth.currentUser?.id;
       if (uid == null || uid.isEmpty) {
         _cachedVipUid = null;
         _cachedIsVip = false;
@@ -912,6 +912,16 @@ class PocketAdMobService {
         _cachedIsVip = isTrueVip;
         _cachedVipTimestamp = DateTime.now();
         vipEntitlementNotifier.value = isTrueVip;
+      } else {
+        // Free user by default - guarantees ads will show for standard accounts!
+        _cachedVipUid = uid;
+        _cachedIsVip = false;
+        _cachedVipTimestamp = DateTime.now();
+        vipEntitlementNotifier.value = false;
+      }
+
+      if (_cachedIsVip == false) {
+        preloadAds();
       }
     } catch (_) {}
   }
@@ -954,12 +964,20 @@ class PocketAdMobService {
 
   /// 🔄 Called when an account is switched or signed in
   void onAccountSwitched(String? newUid) {
-    _cachedVipUid = null;
-    _cachedIsVip = null;
+    // 🛡️ CRITICAL GUARANTEE: Reset cache to false (Free) immediately
+    // so that switching from a Premium/VIP account to a Free account
+    // NEVER blocks ads due to stale VIP caching!
+    _cachedVipUid = newUid;
+    _cachedIsVip = false;
     _cachedVipTimestamp = null;
     vipEntitlementNotifier.value = false;
-    _loadLocalVipEntitlement().then((_) {
-      isUserVip(forceRefresh: true);
+
+    _loadLocalVipEntitlement(newUid).then((_) {
+      isUserVip(forceRefresh: true).then((isVip) {
+        if (!isVip) {
+          preloadAds();
+        }
+      });
     });
   }
 

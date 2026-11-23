@@ -337,6 +337,7 @@ class PocketSavedAccountService {
         await PocketKidsService.syncAndVerifyUserAccountType(uid);
       } catch (_) {}
       PocketAdMobService.instance.onAccountSwitched(uid);
+      await PocketAdMobService.instance.isUserVip(forceRefresh: true);
 
       // Update target account last active in saved list
       await saveOrUpdateAccount(
