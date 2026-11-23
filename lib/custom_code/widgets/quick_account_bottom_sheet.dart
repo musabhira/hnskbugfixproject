@@ -88,9 +88,16 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
       try {
         final pRes = await supabase
             .from('profile')
-            .select('name, profile_image_url')
+            .select('name, profile_image_url, is_vip, is_premium, is_subscribed, subscription_tier, verified')
             .eq('user_id', currentUserId)
             .maybeSingle();
+        final bool isVip = pRes?['is_vip'] == true ||
+            pRes?['is_premium'] == true ||
+            pRes?['is_subscribed'] == true ||
+            pRes?['verified'] == true ||
+            (pRes?['subscription_tier'] != null &&
+                pRes?['subscription_tier'] != 'free' &&
+                pRes?['subscription_tier'] != 'none');
         if (mounted) {
           setState(() {
             currentProfile = {
@@ -100,6 +107,7 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
                   currentUserEmail?.split('@').first ??
                   'You',
               'profile_image_url': pRes?['profile_image_url']?.toString(),
+              'is_vip': isVip,
             };
           });
         }
@@ -111,6 +119,7 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
               'email': currentUserEmail ?? '',
               'name': currentUserEmail?.split('@').first ?? 'You',
               'profile_image_url': null,
+              'is_vip': false,
             };
           });
         }
@@ -151,7 +160,7 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
               id,
               email,
               password,
-              profile!inner(name, profile_image_url)
+              profile!inner(name, profile_image_url, is_vip, is_premium, is_subscribed, subscription_tier, verified)
             )
           ''').or('parent_user_id.eq.$currentUserId,user_id.eq.$currentUserId');
 
@@ -176,6 +185,13 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
         final password = userInfo?['password']?.toString();
         final name = profile?['name']?.toString() ?? email?.split('@').first ?? 'User';
         final profileImageUrl = profile?['profile_image_url']?.toString();
+        final bool isVip = profile?['is_vip'] == true ||
+            profile?['is_premium'] == true ||
+            profile?['is_subscribed'] == true ||
+            profile?['verified'] == true ||
+            (profile?['subscription_tier'] != null &&
+                profile?['subscription_tier'] != 'free' &&
+                profile?['subscription_tier'] != 'none');
 
         final existingIdx = combined.indexWhere((item) =>
             item['user_id'] == targetUserId || (email != null && item['email'] == email));
@@ -186,6 +202,7 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
           if (profileImageUrl != null) combined[existingIdx]['profile_image_url'] = profileImageUrl;
           if (password != null && password.isNotEmpty) combined[existingIdx]['password'] = password;
           combined[existingIdx]['auto_login_id'] = row['id']?.toString();
+          combined[existingIdx]['is_vip'] = isVip;
         } else {
           combined.add({
             'user_id': targetUserId,
@@ -194,6 +211,7 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
             'name': name,
             'profile_image_url': profileImageUrl,
             'auto_login_id': row['id']?.toString(),
+            'is_vip': isVip,
           });
         }
       }
@@ -270,6 +288,7 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
 
       // 👑 Switch VIP & AdMob status seamlessly for the new account
       PocketAdMobService.instance.onAccountSwitched(res.user!.id);
+      await PocketAdMobService.instance.isUserVip(forceRefresh: true);
 
       if (!mounted) return;
       Navigator.of(context).pop();
@@ -920,15 +939,26 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  currentProfile!['name']?.toString() ?? 'You',
-                                  style: GoogleFonts.outfit(
-                                    color: Colors.white,
-                                    fontSize: 15.5,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                                Row(
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        currentProfile!['name']?.toString() ?? 'You',
+                                        style: GoogleFonts.outfit(
+                                          color: Colors.white,
+                                          fontSize: 15.5,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    if (currentProfile!['is_vip'] == true) ...[
+                                      const SizedBox(width: 5),
+                                      const Icon(Icons.verified_rounded,
+                                          color: Color(0xFFFFD700), size: 16),
+                                    ],
+                                  ],
                                 ),
                                 if (currentProfile!['email'] != null &&
                                     currentProfile!['email'].toString().isNotEmpty)
@@ -1121,13 +1151,25 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
                                   )
                                 : null,
                           ),
-                          title: Text(
-                            profileName,
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          title: Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  profileName,
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (user['is_vip'] == true) ...[
+                                const SizedBox(width: 5),
+                                const Icon(Icons.verified_rounded,
+                                    color: Color(0xFFFFD700), size: 16),
+                              ],
+                            ],
                           ),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,

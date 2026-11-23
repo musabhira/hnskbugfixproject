@@ -2233,10 +2233,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   Widget _buildUserTab() {
     final filteredUsers = allProfiles.where((u) {
       final name = u['name']?.toString().toLowerCase() ?? "";
+      final email = u['email']?.toString().toLowerCase() ?? "";
       final shop = u['shop_name']?.toString().toLowerCase() ?? "";
       final phone = u['phone_no']?.toString().toLowerCase() ?? "";
       final q = userSearchQuery.toLowerCase();
-      return name.contains(q) || shop.contains(q) || phone.contains(q);
+      return name.contains(q) || email.contains(q) || shop.contains(q) || phone.contains(q);
     }).toList();
 
     return Column(
@@ -2247,7 +2248,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             onChanged: (v) => setState(() => userSearchQuery = v),
             style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
-              hintText: 'Search users by name, shop, or phone...',
+              hintText: 'Search users by name, email, or phone...',
               hintStyle: const TextStyle(color: Colors.grey),
               prefixIcon: const Icon(Icons.search, color: Colors.grey),
               filled: true,
@@ -2341,13 +2342,55 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                         ],
                                       ),
                                       const SizedBox(height: 3),
-                                      Text(
-                                        user['phone_no'] ??
-                                            user['shop_name'] ??
-                                            'No phone / shop',
-                                        style: const TextStyle(
-                                            fontSize: 12, color: Colors.grey),
-                                        overflow: TextOverflow.ellipsis,
+                                      // Email
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.email_outlined,
+                                              size: 12, color: Colors.white60),
+                                          const SizedBox(width: 4),
+                                          Expanded(
+                                            child: Text(
+                                              (user['email'] != null && user['email'].toString().isNotEmpty)
+                                                  ? user['email'].toString()
+                                                  : 'No email registered',
+                                              style: const TextStyle(
+                                                  fontSize: 11.5,
+                                                  color: Colors.white70),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 2),
+                                      // DOB & Phone
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.cake_outlined,
+                                              size: 12, color: Color(0xFFFFD700)),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            (user['day'] != null && user['month'] != null && user['year'] != null)
+                                                ? 'DOB: ${user['day'].toString().padLeft(2, '0')}/${user['month'].toString().padLeft(2, '0')}/${user['year']}'
+                                                : 'DOB: Not set',
+                                            style: const TextStyle(
+                                                fontSize: 11,
+                                                color: Color(0xFFFFD700),
+                                                fontWeight: FontWeight.w600),
+                                          ),
+                                          if (user['phone_no'] != null &&
+                                              user['phone_no'].toString().isNotEmpty) ...[
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: Text(
+                                                '• ${user['phone_no']}',
+                                                style: const TextStyle(
+                                                    fontSize: 11,
+                                                    color: Colors.white38),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ],
                                       ),
                                       const SizedBox(height: 4),
                                       Row(
@@ -16729,6 +16772,14 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                               user['is_subscribed'] == true ||
                               user['verified'] == true;
                           final name = user['name']?.toString() ?? 'Unnamed';
+                          final email = user['email']?.toString() ?? '';
+                          final day = user['day'];
+                          final month = user['month'];
+                          final year = user['year'];
+                          final hasDob = day != null && month != null && year != null;
+                          final dobStr = hasDob
+                              ? '${day.toString().padLeft(2, '0')}/${month.toString().padLeft(2, '0')}/$year'
+                              : null;
                           final phone =
                               user['phone_no']?.toString() ?? 'No phone';
                           final tier = user['subscription_tier']?.toString() ??
@@ -16816,6 +16867,26 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                           ],
                                         ],
                                       ),
+                                      if (email.isNotEmpty) ...[
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          email,
+                                          style: GoogleFonts.inter(
+                                              color: Colors.white70,
+                                              fontSize: 11),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                      if (dobStr != null) ...[
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'DOB: $dobStr',
+                                          style: GoogleFonts.inter(
+                                              color: const Color(0xFFFFD700),
+                                              fontSize: 10.5,
+                                              fontWeight: FontWeight.w600),
+                                        ),
+                                      ],
                                       const SizedBox(height: 2),
                                       Text(
                                         phone,

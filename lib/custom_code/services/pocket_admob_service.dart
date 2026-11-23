@@ -897,7 +897,9 @@ class PocketAdMobService {
         return;
       }
       final prefs = await SharedPreferences.getInstance();
-      final isVip = prefs.getBool('is_vip_$uid') ?? prefs.getBool('is_premium_$uid');
+      final isVip = prefs.getBool('is_vip_$uid') ??
+          prefs.getBool('is_premium_$uid') ??
+          prefs.getBool('is_verified_$uid');
       final tier = prefs.getString('subscription_tier_$uid');
       if (isVip != null) {
         _cachedVipUid = uid;
@@ -1056,20 +1058,22 @@ class PocketAdMobService {
             tier != 'none' &&
             tier != 'null';
 
-        // Option B Single Source of Truth:
+        // Unified Single Source of Truth (VIP = Premium = Subscribed = Verified)
         final bool isTrueVip = hasActivePaidTier ||
             role == 'vip' ||
             role == 'admin' ||
             profile['is_vip'] == true ||
             profile['is_premium'] == true ||
-            profile['is_subscribed'] == true;
+            profile['is_subscribed'] == true ||
+            profile['verified'] == true;
 
-        debugPrint('🔍 [PocketAdMob] Genuine DB Check VIP for UID $uid: isTrueVip=$isTrueVip (Tier: $tier, Role: $role, is_premium: ${profile['is_premium']}, is_vip: ${profile['is_vip']})');
+        debugPrint('🔍 [PocketAdMob] Genuine DB Check VIP for UID $uid: isTrueVip=$isTrueVip (Tier: $tier, Role: $role, is_premium: ${profile['is_premium']}, is_vip: ${profile['is_vip']}, verified: ${profile['verified']})');
 
         if (isTrueVip) {
           await prefs.setBool('is_vip_$uid', true);
           await prefs.setBool('is_premium_$uid', true);
-          await prefs.setString('subscription_tier_$uid', tier ?? 'monthly');
+          await prefs.setBool('is_verified_$uid', true);
+          await prefs.setString('subscription_tier_$uid', tier ?? 'vip_active');
 
           // Clear un-scoped global device flags to prevent cross-account leaks
           await prefs.setBool('is_vip', false);
@@ -1086,6 +1090,7 @@ class PocketAdMobService {
         } else {
           await prefs.setBool('is_vip_$uid', false);
           await prefs.setBool('is_premium_$uid', false);
+          await prefs.setBool('is_verified_$uid', false);
           await prefs.setString('subscription_tier_$uid', 'free');
 
           await prefs.setBool('is_vip', false);

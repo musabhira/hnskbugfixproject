@@ -37,6 +37,7 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _isProcessing = false;
   bool _canAccessAdmin = false;
   bool _isVip = false;
+  String _userPlan = 'free';
   String _selectedLanguage = PocketLanguageService.currentLanguage;
   bool _isPowerSaving = false;
   bool _isNotificationsEnabled = true;
@@ -61,9 +62,32 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _loadUserSettings() async {
     final prefs = await SharedPreferences.getInstance();
     final isVip = await PocketAdMobService.instance.isUserVip();
+    final uid = SupaFlow.client.auth.currentUser?.id;
+    String userPlan = 'free';
+    if (uid != null) {
+      userPlan = prefs.getString('subscription_tier_$uid') ?? 'free';
+      if (userPlan == 'free') {
+        try {
+          final res = await SupaFlow.client
+              .from('profile')
+              .select('subscription_tier, is_vip, is_subscribed, verified')
+              .or('user_id.eq.$uid,id.eq.$uid')
+              .maybeSingle();
+          if (res != null) {
+            final tier = res['subscription_tier']?.toString().toLowerCase().trim();
+            if (tier != null && tier.isNotEmpty && tier != 'free' && tier != 'none') {
+              userPlan = tier;
+            } else if (res['is_vip'] == true || res['is_subscribed'] == true || res['verified'] == true) {
+              userPlan = 'vip_active';
+            }
+          }
+        } catch (_) {}
+      }
+    }
     if (mounted) {
       setState(() {
         _isVip = isVip;
+        _userPlan = userPlan;
         _selectedLanguage = prefs.getString('preferred_language') ?? PocketLanguageService.currentLanguage;
         _isPowerSaving = prefs.getBool('power_saving_mode') ?? false;
         _isNotificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
@@ -214,12 +238,15 @@ class _SettingsPageState extends State<SettingsPage> {
                     children: [
                       Row(
                         children: [
-                          Text(
-                            _isVip ? 'Poket VIP Active' : 'Upgrade to Poket VIP',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFFFFD700),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                          Flexible(
+                            child: Text(
+                              _isVip ? 'Poket VIP Active' : 'Upgrade to Poket VIP',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFD700),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           const SizedBox(width: 6),
@@ -227,6 +254,37 @@ class _SettingsPageState extends State<SettingsPage> {
                             _isVip ? Icons.verified_rounded : Icons.bolt_rounded,
                             color: const Color(0xFFFFD700),
                             size: 16,
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                            decoration: BoxDecoration(
+                              color: _isVip
+                                  ? const Color(0xFFFFD700).withValues(alpha: 0.2)
+                                  : Colors.white.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: _isVip
+                                    ? const Color(0xFFFFD700)
+                                    : Colors.white24,
+                                width: 0.8,
+                              ),
+                            ),
+                            child: Text(
+                              _isVip
+                                  ? (_userPlan.contains('year')
+                                      ? 'YEARLY PLAN'
+                                      : _userPlan.contains('month')
+                                          ? 'MONTHLY PLAN'
+                                          : 'VIP ACTIVE')
+                                  : 'FREE PLAN',
+                              style: GoogleFonts.outfit(
+                                color: _isVip ? const Color(0xFFFFD700) : Colors.white60,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
                           ),
                         ],
                       ),
