@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'chat/whats_app_groups_provider.dart';
+import 'chat/whatsapp_group_chat.dart';
 import 'teams/teams_service.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 
@@ -135,7 +136,25 @@ class NotificationsListPage extends ConsumerWidget {
         color: material.Colors.transparent,
         child: material.InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () {}, // Could show details
+          onTap: () {
+            String targetId = notification.sourceId ?? notification.id;
+            if (targetId.startsWith('notif_')) {
+              targetId = notification.sourceId ?? '';
+            }
+            if (targetId.isNotEmpty) {
+              final groupId = targetId.startsWith('p:') ? targetId : 'p:$targetId';
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => WhatsAppGroupChat(
+                    groupId: groupId,
+                    groupName: notification.name,
+                    groupImage: notification.imageUrl,
+                    showBackButton: true,
+                  ),
+                ),
+              );
+            }
+          },
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(

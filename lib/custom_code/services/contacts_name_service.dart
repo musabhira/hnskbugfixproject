@@ -5,6 +5,9 @@ import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/services/push_notification_service.dart';
+import 'package:pocket_mates_app/flutter_flow/nav/nav.dart';
+import 'package:pocket_mates_app/custom_code/services/in_app_notification_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 
 /// 📱 Service that maps user IDs and phone numbers to the user's saved local phonebook contacts.
 /// Powers WhatsApp-style contact name display and Snapchat/Telegram-style contact joined discovery.
@@ -218,6 +221,27 @@ class ContactsNameService {
                 body:
                     '$savedContactName from your contacts is on Poket Mates. Tap to say hello and start chatting!',
                 payload: 'chat_p:$uid',
+              );
+              InAppNotificationService.show(
+                title: '👋 $savedContactName is on Poket Mates!',
+                message:
+                    '$savedContactName from your contacts joined Poket Mates. Tap to say hello and start chatting!',
+                badgeText: 'CONTACT',
+                badgeColor: const Color(0xFF10B981),
+                onTap: () {
+                  final context = appNavigatorKey.currentContext;
+                  if (context != null) {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => WhatsAppGroupChat(
+                          groupId: 'p:$uid',
+                          groupName: savedContactName,
+                          showBackButton: true,
+                        ),
+                      ),
+                    );
+                  }
+                },
               );
             });
           }

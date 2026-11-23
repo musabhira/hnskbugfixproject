@@ -1753,7 +1753,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     if (PocketRobotService.isRobotId(peerId)) {
       return PocketRobotService.getRobotById(peerId)?.name ?? 'Pocket Robot';
     }
-    final contactName = ContactsNameService().getDisplayName(userId: peerId, fallbackName: '');
+    final contactName =
+        ContactsNameService().getDisplayName(userId: peerId, fallbackName: '');
     if (contactName.isNotEmpty &&
         contactName != 'Learner' &&
         !contactName.startsWith('Learner ')) {
@@ -2846,7 +2847,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
     final topReq = _pendingRequests.first;
     final senderName = PocketMateService.resolveRealUserName(
-      userId: topReq['sender_id']?.toString() ?? topReq['user_id']?.toString() ?? '',
+      userId: topReq['sender_id']?.toString() ??
+          topReq['user_id']?.toString() ??
+          '',
       preferredName: topReq['sender_name'],
     );
     final msg = topReq['message'] ?? 'wants to connect as your Mate';
@@ -3205,7 +3208,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         final dt = DateTime.tryParse(sReq['created_at']?.toString() ?? '') ??
             DateTime.now();
         final map = Map<String, dynamic>.from(sReq);
-        final recId = sReq['receiver_id']?.toString() ?? sReq['user_id']?.toString() ?? '';
+        final recId = sReq['receiver_id']?.toString() ??
+            sReq['user_id']?.toString() ??
+            '';
         map['is_sent'] = true;
         map['sender_name'] = PocketMateService.resolveRealUserName(
           userId: recId,
@@ -3535,7 +3540,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   Flexible(
                     child: Text(
                       PocketMateService.resolveRealUserName(
-                        userId: req['sender_id']?.toString() ?? req['user_id']?.toString() ?? '',
+                        userId: req['sender_id']?.toString() ??
+                            req['user_id']?.toString() ??
+                            '',
                         preferredName: req['sender_name'],
                       ),
                       style: GoogleFonts.outfit(
@@ -4030,7 +4037,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   '';
               peerName = PocketMateService.resolveRealUserName(
                 userId: peerId,
-                preferredName: req['receiver_name']?.toString() ?? req['sender_name']?.toString(),
+                preferredName: req['receiver_name']?.toString() ??
+                    req['sender_name']?.toString(),
               );
               peerAvatar = req['receiver_profile_image']?.toString() ??
                   req['receiver_avatar']?.toString() ??
@@ -5265,7 +5273,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               ] else if (_chatCategoryFilterIndex == 7) ...[
                 // 👥 Dedicated Invite Friends & Contacts Sync View
                 SliverToBoxAdapter(
-                  child: ContactsSyncWidget(currentUserId: _currentUserId ?? ''),
+                  child:
+                      ContactsSyncWidget(currentUserId: _currentUserId ?? ''),
                 ),
               ] else ...[
                 if (_chatCategoryFilterIndex == 0) ...[

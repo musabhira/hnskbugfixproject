@@ -11,6 +11,10 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/services/push_notification_service.dart';
+import 'package:pocket_mates_app/custom_code/services/in_app_notification_service.dart';
+import 'package:pocket_mates_app/flutter_flow/nav/nav.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 
 /// 🏛️ Official President of Pocket World & Pocket Mates Service
 /// Handles the official Presidential Desk, user inquiries, 24-hour protection alerts,
@@ -971,10 +975,13 @@ class PocketPresidentService {
       try {
         myUid = SupaFlow.client.auth.currentUser?.id ?? '';
       } catch (_) {}
-      final feedbackGiven = myUid.isNotEmpty
-          ? (prefs.getBool('president_feedback_given_$myUid') ?? false)
-          : false;
-      if (!feedbackGiven) {
+      final lastFeedbackTs =
+          prefs.getInt('president_last_feedback_ts_$myUid') ?? 0;
+      final nowMs = DateTime.now().millisecondsSinceEpoch;
+      // Show feedback vibe periodically (if no feedback yet or at least 3 days since last feedback)
+      final hasRecentFeedback =
+          (nowMs - lastFeedbackTs < 3 * 24 * 60 * 60 * 1000);
+      if (!hasRecentFeedback) {
         final feedbackVibe = {
           'id': 'pres_vibe_feedback_prompt',
           'user_id': presidentId,
@@ -1043,6 +1050,17 @@ class PocketPresidentService {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('president_feedback_given_$userId', true);
+    await prefs.setInt('president_last_feedback_ts_$userId', DateTime.now().millisecondsSinceEpoch);
+
+    // Save to Supabase feedback or citizen_reports table if available
+    try {
+      await SupaFlow.client.from('feedback').insert({
+        'user_id': userId,
+        'message': clean,
+        'category': 'english_learning_quality',
+        'created_at': DateTime.now().toIso8601String(),
+      });
+    } catch (_) {}
 
     // Save user's feedback into President chat
     final userMsgId = 'pres_feedback_${DateTime.now().millisecondsSinceEpoch}';
@@ -1093,6 +1111,154 @@ class PocketPresidentService {
       );
     } catch (e) {
       debugPrint('Error checking feedback prompt: $e');
+    }
+  }
+
+  /// 🎂 User Birthday Celebration & Presidential Proclamation
+  /// If today matches citizen's Date of Birth:
+  /// 1. The President sends a personalized royal birthday greeting in President Chat.
+  /// 2. The President broadcasts an official public Birthday Vibe for the citizen.
+  /// 3. Sends instant celebratory push & in-app notification to the citizen.
+  /// 4. Notifies citizen's contacts on Pocket Mates that it is their friend's birthday!
+  static Future<void> checkAndDeliverBirthdayWish(String userId) async {
+    try {
+      if (userId.isEmpty) return;
+      final prefs = await SharedPreferences.getInstance();
+      final now = DateTime.now();
+
+      // Only wish once per calendar year
+      final alreadyWishedYear =
+          prefs.getInt('president_birthday_wish_year_$userId');
+      if (alreadyWishedYear == now.year) return;
+
+      int? bDay;
+      int? bMonth;
+      String userName = 'Citizen';
+
+      // 1. Try local cached DOB (pm_dob_$userId)
+      final cachedDobStr = prefs.getString('pm_dob_$userId');
+      if (cachedDobStr != null && cachedDobStr.isNotEmpty) {
+        final parsed = DateTime.tryParse(cachedDobStr);
+        if (parsed != null) {
+          bDay = parsed.day;
+          bMonth = parsed.month;
+        }
+      }
+
+      // 2. Query Supabase profile table for day, month, year, and name
+      try {
+        final profile = await SupaFlow.client
+            .from('profile')
+            .select('day, month, year, name')
+            .or('id.eq.$userId,user_id.eq.$userId')
+            .maybeSingle();
+
+        if (profile != null) {
+          if (profile['day'] != null && profile['month'] != null) {
+            bDay = int.tryParse(profile['day'].toString());
+            bMonth = int.tryParse(profile['month'].toString());
+          }
+          final pName = profile['name']?.toString().trim();
+          if (pName != null && pName.isNotEmpty && pName != 'Pocket Mate') {
+            userName = pName;
+          }
+        }
+      } catch (e) {
+        debugPrint('PocketPresidentService birthday check profile error: $e');
+      }
+
+      // Fallback name from ContactsNameService
+      if (userName == 'Citizen') {
+        final contactName = ContactsNameService().getDisplayName(
+          userId: userId,
+          fallbackName: 'Citizen',
+        );
+        if (contactName != 'Pocket Mate' && contactName != 'Citizen') {
+          userName = contactName;
+        }
+      }
+
+      // If citizen has not configured their DOB, return safely
+      if (bDay == null || bMonth == null) return;
+
+      // Check if today matches citizen's birthday (day & month)
+      if (bDay != now.day || bMonth != now.month) return;
+
+      // Mark this year as wished immediately to prevent duplicate dispatches
+      await prefs.setInt('president_birthday_wish_year_$userId', now.year);
+      await prefs.setString('president_birthday_wish_date_$userId',
+          '${now.year}-${now.month}-${now.day}');
+
+      // A. Royal Birthday Message in President 1-on-1 Chat
+      final birthdayMessage =
+          '🎂 Royal Birthday Greetings, $userName! 🌟🎉\n\n'
+          'On this auspicious day, the President and the entire nation of Pocket World celebrate you! 👑✨\n\n'
+          'May your year ahead be blessed with boundless English fluency, great friendships, courage in every Citadel battle, and abundant prosperity. Have a joyous and blessed birthday! 🎁🎈';
+
+      await sendPresidentReplyToUser(
+        targetUserId: userId,
+        replyText: birthdayMessage,
+        adminName: 'Presidential Office',
+      );
+
+      // B. Public Birthday Vibe Proclamation (Visible to all citizens in Vibes)
+      final vibeCaption =
+          '👑 Presidential Proclamation 🎂🎉\n\n'
+          'Join the President in wishing a magnificent Happy Birthday to our esteemed citizen $userName! 🌟✨\n'
+          'Let us all celebrate their journey in Pocket World! Send them your warmest wishes! 🎁🥳';
+
+      await postPresidentVibe(
+        caption: vibeCaption,
+        mediaType: 'text',
+      );
+
+      // C. Instant Celebratory Notification to the User
+      PushNotificationService.showInstantNotification(
+        id: 99901,
+        title: '🎂 Happy Birthday from The President! 🎉',
+        body: 'The President and Pocket World wish you a marvelous birthday! Tap to see your royal message.',
+        payload: 'chat_p:$presidentId',
+      );
+
+      // In-App floating banner
+      InAppNotificationService.show(
+        title: '🎂 Happy Birthday, $userName! 🎉',
+        message: 'The President has officially proclaimed your birthday across Pocket World! Tap to view.',
+        badgeText: 'BIRTHDAY',
+        badgeColor: const Color(0xFFFFD700),
+        onTap: () {
+          final context = appNavigatorKey.currentContext;
+          if (context != null) {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => WhatsAppGroupChat(
+                  groupId: 'p:$presidentId',
+                  groupName: 'The President 🏛️',
+                  showBackButton: true,
+                ),
+              ),
+            );
+          }
+        },
+      );
+
+      // D. Broadcast Birthday Notification to citizen's contacts on Pocket Mates
+      try {
+        final contactUserIds = ContactsNameService().allSyncedContactUserIds;
+        for (final friendUid in contactUserIds) {
+          if (friendUid == userId) continue;
+          PushNotificationService.dispatchChatMessagePushNotification(
+            senderId: presidentId,
+            senderName: 'The President 🏛️',
+            messageText: '🎉 Today is $userName\'s Birthday! Tap to send warm wishes!',
+            receiverId: friendUid,
+          );
+        }
+      } catch (e) {
+        debugPrint('Birthday contacts notification error: $e');
+      }
+    } catch (e) {
+      debugPrint('Error in checkAndDeliverBirthdayWish: $e');
     }
   }
 

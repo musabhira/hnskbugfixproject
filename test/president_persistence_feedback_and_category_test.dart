@@ -98,12 +98,12 @@ void main() {
       expect(PocketMateService.resolveRealUserName(
         userId: 'abcdef123456',
         preferredName: 'Pocket Mate',
-      ), equals('Learner abcdef'));
+      ), equals('Mate #ABCD'));
 
       expect(PocketMateService.resolveRealUserName(
         userId: '9876543210ab',
         preferredName: 'Poket Mate',
-      ), equals('Learner 987654'));
+      ), equals('Mate #9876'));
 
       expect(PocketMateService.resolveRealUserName(
         userId: 'user_xyz_7890',
@@ -118,7 +118,7 @@ void main() {
       expect(PocketMateService.resolveRealUserName(
         userId: '1122334455',
         profileMap: {'display_name': 'Pocket Mate', 'name': 'Poket Mate'},
-      ), equals('Learner 112233'));
+      ), equals('Mate #1122'));
     });
   });
 
@@ -166,6 +166,47 @@ void main() {
       expect(humans.any((c) => c.id == 'mate_uuid_1'), isTrue);
       expect(humans.any((c) => c.id == PocketPresidentService.presidentId), isTrue);
       expect(humans.any((c) => c.id == 'attacker_uuid_99'), isFalse);
+    });
+  });
+
+  group('Birthday Celebration & Notification Tests', () {
+    test('checkAndDeliverBirthdayWish logic correctly identifies birthday and avoids re-wishing', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      const testUser = 'birthday_user_123';
+      final now = DateTime.now();
+
+      // Set user's cached DOB to today
+      final dobToday = DateTime(2000, now.month, now.day);
+      await prefs.setString('pm_dob_$testUser', dobToday.toIso8601String());
+
+      // Simulate first birthday check
+      expect(prefs.getInt('president_birthday_wish_year_$testUser'), isNull);
+
+      await PocketPresidentService.checkAndDeliverBirthdayWish(testUser);
+
+      // Now it should be recorded for the current year
+      expect(prefs.getInt('president_birthday_wish_year_$testUser'), equals(now.year));
+      expect(prefs.getString('president_birthday_wish_date_$testUser'), equals('${now.year}-${now.month}-${now.day}'));
+
+      // Re-triggering should safely skip
+      await PocketPresidentService.checkAndDeliverBirthdayWish(testUser);
+      expect(prefs.getInt('president_birthday_wish_year_$testUser'), equals(now.year));
+    });
+
+    test('Different DOB does not trigger birthday wish', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      const testUser = 'non_birthday_user_456';
+      final now = DateTime.now();
+
+      // Set user's DOB to tomorrow
+      final tomorrow = now.add(const Duration(days: 1));
+      final dobTomorrow = DateTime(2000, tomorrow.month, tomorrow.day);
+      await prefs.setString('pm_dob_$testUser', dobTomorrow.toIso8601String());
+
+      await PocketPresidentService.checkAndDeliverBirthdayWish(testUser);
+      expect(prefs.getInt('president_birthday_wish_year_$testUser'), isNull);
     });
   });
 }

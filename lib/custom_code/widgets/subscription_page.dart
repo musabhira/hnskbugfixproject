@@ -261,208 +261,6 @@ class _SubscriptionPageState extends State<SubscriptionPage>
   static const bool _allowDirectUpi =
       false; // Strictly false for official Google Play & Apple App Store compliance
 
-  void _showStoreKitSyncSheet(
-      BuildContext context, Map<String, dynamic> plan, List<ProductDetails> loadedProducts) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF131722),
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
-      ),
-      builder: (ctx) {
-        final planName = plan['name'] ?? 'VIP Plan';
-        final planId = plan['id']?.toString() ?? 'quarterly';
-        return Padding(
-          padding: EdgeInsets.fromLTRB(
-              24, 20, 24, MediaQuery.of(ctx).padding.bottom + 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 44,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.white24,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 18),
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFD700).withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.apple_rounded,
-                      color: Color(0xFFFFD700),
-                      size: 26,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Apple In-App Purchases',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                        Text(
-                          '$planName is syncing with App Store Connect',
-                          style: GoogleFonts.inter(
-                            color: Colors.white70,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1E293B),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.white12),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Ready on Apple StoreKit:',
-                      style: GoogleFonts.outfit(
-                        color: Colors.white70,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    ...loadedProducts.map((p) => Padding(
-                          padding: const EdgeInsets.only(bottom: 6),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.check_circle_rounded,
-                                  color: Color(0xFF10B981), size: 16),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  '${p.title} (${p.price})',
-                                  style: GoogleFonts.inter(
-                                    color: Colors.white,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        )),
-                    const SizedBox(height: 6),
-                    Text(
-                      '💡 In App Store Connect, ensure this subscription product has its review screenshot and English description uploaded so Apple serves it across all regions.',
-                      style: GoogleFonts.inter(
-                        color: Colors.white60,
-                        fontSize: 11,
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 18),
-              // Option 1: Buy loaded active Apple product
-              InkWell(
-                onTap: () async {
-                  Navigator.pop(ctx);
-                  HapticFeedback.mediumImpact();
-                  await IAPService().buyProduct(loadedProducts.first);
-                },
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFFFD700), Color(0xFFF59E0B)],
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Center(
-                    child: Text(
-                      'Purchase ${loadedProducts.first.title} (${loadedProducts.first.price})',
-                      style: GoogleFonts.outfit(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              // Option 2: TestFlight Sandbox VIP Unlock
-              InkWell(
-                onTap: () async {
-                  Navigator.pop(ctx);
-                  HapticFeedback.mediumImpact();
-                  await IAPService().grantSimulatedVip(planId: planId);
-                  if (mounted) {
-                    await _loadCurrentPlan();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          '👑 VIP Sandbox Access Granted for Testing!',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        backgroundColor: const Color(0xFF10B981),
-                      ),
-                    );
-                  }
-                },
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white24),
-                  ),
-                  child: Center(
-                    child: Text(
-                      'Test $planName in Sandbox (1-Tap Unlock)',
-                      style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   Future<void> _selectPlan(String planId) async {
     if (planId == _currentPlan) return;
 
@@ -513,29 +311,24 @@ class _SubscriptionPageState extends State<SubscriptionPage>
       );
       if (!initiated && mounted) {
         final errorDetail = IAPService().lastError;
-        final loaded = IAPService().products;
         messenger.hideCurrentSnackBar();
-        if (loaded.isNotEmpty) {
-          _showStoreKitSyncSheet(context, plan, loaded);
-        } else {
-          messenger.showSnackBar(
-            SnackBar(
-              content: Text(
-                Platform.isIOS
-                    ? (errorDetail != null
-                        ? '⚠️ App Store IAP: $errorDetail'
-                        : '⚠️ Unable to connect to App Store In-App Purchases. Please check your internet connection or Apple ID.')
-                    : '⚠️ Google Play In-App Billing could not be reached. Please check your network connection.',
-                style: GoogleFonts.outfit(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
-                ),
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(
+              Platform.isIOS
+                  ? (errorDetail != null
+                      ? '⚠️ App Store: $errorDetail'
+                      : '⚠️ Connecting to Apple App Store. Subscription will become available as soon as Apple finishes activation.')
+                  : '⚠️ Google Play In-App Billing could not be reached. Please check your network connection.',
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
               ),
-              backgroundColor: const Color(0xFF1E293B),
-              duration: const Duration(seconds: 5),
             ),
-          );
-        }
+            backgroundColor: const Color(0xFF1E293B),
+            duration: const Duration(seconds: 4),
+          ),
+        );
       }
       return;
     }

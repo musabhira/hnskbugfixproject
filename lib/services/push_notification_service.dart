@@ -353,27 +353,50 @@ class PushNotificationService {
     if (payload == null || payload.isEmpty) return;
     try {
       debugPrint('PushNotificationService: Routing for payload: $payload');
+      String? targetUserId;
       if (payload.startsWith('chat_p:')) {
-        final targetUserId = payload.substring(7);
-        final context = appNavigatorKey.currentContext;
-        if (context != null) {
-          final displayName = ContactsNameService().getDisplayName(
-            userId: targetUserId,
-            fallbackName: 'Poket Mate',
-          );
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => WhatsAppGroupChat(
-                groupId: 'p:$targetUserId',
-                groupName: displayName,
-                showBackButton: true,
-              ),
-            ),
-          );
-        }
+        targetUserId = payload.substring(7);
+      } else if (payload.startsWith('contact_joined:')) {
+        targetUserId = payload.substring(15);
+      } else if (payload.startsWith('user:')) {
+        targetUserId = payload.substring(5);
+      } else if (payload.startsWith('p:')) {
+        targetUserId = payload.substring(2);
+      } else if (payload.length >= 20 && !payload.contains(' ') && !payload.contains('/')) {
+        // Direct UUID or ID
+        targetUserId = payload;
+      }
+
+      if (targetUserId != null && targetUserId.isNotEmpty) {
+        _navigateToDirectChat(targetUserId);
+        return;
       }
     } catch (e) {
       debugPrint('PushNotificationService: Error handling payload: $e');
+    }
+  }
+
+  /// Safe navigation to 1-on-1 personal chat, retrying if context is not yet mounted (e.g., cold start)
+  static void _navigateToDirectChat(String targetUserId, {int retryCount = 0}) {
+    final context = appNavigatorKey.currentContext;
+    if (context != null) {
+      final displayName = ContactsNameService().getDisplayName(
+        userId: targetUserId,
+        fallbackName: 'Poket Mate',
+      );
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => WhatsAppGroupChat(
+            groupId: 'p:$targetUserId',
+            groupName: displayName,
+            showBackButton: true,
+          ),
+        ),
+      );
+    } else if (retryCount < 10) {
+      Future.delayed(const Duration(milliseconds: 300), () {
+        _navigateToDirectChat(targetUserId, retryCount: retryCount + 1);
+      });
     }
   }
 

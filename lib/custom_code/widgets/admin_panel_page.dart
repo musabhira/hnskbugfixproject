@@ -817,7 +817,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       }
       if (profileId != null) {
         try {
-          await supabase.from('profiles').update(updateData).eq('id', profileId);
+          await supabase
+              .from('profiles')
+              .update(updateData)
+              .eq('id', profileId);
         } catch (_) {}
         try {
           await supabase.from('profile').update(updateData).eq('id', profileId);
@@ -839,8 +842,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                   ? '👑 Plan updated to ${targetTier.toUpperCase()} for ${user['name'] ?? "User"}!'
                   : 'Subscription reset to Free for ${user['name'] ?? "User"}.',
             ),
-            backgroundColor:
-                newIsVip ? const Color(0xFFFFD700) : Colors.orange,
+            backgroundColor: newIsVip ? const Color(0xFFFFD700) : Colors.orange,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -866,7 +868,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
 
   /// 👑 Plan Selector Dialog for Admin (Free, Monthly, Yearly, VIP Gold)
   Future<void> _showSubscriptionTierDialog(Map<String, dynamic> user) async {
-    final currentTier = user['subscription_tier']?.toString().toLowerCase().trim() ?? 'free';
+    final currentTier =
+        user['subscription_tier']?.toString().toLowerCase().trim() ?? 'free';
     final selectedTier = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -877,12 +880,16 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         ),
         title: Row(
           children: [
-            const Icon(Icons.workspace_premium_rounded, color: Color(0xFFFFD700), size: 24),
+            const Icon(Icons.workspace_premium_rounded,
+                color: Color(0xFFFFD700), size: 24),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 'Set Plan: ${user['name'] ?? "User"}',
-                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -891,19 +898,29 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildTierOptionTile(ctx, 'Free Tier (Ads Active)', 'free', Icons.person_outline, Colors.white60, currentTier),
+            _buildTierOptionTile(ctx, 'Free Tier (Ads Active)', 'free',
+                Icons.person_outline, Colors.white60, currentTier),
             const SizedBox(height: 8),
-            _buildTierOptionTile(ctx, 'Monthly VIP (Ad-Free)', 'monthly', Icons.calendar_month_rounded, const Color(0xFF38BDF8), currentTier),
+            _buildTierOptionTile(
+                ctx,
+                'Monthly VIP (Ad-Free)',
+                'monthly',
+                Icons.calendar_month_rounded,
+                const Color(0xFF38BDF8),
+                currentTier),
             const SizedBox(height: 8),
-            _buildTierOptionTile(ctx, 'Yearly VIP (Ad-Free)', 'yearly', Icons.star_rounded, const Color(0xFFFFD700), currentTier),
+            _buildTierOptionTile(ctx, 'Yearly VIP (Ad-Free)', 'yearly',
+                Icons.star_rounded, const Color(0xFFFFD700), currentTier),
             const SizedBox(height: 8),
-            _buildTierOptionTile(ctx, 'VIP Gold (Full Bypass)', 'vip_gold', Icons.shield_rounded, const Color(0xFF10B981), currentTier),
+            _buildTierOptionTile(ctx, 'VIP Gold (Full Bypass)', 'vip_gold',
+                Icons.shield_rounded, const Color(0xFF10B981), currentTier),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            child:
+                const Text('Cancel', style: TextStyle(color: Colors.white54)),
           ),
         ],
       ),
@@ -914,7 +931,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
     }
   }
 
-  Widget _buildTierOptionTile(BuildContext ctx, String title, String tierValue, IconData icon, Color color, String currentTier) {
+  Widget _buildTierOptionTile(BuildContext ctx, String title, String tierValue,
+      IconData icon, Color color, String currentTier) {
     final isSelected = currentTier == tierValue;
     return InkWell(
       onTap: () => Navigator.pop(ctx, tierValue),
@@ -922,7 +940,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? color.withValues(alpha: 0.18) : Colors.white.withValues(alpha: 0.05),
+          color: isSelected
+              ? color.withValues(alpha: 0.18)
+              : Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? color : Colors.white12,
@@ -983,7 +1003,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       }
       if (profileId != null) {
         try {
-          await supabase.from('profiles').update(updateData).eq('id', profileId);
+          await supabase
+              .from('profiles')
+              .update(updateData)
+              .eq('id', profileId);
         } catch (_) {}
         try {
           await supabase.from('profile').update(updateData).eq('id', profileId);
@@ -995,7 +1018,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             content: Text(newStatus
                 ? '✅ Verification badge granted to ${user['name'] ?? "User"}'
                 : 'Verification badge removed from ${user['name'] ?? "User"}'),
-            backgroundColor: newStatus ? const Color(0xFF38BDF8) : Colors.orange,
+            backgroundColor:
+                newStatus ? const Color(0xFF38BDF8) : Colors.orange,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -1228,7 +1252,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                         icon: Icon(Icons.ads_click_rounded, size: 16),
                         text: 'AdMob & Ads 📺'),
                     Tab(
-                        icon: Icon(Icons.notifications_active_rounded, size: 16),
+                        icon:
+                            Icon(Icons.notifications_active_rounded, size: 16),
                         text: 'Notifications 🔔'),
                     Tab(
                         icon: Icon(Icons.public_rounded, size: 16),
@@ -2233,7 +2258,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       final shop = u['shop_name']?.toString().toLowerCase() ?? "";
       final phone = u['phone_no']?.toString().toLowerCase() ?? "";
       final q = userSearchQuery.toLowerCase();
-      return name.contains(q) || email.contains(q) || shop.contains(q) || phone.contains(q);
+      return name.contains(q) ||
+          email.contains(q) ||
+          shop.contains(q) ||
+          phone.contains(q);
     }).toList();
 
     return Column(
@@ -2346,7 +2374,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                           const SizedBox(width: 4),
                                           Expanded(
                                             child: Text(
-                                              (user['email'] != null && user['email'].toString().isNotEmpty)
+                                              (user['email'] != null &&
+                                                      user['email']
+                                                          .toString()
+                                                          .isNotEmpty)
                                                   ? user['email'].toString()
                                                   : 'No email registered',
                                               style: const TextStyle(
@@ -2362,10 +2393,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                       Row(
                                         children: [
                                           const Icon(Icons.cake_outlined,
-                                              size: 12, color: Color(0xFFFFD700)),
+                                              size: 12,
+                                              color: Color(0xFFFFD700)),
                                           const SizedBox(width: 4),
                                           Text(
-                                            (user['day'] != null && user['month'] != null && user['year'] != null)
+                                            (user['day'] != null &&
+                                                    user['month'] != null &&
+                                                    user['year'] != null)
                                                 ? 'DOB: ${user['day'].toString().padLeft(2, '0')}/${user['month'].toString().padLeft(2, '0')}/${user['year']}'
                                                 : 'DOB: Not set',
                                             style: const TextStyle(
@@ -2374,7 +2408,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                                 fontWeight: FontWeight.w600),
                                           ),
                                           if (user['phone_no'] != null &&
-                                              user['phone_no'].toString().isNotEmpty) ...[
+                                              user['phone_no']
+                                                  .toString()
+                                                  .isNotEmpty) ...[
                                             const SizedBox(width: 8),
                                             Expanded(
                                               child: Text(
@@ -13820,7 +13856,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                 Text(
                   'Community: Pocket Mates Official English Club\nDirect learner community for updates, daily tips, and peer conversations.',
                   style: GoogleFonts.inter(
-                      color: Colors.white.withValues(alpha: 0.95), fontSize: 12),
+                      color: Colors.white.withValues(alpha: 0.95),
+                      fontSize: 12),
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -13921,8 +13958,7 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                 const SizedBox(height: 8),
                 Text(
                   'Send instant lock-screen push notifications to all registered devices or to a specific citizen.',
-                  style: GoogleFonts.inter(
-                      color: Colors.white60, fontSize: 12),
+                  style: GoogleFonts.inter(color: Colors.white60, fontSize: 12),
                 ),
                 const SizedBox(height: 14),
                 // Target selection: Broadcast vs Individual
@@ -13959,7 +13995,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                       ),
                       onSelected: (selected) {
                         if (selected) {
-                          setState(() => _pushNotificationTarget = 'individual');
+                          setState(
+                              () => _pushNotificationTarget = 'individual');
                         }
                       },
                     ),
@@ -13969,8 +14006,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                   const SizedBox(height: 12),
                   Text(
                     'Target User ID (UUID):',
-                    style: GoogleFonts.outfit(
-                        color: Colors.white70, fontSize: 12),
+                    style:
+                        GoogleFonts.outfit(color: Colors.white70, fontSize: 12),
                   ),
                   const SizedBox(height: 6),
                   TextField(
@@ -13994,8 +14031,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                 const SizedBox(height: 12),
                 Text(
                   'Notification Title:',
-                  style: GoogleFonts.outfit(
-                      color: Colors.white70, fontSize: 12),
+                  style:
+                      GoogleFonts.outfit(color: Colors.white70, fontSize: 12),
                 ),
                 const SizedBox(height: 6),
                 TextField(
@@ -14018,8 +14055,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                 const SizedBox(height: 12),
                 Text(
                   'Notification Message / Body:',
-                  style: GoogleFonts.outfit(
-                      color: Colors.white70, fontSize: 12),
+                  style:
+                      GoogleFonts.outfit(color: Colors.white70, fontSize: 12),
                 ),
                 const SizedBox(height: 6),
                 TextField(
@@ -14108,8 +14145,7 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                               'body': body,
                               'data': {
                                 'type': 'admin_manual_push',
-                                'timestamp':
-                                    DateTime.now().toIso8601String(),
+                                'timestamp': DateTime.now().toIso8601String(),
                               },
                             };
                             if (_pushNotificationTarget == 'individual') {
@@ -14151,7 +14187,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                             );
                           } finally {
                             if (mounted) {
-                              setState(() => _isSendingPushNotification = false);
+                              setState(
+                                  () => _isSendingPushNotification = false);
                             }
                           }
                         },
@@ -16765,7 +16802,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                           final day = user['day'];
                           final month = user['month'];
                           final year = user['year'];
-                          final hasDob = day != null && month != null && year != null;
+                          final hasDob =
+                              day != null && month != null && year != null;
                           final dobStr = hasDob
                               ? '${day.toString().padLeft(2, '0')}/${month.toString().padLeft(2, '0')}/$year'
                               : null;
@@ -17036,7 +17074,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                         ),
                         onSelected: (selected) {
                           if (selected) {
-                            setState(() => _pushNotificationTarget = 'broadcast');
+                            setState(
+                                () => _pushNotificationTarget = 'broadcast');
                           }
                         },
                       ),
@@ -17054,7 +17093,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                         ),
                         onSelected: (selected) {
                           if (selected) {
-                            setState(() => _pushNotificationTarget = 'individual');
+                            setState(
+                                () => _pushNotificationTarget = 'individual');
                           }
                         },
                       ),
@@ -17090,16 +17130,20 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                     const SizedBox(height: 8),
                     TextField(
                       controller: _pushNotificationUserIdController,
-                      style: const TextStyle(color: Colors.white, fontSize: 13.5),
+                      style:
+                          const TextStyle(color: Colors.white, fontSize: 13.5),
                       decoration: InputDecoration(
                         hintText: 'e.g. 1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d',
-                        hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
+                        hintStyle: const TextStyle(
+                            color: Colors.white38, fontSize: 13),
                         filled: true,
                         fillColor: const Color(0xFF0F172A),
-                        prefixIcon: const Icon(Icons.person_pin_rounded, color: Color(0xFF38BDF8), size: 18),
+                        prefixIcon: const Icon(Icons.person_pin_rounded,
+                            color: Color(0xFF38BDF8), size: 18),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                          borderSide: BorderSide(
+                              color: Colors.white.withValues(alpha: 0.1)),
                         ),
                       ),
                     ),
@@ -17120,13 +17164,16 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                     style: const TextStyle(color: Colors.white, fontSize: 14),
                     decoration: InputDecoration(
                       hintText: 'e.g. Today\'s English Mission is Live! 🔥',
-                      hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
+                      hintStyle:
+                          const TextStyle(color: Colors.white38, fontSize: 13),
                       filled: true,
                       fillColor: const Color(0xFF0F172A),
-                      prefixIcon: const Icon(Icons.title_rounded, color: Color(0xFF38BDF8), size: 18),
+                      prefixIcon: const Icon(Icons.title_rounded,
+                          color: Color(0xFF38BDF8), size: 18),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                        borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.1)),
                       ),
                     ),
                   ),
@@ -17146,13 +17193,16 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                     maxLines: 3,
                     style: const TextStyle(color: Colors.white, fontSize: 14),
                     decoration: InputDecoration(
-                      hintText: 'e.g. Come in, practice speaking for 5 minutes, and climb the Sovereign World Ranking!',
-                      hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
+                      hintText:
+                          'e.g. Come in, practice speaking for 5 minutes, and climb the Sovereign World Ranking!',
+                      hintStyle:
+                          const TextStyle(color: Colors.white38, fontSize: 13),
                       filled: true,
                       fillColor: const Color(0xFF0F172A),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                        borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.1)),
                       ),
                     ),
                   ),
@@ -17175,28 +17225,40 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                       ActionChip(
                         backgroundColor: const Color(0xFF1E293B),
                         avatar: const Text('🌅'),
-                        label: const Text('Daily Mission Reminder', style: TextStyle(color: Colors.white70, fontSize: 11)),
+                        label: const Text('Daily Mission Reminder',
+                            style:
+                                TextStyle(color: Colors.white70, fontSize: 11)),
                         onPressed: () {
-                          _pushNotificationTitleController.text = '🌅 Your Daily English Mission is Waiting!';
-                          _pushNotificationBodyController.text = 'Complete today\'s challenge to build fluency and protect your streak!';
+                          _pushNotificationTitleController.text =
+                              '🌅 Your Daily English Mission is Waiting!';
+                          _pushNotificationBodyController.text =
+                              'Complete today\'s challenge to build fluency and protect your streak!';
                         },
                       ),
                       ActionChip(
                         backgroundColor: const Color(0xFF1E293B),
                         avatar: const Text('⚔️'),
-                        label: const Text('Citadel Raid Alert', style: TextStyle(color: Colors.white70, fontSize: 11)),
+                        label: const Text('Citadel Raid Alert',
+                            style:
+                                TextStyle(color: Colors.white70, fontSize: 11)),
                         onPressed: () {
-                          _pushNotificationTitleController.text = '⚔️ Citadel Gate Defense!';
-                          _pushNotificationBodyController.text = 'Your mates are waiting in the arena. Defend your fortress today!';
+                          _pushNotificationTitleController.text =
+                              '⚔️ Citadel Gate Defense!';
+                          _pushNotificationBodyController.text =
+                              'Your mates are waiting in the arena. Defend your fortress today!';
                         },
                       ),
                       ActionChip(
                         backgroundColor: const Color(0xFF1E293B),
                         avatar: const Text('🚀'),
-                        label: const Text('New App Update', style: TextStyle(color: Colors.white70, fontSize: 11)),
+                        label: const Text('New App Update',
+                            style:
+                                TextStyle(color: Colors.white70, fontSize: 11)),
                         onPressed: () {
-                          _pushNotificationTitleController.text = '🚀 Exciting New Update Available!';
-                          _pushNotificationBodyController.text = 'Check out fresh speaking tasks, faster games, and new fluency badges now!';
+                          _pushNotificationTitleController.text =
+                              '🚀 Exciting New Update Available!';
+                          _pushNotificationBodyController.text =
+                              'Check out fresh speaking tasks, faster games, and new fluency badges now!';
                         },
                       ),
                     ],
@@ -17217,7 +17279,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                         ? const SizedBox(
                             width: 18,
                             height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.black),
                           )
                         : const Icon(Icons.send_rounded, size: 18),
                     label: Text(
@@ -17235,24 +17298,30 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                     onPressed: _isSendingPushNotification
                         ? null
                         : () async {
-                            final title = _pushNotificationTitleController.text.trim();
-                            final body = _pushNotificationBodyController.text.trim();
-                            final targetUid = _pushNotificationUserIdController.text.trim();
+                            final title =
+                                _pushNotificationTitleController.text.trim();
+                            final body =
+                                _pushNotificationBodyController.text.trim();
+                            final targetUid =
+                                _pushNotificationUserIdController.text.trim();
 
                             if (title.isEmpty || body.isEmpty) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('Please provide both title and message.'),
+                                  content: Text(
+                                      'Please provide both title and message.'),
                                   backgroundColor: Colors.red,
                                 ),
                               );
                               return;
                             }
 
-                            if (_pushNotificationTarget == 'individual' && targetUid.isEmpty) {
+                            if (_pushNotificationTarget == 'individual' &&
+                                targetUid.isEmpty) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('Please enter a target User ID.'),
+                                  content:
+                                      Text('Please enter a target User ID.'),
                                   backgroundColor: Colors.red,
                                 ),
                               );
@@ -17275,7 +17344,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                 payload['user_id'] = targetUid;
                               }
 
-                              final response = await SupaFlow.client.functions.invoke(
+                              final response =
+                                  await SupaFlow.client.functions.invoke(
                                 'send-push-notification',
                                 body: payload,
                               );
@@ -17287,14 +17357,16 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                 _pushNotificationBodyController.clear();
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('Push notification dispatched successfully! 🔔'),
+                                    content: Text(
+                                        'Push notification dispatched successfully! 🔔'),
                                     backgroundColor: Colors.green,
                                   ),
                                 );
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('Push dispatch returned status ${response.status}'),
+                                    content: Text(
+                                        'Push dispatch returned status ${response.status}'),
                                     backgroundColor: Colors.orange,
                                   ),
                                 );
@@ -17309,7 +17381,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                               );
                             } finally {
                               if (mounted) {
-                                setState(() => _isSendingPushNotification = false);
+                                setState(
+                                    () => _isSendingPushNotification = false);
                               }
                             }
                           },
@@ -17798,7 +17871,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
       if (_feedbackStatusFilter != 'all' && f.status != _feedbackStatusFilter) {
         return false;
       }
-      if (_feedbackTypeFilter != 'all' && f.feedbackType != _feedbackTypeFilter) {
+      if (_feedbackTypeFilter != 'all' &&
+          f.feedbackType != _feedbackTypeFilter) {
         return false;
       }
       if (_feedbackSearchQuery.isNotEmpty) {
@@ -17912,9 +17986,11 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                 _buildCosmosStatCard('STEP IDEAS', '$ideasCount',
                     Icons.auto_awesome_rounded, const Color(0xFF10B981)),
                 const SizedBox(width: 8),
-                _buildCosmosStatCard('AVG RATING',
+                _buildCosmosStatCard(
+                    'AVG RATING',
                     '${avgRating.toStringAsFixed(1)} ★',
-                    Icons.star_rounded, const Color(0xFFFFD700)),
+                    Icons.star_rounded,
+                    const Color(0xFFFFD700)),
               ],
             ),
             const SizedBox(height: 16),
@@ -17931,8 +18007,10 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                     color: Color(0xFFFFD700), size: 18),
                 suffixIcon: _feedbackSearchQuery.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear, color: Colors.white54, size: 16),
-                        onPressed: () => setState(() => _feedbackSearchQuery = ''),
+                        icon: const Icon(Icons.clear,
+                            color: Colors.white54, size: 16),
+                        onPressed: () =>
+                            setState(() => _feedbackSearchQuery = ''),
                       )
                     : null,
                 filled: true,
@@ -17961,7 +18039,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
               children: [
                 Text(
                   'Status: ',
-                  style: GoogleFonts.outfit(color: Colors.white60, fontSize: 12),
+                  style:
+                      GoogleFonts.outfit(color: Colors.white60, fontSize: 12),
                 ),
                 const SizedBox(width: 6),
                 Expanded(
@@ -17969,13 +18048,25 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        _buildFilterPill('All Status', 'all', _feedbackStatusFilter,
+                        _buildFilterPill(
+                            'All Status',
+                            'all',
+                            _feedbackStatusFilter,
                             (v) => setState(() => _feedbackStatusFilter = v)),
-                        _buildFilterPill('New Pending', 'new', _feedbackStatusFilter,
+                        _buildFilterPill(
+                            'New Pending',
+                            'new',
+                            _feedbackStatusFilter,
                             (v) => setState(() => _feedbackStatusFilter = v)),
-                        _buildFilterPill('Reviewed', 'reviewed', _feedbackStatusFilter,
+                        _buildFilterPill(
+                            'Reviewed',
+                            'reviewed',
+                            _feedbackStatusFilter,
                             (v) => setState(() => _feedbackStatusFilter = v)),
-                        _buildFilterPill('Implemented 🚀', 'implemented', _feedbackStatusFilter,
+                        _buildFilterPill(
+                            'Implemented 🚀',
+                            'implemented',
+                            _feedbackStatusFilter,
                             (v) => setState(() => _feedbackStatusFilter = v)),
                       ],
                     ),
@@ -17990,7 +18081,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
               children: [
                 Text(
                   'Category: ',
-                  style: GoogleFonts.outfit(color: Colors.white60, fontSize: 12),
+                  style:
+                      GoogleFonts.outfit(color: Colors.white60, fontSize: 12),
                 ),
                 const SizedBox(width: 6),
                 Expanded(
@@ -17998,15 +18090,30 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        _buildFilterPill('All Categories', 'all', _feedbackTypeFilter,
+                        _buildFilterPill(
+                            'All Categories',
+                            'all',
+                            _feedbackTypeFilter,
                             (v) => setState(() => _feedbackTypeFilter = v)),
-                        _buildFilterPill('💡 Roadmap Ideas', 'roadmap_idea', _feedbackTypeFilter,
+                        _buildFilterPill(
+                            '💡 Roadmap Ideas',
+                            'roadmap_idea',
+                            _feedbackTypeFilter,
                             (v) => setState(() => _feedbackTypeFilter = v)),
-                        _buildFilterPill('🌟 Day Reviews', 'day_completion', _feedbackTypeFilter,
+                        _buildFilterPill(
+                            '🌟 Day Reviews',
+                            'day_completion',
+                            _feedbackTypeFilter,
                             (v) => setState(() => _feedbackTypeFilter = v)),
-                        _buildFilterPill('🚀 Features', 'feature_request', _feedbackTypeFilter,
+                        _buildFilterPill(
+                            '🚀 Features',
+                            'feature_request',
+                            _feedbackTypeFilter,
                             (v) => setState(() => _feedbackTypeFilter = v)),
-                        _buildFilterPill('🐞 Bug Reports', 'bug_report', _feedbackTypeFilter,
+                        _buildFilterPill(
+                            '🐞 Bug Reports',
+                            'bug_report',
+                            _feedbackTypeFilter,
                             (v) => setState(() => _feedbackTypeFilter = v)),
                       ],
                     ),
@@ -18073,8 +18180,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
     );
   }
 
-  Widget _buildFilterPill(
-      String label, String value, String activeValue, ValueChanged<String> onSelected) {
+  Widget _buildFilterPill(String label, String value, String activeValue,
+      ValueChanged<String> onSelected) {
     final isSelected = activeValue == value;
     return GestureDetector(
       onTap: () => onSelected(value),
@@ -18190,7 +18297,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 6, vertical: 1.5),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF0284C7).withValues(alpha: 0.3),
+                              color: const Color(0xFF0284C7)
+                                  .withValues(alpha: 0.3),
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
                                   color: const Color(0xFF38BDF8), width: 0.6),
@@ -18241,7 +18349,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
             decoration: BoxDecoration(
               color: badgeColor.withValues(alpha: 0.18),
               borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: badgeColor.withValues(alpha: 0.6), width: 0.8),
+              border: Border.all(
+                  color: badgeColor.withValues(alpha: 0.6), width: 0.8),
             ),
             child: Text(
               badgeLabel,
@@ -18302,7 +18411,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(6),
@@ -18334,7 +18444,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                   style: TextButton.styleFrom(
                     foregroundColor: const Color(0xFF38BDF8),
                     visualDensity: VisualDensity.compact,
-                    textStyle: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold),
+                    textStyle: GoogleFonts.outfit(
+                        fontSize: 11, fontWeight: FontWeight.bold),
                   ),
                 ),
 
@@ -18351,7 +18462,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                   style: TextButton.styleFrom(
                     foregroundColor: const Color(0xFF10B981),
                     visualDensity: VisualDensity.compact,
-                    textStyle: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold),
+                    textStyle: GoogleFonts.outfit(
+                        fontSize: 11, fontWeight: FontWeight.bold),
                   ),
                 ),
 
@@ -18371,15 +18483,18 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                 itemBuilder: (context) => [
                   const PopupMenuItem(
                     value: 'new',
-                    child: Text('Set as New', style: TextStyle(color: Colors.white, fontSize: 12)),
+                    child: Text('Set as New',
+                        style: TextStyle(color: Colors.white, fontSize: 12)),
                   ),
                   const PopupMenuItem(
                     value: 'reviewed',
-                    child: Text('Set as Reviewed', style: TextStyle(color: Colors.white, fontSize: 12)),
+                    child: Text('Set as Reviewed',
+                        style: TextStyle(color: Colors.white, fontSize: 12)),
                   ),
                   const PopupMenuItem(
                     value: 'implemented',
-                    child: Text('Set as Implemented', style: TextStyle(color: Colors.white, fontSize: 12)),
+                    child: Text('Set as Implemented',
+                        style: TextStyle(color: Colors.white, fontSize: 12)),
                   ),
                 ],
               ),

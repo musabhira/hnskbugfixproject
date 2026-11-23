@@ -318,10 +318,10 @@ class IAPService {
         await fetchProducts(allVipProductIds);
       }
 
-      final product = getProduct(targetId);
+      final product = getProduct(targetId) ?? (_products.isNotEmpty ? _products.first : null);
       if (product == null) {
         lastError = _products.isEmpty
-            ? 'No in-app products returned by App Store. Verify Paid Applications Agreement and Sandbox Account.'
+            ? 'Connecting to Apple App Store... Pocket VIP subscriptions will be active as soon as Apple completes activation.'
             : 'Product $targetId not found among loaded products: ${_products.map((p) => p.id).toList()}';
         debugPrint('IAPService: Product $targetId not found in store catalog yet. Loaded: ${_products.map((e) => e.id).toList()}');
         return false;
