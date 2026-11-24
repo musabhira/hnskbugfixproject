@@ -468,11 +468,11 @@ class ChatMessages extends _$ChatMessages {
               sender_id,
               metadata,
               sender:users!sender_id(
-                profile:profile!user_id(name, profile_image_url)
+                profile:profile!user_id(name, profile_image_url, pocket_score, learning_points, xp, day, learning_day, learning_stage, stage, level)
               )
             ),
             sender:users!sender_id(
-              profile:profile!user_id(name, profile_image_url)
+              profile:profile!user_id(name, profile_image_url, pocket_score, learning_points, xp, day, learning_day, learning_stage, stage, level)
             ),
             gallery:gallery_id(
               *,
@@ -1020,11 +1020,11 @@ class ChatMessages extends _$ChatMessages {
               sender_id,
               metadata,
               sender:users!sender_id(
-                profile:profile!user_id(name, profile_image_url)
+                profile:profile!user_id(name, profile_image_url, pocket_score, learning_points, xp, day, learning_day, learning_stage, stage, level)
               )
             ),
             sender:users!sender_id(
-              profile:profile!user_id(name, profile_image_url)
+              profile:profile!user_id(name, profile_image_url, pocket_score, learning_points, xp, day, learning_day, learning_stage, stage, level)
             ),
             gallery:gallery_id(
               *,
@@ -1450,11 +1450,11 @@ class ChatMessages extends _$ChatMessages {
           sender_id,
           metadata,
           sender:users!sender_id(
-            profile:profile!user_id(name, profile_image_url)
+            profile:profile!user_id(name, profile_image_url, pocket_score, learning_points, xp, day, learning_day, learning_stage, stage, level)
           )
         ),
         sender:users!sender_id(
-          profile:profile!user_id(name, profile_image_url)
+          profile:profile!user_id(name, profile_image_url, pocket_score, learning_points, xp, day, learning_day, learning_stage, stage, level)
         ),
         gallery:gallery_id(
           *,

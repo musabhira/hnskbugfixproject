@@ -112,6 +112,7 @@ class PocketRankingService {
 
   // Cached state for instant rendering
   static List<PocketRankedUser> _cachedGlobalTop = [];
+  static final Map<String, int> _userGlobalRankDirectCache = {};
   static DateTime? _lastGlobalFetchTime;
   static int? _cachedMyGlobalRank;
   static bool? _cachedIsUnder17;
@@ -241,16 +242,27 @@ class PocketRankingService {
   /// Clear ranking caches (e.g. after a citadel attack or score update)
   static void invalidateCache() {
     _cachedGlobalTop.clear();
+    _userGlobalRankDirectCache.clear();
     _lastGlobalFetchTime = null;
     _cachedMyGlobalRank = null;
     _cachedIsUnder17 = null;
     _cachedIncludeRobots = null;
   }
 
+  /// 🔍 Manually set/store a fetched rank for a user ID
+  static void setCachedGlobalRank(String userId, int rank) {
+    if (userId.isNotEmpty && rank > 0) {
+      _userGlobalRankDirectCache[userId] = rank;
+    }
+  }
+
   /// 🔍 Get cached global rank for any user if available
   static int? getCachedGlobalRank(String userId) {
     if (userId == _supabase.auth.currentUser?.id && _cachedMyGlobalRank != null) {
       return _cachedMyGlobalRank;
+    }
+    if (_userGlobalRankDirectCache.containsKey(userId)) {
+      return _userGlobalRankDirectCache[userId];
     }
     if (_cachedGlobalTop.isEmpty) return null;
     final idx = _cachedGlobalTop.indexWhere((u) => u.userId == userId);
@@ -1062,12 +1074,15 @@ class PocketRankingService {
           .gt('pocket_score', score);
 
       final rank = countRes + robotCountAbove + 1;
+      _userGlobalRankDirectCache[userId] = rank;
       if (userId == _supabase.auth.currentUser?.id) {
         _cachedMyGlobalRank = rank;
       }
       return rank;
     } catch (_) {
-      return robotCountAbove + 1;
+      final fallbackRank = robotCountAbove + 1;
+      _userGlobalRankDirectCache[userId] = fallbackRank;
+      return fallbackRank;
     }
   }
 

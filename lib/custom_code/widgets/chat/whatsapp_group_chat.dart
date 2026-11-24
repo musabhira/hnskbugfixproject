@@ -137,8 +137,9 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         PocketPresidentService.isPresidentId(targetId)) return;
     _pendingRankFetchUserIds.add(targetId);
     PocketRankingService.fetchUserGlobalRank(targetId).then((rank) {
-      if (mounted && rank > 0) {
-        safeSetState(() {});
+      if (rank > 0) {
+        _userGlobalRankCache[targetId] = rank;
+        if (mounted) safeSetState(() {});
       }
     }).catchError((_) {}).whenComplete(() {
       _pendingRankFetchUserIds.remove(targetId);
@@ -162,6 +163,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   static final Map<String, VectorAvatarConfig> _userAvatarConfigCache = {};
   static final Map<String, int> _userPocketScoreCache = {};
   static final Map<String, int> _userPocketStageCache = {};
+  static final Map<String, int> _userGlobalRankCache = {};
   final Set<String> _fetchingAvatarUserIds = {};
 
   late String _currentUserId;
@@ -7285,7 +7287,8 @@ Draft: "$draft"''';
   }
 
   /// 🏅 Minimal Level & Rank Badge above message bubbles (Audio Directive)
-  Widget _buildSenderLevelAndRankBadge(String senderId) {
+  Widget _buildSenderLevelAndRankBadge(ChatMessage message) {
+    final senderId = message.senderId;
     final isPresident = PocketPresidentService.isPresidentId(senderId);
     if (isPresident) {
       return Container(
@@ -7346,12 +7349,20 @@ Draft: "$draft"''';
       );
     }
 
-    // 🤖 AI Robot Check: ONLY true robots, NEVER based on !isUuid!
+    // 🤖 AI Robot Check: ONLY true robots or explicitly flagged robot messages!
     final robot = PocketRobotService.getRobotById(senderId);
-    final isRobot = robot != null || PocketRobotService.isRobotId(senderId);
+    final isRobotFlagged = message.metadata?['is_robot'] == true ||
+        message.senderProfile?['is_robot'] == true;
+    final isRobot = robot != null ||
+        PocketRobotService.isRobotId(senderId) ||
+        (isRobotFlagged && !_uuidRegex.hasMatch(senderId));
+
     if (isRobot) {
-      final lvl = robot != null ? PocketRobotService.getDynamicLevel(robot) : 1;
-      final cachedRank = PocketRankingService.getCachedGlobalRank(senderId);
+      final lvl = robot != null
+          ? PocketRobotService.getDynamicLevel(robot)
+          : ((message.senderProfile?['level'] as num?)?.toInt() ?? 1);
+      final cachedRank = _userGlobalRankCache[senderId] ??
+          PocketRankingService.getCachedGlobalRank(senderId);
       final rankStr = cachedRank != null && cachedRank > 0 ? '$cachedRank' : '$lvl';
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
@@ -7393,25 +7404,49 @@ Draft: "$draft"''';
     int level = 1;
     int? rank;
 
+    // 1. Try directly from message.senderProfile
+    final msgProf = message.senderProfile;
+    if (msgProf != null && msgProf.isNotEmpty) {
+      final rawDay = (msgProf['day'] as num?)?.toInt() ??
+          (msgProf['learning_day'] as num?)?.toInt() ??
+          (msgProf['learning_stage'] as num?)?.toInt() ??
+          (msgProf['stage'] as num?)?.toInt() ??
+          (msgProf['level'] as num?)?.toInt();
+      final score = (msgProf['pocket_score'] as num?)?.toInt() ??
+          (msgProf['learning_points'] as num?)?.toInt() ??
+          (msgProf['xp'] as num?)?.toInt();
+
+      if (rawDay != null || score != null) {
+        final calcLvl = PocketScoreLevelEngine.calculateEffectiveLevel(
+          day: rawDay ?? 1,
+          pocketScore: score ?? 0,
+        );
+        if (calcLvl > 0) level = calcLvl;
+      }
+      rank = (msgProf['global_rank'] as num?)?.toInt();
+    }
+
+    // 2. Try ranking cache and personal cache
+    if (rank == null || rank <= 0) {
+      rank = _userGlobalRankCache[senderId] ??
+          PocketRankingService.getCachedGlobalRank(senderId);
+    }
+
     if (senderId == _currentUserId) {
-      final cachedRank = PocketRankingService.getCachedGlobalRank(_currentUserId);
-      rank = cachedRank;
       final cached = PocketRankingService.getCachedUser(_currentUserId);
       if (cached != null) {
-        level = cached.level;
+        if (level <= 1) level = cached.level;
         rank ??= cached.globalRank;
       }
     } else {
       final cached = PocketRankingService.getCachedUser(senderId);
       if (cached != null) {
-        level = cached.level;
-        rank = cached.globalRank;
-      } else {
-        rank = PocketRankingService.getCachedGlobalRank(senderId);
+        if (level <= 1) level = cached.level;
+        rank ??= cached.globalRank;
       }
     }
 
-    // Fallback: check _groupMembers profile data
+    // 3. Fallback: check _groupMembers profile data
     if (level <= 1 || rank == null) {
       final member = _groupMembers.firstWhere(
         (m) => m['user_id'] == senderId || m['id'] == senderId,
@@ -7434,21 +7469,29 @@ Draft: "$draft"''';
           day: rawDay,
           pocketScore: score,
         );
-        if (calcLvl > 0) level = calcLvl;
-        if (rank == null) {
+        if (calcLvl > 0 && level <= 1) level = calcLvl;
+        if (rank == null || rank <= 0) {
           rank = (prof['global_rank'] as num?)?.toInt() ??
               (member['global_rank'] as num?)?.toInt();
         }
       }
     }
 
-    // Fallback: check cached personal stage
+    // 4. Fallback: check cached personal stage from profile table cache
     if (level <= 1 && _userPocketStageCache.containsKey(senderId)) {
       level = _userPocketStageCache[senderId] ?? 1;
     }
 
-    // Asynchronously fetch rank if not cached
-    if (rank == null && senderId.isNotEmpty) {
+    // 5. Asynchronously fetch level/profile if missing for this human user
+    if (level <= 1 &&
+        senderId.isNotEmpty &&
+        _uuidRegex.hasMatch(senderId) &&
+        !_userPocketStageCache.containsKey(senderId)) {
+      _fetchUserAvatarConfigAsync(senderId);
+    }
+
+    // 6. Asynchronously fetch rank if not cached
+    if ((rank == null || rank <= 0) && senderId.isNotEmpty) {
       _fetchUserRankAsync(senderId);
     }
 
@@ -7632,7 +7675,7 @@ Draft: "$draft"''';
                             ),
                           ),
                           const SizedBox(width: 6),
-                          _buildSenderLevelAndRankBadge(message.senderId),
+                          _buildSenderLevelAndRankBadge(message),
                           if (_isAdmin(message.senderId)) ...[
                             const SizedBox(width: 4),
                             Container(
