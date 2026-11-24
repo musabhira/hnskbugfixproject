@@ -40,9 +40,11 @@ class PocketPresidentService {
 
   // SharedPreferences Keys
   static const String _kPresidentChatPrefix = 'president_chat_';
-  static const String _kPresidentInquiriesMasterKey = 'president_inquiries_master';
+  static const String _kPresidentInquiriesMasterKey =
+      'president_inquiries_master';
   static const String _kPresidentVibesKey = 'president_vibes_store';
-  static const String _kPresidentAnnouncementsKey = 'president_announcements_store';
+  static const String _kPresidentAnnouncementsKey =
+      'president_announcements_store';
 
   static bool isPresidentId(String id) {
     final lower = id.toLowerCase().trim();
@@ -54,7 +56,8 @@ class PocketPresidentService {
   }
 
   /// Persist President chat messages across both SharedPreferences and LocalSyncServer
-  static Future<void> savePresidentChatMessages(String userId, List<dynamic> messages) async {
+  static Future<void> savePresidentChatMessages(
+      String userId, List<dynamic> messages) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final key = '$_kPresidentChatPrefix$userId';
@@ -63,7 +66,8 @@ class PocketPresidentService {
         if (m is Map) {
           final map = Map<String, dynamic>.from(m);
           if (map['created_at'] is DateTime) {
-            map['created_at'] = (map['created_at'] as DateTime).toIso8601String();
+            map['created_at'] =
+                (map['created_at'] as DateTime).toIso8601String();
           }
           cleanList.add(map);
         }
@@ -71,7 +75,8 @@ class PocketPresidentService {
       await prefs.setString(key, jsonEncode(cleanList));
 
       // Also persist to LocalSyncServer both with and without prefix
-      unawaited(LocalSyncServer().saveMessages(userId, 'p:$presidentId', cleanList));
+      unawaited(
+          LocalSyncServer().saveMessages(userId, 'p:$presidentId', cleanList));
       unawaited(LocalSyncServer().saveMessages(userId, presidentId, cleanList));
     } catch (e) {
       debugPrint('Error saving President chat messages: $e');
@@ -79,7 +84,8 @@ class PocketPresidentService {
   }
 
   /// Fetch full chat history for a specific user with The President
-  static Future<List<Map<String, dynamic>>> getPresidentChatHistory(String userId) async {
+  static Future<List<Map<String, dynamic>>> getPresidentChatHistory(
+      String userId) async {
     List<Map<String, dynamic>> historyList = [];
     final prefs = await SharedPreferences.getInstance();
     final key = '$_kPresidentChatPrefix$userId';
@@ -101,7 +107,8 @@ class PocketPresidentService {
 
       // Also recover any messages saved in LocalSyncServer (fail-safe)
       try {
-        final cachedFromSync = LocalSyncServer().getCachedMessages(userId, 'p:$presidentId');
+        final cachedFromSync =
+            LocalSyncServer().getCachedMessages(userId, 'p:$presidentId');
         for (final item in cachedFromSync) {
           Map<String, dynamic>? map;
           if (item is Map) {
@@ -115,7 +122,8 @@ class PocketPresidentService {
           final mid = map['id']?.toString() ?? '';
           if (mid.isNotEmpty && !historyList.any((h) => h['id'] == mid)) {
             if (map['created_at'] is DateTime) {
-              map['created_at'] = (map['created_at'] as DateTime).toIso8601String();
+              map['created_at'] =
+                  (map['created_at'] as DateTime).toIso8601String();
             }
             historyList.add(map);
           }
@@ -133,14 +141,16 @@ class PocketPresidentService {
             .maybeSingle();
 
         if (reportRow != null && reportRow['additional_info'] != null) {
-          final Map<String, dynamic> extra = jsonDecode(reportRow['additional_info'].toString());
+          final Map<String, dynamic> extra =
+              jsonDecode(reportRow['additional_info'].toString());
           if (extra['messages'] is List) {
             final List<dynamic> remoteMsgs = extra['messages'];
             bool addedRemote = false;
             for (var rm in remoteMsgs) {
               final mid = rm['id']?.toString() ?? '';
               if (mid.isNotEmpty && !historyList.any((h) => h['id'] == mid)) {
-                final isPres = rm['is_president'] == true || rm['sender_id'] == presidentId;
+                final isPres = rm['is_president'] == true ||
+                    rm['sender_id'] == presidentId;
                 historyList.add({
                   'id': mid,
                   'sender_id': isPres ? presidentId : userId,
@@ -148,7 +158,8 @@ class PocketPresidentService {
                   'message_text': rm['text'] ?? rm['message_text'] ?? '',
                   'message_type': rm['message_type'] ?? 'text',
                   'file_url': rm['file_url'],
-                  'created_at': rm['created_at'] ?? DateTime.now().toIso8601String(),
+                  'created_at':
+                      rm['created_at'] ?? DateTime.now().toIso8601String(),
                   'is_read': true,
                   'metadata': {
                     'is_official': isPres,
@@ -162,8 +173,12 @@ class PocketPresidentService {
             }
             if (addedRemote) {
               historyList.sort((a, b) {
-                final tA = DateTime.tryParse(a['created_at']?.toString() ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
-                final tB = DateTime.tryParse(b['created_at']?.toString() ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+                final tA =
+                    DateTime.tryParse(a['created_at']?.toString() ?? '') ??
+                        DateTime.fromMillisecondsSinceEpoch(0);
+                final tB =
+                    DateTime.tryParse(b['created_at']?.toString() ?? '') ??
+                        DateTime.fromMillisecondsSinceEpoch(0);
                 return tB.compareTo(tA);
               });
               await prefs.setString(key, jsonEncode(historyList));
@@ -182,7 +197,8 @@ class PocketPresidentService {
           bool addedNew = false;
           for (var ann in annList) {
             final annId = ann['id']?.toString() ?? '';
-            final alreadyInChat = historyList.any((m) => m['id'] == 'pres_broadcast_$annId');
+            final alreadyInChat =
+                historyList.any((m) => m['id'] == 'pres_broadcast_$annId');
             if (!alreadyInChat) {
               final mediaUrl = ann['media_url']?.toString();
               final hasMedia = mediaUrl != null && mediaUrl.isNotEmpty;
@@ -190,10 +206,12 @@ class PocketPresidentService {
                 'id': 'pres_broadcast_$annId',
                 'sender_id': presidentId,
                 'receiver_id': userId,
-                'message_text': '🏛️ [PRESIDENTIAL BROADCAST: ${ann['title']}]\n\n${ann['content']}',
+                'message_text':
+                    '🏛️ [PRESIDENTIAL BROADCAST: ${ann['title']}]\n\n${ann['content']}',
                 'message_type': hasMedia ? 'image' : 'text',
                 'file_url': mediaUrl,
-                'created_at': ann['created_at'] ?? DateTime.now().toIso8601String(),
+                'created_at':
+                    ann['created_at'] ?? DateTime.now().toIso8601String(),
                 'is_read': false,
                 'metadata': {
                   'is_official': true,
@@ -208,8 +226,10 @@ class PocketPresidentService {
           }
           if (addedNew) {
             historyList.sort((a, b) {
-              final tA = DateTime.tryParse(a['created_at']?.toString() ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
-              final tB = DateTime.tryParse(b['created_at']?.toString() ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+              final tA = DateTime.tryParse(a['created_at']?.toString() ?? '') ??
+                  DateTime.fromMillisecondsSinceEpoch(0);
+              final tB = DateTime.tryParse(b['created_at']?.toString() ?? '') ??
+                  DateTime.fromMillisecondsSinceEpoch(0);
               return tB.compareTo(tA);
             });
             await prefs.setString(key, jsonEncode(historyList));
@@ -224,7 +244,9 @@ class PocketPresidentService {
           'receiver_id': userId,
           'message_text': defaultWelcomeMessage,
           'message_type': 'text',
-          'created_at': DateTime.now().subtract(const Duration(minutes: 5)).toIso8601String(),
+          'created_at': DateTime.now()
+              .subtract(const Duration(minutes: 5))
+              .toIso8601String(),
           'is_read': false,
           'metadata': {
             'is_official': true,
@@ -237,8 +259,10 @@ class PocketPresidentService {
       } else {
         // Guarantee sorted descending by timestamp
         historyList.sort((a, b) {
-          final tA = DateTime.tryParse(a['created_at']?.toString() ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
-          final tB = DateTime.tryParse(b['created_at']?.toString() ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+          final tA = DateTime.tryParse(a['created_at']?.toString() ?? '') ??
+              DateTime.fromMillisecondsSinceEpoch(0);
+          final tB = DateTime.tryParse(b['created_at']?.toString() ?? '') ??
+              DateTime.fromMillisecondsSinceEpoch(0);
           return tB.compareTo(tA);
         });
       }
@@ -251,7 +275,8 @@ class PocketPresidentService {
   }
 
   /// Get the last message preview for the conversation tile
-  static Future<Map<String, dynamic>> getLastPresidentMessage(String userId) async {
+  static Future<Map<String, dynamic>> getLastPresidentMessage(
+      String userId) async {
     final history = await getPresidentChatHistory(userId);
     if (history.isEmpty) {
       return {
@@ -263,14 +288,17 @@ class PocketPresidentService {
     }
 
     final lastMsg = history.first; // newest first
-    final hasUnread = lastMsg['sender_id'] == presidentId && lastMsg['is_read'] == false;
+    final hasUnread =
+        lastMsg['sender_id'] == presidentId && lastMsg['is_read'] == false;
     final unreadCount = history
         .where((m) => m['sender_id'] == presidentId && m['is_read'] == false)
         .length;
 
     return {
-      'message_text': lastMsg['message_text']?.toString() ?? defaultWelcomeMessage,
-      'created_at': DateTime.tryParse(lastMsg['created_at'].toString()) ?? DateTime.now(),
+      'message_text':
+          lastMsg['message_text']?.toString() ?? defaultWelcomeMessage,
+      'created_at':
+          DateTime.tryParse(lastMsg['created_at'].toString()) ?? DateTime.now(),
       'unread_count': unreadCount,
       'has_unread': hasUnread,
     };
@@ -310,7 +338,8 @@ class PocketPresidentService {
     String? existingMessageId,
   }) async {
     final now = DateTime.now();
-    final messageId = existingMessageId ?? 'pres_msg_${now.millisecondsSinceEpoch}';
+    final messageId =
+        existingMessageId ?? 'pres_msg_${now.millisecondsSinceEpoch}';
 
     final message = {
       'id': messageId,
@@ -337,11 +366,14 @@ class PocketPresidentService {
       updatedHistory = [message, ...history];
     }
     await prefs.setString(key, jsonEncode(updatedHistory));
-    unawaited(LocalSyncServer().saveMessages(userId, 'p:$presidentId', updatedHistory));
-    unawaited(LocalSyncServer().saveMessages(userId, presidentId, updatedHistory));
+    unawaited(LocalSyncServer()
+        .saveMessages(userId, 'p:$presidentId', updatedHistory));
+    unawaited(
+        LocalSyncServer().saveMessages(userId, presidentId, updatedHistory));
 
     // 2. Fetch sender profile details & auth credentials to enrich report metadata
-    String userName = ContactsNameService().getDisplayName(userId: userId, fallbackName: '');
+    String userName =
+        ContactsNameService().getDisplayName(userId: userId, fallbackName: '');
     String? userAvatar;
     int learningDay = 1;
     String userEmail = '';
@@ -384,7 +416,8 @@ class PocketPresidentService {
 
     if (userName.isEmpty || userName == 'User' || userName == 'Citizen') {
       if (userEmail.isNotEmpty) {
-        userName = userEmail.contains('@') ? userEmail.split('@').first : userEmail;
+        userName =
+            userEmail.contains('@') ? userEmail.split('@').first : userEmail;
       } else if (userId.length > 6) {
         userName = 'Learner ${userId.substring(0, 6)}';
       } else {
@@ -417,7 +450,8 @@ class PocketPresidentService {
       List<dynamic> messageThread = [];
       if (existingReport != null && existingReport['additional_info'] != null) {
         try {
-          final oldExtra = jsonDecode(existingReport['additional_info'].toString());
+          final oldExtra =
+              jsonDecode(existingReport['additional_info'].toString());
           if (oldExtra['messages'] is List) {
             messageThread = List.from(oldExtra['messages']);
           }
@@ -462,7 +496,8 @@ class PocketPresidentService {
           'reporter_id': userId,
           'content_type': 'president_inquiry',
           'content_id': messageId,
-          'report_type': 'other', // President inquiries use 'other' — matches reports_report_type_check constraint
+          'report_type':
+              'other', // President inquiries use 'other' — matches reports_report_type_check constraint
           'description': messageText,
           'additional_info': jsonEncode(additionalData),
           'status': 'pending',
@@ -487,7 +522,8 @@ class PocketPresidentService {
     String? existingMessageId,
   }) async {
     final now = DateTime.now();
-    final messageId = existingMessageId ?? 'pres_reply_${now.millisecondsSinceEpoch}';
+    final messageId =
+        existingMessageId ?? 'pres_reply_${now.millisecondsSinceEpoch}';
 
     final reply = {
       'id': messageId,
@@ -520,8 +556,10 @@ class PocketPresidentService {
       updated = [reply, ...history];
     }
     await prefs.setString(key, jsonEncode(updated));
-    unawaited(LocalSyncServer().saveMessages(targetUserId, 'p:$presidentId', updated));
-    unawaited(LocalSyncServer().saveMessages(targetUserId, presidentId, updated));
+    unawaited(LocalSyncServer()
+        .saveMessages(targetUserId, 'p:$presidentId', updated));
+    unawaited(
+        LocalSyncServer().saveMessages(targetUserId, presidentId, updated));
 
     // 2. Update master inquiries status to replied locally
     await _markMasterInquiryReplied(targetUserId, replyText);
@@ -579,7 +617,9 @@ class PocketPresidentService {
     try {
       InAppNotificationService.show(
         title: '🏛️ The President of Pocket World',
-        message: messageType == 'image' ? 'Sent you an educational card 📜' : replyText,
+        message: messageType == 'image'
+            ? 'Sent you an educational card 📜'
+            : replyText,
       );
     } catch (_) {}
 
@@ -589,7 +629,9 @@ class PocketPresidentService {
         'action': 'individual',
         'user_id': targetUserId,
         'title': '🏛️ Presidential Office Message',
-        'body': replyText.length > 100 ? '${replyText.substring(0, 97)}...' : replyText,
+        'body': replyText.length > 100
+            ? '${replyText.substring(0, 97)}...'
+            : replyText,
       });
     } catch (_) {}
 
@@ -602,8 +644,7 @@ class PocketPresidentService {
     int hours = 6,
     String? reason,
   }) async {
-    final protectionMessage =
-        '👮‍♂️ POLICE PROTECTION NOTICE:\n'
+    final protectionMessage = '👮‍♂️ POLICE PROTECTION NOTICE:\n'
         'Following recent combat activity, your house is officially sheltered under Police Protection for the next $hours hours!\n\n'
         '• Raids & Attacks: BLOCKED\n'
         '• Status: Active Police Protection\n'
@@ -629,7 +670,8 @@ class PocketPresidentService {
     String? storeUrl,
   }) async {
     final prefs = await SharedPreferences.getInstance();
-    final releaseKey = 'pres_app_update_sent_${platform.toLowerCase()}_${version.replaceAll('.', '_')}_$targetUserId';
+    final releaseKey =
+        'pres_app_update_sent_${platform.toLowerCase()}_${version.replaceAll('.', '_')}_$targetUserId';
     if (prefs.getBool(releaseKey) == true) {
       return; // Deduplication: already sent to this user!
     }
@@ -641,7 +683,8 @@ class PocketPresidentService {
     buffer.writeln();
     buffer.writeln('A new POKET update is now available for $platform.');
     buffer.writeln();
-    buffer.writeln('📌 Version $version – ${title.isNotEmpty ? title : "What\'s New"}');
+    buffer.writeln(
+        '📌 Version $version – ${title.isNotEmpty ? title : "What\'s New"}');
     buffer.writeln();
     if (description.isNotEmpty) {
       buffer.writeln(description);
@@ -654,7 +697,8 @@ class PocketPresidentService {
       }
       buffer.writeln();
     }
-    buffer.writeln('Thank you for being part of POKET! Speak with confidence every single day! 🌟');
+    buffer.writeln(
+        'Thank you for being part of POKET! Speak with confidence every single day! 🌟');
 
     await sendPresidentReplyToUser(
       targetUserId: targetUserId,
@@ -667,7 +711,8 @@ class PocketPresidentService {
 
   /// 🚀 Automatically delivers release notes & community links for current installed build
   /// into user's 1-on-1 President chat upon first launch of that version!
-  static Future<void> checkAndDeliverInstalledReleaseNotes(String userId) async {
+  static Future<void> checkAndDeliverInstalledReleaseNotes(
+      String userId) async {
     try {
       if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return;
       final packageInfo = await PackageInfo.fromPlatform();
@@ -683,8 +728,9 @@ class PocketPresidentService {
       }
 
       // Fetch active production release or remote release notes
-      final activeRelease = await PocketReleaseService.fetchActiveProductionRelease(
-          platform.toLowerCase());
+      final activeRelease =
+          await PocketReleaseService.fetchActiveProductionRelease(
+              platform.toLowerCase());
 
       final buffer = StringBuffer();
       buffer.writeln(
@@ -694,7 +740,8 @@ class PocketPresidentService {
           'Greetings, citizen! 🌟 The Presidential Office is proud to announce our latest update:');
       buffer.writeln();
 
-      if (activeRelease != null && activeRelease.releaseNotes.trim().isNotEmpty) {
+      if (activeRelease != null &&
+          activeRelease.releaseNotes.trim().isNotEmpty) {
         buffer.writeln(activeRelease.releaseNotes.trim());
       } else {
         buffer.writeln(
@@ -704,9 +751,11 @@ class PocketPresidentService {
       }
 
       buffer.writeln();
-      buffer.writeln('👥 Stay connected with our official English Club Community:');
+      buffer.writeln(
+          '👥 Stay connected with our official English Club Community:');
       buffer.writeln();
-      buffer.writeln('💬 Official WhatsApp Community (Daily tips & syllabus updates):');
+      buffer.writeln(
+          '💬 Official WhatsApp Community (Daily tips & syllabus updates):');
       buffer.writeln('👉 https://chat.whatsapp.com/HqRgqeHEQVm6LoZ7L8dO6r');
       buffer.writeln();
       buffer.writeln(
@@ -741,7 +790,10 @@ class PocketPresidentService {
     String? currentUserId,
   }) async {
     final clean = userMessage.trim().toLowerCase();
-    final citizen = (userName != null && userName.isNotEmpty && userName != 'Citizen') ? userName : 'Citizen';
+    final citizen =
+        (userName != null && userName.isNotEmpty && userName != 'Citizen')
+            ? userName
+            : 'Citizen';
 
     // 1. Who are you / ആരാണ് താങ്കൾ? / Who is the President?
     if (clean.contains('who are you') ||
@@ -804,10 +856,15 @@ class PocketPresidentService {
         clean.contains('what is') ||
         clean.contains('help') ||
         clean.contains('guide')) {
-      if (clean.contains('level') || clean.contains('score') || clean.contains('points') || clean.contains('rank')) {
+      if (clean.contains('level') ||
+          clean.contains('score') ||
+          clean.contains('points') ||
+          clean.contains('rank')) {
         return "Thank you for asking, $citizen! 🌟 Your Pocket Score and level grow naturally each day as you practice speaking, defend your Citadel, and complete your daily missions. Take it one day at a time—you are doing wonderfully!";
       }
-      if (clean.contains('mate') || clean.contains('friend') || clean.contains('chat')) {
+      if (clean.contains('mate') ||
+          clean.contains('friend') ||
+          clean.contains('chat')) {
         return "Thank you for reaching out, $citizen! 🤝 As the President, I am always connected with you right here. You can also chat with friendly mates in the English Hub or practice voice speaking anytime. We are all here supporting you!";
       }
       return "Thank you so much for asking, $citizen! 💛 Pocket World is designed to make speaking English natural, fun, and relaxing. Never worry about making mistakes—every sentence you try is a victory! Feel free to ask me anything anytime.";
@@ -824,7 +881,10 @@ class PocketPresidentService {
     }
 
     // 8. Thanks & Appreciation
-    if (clean.contains('thank') || clean.contains('thx') || clean.contains('super') || clean.contains('great')) {
+    if (clean.contains('thank') ||
+        clean.contains('thx') ||
+        clean.contains('super') ||
+        clean.contains('great')) {
       return "Thank YOU so much, dear $citizen! 🌟 Having you in Pocket World brings us so much happiness. Keep smiling and speaking with confidence every day—our entire team is always cheering for you! 💛";
     }
 
@@ -843,7 +903,8 @@ class PocketPresidentService {
     String? aiVerdictSummary,
   }) async {
     final now = DateTime.now();
-    final reportSummary = '🚨 CITADEL DEFENSE QUESTION REPORT: "$questionText" from $houseOwnerName\'s Citadel ($houseId). Reason: $reason. ${aiVerdictSummary ?? ''}';
+    final reportSummary =
+        '🚨 CITADEL DEFENSE QUESTION REPORT: "$questionText" from $houseOwnerName\'s Citadel ($houseId). Reason: $reason. ${aiVerdictSummary ?? ''}';
 
     await _recordMasterInquiry(
       userId: reporterId,
@@ -947,7 +1008,8 @@ class PocketPresidentService {
 
       for (var row in res) {
         final meta = row['metadata'] is Map ? row['metadata'] as Map : {};
-        if (meta['is_president'] == true || row['user_id']?.toString() == presidentId) {
+        if (meta['is_president'] == true ||
+            row['user_id']?.toString() == presidentId) {
           allVibes.add({
             'id': row['id']?.toString(),
             'user_id': presidentId,
@@ -998,11 +1060,14 @@ class PocketPresidentService {
     final lang = PocketLanguageService.currentLanguage.toLowerCase();
     String vocabTip;
     if (lang.contains('hindi')) {
-      vocabTip = '🌟 President\'s Spoken English Tip 🏛️\n\nWord: "Persevere" (डटे रहना / लगातार प्रयास करना)\nMeaning: Keep going despite challenges.\nExample: "If you persevere with daily Poket Talk pacts, fluency comes naturally!" 👑';
+      vocabTip =
+          '🌟 President\'s Spoken English Tip 🏛️\n\nWord: "Persevere" (डटे रहना / लगातार प्रयास करना)\nMeaning: Keep going despite challenges.\nExample: "If you persevere with daily Poket Talk pacts, fluency comes naturally!" 👑';
     } else if (lang.contains('tamil')) {
-      vocabTip = '🌟 President\'s Spoken English Tip 🏛️\n\nWord: "Persevere" (விடாமுயற்சி செய்)\nMeaning: Keep going despite challenges.\nExample: "If you persevere with daily Poket Talk pacts, fluency comes naturally!" 👑';
+      vocabTip =
+          '🌟 President\'s Spoken English Tip 🏛️\n\nWord: "Persevere" (விடாமுயற்சி செய்)\nMeaning: Keep going despite challenges.\nExample: "If you persevere with daily Poket Talk pacts, fluency comes naturally!" 👑';
     } else {
-      vocabTip = '🌟 President\'s Spoken English Tip 🏛️\n\nWord: "Persevere" (തുടർന്നുപ്രയത്നിക്കുക / വിട്ടുപിരിയാതിരിക്കുക)\nMeaning: Keep going despite challenges.\nExample: "If you persevere with daily Poket Talk pacts, fluency comes naturally!" 👑';
+      vocabTip =
+          '🌟 President\'s Spoken English Tip 🏛️\n\nWord: "Persevere" (തുടർന്നുപ്രയത്നിക്കുക / വിട്ടുപിരിയാതിരിക്കുക)\nMeaning: Keep going despite challenges.\nExample: "If you persevere with daily Poket Talk pacts, fluency comes naturally!" 👑';
     }
 
     final dailyVibe = {
@@ -1013,8 +1078,11 @@ class PocketPresidentService {
       'media_url': '',
       'caption': vocabTip,
       'duration': 10,
-      'created_at': DateTime.now().subtract(const Duration(minutes: 30)).toIso8601String(),
-      'expires_at': DateTime.now().add(const Duration(hours: 23)).toIso8601String(),
+      'created_at': DateTime.now()
+          .subtract(const Duration(minutes: 30))
+          .toIso8601String(),
+      'expires_at':
+          DateTime.now().add(const Duration(hours: 23)).toIso8601String(),
       'is_active': true,
       'views_count': 234,
       'profile': {
@@ -1053,8 +1121,11 @@ class PocketPresidentService {
           'caption':
               '🏛️ Presidential Public Survey: Help Us Improve Poket Mates! 🌟\n\nHow can we improve the app quality and your English learning experience? Tap below or type your suggestions to share your feedback directly with The President! ✍️',
           'duration': 12,
-          'created_at': DateTime.now().subtract(const Duration(minutes: 15)).toIso8601String(),
-          'expires_at': DateTime.now().add(const Duration(hours: 48)).toIso8601String(),
+          'created_at': DateTime.now()
+              .subtract(const Duration(minutes: 15))
+              .toIso8601String(),
+          'expires_at':
+              DateTime.now().add(const Duration(hours: 48)).toIso8601String(),
           'is_active': true,
           'views_count': 382,
           'is_feedback_vibe': true,
@@ -1084,8 +1155,11 @@ class PocketPresidentService {
           'caption':
               '🏛️ Poket World State Address:\n"English is your passport to the world. Speak with confidence every single day!" — The President 🌟',
           'duration': 8,
-          'created_at': DateTime.now().subtract(const Duration(hours: 1)).toIso8601String(),
-          'expires_at': DateTime.now().add(const Duration(hours: 23)).toIso8601String(),
+          'created_at': DateTime.now()
+              .subtract(const Duration(hours: 1))
+              .toIso8601String(),
+          'expires_at':
+              DateTime.now().add(const Duration(hours: 23)).toIso8601String(),
           'is_active': true,
           'views_count': 158,
           'profile': {
@@ -1112,7 +1186,8 @@ class PocketPresidentService {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('president_feedback_given_$userId', true);
-    await prefs.setInt('president_last_feedback_ts_$userId', DateTime.now().millisecondsSinceEpoch);
+    await prefs.setInt('president_last_feedback_ts_$userId',
+        DateTime.now().millisecondsSinceEpoch);
 
     // Save to Supabase feedback or citizen_reports table if available
     try {
@@ -1252,8 +1327,7 @@ class PocketPresidentService {
           '${now.year}-${now.month}-${now.day}');
 
       // A. Royal Birthday Message in President 1-on-1 Chat
-      final birthdayMessage =
-          '🎂 Royal Birthday Greetings, $userName! 🌟🎉\n\n'
+      final birthdayMessage = '🎂 Royal Birthday Greetings, $userName! 🌟🎉\n\n'
           'On this auspicious day, the President and the entire nation of Pocket World celebrate you! 👑✨\n\n'
           'May your year ahead be blessed with boundless English fluency, great friendships, courage in every Citadel battle, and abundant prosperity. Have a joyous and blessed birthday! 🎁🎈';
 
@@ -1264,8 +1338,7 @@ class PocketPresidentService {
       );
 
       // B. Public Birthday Vibe Proclamation (Visible to all citizens in Vibes)
-      final vibeCaption =
-          '👑 Presidential Proclamation 🎂🎉\n\n'
+      final vibeCaption = '👑 Presidential Proclamation 🎂🎉\n\n'
           'Join the President in wishing a magnificent Happy Birthday to our esteemed citizen $userName! 🌟✨\n'
           'Let us all celebrate their journey in Pocket World! Send them your warmest wishes! 🎁🥳';
 
@@ -1278,14 +1351,16 @@ class PocketPresidentService {
       PushNotificationService.showInstantNotification(
         id: 99901,
         title: '🎂 Happy Birthday from The President! 🎉',
-        body: 'The President and Pocket World wish you a marvelous birthday! Tap to see your royal message.',
+        body:
+            'The President and Pocket World wish you a marvelous birthday! Tap to see your royal message.',
         payload: 'chat_p:$presidentId',
       );
 
       // In-App floating banner
       InAppNotificationService.show(
         title: '🎂 Happy Birthday, $userName! 🎉',
-        message: 'The President has officially proclaimed your birthday across Pocket World! Tap to view.',
+        message:
+            'The President has officially proclaimed your birthday across Pocket World! Tap to view.',
         badgeText: 'BIRTHDAY',
         badgeColor: const Color(0xFFFFD700),
         onTap: () {
@@ -1312,7 +1387,8 @@ class PocketPresidentService {
           PushNotificationService.dispatchChatMessagePushNotification(
             senderId: presidentId,
             senderName: 'The President 🏛️',
-            messageText: '🎉 Today is $userName\'s Birthday! Tap to send warm wishes!',
+            messageText:
+                '🎉 Today is $userName\'s Birthday! Tap to send warm wishes!',
             receiverId: friendUid,
           );
         }
@@ -1367,7 +1443,8 @@ class PocketPresidentService {
       await supabase.functions.invoke('send-push-notification', body: {
         'action': 'broadcast',
         'title': '🏛️ [Presidential Decree] $title',
-        'body': content.length > 120 ? '${content.substring(0, 117)}...' : content,
+        'body':
+            content.length > 120 ? '${content.substring(0, 117)}...' : content,
       });
       debugPrint('Presidential Broadcast Push Notification dispatched!');
     } catch (pushErr) {
@@ -1443,13 +1520,20 @@ class PocketPresidentService {
 
         final isGeneralReport = row['content_type'] != 'president_inquiry';
         final desc = row['description'] ?? row['reason'] ?? '';
-        final reporterId = (row['reporter_id'] ?? row['user_id'] ?? '').toString();
+        final reporterId =
+            (row['reporter_id'] ?? row['user_id'] ?? '').toString();
         final prof = profileMap[reporterId];
         final userAuth = userAuthMap[reporterId];
 
         String realName = '';
         if (prof != null) {
-          final n = (prof['display_name'] ?? prof['name'] ?? prof['username'] ?? prof['first_name'] ?? '').toString().trim();
+          final n = (prof['display_name'] ??
+                  prof['name'] ??
+                  prof['username'] ??
+                  prof['first_name'] ??
+                  '')
+              .toString()
+              .trim();
           if (n.isNotEmpty && n != 'Citizen' && n != 'User') realName = n;
         }
         if (realName.isEmpty) {
@@ -1460,30 +1544,46 @@ class PocketPresidentService {
           final em = userAuth!['email'].toString();
           realName = em.contains('@') ? em.split('@').first : em;
         }
-        if (realName.isEmpty || realName == 'Citizen' || realName.startsWith('Citizen (')) {
-          final contactName = ContactsNameService().getDisplayName(userId: reporterId, fallbackName: 'Learner');
-          if (contactName.isNotEmpty && contactName != 'User' && contactName != 'Citizen') {
+        if (realName.isEmpty ||
+            realName == 'Citizen' ||
+            realName.startsWith('Citizen (')) {
+          final contactName = ContactsNameService()
+              .getDisplayName(userId: reporterId, fallbackName: 'Learner');
+          if (contactName.isNotEmpty &&
+              contactName != 'User' &&
+              contactName != 'Citizen') {
             realName = contactName;
           } else {
-            realName = reporterId.length > 5 ? 'Citizen ${reporterId.substring(0, 5)}' : 'Citizen';
+            realName = reporterId.length > 5
+                ? 'Citizen ${reporterId.substring(0, 5)}'
+                : 'Citizen';
           }
         }
 
-        final email = (userAuth?['email'] ?? extra['email'] ?? '').toString().trim();
-        final phone = (prof?['phone_no'] ?? userAuth?['phone_no'] ?? extra['phone'] ?? '').toString().trim();
-        final planet = (prof?['country'] ?? extra['planet'] ?? 'Earth').toString().trim();
+        final email =
+            (userAuth?['email'] ?? extra['email'] ?? '').toString().trim();
+        final phone =
+            (prof?['phone_no'] ?? userAuth?['phone_no'] ?? extra['phone'] ?? '')
+                .toString()
+                .trim();
+        final planet =
+            (prof?['country'] ?? extra['planet'] ?? 'Earth').toString().trim();
         final city = (prof?['city'] ?? extra['city'] ?? '').toString().trim();
         final bio = (prof?['bio'] ?? '').toString();
         String plot = '';
         if (bio.isNotEmpty) {
-          final plotMatch = RegExp(r'Plot\s*[:#]?\s*(\d+)', caseSensitive: false).firstMatch(bio);
+          final plotMatch =
+              RegExp(r'Plot\s*[:#]?\s*(\d+)', caseSensitive: false)
+                  .firstMatch(bio);
           if (plotMatch != null) plot = 'Plot #${plotMatch.group(1)}';
         }
 
         final avatarUrl = prof?['profile_image_url'] ?? extra['user_avatar'];
-        final day = prof?['learning_day'] ?? prof?['day'] ?? extra['learning_day'] ?? 1;
+        final day =
+            prof?['learning_day'] ?? prof?['day'] ?? extra['learning_day'] ?? 1;
         final messages = (extra['messages'] is List)
-            ? List<Map<String, dynamic>>.from(extra['messages'].map((m) => Map<String, dynamic>.from(m)))
+            ? List<Map<String, dynamic>>.from(
+                extra['messages'].map((m) => Map<String, dynamic>.from(m)))
             : <Map<String, dynamic>>[];
 
         inquiries.add({
@@ -1498,8 +1598,11 @@ class PocketPresidentService {
           'user_avatar': avatarUrl,
           'learning_day': day,
           'english_level': prof?['english_level'],
-          'last_message': isGeneralReport ? '⚠️ [REPORT: ${row['report_type'] ?? 'Citizen Report'}] $desc' : desc,
-          'report_type': row['report_type'] ?? (isGeneralReport ? 'citizen_report' : 'doubt'),
+          'last_message': isGeneralReport
+              ? '⚠️ [REPORT: ${row['report_type'] ?? 'Citizen Report'}] $desc'
+              : desc,
+          'report_type': row['report_type'] ??
+              (isGeneralReport ? 'citizen_report' : 'doubt'),
           'status': row['status'] ?? 'pending',
           'created_at': row['created_at'],
           'is_general_report': isGeneralReport,
@@ -1508,7 +1611,8 @@ class PocketPresidentService {
         });
       }
     } catch (e) {
-      debugPrint('Error fetching President inquiries/reports from Supabase: $e');
+      debugPrint(
+          'Error fetching President inquiries/reports from Supabase: $e');
     }
 
     // 1.5 Fetch direct citizen chat messages sent to The President from Supabase messages table
@@ -1516,7 +1620,8 @@ class PocketPresidentService {
       final supabase = SupaFlow.client;
       final directMsgs = await supabase
           .from('messages')
-          .select('id, sender_id, receiver_id, message_text, created_at, metadata')
+          .select(
+              'id, sender_id, receiver_id, message_text, created_at, metadata')
           .or('receiver_id.eq.pocket_president,receiver_id.eq.president,receiver_id.eq.president_of_pocket_world')
           .order('created_at', ascending: false)
           .limit(100);
@@ -1536,18 +1641,22 @@ class PocketPresidentService {
         try {
           final profs1 = await supabase
               .from('profile')
-              .select('id, user_id, name, display_name, first_name, username, profile_image_url, learning_day, day, english_level, country, city, bio, phone_no')
+              .select(
+                  'id, user_id, name, display_name, first_name, username, profile_image_url, learning_day, day, english_level, country, city, bio, phone_no')
               .inFilter('user_id', missingUserIds);
           for (var p in profs1) {
-            if (p['user_id'] != null) directProfMap[p['user_id'].toString()] = p;
+            if (p['user_id'] != null)
+              directProfMap[p['user_id'].toString()] = p;
             if (p['id'] != null) directProfMap[p['id'].toString()] = p;
           }
           final profs2 = await supabase
               .from('profile')
-              .select('id, user_id, name, display_name, first_name, username, profile_image_url, learning_day, day, english_level, country, city, bio, phone_no')
+              .select(
+                  'id, user_id, name, display_name, first_name, username, profile_image_url, learning_day, day, english_level, country, city, bio, phone_no')
               .inFilter('id', missingUserIds);
           for (var p in profs2) {
-            if (p['user_id'] != null) directProfMap[p['user_id'].toString()] = p;
+            if (p['user_id'] != null)
+              directProfMap[p['user_id'].toString()] = p;
             if (p['id'] != null) directProfMap[p['id'].toString()] = p;
           }
         } catch (_) {}
@@ -1569,7 +1678,13 @@ class PocketPresidentService {
 
           String displayName = '';
           if (prof != null) {
-            final n = (prof['display_name'] ?? prof['name'] ?? prof['username'] ?? prof['first_name'] ?? '').toString().trim();
+            final n = (prof['display_name'] ??
+                    prof['name'] ??
+                    prof['username'] ??
+                    prof['first_name'] ??
+                    '')
+                .toString()
+                .trim();
             if (n.isNotEmpty && n != 'Citizen' && n != 'User') displayName = n;
           }
           if (displayName.isEmpty && userAuth?['email'] != null) {
@@ -1577,18 +1692,28 @@ class PocketPresidentService {
             displayName = em.contains('@') ? em.split('@').first : em;
           }
           if (displayName.isEmpty) {
-            final cName = ContactsNameService().getDisplayName(userId: sId, fallbackName: 'Learner');
-            displayName = (cName.isNotEmpty && cName != 'User' && cName != 'Citizen') ? cName : (sId.length > 5 ? 'Citizen ${sId.substring(0, 5)}' : 'Citizen');
+            final cName = ContactsNameService()
+                .getDisplayName(userId: sId, fallbackName: 'Learner');
+            displayName =
+                (cName.isNotEmpty && cName != 'User' && cName != 'Citizen')
+                    ? cName
+                    : (sId.length > 5
+                        ? 'Citizen ${sId.substring(0, 5)}'
+                        : 'Citizen');
           }
 
           final email = (userAuth?['email'] ?? '').toString().trim();
-          final phone = (prof?['phone_no'] ?? userAuth?['phone_no'] ?? '').toString().trim();
+          final phone = (prof?['phone_no'] ?? userAuth?['phone_no'] ?? '')
+              .toString()
+              .trim();
           final planet = (prof?['country'] ?? 'Earth').toString().trim();
           final city = (prof?['city'] ?? '').toString().trim();
           final bio = (prof?['bio'] ?? '').toString();
           String plot = '';
           if (bio.isNotEmpty) {
-            final plotMatch = RegExp(r'Plot\s*[:#]?\s*(\d+)', caseSensitive: false).firstMatch(bio);
+            final plotMatch =
+                RegExp(r'Plot\s*[:#]?\s*(\d+)', caseSensitive: false)
+                    .firstMatch(bio);
             if (plotMatch != null) plot = 'Plot #${plotMatch.group(1)}';
           }
 
@@ -1638,7 +1763,8 @@ class PocketPresidentService {
         });
       }
     } catch (directMsgErr) {
-      debugPrint('Error fetching direct citizen messages for President Desk: $directMsgErr');
+      debugPrint(
+          'Error fetching direct citizen messages for President Desk: $directMsgErr');
     }
 
     // 2. Fetch local inquiries from SharedPreferences as fallback/merge
@@ -1675,10 +1801,18 @@ class PocketPresidentService {
       List<dynamic> list = raw != null && raw.isNotEmpty ? jsonDecode(raw) : [];
 
       final existingIndex = list.indexWhere((i) => i['user_id'] == userId);
-      final resolvedContact = ContactsNameService().getDisplayName(userId: userId, fallbackName: 'Learner');
-      final finalName = (userName != null && userName.isNotEmpty && userName != 'Citizen' && userName != 'User')
+      final resolvedContact = ContactsNameService()
+          .getDisplayName(userId: userId, fallbackName: 'Learner');
+      final finalName = (userName != null &&
+              userName.isNotEmpty &&
+              userName != 'Citizen' &&
+              userName != 'User')
           ? userName
-          : (resolvedContact.isNotEmpty && resolvedContact != 'User' ? resolvedContact : (userId.length > 5 ? 'Learner ${userId.substring(0, 5)}' : 'Learner'));
+          : (resolvedContact.isNotEmpty && resolvedContact != 'User'
+              ? resolvedContact
+              : (userId.length > 5
+                  ? 'Learner ${userId.substring(0, 5)}'
+                  : 'Learner'));
       final inquiryData = {
         'user_id': userId,
         'user_name': finalName,
@@ -1702,7 +1836,8 @@ class PocketPresidentService {
     }
   }
 
-  static Future<void> _markMasterInquiryReplied(String userId, String reply) async {
+  static Future<void> _markMasterInquiryReplied(
+      String userId, String reply) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString(_kPresidentInquiriesMasterKey);
@@ -1721,19 +1856,30 @@ class PocketPresidentService {
 
   static String _categorizeInquiry(String text) {
     final lower = text.toLowerCase();
-    if (lower.contains('complaint') || lower.contains('cheat') || lower.contains('report') || lower.contains('bug') || lower.contains('issue')) {
+    if (lower.contains('complaint') ||
+        lower.contains('cheat') ||
+        lower.contains('report') ||
+        lower.contains('bug') ||
+        lower.contains('issue')) {
       return 'complaint';
     }
-    if (lower.contains('doubt') || lower.contains('question') || lower.contains('how to') || lower.contains('meaning')) {
+    if (lower.contains('doubt') ||
+        lower.contains('question') ||
+        lower.contains('how to') ||
+        lower.contains('meaning')) {
       return 'doubt';
     }
-    if (lower.contains('attack') || lower.contains('citadel') || lower.contains('protect') || lower.contains('shield')) {
+    if (lower.contains('attack') ||
+        lower.contains('citadel') ||
+        lower.contains('protect') ||
+        lower.contains('shield')) {
       return 'citadel_protection';
     }
     return 'general';
   }
 
-  static const String _kPresidentCitadelConqueredPrefix = 'presidential_citadel_conquered_';
+  static const String _kPresidentCitadelConqueredPrefix =
+      'presidential_citadel_conquered_';
 
   /// Check if the user has conquered the Level 91 Presidential Palace Citadel
   static Future<bool> hasConqueredPresidentialCitadel([String? userId]) async {

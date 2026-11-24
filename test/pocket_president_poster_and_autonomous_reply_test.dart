@@ -35,7 +35,8 @@ void main() {
       final afterAdd = await PocketPresidentPosterService.getAllPosters();
       expect(afterAdd.length, equals(initialCount + 1));
 
-      final fetched = await PocketPresidentPosterService.getAllPosters(languageFilter: 'ml');
+      final fetched = await PocketPresidentPosterService.getAllPosters(
+          languageFilter: 'ml');
       expect(fetched.any((p) => p.id == 'test_poster_vocab'), isTrue);
 
       await PocketPresidentPosterService.deletePoster('test_poster_vocab');
@@ -43,17 +44,21 @@ void main() {
       expect(afterDelete.length, equals(initialCount));
     });
 
-    test('Strict Homes seen tracking: once seen, does not return duplicate', () async {
-      final poster1 = await PocketPresidentPosterService.getNextUnseenPosterForHomes(
+    test('Strict Homes seen tracking: once seen, does not return duplicate',
+        () async {
+      final poster1 =
+          await PocketPresidentPosterService.getNextUnseenPosterForHomes(
         userId: 'user_homes_test',
         language: 'ml',
       );
       expect(poster1, isNotNull);
 
       if (poster1 != null) {
-        await PocketPresidentPosterService.markPosterSeenInHomes('user_homes_test', poster1.id);
-        
-        final poster2 = await PocketPresidentPosterService.getNextUnseenPosterForHomes(
+        await PocketPresidentPosterService.markPosterSeenInHomes(
+            'user_homes_test', poster1.id);
+
+        final poster2 =
+            await PocketPresidentPosterService.getNextUnseenPosterForHomes(
           userId: 'user_homes_test',
           language: 'ml',
         );
@@ -65,15 +70,21 @@ void main() {
     });
   });
 
-  group('👑 PocketPresidentService Thankful & Supportive English Tone Tests', () {
-    test('Answers "who are you" / "നിങ്ങൾ ആരാണ്?" with gratitude and supportive teammate tone in English', () async {
+  group('👑 PocketPresidentService Thankful & Supportive English Tone Tests',
+      () {
+    test(
+        'Answers "who are you" / "നിങ്ങൾ ആരാണ്?" with gratitude and supportive teammate tone in English',
+        () async {
       final replyEn = await PocketPresidentService.generatePresidentRobotReply(
         userMessage: 'Who are you?',
         userName: 'Rahul',
       );
       expect(replyEn.toLowerCase().contains('thank you'), isTrue);
       expect(replyEn.toLowerCase().contains('president'), isTrue);
-      expect(replyEn.toLowerCase().contains('supporter') || replyEn.toLowerCase().contains('team'), isTrue);
+      expect(
+          replyEn.toLowerCase().contains('supporter') ||
+              replyEn.toLowerCase().contains('team'),
+          isTrue);
 
       final replyMl = await PocketPresidentService.generatePresidentRobotReply(
         userMessage: 'നിങ്ങൾ ആരാണ്?',
@@ -92,12 +103,17 @@ void main() {
       expect(reply.toLowerCase().contains('english'), isTrue);
     });
 
-    test('Answers "attack" / "citadel protection" with reassuring support', () async {
+    test('Answers "attack" / "citadel protection" with reassuring support',
+        () async {
       final reply = await PocketPresidentService.generatePresidentRobotReply(
         userMessage: 'Can someone attack me or my citadel?',
       );
       expect(reply.toLowerCase().contains('thank you'), isTrue);
-      expect(reply.contains('Citadel') || reply.contains('Protection') || reply.contains('safe'), isTrue);
+      expect(
+          reply.contains('Citadel') ||
+              reply.contains('Protection') ||
+              reply.contains('safe'),
+          isTrue);
     });
   });
 }
