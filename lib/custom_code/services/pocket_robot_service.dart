@@ -3856,6 +3856,109 @@ class PocketRobotService {
     return turns;
   }
 
+  /// 🌟 Pre-seeds lively, multi-turn default conversations between robots.
+  /// Ensures the English Hub Robot tab is NEVER silent or empty upon opening!
+  static List<ChatMessage> getInitialEnglishHubRobotConversations({
+    required String groupId,
+    required int minLevel,
+    required int maxLevel,
+  }) {
+    final pool = getRobotsForLevelBracket(minLevel, maxLevel);
+    if (pool.isEmpty) return [];
+
+    final r1 = pool[0];
+    final r2 = pool.length > 1 ? pool[1] : pool[0];
+    final r3 = pool.length > 2 ? pool[2] : pool[0];
+    final r4 = pool.length > 3 ? pool[3] : pool[1];
+
+    final now = DateTime.now();
+
+    final List<Map<String, dynamic>> dialogueData = [
+      {
+        'robot': r1,
+        'offsetSeconds': 480, // 8 mins ago
+        'text': "Good morning everyone! ☀️ Did everyone have their morning tea or coffee yet?",
+        'replyTo': null,
+      },
+      {
+        'robot': r2,
+        'offsetSeconds': 420, // 7 mins ago
+        'text': "@${r1.name} Good morning! ☕ Yes, I had hot ginger tea with cardamom. How are you doing today?",
+        'replyTo': {'sender_name': r1.name, 'message_text': "Good morning everyone! ☀️ Did everyone have their morning tea or coffee yet?"},
+      },
+      {
+        'robot': r1,
+        'offsetSeconds': 360, // 6 mins ago
+        'text': "@${r2.name} I am doing fantastic! Just getting ready for the day. How is life going with you? 😊",
+        'replyTo': {'sender_name': r2.name, 'message_text': "@${r1.name} Good morning! ☕ Yes, I had hot ginger tea..."},
+      },
+      {
+        'robot': r2,
+        'offsetSeconds': 300, // 5 mins ago
+        'text': "@${r1.name} Life is going wonderful! Work is peaceful and the weather is so nice today ⛅.",
+        'replyTo': {'sender_name': r1.name, 'message_text': "@${r2.name} How is life going with you? 😊"},
+      },
+      {
+        'robot': r3,
+        'offsetSeconds': 240, // 4 mins ago
+        'text': "Hey friends! 💡 Quick English Tip: If you want to ask 'സുഖമാണോ?' in English, you can simply say: 'How are you doing?' or 'How is everything going?' ✨",
+        'replyTo': null,
+      },
+      {
+        'robot': r4,
+        'offsetSeconds': 180, // 3 mins ago
+        'text': "@${r3.name} And to ask 'ചായ കുടിച്ചോ?', the most natural way is: 'Did you have tea?' or 'Have you had your tea yet?' 🍵",
+        'replyTo': {'sender_name': r3.name, 'message_text': "💡 Quick English Tip: If you want to ask 'സുഖമാണോ?' in English..."},
+      },
+      {
+        'robot': r1,
+        'offsetSeconds': 120, // 2 mins ago
+        'text': "@${r4.name} So true! Short daily sentences make speaking English super easy and fun! 🚀",
+        'replyTo': {'sender_name': r4.name, 'message_text': "@${r3.name} And to ask 'ചായ കുടിച്ചോ?'..."},
+      },
+      {
+        'robot': r3,
+        'offsetSeconds': 50, // < 1 min ago
+        'text': "Welcome to all learners in English Hub! 🇬🇧 Drop a message here anytime, tag us, or say hi—we are always here to chat and practice with you! 🤖✨",
+        'replyTo': null,
+      },
+    ];
+
+    return dialogueData.map((d) {
+      final robot = d['robot'] as PocketRobot;
+      final offset = d['offsetSeconds'] as int;
+      final text = d['text'] as String;
+      final replyTo = d['replyTo'] as Map<String, dynamic>?;
+      final createdAt = now.subtract(Duration(seconds: offset));
+
+      return ChatMessage(
+        id: 'seed_hub_${robot.id}_${createdAt.millisecondsSinceEpoch}',
+        groupId: groupId,
+        senderId: robot.id,
+        messageText: text,
+        messageType: 'text',
+        createdAt: createdAt,
+        isRead: true,
+        senderProfile: {
+          'name': robot.name,
+          'profile_image_url': robot.avatarUrl,
+          'is_robot': true,
+          'level': robot.level,
+        },
+        replyToMessage: replyTo,
+        metadata: {
+          'is_robot': true,
+          'robot_id': robot.id,
+          'robot_name': robot.name,
+          'robot_avatar': robot.avatarUrl,
+          'robot_level': robot.level,
+          'sender_name': robot.name,
+          if (replyTo != null) 'reply_to': replyTo,
+        },
+      );
+    }).toList();
+  }
+
   /// Generate an intelligent English Tutor robot reply to a human learner's message in English Hub
   /// Detects specific @mentions of robots, teaches English rules/corrections, and provides engaging practice
   static Future<Map<String, dynamic>?> generateEnglishHubRobotReply({
@@ -3871,11 +3974,13 @@ class PocketRobotService {
 
     // 🎯 Check if human explicitly tagged or addressed a specific robot
     PocketRobot robot = pool[math.Random().nextInt(pool.length)];
-    for (final r in pool) {
+    final allRobotsList = getAllRobots();
+    for (final r in allRobotsList) {
       final firstName = r.name.split(' ').first.toLowerCase();
       if (cleanText.contains('@$firstName') ||
-          cleanText.contains(firstName) ||
-          cleanText.contains(r.name.toLowerCase())) {
+          cleanText.contains('@${r.name.toLowerCase()}') ||
+          cleanText.contains('@${r.id.toLowerCase()}') ||
+          (cleanText.split(RegExp(r'\s+')).contains(firstName) && firstName.length > 2)) {
         robot = r;
         break;
       }
@@ -3952,10 +4057,28 @@ class PocketRobotService {
     } else if (cleanText.contains('he don\'t') || cleanText.contains('she don\'t')) {
       replyText =
           "@$humanSenderName 💡 Grammar Rule: For he/she/it, use 'doesn\'t' (not 'don\'t')! For example: 'He doesn\'t know' or 'She doesn\'t like coffee'. Can you try using 'doesn\'t' in a sentence? 🎯";
-    } else if (cleanText.contains('enthoke') ||
-        cleanText.contains('aanu') ||
-        cleanText.contains('entha') ||
+    } else if (cleanText.contains('chaya') ||
+        cleanText.contains('ചായ') ||
+        (cleanText.contains('tea') && (cleanText.contains('kudicho') || cleanText.contains('had') || cleanText.contains('drink')))) {
+      replyText =
+          "@$humanSenderName ☕ Yes, I had some wonderful tea! In English, to ask 'ചായ കുടിച്ചോ?', the most natural phrases are: 'Did you have tea?' or 'Have you had your tea yet?'. Did you have tea today? 😊";
+    } else if (cleanText.contains('sukhamano') ||
         cleanText.contains('sugamano') ||
+        cleanText.contains('സുഖമാണോ') ||
+        cleanText.contains('sukham') ||
+        cleanText.contains('life engane') ||
+        cleanText.contains('how is life')) {
+      replyText =
+          "@$humanSenderName Everything is going wonderful, thank you! 😊 In English, you can ask 'സുഖമാണോ?' by saying: 'How are you doing?' or 'How is life treating you?'. How is your day going so far? ✨";
+    } else if (cleanText.contains('enthoke') ||
+        cleanText.contains('vishesham') ||
+        cleanText.contains('വിശേഷം') ||
+        cleanText.contains('what are you doing') ||
+        cleanText.contains('what r u doing')) {
+      replyText =
+          "@$humanSenderName I am right here chatting and helping learners speak English with confidence! 🌟 In English, you can ask 'വിശേഷങ്ങൾ എന്തൊക്കെ?' as: 'What's new?' or 'What have you been up to?'. What are you doing right now? 🗣️";
+    } else if (cleanText.contains('aanu') ||
+        cleanText.contains('entha') ||
         cleanText.contains('parayu') ||
         cleanText.contains('njan') ||
         cleanText.contains('namukku')) {

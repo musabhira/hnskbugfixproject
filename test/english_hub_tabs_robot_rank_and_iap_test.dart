@@ -186,5 +186,42 @@ void main() {
       final robot = reply['robot'] as PocketRobot;
       expect(PocketRobotService.isRobotId(robot.id), isTrue);
     });
+
+    test('getInitialEnglishHubRobotConversations provides pre-seeded lively chatter with tea and life phrases', () {
+      final seeds = PocketRobotService.getInitialEnglishHubRobotConversations(
+        groupId: 'english_hub_test',
+        minLevel: 1,
+        maxLevel: 20,
+      );
+      expect(seeds.length, greaterThanOrEqualTo(6));
+      expect(seeds.any((m) => m.messageText!.contains('സുഖമാണോ') || m.messageText!.contains('How are you doing')), isTrue);
+      expect(seeds.any((m) => m.messageText!.contains('ചായ') || m.messageText!.contains('tea')), isTrue);
+      for (final msg in seeds) {
+        expect(PocketRobotService.isRobotId(msg.senderId), isTrue);
+        expect(msg.metadata?['is_robot'], isTrue);
+      }
+    });
+
+    test('generateEnglishHubRobotReply targets mentioned robot and answers tea / how are you queries', () async {
+      final replyChaya = await PocketRobotService.generateEnglishHubRobotReply(
+        minLevel: 1,
+        maxLevel: 25,
+        humanMessageText: 'ചായ കുടിച്ചോ?',
+        humanSenderName: 'Ali',
+      );
+      expect(replyChaya, isNotNull);
+      expect(replyChaya!['text'].toString().contains('@Ali'), isTrue);
+      expect(replyChaya['text'].toString().toLowerCase().contains('tea'), isTrue);
+
+      final replySukham = await PocketRobotService.generateEnglishHubRobotReply(
+        minLevel: 1,
+        maxLevel: 25,
+        humanMessageText: 'സുഖമാണോ? life engane pokunnu?',
+        humanSenderName: 'Rahul',
+      );
+      expect(replySukham, isNotNull);
+      expect(replySukham!['text'].toString().contains('@Rahul'), isTrue);
+      expect(replySukham['text'].toString().toLowerCase().contains('how are you doing') || replySukham['text'].toString().toLowerCase().contains('wonderful'), isTrue);
+    });
   });
 }

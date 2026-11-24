@@ -917,22 +917,22 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
   void _scheduleEnglishHubIdleRobotCheck({bool initial = false}) {
     _hubRobotIdleConversationTimer?.cancel();
-    if (!_isEnglishHubRobotsEnabled) return;
+    if (!_isEnglishHubRobotsEnabled && _activeChatTabIndex != 1) return;
     final isRobotTab = _activeChatTabIndex == 1;
-    // ⏱️ Start within 2-4 seconds on first open!
-    // On Robot tab, robots continuously converse back and forth every 20-35 seconds!
-    // On other tabs, steady background cadence every 50-80 seconds.
+    // ⏱️ Start within 1-2 seconds on first open!
+    // On Robot tab, robots continuously converse back and forth every 10-18 seconds!
+    // On other tabs, steady background cadence every 35-50 seconds.
     final delaySeconds = initial
-        ? (2 + math.Random().nextInt(3)) // 2 to 4 seconds instant kick-off
+        ? (1 + math.Random().nextInt(2)) // 1 to 2 seconds instant kick-off
         : (isRobotTab
-            ? (20 + math.Random().nextInt(15)) // 20 to 35 seconds
-            : (50 + math.Random().nextInt(30))); // 50 to 80 seconds
+            ? (10 + math.Random().nextInt(8)) // 10 to 18 seconds
+            : (35 + math.Random().nextInt(15))); // 35 to 50 seconds
     _hubRobotIdleConversationTimer =
         Timer(Duration(seconds: delaySeconds), () async {
-      if (!mounted || !_isEnglishHubGroup || !_isEnglishHubRobotsEnabled)
-        return;
+      if (!mounted || !_isEnglishHubGroup) return;
+      if (!_isEnglishHubRobotsEnabled && _activeChatTabIndex != 1) return;
       await _postAutonomousRobotComboDialogueIfIdle();
-      if (mounted && _isEnglishHubGroup && _isEnglishHubRobotsEnabled) {
+      if (mounted && _isEnglishHubGroup) {
         _scheduleEnglishHubIdleRobotCheck(initial: false);
       }
     });
@@ -942,7 +942,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   void _triggerImmediateRobotDialogueIfQuiet() {
     _hubRobotIdleConversationTimer?.cancel();
     _hubRobotIdleConversationTimer =
-        Timer(const Duration(milliseconds: 1000), () async {
+        Timer(const Duration(milliseconds: 600), () async {
       if (!mounted || !_isEnglishHubGroup || _activeChatTabIndex != 1) return;
       await _postAutonomousRobotComboDialogueIfIdle();
       if (mounted && _isEnglishHubGroup) {
@@ -954,8 +954,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   /// 🤖 Posts a natural gentle robot conversation (single topic turn) with real typing indicators
   Future<void> _postAutonomousRobotComboDialogueIfIdle() async {
     try {
-      if (!mounted || !_isEnglishHubGroup || !_isEnglishHubRobotsEnabled)
-        return;
+      if (!mounted || !_isEnglishHubGroup) return;
+      if (!_isEnglishHubRobotsEnabled && _activeChatTabIndex != 1) return;
       // Yield floor only if currently actively generating a direct tutor reply to human
       if (_isRobotReplyingToHuman) return;
 
@@ -967,14 +967,14 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
       // Deliver each turn sequentially with a visible typing indicator
       for (int i = 0; i < turns.length; i++) {
-        if (!mounted || !_isEnglishHubGroup || !_isEnglishHubRobotsEnabled)
-          break;
+        if (!mounted || !_isEnglishHubGroup) break;
+        if (!_isEnglishHubRobotsEnabled && _activeChatTabIndex != 1) break;
         final turn = turns[i];
 
         // 1. Show live typing indicator for this specific robot
         PocketRobotService.setTyping(turn.robot.id, true);
         await Future.delayed(Duration(milliseconds: turn.typingDurationMs));
-        if (!mounted || !_isEnglishHubGroup || !_isEnglishHubRobotsEnabled) {
+        if (!mounted || !_isEnglishHubGroup) {
           PocketRobotService.setTyping(turn.robot.id, false);
           break;
         }
@@ -984,7 +984,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         final msgTime = DateTime.now();
         final robotMsg = ChatMessage(
           id: 'hub_robot_${turn.robot.id}_${msgTime.millisecondsSinceEpoch}',
-          groupId: widget.groupId,
+          groupId: _currentGroupId,
           senderId: turn.robot.id,
           messageText: turn.text,
           messageType: 'text',
@@ -1022,7 +1022,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         // NOTE: sender_id must be null because sender_id in group_messages is a UUID referencing users(id)
         try {
           await _supabase.from(_groupMessagesTable).insert({
-            'group_id': widget.groupId,
+            'group_id': _currentGroupId,
             'sender_id': null,
             'message_text': turn.text,
             'message_type': 'text',
@@ -1048,7 +1048,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
         // Add to local chat provider state
         ref
-            .read(chatMessagesProvider(widget.groupId).notifier)
+            .read(chatMessagesProvider(_currentGroupId).notifier)
             .addIncomingMessage(robotMsg);
 
         // Natural pause before next robot chimes in
@@ -1068,17 +1068,17 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     required String humanText,
     required String senderName,
   }) {
-    if (!_isEnglishHubGroup ||
-        !_isEnglishHubRobotsEnabled ||
-        _isRobotReplyingToHuman) return;
+    if (!_isEnglishHubGroup) return;
+    if (!_isEnglishHubRobotsEnabled && _activeChatTabIndex != 1) return;
+    if (_isRobotReplyingToHuman) return;
 
     _isRobotReplyingToHuman = true;
     _hubRobotReplyCooldownTimer?.cancel();
 
-    // Natural human reading & thinking delay: 1.5 seconds before robot starts typing
-    Timer(const Duration(milliseconds: 1500), () async {
+    // Fast, natural human reading delay: 500ms before robot starts typing
+    Timer(const Duration(milliseconds: 500), () async {
       try {
-        if (!mounted || !_isEnglishHubRobotsEnabled) {
+        if (!mounted || !_isEnglishHubGroup) {
           _isRobotReplyingToHuman = false;
           return;
         }
@@ -1097,9 +1097,9 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
         final robot = reply['robot'] as PocketRobot;
 
-        // Show live typing indicator for the replying robot
+        // Show live typing indicator for the replying robot (1.2s typing)
         PocketRobotService.setTyping(robot.id, true);
-        await Future.delayed(const Duration(milliseconds: 2200));
+        await Future.delayed(const Duration(milliseconds: 1200));
         if (!mounted) {
           PocketRobotService.setTyping(robot.id, false);
           _isRobotReplyingToHuman = false;
@@ -1110,7 +1110,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         final now = DateTime.now();
         final robotReplyMsg = ChatMessage(
           id: 'hub_reply_${robot.id}_${now.millisecondsSinceEpoch}',
-          groupId: widget.groupId,
+          groupId: _currentGroupId,
           senderId: robot.id,
           messageText: reply['text'] as String,
           messageType: 'text',
@@ -1143,7 +1143,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         // Persist to Supabase group_messages with null sender_id so UUID constraint passes
         try {
           await _supabase.from(_groupMessagesTable).insert({
-            'group_id': widget.groupId,
+            'group_id': _currentGroupId,
             'sender_id': null,
             'message_text': reply['text'],
             'message_type': 'text',
@@ -1167,14 +1167,14 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
         // Add to local state cleanly
         ref
-            .read(chatMessagesProvider(widget.groupId).notifier)
+            .read(chatMessagesProvider(_currentGroupId).notifier)
             .addIncomingMessage(robotReplyMsg);
       } catch (e) {
         debugPrint('Error generating polite robot reply in hub: $e');
       } finally {
-        // Enforce short 3-second cooldown in Robot tab so human can continuously chat & learn,
-        // or 15 seconds in general tab.
-        final cooldownSeconds = (_activeChatTabIndex == 1) ? 3 : 15;
+        // Enforce short 2-second cooldown in Robot tab so human can continuously chat & learn,
+        // or 10 seconds in general tab.
+        final cooldownSeconds = (_activeChatTabIndex == 1) ? 2 : 10;
         _hubRobotReplyCooldownTimer = Timer(Duration(seconds: cooldownSeconds), () {
           _isRobotReplyingToHuman = false;
         });

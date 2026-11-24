@@ -87,6 +87,26 @@ class ChatMessages extends _$ChatMessages {
     final cached = await _loadFromCache();
     final freshFuture = _fetchMessages(isInitial: true);
 
+    if (_isEnglishHubGroup) {
+      final robotCount = cached.where((m) =>
+          PocketRobotService.isRobotId(m.senderId) ||
+          m.metadata?['is_robot'] == true ||
+          m.senderProfile?['is_robot'] == true).length;
+      if (robotCount < 4) {
+        final seeds = PocketRobotService.getInitialEnglishHubRobotConversations(
+          groupId: groupId,
+          minLevel: 1,
+          maxLevel: 90,
+        );
+        for (final s in seeds) {
+          if (!cached.any((m) => m.id == s.id)) {
+            cached.add(s);
+          }
+        }
+        cached.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      }
+    }
+
     if (cached.isNotEmpty) {
       freshFuture.then((fresh) {
         if (state.hasValue) {
@@ -567,6 +587,25 @@ class ChatMessages extends _$ChatMessages {
       if (_isEnglishHubGroup) {
         final localCutoff = DateTime.now().subtract(const Duration(minutes: 35));
         combined = combined.where((m) => m.createdAt.isAfter(localCutoff)).toList();
+
+        // 🤖 Ensure lively robot dialogue is NEVER empty in English Hub
+        final robotCount = combined.where((m) =>
+            PocketRobotService.isRobotId(m.senderId) ||
+            m.metadata?['is_robot'] == true ||
+            m.senderProfile?['is_robot'] == true).length;
+        if (robotCount < 4) {
+          final seeds = PocketRobotService.getInitialEnglishHubRobotConversations(
+            groupId: actualId,
+            minLevel: 1,
+            maxLevel: 90,
+          );
+          for (final s in seeds) {
+            if (!combined.any((m) => m.id == s.id)) {
+              combined.add(s);
+            }
+          }
+          combined.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        }
       }
 
       if (isInitial) {
