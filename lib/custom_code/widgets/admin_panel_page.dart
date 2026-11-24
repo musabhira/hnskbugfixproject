@@ -21,6 +21,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_president_poster_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin/admin_sentence_marketing_studio.dart';
@@ -193,11 +194,14 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
 
   // President Desk State
   int _presidentSubTab =
-      0; // 0: Inquiries, 1: Post Vibe, 2: Announcements, 3: Protection
+      0; // 0: Inquiries/Chats, 1: Store/Vault, 2: Vibes, 3: Reports, 4: Notifications
   List<Map<String, dynamic>> _presidentInquiries = [];
   bool _isLoadingPresidentInquiries = false;
   String _presidentInquirySearchQuery = '';
   int _presidentInquiryStatusFilter = 0; // 0: All, 1: Pending, 2: Replied
+  String _presidentStoreLanguageFilter = 'all';
+  List<PresidentEducationalPoster> _presidentStorePosters = [];
+  bool _isLoadingPresidentStore = false;
   final TextEditingController _presidentVibeCaptionController =
       TextEditingController();
   final TextEditingController _presidentVibeMediaUrlController =
@@ -12162,8 +12166,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                 index: 0,
               ),
               _buildPresidentSubNavButton(
-                label: 'Reports ${totalReports > 0 ? '($totalReports)' : ''}',
-                icon: Icons.shield_outlined,
+                label: 'Store 📚',
+                icon: Icons.auto_stories_rounded,
                 index: 1,
               ),
               _buildPresidentSubNavButton(
@@ -12172,9 +12176,14 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                 index: 2,
               ),
               _buildPresidentSubNavButton(
-                label: 'Notifications 🔔',
-                icon: Icons.notifications_active_rounded,
+                label: 'Reports ${totalReports > 0 ? '($totalReports)' : ''}',
+                icon: Icons.shield_outlined,
                 index: 3,
+              ),
+              _buildPresidentSubNavButton(
+                label: 'Notifs 🔔',
+                icon: Icons.notifications_active_rounded,
+                index: 4,
               ),
             ],
           ),
@@ -12184,10 +12193,12 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
           child: _presidentSubTab == 0
               ? _buildPresidentInquiriesSubTab()
               : _presidentSubTab == 1
-                  ? _buildReportsTab()
+                  ? _buildPresidentStoreSubTab()
                   : _presidentSubTab == 2
                       ? _buildPresidentVibeSubTab()
-                      : _buildPresidentAnnouncementsSubTab(),
+                      : _presidentSubTab == 3
+                          ? _buildReportsTab()
+                          : _buildPresidentAnnouncementsSubTab(),
         ),
       ],
     );
@@ -12930,6 +12941,52 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
             setModalState(() => isSending = false);
           }
 
+          Future<void> sendImageReply(String imageUrl, [String? caption]) async {
+            final effectiveUrl = imageUrl.trim();
+            if (effectiveUrl.isEmpty || isSending) return;
+
+            setModalState(() => isSending = true);
+
+            final now = DateTime.now();
+            final capText = (caption ?? '').trim();
+            final newMsg = {
+              'id': 'pres_${now.millisecondsSinceEpoch}',
+              'sender_id': PocketPresidentService.presidentId,
+              'sender_name': 'The President',
+              'is_president': true,
+              'golden_tick': true,
+              'text': capText.isNotEmpty ? capText : '🏛️ Official Educational Poster from The President',
+              'message_type': 'image',
+              'file_url': effectiveUrl,
+              'created_at': now.toIso8601String(),
+              'admin_author': 'Presidential Desk',
+            };
+
+            setModalState(() {
+              messages.add(newMsg);
+              replyController.clear();
+            });
+            scrollToBottom();
+
+            await PocketPresidentService.sendPresidentReplyToUser(
+              targetUserId: targetId,
+              replyText: capText.isNotEmpty ? capText : '🏛️ Official Educational Poster from The President',
+              messageType: 'image',
+              fileUrl: effectiveUrl,
+              adminName: 'Presidential Desk',
+            );
+
+            inquiry['status'] = 'resolved';
+            inquiry['last_message'] = '[Educational Photo/Card]';
+            inquiry['messages'] = messages;
+
+            if (mounted) {
+              setState(() {});
+            }
+
+            setModalState(() => isSending = false);
+          }
+
           return Container(
             height: MediaQuery.of(context).size.height * 0.85,
             padding: EdgeInsets.only(
@@ -13186,6 +13243,22 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                         ),
                                       ),
                                     const SizedBox(height: 4),
+                                    if (msg['message_type'] == 'image' ||
+                                        (msg['file_url'] != null &&
+                                            msg['file_url'].toString().isNotEmpty)) ...[
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(10),
+                                        child: CachedNetworkImage(
+                                          imageUrl: msg['file_url'].toString(),
+                                          height: 140,
+                                          width: double.infinity,
+                                          fit: BoxFit.cover,
+                                          errorWidget: (_, __, ___) =>
+                                              const Icon(Icons.broken_image, color: Colors.white38),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                    ],
                                     Text(
                                       text,
                                       style: GoogleFonts.inter(
@@ -13321,6 +13394,21 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                           });
                         },
                       ),
+                      IconButton(
+                        icon: const Icon(Icons.add_photo_alternate_rounded,
+                            color: Color(0xFFFFD700), size: 22),
+                        tooltip: 'Send Educational Poster / Image',
+                        onPressed: () {
+                          _showSendImageToCitizenDialog(
+                            context: context,
+                            targetUserId: targetId,
+                            citizenName: name,
+                            onSend: (imageUrl, caption) {
+                              sendImageReply(imageUrl, caption);
+                            },
+                          );
+                        },
+                      ),
                       const SizedBox(width: 4),
                       Expanded(
                         child: TextField(
@@ -13404,6 +13492,554 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
             fontWeight: FontWeight.w600,
           ),
         ),
+      ),
+    );
+  }
+
+  // =========================================================================
+  // 📚 PRESIDENTIAL EDUCATIONAL POSTERS & VAULT SUB-TAB
+  // =========================================================================
+  Widget _buildPresidentStoreSubTab() {
+    return FutureBuilder<List<PresidentEducationalPoster>>(
+      future: PocketPresidentPosterService.getAllPosters(
+        languageFilter: _presidentStoreLanguageFilter,
+      ),
+      builder: (context, snapshot) {
+        final posters = snapshot.data ?? [];
+        final isLoading = snapshot.connectionState == ConnectionState.waiting;
+
+        return Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Presidential Poster Desk 📚',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'Daily vocabulary & educational posters broadcast',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFFFFD700),
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFFD700),
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        icon: const Icon(Icons.add_photo_alternate_rounded, size: 16),
+                        label: const Text('Add Poster', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5)),
+                        onPressed: _showAddNewPosterDialog,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        {'code': 'all', 'label': '🌐 All'},
+                        {'code': 'ml', 'label': '🌴 Malayalam'},
+                        {'code': 'ta', 'label': '🦚 Tamil'},
+                        {'code': 'kn', 'label': '🌸 Kannada'},
+                        {'code': 'hi', 'label': '🪷 Hindi'},
+                      ].map((item) {
+                        final isSel = _presidentStoreLanguageFilter == item['code'];
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 6),
+                          child: ChoiceChip(
+                            label: Text(item['label']!),
+                            selected: isSel,
+                            selectedColor: const Color(0xFFFFD700),
+                            backgroundColor: const Color(0xFF1E293B),
+                            labelStyle: TextStyle(
+                              color: isSel ? Colors.black : Colors.white70,
+                              fontSize: 11,
+                              fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
+                            ),
+                            onSelected: (val) {
+                              if (val) {
+                                setState(() => _presidentStoreLanguageFilter = item['code']!);
+                              }
+                            },
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(color: Colors.white12, height: 1),
+            Expanded(
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator(color: Color(0xFFFFD700)))
+                  : posters.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.photo_library_outlined, color: Colors.white24, size: 48),
+                              const SizedBox(height: 8),
+                              Text('No educational posters in this category.', style: GoogleFonts.inter(color: Colors.white38)),
+                              const SizedBox(height: 12),
+                              OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: const Color(0xFFFFD700),
+                                  side: const BorderSide(color: Color(0xFFFFD700)),
+                                ),
+                                icon: const Icon(Icons.add, size: 16),
+                                label: const Text('Upload First Poster'),
+                                onPressed: _showAddNewPosterDialog,
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          itemCount: posters.length,
+                          itemBuilder: (context, idx) {
+                            final poster = posters[idx];
+                            return _buildPosterCardItem(poster);
+                          },
+                        ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildPosterCardItem(PresidentEducationalPoster poster) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF131B26),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  bottomLeft: Radius.circular(16),
+                ),
+                child: CachedNetworkImage(
+                  imageUrl: poster.imageUrl,
+                  width: 100,
+                  height: 100,
+                  fit: BoxFit.cover,
+                  errorWidget: (_, __, ___) => Container(
+                    width: 100,
+                    height: 100,
+                    color: const Color(0xFF1E293B),
+                    alignment: Alignment.center,
+                    child: const Icon(Icons.image, color: Colors.white38),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              poster.languageDisplayName,
+                              style: const TextStyle(color: Color(0xFFFFD700), fontSize: 9.5, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          const Spacer(),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 18),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            onPressed: () async {
+                              await PocketPresidentPosterService.deletePoster(poster.id);
+                              setState(() {});
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        poster.title,
+                        style: GoogleFonts.outfit(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.bold),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (poster.subtitle != null && poster.subtitle!.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          poster.subtitle!,
+                          style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const Divider(color: Colors.white10, height: 1),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextButton.icon(
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFFFFD700),
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                    ),
+                    icon: const Icon(Icons.auto_awesome_rounded, size: 14),
+                    label: const Text('Post as Vibe', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
+                    onPressed: () async {
+                      await PocketPresidentPosterService.publishPosterAsPresidentVibe(poster);
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Posted to President Vibes with Golden glow! 🌟'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                Container(width: 1, height: 20, color: Colors.white12),
+                Expanded(
+                  child: TextButton.icon(
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFF38BDF8),
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                    ),
+                    icon: const Icon(Icons.send_rounded, size: 14),
+                    label: const Text('Send to Citizen', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
+                    onPressed: () => _showSendPosterModal(poster),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAddNewPosterDialog() {
+    final titleController = TextEditingController();
+    final subtitleController = TextEditingController();
+    final urlController = TextEditingController();
+    String selectedLang = 'ml';
+    String selectedRatio = 'feed_1x1';
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDlgState) {
+          return AlertDialog(
+            backgroundColor: const Color(0xFF0F172A),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: Row(
+              children: [
+                const Icon(Icons.add_photo_alternate_rounded, color: Color(0xFFFFD700)),
+                const SizedBox(width: 8),
+                Text('Add Educational Poster', style: GoogleFonts.outfit(color: Colors.white, fontSize: 16)),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: titleController,
+                    style: const TextStyle(color: Colors.white, fontSize: 13),
+                    decoration: InputDecoration(
+                      labelText: 'Title (e.g. Daily English Vocabulary: WHO)',
+                      labelStyle: const TextStyle(color: Colors.white60, fontSize: 12),
+                      filled: true,
+                      fillColor: const Color(0xFF1E293B),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: subtitleController,
+                    style: const TextStyle(color: Colors.white, fontSize: 13),
+                    decoration: InputDecoration(
+                      labelText: 'Subtitle / Notes (e.g. Phrases with WHO)',
+                      labelStyle: const TextStyle(color: Colors.white60, fontSize: 12),
+                      filled: true,
+                      fillColor: const Color(0xFF1E293B),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: urlController,
+                    style: const TextStyle(color: Colors.white, fontSize: 13),
+                    decoration: InputDecoration(
+                      labelText: 'Image URL or File Path',
+                      labelStyle: const TextStyle(color: Colors.white60, fontSize: 12),
+                      filled: true,
+                      fillColor: const Color(0xFF1E293B),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  DropdownButtonFormField<String>(
+                    value: selectedLang,
+                    dropdownColor: const Color(0xFF1E293B),
+                    style: const TextStyle(color: Colors.white, fontSize: 13),
+                    decoration: InputDecoration(
+                      labelText: 'Language Category',
+                      labelStyle: const TextStyle(color: Colors.white60, fontSize: 12),
+                      filled: true,
+                      fillColor: const Color(0xFF1E293B),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'ml', child: Text('🌴 Malayalam (മലയാളം)')),
+                      DropdownMenuItem(value: 'ta', child: Text('🦚 Tamil (தமிழ்)')),
+                      DropdownMenuItem(value: 'kn', child: Text('🌸 Kannada (ಕನ್ನಡ)')),
+                      DropdownMenuItem(value: 'hi', child: Text('🪷 Hindi (हिन्दी)')),
+                      DropdownMenuItem(value: 'all', child: Text('🌐 All Languages (Global)')),
+                    ],
+                    onChanged: (v) => setDlgState(() => selectedLang = v ?? 'ml'),
+                  ),
+                  const SizedBox(height: 10),
+                  DropdownButtonFormField<String>(
+                    value: selectedRatio,
+                    dropdownColor: const Color(0xFF1E293B),
+                    style: const TextStyle(color: Colors.white, fontSize: 13),
+                    decoration: InputDecoration(
+                      labelText: 'Aspect Ratio / Format',
+                      labelStyle: const TextStyle(color: Colors.white60, fontSize: 12),
+                      filled: true,
+                      fillColor: const Color(0xFF1E293B),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'feed_1x1', child: Text('Square (1:1)')),
+                      DropdownMenuItem(value: 'story_9x16', child: Text('Story / Reels (9:16)')),
+                      DropdownMenuItem(value: 'portrait_4x5', child: Text('Portrait (4:5)')),
+                    ],
+                    onChanged: (v) => setDlgState(() => selectedRatio = v ?? 'feed_1x1'),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+                onPressed: () => Navigator.pop(ctx),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFFD700),
+                  foregroundColor: Colors.black,
+                ),
+                child: const Text('Save Poster', style: TextStyle(fontWeight: FontWeight.bold)),
+                onPressed: () async {
+                  final title = titleController.text.trim();
+                  final url = urlController.text.trim();
+                  if (title.isEmpty || url.isEmpty) return;
+
+                  final poster = PresidentEducationalPoster(
+                    id: 'poster_${DateTime.now().millisecondsSinceEpoch}',
+                    title: title,
+                    subtitle: subtitleController.text.trim(),
+                    imageUrl: url,
+                    language: selectedLang,
+                    aspectRatio: selectedRatio,
+                    createdAt: DateTime.now(),
+                  );
+
+                  await PocketPresidentPosterService.addPoster(poster);
+                  if (mounted) setState(() {});
+                  Navigator.pop(ctx);
+                },
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  void _showSendPosterModal(PresidentEducationalPoster poster) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF0F172A),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Send Poster to Citizen Chat 💬',
+                style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Pick a citizen to receive "${poster.title}":',
+                style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+              ),
+              const SizedBox(height: 12),
+              if (_presidentInquiries.isEmpty)
+                Text('No active citizen inquiries. Citizens who message The President will appear here.',
+                    style: GoogleFonts.inter(color: Colors.white38, fontSize: 12))
+              else
+                SizedBox(
+                  height: 220,
+                  child: ListView.builder(
+                    itemCount: _presidentInquiries.length,
+                    itemBuilder: (context, idx) {
+                      final inq = _presidentInquiries[idx];
+                      final name = inq['user_name'] ?? 'Learner';
+                      final uid = inq['user_id']?.toString() ?? '';
+                      return ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: const Color(0xFFFFD700),
+                          child: Text(name.isNotEmpty ? name[0] : 'L', style: const TextStyle(color: Colors.black)),
+                        ),
+                        title: Text(name, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+                        subtitle: Text('ID: ${uid.length > 8 ? uid.substring(0, 8) : uid}...',
+                            style: const TextStyle(color: Colors.white54, fontSize: 11)),
+                        trailing: ElevatedButton(
+                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFFD700), foregroundColor: Colors.black),
+                          child: const Text('Send', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                          onPressed: () async {
+                            await PocketPresidentPosterService.sendPosterToCitizenChat(
+                              targetUserId: uid,
+                              poster: poster,
+                            );
+                            Navigator.pop(ctx);
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Poster sent to $name\'s chat! 📜'), backgroundColor: Colors.green),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showSendImageToCitizenDialog({
+    required BuildContext context,
+    required String targetUserId,
+    required String citizenName,
+    required Function(String url, String? caption) onSend,
+  }) {
+    final urlController = TextEditingController();
+    final captionController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(Icons.add_photo_alternate_rounded, color: Color(0xFFFFD700)),
+            const SizedBox(width: 8),
+            Text('Send Image / Educational Card', style: GoogleFonts.outfit(color: Colors.white, fontSize: 15)),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Send to $citizenName as The President 👑',
+                  style: GoogleFonts.inter(color: const Color(0xFFFFD700), fontSize: 11.5)),
+              const SizedBox(height: 12),
+              TextField(
+                controller: urlController,
+                style: const TextStyle(color: Colors.white, fontSize: 13),
+                decoration: InputDecoration(
+                  labelText: 'Image URL or File Path',
+                  labelStyle: const TextStyle(color: Colors.white60, fontSize: 12),
+                  filled: true,
+                  fillColor: const Color(0xFF1E293B),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: captionController,
+                style: const TextStyle(color: Colors.white, fontSize: 13),
+                decoration: InputDecoration(
+                  labelText: 'Caption (Optional)',
+                  labelStyle: const TextStyle(color: Colors.white60, fontSize: 12),
+                  filled: true,
+                  fillColor: const Color(0xFF1E293B),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            onPressed: () => Navigator.pop(ctx),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFFD700), foregroundColor: Colors.black),
+            child: const Text('Send Image', style: TextStyle(fontWeight: FontWeight.bold)),
+            onPressed: () {
+              final url = urlController.text.trim();
+              if (url.isNotEmpty) {
+                onSend(url, captionController.text.trim());
+                Navigator.pop(ctx);
+              }
+            },
+          ),
+        ],
       ),
     );
   }

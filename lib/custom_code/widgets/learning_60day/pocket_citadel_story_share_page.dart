@@ -240,7 +240,245 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
     }
   }
 
-  Future<void> _downloadVideo() async {
+  static const List<Map<String, String>> _availableBgmTracks = [
+    {
+      'title': 'Happy Whistler',
+      'mood': '☀️ Cheerful & Uplifting',
+      'asset': 'assets/audio/bgm/happy_whistler.mp3',
+    },
+    {
+      'title': 'Adventure Quest',
+      'mood': '🗺️ Epic Journey & Heroic',
+      'asset': 'assets/audio/bgm/adventure_quest.mp3',
+    },
+    {
+      'title': 'Speedy Duel',
+      'mood': '⚔️ Fast & Energetic Battle',
+      'asset': 'assets/audio/bgm/speedy_duel.mp3',
+    },
+    {
+      'title': 'Citadel Defense',
+      'mood': '🛡️ Majestic Sovereign Guard',
+      'asset': 'assets/audio/bgm/citadel_defense.mp3',
+    },
+    {
+      'title': 'Dancing Stardust',
+      'mood': '✨ Magical & Dreamy',
+      'asset': 'assets/audio/bgm/dancing_stardust.mp3',
+    },
+    {
+      'title': 'Pocket Sailor',
+      'mood': '⛵ Oceanic Breeze & Chill',
+      'asset': 'assets/audio/bgm/pocket_sailor.mp3',
+    },
+    {
+      'title': 'Market Square',
+      'mood': '🎪 Lively Town Square',
+      'asset': 'assets/audio/bgm/market_square.mp3',
+    },
+    {
+      'title': 'Arcade Retro',
+      'mood': '🕹️ 8-Bit Pixel Nostalgia',
+      'asset': 'assets/audio/bgm/arcade_short.mp3',
+    },
+    {
+      'title': 'Peaceful Lullaby',
+      'mood': '🍃 Serene & Calming',
+      'asset': 'assets/audio/bgm/peaceful_lullaby.mp3',
+    },
+    {
+      'title': 'Run & Catch',
+      'mood': '🏃‍♂️ Playful & Fast',
+      'asset': 'assets/audio/bgm/run_and_catch.mp3',
+    },
+  ];
+
+  String _selectedBgmAsset = 'assets/audio/bgm/happy_whistler.mp3';
+  String? _previewingTrackAsset;
+
+  Future<void> _showBgmSelectionModal() async {
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF141210),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.72,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Column(
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.white24,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Select Story Music 🎵',
+                            style: GoogleFonts.outfit(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Pick background track for your 15s Story/Reel',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: const Color(0xFFD4A373),
+                            ),
+                          ),
+                        ],
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                        onPressed: () {
+                          PocketGameAudioService.instance.stop();
+                          _previewingTrackAsset = null;
+                          Navigator.pop(ctx);
+                        },
+                      ),
+                    ],
+                  ),
+                  const Divider(color: Colors.white12, height: 20),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: _availableBgmTracks.length,
+                      itemBuilder: (context, idx) {
+                        final track = _availableBgmTracks[idx];
+                        final asset = track['asset']!;
+                        final isSelected = _selectedBgmAsset == asset;
+                        final isPlaying = _previewingTrackAsset == asset;
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          decoration: BoxDecoration(
+                            color: isSelected ? const Color(0xFF2E1F18) : const Color(0xFF1C1917),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: isSelected
+                                  ? const Color(0xFFF59E0B)
+                                  : Colors.white.withValues(alpha: 0.08),
+                              width: isSelected ? 1.5 : 1,
+                            ),
+                          ),
+                          child: ListTile(
+                            onTap: () {
+                              setSheetState(() => _selectedBgmAsset = asset);
+                              setState(() => _selectedBgmAsset = asset);
+                            },
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                            leading: GestureDetector(
+                              onTap: () async {
+                                if (isPlaying) {
+                                  await PocketGameAudioService.instance.stop();
+                                  setSheetState(() => _previewingTrackAsset = null);
+                                } else {
+                                  await PocketGameAudioService.instance.playTrack(
+                                    PocketMusicTrack(
+                                      id: 'preview_${track['title']}',
+                                      title: track['title']!,
+                                      genre: track['mood']!,
+                                      url: asset,
+                                    ),
+                                  );
+                                  setSheetState(() => _previewingTrackAsset = asset);
+                                }
+                              },
+                              child: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: isPlaying
+                                      ? const Color(0xFFF59E0B)
+                                      : const Color(0xFF292524),
+                                  shape: BoxShape.circle,
+                                ),
+                                alignment: Alignment.center,
+                                child: Icon(
+                                  isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                                  color: isPlaying ? Colors.black : Colors.white,
+                                  size: 22,
+                                ),
+                              ),
+                            ),
+                            title: Text(
+                              track['title']!,
+                              style: GoogleFonts.outfit(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: isSelected ? const Color(0xFFF59E0B) : Colors.white,
+                              ),
+                            ),
+                            subtitle: Text(
+                              track['mood']!,
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                color: Colors.white60,
+                              ),
+                            ),
+                            trailing: isSelected
+                                ? const Icon(Icons.check_circle_rounded, color: Color(0xFFF59E0B), size: 22)
+                                : const Icon(Icons.radio_button_unchecked_rounded, color: Colors.white24, size: 20),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  SafeArea(
+                    top: false,
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFF59E0B),
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          elevation: 0,
+                        ),
+                        icon: const Icon(Icons.movie_creation_rounded, size: 18),
+                        label: Text(
+                          'Render 15s Story Video 🎬',
+                          style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold),
+                        ),
+                        onPressed: () {
+                          PocketGameAudioService.instance.stop();
+                          _previewingTrackAsset = null;
+                          Navigator.pop(ctx);
+                          _downloadVideo(_selectedBgmAsset);
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _downloadVideo([String? customBgmAsset]) async {
     if (_isExporting) return;
     setState(() {
       _isExporting = true;
@@ -255,10 +493,23 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
       final videoFile = await PocketCitadelVideoExportService.generateStoryVideo(
         imageFile: imageFile,
         durationSeconds: 15,
+        bgmAssetPath: customBgmAsset ?? _selectedBgmAsset,
       );
 
       if (videoFile == null) {
         await _downloadImage();
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: const Color(0xFF3B82F6),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+            content: Text(
+              '🎬 15s Story Video with chosen BGM renders natively on Android & iOS! Saved Story card image.',
+              style: GoogleFonts.outfit(color: Colors.white, fontSize: 12.5),
+            ),
+          ),
+        );
         return;
       }
 
@@ -535,7 +786,10 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                           child: SizedBox(
                             width: _selectedFormat.designWidth,
                             height: _selectedFormat.designHeight,
-                            child: cardContent,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: cardContent,
+                            ),
                           ),
                         ),
                       ),
@@ -1011,50 +1265,67 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
   // 🏔️ TEMPLATE 3: "Cinematic Showcase"
   // =========================================================================
   Widget _buildTemplate3CinematicShowcase() {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        _buildCitadelScenicViewport(),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Colors.black.withValues(alpha: 0.3), Colors.transparent, Colors.black.withValues(alpha: 0.75)],
-              stops: const [0.0, 0.4, 1.0],
-            ),
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFD4A373).withValues(alpha: 0.5), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
-        ),
-        Positioned(
-          top: 14,
-          left: 14,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFF2E1810).withValues(alpha: 0.75),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFD4A373).withValues(alpha: 0.6)),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            _buildCitadelScenicViewport(),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.black.withValues(alpha: 0.35), Colors.transparent, Colors.black.withValues(alpha: 0.8)],
+                  stops: const [0.0, 0.35, 1.0],
+                ),
+              ),
             ),
-            child: Text(
-              '🏰 Day ${widget.level} Citadel',
-              style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.white),
+            Positioned(
+              top: 14,
+              left: 14,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2E1810).withValues(alpha: 0.85),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFD4A373).withValues(alpha: 0.7)),
+                ),
+                child: Text(
+                  '🏰 Day ${widget.level} Citadel',
+                  style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.white),
+                ),
+              ),
             ),
-          ),
+            Positioned(
+              bottom: 12,
+              left: 14,
+              right: 14,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildKraftPlayerPod(),
+                  const SizedBox(height: 6),
+                  _buildVintageBrandFooter(darkTone: false),
+                ],
+              ),
+            ),
+          ],
         ),
-        Positioned(
-          bottom: 12,
-          left: 14,
-          right: 14,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildKraftPlayerPod(),
-              const SizedBox(height: 6),
-              _buildVintageBrandFooter(darkTone: false),
-            ],
-          ),
-        ),
-      ],
+      ),
     );
   }
 
@@ -1440,67 +1711,81 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
   // =========================================================================
   Widget _buildTemplate9CosmicObservatory() {
     return Container(
-      decoration: const BoxDecoration(color: Color(0xFF030712)),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          _buildCitadelScenicViewport(),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                colors: [Colors.transparent, Colors.black.withValues(alpha: 0.85)],
-                radius: 0.85,
-              ),
-            ),
-          ),
-          Positioned(
-            top: 14,
-            left: 14,
-            right: 14,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.7),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: const Color(0xFF38BDF8), width: 1),
-                  ),
-                  child: Text(
-                    'SECTOR ${widget.neighbor.effectivePlanetCode}',
-                    style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: const Color(0xFF38BDF8)),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.7),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: const Color(0xFFA855F7), width: 1),
-                  ),
-                  child: Text(
-                    'ORBIT DAY ${widget.level}',
-                    style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: const Color(0xFFA855F7)),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Positioned(
-            bottom: 12,
-            left: 14,
-            right: 14,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildKraftPlayerPod(),
-                const SizedBox(height: 6),
-                _buildVintageBrandFooter(darkTone: false),
-              ],
-            ),
+      decoration: BoxDecoration(
+        color: const Color(0xFF030712),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
         ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            _buildCitadelScenicViewport(),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  colors: [Colors.transparent, Colors.black.withValues(alpha: 0.88)],
+                  radius: 0.85,
+                ),
+              ),
+            ),
+            Positioned(
+              top: 14,
+              left: 14,
+              right: 14,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.7),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: const Color(0xFF38BDF8), width: 1),
+                    ),
+                    child: Text(
+                      'SECTOR ${widget.neighbor.effectivePlanetCode}',
+                      style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: const Color(0xFF38BDF8)),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.7),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: const Color(0xFFA855F7), width: 1),
+                    ),
+                    child: Text(
+                      'ORBIT DAY ${widget.level}',
+                      style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: const Color(0xFFA855F7)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              bottom: 12,
+              left: 14,
+              right: 14,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildKraftPlayerPod(),
+                  const SizedBox(height: 6),
+                  _buildVintageBrandFooter(darkTone: false),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1909,10 +2194,10 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
               ),
               const SizedBox(width: 8),
 
-              // 🎬 Video Button
+              // 🎬 Video Button (With BGM track picker)
               Expanded(
                 child: GestureDetector(
-                  onTap: _isExporting ? null : _downloadVideo,
+                  onTap: _isExporting ? null : _showBgmSelectionModal,
                   child: Container(
                     height: 40,
                     decoration: BoxDecoration(

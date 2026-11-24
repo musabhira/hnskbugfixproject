@@ -1182,6 +1182,84 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     });
   }
 
+  bool _isPresidentReplying = false;
+
+  /// 🏛️ Trigger autonomous dignified reply from The President of Pocket World
+  void _triggerPresidentialReplyToHuman({
+    required String humanText,
+    required String senderName,
+  }) {
+    if (_isPresidentReplying) return;
+    _isPresidentReplying = true;
+
+    Timer(const Duration(milliseconds: 700), () async {
+      try {
+        if (!mounted) {
+          _isPresidentReplying = false;
+          return;
+        }
+
+        // Show typing indicator for The President
+        PocketRobotService.setTyping(PocketPresidentService.presidentId, true);
+        await Future.delayed(const Duration(milliseconds: 1400));
+        if (!mounted) {
+          PocketRobotService.setTyping(PocketPresidentService.presidentId, false);
+          _isPresidentReplying = false;
+          return;
+        }
+        PocketRobotService.setTyping(PocketPresidentService.presidentId, false);
+
+        // Formulate dignified presidential reply
+        final replyText = await PocketPresidentService.generatePresidentRobotReply(
+          userMessage: humanText,
+          userName: senderName,
+          currentUserId: _currentUserId,
+        );
+
+        final now = DateTime.now();
+        final presMsg = ChatMessage(
+          id: 'pres_reply_${now.millisecondsSinceEpoch}',
+          groupId: _currentGroupId,
+          senderId: PocketPresidentService.presidentId,
+          messageText: replyText,
+          messageType: 'text',
+          createdAt: now,
+          isRead: false,
+          senderProfile: {
+            'name': 'The President',
+            'profile_image_url': PocketPresidentService.presidentAvatarUrl,
+            'is_president': true,
+            'golden_tick': true,
+          },
+          metadata: {
+            'is_official': true,
+            'is_president': true,
+            'golden_tick': true,
+            'president_title': 'Head of Poket World',
+          },
+        );
+
+        // Also persist to PocketPresidentService & LocalSyncServer
+        await PocketPresidentService.sendPresidentReplyToUser(
+          targetUserId: _currentUserId,
+          replyText: replyText,
+          adminName: 'Presidential AI Desk',
+          existingMessageId: presMsg.id,
+        );
+
+        // Add to local state cleanly
+        ref
+            .read(chatMessagesProvider(_currentGroupId).notifier)
+            .addIncomingMessage(presMsg);
+      } catch (e) {
+        debugPrint('Error triggering presidential reply: $e');
+      } finally {
+        PocketRobotService.setTyping(PocketPresidentService.presidentId, false);
+        _isPresidentReplying = false;
+      }
+    });
+  }
+
   void _onMessageChanged() {
     final text = _messageController.text;
     if (text.contains('@')) {
@@ -3869,6 +3947,22 @@ Draft: "$draft"''';
               _isOutgoingPendingRequest = false;
             });
             PocketMateService.addMateLocally(_currentUserId, otherUserId);
+          }
+
+          // 🏛️ If communicating with The President, log inquiry and trigger autonomous dignified reply!
+          if (PocketPresidentService.isPresidentId(otherUserId)) {
+            final myName = ContactsNameService().getDisplayName(userId: _currentUserId, fallbackName: 'Learner');
+            PocketPresidentService.sendUserMessageToPresident(
+              userId: _currentUserId,
+              messageText: text ?? (messageType == 'image' ? '[Educational Photo/Card]' : '[Message]'),
+              messageType: messageType,
+              fileUrl: fileUrl,
+            );
+
+            _triggerPresidentialReplyToHuman(
+              humanText: text ?? '',
+              senderName: myName,
+            );
           }
         } else if (!_isMate) {
           // If a request was not yet sent, trigger it in the background without blocking message flow

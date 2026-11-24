@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/pocket_game_audio_service.dart';
@@ -25,13 +26,14 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../learning_60day/pocket_world_street_page.dart';
 import '../../services/pocket_president_service.dart';
+import '../../services/pocket_president_poster_service.dart';
 import 'pocket_feed_vibe_share_sheet.dart';
 import 'pocket_reels_game_engine.dart';
 import 'pocket_reels_content_engine.dart';
 import '../report_dailoge.dart';
 import '../subscription_page.dart';
 
-/// Item type for the Reels Feed: Homestead, Interactive Mini-Game, Public Vibe, Story, Interview, Speak Challenge, Vocab, or Native Ad
+/// Item type for the Reels Feed: Homestead, Interactive Mini-Game, Public Vibe, Story, Interview, Speak Challenge, Vocab, Educational Poster, or Native Ad
 enum ReelItemType {
   home,
   game,
@@ -40,6 +42,7 @@ enum ReelItemType {
   interview,
   speakChallenge,
   vocabCard,
+  presidentPoster,
   ad
 }
 
@@ -118,6 +121,7 @@ class ReelFeedItem {
   final ReelInterviewCard? interviewCard;
   final ReelSpeakChallengeCard? speakChallengeCard;
   final ReelVocabCard? vocabCard;
+  final PresidentEducationalPoster? presidentPoster;
 
   const ReelFeedItem.home(this.neighbor)
       : type = ReelItemType.home,
@@ -126,7 +130,8 @@ class ReelFeedItem {
         storyCard = null,
         interviewCard = null,
         speakChallengeCard = null,
-        vocabCard = null;
+        vocabCard = null,
+        presidentPoster = null;
 
   const ReelFeedItem.game(this.gameCard)
       : type = ReelItemType.game,
@@ -135,7 +140,8 @@ class ReelFeedItem {
         storyCard = null,
         interviewCard = null,
         speakChallengeCard = null,
-        vocabCard = null;
+        vocabCard = null,
+        presidentPoster = null;
 
   const ReelFeedItem.vibe(this.vibeCard)
       : type = ReelItemType.vibe,
@@ -144,7 +150,8 @@ class ReelFeedItem {
         storyCard = null,
         interviewCard = null,
         speakChallengeCard = null,
-        vocabCard = null;
+        vocabCard = null,
+        presidentPoster = null;
 
   const ReelFeedItem.story(this.storyCard)
       : type = ReelItemType.story,
@@ -153,7 +160,8 @@ class ReelFeedItem {
         vibeCard = null,
         interviewCard = null,
         speakChallengeCard = null,
-        vocabCard = null;
+        vocabCard = null,
+        presidentPoster = null;
 
   const ReelFeedItem.interview(this.interviewCard)
       : type = ReelItemType.interview,
@@ -162,7 +170,8 @@ class ReelFeedItem {
         vibeCard = null,
         storyCard = null,
         speakChallengeCard = null,
-        vocabCard = null;
+        vocabCard = null,
+        presidentPoster = null;
 
   const ReelFeedItem.speakChallenge(this.speakChallengeCard)
       : type = ReelItemType.speakChallenge,
@@ -171,7 +180,8 @@ class ReelFeedItem {
         vibeCard = null,
         storyCard = null,
         interviewCard = null,
-        vocabCard = null;
+        vocabCard = null,
+        presidentPoster = null;
 
   const ReelFeedItem.vocab(this.vocabCard)
       : type = ReelItemType.vocabCard,
@@ -180,7 +190,18 @@ class ReelFeedItem {
         vibeCard = null,
         storyCard = null,
         interviewCard = null,
-        speakChallengeCard = null;
+        speakChallengeCard = null,
+        presidentPoster = null;
+
+  const ReelFeedItem.presidentPoster(this.presidentPoster)
+      : type = ReelItemType.presidentPoster,
+        neighbor = null,
+        gameCard = null,
+        vibeCard = null,
+        storyCard = null,
+        interviewCard = null,
+        speakChallengeCard = null,
+        vocabCard = null;
 
   const ReelFeedItem.ad()
       : type = ReelItemType.ad,
@@ -190,7 +211,8 @@ class ReelFeedItem {
         storyCard = null,
         interviewCard = null,
         speakChallengeCard = null,
-        vocabCard = null;
+        vocabCard = null,
+        presidentPoster = null;
 }
 
 /// 🪐 Multi-Planetary & Island Atmosphere Engine for Homes Reels Feed
@@ -1156,6 +1178,16 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           items.add(ReelFeedItem.vocab(vocabs[vIdx++]));
         } else if (i % 3 == 2 && sIdx < stories.length) {
           items.add(ReelFeedItem.story(stories[sIdx++]));
+        }
+
+        // 🏛️ Educational Poster injection from President Desk (with native language matching)
+        if (i % 4 == 1) {
+          final poster = PocketPresidentPosterService.getNextUnseenPosterSync(
+            userId: _supabase.auth.currentUser?.id ?? '',
+          );
+          if (poster != null) {
+            items.add(ReelFeedItem.presidentPoster(poster));
+          }
         }
       }
     }
@@ -2378,6 +2410,9 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
               } else if (item.type == ReelItemType.vocabCard &&
                   item.vocabCard != null) {
                 return _buildVocabSlide(item.vocabCard!, index);
+              } else if (item.type == ReelItemType.presidentPoster &&
+                  item.presidentPoster != null) {
+                return _buildPresidentPosterSlide(item.presidentPoster!, index);
               } else if (item.type == ReelItemType.ad) {
                 return _buildNativeAdReelSlide(index);
               }
@@ -5809,6 +5844,181 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 🏛️ Official Educational Poster Slide from Presidential Desk
+  Widget _buildPresidentPosterSlide(PresidentEducationalPoster poster, int index) {
+    PocketPresidentPosterService.markPosterSeen(_supabase.auth.currentUser?.id ?? '', poster.id);
+
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: _scrollToNextReel,
+      child: Stack(
+        children: [
+          // Background (Warm Kraft Obsidian paper aesthetic)
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFF1E1712),
+                    Color(0xFF141210),
+                    Color(0xFF0F0E0D),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+            ),
+          ),
+
+          // Center Educational Poster Card
+          Positioned.fill(
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 16, right: 68, top: 20, bottom: 28),
+                child: Center(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1F1D1B),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.12),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Top Presidential Badge Bar
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            color: const Color(0xFF181512),
+                            child: Row(
+                              children: [
+                                const Text('🏛️ ', style: TextStyle(fontSize: 14)),
+                                Text(
+                                  'President\'s Desk',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFFFFD700),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                const Spacer(),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    poster.languageDisplayName,
+                                    style: const TextStyle(
+                                      color: Color(0xFFFFD700),
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // Poster Image
+                          Container(
+                            constraints: const BoxConstraints(maxHeight: 380),
+                            child: CachedNetworkImage(
+                              imageUrl: poster.imageUrl,
+                              fit: BoxFit.contain,
+                              placeholder: (_, __) => Container(
+                                height: 240,
+                                color: const Color(0xFF141210),
+                                alignment: Alignment.center,
+                                child: const CircularProgressIndicator(color: Color(0xFFFFD700)),
+                              ),
+                              errorWidget: (_, __, ___) => Container(
+                                height: 220,
+                                color: const Color(0xFF141210),
+                                alignment: Alignment.center,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.school_rounded, color: Color(0xFFFFD700), size: 40),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      poster.title,
+                                      style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          // Bottom Title & Guidance Info
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            color: const Color(0xFF181512),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  poster.title,
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                if (poster.subtitle != null) ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    poster.subtitle!,
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white70,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 13),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Official PoketMates Daily Syllabus',
+                                      style: GoogleFonts.inter(
+                                        color: Colors.white60,
+                                        fontSize: 10,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ],
