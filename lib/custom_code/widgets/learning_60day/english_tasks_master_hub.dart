@@ -3331,6 +3331,24 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         },
                       ),
                       const SizedBox(height: 6),
+                      // 💬 WhatsApp English Community Pill
+                      _buildMinimalFloatingPill(
+                        icon: '💬',
+                        label: 'WhatsApp',
+                        onTap: () async {
+                          HapticFeedback.mediumImpact();
+                          const waUrl =
+                              'https://chat.whatsapp.com/HqRgqeHEQVm6LoZ7L8dO6r';
+                          final uri = Uri.parse(waUrl);
+                          try {
+                            await launchUrl(uri,
+                                mode: LaunchMode.externalApplication);
+                          } catch (e) {
+                            debugPrint('Error launching WhatsApp: $e');
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 6),
                       _buildMinimalFloatingPill(
                         icon: '🛒',
                         label: 'Store',

@@ -4,6 +4,7 @@ import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocket_diagram_s
 
 import '/backend/supabase/supabase.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'chat_provider.dart';
 import 'chat_models.dart';
@@ -7821,9 +7822,9 @@ Draft: "$draft"''';
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Text(
+                                        _buildLinkedMessageText(
                                           message.messageText!,
-                                          style: GoogleFonts.inter(
+                                          baseStyle: GoogleFonts.inter(
                                             color: Colors.white,
                                             fontSize: 14.5,
                                             fontWeight: FontWeight.w400,
@@ -8075,6 +8076,70 @@ Draft: "$draft"''';
           ),
         ],
       ],
+    );
+  }
+
+  /// 🔗 Helper to render message text with clickable, light blue URLs
+  Widget _buildLinkedMessageText(String text, {required TextStyle baseStyle}) {
+    final urlRegex = RegExp(
+      r'((?:https?:\/\/|www\.)[^\s]+)',
+      caseSensitive: false,
+    );
+    final matches = urlRegex.allMatches(text).toList();
+
+    if (matches.isEmpty) {
+      return Text(text, style: baseStyle);
+    }
+
+    final spans = <InlineSpan>[];
+    int currentIndex = 0;
+
+    for (final match in matches) {
+      if (match.start > currentIndex) {
+        spans.add(TextSpan(
+          text: text.substring(currentIndex, match.start),
+          style: baseStyle,
+        ));
+      }
+
+      final rawUrl = match.group(0)!;
+      final parsedUrl = rawUrl.startsWith('http://') || rawUrl.startsWith('https://')
+          ? rawUrl
+          : 'https://$rawUrl';
+
+      spans.add(
+        TextSpan(
+          text: rawUrl,
+          style: baseStyle.copyWith(
+            color: const Color(0xFF38BDF8),
+            decoration: TextDecoration.underline,
+            decorationColor: const Color(0xFF38BDF8),
+            fontWeight: FontWeight.w600,
+          ),
+          recognizer: TapGestureRecognizer()
+            ..onTap = () async {
+              try {
+                final uri = Uri.parse(parsedUrl);
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              } catch (e) {
+                debugPrint('Error launching URL ($parsedUrl): $e');
+              }
+            },
+        ),
+      );
+
+      currentIndex = match.end;
+    }
+
+    if (currentIndex < text.length) {
+      spans.add(TextSpan(
+        text: text.substring(currentIndex),
+        style: baseStyle,
+      ));
+    }
+
+    return RichText(
+      text: TextSpan(children: spans),
     );
   }
 

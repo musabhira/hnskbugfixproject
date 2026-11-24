@@ -2450,6 +2450,30 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                             ),
                                           ),
                                           const SizedBox(width: 6),
+                                          // 🌐 User Native Language Tag
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF10B981)
+                                                  .withValues(alpha: 0.2),
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                              border: Border.all(
+                                                  color: const Color(0xFF10B981)
+                                                      .withValues(alpha: 0.5),
+                                                  width: 0.8),
+                                            ),
+                                            child: Text(
+                                              '🗣️ ${(user['native_language'] != null && user['native_language'].toString().trim().isNotEmpty) ? user['native_language'].toString().trim() : 'Malayalam'}',
+                                              style: const TextStyle(
+                                                color: Color(0xFF6EE7B7),
+                                                fontSize: 10.5,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
                                           Container(
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 6, vertical: 2),

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
@@ -39,6 +40,10 @@ class PocketLanguageService {
       } else {
         // Default language: Malayalam
         activeLanguageNotifier.value = 'Malayalam';
+        // Persist default to user profile if logged in
+        if (currentUserId != null && currentUserId.isNotEmpty) {
+          unawaited(setNativeLanguage('Malayalam', userId: currentUserId));
+        }
       }
       _initialized = true;
     } catch (e) {
