@@ -156,4 +156,35 @@ void main() {
       expect(robotMessages.any((m) => m.id == 'msg_4'), isTrue);
     });
   });
+
+  group('4. English Hub Autonomous Dialogue Combo & Tutor Reply Tests', () {
+    test('generateEnglishHubDialogueCombo yields multi-turn robot conversations', () {
+      final combo = PocketRobotService.generateEnglishHubDialogueCombo(
+        minLevel: 1,
+        maxLevel: 25,
+      );
+      expect(combo.isNotEmpty, isTrue);
+      expect(combo.length, greaterThanOrEqualTo(2));
+      for (final turn in combo) {
+        expect(turn.robot, isNotNull);
+        expect(turn.text.isNotEmpty, isTrue);
+        expect(PocketRobotService.isRobotId(turn.robot.id), isTrue);
+      }
+    });
+
+    test('generateEnglishHubRobotReply teaches English and replies to human learner', () async {
+      final reply = await PocketRobotService.generateEnglishHubRobotReply(
+        minLevel: 1,
+        maxLevel: 25,
+        humanMessageText: 'I have a doubt regarding grammar',
+        humanSenderName: 'Ramu',
+      );
+      expect(reply, isNotNull);
+      final text = reply!['text'] as String;
+      expect(text.contains('@Ramu'), isTrue);
+      expect(text.toLowerCase().contains('question'), isTrue);
+      final robot = reply['robot'] as PocketRobot;
+      expect(PocketRobotService.isRobotId(robot.id), isTrue);
+    });
+  });
 }

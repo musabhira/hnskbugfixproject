@@ -918,12 +918,15 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   void _scheduleEnglishHubIdleRobotCheck({bool initial = false}) {
     _hubRobotIdleConversationTimer?.cancel();
     if (!_isEnglishHubRobotsEnabled) return;
-    // ⏱️ Gentle, natural robot intervals (25 - 50 minutes) so robots never flood the chat:
-    // Some intervals ~30 mins, some ~45-50 mins.
-    // On first open, wait 25-45 minutes or random between 1500s and 3000s (25-50 minutes).
+    final isRobotTab = _activeChatTabIndex == 1;
+    // ⏱️ Start within 2-4 seconds on first open!
+    // On Robot tab, robots continuously converse back and forth every 20-35 seconds!
+    // On other tabs, steady background cadence every 50-80 seconds.
     final delaySeconds = initial
-        ? (25 * 60 + math.Random().nextInt(20 * 60)) // 25 to 45 minutes
-        : (30 * 60 + math.Random().nextInt(25 * 60)); // 30 to 55 minutes
+        ? (2 + math.Random().nextInt(3)) // 2 to 4 seconds instant kick-off
+        : (isRobotTab
+            ? (20 + math.Random().nextInt(15)) // 20 to 35 seconds
+            : (50 + math.Random().nextInt(30))); // 50 to 80 seconds
     _hubRobotIdleConversationTimer =
         Timer(Duration(seconds: delaySeconds), () async {
       if (!mounted || !_isEnglishHubGroup || !_isEnglishHubRobotsEnabled)
@@ -935,23 +938,26 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     });
   }
 
+  /// 🤖 Trigger quick robot dialogue if the user specifically navigated to the Robot tab
+  void _triggerImmediateRobotDialogueIfQuiet() {
+    _hubRobotIdleConversationTimer?.cancel();
+    _hubRobotIdleConversationTimer =
+        Timer(const Duration(milliseconds: 1000), () async {
+      if (!mounted || !_isEnglishHubGroup || _activeChatTabIndex != 1) return;
+      await _postAutonomousRobotComboDialogueIfIdle();
+      if (mounted && _isEnglishHubGroup) {
+        _scheduleEnglishHubIdleRobotCheck(initial: false);
+      }
+    });
+  }
+
   /// 🤖 Posts a natural gentle robot conversation (single topic turn) with real typing indicators
   Future<void> _postAutonomousRobotComboDialogueIfIdle() async {
     try {
       if (!mounted || !_isEnglishHubGroup || !_isEnglishHubRobotsEnabled)
         return;
-      final messages =
-          ref.read(chatMessagesProvider(widget.groupId)).value ?? [];
-      final now = DateTime.now();
-
-      // If a human just messaged in the last 15 minutes, completely yield the floor to human learners
-      if (messages.isNotEmpty) {
-        final lastMsg = messages.first;
-        if (!PocketRobotService.isRobotId(lastMsg.senderId) &&
-            now.difference(lastMsg.createdAt).inMinutes < 15) {
-          return;
-        }
-      }
+      // Yield floor only if currently actively generating a direct tutor reply to human
+      if (_isRobotReplyingToHuman) return;
 
       final turns = PocketRobotService.generateEnglishHubDialogueCombo(
         minLevel: _hubMinLevel,
@@ -1069,8 +1075,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     _isRobotReplyingToHuman = true;
     _hubRobotReplyCooldownTimer?.cancel();
 
-    // Natural human reading & thinking delay: 1.8 seconds before robot starts typing
-    Timer(const Duration(milliseconds: 1800), () async {
+    // Natural human reading & thinking delay: 1.5 seconds before robot starts typing
+    Timer(const Duration(milliseconds: 1500), () async {
       try {
         if (!mounted || !_isEnglishHubRobotsEnabled) {
           _isRobotReplyingToHuman = false;
@@ -1084,15 +1090,19 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           humanSenderName: senderName,
         );
 
-        if (reply == null || !mounted) return;
+        if (reply == null || !mounted) {
+          _isRobotReplyingToHuman = false;
+          return;
+        }
 
         final robot = reply['robot'] as PocketRobot;
 
         // Show live typing indicator for the replying robot
         PocketRobotService.setTyping(robot.id, true);
-        await Future.delayed(const Duration(milliseconds: 2400));
+        await Future.delayed(const Duration(milliseconds: 2200));
         if (!mounted) {
           PocketRobotService.setTyping(robot.id, false);
+          _isRobotReplyingToHuman = false;
           return;
         }
         PocketRobotService.setTyping(robot.id, false);
@@ -1162,8 +1172,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       } catch (e) {
         debugPrint('Error generating polite robot reply in hub: $e');
       } finally {
-        // Enforce 30-minute cooldown so robots never flood the chat after replying
-        _hubRobotReplyCooldownTimer = Timer(const Duration(minutes: 30), () {
+        // Enforce short 3-second cooldown in Robot tab so human can continuously chat & learn,
+        // or 15 seconds in general tab.
+        final cooldownSeconds = (_activeChatTabIndex == 1) ? 3 : 15;
+        _hubRobotReplyCooldownTimer = Timer(Duration(seconds: cooldownSeconds), () {
           _isRobotReplyingToHuman = false;
         });
       }
@@ -6235,6 +6247,9 @@ Draft: "$draft"''';
                       onPageChanged: (index) {
                         if (mounted && _activeChatTabIndex != index) {
                           safeSetState(() => _activeChatTabIndex = index);
+                          if (index == 1 && _isEnglishHubGroup) {
+                            _triggerImmediateRobotDialogueIfQuiet();
+                          }
                         }
                       },
                       children: [
@@ -6897,7 +6912,10 @@ Draft: "$draft"''';
                       if (!hasContent) return false;
 
                       if (_isEnglishHubGroup && englishHubFilter != null) {
-                        final isRobot = PocketRobotService.isRobotId(m.senderId);
+                        final isRobot =
+                            PocketRobotService.isRobotId(m.senderId) ||
+                                m.metadata?['is_robot'] == true ||
+                                m.senderProfile?['is_robot'] == true;
                         final isMe = m.senderId == _currentUserId;
                         if (englishHubFilter == 'human') {
                           // Tab 0: Humans only (no robots)

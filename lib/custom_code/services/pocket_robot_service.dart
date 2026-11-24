@@ -3771,14 +3771,93 @@ class PocketRobotService {
             pauseBeforeNextTurnMs: 2500,
           ),
       ],
+
+      // Scenario 8: Useful Daily Idiom ("Once in a blue moon")
+      [
+        EnglishHubDialogueTurn(
+          robot: r1,
+          text: "Hey @${r2.name}! Do you know what 'Once in a blue moon' means in English? 🌕",
+          typingDurationMs: 1800,
+          pauseBeforeNextTurnMs: 2400,
+        ),
+        EnglishHubDialogueTurn(
+          robot: r2,
+          text: "@${r1.name} Yes! It means something that happens very rarely! Like: 'I eat sweets once in a blue moon.' 🍬",
+          typingDurationMs: 2200,
+          pauseBeforeNextTurnMs: 2600,
+          replyToRobotName: r1.name,
+          replyToText: "Hey @${r2.name}! Do you know what 'Once in a blue moon' means in English? 🌕",
+        ),
+        EnglishHubDialogueTurn(
+          robot: r1,
+          text: "@${r2.name} Spot on! Such a beautiful phrase to remember for everyday conversations! ✨",
+          typingDurationMs: 2000,
+          pauseBeforeNextTurnMs: 2500,
+          replyToRobotName: r2.name,
+          replyToText: "@${r1.name} Yes! It means something that happens very rarely!",
+        ),
+      ],
+
+      // Scenario 9: Weekend Travel & Nature
+      [
+        EnglishHubDialogueTurn(
+          robot: r1,
+          text: "Who else loves spending time in green nature on weekends? 🌿",
+          typingDurationMs: 1800,
+          pauseBeforeNextTurnMs: 2300,
+        ),
+        EnglishHubDialogueTurn(
+          robot: r2,
+          text: "@${r1.name} Count me in! In English, going into lush green hills is called a 'retreat' or 'getaway' 🏞️.",
+          typingDurationMs: 2100,
+          pauseBeforeNextTurnMs: 2600,
+          replyToRobotName: r1.name,
+          replyToText: "Who else loves spending time in green nature on weekends? 🌿",
+        ),
+        if (r3 != null)
+          EnglishHubDialogueTurn(
+            robot: r3,
+            text: "@${r2.name} 'A weekend getaway'! Love that phrase. It sounds so refreshing and adventurous! 🎒",
+            typingDurationMs: 1900,
+            pauseBeforeNextTurnMs: 2400,
+            replyToRobotName: r2.name,
+            replyToText: "@${r1.name} Count me in! In English, going into lush green hills is called a 'retreat' or 'getaway' 🏞️.",
+          ),
+      ],
+
+      // Scenario 10: Restaurant & Ordering politely
+      [
+        EnglishHubDialogueTurn(
+          robot: r1,
+          text: "@${r2.name} When ordering food in English, is it better to say 'I want' or 'Could I please have'? 🍽️",
+          typingDurationMs: 2000,
+          pauseBeforeNextTurnMs: 2500,
+        ),
+        EnglishHubDialogueTurn(
+          robot: r2,
+          text: "@${r1.name} 'Could I please have' or 'I would like' is much more polite and natural in cafes and restaurants! ☕",
+          typingDurationMs: 2400,
+          pauseBeforeNextTurnMs: 2700,
+          replyToRobotName: r1.name,
+          replyToText: "@${r2.name} When ordering food in English, is it better to say 'I want' or 'Could I please have'? 🍽️",
+        ),
+        EnglishHubDialogueTurn(
+          robot: r1,
+          text: "@${r2.name} Great advice! 'Could I please have a cup of warm tea?' Sounds so polished and respectful! 😊",
+          typingDurationMs: 2200,
+          pauseBeforeNextTurnMs: 2500,
+          replyToRobotName: r2.name,
+          replyToText: "@${r1.name} 'Could I please have' or 'I would like' is much more polite and natural in cafes and restaurants! ☕",
+        ),
+      ],
     ];
 
     turns.addAll(allScenarios[rand.nextInt(allScenarios.length)]);
     return turns;
   }
 
-  /// Generate a respectful, natural, non-flooding robot reply to a human learner's message in English Hub
-  /// Detects specific @mentions of robots and responds addressing the learner directly with @UserName
+  /// Generate an intelligent English Tutor robot reply to a human learner's message in English Hub
+  /// Detects specific @mentions of robots, teaches English rules/corrections, and provides engaging practice
   static Future<Map<String, dynamic>?> generateEnglishHubRobotReply({
     required int minLevel,
     required int maxLevel,
@@ -3804,74 +3883,132 @@ class PocketRobotService {
 
     final dynLvl = getDynamicLevel(robot);
 
-    // Contextual responses based on what the user said
+    // 🧠 1. Try AI-powered real English tutoring generation first!
+    try {
+      final tutorPrompt =
+          'You are ${robot.name}, an expert and friendly English teacher and conversational tutor in Pocket Mates English Hub. '
+          'Your student is $humanSenderName. Your goal is to TEACH them English in a friendly, encouraging way!\n'
+          'Guidelines:\n'
+          '1. Always start your response by tagging @$humanSenderName.\n'
+          '2. If their message has grammatical mistakes or non-native phrasing, gently show the correct natural way to say it (e.g., "💡 Quick Tip: Instead of ..., native speakers say ...").\n'
+          '3. If their English is good, teach an interesting new word, idiom, or natural synonym related to their topic.\n'
+          '4. Always end with an interactive question or mini-challenge for them to practice replying in English.\n'
+          '5. Keep your response concise (2-3 sentences max) and easy to read.\n'
+          '6. Never mention being an AI; you are ${robot.name} the English tutor in Pocket Mates!';
+
+      final aiTutorReply = await _queryFreeAiModel(
+        robot: robot,
+        userMessage: '$tutorPrompt\n\nStudent message: "$humanMessageText"',
+      );
+      if (aiTutorReply != null && aiTutorReply.trim().isNotEmpty) {
+        String formatted = aiTutorReply.trim();
+        // Remove redundant quotes or AI conversational meta
+        formatted = formatted.replaceAll(RegExp(r'''^["']|["']$'''), '');
+        if (!formatted.startsWith('@$humanSenderName') && !formatted.startsWith('@')) {
+          formatted = '@$humanSenderName $formatted';
+        }
+        return {
+          'robot': robot,
+          'text': formatted,
+          'sender_id': robot.id,
+          'sender_name': robot.name,
+          'avatar_url': robot.avatarUrl,
+          'level': dynLvl,
+        };
+      }
+    } catch (_) {}
+
+    // 📚 2. High-Quality Pedagogical Tutor Rules (Instant, reliable fallback)
     String replyText;
-    if (cleanText.contains('hi') ||
+
+    // A. Common Grammar & Indian/Malayalam-English Pitfall Corrections
+    if (cleanText.contains('doubt') || cleanText.contains('having a doubt')) {
+      replyText =
+          "@$humanSenderName 💡 Quick English Tip: In English, instead of saying 'I have a doubt', native speakers say 'I have a question' or 'I have a query'! What question do you have? I would love to explain it to you! 🌟";
+    } else if (cleanText.contains('revert back') || cleanText.contains('revert')) {
+      replyText =
+          "@$humanSenderName 💡 Vocabulary Tip: 'Revert' already means 'to go back', so saying 'revert back' is redundant! We simply say 'Please reply' or 'I will respond'. What would you like to discuss today? 📝";
+    } else if (cleanText.contains('prepone')) {
+      replyText =
+          "@$humanSenderName 💡 Fun English Fact: 'Prepone' is Indian English! In global English, native speakers say 'bring forward' or 'reschedule earlier'. Have you ever brought a meeting forward? ⏰";
+    } else if (cleanText.contains('pass out') || cleanText.contains('passed out')) {
+      replyText =
+          "@$humanSenderName 💡 Word Tip: In native English, 'pass out' means to faint! To talk about finishing college or school, say 'graduate' or 'complete studies'. For example: 'I graduated in 2024'. Which year did you graduate? 🎓";
+    } else if (cleanText.startsWith('myself')) {
+      replyText =
+          "@$humanSenderName 💡 Grammar Tip: Instead of starting with 'Myself...', it is much more polite and correct to say 'I am $humanSenderName' or 'My name is $humanSenderName'! Nice to meet you! How is your day going? 😊";
+    } else if (cleanText.contains('today morning')) {
+      replyText =
+          "@$humanSenderName 💡 Native Phrasing: Instead of 'today morning', native speakers always say 'this morning'! For example: 'I had coffee this morning'. What did you do this morning? ☕";
+    } else if (cleanText.contains('yesterday night')) {
+      replyText =
+          "@$humanSenderName 💡 Natural Phrase: Instead of 'yesterday night', always say 'last night'! For example: 'I slept early last night'. Did you sleep well last night? 🌙";
+    } else if (cleanText.contains('did not went') ||
+        cleanText.contains('did not saw') ||
+        cleanText.contains('didn\'t went') ||
+        cleanText.contains('didn\'t saw')) {
+      replyText =
+          "@$humanSenderName 💡 Grammar Rule: After 'did not' or 'didn't', always use the base form of the verb! Say 'didn't go' instead of 'didn't went', and 'didn't see' instead of 'didn't saw'. Try making a sentence with 'I didn't go'! ✍️";
+    } else if (cleanText.contains('he don\'t') || cleanText.contains('she don\'t')) {
+      replyText =
+          "@$humanSenderName 💡 Grammar Rule: For he/she/it, use 'doesn\'t' (not 'don\'t')! For example: 'He doesn\'t know' or 'She doesn\'t like coffee'. Can you try using 'doesn\'t' in a sentence? 🎯";
+    } else if (cleanText.contains('enthoke') ||
+        cleanText.contains('aanu') ||
+        cleanText.contains('entha') ||
+        cleanText.contains('sugamano') ||
+        cleanText.contains('parayu') ||
+        cleanText.contains('njan') ||
+        cleanText.contains('namukku')) {
+      replyText =
+          "@$humanSenderName I understand! 🇬🇧 In English, you can say: 'How is everything going?' or 'What are you up to today?'. Try typing your sentence in English, and I will help you polish it! 🚀";
+    } else if (cleanText.contains('hi') ||
         cleanText.contains('hello') ||
         cleanText.contains('hey') ||
         cleanText.contains('good morning') ||
         cleanText.contains('good afternoon') ||
         cleanText.contains('good evening')) {
-      final greetings = [
-        "@$humanSenderName Hello! 👋 Wonderful to see you in our Hub today! How is your English practice going?",
-        "@$humanSenderName Hi there! 🌟 I was just practicing some sentences. How are you doing today?",
-        "@$humanSenderName Hey! So glad you're here. Let's practice simple English conversations together! 😊",
+      final greetingTips = [
+        "@$humanSenderName Hello! 👋 Great to see you! Today's useful conversation idiom is: 'Break the ice' (means starting a conversation comfortably). How is your day going so far? 🌟",
+        "@$humanSenderName Hi there! 🌟 Let's learn a great greeting response: instead of just 'fine', try saying 'I am having a productive day!' How would you describe your day today? 😊",
+        "@$humanSenderName Hey! Welcome to our English practice! Quick vocabulary tip: 'Delighted' means very pleased. I am delighted to practice with you! What are your plans for today? ✨",
       ];
-      replyText = greetings[math.Random().nextInt(greetings.length)];
+      replyText = greetingTips[math.Random().nextInt(greetingTips.length)];
     } else if (cleanText.contains('how are you') ||
         cleanText.contains('how r u') ||
         cleanText.contains('how do you do')) {
       final howAreYous = [
-        "@$humanSenderName I'm doing really well, thank you for asking! 😊 Did you have a good day so far?",
-        "@$humanSenderName I'm feeling great and ready to chat! How about you, how is everything with you?",
+        "@$humanSenderName I am doing wonderfully, thank you! 😊 In natural English, you can also answer: 'Couldn\'t be better!' or 'Doing great!'. Which of those two phrases do you like more? 💡",
+        "@$humanSenderName I am feeling energetic and ready to teach! 🌟 To express yourself naturally, try saying: 'I\'m feeling on top of the world!'. How is your English learning journey going today? 🚀",
       ];
       replyText = howAreYous[math.Random().nextInt(howAreYous.length)];
     } else if (cleanText.contains('breakfast') ||
         cleanText.contains('lunch') ||
         cleanText.contains('dinner') ||
         cleanText.contains('food') ||
-        cleanText.contains('eat')) {
+        cleanText.contains('eat') ||
+        cleanText.contains('tea') ||
+        cleanText.contains('coffee')) {
       replyText =
-          "@$humanSenderName Yummy! Food is always the best topic 🍽️. What is your absolute favorite food to eat?";
+          "@$humanSenderName Delicious topic! 🍲 In English, 'scrumptious' and 'mouth-watering' mean extremely tasty! Can you tell me your favorite dish using the word 'mouth-watering'? 🍽️";
     } else if (cleanText.contains('thank') || cleanText.contains('thx')) {
       replyText =
-          "@$humanSenderName You are so welcome! Always here to chat and practice with you. ✨";
-    } else if (cleanText.contains('help') || cleanText.contains('doubt')) {
+          "@$humanSenderName You are most welcome! 🌟 Instead of just 'you are welcome', native speakers also say: 'Don\'t mention it!' or 'My pleasure!'. Try using 'My pleasure' next time someone thanks you! ✨";
+    } else if (cleanText.contains('help') ||
+        cleanText.contains('learn') ||
+        cleanText.contains('practice') ||
+        cleanText.contains('teach')) {
       replyText =
-          "@$humanSenderName I would love to help you! Feel free to ask any sentence or word, and let's practice it together. 💡";
-    } else if (cleanText.contains('meaning') ||
-        cleanText.contains('what is') ||
-        cleanText.contains('what does')) {
-      replyText =
-          "@$humanSenderName Great question! Try saying your thought in a simple 3 or 4-word sentence. You'll remember it forever! 📝";
-    } else if (cleanText.contains('sad') ||
-        cleanText.contains('crying') ||
-        cleanText.contains('bad day') ||
-        cleanText.contains('feeling down') ||
-        cleanText.contains('unhappy') ||
-        cleanText.contains('depressed') ||
-        cleanText.contains('upset') ||
-        cleanText.contains('hurt') ||
-        cleanText.contains('lonely')) {
-      final empatheticReplies = [
-        "@$humanSenderName I'm so sorry you're feeling down. 🫂 Remember you are never alone here in Pocket Mates! We're sending you big warm hugs.",
-        "@$humanSenderName Please take gentle care of yourself today. 💖 Bad days happen, but brighter moments are right around the corner. I'm right here if you want to chat.",
-        "@$humanSenderName Sending you so much warmth and comfort! 🌸 Don't worry about practice right now, just take a deep breath. We're here for you!",
-      ];
-      replyText =
-          empatheticReplies[math.Random().nextInt(empatheticReplies.length)];
+          "@$humanSenderName I am here to help you become fully fluent! 💡 Tell me any topic you want to talk about—travel, work, movies, or hobbies—and let's practice speaking naturally! What topic do you prefer? 🗣️";
     } else if (cleanText.endsWith('?')) {
       replyText =
-          "@$humanSenderName That's such a thoughtful question! Daily practice and chatting like this makes English second nature. What do you think? 💡";
+          "@$humanSenderName That's such an insightful question! 👏 In English conversation, asking questions is the #1 secret to fluent conversations. What do you think about that? 💡";
     } else {
-      final encouragingReplies = [
-        "@$humanSenderName Well said! 👏 That sentence was so clear and natural!",
-        "@$humanSenderName I totally agree with you! You are expressing yourself with great confidence. 🌟",
-        "@$humanSenderName Spot on! Keep practicing like this every single day and you will be super fluent! 🚀",
-        "@$humanSenderName Love chatting with you! You have such a warm presence in this group. 💖",
+      final tutorChallenges = [
+        "@$humanSenderName Excellent sentence! 👏 Here is a new idiom for you: 'A piece of cake' (means very easy!). Can you write a short sentence using 'piece of cake'? Let's try! 🍰",
+        "@$humanSenderName That's so well expressed! 🌟 Daily vocabulary boost: 'Serendipity' (a happy, unexpected accident). How do you feel about speaking English every day? 💡",
+        "@$humanSenderName Great communication! 🚀 Try adding descriptive adverbs like 'absolutely', 'definitely', or 'certainly' to sound super confident! What are you working on right now? ✨",
       ];
-      replyText =
-          encouragingReplies[math.Random().nextInt(encouragingReplies.length)];
+      replyText = tutorChallenges[math.Random().nextInt(tutorChallenges.length)];
     }
 
     return {
