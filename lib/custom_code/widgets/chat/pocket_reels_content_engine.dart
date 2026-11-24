@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_90day_vocab_curriculum.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/day1_az_and_300vocab_data.dart';
 
 /// 📖 Reel Short Story Model with Audio Read-Along & Dynamic Native Takeaway
 class ReelStoryCard {
@@ -140,6 +142,7 @@ class ReelVocabCard {
 /// 🧠 Central Engine for Stories, Interview Vault, Speaking & Vocab Reels
 class PocketReelsContentEngine {
   static final Set<String> _viewedItemIds = {};
+  static final Set<String> _viewedVibesItemIds = {};
   static bool _initialized = false;
   static final math.Random _random = math.Random();
 
@@ -149,6 +152,8 @@ class PocketReelsContentEngine {
       final prefs = await SharedPreferences.getInstance();
       final saved = prefs.getStringList('pm_viewed_content_ids') ?? [];
       _viewedItemIds.addAll(saved);
+      final savedVibes = prefs.getStringList('pm_viewed_vibes_vocab_ids') ?? [];
+      _viewedVibesItemIds.addAll(savedVibes);
       _initialized = true;
     } catch (_) {}
   }
@@ -160,6 +165,23 @@ class PocketReelsContentEngine {
         await prefs.setStringList('pm_viewed_content_ids', _viewedItemIds.toList());
       } catch (_) {}
     }
+  }
+
+  static Future<void> markVibesContentViewed(String id) async {
+    if (_viewedVibesItemIds.add(id)) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setStringList('pm_viewed_vibes_vocab_ids', _viewedVibesItemIds.toList());
+      } catch (_) {}
+    }
+  }
+
+  /// 📓 Returns an unseen Daily English Phrases deck for Vibes feed (strict no-repeat)
+  static ReelVocabCard? getVibesUnseenDeck({int slotOffset = 0}) {
+    final all = allDailyEnglishDecks;
+    final unseen = all.where((v) => !_viewedVibesItemIds.contains(v.id)).toList();
+    if (unseen.isEmpty) return null;
+    return unseen[slotOffset % unseen.length];
   }
 
   /// 📖 Get Short Story Batch (prioritizes unviewed)
@@ -195,15 +217,149 @@ class PocketReelsContentEngine {
     return [...unseen, ...seen].take(count).toList();
   }
 
-  /// ⚡ Get Power Vocabulary Batch
-  static List<ReelVocabCard> getVocabCards({int count = 4}) {
-    final unseen = _curatedVocabCards.where((v) => !_viewedItemIds.contains(v.id)).toList();
-    unseen.shuffle(_random);
-    if (unseen.length >= count) return unseen.take(count).toList();
+  static List<ReelVocabCard>? _cachedAllVocabDecks;
+  static final Set<String> _sessionServedVocabIds = {};
 
-    final seen = _curatedVocabCards.where((v) => _viewedItemIds.contains(v.id)).toList();
-    seen.shuffle(_random);
-    return [...unseen, ...seen].take(count).toList();
+  /// 📚 Generates 165+ Daily English Phrases & Words Scrapbook Decks (1,400+ entries across 90 days + everyday banks)
+  static List<ReelVocabCard> get allDailyEnglishDecks {
+    if (_cachedAllVocabDecks != null) return _cachedAllVocabDecks!;
+
+    final List<ReelVocabCard> decks = [];
+    // 1. Add all curated conversational Phrase Decks first
+    decks.addAll(_curatedVocabCards.where((v) => v.phrases.isNotEmpty));
+
+    // 2. Generate Scrapbook Decks from 90-Day Curriculum (900 unique words with multi-language translations)
+    final List<Map<String, dynamic>> buffer = [];
+    int deckIndex = 1;
+    for (int day = 1; day <= 90; day++) {
+      final items = Pocket90DayVocabCurriculum.getVocabForDay(day);
+      for (final item in items) {
+        final ml = item.malayalamMeaning.trim();
+        final ta = item.tamilMeaning.trim();
+        final hi = item.hindiMeaning.trim();
+        final kn = item.kannadaMeaning.trim();
+        final te = item.teluguMeaning.trim();
+        if (item.word.isEmpty || (ml.isEmpty && hi.isEmpty && ta.isEmpty)) {
+          continue;
+        }
+        buffer.add({
+          'en': item.word,
+          'Malayalam': ml.isNotEmpty ? ml : item.definition,
+          'Tamil': ta.isNotEmpty ? ta : (ml.isNotEmpty ? ml : item.definition),
+          'Hindi': hi.isNotEmpty ? hi : (ml.isNotEmpty ? ml : item.definition),
+          'Kannada': kn.isNotEmpty ? kn : (ml.isNotEmpty ? ml : item.definition),
+          'Telugu': te.isNotEmpty ? te : (ml.isNotEmpty ? ml : item.definition),
+        });
+        if (buffer.length == 8) {
+          decks.add(ReelVocabCard(
+            id: 'daily_90_deck_$deckIndex',
+            word: 'Day $day • Daily Words',
+            partOfSpeech: 'Daily English',
+            phonetic: '',
+            definitionEn: 'Essential Day $day Daily English Words',
+            contextSentence: item.exampleSentence,
+            nativeMeanings: const {},
+            proTip: 'Tap any English word to hear clear pronunciation!',
+            phrases: List<Map<String, dynamic>>.from(buffer),
+          ));
+          buffer.clear();
+          deckIndex++;
+        }
+      }
+    }
+    if (buffer.isNotEmpty) {
+      decks.add(ReelVocabCard(
+        id: 'daily_90_deck_$deckIndex',
+        word: 'Daily Mastery Words',
+        partOfSpeech: 'Daily English',
+        phonetic: '',
+        definitionEn: 'Essential Daily English Words',
+        contextSentence: '',
+        nativeMeanings: const {},
+        proTip: 'Tap any English word to hear clear pronunciation!',
+        phrases: List<Map<String, dynamic>>.from(buffer),
+      ));
+      buffer.clear();
+    }
+
+    // 3. Generate Scrapbook Decks from Day 1 Everyday 300+ Vocab Bank
+    int bankDeckIdx = 1;
+    final List<Map<String, dynamic>> bankBuffer = [];
+    for (final w in Day1VocabBankData.words300) {
+      final wordStr = w['word']?.toString() ?? '';
+      final mlMeaning = w['meaning']?.toString() ?? '';
+      if (wordStr.isEmpty || mlMeaning.isEmpty) continue;
+      bankBuffer.add({
+        'en': wordStr,
+        'Malayalam': mlMeaning,
+        'Tamil': mlMeaning,
+        'Hindi': mlMeaning,
+        'Kannada': mlMeaning,
+        'Telugu': mlMeaning,
+      });
+      if (bankBuffer.length == 8) {
+        final cat = w['category']?.toString() ?? 'Everyday';
+        decks.add(ReelVocabCard(
+          id: 'daily_bank_deck_$bankDeckIdx',
+          word: '$cat Essentials #$bankDeckIdx',
+          partOfSpeech: 'Daily English',
+          phonetic: '',
+          definitionEn: 'Everyday $cat English words',
+          contextSentence: w['example']?.toString() ?? '',
+          nativeMeanings: const {},
+          proTip: 'Practice speaking each word clearly!',
+          phrases: List<Map<String, dynamic>>.from(bankBuffer),
+        ));
+        bankBuffer.clear();
+        bankDeckIdx++;
+      }
+    }
+
+    _cachedAllVocabDecks = decks;
+    return decks;
+  }
+
+  /// ⚡ Get Power Vocabulary & Daily English Phrases Batch (Strict No-Repeat)
+  static List<ReelVocabCard> getVocabCards({int count = 8}) {
+    final all = allDailyEnglishDecks;
+    // Strict no-repeat: exclude both permanently viewed AND already-served-this-session
+    final unseen = all
+        .where((v) =>
+            !_viewedItemIds.contains(v.id) &&
+            !_sessionServedVocabIds.contains(v.id))
+        .toList();
+    // Keep curated conversational decks prioritized at the front while shuffling the rest
+    final curatedUnseen =
+        unseen.where((v) => v.id.startsWith('vocab_phrases_')).toList()
+          ..shuffle(_random);
+    final bankUnseen =
+        unseen.where((v) => !v.id.startsWith('vocab_phrases_')).toList()
+          ..shuffle(_random);
+    final orderedUnseen = [...curatedUnseen, ...bankUnseen];
+
+    if (orderedUnseen.isNotEmpty) {
+      final picked = orderedUnseen.take(count).toList();
+      for (final p in picked) {
+        _sessionServedVocabIds.add(p.id);
+      }
+      return picked;
+    }
+
+    // Only recycle if user has literally finished all 165+ decks!
+    final fallbackUnserved =
+        all.where((v) => !_sessionServedVocabIds.contains(v.id)).toList()
+          ..shuffle(_random);
+    if (fallbackUnserved.isNotEmpty) {
+      final picked = fallbackUnserved.take(count).toList();
+      for (final p in picked) {
+        _sessionServedVocabIds.add(p.id);
+      }
+      return picked;
+    }
+
+    _sessionServedVocabIds.clear();
+    final fresh = List<ReelVocabCard>.from(all)..shuffle(_random);
+    return fresh.take(count).toList();
   }
 
   /// 🗣️ Get Spoken English Animal Buddy Challenges for Kids
@@ -541,6 +697,132 @@ class PocketReelsContentEngine {
         {'en': 'What is your name?', 'Malayalam': 'നിങ്ങളുടെ പേരെന്താണ്?', 'Tamil': 'உங்கள் பெயர் என்ன?', 'Hindi': 'आपका नाम क्या है?', 'Kannada': 'ನಿಮ್ಮ ಹೆಸರೇನು?', 'Telugu': 'మీ పేరు ఏమిటి?'},
         {'en': "What's going on?", 'Malayalam': 'എന്തൊക്കെയുണ്ട് വിശേഷങ്ങൾ?', 'Tamil': 'என்ன நடக்கிறது?', 'Hindi': 'क्या चल रहा है?', 'Kannada': 'ಏನು ನಡೆಯುತ್ತಿದೆ?', 'Telugu': 'ఏం జరుగుతోంది?'},
         {'en': 'What else?', 'Malayalam': 'വേറെന്താണ്?', 'Tamil': 'வேறு என்ன?', 'Hindi': 'और क्या?', 'Kannada': 'ಮತ್ತೇನು?', 'Telugu': 'ఇంకేమిటి?'},
+      ],
+    ),
+    // 📖 5. Phrases with 'WHEN'
+    const ReelVocabCard(
+      id: 'vocab_phrases_when',
+      word: "Phrases with 'WHEN'",
+      partOfSpeech: 'Phrases',
+      phonetic: '/wɛn/',
+      definitionEn: 'Essential phrases for asking about time, schedules, and events.',
+      contextSentence: 'When does the next bus arrive at this station?',
+      nativeMeanings: {'Malayalam': "'എപ്പോൾ' (WHEN) ഉപയോഗിച്ചുള്ള വാക്യങ്ങൾ."},
+      proTip: 'Great for planning meetings, travel, and daily routines.',
+      phrases: [
+        {'en': 'When are you coming?', 'Malayalam': 'നീ എപ്പോഴാണ് വരുന്നത്?', 'Tamil': 'நீங்கள் எப்போது வருகிறீர்கள்?', 'Hindi': 'आप कब आ रहे हैं?', 'Kannada': 'ನೀವು ಯಾವಾಗ ಬರುತ್ತಿದ್ದೀರಿ?', 'Telugu': 'మీరు ఎప్పుడు వస్తున్నారు?'},
+        {'en': 'When did it happen?', 'Malayalam': 'അതെപ്പോഴാണ് സംഭവിച്ചത്?', 'Tamil': 'அது எப்போது நடந்தது?', 'Hindi': 'यह कब हुआ?', 'Kannada': 'ಅದು ಯಾವಾಗ ನಡೆಯಿತು?', 'Telugu': 'అది ఎప్పుడు జరిగింది?'},
+        {'en': 'When does it start?', 'Malayalam': 'ഇത് എപ്പോഴാണ് തുടങ്ങുന്നത്?', 'Tamil': 'இது எப்போது தொடங்கும்?', 'Hindi': 'यह कब शुरू होता है?', 'Kannada': 'ಇದು ಯಾವಾಗ ಪ್ರಾರಂಭವಾಗುತ್ತದೆ?', 'Telugu': 'ఇది ఎప్పుడు మొదలవుతుంది?'},
+        {'en': 'When will you be free?', 'Malayalam': 'നീ എപ്പോൾ ഫ്രീ ആകും?', 'Tamil': 'நீங்கள் எப்போது ஃப்ரீயாக இருப்பீர்கள்?', 'Hindi': 'आप कब फ्री होंगे?', 'Kannada': 'ನೀವು ಯಾವಾಗ ಫ್ರೀ ಆಗುತ್ತೀರಿ?', 'Telugu': 'మీరు ఎప్పుడు ఖాళీగా ఉంటారు?'},
+        {'en': 'When is your birthday?', 'Malayalam': 'നിന്റെ ജന്മദിനം എപ്പോഴാണ്?', 'Tamil': 'உங்கள் பிறந்தநாள் எப்போது?', 'Hindi': 'आपका जन्मदिन कब है?', 'Kannada': 'ನಿಮ್ಮ ಹುಟ್ಟುಹಬ್ಬ ಯಾವಾಗ?', 'Telugu': 'మీ పుట్టినరోజు ఎప్పుడు?'},
+        {'en': 'When should I call?', 'Malayalam': 'ഞാൻ എപ്പോഴാണ് വിളിക്കേണ്ടത്?', 'Tamil': 'நான் எப்போது அழைக்க வேண்டும்?', 'Hindi': 'मुझे कब कॉल करना चाहिए?', 'Kannada': 'ನಾನು ಯಾವಾಗ ಕರೆ ಮಾಡಬೇಕು?', 'Telugu': 'నేను ఎప్పుడు కాల్ చేయాలి?'},
+        {'en': 'When did you arrive?', 'Malayalam': 'നീ എപ്പോഴാണ് എത്തിയത്?', 'Tamil': 'நீங்கள் எப்போது வந்தீர்கள்?', 'Hindi': 'आप कब पहुँचे?', 'Kannada': 'ನೀವು ಯಾವಾಗ ತಲುಪಿದಿರಿ?', 'Telugu': 'మీరు ఎప్పుడు వచ్చారు?'},
+        {'en': 'Since when?', 'Malayalam': 'എപ്പോൾ മുതൽ?', 'Tamil': 'எப்போதிலிருந்து?', 'Hindi': 'कब से?', 'Kannada': 'ಯಾವಾಗಿನಿಂದ?', 'Telugu': 'ఎప్పటి నుండి?'},
+      ],
+    ),
+    // 📖 6. Phrases with 'WHY'
+    const ReelVocabCard(
+      id: 'vocab_phrases_why',
+      word: "Phrases with 'WHY'",
+      partOfSpeech: 'Phrases',
+      phonetic: '/waɪ/',
+      definitionEn: 'Natural ways to ask reasons and explanations politely.',
+      contextSentence: 'Why is this road closed today?',
+      nativeMeanings: {'Malayalam': "'എന്തുകൊണ്ട്' (WHY) ഉപയോഗിച്ചുള്ള വാക്യങ്ങൾ."},
+      proTip: 'Soften "Why" questions with a polite tone in conversations.',
+      phrases: [
+        {'en': 'Why are you late?', 'Malayalam': 'എന്താ വൈകിയത്?', 'Tamil': 'ஏன் தாமதம்?', 'Hindi': 'आप देर से क्यों आए?', 'Kannada': 'ಏಕೆ ತಡವಾಯಿತು?', 'Telugu': 'ఎందుకు ఆలస్యమైంది?'},
+        {'en': 'Why did you say that?', 'Malayalam': 'നീ എന്താ അങ്ങനെ പറഞ്ഞത്?', 'Tamil': 'ஏன் அப்படி சொன்னீர்கள்?', 'Hindi': 'आपने ऐसा क्यों कहा?', 'Kannada': 'ನೀವು ಹಾಗೆ ಏಕೆ ಹೇಳಿದಿರಿ?', 'Telugu': 'మీరు అలా ఎందుకు అన్నారు?'},
+        {'en': 'Why not?', 'Malayalam': 'എന്തുകൊണ്ട് ആയിക്കൂടാ?', 'Tamil': 'ஏன் கூடாது?', 'Hindi': 'क्यों नहीं?', 'Kannada': 'ಏಕಾಗಬಾರದು?', 'Telugu': 'ఎందుకు కాదు?'},
+        {'en': 'Why are you laughing?', 'Malayalam': 'നീ എന്തിനാ ചിരിക്കുന്നത്?', 'Tamil': 'ஏன் சிரிக்கிறீர்கள்?', 'Hindi': 'आप क्यों हँस रहे हैं?', 'Kannada': 'ನೀವು ಏಕೆ ನಗುತ್ತಿದ್ದೀರಿ?', 'Telugu': 'మీరు ఎందుకు నవ్వుతున్నారు?'},
+        {'en': 'Why is it so expensive?', 'Malayalam': 'ഇതിന് എന്താ ഇത്ര വില?', 'Tamil': 'இது ஏன் இவ்வளவு விலை?', 'Hindi': 'यह इतना महंगा क्यों है?', 'Kannada': 'ಇದು ಏಕೆ ಇಷ್ಟು ದುಬಾರಿ?', 'Telugu': 'ఇది ఎందుకు ఇంత ఖరీదు?'},
+        {'en': 'Why do you ask?', 'Malayalam': 'നീ എന്തിനാ ചോദിച്ചത്?', 'Tamil': 'ஏன் கேட்கிறீர்கள்?', 'Hindi': 'आप क्यों पूछ रहे हैं?', 'Kannada': 'ನೀವು ಏಕೆ ಕೇಳುತ್ತಿದ್ದೀರಿ?', 'Telugu': 'మీరు ఎందుకు అడుగుతున్నారు?'},
+        {'en': 'Why did he leave?', 'Malayalam': 'അവൻ എന്തിനാ പോയത്?', 'Tamil': 'அவர் ஏன் சென்றார்?', 'Hindi': 'वह क्यों चला गया?', 'Kannada': 'ಅವರು ಏಕೆ ಹೋದರು?', 'Telugu': 'అతను ఎందుకు వెళ్ళాడు?'},
+        {'en': "That's why!", 'Malayalam': 'അതുകൊണ്ടാണ്!', 'Tamil': 'அதனால்தான்!', 'Hindi': 'इसीलिए!', 'Kannada': 'ಅದಕ್ಕಾಗಿಯೇ!', 'Telugu': 'అందుకే!'},
+      ],
+    ),
+    // 📖 7. Phrases with 'CAN'
+    const ReelVocabCard(
+      id: 'vocab_phrases_can',
+      word: "Phrases with 'CAN'",
+      partOfSpeech: 'Phrases',
+      phonetic: '/kæn/',
+      definitionEn: 'Polite requests, offers, and capability questions.',
+      contextSentence: 'Can you please help me with this bag?',
+      nativeMeanings: {'Malayalam': "'സാധിക്കുമോ / കഴിയുമോ' (CAN) വാക്യങ്ങൾ."},
+      proTip: 'Using "Can you..." is the easiest way to make polite everyday requests.',
+      phrases: [
+        {'en': 'Can you help me?', 'Malayalam': 'എന്നെ ഒന്ന് സഹായിക്കാമോ?', 'Tamil': 'எனக்கு உதவ முடியுமா?', 'Hindi': 'क्या आप मेरी मदद कर सकते हैं?', 'Kannada': 'ನನಗೆ ಸಹಾಯ ಮಾಡುತ್ತೀರಾ?', 'Telugu': 'నాకు సహాయం చేయగలరా?'},
+        {'en': 'Can I come in?', 'Malayalam': 'ഞാൻ അകത്തേക്ക് വരട്ടെ?', 'Tamil': 'நான் உள்ளே வரலாமா?', 'Hindi': 'क्या मैं अंदर आ सकता हूँ?', 'Kannada': 'ನಾನು ಒಳಗೆ ಬರಬಹುದೇ?', 'Telugu': 'నేను లోపలికి రావచ్చా?'},
+        {'en': 'Can you hear me?', 'Malayalam': 'എന്നെ കേൾക്കുന്നുണ്ടോ?', 'Tamil': 'நான் பேசுவது கேட்கிறதா?', 'Hindi': 'क्या आप मुझे सुन सकते हैं?', 'Kannada': 'ನನ್ನ ಮಾತು ಕೇಳಿಸುತ್ತಿದೆಯೇ?', 'Telugu': 'నేను చెప్పేది వినిపిస్తోందా?'},
+        {'en': 'Can you speak slowly?', 'Malayalam': 'ദയവായി പതുക്കെ സംസാരിക്കാമോ?', 'Tamil': 'கொஞ்சம் மெதுவாக பேச முடியுமா?', 'Hindi': 'क्या आप धीरे बोल सकते हैं?', 'Kannada': 'ಸ್ವಲ್ಪ ನಿಧಾನವಾಗಿ ಮಾತನಾಡುತ್ತೀರಾ?', 'Telugu': 'కొంచెం నెమ్మదిగా మాట్లాడగలరా?'},
+        {'en': 'Can I pay by UPI?', 'Malayalam': 'യുപിഐ വഴി പണം നൽകാമോ?', 'Tamil': 'UPI மூலம் பணம் செலுத்தலாமா?', 'Hindi': 'क्या मैं UPI से भुगतान कर सकता हूँ?', 'Kannada': 'ನಾನು UPI ಮೂಲಕ ಪಾವತಿಸಬಹುದೇ?', 'Telugu': 'నేను UPI ద్వారా చెల్లించవచ్చా?'},
+        {'en': 'Can we meet today?', 'Malayalam': 'നമുക്ക് ഇന്ന് കാണാമോ?', 'Tamil': 'நாம் இன்று சந்திக்கலாமா?', 'Hindi': 'क्या हम आज मिल सकते हैं?', 'Kannada': 'ನಾವು ಇಂದು ಭೇಟಿಯಾಗಬಹುದೇ?', 'Telugu': 'మనం ఈరోజు కలవవచ్చా?'},
+        {'en': 'Can you repeat that?', 'Malayalam': 'അതൊന്ന് കൂടി പറയാമോ?', 'Tamil': 'அதை மீண்டும் சொல்ல முடியுமா?', 'Hindi': 'क्या आप वह दोहरा सकते हैं?', 'Kannada': 'ಅದನ್ನು ಮತ್ತೊಮ್ಮೆ ಹೇಳುತ್ತೀರಾ?', 'Telugu': 'దాన్ని మళ్ళీ చెప్పగలరా?'},
+        {'en': 'I can do it!', 'Malayalam': 'എനിക്കിത് ചെയ്യാൻ സാധിക്കും!', 'Tamil': 'என்னால் இதை செய்ய முடியும்!', 'Hindi': 'मैं यह कर सकता हूँ!', 'Kannada': 'ನಾನು ಇದನ್ನು ಮಾಡಬಲ್ಲೆ!', 'Telugu': 'నేను ఇది చేయగలను!'},
+      ],
+    ),
+    // 📖 8. Polite Everyday Phrases
+    const ReelVocabCard(
+      id: 'vocab_phrases_polite',
+      word: "Polite Everyday Phrases",
+      partOfSpeech: 'Phrases',
+      phonetic: '/pəˈlaɪt/',
+      definitionEn: 'Essential courteous phrases to sound friendly and confident.',
+      contextSentence: 'Excuse me, could you tell me the way?',
+      nativeMeanings: {'Malayalam': 'നിത്യജീവിതത്തിലെ മര്യാദയുള്ള വാക്യങ്ങൾ.'},
+      proTip: 'Polite phrases immediately make native speakers eager to help you.',
+      phrases: [
+        {'en': 'Excuse me, please.', 'Malayalam': 'ക്ഷമിക്കണം, ഒന്ന് ശ്രദ്ധിക്കാമോ?', 'Tamil': 'மன்னிக்கவும்.', 'Hindi': 'सुनिए, कृपया.', 'Kannada': 'ಕ್ಷಮಿಸಿ, ದಯವಿಟ್ಟು.', 'Telugu': 'క్షమించండి, దయచేసి.'},
+        {'en': 'I am really sorry.', 'Malayalam': 'എനിക്ക് ശരിക്കും വിഷമമുണ്ട് / ക്ഷമിക്കണം.', 'Tamil': 'மிகவும் வருந்துகிறேன்.', 'Hindi': 'मुझे वास्तव में खेद है.', 'Kannada': 'ನನಗೆ ನಿಜವಾಗಿಯೂ ಕ್ಷಮಿಸಿ.', 'Telugu': 'నన్ను క్షమించండి.'},
+        {'en': 'No problem at all.', 'Malayalam': 'ഒരു കുഴപ്പവുമില്ല.', 'Tamil': 'ஒரு பிரச்சினையும் இல்லை.', 'Hindi': 'कोई बात नहीं.', 'Kannada': 'ಏನೂ ತೊಂದರೆ ಇಲ್ಲ.', 'Telugu': 'పర్వాలేదు, ఏం కాదు.'},
+        {'en': 'Thank you so much!', 'Malayalam': 'വളരെയധികം നന്ദി!', 'Tamil': 'மிக்க நன்றி!', 'Hindi': 'आपका बहुत-बहुत धन्यवाद!', 'Kannada': 'ತುಂಬಾ ಧನ್ಯವಾದಗಳು!', 'Telugu': 'చాలా ధన్యవాదాలు!'},
+        {'en': 'You are welcome.', 'Malayalam': 'സ്വാഗതം / സന്തോഷമേയുള്ളൂ.', 'Tamil': 'நல்வரவு / பரவாயில்லை.', 'Hindi': 'आपका स्वागत है.', 'Kannada': 'ನಿಮಗೆ ಸ್ವಾಗತ.', 'Telugu': 'మీకు స్వాగతం.'},
+        {'en': 'Have a nice day!', 'Malayalam': 'നല്ലൊരു ദിവസം ആശംസിക്കുന്നു!', 'Tamil': 'இனிய நாளாக அமையட்டும்!', 'Hindi': 'आपका दिन शुभ हो!', 'Kannada': 'ನಿಮ್ಮ ದಿನ ಶುಭವಾಗಲಿ!', 'Telugu': 'మీ రోజు శుభప్రదంగా ఉండాలి!'},
+        {'en': 'See you soon.', 'Malayalam': 'ഉടൻ കാണാം.', 'Tamil': 'விரைவில் சந்திப்போம்.', 'Hindi': 'जल्द ही मिलते हैं.', 'Kannada': 'ಶೀಘ್ರದಲ್ಲೇ ಸಿಗೋಣ.', 'Telugu': 'త్వరలో కలుద్దాం.'},
+        {'en': 'Take care of yourself.', 'Malayalam': 'സ്വന്തം കാര്യം ശ്രദ്ധിക്കണേ.', 'Tamil': 'உங்களை கவனித்துக்கொள்ளுங்கள்.', 'Hindi': 'अपना ख्याल रखना.', 'Kannada': 'ನಿಮ್ಮ ಆರೋಗ್ಯ ನೋಡಿಕೊಳ್ಳಿ.', 'Telugu': 'మీ జాగ్రత్తగా ఉండండి.'},
+      ],
+    ),
+    // 📖 9. Travel & Directions
+    const ReelVocabCard(
+      id: 'vocab_phrases_travel',
+      word: "Travel & Directions",
+      partOfSpeech: 'Phrases',
+      phonetic: '/ˈtræv.əl/',
+      definitionEn: 'Useful travel expressions for stations, buses, and directions.',
+      contextSentence: 'How far is the railway station from here?',
+      nativeMeanings: {'Malayalam': 'യാത്രയിലും വഴി ചോദിക്കാനും വേണ്ട വാക്യങ്ങൾ.'},
+      proTip: 'Keep these phrases handy whenever exploring a new city.',
+      phrases: [
+        {'en': 'How far is it?', 'Malayalam': 'ഇവിടെ നിന്ന് എത്ര ദൂരമുണ്ട്?', 'Tamil': 'அது எவ்வளவு தூரம்?', 'Hindi': 'यह कितनी दूर है?', 'Kannada': 'ಅದು ಎಷ್ಟು ದೂರವಿದೆ?', 'Telugu': 'అది ఎంత దూరం?'},
+        {'en': 'Which way to go?', 'Malayalam': 'ഏത് വഴിയിലൂടെയാണ് പോകേണ്ടത്?', 'Tamil': 'எந்த வழியில் செல்ல வேண்டும்?', 'Hindi': 'किस रास्ते से जाना है?', 'Kannada': 'ಯಾವ ದಾರಿಯಲ್ಲಿ ಹೋಗಬೇಕು?', 'Telugu': 'ఏ దారిలో వెళ్ళాలి?'},
+        {'en': 'Stop right here.', 'Malayalam': 'ഇവിടെ നിർത്തൂ.', 'Tamil': 'இங்கே நிறுத்துங்கள்.', 'Hindi': 'यहीं रोकिए.', 'Kannada': 'ಇಲ್ಲಿಯೇ ನಿಲ್ಲಿಸಿ.', 'Telugu': 'ఇక్కడే ఆపండి.'},
+        {'en': 'Turn left ahead.', 'Malayalam': 'മുന്നിൽ നിന്ന് ഇടത്തോട്ട് തിരിയുക.', 'Tamil': 'முன்னால் இடதுபுறம் திரும்பவும்.', 'Hindi': 'आगे से बाएं मुड़ें.', 'Kannada': 'ಮುಂದೆ ಎಡಕ್ಕೆ ತಿರುಗಿ.', 'Telugu': 'ముందు ఎడమవైపు తిరగండి.'},
+        {'en': 'One ticket, please.', 'Malayalam': 'ദയവായി ഒരു ടിക്കറ്റ് തരൂ.', 'Tamil': 'ஒரு டிக்கெட் கொடுங்கள்.', 'Hindi': 'कृपया एक टिकट दीजिए.', 'Kannada': 'ದಯವಿಟ್ಟು ಒಂದು ಟಿಕೆಟ್ ಕೊಡಿ.', 'Telugu': 'దయచేసి ఒక టికెట్ ఇవ్వండి.'},
+        {'en': 'Is this seat taken?', 'Malayalam': 'ഈ സീറ്റിൽ ആളുണ്ടോ?', 'Tamil': 'இந்த இருக்கை காலியாக உள்ளதா?', 'Hindi': 'क्या यह सीट खाली है?', 'Kannada': 'ಈ ಸೀಟು ಖಾಲಿ ಇದೆಯೇ?', 'Telugu': 'ఈ సీటు ఖాళీగా ఉందా?'},
+        {'en': 'What is the fare?', 'Malayalam': 'ചാർജ് എത്രയാണ്?', 'Tamil': 'கட்டணம் எவ்வளவு?', 'Hindi': 'किराया कितना है?', 'Kannada': 'ಬಾಡಿಗೆ ಎಷ್ಟು?', 'Telugu': 'చార్జీ ఎంత?'},
+        {'en': 'Have a safe trip!', 'Malayalam': 'സുരക്ഷിതമായ യാത്ര ആശംസിക്കുന്നു!', 'Tamil': 'பயணம் இனிதாகட்டும்!', 'Hindi': 'आपकी यात्रा सुरक्षित हो!', 'Kannada': 'ನಿಮ್ಮ ಪ್ರಯಾಣ ಸುರಕ್ಷಿತವಾಗಿರಲಿ!', 'Telugu': 'మీ ప్రయాణం సురక్షితంగా సాగాలి!'},
+      ],
+    ),
+    // 📖 10. Shopping & Price
+    const ReelVocabCard(
+      id: 'vocab_phrases_shopping',
+      word: "Shopping & Prices",
+      partOfSpeech: 'Phrases',
+      phonetic: '/ˈʃɒp.ɪŋ/',
+      definitionEn: 'Confident shopping and bargaining phrases.',
+      contextSentence: 'How much does this shirt cost?',
+      nativeMeanings: {'Malayalam': 'ഷോപ്പിംഗിനും വില ചോദിക്കാനുമുള്ള വാക്യങ്ങൾ.'},
+      proTip: 'Sound polite and confident when asking for discounts or sizes.',
+      phrases: [
+        {'en': 'How much is this?', 'Malayalam': 'ഇതിന് എത്ര വിലയാകും?', 'Tamil': 'இதன் விலை என்ன?', 'Hindi': 'यह कितने का है?', 'Kannada': 'ಇದರ ಬೆಲೆ ಎಷ್ಟು?', 'Telugu': 'దీని ధర ఎంత?'},
+        {'en': 'Do you have a smaller size?', 'Malayalam': 'ഇതിന്റെ ചെറിയ സൈസ് ഉണ്ടോ?', 'Tamil': 'இதில் சிறிய அளவு உள்ளதா?', 'Hindi': 'क्या आपके पास छोटा साइज़ है?', 'Kannada': 'ಇದರಲ್ಲಿ ಚಿಕ್ಕ ಸೈಜ್ ಇದೆಯೇ?', 'Telugu': 'ఇందులో చిన్న సైజు ఉందా?'},
+        {'en': 'Can I try it on?', 'Malayalam': 'എനിക്ക് ഇതൊന്ന് ഇട്ടു നോക്കാമോ?', 'Tamil': 'நான் இதை போட்டுப் பார்க்கலாமா?', 'Hindi': 'क्या मैं इसे पहन कर देख सकता हूँ?', 'Kannada': 'ನಾನು ಇದನ್ನು ಹಾಕಿ ನೋಡಬಹುದೇ?', 'Telugu': 'నేను దీనిని వేసుకొని చూడవచ్చా?'},
+        {'en': 'It is too expensive.', 'Malayalam': 'ഇതിന് വില വളരെ കൂടുതലാണ്.', 'Tamil': 'விலை மிக அதிகமாக உள்ளது.', 'Hindi': 'यह बहुत महंगा है.', 'Kannada': 'ಇದು ತುಂಬಾ ದುಬಾರಿಯಾಗಿದೆ.', 'Telugu': 'ఇది చాలా ఖరీదుగా ఉంది.'},
+        {'en': 'Any discount available?', 'Malayalam': 'വല്ല ഡിസ്കൗണ്ടും ഉണ്ടോ?', 'Tamil': 'தள்ளுபடி ஏதாவது உண்டா?', 'Hindi': 'कोई छूट मिलेगी क्या?', 'Kannada': 'ಏನಾದರೂ ರಿಯಾಯಿತಿ ಇದೆಯೇ?', 'Telugu': 'ఏదైనా డిస్కౌంట్ ఉందా?'},
+        {'en': 'I am just looking.', 'Malayalam': 'ഞാൻ ജസ്റ്റ് നോക്കുകയാണ്.', 'Tamil': 'நான் சும்மா பார்க்கிறேன்.', 'Hindi': 'मैं बस देख रहा हूँ.', 'Kannada': 'ನಾನು ಸುಮ್ಮನೆ ನೋಡುತ್ತಿದ್ದೇನೆ.', 'Telugu': 'నేను ఊరికే చూస్తున్నాను.'},
+        {'en': 'I will take this one.', 'Malayalam': 'ഞാൻ ഇതെടുക്കാം.', 'Tamil': 'நான் இதை எடுத்துக்கொள்கிறேன்.', 'Hindi': 'मैं यह लूँगा.', 'Kannada': 'ನಾನು ಇದನ್ನು ತೆಗೆದುಕೊಳ್ಳುತ್ತೇನೆ.', 'Telugu': 'నేను దీనిని తీసుకుంటాను.'},
+        {'en': 'Give me the bill, please.', 'Malayalam': 'ദയവായി ബിൽ തരൂ.', 'Tamil': 'பில் கொடுங்கள்.', 'Hindi': 'कृपया बिल दीजिए.', 'Kannada': 'ದಯವಿಟ್ಟು ಬಿಲ್ ಕೊಡಿ.', 'Telugu': 'దయచేసి బిల్ ఇవ్వండి.'},
       ],
     ),
     const ReelVocabCard(

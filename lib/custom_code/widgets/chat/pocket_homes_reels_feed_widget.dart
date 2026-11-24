@@ -1668,21 +1668,36 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       }
     }
 
-    // Fetch high-value learning content batches (anti-repetition prioritized)
-    final List<ReelStoryCard> stories = isKid
-        ? PocketReelsContentEngine.getKidsStories(count: 6)
-        : PocketReelsContentEngine.getStories(count: 8);
-    final List<ReelSpeakChallengeCard> speakChallenges = isKid
-        ? PocketReelsContentEngine.getKidsSpeakChallenges(count: 8)
-        : PocketReelsContentEngine.getSpeakChallenges(count: 8);
+    // Ensure seen-tracking is initialized from SharedPreferences before fetching unseen items
+    await PocketReelsContentEngine.init();
+
+    // Fetch high-value learning content batches (strict no-repeat)
     final List<ReelVocabCard> vocabCards = isKid
-        ? PocketReelsContentEngine.getKidsVocabCards(count: 8)
-        : PocketReelsContentEngine.getVocabCards(count: 8);
+        ? PocketReelsContentEngine.getKidsVocabCards(count: 16)
+        : PocketReelsContentEngine.getVocabCards(count: 24);
+
+    // Diversify combinedNeighbors by level so consecutive homes aren't all the same level
+    final Map<int, List<PocketNeighbor>> byLevelBucket = {};
+    for (final n in combinedNeighbors) {
+      final bucket = (n.day ~/ 5);
+      byLevelBucket.putIfAbsent(bucket, () => []).add(n);
+    }
+    final List<PocketNeighbor> diversifiedNeighbors = [];
+    final bucketKeys = byLevelBucket.keys.toList()..shuffle(math.Random());
+    bool addedAny = true;
+    while (addedAny) {
+      addedAny = false;
+      for (final k in bucketKeys) {
+        final list = byLevelBucket[k]!;
+        if (list.isNotEmpty) {
+          diversifiedNeighbors.add(list.removeAt(0));
+          addedAny = true;
+        }
+      }
+    }
 
     final List<ReelFeedItem> combinedFeed = [];
     int gameIdx = 0;
-    int storyIdx = 0;
-    int speakIdx = 0;
     int vocabIdx = 0;
     int vibeIdx = 0;
 
@@ -1709,7 +1724,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     void addReelItem(ReelFeedItem item) {
       combinedFeed.add(item);
       itemsSinceLastAd++;
-      // 📢 User Directive: First ad appears right after 2 reels (index 2 / 3rd slide); subsequent ads every 3-4 reels
+      // 📢 User Directive: Ad appears right after 2-3 scrolls
       final threshold = isFirstAdPlaced ? 3 : 2;
       if (itemsSinceLastAd >= threshold) {
         combinedFeed.add(const ReelFeedItem.ad());
@@ -1718,47 +1733,28 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       }
     }
 
-    for (int i = 0; i < combinedNeighbors.length; i++) {
-      if (isKid) {
-        addReelItem(ReelFeedItem.home(combinedNeighbors[i]));
-        // 🧸 KIDS COMMUNICATION-RICH STREAM:
-        if (gameIdx < games.length) {
-          addReelItem(ReelFeedItem.game(games[gameIdx++]));
-        }
+    // 📓 User Directive: Show Daily English Phrases right at the very top (Index 0) on Homes open!
+    if (widget.initialGameId == null && vocabIdx < vocabCards.length) {
+      addReelItem(ReelFeedItem.vocab(vocabCards[vocabIdx++]));
+    }
 
-        // Interleave animal speak challenge, vocab card, or fable every 2-3 homes
-        if (i % 3 == 0 && speakIdx < speakChallenges.length) {
-          addReelItem(ReelFeedItem.speakChallenge(speakChallenges[speakIdx++]));
-        } else if (i % 3 == 1 && vocabIdx < vocabCards.length) {
-          addReelItem(ReelFeedItem.vocab(vocabCards[vocabIdx++]));
-        } else if (i % 3 == 2 && storyIdx < stories.length) {
-          addReelItem(ReelFeedItem.story(stories[storyIdx++]));
-        }
+    for (int i = 0; i < diversifiedNeighbors.length; i++) {
+      // 1. Show a diverse Home
+      addReelItem(ReelFeedItem.home(diversifiedNeighbors[i]));
 
-        if ((i + 1) % 3 == 0 && vibeIdx < publicVibes.length) {
-          addReelItem(ReelFeedItem.vibe(publicVibes[vibeIdx++]));
-        }
-      } else {
-        // 🏰 ADULT SPOKEN COMMUNICATION STREAM:
-        addReelItem(ReelFeedItem.home(combinedNeighbors[i]));
+      // 2. Interleave Scrapbook-styled Dialogue Quiz (e.g. Asking the Time)
+      if (gameIdx < games.length) {
+        addReelItem(ReelFeedItem.game(games[gameIdx++]));
+      }
 
-        // Pair every single home with a Level-Matched Spoken English Dialogue Game!
-        if (gameIdx < games.length) {
-          addReelItem(ReelFeedItem.game(games[gameIdx++]));
-        }
+      // 3. Interleave Daily English Phrases Scrapbook Card regularly
+      if (vocabIdx < vocabCards.length) {
+        addReelItem(ReelFeedItem.vocab(vocabCards[vocabIdx++]));
+      }
 
-        // Interleave light bite-sized content every 2-3 homes (Speak challenge, Vocab card, or short Story bite)
-        if (i % 3 == 0 && speakIdx < speakChallenges.length) {
-          addReelItem(ReelFeedItem.speakChallenge(speakChallenges[speakIdx++]));
-        } else if (i % 3 == 1 && vocabIdx < vocabCards.length) {
-          addReelItem(ReelFeedItem.vocab(vocabCards[vocabIdx++]));
-        } else if (i % 3 == 2 && storyIdx < stories.length) {
-          addReelItem(ReelFeedItem.story(stories[storyIdx++]));
-        }
-
-        if ((i + 1) % 4 == 0 && vibeIdx < publicVibes.length) {
-          addReelItem(ReelFeedItem.vibe(publicVibes[vibeIdx++]));
-        }
+      // 4. Interleave Public Vibes occasionally
+      if ((i + 1) % 3 == 0 && vibeIdx < publicVibes.length) {
+        addReelItem(ReelFeedItem.vibe(publicVibes[vibeIdx++]));
       }
     }
 
@@ -1826,10 +1822,11 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           if (gIdx < newGames.length) {
             newBatch.add(ReelFeedItem.game(newGames[gIdx++]));
           }
-          if (i % 2 == 0 && spIdx < newSpeak.length) {
-            newBatch.add(ReelFeedItem.speakChallenge(newSpeak[spIdx++]));
-          } else if (i % 2 == 1 && vIdx < newVocab.length) {
+          if (vIdx < newVocab.length) {
             newBatch.add(ReelFeedItem.vocab(newVocab[vIdx++]));
+          }
+          if (newBatch.length % 3 == 0) {
+            newBatch.add(const ReelFeedItem.ad());
           }
         }
       } else {
@@ -1845,29 +1842,24 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           userLevel: widget.userLevel,
           count: 8,
         );
-        final newStories = PocketReelsContentEngine.getStories(count: 3);
-        final newSpeak = PocketReelsContentEngine.getSpeakChallenges(count: 3);
-        final newVocab = PocketReelsContentEngine.getVocabCards(count: 3);
+        final newVocab = PocketReelsContentEngine.getVocabCards(count: 12);
 
         int gIdx = 0;
-        int sIdx = 0;
-        int spIdx = 0;
         int vIdx = 0;
 
         for (int i = 0; i < unseenNewRobots.length; i++) {
           newBatch.add(ReelFeedItem.home(unseenNewRobots[i]));
 
-          // Pair each home with a level-matched spoken dialogue game
           if (gIdx < newGames.length) {
             newBatch.add(ReelFeedItem.game(newGames[gIdx++]));
           }
 
-          if (i % 3 == 0 && spIdx < newSpeak.length) {
-            newBatch.add(ReelFeedItem.speakChallenge(newSpeak[spIdx++]));
-          } else if (i % 3 == 1 && vIdx < newVocab.length) {
+          if (vIdx < newVocab.length) {
             newBatch.add(ReelFeedItem.vocab(newVocab[vIdx++]));
-          } else if (i % 3 == 2 && sIdx < newStories.length) {
-            newBatch.add(ReelFeedItem.story(newStories[sIdx++]));
+          }
+
+          if ((i + 1) % 2 == 0) {
+            newBatch.add(const ReelFeedItem.ad());
           }
         }
       }
@@ -3522,34 +3514,53 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       onTap: _scrollToNextReel,
       child: Stack(
         children: [
-          // Background Gradient
+          // 📜 Warm Kraft Cardboard Backdrop (Scrapbook Card Theme)
           Positioned.fill(
             child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Color(0xFF0A0F1E),
-                    Color(0xFF131D33),
-                    Color(0xFF0F172A),
-                    Color(0xFF070B0D),
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
+              color: const Color(0xFFDECDB4),
+              child: CustomPaint(painter: _ReelKraftCardboardPainter()),
             ),
           ),
 
-          // Main Game Content (Centered, inner scrolling disabled so parent PageView receives 100% of vertical gestures!)
+          // Main Game Content (Scrapbook Framed Card, centered)
           Positioned.fill(
             child: SafeArea(
               child: Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    const EdgeInsets.fromLTRB(16, 16, 68, 44),
                 child: Center(
                   child: SingleChildScrollView(
-                    physics: const NeverScrollableScrollPhysics(),
-                    child: _buildGameContentForType(card),
+                    physics: const BouncingScrollPhysics(),
+                    child: Container(
+                      constraints: const BoxConstraints(maxWidth: 420),
+                      padding: const EdgeInsets.fromLTRB(16, 20, 16, 18),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF131A29),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: const Color(0xFFFAF7F0),
+                          width: 4.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.28),
+                            blurRadius: 18,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          _buildGameContentForType(card),
+                          Positioned(
+                            top: -28,
+                            left: 6,
+                            child: _buildReelSilverPaperclip(),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -3566,13 +3577,14 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.keyboard_arrow_up_rounded,
-                      color: Colors.white24, size: 16),
+                      color: Color(0xFF6B5744), size: 16),
                   const SizedBox(width: 4),
                   Text(
                     'Swipe up for next Reel',
                     style: GoogleFonts.outfit(
-                      color: Colors.white30,
+                      color: const Color(0xFF5A4838),
                       fontSize: 10.5,
+                      fontWeight: FontWeight.w600,
                       letterSpacing: 0.3,
                     ),
                   ),
@@ -6514,7 +6526,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                                 child: Column(
                                   children: [
                                     Text(
-                                      'DAILY ENGLISH VOCABULARY',
+                                      'DAILY ENGLISH PHRASES',
                                       style: GoogleFonts.outfit(
                                         fontSize: 15,
                                         fontWeight: FontWeight.w900,

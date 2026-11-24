@@ -43,6 +43,8 @@ import 'package:pocket_mates_app/custom_code/services/pocket_meta_ads_service.da
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/pocket_reels_content_engine.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'package:pocket_mates_app/custom_code/services/vibes_seen_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
@@ -1514,6 +1516,17 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                 PocketMatesSuggestedGridCard(
                   currentUserId: widget.currentUserId,
                 ),
+            ],
+          );
+        }
+
+        // 📓 Daily English Phrases Scrapbook Card interleaved in Vibes (No-Repeat)
+        if (widget.isVertical && (index == 1 || (index > 2 && index % 4 == 1))) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              statusItem,
+              _VibesDailyEnglishScrapbookCard(slotOffset: index ~/ 4),
             ],
           );
         }
@@ -9553,6 +9566,289 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
             const SizedBox(height: 6),
             Text(label,
                 style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 11)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 📓 Aesthetic Scrapbook Torn Notebook Card for Vibes Feed (Strict No-Repeat)
+class _VibesDailyEnglishScrapbookCard extends StatefulWidget {
+  final int slotOffset;
+  const _VibesDailyEnglishScrapbookCard({this.slotOffset = 0});
+
+  @override
+  State<_VibesDailyEnglishScrapbookCard> createState() =>
+      _VibesDailyEnglishScrapbookCardState();
+}
+
+class _VibesDailyEnglishScrapbookCardState
+    extends State<_VibesDailyEnglishScrapbookCard> {
+  ReelVocabCard? _deck;
+  bool _dismissed = false;
+  FlutterTts? _tts;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDeck();
+  }
+
+  Future<void> _loadDeck() async {
+    await PocketReelsContentEngine.init();
+    final deck =
+        PocketReelsContentEngine.getVibesUnseenDeck(slotOffset: widget.slotOffset);
+    if (mounted) {
+      setState(() => _deck = deck);
+      if (deck != null) {
+        // Automatically mark viewed in Vibes so it never repeats on next visit
+        PocketReelsContentEngine.markVibesContentViewed(deck.id);
+      }
+    }
+  }
+
+  Future<void> _speak(String text) async {
+    try {
+      _tts ??= FlutterTts();
+      await _tts!.setLanguage('en-IN');
+      await _tts!.setSpeechRate(0.46);
+      await _tts!.speak(text);
+    } catch (_) {}
+  }
+
+  @override
+  void dispose() {
+    _tts?.stop();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_dismissed || _deck == null || _deck!.phrases.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final deck = _deck!;
+    final activeLang = PocketLanguageService.currentLanguage.isNotEmpty
+        ? PocketLanguageService.currentLanguage
+        : 'Malayalam';
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFDECDB4),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.22),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFFFAF7F0),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.12),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // Spiral Holes along left edge
+            Positioned(
+              left: 6,
+              top: 14,
+              bottom: 14,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: List.generate(
+                  9,
+                  (_) => Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFFDECDB4),
+                      border: Border.all(
+                        color: const Color(0xFFB8A082),
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.fromLTRB(22, 14, 14, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header Banner
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFE2D6C5)),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          'DAILY ENGLISH PHRASES',
+                          style: GoogleFonts.outfit(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w900,
+                            color: const Color(0xFF1E140F),
+                            letterSpacing: 1.0,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        Text(
+                          'English - $activeLang • ${deck.word}',
+                          style: GoogleFonts.outfit(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF786550),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  ...deck.phrases.take(6).map((phrase) {
+                    final enText = phrase['en']?.toString() ?? '';
+                    final nativeText = (phrase[activeLang] ??
+                            phrase['Malayalam'] ??
+                            phrase['Hindi'] ??
+                            phrase['Tamil'] ??
+                            enText)
+                        .toString();
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2.5),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 5,
+                            child: GestureDetector(
+                              onTap: () {
+                                HapticFeedback.selectionClick();
+                                _speak(enText);
+                              },
+                              child: Row(
+                                children: [
+                                  const Text('• ',
+                                      style: TextStyle(
+                                          color: Color(0xFF8B2500),
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12.5)),
+                                  Expanded(
+                                    child: Text(
+                                      enText,
+                                      style: GoogleFonts.outfit(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w800,
+                                        color: const Color(0xFF1E140F),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Container(
+                            height: 18,
+                            width: 1,
+                            color: const Color(0xFFD4A373).withValues(alpha: 0.5),
+                            margin: const EdgeInsets.symmetric(horizontal: 6),
+                          ),
+                          Expanded(
+                            flex: 5,
+                            child: Text(
+                              nativeText,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF8B2500),
+                                fontFamily: activeLang == 'Malayalam'
+                                    ? 'NotoSansMalayalam'
+                                    : null,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'PoketMates • Tap phrase to listen 🔊',
+                        style: GoogleFonts.outfit(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF8A7662),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          setState(() => _dismissed = true);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E140F),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            'Got it ✓',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // Silver Paperclip
+            Positioned(
+              top: -7,
+              left: 18,
+              child: Container(
+                width: 14,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(7),
+                  border:
+                      Border.all(color: const Color(0xFF94A3B8), width: 2.0),
+                ),
+              ),
+            ),
           ],
         ),
       ),
