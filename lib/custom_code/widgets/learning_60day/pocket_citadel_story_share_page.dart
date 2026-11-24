@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'dart:ui' as ui;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:gal/gal.dart';
 
 import 'pocket_world_street_page.dart';
 import 'flame_english_house_game.dart';
@@ -199,6 +201,14 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
       final permanentPath = '${targetDir.path}${Platform.pathSeparator}${file.uri.pathSegments.last}';
       await file.copy(permanentPath);
 
+      if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+        try {
+          await Gal.putImage(permanentPath, album: 'PoketMates');
+        } catch (galErr) {
+          debugPrint('Gal image save notice: $galErr');
+        }
+      }
+
       if (Platform.isWindows) {
         try {
           Process.run('explorer.exe', ['/select,', permanentPath]);
@@ -217,7 +227,9 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Saved to Downloads: ${file.uri.pathSegments.last} 📸',
+                  Platform.isWindows
+                      ? 'Saved to Downloads: ${file.uri.pathSegments.last} 📸'
+                      : 'Saved to Gallery & Downloads: ${file.uri.pathSegments.last} 📸',
                   style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 13),
                   maxLines: 2,
                 ),
@@ -517,6 +529,14 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
       final permanentPath = '${targetDir.path}${Platform.pathSeparator}${videoFile.uri.pathSegments.last}';
       await videoFile.copy(permanentPath);
 
+      if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+        try {
+          await Gal.putVideo(permanentPath, album: 'PoketMates');
+        } catch (galErr) {
+          debugPrint('Gal video save notice: $galErr');
+        }
+      }
+
       if (Platform.isWindows) {
         try {
           Process.run('explorer.exe', ['/select,', permanentPath]);
@@ -535,7 +555,9 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  '15s Video saved to Downloads: ${videoFile.uri.pathSegments.last} 🎬',
+                  Platform.isWindows
+                      ? '15s Video saved to Downloads: ${videoFile.uri.pathSegments.last} 🎬'
+                      : '15s Video saved to Gallery & Downloads: ${videoFile.uri.pathSegments.last} 🎬',
                   style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 13),
                   maxLines: 2,
                 ),

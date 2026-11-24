@@ -5853,7 +5853,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
 
   /// 🏛️ Official Educational Poster Slide from Presidential Desk
   Widget _buildPresidentPosterSlide(PresidentEducationalPoster poster, int index) {
-    PocketPresidentPosterService.markPosterSeen(_supabase.auth.currentUser?.id ?? '', poster.id);
+    PocketPresidentPosterService.markPosterSeenInHomes(_supabase.auth.currentUser?.id ?? '', poster.id);
 
     return GestureDetector(
       behavior: HitTestBehavior.translucent,

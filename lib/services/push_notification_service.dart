@@ -275,9 +275,6 @@ class PushNotificationService {
                 AndroidFlutterLocalNotificationsPlugin>();
         final androidGranted = await androidImpl?.requestNotificationsPermission();
         if (androidGranted == true) granted = true;
-        try {
-          await androidImpl?.requestExactAlarmsPermission();
-        } catch (_) {}
         debugPrint('PushNotificationService: Android local permission: $androidGranted');
       } else if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
         final iosImpl = _localNotificationsPlugin

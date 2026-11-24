@@ -136,15 +136,19 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     if (PocketRobotService.isRobotId(targetId) ||
         PocketPresidentService.isPresidentId(targetId)) return;
     _pendingRankFetchUserIds.add(targetId);
-    PocketRankingService.fetchUserGlobalRank(targetId).then((rank) {
-      if (rank > 0) {
-        _userGlobalRankCache[targetId] = rank;
-        if (mounted) safeSetState(() {});
-      }
-    }).catchError((_) {}).whenComplete(() {
-      _pendingRankFetchUserIds.remove(targetId);
-    });
+    PocketRankingService.fetchUserGlobalRank(targetId)
+        .then((rank) {
+          if (rank > 0) {
+            _userGlobalRankCache[targetId] = rank;
+            if (mounted) safeSetState(() {});
+          }
+        })
+        .catchError((_) {})
+        .whenComplete(() {
+          _pendingRankFetchUserIds.remove(targetId);
+        });
   }
+
   static const Color accentColor = Color(0xFFFFFC00);
   static const Color appBarColor = Color(0xFF121B22);
   final _supabase = Supabase.instance.client;
@@ -1175,7 +1179,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         // Enforce short 2-second cooldown in Robot tab so human can continuously chat & learn,
         // or 10 seconds in general tab.
         final cooldownSeconds = (_activeChatTabIndex == 1) ? 2 : 10;
-        _hubRobotReplyCooldownTimer = Timer(Duration(seconds: cooldownSeconds), () {
+        _hubRobotReplyCooldownTimer =
+            Timer(Duration(seconds: cooldownSeconds), () {
           _isRobotReplyingToHuman = false;
         });
       }
@@ -5460,7 +5465,8 @@ Draft: "$draft"''';
                       );
                       final userStage = _userPocketStageCache[targetId] ??
                           (widget.avatarConfig?['stage'] as num?)?.toInt() ??
-                          (widget.avatarConfig?['learning_day'] as num?)?.toInt() ??
+                          (widget.avatarConfig?['learning_day'] as num?)
+                              ?.toInt() ??
                           (widget.avatarConfig?['level'] as num?)?.toInt() ??
                           1;
                       PocketCitadelAttackPage.openForUser(
@@ -5611,7 +5617,8 @@ Draft: "$draft"''';
                     if (_isPersonalChat) {
                       final targetId = _personalPeerId;
                       if (targetId.isNotEmpty) {
-                        final displayName = ContactsNameService().getDisplayName(
+                        final displayName =
+                            ContactsNameService().getDisplayName(
                           userId: targetId,
                           fallbackName: _currentGroupName.isNotEmpty
                               ? _currentGroupName
@@ -5619,13 +5626,15 @@ Draft: "$draft"''';
                         );
                         final userStage = _userPocketStageCache[targetId] ??
                             (widget.avatarConfig?['stage'] as num?)?.toInt() ??
-                            (widget.avatarConfig?['learning_day'] as num?)?.toInt() ??
+                            (widget.avatarConfig?['learning_day'] as num?)
+                                ?.toInt() ??
                             (widget.avatarConfig?['level'] as num?)?.toInt() ??
                             1;
                         PocketCitadelAttackPage.openForUser(
                           context,
                           userId: targetId,
-                          targetName: displayName.isNotEmpty ? displayName : null,
+                          targetName:
+                              displayName.isNotEmpty ? displayName : null,
                           targetDay: userStage > 0 ? userStage : null,
                           preloadedProfile: {
                             'id': targetId,
@@ -5834,12 +5843,15 @@ Draft: "$draft"''';
                           }
                           if (_isPersonalChat) {
                             final stage = _userPocketStageCache[targetId] ?? 1;
-                            final rank = PocketRankingService.getCachedGlobalRank(targetId);
+                            final rank =
+                                PocketRankingService.getCachedGlobalRank(
+                                    targetId);
                             if (rank == null && targetId.isNotEmpty) {
                               _fetchUserRankAsync(targetId);
                             }
                             final isStudent = PocketKidsService.isKidAccount;
-                            final rankPrefix = isStudent ? 'Student Rank' : 'Global Rank';
+                            final rankPrefix =
+                                isStudent ? 'Student Rank' : 'Global Rank';
                             final rankText = rank != null && rank > 0
                                 ? '$rankPrefix #$rank'
                                 : '$rankPrefix #--';
@@ -6945,8 +6957,8 @@ Draft: "$draft"''';
   }
 
   Widget _buildMainChatConversationView(
-      AsyncValue<List<ChatMessage>> chatMessagesAsync, {
-      String? englishHubFilter,
+    AsyncValue<List<ChatMessage>> chatMessagesAsync, {
+    String? englishHubFilter,
   }) {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
@@ -7495,7 +7507,8 @@ Draft: "$draft"''';
           color: const Color(0xFFFFD700).withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(4),
           border: Border.all(
-              color: const Color(0xFFFFD700).withValues(alpha: 0.4), width: 0.6),
+              color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+              width: 0.6),
         ),
         child: Text(
           'President',
@@ -7563,7 +7576,8 @@ Draft: "$draft"''';
           : ((message.senderProfile?['level'] as num?)?.toInt() ?? 1);
       final cachedRank = _userGlobalRankCache[senderId] ??
           PocketRankingService.getCachedGlobalRank(senderId);
-      final rankStr = cachedRank != null && cachedRank > 0 ? '$cachedRank' : '$lvl';
+      final rankStr =
+          cachedRank != null && cachedRank > 0 ? '$cachedRank' : '$lvl';
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
         decoration: BoxDecoration(
@@ -7760,9 +7774,10 @@ Draft: "$draft"''';
         (message.metadata?['robot_name'] as String?) ??
         'User';
 
-    final effectiveProfile = (message.senderProfile != null && message.senderProfile!.isNotEmpty)
-        ? message.senderProfile
-        : (memberProf.isNotEmpty ? memberProf : null);
+    final effectiveProfile =
+        (message.senderProfile != null && message.senderProfile!.isNotEmpty)
+            ? message.senderProfile
+            : (memberProf.isNotEmpty ? memberProf : null);
 
     // Calculate effective day/level
     final rawDay = (effectiveProfile?['learning_day'] as num?)?.toInt() ??
@@ -8377,9 +8392,10 @@ Draft: "$draft"''';
       }
 
       final rawUrl = match.group(0)!;
-      final parsedUrl = rawUrl.startsWith('http://') || rawUrl.startsWith('https://')
-          ? rawUrl
-          : 'https://$rawUrl';
+      final parsedUrl =
+          rawUrl.startsWith('http://') || rawUrl.startsWith('https://')
+              ? rawUrl
+              : 'https://$rawUrl';
 
       spans.add(
         TextSpan(

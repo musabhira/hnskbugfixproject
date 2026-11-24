@@ -733,8 +733,8 @@ class PocketPresidentService {
   }
 
   /// 🤖 Autonomous Robot / AI Presidential Response Generator
-  /// Formulates official, dignified, and helpful replies to citizen doubts, app questions,
-  /// complaints, purpose, rules, and greetings.
+  /// Formulates deeply thankful, supportive, gentle English replies
+  /// ensuring users feel valued, safe, and encouraged in their English journey.
   static Future<String> generatePresidentRobotReply({
     required String userMessage,
     String? userName,
@@ -743,25 +743,13 @@ class PocketPresidentService {
     final clean = userMessage.trim().toLowerCase();
     final citizen = (userName != null && userName.isNotEmpty && userName != 'Citizen') ? userName : 'Citizen';
 
-    final isMalayalam = PocketRobotService.isMalayalamOrManglish(userMessage) ||
-        userMessage.contains('ആരാണ്') ||
-        userMessage.contains('എന്താണ്') ||
-        userMessage.contains('പ്രസിഡന്റ്') ||
-        userMessage.contains('ലക്ഷ്യം') ||
-        userMessage.contains('റൂൾ');
-
     // 1. Who are you / ആരാണ് താങ്കൾ? / Who is the President?
     if (clean.contains('who are you') ||
         clean.contains('who is president') ||
         clean.contains('identity') ||
         clean.contains('who r u') ||
         userMessage.contains('ആരാണ്')) {
-      if (isMalayalam) {
-        return "ബഹുമാനപ്പെട്ട $citizen, പോക്കറ്റ് വേൾഡിന്റെ പ്രസിഡൻഷ്യൽ ഓഫീസിലേക്ക് സ്വാഗതം! 🏛️🌟\n\n"
-            "ഞാൻ പോക്കറ്റ് വേൾഡിന്റെ പ്രസിഡന്റാണ്. എല്ലാ പഠിതാക്കളെയും തെറ്റുകൾ ഭയക്കാതെ ആത്മവിശ്വാസത്തോടെ ഇംഗ്ലീഷ് സംസാരിക്കാൻ പ്രാപ്തരാക്കുക, നിങ്ങളെ സംരക്ഷിക്കുക, പോക്കറ്റ് വേൾഡിലെ പഠന നിയമങ്ങൾ പരിപാലിക്കുക എന്നിവയാണ് എന്റെ ചുമതല. എന്ത് സഹായത്തിനും എന്നോട് ഇവിടെ നേരിട്ട് ചോദിക്കാം!";
-      }
-      return "Greetings, $citizen! 🏛️🌟 I am the President of Pocket World.\n\n"
-          "My sovereign duty is to guide, safeguard, and champion your daily journey toward fluent English speaking. Here in Pocket World, you are protected, supported, and rewarded for every spoken word. How may the Presidential Office assist you today?";
+      return "Thank you so much for asking, dear $citizen! 🌟 I am the President of Pocket World, but above all, I am your friend and your biggest supporter! Our entire team is here to stand by you, encourage you, and make sure you feel happy and confident speaking English every day. You are never alone here—we are one supportive team! How can I help you today? 💛";
     }
 
     // 2. What is your purpose / എന്താണ് ലക്ഷ്യം?
@@ -771,18 +759,7 @@ class PocketPresidentService {
         clean.contains('what do you do') ||
         clean.contains('aim') ||
         userMessage.contains('ലക്ഷ്യം')) {
-      if (isMalayalam) {
-        return "ബഹുമാനപ്പെട്ട $citizen, പ്രസിഡൻഷ്യൽ ലക്ഷ്യം (Presidential Purpose) ഇതാണ്: 🏛️✨\n\n"
-            "1. ആത്മവിശ്വാസത്തോടെ ഇംഗ്ലീഷ് സംസാരിക്കാൻ നിങ്ങളെ ദിവസവും പ്രോത്സാഹിപ്പിക്കുക.\n"
-            "2. സിറ്റാഡൽ ചലഞ്ചുകളിലും അറ്റാക്കുകളിലും സത്യസന്ധമായ ചോദ്യങ്ങളും പ്രതിരോധങ്ങളും ഉറപ്പാക്കുക.\n"
-            "3. പഠിതാക്കൾക്ക് മികച്ച ഗൈഡൻസും പ്രതിദിന വൊക്കാബുലറി കാർഡുകളും നൽകുക.\n"
-            "4. 24/7 പ്രസിഡൻഷ്യൽ പ്രൊട്ടക്ഷൻ നൽകി നിങ്ങളുടെ സിറ്റാഡലിനെ സുരക്ഷിതമാക്കുക!";
-      }
-      return "Honored $citizen, the Presidential Purpose of Pocket World is fourfold: 🏛️✨\n\n"
-          "1. Fluency Without Fear: Empowering you to speak English naturally every single day.\n"
-          "2. Citadel Justice: Safeguarding fairness in homestead battles and awarding Presidential Shields.\n"
-          "3. Daily Guidance: Delivering curated vocabulary, syllabus insights, and motivational briefings.\n"
-          "4. 24/7 Citizen Care: Ensuring no learner is left behind. Every doubt sent here reaches my executive desk!";
+      return "Thank you for asking such a wonderful question, $citizen! 🌸 Our purpose is heartfelt and simple: to support you and cheer you on in your daily English speaking journey! We want you to speak without any fear or hesitation, celebrate your daily progress, protect your Citadel, and share helpful vocabulary cards with you. Our whole team is always here for you!";
     }
 
     // 3. Rules / പ്രസിഡന്റ് റൂൾസ് എന്തൊക്കെയാണ്?
@@ -791,18 +768,11 @@ class PocketPresidentService {
         clean.contains('law') ||
         clean.contains('regulation') ||
         userMessage.contains('റൂൾ')) {
-      if (isMalayalam) {
-        return "⚖️ പോക്കറ്റ് വേൾഡിന്റെ സുവർണ്ണ പ്രസിഡൻഷ്യൽ ചട്ടങ്ങൾ (Presidential Rules):\n\n"
-            "1. 🗣️ English Only in Hubs: ഇംഗ്ലീഷ് ഹബ്ബുകളിലും പോക്കറ്റ് ടോക്കിലും ഇംഗ്ലീഷിൽ മാത്രം സംസാരിക്കുക.\n"
-            "2. 🛡️ Fair Play in Citadels: വ്യാജമോ അർത്ഥമില്ലാത്തതോ ആയ ചോദ്യങ്ങൾ നൽകാതെ യഥാർത്ഥ ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ കൊണ്ട് കോട്ട സംരക്ഷിക്കുക.\n"
-            "3. 🤝 Respect Fellow Mates: സഹപഠിതാക്കളോട് ആദരവോടെയും പ്രോത്സാഹനത്തോടെയും പെരുമാറുക.\n"
-            "4. 🌟 Daily Discipline: ദിവസേനയുള്ള മിഷനുകൾ പൂർത്തിയാക്കി സുവർണ്ണ ട്രോഫികൾ നേടുക!";
-      }
-      return "⚖️ The Sovereign Presidential Code of Pocket World:\n\n"
-          "1. 🗣️ English-First Principle: Hubs and Spoken Pacts are English-speaking sanctuaries. Every attempt counts!\n"
-          "2. 🛡️ Citadel Honor Code: Build defenses with genuine, high-quality learning questions. Unfair traps face immediate Court Sanctions.\n"
-          "3. 🤝 Mutual Camaraderie: Uplift your fellow mates. Courage in speaking is celebrated above perfection.\n"
-          "4. 🌟 Daily Consistency: Complete daily quests to earn Presidential Medals and Shield Honors!";
+      return "Thank you for wanting to follow our community spirit, $citizen! 🤝 Here in Pocket World, our guidelines are based on kindness and courage:\n\n"
+          "1. 🗣️ Speak with courage: Try speaking English every day—mistakes are just proof you are learning!\n"
+          "2. 🛡️ Fair Citadel play: Protect your home with real, helpful English questions.\n"
+          "3. 💛 Support each other: Be kind and encouraging to all fellow mates.\n"
+          "4. 🌟 Daily joy: Enjoy your streak and be proud of every step you take!";
     }
 
     // 4. Citadel Attacks, Defense & Presidential Protection
@@ -814,10 +784,7 @@ class PocketPresidentService {
         clean.contains('protect') ||
         userMessage.contains('അറ്റാക്ക്') ||
         userMessage.contains('പ്രൊട്ടക്ഷൻ')) {
-      if (isMalayalam) {
-        return "ബഹുമാനപ്പെട്ട $citizen! 🛡️ സിറ്റാഡൽ പ്രതിരോധത്തിൽ ദിവസവും നിങ്ങൾ പഠിക്കുന്ന ഇംഗ്ലീഷ് പാഠങ്ങളാണ് നിങ്ങളുടെ സംരക്ഷണം. ആരെങ്കിലും അറ്റാക്ക് ചെയ്താൽ സിറ്റാഡലിന് 6 മണിക്കൂർ പ്രസിഡൻഷ്യൽ പ്രൊട്ടക്ഷൻ ലഭിക്കും. ആ സമയത്ത് അറ്റാക്കുകൾ ലോക്ക് ചെയ്യപ്പെടുന്നതാണ്!";
-      }
-      return "Greetings $citizen! 🛡️ In Pocket World, every day of completed English study arms your Citadel with defense questions. If your homestead is attacked, you have Presidential Protection for up to 6 hours. During this period, attacks are locked so you can recover peacefully!";
+      return "Thank you for checking in, dear $citizen! 🛡️ Don't worry at all—you are always safe with us! Every day of completed English learning strengthens your Citadel. And whenever an attack occurs, our Presidential Protection automatically shields your home for 6 hours so you can rest peacefully without stress. We've got your back! 🌟";
     }
 
     // 5. Complaints & Reports
@@ -828,7 +795,7 @@ class PocketPresidentService {
         clean.contains('bug') ||
         clean.contains('issue') ||
         clean.contains('hacker')) {
-      return "Thank you for bringing this to my desk, $citizen. 🏛️ Your report has been officially logged in our Presidential Oversight registry. Our administration takes all violations and technical issues very seriously. We are actively inspecting it to safeguard Pocket World's integrity! ⚖️";
+      return "Thank you so much for bringing this to our attention, dear $citizen! 💛 Your feedback helps us make Pocket World better for everyone. Our support team is looking into this with the utmost care right now, and we promise to keep everything fair, safe, and pleasant for you!";
     }
 
     // 6. App doubts & How to use
@@ -838,12 +805,12 @@ class PocketPresidentService {
         clean.contains('help') ||
         clean.contains('guide')) {
       if (clean.contains('level') || clean.contains('score') || clean.contains('points') || clean.contains('rank')) {
-        return "Excellent question, $citizen! Your Pocket Score and CEFR rank advance as you solve daily missions, engage in voice speaking sprints, and defend your Citadel. Consistency is the secret to mastery! 🌟";
+        return "Thank you for asking, $citizen! 🌟 Your Pocket Score and level grow naturally each day as you practice speaking, defend your Citadel, and complete your daily missions. Take it one day at a time—you are doing wonderfully!";
       }
       if (clean.contains('mate') || clean.contains('friend') || clean.contains('chat')) {
-        return "As President, I am connected as a Mate to every citizen of Pocket World! You can also search for learning partners, snap progress updates, or join your level bracket's English Hub for live conversation! 🤝";
+        return "Thank you for reaching out, $citizen! 🤝 As the President, I am always connected with you right here. You can also chat with friendly mates in the English Hub or practice voice speaking anytime. We are all here supporting you!";
       }
-      return "I am delighted to assist you, $citizen! 🏛️ Pocket World is built to make English your natural second language through daily speaking sprints, Citadel challenges, and immersive peer conversations. Feel free to ask any specific doubts anytime!";
+      return "Thank you so much for asking, $citizen! 💛 Pocket World is designed to make speaking English natural, fun, and relaxing. Never worry about making mistakes—every sentence you try is a victory! Feel free to ask me anything anytime.";
     }
 
     // 7. Greetings
@@ -853,16 +820,16 @@ class PocketPresidentService {
         clean.contains('morning') ||
         clean.contains('evening') ||
         userMessage.contains('നമസ്കാരം')) {
-      return "Greetings, $citizen! 🏛️ I am honored to welcome you to the Presidential Desk. How is your English learning journey progressing today?";
+      return "Hello and a warm welcome, dear $citizen! 🌸 Thank you so much for saying hi! How is your day going? Our team is so grateful to have you with us. How can I support your English practice today?";
     }
 
     // 8. Thanks & Appreciation
     if (clean.contains('thank') || clean.contains('thx') || clean.contains('super') || clean.contains('great')) {
-      return "You are most welcome, $citizen! 🌟 The Presidential Office is always in your corner. Keep speaking with courage and curiosity every day!";
+      return "Thank YOU so much, dear $citizen! 🌟 Having you in Pocket World brings us so much happiness. Keep smiling and speaking with confidence every day—our entire team is always cheering for you! 💛";
     }
 
     // 9. General encouraging reply
-    return "Greetings $citizen! 🏛️ I have received your message at the Presidential Desk. Remember: every word you speak in English today builds your confidence for tomorrow! If this is an administrative inquiry, our executive team is monitoring it closely.";
+    return "Thank you so much for your message, dear $citizen! 🌸 Every single word you speak in English today brings you closer to your dreams. Remember, our whole team is right here with you, cheering you on every step of the way! Feel free to share your thoughts anytime.";
   }
 
   /// Log a reported defense question directly to the President Desk registry

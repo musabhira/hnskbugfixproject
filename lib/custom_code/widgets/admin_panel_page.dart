@@ -12310,6 +12310,11 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
               ),
               const SizedBox(width: 8),
               IconButton(
+                icon: const Icon(Icons.person_search_rounded, color: Color(0xFFFFD700)),
+                onPressed: _showSearchCitizenForChatModal,
+                tooltip: 'Search Citizen & Start Chat',
+              ),
+              IconButton(
                 icon:
                     const Icon(Icons.refresh_rounded, color: Color(0xFFFFD700)),
                 onPressed: _loadPresidentInquiries,
@@ -12827,6 +12832,135 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
           ),
         ),
       ),
+    );
+  }
+
+  /// Search any citizen and start 1-on-1 President Chat
+  void _showSearchCitizenForChatModal() {
+    String searchCitizen = '';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF0F172A),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final query = searchCitizen.toLowerCase().trim();
+            final matchedUsers = allProfiles.where((u) {
+              if (query.isEmpty) return true;
+              final name = (u['name'] ?? u['display_name'] ?? '').toString().toLowerCase();
+              final email = (u['email'] ?? '').toString().toLowerCase();
+              final uid = (u['id'] ?? '').toString().toLowerCase();
+              return name.contains(query) || email.contains(query) || uid.contains(query);
+            }).toList();
+
+            return Container(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 16,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Start Chat with Citizen 🏛️',
+                        style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  TextField(
+                    onChanged: (v) => setModalState(() => searchCitizen = v),
+                    style: const TextStyle(color: Colors.white, fontSize: 13),
+                    decoration: InputDecoration(
+                      hintText: 'Search citizen by name, email, or ID...',
+                      hintStyle: const TextStyle(color: Colors.white38, fontSize: 12),
+                      prefixIcon: const Icon(Icons.search, color: Color(0xFFFFD700), size: 18),
+                      filled: true,
+                      fillColor: const Color(0xFF1E293B),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    height: 280,
+                    child: matchedUsers.isEmpty
+                        ? Center(
+                            child: Text(
+                              'No matching citizens found.',
+                              style: GoogleFonts.inter(color: Colors.white38, fontSize: 12),
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: matchedUsers.length,
+                            itemBuilder: (context, idx) {
+                              final user = matchedUsers[idx];
+                              final name = (user['name'] ?? user['display_name'] ?? 'Learner').toString();
+                              final uid = (user['id'] ?? '').toString();
+                              final pic = user['profile_image_url']?.toString();
+
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1E293B),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                                  leading: CircleAvatar(
+                                    backgroundImage: pic != null && pic.isNotEmpty ? CachedNetworkImageProvider(pic) : null,
+                                    backgroundColor: const Color(0xFFFFD700),
+                                    child: pic == null || pic.isEmpty
+                                        ? Text(name.isNotEmpty ? name[0] : 'L', style: const TextStyle(color: Colors.black))
+                                        : null,
+                                  ),
+                                  title: Text(name, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+                                  subtitle: Text(
+                                    'ID: ${uid.length > 8 ? uid.substring(0, 8) : uid}...',
+                                    style: const TextStyle(color: Colors.white54, fontSize: 11),
+                                  ),
+                                  trailing: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFFFFD700),
+                                      foregroundColor: Colors.black,
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    ),
+                                    child: const Text('Open Chat', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
+                                    onPressed: () {
+                                      Navigator.pop(ctx);
+                                      _openPresidentChatModal({
+                                        'user_id': uid,
+                                        'user_name': name,
+                                        'status': 'active',
+                                        'last_message': 'Started chat with $name',
+                                        'updated_at': DateTime.now().toIso8601String(),
+                                      });
+                                    },
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -13681,6 +13815,18 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                               style: const TextStyle(color: Color(0xFFFFD700), fontSize: 9.5, fontWeight: FontWeight.bold),
                             ),
                           ),
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              poster.category,
+                              style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 9.5, fontWeight: FontWeight.bold),
+                            ),
+                          ),
                           const Spacer(),
                           IconButton(
                             icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 18),
@@ -13726,8 +13872,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                       foregroundColor: const Color(0xFFFFD700),
                       padding: const EdgeInsets.symmetric(vertical: 4),
                     ),
-                    icon: const Icon(Icons.auto_awesome_rounded, size: 14),
-                    label: const Text('Post as Vibe', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
+                    icon: const Icon(Icons.auto_awesome_rounded, size: 13),
+                    label: const Text('Post Vibe', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                     onPressed: () async {
                       await PocketPresidentPosterService.publishPosterAsPresidentVibe(poster);
                       if (!mounted) return;
@@ -13740,20 +13886,77 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                     },
                   ),
                 ),
-                Container(width: 1, height: 20, color: Colors.white12),
+                Container(width: 1, height: 18, color: Colors.white12),
                 Expanded(
                   child: TextButton.icon(
                     style: TextButton.styleFrom(
                       foregroundColor: const Color(0xFF38BDF8),
                       padding: const EdgeInsets.symmetric(vertical: 4),
                     ),
-                    icon: const Icon(Icons.send_rounded, size: 14),
-                    label: const Text('Send to Citizen', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
+                    icon: const Icon(Icons.send_rounded, size: 13),
+                    label: const Text('Send Citizen', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                     onPressed: () => _showSendPosterModal(poster),
+                  ),
+                ),
+                Container(width: 1, height: 18, color: Colors.white12),
+                Expanded(
+                  child: TextButton.icon(
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFF10B981),
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                    ),
+                    icon: const Icon(Icons.campaign_rounded, size: 14),
+                    label: const Text('Broadcast All', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                    onPressed: () => _confirmBroadcastPosterToAll(poster),
                   ),
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmBroadcastPosterToAll(PresidentEducationalPoster poster) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(Icons.campaign_rounded, color: Color(0xFF10B981)),
+            const SizedBox(width: 8),
+            Text('Broadcast to ALL Citizens 📢', style: GoogleFonts.outfit(color: Colors.white, fontSize: 16)),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to broadcast "${poster.title}" directly to EVERY citizen\'s 1-on-1 President chat?\n\nEach citizen will receive this learning card with an official notification.',
+          style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            onPressed: () => Navigator.pop(ctx),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Broadcast Now', style: TextStyle(fontWeight: FontWeight.bold)),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Broadcasting learning card to all citizens... ⏳'), backgroundColor: Colors.blue),
+              );
+              final count = await PocketPresidentPosterService.broadcastPosterToAllCitizens(poster: poster);
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Successfully delivered learning card to $count citizens! 📢✨'), backgroundColor: Colors.green),
+              );
+            },
           ),
         ],
       ),
@@ -13765,7 +13968,10 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
     final subtitleController = TextEditingController();
     final urlController = TextEditingController();
     String selectedLang = 'ml';
+    String selectedCategory = 'Vocabulary';
     String selectedRatio = 'feed_1x1';
+    XFile? pickedMediaFile;
+    bool isUploading = false;
 
     showDialog(
       context: context,
@@ -13778,13 +13984,63 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
               children: [
                 const Icon(Icons.add_photo_alternate_rounded, color: Color(0xFFFFD700)),
                 const SizedBox(width: 8),
-                Text('Add Educational Poster', style: GoogleFonts.outfit(color: Colors.white, fontSize: 16)),
+                Text('Add Poster to Store', style: GoogleFonts.outfit(color: Colors.white, fontSize: 16)),
               ],
             ),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // 📸 Image picker & preview
+                  GestureDetector(
+                    onTap: () async {
+                      try {
+                        final picker = ImagePicker();
+                        final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 88);
+                        if (picked != null) {
+                          setDlgState(() => pickedMediaFile = picked);
+                        }
+                      } catch (e) {
+                        debugPrint('Error picking image: $e');
+                      }
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      height: 130,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E293B),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4), width: 1.2),
+                      ),
+                      alignment: Alignment.center,
+                      child: pickedMediaFile != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(11),
+                              child: Image.file(
+                                File(pickedMediaFile!.path),
+                                width: double.infinity,
+                                height: 130,
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                          : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.cloud_upload_rounded, color: Color(0xFFFFD700), size: 36),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Tap to Pick Image from Device 📸',
+                                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  'Uploads directly to Supabase Storage',
+                                  style: GoogleFonts.inter(color: Colors.white54, fontSize: 10),
+                                ),
+                              ],
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   TextField(
                     controller: titleController,
                     style: const TextStyle(color: Colors.white, fontSize: 13),
@@ -13809,48 +14065,81 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                     ),
                   ),
                   const SizedBox(height: 10),
-                  TextField(
-                    controller: urlController,
-                    style: const TextStyle(color: Colors.white, fontSize: 13),
-                    decoration: InputDecoration(
-                      labelText: 'Image URL or File Path',
-                      labelStyle: const TextStyle(color: Colors.white60, fontSize: 12),
-                      filled: true,
-                      fillColor: const Color(0xFF1E293B),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  if (pickedMediaFile == null)
+                    TextField(
+                      controller: urlController,
+                      style: const TextStyle(color: Colors.white, fontSize: 13),
+                      decoration: InputDecoration(
+                        labelText: 'Or Paste Image URL (Optional)',
+                        labelStyle: const TextStyle(color: Colors.white60, fontSize: 12),
+                        filled: true,
+                        fillColor: const Color(0xFF1E293B),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
                     ),
-                  ),
                   const SizedBox(height: 10),
-                  DropdownButtonFormField<String>(
-                    value: selectedLang,
-                    dropdownColor: const Color(0xFF1E293B),
-                    style: const TextStyle(color: Colors.white, fontSize: 13),
-                    decoration: InputDecoration(
-                      labelText: 'Language Category',
-                      labelStyle: const TextStyle(color: Colors.white60, fontSize: 12),
-                      filled: true,
-                      fillColor: const Color(0xFF1E293B),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                    items: const [
-                      DropdownMenuItem(value: 'ml', child: Text('🌴 Malayalam (മലയാളം)')),
-                      DropdownMenuItem(value: 'ta', child: Text('🦚 Tamil (தமிழ்)')),
-                      DropdownMenuItem(value: 'kn', child: Text('🌸 Kannada (ಕನ್ನಡ)')),
-                      DropdownMenuItem(value: 'hi', child: Text('🪷 Hindi (हिन्दी)')),
-                      DropdownMenuItem(value: 'all', child: Text('🌐 All Languages (Global)')),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: selectedCategory,
+                          dropdownColor: const Color(0xFF1E293B),
+                          style: const TextStyle(color: Colors.white, fontSize: 12),
+                          decoration: InputDecoration(
+                            labelText: 'Category',
+                            labelStyle: const TextStyle(color: Colors.white60, fontSize: 11),
+                            filled: true,
+                            fillColor: const Color(0xFF1E293B),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          items: const [
+                            DropdownMenuItem(value: 'Vocabulary', child: Text('📖 Vocabulary')),
+                            DropdownMenuItem(value: 'Phrases', child: Text('🗣️ Phrases')),
+                            DropdownMenuItem(value: 'Grammar', child: Text('✏️ Grammar')),
+                            DropdownMenuItem(value: 'Citadel', child: Text('🛡️ Citadel')),
+                            DropdownMenuItem(value: 'General', child: Text('🌟 General')),
+                          ],
+                          onChanged: (v) => setDlgState(() => selectedCategory = v ?? 'Vocabulary'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: selectedLang,
+                          dropdownColor: const Color(0xFF1E293B),
+                          style: const TextStyle(color: Colors.white, fontSize: 12),
+                          decoration: InputDecoration(
+                            labelText: 'Language',
+                            labelStyle: const TextStyle(color: Colors.white60, fontSize: 11),
+                            filled: true,
+                            fillColor: const Color(0xFF1E293B),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          items: const [
+                            DropdownMenuItem(value: 'ml', child: Text('🌴 Malayalam')),
+                            DropdownMenuItem(value: 'ta', child: Text('🦚 Tamil')),
+                            DropdownMenuItem(value: 'kn', child: Text('🌸 Kannada')),
+                            DropdownMenuItem(value: 'hi', child: Text('🪷 Hindi')),
+                            DropdownMenuItem(value: 'all', child: Text('🌐 Global')),
+                          ],
+                          onChanged: (v) => setDlgState(() => selectedLang = v ?? 'ml'),
+                        ),
+                      ),
                     ],
-                    onChanged: (v) => setDlgState(() => selectedLang = v ?? 'ml'),
                   ),
                   const SizedBox(height: 10),
                   DropdownButtonFormField<String>(
                     value: selectedRatio,
                     dropdownColor: const Color(0xFF1E293B),
-                    style: const TextStyle(color: Colors.white, fontSize: 13),
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
                     decoration: InputDecoration(
                       labelText: 'Aspect Ratio / Format',
-                      labelStyle: const TextStyle(color: Colors.white60, fontSize: 12),
+                      labelStyle: const TextStyle(color: Colors.white60, fontSize: 11),
                       filled: true,
                       fillColor: const Color(0xFF1E293B),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                     items: const [
@@ -13873,26 +14162,49 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                   backgroundColor: const Color(0xFFFFD700),
                   foregroundColor: Colors.black,
                 ),
-                child: const Text('Save Poster', style: TextStyle(fontWeight: FontWeight.bold)),
-                onPressed: () async {
-                  final title = titleController.text.trim();
-                  final url = urlController.text.trim();
-                  if (title.isEmpty || url.isEmpty) return;
+                onPressed: isUploading
+                    ? null
+                    : () async {
+                        final title = titleController.text.trim();
+                        if (title.isEmpty) return;
 
-                  final poster = PresidentEducationalPoster(
-                    id: 'poster_${DateTime.now().millisecondsSinceEpoch}',
-                    title: title,
-                    subtitle: subtitleController.text.trim(),
-                    imageUrl: url,
-                    language: selectedLang,
-                    aspectRatio: selectedRatio,
-                    createdAt: DateTime.now(),
-                  );
+                        setDlgState(() => isUploading = true);
 
-                  await PocketPresidentPosterService.addPoster(poster);
-                  if (mounted) setState(() {});
-                  Navigator.pop(ctx);
-                },
+                        String finalImageUrl = urlController.text.trim();
+
+                        if (pickedMediaFile != null) {
+                          final uploadedUrl = await PocketPresidentPosterService.uploadPosterImageToSupabase(
+                            imageFile: File(pickedMediaFile!.path),
+                            title: title,
+                          );
+                          if (uploadedUrl != null && uploadedUrl.isNotEmpty) {
+                            finalImageUrl = uploadedUrl;
+                          }
+                        }
+
+                        if (finalImageUrl.isEmpty) {
+                          setDlgState(() => isUploading = false);
+                          return;
+                        }
+
+                        final poster = PresidentEducationalPoster(
+                          id: 'poster_${DateTime.now().millisecondsSinceEpoch}',
+                          title: title,
+                          subtitle: subtitleController.text.trim(),
+                          imageUrl: finalImageUrl,
+                          language: selectedLang,
+                          aspectRatio: selectedRatio,
+                          category: selectedCategory,
+                          createdAt: DateTime.now(),
+                        );
+
+                        await PocketPresidentPosterService.addPoster(poster);
+                        if (mounted) setState(() {});
+                        Navigator.pop(ctx);
+                      },
+                child: isUploading
+                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+                    : const Text('Save & Store 💾', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ],
           );
@@ -13902,68 +14214,141 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
   }
 
   void _showSendPosterModal(PresidentEducationalPoster poster) {
+    String searchCitizen = '';
+
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: const Color(0xFF0F172A),
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) {
-        return Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Send Poster to Citizen Chat 💬',
-                style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final query = searchCitizen.toLowerCase().trim();
+            final matchedUsers = allProfiles.where((u) {
+              if (query.isEmpty) return true;
+              final name = (u['name'] ?? u['display_name'] ?? '').toString().toLowerCase();
+              final email = (u['email'] ?? '').toString().toLowerCase();
+              final uid = (u['id'] ?? '').toString().toLowerCase();
+              return name.contains(query) || email.contains(query) || uid.contains(query);
+            }).toList();
+
+            return Container(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 16,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
               ),
-              const SizedBox(height: 4),
-              Text(
-                'Pick a citizen to receive "${poster.title}":',
-                style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
-              ),
-              const SizedBox(height: 12),
-              if (_presidentInquiries.isEmpty)
-                Text('No active citizen inquiries. Citizens who message The President will appear here.',
-                    style: GoogleFonts.inter(color: Colors.white38, fontSize: 12))
-              else
-                SizedBox(
-                  height: 220,
-                  child: ListView.builder(
-                    itemCount: _presidentInquiries.length,
-                    itemBuilder: (context, idx) {
-                      final inq = _presidentInquiries[idx];
-                      final name = inq['user_name'] ?? 'Learner';
-                      final uid = inq['user_id']?.toString() ?? '';
-                      return ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: const Color(0xFFFFD700),
-                          child: Text(name.isNotEmpty ? name[0] : 'L', style: const TextStyle(color: Colors.black)),
-                        ),
-                        title: Text(name, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
-                        subtitle: Text('ID: ${uid.length > 8 ? uid.substring(0, 8) : uid}...',
-                            style: const TextStyle(color: Colors.white54, fontSize: 11)),
-                        trailing: ElevatedButton(
-                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFFD700), foregroundColor: Colors.black),
-                          child: const Text('Send', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                          onPressed: () async {
-                            await PocketPresidentPosterService.sendPosterToCitizenChat(
-                              targetUserId: uid,
-                              poster: poster,
-                            );
-                            Navigator.pop(ctx);
-                            if (!mounted) return;
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Poster sent to $name\'s chat! 📜'), backgroundColor: Colors.green),
-                            );
-                          },
-                        ),
-                      );
-                    },
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Send Poster to Citizen 💬',
+                        style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      TextButton.icon(
+                        style: TextButton.styleFrom(foregroundColor: const Color(0xFF10B981)),
+                        icon: const Icon(Icons.campaign_rounded, size: 16),
+                        label: const Text('Broadcast All', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          _confirmBroadcastPosterToAll(poster);
+                        },
+                      ),
+                    ],
                   ),
-                ),
-            ],
-          ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Card: "${poster.title}"',
+                    style: GoogleFonts.inter(color: const Color(0xFFFFD700), fontSize: 12),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    onChanged: (v) => setModalState(() => searchCitizen = v),
+                    style: const TextStyle(color: Colors.white, fontSize: 13),
+                    decoration: InputDecoration(
+                      hintText: 'Search citizen by name or ID...',
+                      hintStyle: const TextStyle(color: Colors.white38, fontSize: 12),
+                      prefixIcon: const Icon(Icons.search, color: Colors.white54, size: 18),
+                      filled: true,
+                      fillColor: const Color(0xFF1E293B),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    height: 260,
+                    child: matchedUsers.isEmpty
+                        ? Center(
+                            child: Text(
+                              'No matching citizens found.',
+                              style: GoogleFonts.inter(color: Colors.white38, fontSize: 12),
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: matchedUsers.length,
+                            itemBuilder: (context, idx) {
+                              final user = matchedUsers[idx];
+                              final name = (user['name'] ?? user['display_name'] ?? 'Learner').toString();
+                              final uid = (user['id'] ?? '').toString();
+                              final pic = user['profile_image_url']?.toString();
+
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1E293B),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                                  leading: CircleAvatar(
+                                    backgroundImage: pic != null && pic.isNotEmpty ? CachedNetworkImageProvider(pic) : null,
+                                    backgroundColor: const Color(0xFFFFD700),
+                                    child: pic == null || pic.isEmpty
+                                        ? Text(name.isNotEmpty ? name[0] : 'L', style: const TextStyle(color: Colors.black))
+                                        : null,
+                                  ),
+                                  title: Text(name, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+                                  subtitle: Text(
+                                    'ID: ${uid.length > 8 ? uid.substring(0, 8) : uid}...',
+                                    style: const TextStyle(color: Colors.white54, fontSize: 11),
+                                  ),
+                                  trailing: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFFFFD700),
+                                      foregroundColor: Colors.black,
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    ),
+                                    child: const Text('Send', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
+                                    onPressed: () async {
+                                      await PocketPresidentPosterService.sendPosterToCitizenChat(
+                                        targetUserId: uid,
+                                        poster: poster,
+                                      );
+                                      Navigator.pop(ctx);
+                                      if (!mounted) return;
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('Poster sent to $name\'s chat! 📜'), backgroundColor: Colors.green),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            );
+          },
         );
       },
     );

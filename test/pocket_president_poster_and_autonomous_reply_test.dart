@@ -11,10 +11,11 @@ void main() {
   });
 
   group('🏛️ PocketPresidentPosterService Tests', () {
-    test('Initializes with seed educational posters', () async {
+    test('Initializes with seed educational posters and categories', () async {
       final posters = await PocketPresidentPosterService.getAllPosters();
       expect(posters.isNotEmpty, isTrue);
       expect(posters.any((p) => p.title.contains('Phrases with WHO')), isTrue);
+      expect(posters.any((p) => p.category == 'Vocabulary'), isTrue);
     });
 
     test('Can add, retrieve, and delete educational poster', () async {
@@ -25,6 +26,7 @@ void main() {
         title: 'Daily English: Greetings',
         imageUrl: 'https://example.com/greetings.jpg',
         language: 'ml',
+        category: 'Vocabulary',
         subtitle: 'Learn greetings in English & Malayalam',
         createdAt: DateTime.now(),
       );
@@ -41,46 +43,61 @@ void main() {
       expect(afterDelete.length, equals(initialCount));
     });
 
-    test('Unseen poster retrieval and markPosterSeen works properly', () async {
-      final poster = PocketPresidentPosterService.getNextUnseenPosterSync(
-        userId: 'user_test_123',
+    test('Strict Homes seen tracking: once seen, does not return duplicate', () async {
+      final poster1 = await PocketPresidentPosterService.getNextUnseenPosterForHomes(
+        userId: 'user_homes_test',
         language: 'ml',
       );
-      expect(poster, isNotNull);
+      expect(poster1, isNotNull);
 
-      if (poster != null) {
-        await PocketPresidentPosterService.markPosterSeen('user_test_123', poster.id);
+      if (poster1 != null) {
+        await PocketPresidentPosterService.markPosterSeenInHomes('user_homes_test', poster1.id);
+        
+        final poster2 = await PocketPresidentPosterService.getNextUnseenPosterForHomes(
+          userId: 'user_homes_test',
+          language: 'ml',
+        );
+        // Should either be a DIFFERENT unseen poster or null if all seen
+        if (poster2 != null) {
+          expect(poster2.id != poster1.id, isTrue);
+        }
       }
     });
   });
 
-  group('👑 PocketPresidentService Autonomous Reply Tests', () {
-    test('Answers "who are you" / "ആരാണ്" in dignified Presidential tone', () async {
+  group('👑 PocketPresidentService Thankful & Supportive English Tone Tests', () {
+    test('Answers "who are you" / "നിങ്ങൾ ആരാണ്?" with gratitude and supportive teammate tone in English', () async {
       final replyEn = await PocketPresidentService.generatePresidentRobotReply(
         userMessage: 'Who are you?',
         userName: 'Rahul',
       );
+      expect(replyEn.toLowerCase().contains('thank you'), isTrue);
       expect(replyEn.toLowerCase().contains('president'), isTrue);
+      expect(replyEn.toLowerCase().contains('supporter') || replyEn.toLowerCase().contains('team'), isTrue);
 
       final replyMl = await PocketPresidentService.generatePresidentRobotReply(
         userMessage: 'നിങ്ങൾ ആരാണ്?',
         userName: 'Anandu',
       );
-      expect(replyMl.contains('പോക്കറ്റ്') || replyMl.contains('പ്രസിഡന്റ്') || replyMl.contains('പ്രസിഡന്റ'), isTrue);
+      // Replies in gentle supportive English
+      expect(replyMl.toLowerCase().contains('thank you'), isTrue);
+      expect(replyMl.toLowerCase().contains('president'), isTrue);
     });
 
-    test('Answers "rules" / "നിയമങ്ങൾ" query authoritatively', () async {
+    test('Answers "rules" with thankfulness and encouragement', () async {
       final reply = await PocketPresidentService.generatePresidentRobotReply(
         userMessage: 'What are the rules of the pocket world?',
       );
-      expect(reply.contains('Presidential Rules') || reply.contains('നിയമം') || reply.contains('English'), isTrue);
+      expect(reply.toLowerCase().contains('thank you'), isTrue);
+      expect(reply.toLowerCase().contains('english'), isTrue);
     });
 
-    test('Answers "attack" / "citadel protection" inquiries', () async {
+    test('Answers "attack" / "citadel protection" with reassuring support', () async {
       final reply = await PocketPresidentService.generatePresidentRobotReply(
         userMessage: 'Can someone attack me or my citadel?',
       );
-      expect(reply.contains('Citadel') || reply.contains('പ്രൊട്ടക്ഷൻ') || reply.contains('Protection') || reply.contains('ഡിഫൻസ്'), isTrue);
+      expect(reply.toLowerCase().contains('thank you'), isTrue);
+      expect(reply.contains('Citadel') || reply.contains('Protection') || reply.contains('safe'), isTrue);
     });
   });
 }
