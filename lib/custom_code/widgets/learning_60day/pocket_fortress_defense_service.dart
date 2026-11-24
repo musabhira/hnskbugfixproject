@@ -2252,14 +2252,14 @@ class PocketFortressDefenseService {
   }
 
   // ============================================================
-  // 👮‍♂️ 24-HOUR PRESIDENTIAL POLICE PROTECTION SYSTEM (Audio Directive)
-  // "പ്രസിഡൻഷ്യൽ പ്രൊട്ടക്ഷൻ 24 മണിക്കൂറാണ് ഒരു യൂസർക്ക്...
-  // അതേ യൂസറെ രണ്ടാമത് അറ്റാക്ക് ചെയ്യാൻ പറ്റില്ല 24 മണിക്കൂർ കഴിയാതെ..."
+  // 👮‍♂️ 6-HOUR POLICE PROTECTION SYSTEM (Audio Directive)
+  // "24 മണിക്കൂർ അല്ല, ഒരു ആറോ ഏഴോ മണിക്കൂറാണ് പോലീസ് പ്രൊട്ടക്ഷൻ കൊടുക്കുക...
+  // അതേ യൂസറെ രണ്ടാമത് അറ്റാക്ക് ചെയ്യാൻ പറ്റില്ല 6 മണിക്കൂർ കഴിയാതെ..."
   // ============================================================
   static const String _presidentialProtectionPrefix = 'pocket_pres_protection_';
-  static const int kPresidentialProtectionHours = 24;
+  static const int kPresidentialProtectionHours = 6;
 
-  /// Place a breached house under 24-hour Presidential Police Protection
+  /// Place a breached house under 6-hour Police Protection
   static Future<void> placeUnderPresidentialProtection(
     String houseId, {
     int hours = kPresidentialProtectionHours,

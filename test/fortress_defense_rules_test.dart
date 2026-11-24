@@ -535,7 +535,7 @@ void main() {
       expect(await PocketFortressDefenseService.isUnderPresidentialProtection(houseId), isTrue);
 
       final mins = await PocketFortressDefenseService.getPresidentialProtectionMinutesRemaining(houseId);
-      expect(mins, inInclusiveRange(2870, 2880)); // ~48 hours (2880 mins)
+      expect(mins, inInclusiveRange(355, 360)); // ~6 hours (360 mins)
 
       await PocketFortressDefenseService.liftPresidentialProtection(houseId);
       expect(await PocketFortressDefenseService.isUnderPresidentialProtection(houseId), isFalse);
@@ -642,8 +642,8 @@ void main() {
       expect(await PocketFortressDefenseService.isUnderPresidentialProtection(houseId), isTrue);
 
       final mins = await PocketFortressDefenseService.getPresidentialProtectionMinutesRemaining(houseId);
-      expect(mins, greaterThan(2800)); // 48 hours = 2880 mins
-      expect(mins, lessThanOrEqualTo(2880));
+      expect(mins, greaterThan(350)); // 6 hours = 360 mins
+      expect(mins, lessThanOrEqualTo(360));
 
       final protectedList = await PocketFortressDefenseService.getProtectedHouseIds();
       expect(protectedList, contains(houseId));

@@ -1157,6 +1157,19 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         ? await PocketFortressDefenseService.getCooldownMinutesRemaining(
             targetId)
         : 0;
+
+    // Check remote Supabase pocket_homes for damaged status
+    try {
+      final homeDoc = await SupaFlow.client
+          .from('pocket_homes')
+          .select('is_damaged, last_attacked_at')
+          .or('user_id.eq.$targetId,id.eq.$targetId')
+          .maybeSingle();
+      if (homeDoc != null && homeDoc['is_damaged'] == true) {
+        _isDefenderDamaged = true;
+      }
+    } catch (_) {}
+
     final isProtectedRaw =
         await PocketFortressDefenseService.isUnderPresidentialProtection(
             targetId);
@@ -1393,13 +1406,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       defenderHasIronDome: widget.neighbor.hasActiveShield,
     );
 
-    // 🛡️ User Audio Directive: 24-Hour Presidential Protection activated after raid
+    // 🛡️ User Audio Directive: 6-Hour Police Protection activated after raid
     await PocketFortressDefenseService.placeUnderPresidentialProtection(
         widget.neighbor.id,
-        hours: 24);
+        hours: 6);
     await PocketPresidentService.notifyPresidentialProtection(
         widget.neighbor.id,
-        hours: 24);
+        hours: 6);
 
     // ⚔️ Audio Directive: Single attack count and single score addition per raid victory
     final looted = (result['lootedCoins'] as num? ?? 15).toInt();
@@ -2748,10 +2761,10 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text('🏛️', style: TextStyle(fontSize: 14)),
+                            const Text('👮‍♂️', style: TextStyle(fontSize: 14)),
                             const SizedBox(width: 6),
                             Text(
-                              'PRESIDENTIAL PROTECTION',
+                              'POLICE PROTECTION',
                               style: GoogleFonts.outfit(
                                 color: const Color(0xFFFFD700),
                                 fontWeight: FontWeight.w900,
@@ -3044,11 +3057,11 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         ),
         title: Row(
           children: [
-            const Text('🏛️', style: TextStyle(fontSize: 26)),
+            const Text('👮‍♂️', style: TextStyle(fontSize: 26)),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'PRESIDENTIAL PROTECTION',
+                'POLICE PROTECTION',
                 style: GoogleFonts.outfit(
                   color: const Color(0xFFFFD700),
                   fontWeight: FontWeight.w900,
@@ -3077,7 +3090,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'PERIMETER SECURED BY FEDERAL POLICE & DEFENSE GUARDS',
+                      'PERIMETER SECURED BY POLICE FORCES',
                       style: GoogleFonts.outfit(
                         color: const Color(0xFF38BDF8),
                         fontWeight: FontWeight.bold,
@@ -3091,7 +3104,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             ),
             const SizedBox(height: 12),
             Text(
-              'Following a recent combat raid, this citadel has been placed under Federal & Presidential Protection to secure the resident and allow structural rebuilding.',
+              'Following a recent combat raid, this house has been placed under Police Protection to secure the resident and allow defense rebuilding.',
               style: GoogleFonts.outfit(
                   color: const Color(0xFFCBD5E1), fontSize: 13, height: 1.4),
             ),
@@ -3114,10 +3127,10 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             const SizedBox(height: 6),
             Text(
               PocketLanguageService.localize(
-                en: 'Raids are strictly prohibited during the 24-hour protection period. Armed guards remain on duty until the decree concludes.',
-                ml: '24 മണിക്കൂർ പ്രസിഡൻഷ്യൽ സുരക്ഷാ കാലയളവിൽ അറ്റാക്ക് ചെയ്യുന്നത് കർശനമായി നിരോധിച്ചിരിക്കുന്നു. സമയം തീരുന്നത് വരെ കോട്ട ലോക്ക് ചെയ്തിരിക്കും.',
-                ta: '24 மணி நேர பாதுகாப்பு காலத்தில் தாக்குதல்கள் முற்றிலும் தடைசெய்யப்பட்டுள்ளன.',
-                hi: '24 घंटे की सुरक्षा अवधि के दौरान हमलों पर कड़ा प्रतिबंध है।',
+                en: 'Raids are strictly prohibited during the 6-hour police protection period. Officers remain on duty until the countdown concludes.',
+                ml: '6 മണിക്കൂർ പോലീസ് സുരക്ഷാ കാലയളവിൽ അറ്റാക്ക് ചെയ്യുന്നത് കർശനമായി നിരോധിച്ചിരിക്കുന്നു. സമയം തീരുന്നത് വരെ വീട് ലോക്ക് ചെയ്തിരിക്കും.',
+                ta: '6 மணி நேர காவல் பாதுகாப்பு காலத்தில் தாக்குதல்கள் முற்றிலும் தடைசெய்யப்பட்டுள்ளன.',
+                hi: '6 घंटे की पुलिस सुरक्षा अवधि के दौरान हमलों पर कड़ा प्रतिबंध है।',
               ),
               style: const TextStyle(color: Colors.white60, fontSize: 11.5),
             ),
@@ -6316,10 +6329,10 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text('🛡️', style: TextStyle(fontSize: 13)),
+                        const Text('👮‍♂️', style: TextStyle(fontSize: 13)),
                         const SizedBox(width: 6),
                         Text(
-                          'PRESIDENTIAL PROTECTION (${_formatProtectionCountdown(_protectionSecondsRemaining)})',
+                          'POLICE PROTECTION (${_formatProtectionCountdown(_protectionSecondsRemaining)})',
                           style: GoogleFonts.outfit(
                             color: const Color(0xFFBAE6FD),
                             fontSize: 11.5,
@@ -7710,11 +7723,11 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               ),
               child: Row(
                 children: const [
-                  Text('🛡️', style: TextStyle(fontSize: 16)),
+                  Text('👮‍♂️', style: TextStyle(fontSize: 16)),
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      '24h Presidential Protection Activated for target to recover.',
+                      '6h Police Protection Activated for target to recover.',
                       style: TextStyle(color: Colors.white60, fontSize: 11),
                     ),
                   ),

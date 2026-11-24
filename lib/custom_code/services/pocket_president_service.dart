@@ -583,18 +583,18 @@ class PocketPresidentService {
     return reply;
   }
 
-  /// Automated Citadel 24-Hour Residency Protection Alert
+  /// Automated Citadel 6-Hour Police Protection Alert
   static Future<void> notifyPresidentialProtection(
     String targetUserId, {
-    int hours = 24,
+    int hours = 6,
     String? reason,
   }) async {
     final protectionMessage =
-        '🛡️ PRESIDENTIAL PROTECTION NOTICE:\n'
-        'Following recent combat activity, your Citadel is officially sheltered under the President\'s Residency Guard for the next $hours hours!\n\n'
+        '👮‍♂️ POLICE PROTECTION NOTICE:\n'
+        'Following recent combat activity, your house is officially sheltered under Police Protection for the next $hours hours!\n\n'
         '• Raids & Attacks: BLOCKED\n'
-        '• Status: Active Residency Protection\n'
-        '• Presidential Seal of Security: APPLIED 🏅\n\n'
+        '• Status: Active Police Protection\n'
+        '• Security: APPLIED 🚨\n\n'
         'Use this time safely to practice your English tasks and fortify your defenses!';
 
     await sendPresidentReplyToUser(
