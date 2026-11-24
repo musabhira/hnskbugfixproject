@@ -193,6 +193,25 @@ class PocketActionChatService {
             'created_at': DateTime.now().toUtc().toIso8601String(),
           });
         } catch (_) {}
+
+        // Log intrusion into citadel_raids table for Police Crime Desk
+        try {
+          await _supabase.from('citadel_raids').insert({
+            'defender_id': defenderId,
+            'attacker_id': attackerId,
+            'attacker_name': aName,
+            'attacker_avatar': aAvatar ?? '⚔️',
+            'attacker_weapon': weapon,
+            'breached': true,
+            'damage_dealt': 60,
+            'coins_looted': lootedCoins,
+            'bonus_points': 150,
+            'iron_dome_blocked': false,
+            'created_at': DateTime.now().toUtc().toIso8601String(),
+          });
+        } catch (e) {
+          debugPrint('Error inserting into citadel_raids in sendAttackActionMessage: $e');
+        }
       }
 
       // 3. Handle local saving if interacting with a robot

@@ -29,6 +29,7 @@ import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/planet_sphere_
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_transit_models.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_transit_planner_sheet.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:flutter/services.dart';
 
 class SearchPage extends StatefulWidget {
@@ -2021,6 +2022,47 @@ class _SearchPageState extends State<SearchPage> {
                       ),
                     ),
                     const Spacer(),
+                    // 🎵 Speaker Mute / Unmute Button (User Audio Directive)
+                    ValueListenableBuilder<bool>(
+                      valueListenable:
+                          PocketGameAudioService.instance.isMutedNotifier,
+                      builder: (context, isMuted, _) {
+                        return Tooltip(
+                          message: isMuted ? 'Unmute Music' : 'Mute Music',
+                          child: InkWell(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              PocketGameAudioService.instance.toggleMute();
+                            },
+                            borderRadius: BorderRadius.circular(20),
+                            child: Container(
+                              padding: const EdgeInsets.all(7),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.08),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: isMuted
+                                      ? Colors.white24
+                                      : const Color(0xFFFFD700)
+                                          .withValues(alpha: 0.45),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Icon(
+                                isMuted
+                                    ? Icons.volume_off_rounded
+                                    : Icons.volume_up_rounded,
+                                color: isMuted
+                                    ? Colors.white54
+                                    : const Color(0xFFFFD700),
+                                size: 16,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 8),
                     if (_searchHistory.isNotEmpty)
                       IconButton(
                         icon: const Icon(Icons.history_rounded,

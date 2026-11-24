@@ -2043,28 +2043,72 @@ class PocketFortressDefenseService {
     try {
       final myId = SupaFlow.client.auth.currentUser?.id;
       if (myId != null) {
-        final res = await SupaFlow.client
-            .from('citadel_raids')
-            .select()
-            .eq('defender_id', myId)
-            .order('created_at', ascending: false)
-            .limit(20);
-        if (res.isNotEmpty) {
-          final entries = res
-              .map((r) => CitadelRaidLogEntry(
-                    id: r['id']?.toString() ?? '',
-                    attackerId: r['attacker_id']?.toString() ?? '',
-                    attackerName: r['attacker_name'] ?? 'Rival Raider',
-                    attackerAvatar: r['attacker_avatar'] ?? '⚔️',
-                    attackerWeapon: r['attacker_weapon'] ?? '💥 Heavy Cannon',
-                    timestamp: r['created_at'] != null
-                        ? DateTime.tryParse(r['created_at']) ?? DateTime.now()
-                        : DateTime.now(),
-                    breached: r['breached'] ?? false,
-                    coinsLooted: (r['coins_looted'] as num?)?.toInt() ?? 0,
-                    ironDomeBlocked: r['iron_dome_blocked'] ?? false,
-                  ))
-              .toList();
+        final List<CitadelRaidLogEntry> entries = [];
+        try {
+          final res = await SupaFlow.client
+              .from('citadel_raids')
+              .select()
+              .eq('defender_id', myId)
+              .order('created_at', ascending: false)
+              .limit(20);
+          if (res.isNotEmpty) {
+            entries.addAll(res.map((r) => CitadelRaidLogEntry(
+                  id: r['id']?.toString() ?? '',
+                  attackerId: r['attacker_id']?.toString() ?? '',
+                  defenderId: r['defender_id']?.toString() ?? myId,
+                  attackerName: r['attacker_name'] ?? 'Rival Raider',
+                  attackerAvatar: r['attacker_avatar'] ?? '⚔️',
+                  attackerWeapon: r['attacker_weapon'] ?? '💥 Heavy Cannon',
+                  timestamp: r['created_at'] != null
+                      ? DateTime.tryParse(r['created_at']) ?? DateTime.now()
+                      : DateTime.now(),
+                  breached: r['breached'] ?? false,
+                  coinsLooted: (r['coins_looted'] as num?)?.toInt() ?? 0,
+                  ironDomeBlocked: r['iron_dome_blocked'] ?? false,
+                )));
+          }
+        } catch (e) {
+          debugPrint('citadel_raids query: $e');
+        }
+
+        // 👮 Fallback / Message Sync: Also pull any incoming attack messages
+        // Ensures chat bubble attacks always reflect on the Police Crime Desk
+        try {
+          final msgRes = await SupaFlow.client
+              .from('messages')
+              .select('id, sender_id, receiver_id, message_text, metadata, created_at')
+              .eq('receiver_id', myId)
+              .eq('message_type', 'citadel_attack')
+              .order('created_at', ascending: false)
+              .limit(10);
+          for (final msg in msgRes) {
+            final senderId = msg['sender_id']?.toString() ?? '';
+            final msgTime = DateTime.tryParse(msg['created_at'] ?? '') ?? DateTime.now();
+            final alreadyLogged = entries.any((e) =>
+                e.attackerId == senderId &&
+                e.timestamp.difference(msgTime).abs().inMinutes < 5);
+            if (!alreadyLogged) {
+              final meta = (msg['metadata'] is Map) ? msg['metadata'] as Map : {};
+              entries.add(CitadelRaidLogEntry(
+                id: msg['id']?.toString() ?? 'msg_atk_${msg['created_at']}',
+                attackerId: senderId,
+                defenderId: myId,
+                attackerName: meta['attacker_name']?.toString() ?? 'Rival Raider',
+                attackerAvatar: meta['attacker_avatar']?.toString() ?? '⚔️',
+                attackerWeapon: meta['weapon']?.toString() ?? '💥 Heavy Cannon',
+                timestamp: msgTime,
+                breached: true,
+                coinsLooted: (meta['coins_looted'] as num?)?.toInt() ?? 15,
+                ironDomeBlocked: false,
+              ));
+            }
+          }
+        } catch (e) {
+          debugPrint('messages attack sync: $e');
+        }
+
+        if (entries.isNotEmpty) {
+          entries.sort((a, b) => b.timestamp.compareTo(a.timestamp));
           await prefs.setString(
               _raidLogKey, jsonEncode(entries.map((e) => e.toJson()).toList()));
           return entries;
@@ -2117,6 +2161,7 @@ class PocketFortressDefenseService {
       final entry = CitadelRaidLogEntry(
         id: 'raid_${DateTime.now().millisecondsSinceEpoch}',
         attackerId: attackerId,
+        defenderId: defenderHouseId,
         attackerName: attackerName,
         attackerAvatar: attackerAvatar,
         attackerWeapon: attackerWeapon,

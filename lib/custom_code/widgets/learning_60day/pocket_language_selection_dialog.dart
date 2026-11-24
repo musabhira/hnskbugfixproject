@@ -55,13 +55,6 @@ class PocketLanguageSelectionDialog extends StatefulWidget {
       'flag': '🇮🇳',
       'desc': 'ಕನ್ನಡದ ಮೂಲಕ ಸುಲಭ ಇಂಗ್ಲಿಷ್ ಕಲಿಕೆ',
     },
-    {
-      'code': 'English',
-      'name': 'English',
-      'englishName': 'Direct English',
-      'flag': '🇬🇧',
-      'desc': '100% Direct English immersion without translation',
-    },
   ];
 
   static Future<String?> show(

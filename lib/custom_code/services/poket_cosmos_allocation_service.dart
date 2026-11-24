@@ -813,8 +813,6 @@ class PoketCosmosAllocationService {
     final int neededWaves = profiles.isNotEmpty
         ? (profiles.length / waveCapacity).ceil()
         : 1;
-    final int effectiveMaxWaves = math.max(maxWaves, neededWaves);
-    final int endPlot = effectiveMaxWaves * waveCapacity;
 
     // Map globalPlotNumber -> Real User Profile
     final Map<int, Map<String, dynamic>> plotToProfile = {};
@@ -832,10 +830,19 @@ class PoketCosmosAllocationService {
         final lPlot = int.tryParse(match.group(4) ?? '1') ?? 1;
         final g = calculateGlobalPlotNumber(
             wave: w, planetCode: pCode, localPlotNumber: lPlot);
-        plotToProfile[g] = prof;
-        relocatedUserIndices.add(i);
+        // Collision guard: Only assign if slot is genuinely free.
+        // If another profile previously claimed slot g, don't drop this user;
+        // let them receive their own unique plot in the deterministic allocation below.
+        if (!plotToProfile.containsKey(g)) {
+          plotToProfile[g] = prof;
+          relocatedUserIndices.add(i);
+        }
       } else if (instance._userBirthPlots.containsKey(uid)) {
-        relocatedUserIndices.add(i);
+        final p = instance._userBirthPlots[uid]!;
+        if (!plotToProfile.containsKey(p.plotNumber)) {
+          plotToProfile[p.plotNumber] = prof;
+          relocatedUserIndices.add(i);
+        }
       }
     }
 
@@ -850,6 +857,15 @@ class PoketCosmosAllocationService {
         nextSlot++;
       }
     }
+
+    // Ensure catalog endPlot covers all allocated slots and wave capacities
+    final int maxAllocatedPlot = plotToProfile.keys.fold<int>(0, math.max);
+    final int dynamicNeededWaves = maxAllocatedPlot > 0
+        ? ((maxAllocatedPlot - 1) ~/ waveCapacity) + 1
+        : 1;
+    final int effectiveMaxWaves =
+        math.max(maxWaves, math.max(neededWaves, dynamicNeededWaves));
+    final int endPlot = effectiveMaxWaves * waveCapacity;
 
     for (int gNum = 1; gNum <= endPlot; gNum++) {
       final parsed = parseGlobalPlotNumber(gNum);

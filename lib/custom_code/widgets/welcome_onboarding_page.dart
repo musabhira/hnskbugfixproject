@@ -134,7 +134,10 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   bool _useCustomPassword = true;
 
   // Onboarding Selections
-  String _selectedNativeLanguage = PocketLanguageService.detectDeviceLanguage();
+  String _selectedNativeLanguage =
+      (PocketLanguageService.detectDeviceLanguage() == 'English')
+          ? 'Malayalam'
+          : PocketLanguageService.detectDeviceLanguage();
   final String _selectedTargetLanguage = 'English';
   final String _selectedReferralSource = 'Instagram / Reels';
   String _selectedEnglishLevel = 'Level 1: Beginner';
@@ -158,14 +161,13 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   List<Map<String, dynamic>> get _placementQuestions =>
       PocketLanguageService.getPlacementQuestions(_selectedNativeLanguage);
 
-  // Options Data
+  // Options Data (English removed because the app is learning English)
   final List<Map<String, String>> _nativeLanguages = [
+    {'code': 'Malayalam', 'name': 'മലയാളം (Malayalam)', 'flag': '🌴'},
     {'code': 'Hindi', 'name': 'हिन्दी (Hindi)', 'flag': '🪷'},
     {'code': 'Tamil', 'name': 'தமிழ் (Tamil)', 'flag': '🦚'},
-    {'code': 'Malayalam', 'name': 'മലയാളം (Malayalam)', 'flag': '🌴'},
     {'code': 'Kannada', 'name': 'ಕನ್ನಡ (Kannada)', 'flag': '🌸'},
     {'code': 'Telugu', 'name': 'తెలుగు (Telugu)', 'flag': '🌺'},
-    {'code': 'English', 'name': 'English', 'flag': '🌐'},
     {'code': 'Arabic', 'name': 'العربية (Arabic)', 'flag': '🇸🇦'},
     {'code': 'Bengali', 'name': 'বাংলা (Bengali)', 'flag': '🌊'},
     {'code': 'Other', 'name': 'Other Language', 'flag': '✨'},
