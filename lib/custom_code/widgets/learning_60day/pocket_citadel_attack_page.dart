@@ -49,6 +49,7 @@ import 'package:pocket_mates_app/custom_code/widgets/settings_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/cards/pop_art_card_flame_game.dart';
 import 'package:pocket_mates_app/custom_code/widgets/cards/pop_art_cards_viewer_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_avatar_system.dart';
+import 'pocket_citadel_story_share_page.dart';
 
 /// ⚔️ Pocket Citadel Attack Page: Full-Screen Battle & Defense Raid
 /// Audio Directive:
@@ -4572,6 +4573,27 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     );
   }
 
+  /// 📸 Open High-Aesthetic Citadel Story Share / Preview Page
+  void _openCitadelStoryShare(int effectiveDay, int psValue) {
+    HapticFeedback.mediumImpact();
+    final now = DateTime.now();
+    final isNightByDefault = (now.hour == 3 && now.minute < 30);
+    final isNight = _manualNightOverride ?? isNightByDefault;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PocketCitadelStorySharePage(
+          neighbor: widget.neighbor,
+          level: effectiveDay,
+          pocketScore: psValue,
+          globalRank: _defenderGlobalRank,
+          isNight: isNight,
+        ),
+      ),
+    );
+  }
+
   Future<void> _testFireIronDome() async {
     if (_ironDomeController.isAnimating) return;
     setState(() => _isIronDomeFiring = true);
@@ -6354,7 +6376,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     onTap: _onTapBottomAttack,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 7.5),
+                          horizontal: 14, vertical: 7.5),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
@@ -6375,25 +6397,18 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           ),
                         ],
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('🎯', style: TextStyle(fontSize: 14)),
-                          const SizedBox(width: 6),
-                          Text(
-                            'MOCK ATTACK',
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0.8,
-                            ),
-                          ),
-                        ],
+                      child: Text(
+                        'MOCK ATTACK',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.8,
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   GestureDetector(
                     onTap: () {
                       HapticFeedback.heavyImpact();
@@ -6404,7 +6419,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 7.5),
+                          horizontal: 13, vertical: 7.5),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Color(0xFFD97706), Color(0xFFB45309)],
@@ -6425,21 +6440,48 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           ),
                         ],
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('🛒', style: TextStyle(fontSize: 13)),
-                          const SizedBox(width: 5),
-                          Text(
-                            'STORE',
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0.6,
-                            ),
+                      child: Text(
+                        'STORE',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  // 📸 Minimal Citadel Story Card / Share Button
+                  GestureDetector(
+                    onTap: () => _openCitadelStoryShare(effectiveDay, psValue),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 11, vertical: 7.5),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                        borderRadius: BorderRadius.circular(11),
+                        border: Border.all(
+                          color: const Color(0xFFC4B5FD),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                const Color(0xFF8B5CF6).withValues(alpha: 0.5),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
                           ),
                         ],
+                      ),
+                      child: const Icon(
+                        Icons.photo_camera_rounded,
+                        size: 16,
+                        color: Colors.white,
                       ),
                     ),
                   ),
@@ -6749,6 +6791,41 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       ),
                     ),
                   ),
+                  const SizedBox(width: 8),
+                  // 📸 Minimal Citadel Story Card / Share Button (Raider mode)
+                  GestureDetector(
+                    onTap: () => _openCitadelStoryShare(effectiveDay, psValue),
+                    child: Container(
+                      height: 40,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                        borderRadius: BorderRadius.circular(11),
+                        border: Border.all(
+                          color: const Color(0xFFC4B5FD),
+                          width: 1.4,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                const Color(0xFF8B5CF6).withValues(alpha: 0.4),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.photo_camera_rounded,
+                        size: 17,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
                 ],
               )
             else
@@ -6904,6 +6981,41 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             ),
                           ),
                         ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // 📸 Minimal Citadel Story Card / Share Button (Raider mode)
+                  GestureDetector(
+                    onTap: () => _openCitadelStoryShare(effectiveDay, psValue),
+                    child: Container(
+                      height: 40,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                        borderRadius: BorderRadius.circular(11),
+                        border: Border.all(
+                          color: const Color(0xFFC4B5FD),
+                          width: 1.4,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                const Color(0xFF8B5CF6).withValues(alpha: 0.4),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.photo_camera_rounded,
+                        size: 17,
+                        color: Colors.white,
                       ),
                     ),
                   ),
