@@ -505,7 +505,7 @@ class PocketCitadelAttackPage extends StatefulWidget {
           p['name'] ??
           p['display_name'] ??
           (effectiveTargetName.isNotEmpty ? effectiveTargetName : null) ??
-          (isMe ? 'My Fortress' : (contactName.isNotEmpty ? contactName : 'Pocket Learner')),
+          (isMe ? (effectiveTargetName.isNotEmpty ? effectiveTargetName : 'Defender') : (contactName.isNotEmpty ? contactName : 'Pocket Learner')),
       day: effectiveDay,
       streak: (p['streak'] as num?)?.toInt() ?? effectiveDay,
       rank: p['rank']?.toString() ?? 'Citizen',
@@ -798,6 +798,10 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   double _savedMinScale = 0.23;
   double _savedGroundY = 920.0;
   int? _fetchedDefenderGlobalRank;
+  int? _dynamicDefenderLevel;
+  int get _effectiveDefenderLevel =>
+      _dynamicDefenderLevel ??
+      (widget.neighbor.day > 0 ? widget.neighbor.day : 1);
 
   @override
   void initState() {
@@ -1053,7 +1057,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
   void _startProtectionCountdownTimer() {
     _protectionCountdownTimer?.cancel();
-    if (!_isTargetProtected || _protectionSecondsRemaining <= 0) return;
+    if (_protectionSecondsRemaining <= 0) return;
+    _isTargetProtected = true;
     _protectionCountdownTimer =
         Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
@@ -1087,7 +1092,48 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   }
 
   Future<void> _loadBattleState() async {
-    if (_attackerDay <= 1) {
+    if (widget.neighbor.isMe || widget.isDefenseMode) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final myId = SupaFlow.client.auth.currentUser?.id ?? widget.neighbor.id;
+        final localDay = (myId.isNotEmpty
+                ? prefs.getInt('learning_day_$myId') ?? prefs.getInt('day_$myId')
+                : null) ??
+            prefs.getInt('learning_day') ??
+            prefs.getInt('current_learning_day') ??
+            prefs.getInt('day') ??
+            prefs.getInt('kCurrentLearningDay');
+        int? dbDay;
+        try {
+          final prof = await SupaFlow.client
+              .from('profile')
+              .select('learning_day, day, stage, level, pocket_score')
+              .or('user_id.eq.$myId,id.eq.$myId')
+              .maybeSingle();
+          if (prof != null) {
+            dbDay = (prof['learning_day'] as num?)?.toInt() ??
+                (prof['day'] as num?)?.toInt() ??
+                (prof['stage'] as num?)?.toInt() ??
+                (prof['level'] as num?)?.toInt();
+            if (prof['pocket_score'] != null) {
+              final ps = (prof['pocket_score'] as num).toInt();
+              if (ps > 0) _defenderScore = ps;
+            }
+          }
+        } catch (_) {}
+        final resolved = (dbDay != null && dbDay > 0)
+            ? dbDay
+            : ((localDay != null && localDay > 0)
+                ? localDay
+                : (widget.neighbor.day > 0 ? widget.neighbor.day : 1));
+        if (mounted) {
+          setState(() {
+            _dynamicDefenderLevel = resolved;
+            _attackerDay = resolved;
+          });
+        }
+      } catch (_) {}
+    } else if (_attackerDay <= 1) {
       try {
         final myId = SupaFlow.client.auth.currentUser?.id;
         if (myId != null) {
@@ -1111,13 +1157,33 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         ? await PocketFortressDefenseService.getCooldownMinutesRemaining(
             targetId)
         : 0;
-    final isProtected =
+    final isProtectedRaw =
         await PocketFortressDefenseService.isUnderPresidentialProtection(
             targetId);
-    final protectionSeconds = isProtected
+    final protectionSecondsRaw = isProtectedRaw
         ? await PocketFortressDefenseService
             .getPresidentialProtectionSecondsRemaining(targetId)
         : 0;
+    final isRobotDefender = widget.neighbor.isPocketRobo ||
+        PocketRobotService.isRobotId(targetId) ||
+        targetId.startsWith('kid_bot_') ||
+        targetId.startsWith('rival_citadel');
+    bool isProtected = isProtectedRaw;
+    int protectionSeconds = protectionSecondsRaw;
+    if (!isProtected &&
+        (widget.neighbor.isDamaged || _isDefenderDamaged) &&
+        !isRobotDefender &&
+        !widget.neighbor.isPresident &&
+        !widget.neighbor.isMe &&
+        !widget.isDefenseMode) {
+      isProtected = true;
+      protectionSeconds = await PocketFortressDefenseService
+          .getPresidentialProtectionSecondsRemaining(targetId);
+      if (protectionSeconds <= 0) {
+        protectionSeconds =
+            PocketFortressDefenseService.kPresidentialProtectionHours * 3600;
+      }
+    }
     final protectionMinutes = (protectionSeconds / 60).ceil();
     final attacksUsed =
         await PocketFortressDefenseService.getDailyAttacksUsedToday();
@@ -5377,7 +5443,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         Flexible(
                           child: Text(
                             (widget.neighbor.name.isNotEmpty &&
-                                    widget.neighbor.name != 'My Fortress' &&
                                     widget.neighbor.name != 'Citadel Defender' &&
                                     widget.neighbor.name != 'Pocket Learner')
                                 ? widget.neighbor.name
@@ -6119,213 +6184,156 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
   /// ⚔️ Minimal Unified Rectangular Attack Pod: Level + PS header row directly joined with red Attack button
   Widget _buildBottomAttackSection() {
+    final effectiveDay = _effectiveDefenderLevel;
     final psValue = _defenderScore > 0
         ? _defenderScore
-        : PocketScoreLevelEngine.getRequiredScoreForLevel(widget.neighbor.day);
+        : PocketScoreLevelEngine.getRequiredScoreForLevel(effectiveDay);
     final int defRank = _defenderGlobalRank ?? 0;
     final rankTheme = PocketTopRankTheme.getThemeForRank(defRank);
-
-    if (_isTargetProtected) {
-      return Center(
-        child: GestureDetector(
-          onTap: () {
-            HapticFeedback.mediumImpact();
-            _showPresidentialProtectionInfoDialog();
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0F172A).withValues(alpha: 0.95),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: const Color(0xFF38BDF8).withValues(alpha: 0.85),
-                width: 1.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.65),
-                  blurRadius: 14,
-                  offset: const Offset(0, 4),
-                ),
-                BoxShadow(
-                  color: const Color(0xFF0284C7).withValues(alpha: 0.35),
-                  blurRadius: 10,
-                  spreadRadius: 1,
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Level ${widget.neighbor.day}',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        width: 3.5,
-                        height: 3.5,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white38,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('🪙', style: TextStyle(fontSize: 12)),
-                          const SizedBox(width: 4),
-                          Text(
-                            '$psValue PS',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFFFFD700),
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF0369A1), Color(0xFF0C4A6E)],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                    borderRadius: BorderRadius.circular(11),
-                    border: Border.all(
-                      color: const Color(0xFF38BDF8).withValues(alpha: 0.8),
-                      width: 1.2,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('🏛️', style: TextStyle(fontSize: 13)),
-                      const SizedBox(width: 6),
-                      Text(
-                        'PRESIDENTIAL PROTECTION (${_formatProtectionCountdown(_protectionSecondsRemaining)})',
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFFBAE6FD),
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.4,
-                        ),
-                      ),
-                      const SizedBox(width: 5),
-                      const Icon(Icons.lock_rounded,
-                          size: 12, color: Color(0xFF38BDF8)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
+    final isRobot = widget.neighbor.isPocketRobo ||
+        PocketRobotService.isRobotId(widget.neighbor.id);
+    final bool isProtectedActive = _isTargetProtected ||
+        ((_isDefenderDamaged || widget.neighbor.isDamaged) &&
+            !isRobot &&
+            !widget.neighbor.isMe &&
+            !widget.isDefenseMode &&
+            !widget.neighbor.isPresident);
 
     return Center(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: const Color(0xFF0F172A).withValues(alpha: 0.95),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: rankTheme != null
-                ? rankTheme.borderColor
-                : ((widget.neighbor.isMe || widget.isDefenseMode)
-                    ? const Color(0xFF10B981).withValues(alpha: 0.8)
-                    : const Color(0xFFEF4444).withValues(alpha: 0.8)),
-            width: rankTheme != null ? 1.8 : 1.4,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.65),
-              blurRadius: 14,
-              offset: const Offset(0, 4),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F172A).withValues(alpha: 0.95),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isProtectedActive
+                  ? const Color(0xFF38BDF8).withValues(alpha: 0.85)
+                  : (rankTheme != null
+                      ? rankTheme.borderColor
+                      : ((widget.neighbor.isMe || widget.isDefenseMode)
+                          ? const Color(0xFF10B981).withValues(alpha: 0.8)
+                          : const Color(0xFFEF4444).withValues(alpha: 0.8))),
+              width: rankTheme != null ? 1.8 : 1.4,
             ),
-            BoxShadow(
-              color: rankTheme != null
-                  ? rankTheme.primaryColor.withValues(alpha: 0.35)
-                  : ((widget.neighbor.isMe || widget.isDefenseMode)
-                      ? const Color(0xFF10B981).withValues(alpha: 0.25)
-                      : const Color(0xFFEF4444).withValues(alpha: 0.25)),
-              blurRadius: 10,
-              spreadRadius: 1,
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Level & PS Minimal Row (User Directive: No "You Level 7" or "VS", just Level & PS)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    (widget.neighbor.isMe || widget.isDefenseMode)
-                        ? 'My Fortress • Level ${widget.neighbor.day}'
-                        : 'Level ${widget.neighbor.day}',
-                    style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.2,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  _buildGlobalRankBadge(),
-                  const SizedBox(width: 6),
-                  Container(
-                    width: 3.5,
-                    height: 3.5,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white38,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('🪙', style: TextStyle(fontSize: 12)),
-                      const SizedBox(width: 4),
-                      Text(
-                        '$psValue PS',
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFFFFD700),
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.65),
+                blurRadius: 14,
+                offset: const Offset(0, 4),
               ),
-            ),
-            const SizedBox(height: 3),
-            // Minimal Red Attack Button or President Level 90 Gate / Challenge Button or Arm Defense
-            if (widget.neighbor.isMe || widget.isDefenseMode) ...[
+              BoxShadow(
+                color: isProtectedActive
+                    ? const Color(0xFF0284C7).withValues(alpha: 0.35)
+                    : (rankTheme != null
+                        ? rankTheme.primaryColor.withValues(alpha: 0.35)
+                        : ((widget.neighbor.isMe || widget.isDefenseMode)
+                            ? const Color(0xFF10B981).withValues(alpha: 0.25)
+                            : const Color(0xFFEF4444).withValues(alpha: 0.25))),
+                blurRadius: 10,
+                spreadRadius: 1,
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Level & PS Minimal Row (User Directive: No "My Fortress" or "VS", strictly Level & PS & Global Rank)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Level $effectiveDay',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    _buildGlobalRankBadge(),
+                    const SizedBox(width: 6),
+                    Container(
+                      width: 3.5,
+                      height: 3.5,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white38,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('🪙', style: TextStyle(fontSize: 12)),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$psValue PS',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFD700),
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 3),
+              // Action Buttons Row:
+              if (isProtectedActive)
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.mediumImpact();
+                    _showPresidentialProtectionInfoDialog();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7.5),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF0369A1), Color(0xFF0C4A6E)],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                      borderRadius: BorderRadius.circular(11),
+                      border: Border.all(
+                        color: const Color(0xFF38BDF8).withValues(alpha: 0.8),
+                        width: 1.2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF0284C7).withValues(alpha: 0.35),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('🛡️', style: TextStyle(fontSize: 13)),
+                        const SizedBox(width: 6),
+                        Text(
+                          'PRESIDENTIAL PROTECTION (${_formatProtectionCountdown(_protectionSecondsRemaining)})',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFBAE6FD),
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.4,
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        const Icon(Icons.lock_rounded, size: 12, color: Color(0xFF38BDF8)),
+                      ],
+                    ),
+                  ),
+                )
+              else if (widget.neighbor.isMe || widget.isDefenseMode) ...[
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -6891,8 +6899,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   /// 🛡️ Check if Kids Hero Drawer should be shown instead of Adult MainProfileWidget
   bool get _shouldShowKidProfile {

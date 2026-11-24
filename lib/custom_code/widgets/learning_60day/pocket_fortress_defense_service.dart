@@ -2277,17 +2277,28 @@ class PocketFortressDefenseService {
         expiryTime.millisecondsSinceEpoch);
 
     try {
-      await SupaFlow.client.from('pocket_homes').update({
+      await SupaFlow.client.from('pocket_homes').upsert({
+        'user_id': houseId,
         'last_attacked_at': DateTime.now().toIso8601String(),
+        'is_damaged': true,
         'updated_at': DateTime.now().toIso8601String(),
-      }).eq('user_id', houseId);
-    } catch (_) {}
+      }, onConflict: 'user_id');
+    } catch (_) {
+      try {
+        await SupaFlow.client.from('pocket_homes').update({
+          'last_attacked_at': DateTime.now().toIso8601String(),
+          'is_damaged': true,
+          'updated_at': DateTime.now().toIso8601String(),
+        }).or('user_id.eq.$houseId,id.eq.$houseId');
+      } catch (_) {}
+    }
   }
 
   /// Check if house is actively guarded by Presidential Police
   static Future<bool> isUnderPresidentialProtection(String houseId) async {
     // Robots NEVER have Presidential Protection (User Audio Directive: "പക്ഷെ റോബോട്ടുകൾക്ക് പ്രസിഡൻഷ്യൽ പ്രൊട്ടക്ഷൻ ഇല്ല")
-    if (houseId.startsWith('pocket_robo') ||
+    if (houseId.isEmpty ||
+        houseId.startsWith('pocket_robo') ||
         houseId.startsWith('kid_bot_') ||
         houseId.startsWith('rival_citadel') ||
         PocketRobotService.isRobotId(houseId)) {
@@ -2300,19 +2311,36 @@ class PocketFortressDefenseService {
       return true;
     }
 
-    // Check remote Supabase pocket_homes last_attacked_at
+    // Check remote Supabase pocket_homes last_attacked_at and is_damaged
     try {
       final res = await SupaFlow.client
           .from('pocket_homes')
-          .select('last_attacked_at')
-          .eq('user_id', houseId)
+          .select('last_attacked_at, is_damaged, updated_at')
+          .or('user_id.eq.$houseId,id.eq.$houseId')
           .maybeSingle();
-      if (res != null && res['last_attacked_at'] != null) {
-        final lastAtk = DateTime.tryParse(res['last_attacked_at'].toString());
-        if (lastAtk != null) {
-          final diff = DateTime.now().difference(lastAtk);
-          if (diff.inHours < kPresidentialProtectionHours) {
-            return true;
+      if (res != null) {
+        if (res['last_attacked_at'] != null) {
+          final lastAtk = DateTime.tryParse(res['last_attacked_at'].toString());
+          if (lastAtk != null) {
+            final diff = DateTime.now().difference(lastAtk);
+            if (diff.inHours < kPresidentialProtectionHours && diff.inSeconds >= 0) {
+              final remainingMs = ((kPresidentialProtectionHours * 3600) - diff.inSeconds) * 1000;
+              await prefs.setInt('$_presidentialProtectionPrefix$houseId',
+                  DateTime.now().millisecondsSinceEpoch + remainingMs);
+              return true;
+            }
+          }
+        }
+        if (res['is_damaged'] == true && res['updated_at'] != null) {
+          final upd = DateTime.tryParse(res['updated_at'].toString());
+          if (upd != null) {
+            final diff = DateTime.now().difference(upd);
+            if (diff.inHours < kPresidentialProtectionHours && diff.inSeconds >= 0) {
+              final remainingMs = ((kPresidentialProtectionHours * 3600) - diff.inSeconds) * 1000;
+              await prefs.setInt('$_presidentialProtectionPrefix$houseId',
+                  DateTime.now().millisecondsSinceEpoch + remainingMs);
+              return true;
+            }
           }
         }
       }
@@ -2338,20 +2366,27 @@ class PocketFortressDefenseService {
       if (diff > 0) return (diff / 1000).ceil();
     }
 
-    // Check remote Supabase pocket_homes last_attacked_at
+    // Check remote Supabase pocket_homes last_attacked_at & is_damaged
     try {
       final res = await SupaFlow.client
           .from('pocket_homes')
-          .select('last_attacked_at')
-          .eq('user_id', houseId)
+          .select('last_attacked_at, is_damaged, updated_at')
+          .or('user_id.eq.$houseId,id.eq.$houseId')
           .maybeSingle();
-      if (res != null && res['last_attacked_at'] != null) {
-        final lastAtk = DateTime.tryParse(res['last_attacked_at'].toString());
-        if (lastAtk != null) {
-          final diff = DateTime.now().difference(lastAtk);
+      if (res != null) {
+        DateTime? atkTime;
+        if (res['last_attacked_at'] != null) {
+          atkTime = DateTime.tryParse(res['last_attacked_at'].toString());
+        } else if (res['is_damaged'] == true && res['updated_at'] != null) {
+          atkTime = DateTime.tryParse(res['updated_at'].toString());
+        }
+        if (atkTime != null) {
+          final diff = DateTime.now().difference(atkTime);
           final remainingSeconds =
               (kPresidentialProtectionHours * 3600) - diff.inSeconds;
           if (remainingSeconds > 0) {
+            await prefs.setInt('$_presidentialProtectionPrefix$houseId',
+                DateTime.now().millisecondsSinceEpoch + (remainingSeconds * 1000));
             return remainingSeconds;
           }
         }
