@@ -266,9 +266,24 @@ jobs:
       - name: Install CocoaPods
         run: |
           gem install cocoapods
+          # Configure Git to not hang on non-interactive credential prompts and retry on network drop
+          git config --global url."https://github.com/".insteadOf "git@github.com:"
+          git config --global http.postBuffer 524288000
+          git config --global http.lowSpeedLimit 1000
+          git config --global http.lowSpeedTime 60
           cd ios
-          pod repo update
-          pod install --repo-update
+          # Retry pod install up to 3 times to mitigate transient GitHub network glitch
+          for i in 1 2 3; do
+            echo "Attempt $i: pod install..."
+            pod install --repo-update && break || {
+              if [ $i -eq 3 ]; then
+                echo "❌ pod install failed after 3 attempts"
+                exit 1
+              fi
+              echo "⚠️ pod install failed. Retrying in 10 seconds..."
+              sleep 10
+            }
+          done
           cd ..
 
       - name: Download iOS Platform
