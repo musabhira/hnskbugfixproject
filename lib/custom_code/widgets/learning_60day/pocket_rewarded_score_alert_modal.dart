@@ -162,11 +162,18 @@ class _PocketRewardedScoreAlertModalState
     try {
       await PocketAdMobService.instance.showRewardedAd(
         context: context,
+        onAdClosed: () {
+          if (mounted && Navigator.of(context).canPop()) {
+            Navigator.of(context).pop();
+          }
+        },
         onUserEarnedReward: (reward) async {
           final updatedPS =
               await PocketAdMobService.instance.grantRewardedPocketScore();
           if (mounted) {
-            Navigator.of(context).pop();
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            }
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Row(

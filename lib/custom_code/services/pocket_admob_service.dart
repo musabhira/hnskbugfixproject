@@ -1501,13 +1501,24 @@ class PocketAdMobService {
       return;
     }
 
-    bool dialogOpen = true;
+    BuildContext? dialogCtx;
+    bool isDialogDismissed = false;
+
+    void dismissLoadingDialog() {
+      if (!isDialogDismissed && dialogCtx != null && dialogCtx!.mounted) {
+        isDialogDismissed = true;
+        try {
+          Navigator.of(dialogCtx!).pop();
+        } catch (_) {}
+      }
+    }
+
     showDialog(
       context: context,
-      barrierDismissible: false,
-      builder: (ctx) => PopScope(
-        canPop: false,
-        child: Dialog(
+      barrierDismissible: true,
+      builder: (ctx) {
+        dialogCtx = ctx;
+        return Dialog(
           backgroundColor: const Color(0xFF0F172A),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
@@ -1541,9 +1552,9 @@ class PocketAdMobService {
               ],
             ),
           ),
-        ),
-      ),
-    ).then((_) => dialogOpen = false);
+        );
+      },
+    ).then((_) => isDialogDismissed = true);
 
     final completer = Completer<RewardedAd?>();
     _loadRewardedAd(completer: completer);
@@ -1564,10 +1575,8 @@ class PocketAdMobService {
 
     final ad = await completer.future;
 
-    if (dialogOpen && context.mounted) {
-      Navigator.of(context, rootNavigator: true).pop();
-      dialogOpen = false;
-    }
+    // Guaranteed cleanup: dismiss loading dialog before opening native AdActivity
+    dismissLoadingDialog();
 
     if (ad != null) {
       _rewardedAd = null;
@@ -1577,11 +1586,13 @@ class PocketAdMobService {
         },
         onAdDismissedFullScreenContent: (dispAd) {
           dispAd.dispose();
+          dismissLoadingDialog();
           _loadRewardedAd();
           onAdClosed?.call();
         },
         onAdFailedToShowFullScreenContent: (dispAd, err) {
           dispAd.dispose();
+          dismissLoadingDialog();
           _loadRewardedAd();
           onAdClosed?.call();
         },
@@ -1591,6 +1602,7 @@ class PocketAdMobService {
         onUserEarnedReward(reward);
       });
     } else {
+      dismissLoadingDialog();
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

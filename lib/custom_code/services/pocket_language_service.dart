@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
@@ -239,6 +240,26 @@ class PocketLanguageService {
     }
   }
 
+  /// Public normalize helper
+  static String normalize(String lang) => _normalizeLanguage(lang);
+
+  /// Automatically detect user's device system language / locale
+  static String detectDeviceLanguage() {
+    try {
+      final locale = ui.PlatformDispatcher.instance.locale;
+      final code = locale.languageCode.toLowerCase();
+      if (code == 'ml') return 'Malayalam';
+      if (code == 'ta') return 'Tamil';
+      if (code == 'hi') return 'Hindi';
+      if (code == 'te') return 'Telugu';
+      if (code == 'kn') return 'Kannada';
+      if (code == 'ar') return 'Arabic';
+      if (code == 'bn') return 'Bengali';
+    } catch (_) {}
+    // Default fallback: Malayalam as per user directive
+    return 'Malayalam';
+  }
+
   /// Update native language across all storage keys and Supabase profile
   static Future<void> setNativeLanguage(String language, {String? userId}) async {
     final normalized = _normalizeLanguage(language);
@@ -256,13 +277,20 @@ class PocketLanguageService {
       if (uid != null && uid.isNotEmpty) {
         await prefs.setString('pm_native_language_$uid', normalized);
         try {
-          await SupaFlow.client.from('profile').upsert({
-            'user_id': uid,
+          await SupaFlow.client.from('profile').update({
             'native_language': normalized,
             'updated_at': DateTime.now().toIso8601String(),
-          }, onConflict: 'user_id');
-        } catch (dbErr) {
-          debugPrint('Error syncing language to profile: $dbErr');
+          }).or('user_id.eq.$uid,id.eq.$uid');
+        } catch (_) {
+          try {
+            await SupaFlow.client.from('profile').upsert({
+              'user_id': uid,
+              'native_language': normalized,
+              'updated_at': DateTime.now().toIso8601String(),
+            }, onConflict: 'user_id');
+          } catch (dbErr) {
+            debugPrint('Error syncing language to profile: $dbErr');
+          }
         }
       }
     } catch (e) {

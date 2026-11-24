@@ -34,6 +34,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/day90_master
 import 'package:pocket_mates_app/custom_code/widgets/admin_ads_management_tab.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_navigator_page.dart';
 import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -62,6 +63,26 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
 
   // Filter and Search
   String userSearchQuery = "";
+  String _userLanguageFilter = "All";
+
+  String _getLanguageRegionLabel(String lang) {
+    switch (lang.toLowerCase()) {
+      case 'malayalam':
+        return '🌴 Malayalam (കേരളം)';
+      case 'tamil':
+        return '🦚 Tamil (தமிழ்நாடு)';
+      case 'hindi':
+        return '🪷 Hindi (North India)';
+      case 'kannada':
+        return '🌸 Kannada (Karnataka)';
+      case 'telugu':
+        return '🌺 Telugu (AP/Telangana)';
+      case 'english':
+        return '🌐 English (Global)';
+      default:
+        return '🗣️ $lang';
+    }
+  }
   String authSearchQuery = "";
   String _premiumSearchQuery = "";
   String _premiumFilter = "all";
@@ -2251,8 +2272,87 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
     );
   }
 
+  Widget _buildLangFilterChip(String langKey, String label) {
+    final isSelected = _userLanguageFilter == langKey;
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        setState(() => _userLanguageFilter = langKey);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color(0xFF38BDF8)
+              : const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFF38BDF8)
+                : Colors.white24,
+            width: 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.black : Colors.white,
+            fontSize: 11.5,
+            fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildUserTab() {
+    int countMalayalam = 0;
+    int countTamil = 0;
+    int countHindi = 0;
+    int countKannada = 0;
+    int countTelugu = 0;
+    int countEnglish = 0;
+
+    for (final u in allProfiles) {
+      final raw = u['native_language']?.toString().trim();
+      final lang = (raw == null || raw.isEmpty)
+          ? 'Malayalam'
+          : PocketLanguageService.normalize(raw);
+      switch (lang.toLowerCase()) {
+        case 'malayalam':
+          countMalayalam++;
+          break;
+        case 'tamil':
+          countTamil++;
+          break;
+        case 'hindi':
+          countHindi++;
+          break;
+        case 'kannada':
+          countKannada++;
+          break;
+        case 'telugu':
+          countTelugu++;
+          break;
+        case 'english':
+          countEnglish++;
+          break;
+        default:
+          countMalayalam++; // Default to Malayalam
+          break;
+      }
+    }
+
     final filteredUsers = allProfiles.where((u) {
+      final raw = u['native_language']?.toString().trim();
+      final lang = (raw == null || raw.isEmpty)
+          ? 'Malayalam'
+          : PocketLanguageService.normalize(raw);
+      if (_userLanguageFilter != 'All') {
+        if (lang.toLowerCase() != _userLanguageFilter.toLowerCase()) {
+          return false;
+        }
+      }
       final name = u['name']?.toString().toLowerCase() ?? "";
       final email = u['email']?.toString().toLowerCase() ?? "";
       final shop = u['shop_name']?.toString().toLowerCase() ?? "";
@@ -2267,7 +2367,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: TextField(
             onChanged: (v) => setState(() => userSearchQuery = v),
             style: const TextStyle(color: Colors.white),
@@ -2283,6 +2383,59 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             ),
           ),
         ),
+
+        // 🌐 Language & Demographic Filter Chips
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          child: Row(
+            children: [
+              _buildLangFilterChip('All', 'All (${allProfiles.length})'),
+              const SizedBox(width: 6),
+              _buildLangFilterChip(
+                  'Malayalam', '🌴 Malayalam ($countMalayalam)'),
+              const SizedBox(width: 6),
+              _buildLangFilterChip('Tamil', '🦚 Tamil ($countTamil)'),
+              const SizedBox(width: 6),
+              _buildLangFilterChip('Hindi', '🪷 Hindi ($countHindi)'),
+              const SizedBox(width: 6),
+              _buildLangFilterChip('Kannada', '🌸 Kannada ($countKannada)'),
+              const SizedBox(width: 6),
+              _buildLangFilterChip('Telugu', '🌺 Telugu ($countTelugu)'),
+              const SizedBox(width: 6),
+              _buildLangFilterChip('English', '🌐 English ($countEnglish)'),
+            ],
+          ),
+        ),
+
+        // 📊 Demographic Analytics Banner for Targeted Marketing
+        if (allProfiles.isNotEmpty)
+          Container(
+            margin: const EdgeInsets.fromLTRB(16, 6, 16, 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B).withValues(alpha: 0.7),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              children: [
+                const Text('📊', style: TextStyle(fontSize: 14)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Marketing Demographics: 🌴 ${(countMalayalam * 100 / allProfiles.length).toStringAsFixed(0)}% Malayalam • 🦚 ${(countTamil * 100 / allProfiles.length).toStringAsFixed(0)}% Tamil • 🪷 ${(countHindi * 100 / allProfiles.length).toStringAsFixed(0)}% Hindi • 🌸 ${(countKannada * 100 / allProfiles.length).toStringAsFixed(0)}% Kannada • 🌺 ${(countTelugu * 100 / allProfiles.length).toStringAsFixed(0)}% Telugu',
+                    style: const TextStyle(
+                      color: Color(0xFFBAE6FD),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         Expanded(
           child: RefreshIndicator(
             onRefresh: _loadProfiles,
@@ -2465,7 +2618,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                                   width: 0.8),
                                             ),
                                             child: Text(
-                                              '🗣️ ${(user['native_language'] != null && user['native_language'].toString().trim().isNotEmpty) ? user['native_language'].toString().trim() : 'Malayalam'}',
+                                              _getLanguageRegionLabel((user['native_language'] != null && user['native_language'].toString().trim().isNotEmpty) ? user['native_language'].toString().trim() : 'Malayalam'),
                                               style: const TextStyle(
                                                 color: Color(0xFF6EE7B7),
                                                 fontSize: 10.5,

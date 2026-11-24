@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/pocket_game_audio_service.dart';
+import '../../services/pocket_language_service.dart';
 import '../../services/pocket_mate_service.dart';
 import '../../services/pocket_trophy_service.dart';
 import '../learning_60day/pocket_fortress_defense_service.dart';
@@ -630,7 +631,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
   final SupabaseClient _supabase = Supabase.instance.client;
   late PageController _verticalPageController;
   bool _isLoadingMore = false;
-  String _userNativeLanguage = 'Malayalam';
+  String _userNativeLanguage = PocketLanguageService.currentLanguage;
   late AnimationController _pulseController;
   late AnimationController _jumpController;
   late Animation<double> _jumpAnimation;
@@ -680,6 +681,9 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
   @override
   void initState() {
     super.initState();
+    _userNativeLanguage = PocketLanguageService.currentLanguage;
+    PocketLanguageService.activeLanguageNotifier
+        .addListener(_onGlobalLanguageChanged);
     WidgetsBinding.instance.addObserver(this);
     _verticalPageController = PageController();
     _pulseController = AnimationController(
@@ -883,9 +887,19 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     }
   }
 
+  void _onGlobalLanguageChanged() {
+    if (mounted) {
+      setState(() {
+        _userNativeLanguage = PocketLanguageService.currentLanguage;
+      });
+    }
+  }
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    PocketLanguageService.activeLanguageNotifier
+        .removeListener(_onGlobalLanguageChanged);
     PocketGameAudioService.instance.stop();
     _stopAllAudioAndSpeech();
     _verticalPageController.dispose();
@@ -958,18 +972,10 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
 
   Future<void> _loadUserLanguage() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final lang = PocketLanguageService.currentLanguage;
+      if (mounted) setState(() => _userNativeLanguage = lang);
+
       final currentUserId = _supabase.auth.currentUser?.id;
-      final savedLang = prefs.getString('pm_native_language') ??
-          (currentUserId != null
-              ? prefs.getString('pm_native_language_$currentUserId')
-              : null);
-
-      if (savedLang != null && savedLang.isNotEmpty) {
-        if (mounted) setState(() => _userNativeLanguage = savedLang);
-        return;
-      }
-
       if (currentUserId != null) {
         final profile = await _supabase
             .from('profile')
@@ -978,7 +984,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
             .maybeSingle();
         final dbLang = profile?['native_language']?.toString();
         if (dbLang != null && dbLang.isNotEmpty && mounted) {
-          setState(() => _userNativeLanguage = dbLang);
+          final norm = PocketLanguageService.normalize(dbLang);
+          setState(() => _userNativeLanguage = norm);
         }
       }
     } catch (_) {}

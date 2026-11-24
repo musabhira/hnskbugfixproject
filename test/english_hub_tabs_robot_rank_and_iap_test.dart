@@ -51,6 +51,14 @@ void main() {
 
     test('Humans correctly resolve to Global Rank', () {
       const humanUuid = '11111111-2222-3333-4444-555555555555';
+      const humanUuidWith72 = 'c03264eb-3773-426b-9c76-5fa023e9cbf6';
+      
+      // UUIDs must NEVER resolve to robots!
+      expect(PocketRobotService.isRobotId(humanUuid), isFalse);
+      expect(PocketRobotService.isRobotId(humanUuidWith72), isFalse);
+      expect(PocketRobotService.getRobotById(humanUuid), isNull);
+      expect(PocketRobotService.getRobotById(humanUuidWith72), isNull);
+
       final isAnimal = PocketKidsRobotsData.getAnimalById(humanUuid) != null;
       final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(humanUuid);
       final isRobot = !isAnimal && (PocketRobotService.isRobotId(humanUuid) || !isUuid);

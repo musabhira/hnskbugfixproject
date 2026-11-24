@@ -194,6 +194,7 @@ class PocketCitadelChallengeGenerator {
     bool isPresident = false,
     bool isVip = false,
     List<HouseShieldQuestion>? customArmedQuestions,
+    List<String>? equippedDefenses,
   }) {
     if (isPresident) {
       return _generatePresidentialGauntlet();
@@ -248,6 +249,69 @@ class PocketCitadelChallengeGenerator {
             random: dayRandom,
           ),
         );
+      }
+    }
+
+    // 🛡️ Citadel Military Armory Store Defenses (Real In-Game Defense Utility!)
+    if (equippedDefenses != null && equippedDefenses.isNotEmpty) {
+      for (final defenseId in equippedDefenses) {
+        if (defenseId == 'fortress_repair') continue;
+        int gatesToAdd = 2;
+        String format = 'sentence_builder';
+        String trapType = 'Military Trap';
+        String catName = 'Fortress Defense';
+        if (defenseId == 'iron_dome') {
+          gatesToAdd = 3;
+          format = 'grammar_defusal';
+          trapType = 'Radar Intercept';
+          catName = '🚀 Iron Dome Missile Defense';
+        } else if (defenseId == 'gatling_turret') {
+          gatesToAdd = 2;
+          format = 'vocab_gate';
+          trapType = 'Rapid-Fire Vocab';
+          catName = '🔫 Dual Gatling Plasma Turret';
+        } else if (defenseId == 'tesla_barrier') {
+          gatesToAdd = 2;
+          format = 'tense_fortress';
+          trapType = 'EMP Shockwave';
+          catName = '⚡ Tesla High-Voltage Fence';
+        } else if (defenseId == 'cyber_droid') {
+          gatesToAdd = 2;
+          format = 'spoken_whisper';
+          trapType = 'Drone Audio Scan';
+          catName = '🤖 Cyber Sentinel Air Droid';
+        } else if (defenseId == 'fortress_moat') {
+          gatesToAdd = 2;
+          format = 'sentence_builder';
+          trapType = 'Drawbridge Riddle';
+          catName = '🏰 Deep Bastion Moat & Spikes';
+        }
+
+        final storeRandom = math.Random(
+            (cleanUid.hashCode.abs() * 37) + defenseId.hashCode.abs());
+        for (int g = 1; g <= gatesToAdd; g++) {
+          final taskIndex = result.length + 1;
+          final challenge = buildChallengeForFormat(
+            format: format,
+            day: math.max(1, defenderLevel),
+            taskIndex: taskIndex,
+            difficulty: 'hard',
+            random: storeRandom,
+          );
+          result.add(
+            HouseShieldQuestion(
+              id: 'store_defense_${defenseId}_gate_$g',
+              question: challenge.question,
+              options: challenge.options,
+              correctIndex: challenge.correctIndex,
+              explanation: challenge.explanation,
+              category: catName,
+              trapType: trapType,
+              gameFormat: challenge.gameFormat,
+              difficulty: 'hard',
+            ),
+          );
+        }
       }
     }
 

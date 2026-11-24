@@ -21,6 +21,7 @@ import 'games/pocket_essential_spelling_game_page.dart';
 import 'games/pocket_citadel_runner_attack_page.dart';
 import '../report_dailoge.dart';
 import 'pocket_citadel_store_sheet.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_citadel_store_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_top_rank_theme.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_action_chat_service.dart';
 import 'painters/citadel_scenic_landscape_painter.dart';
@@ -42,6 +43,9 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_avatar_house_wi
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
 import 'day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dart';
+import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_saved_account_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/settings_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/cards/pop_art_card_flame_game.dart';
 import 'package:pocket_mates_app/custom_code/widgets/cards/pop_art_cards_viewer_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_avatar_system.dart';
@@ -224,8 +228,10 @@ class PocketCitadelAttackPage extends StatefulWidget {
       );
     }
 
-    final isRobot = PocketRobotService.isRobotId(userId) ||
-        !RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
+    final isRobot = (PocketRobotService.isRobotId(userId) ||
+            preloadedProfile?['is_robot'] == true ||
+            (neighbor?.isPocketRobo ?? false)) &&
+        !PocketPresidentService.isPresidentId(userId);
 
     if (isRobot) {
       final robot = PocketRobotService.getRobotById(userId) ??
@@ -297,13 +303,32 @@ class PocketCitadelAttackPage extends StatefulWidget {
       try {
         final res = await SupaFlow.client
             .from('profile')
-            .select(
-                'user_id, id, first_name, name, bio, learning_day, level, stage, streak, rank, palette_id, is_pocket_robo, pocket_score, is_vip, is_premium, verified')
-            .or('user_id.eq.$userId,id.eq.$userId')
+            .select()
+            .eq('user_id', userId)
             .maybeSingle();
-        if (res != null) data = res;
+        if (res != null) {
+          data = res;
+        } else {
+          final idRes = await SupaFlow.client
+              .from('profile')
+              .select()
+              .eq('id', userId)
+              .maybeSingle();
+          if (idRes != null) data = idRes;
+        }
       } catch (e) {
         debugPrint('PocketCitadelAttackPage.openForUser error: $e');
+      }
+
+      if (data == null) {
+        try {
+          final resPlural = await SupaFlow.client
+              .from('profiles')
+              .select()
+              .eq('id', userId)
+              .maybeSingle();
+          if (resPlural != null) data = resPlural;
+        } catch (_) {}
       }
     }
 
@@ -315,18 +340,33 @@ class PocketCitadelAttackPage extends StatefulWidget {
       try {
         final userRes = await SupaFlow.client
             .from('users')
-            .select(
-                'id, name, display_name, learning_day, level, avatar_config')
+            .select()
             .eq('id', userId)
             .maybeSingle();
         if (userRes != null) {
           data = {
             ...?data,
-            'user_id': userRes['id'],
+            ...userRes,
             'name': userRes['display_name'] ?? userRes['name'] ?? data?['name'],
-            'learning_day': userRes['learning_day'],
-            'level': userRes['level'],
-            'avatar_config': userRes['avatar_config'],
+          };
+        }
+      } catch (_) {}
+    }
+
+    // Tertiary fallback: check 'pocket_homes' table for stage / level / points
+    if (data == null || (data['learning_day'] == null && data['level'] == null)) {
+      try {
+        final homeRes = await SupaFlow.client
+            .from('pocket_homes')
+            .select()
+            .eq('user_id', userId)
+            .maybeSingle();
+        if (homeRes != null) {
+          data = {
+            ...?data,
+            'learning_day': data?['learning_day'] ?? homeRes['level'] ?? homeRes['day'],
+            'level': data?['level'] ?? homeRes['level'],
+            'pocket_score': data?['pocket_score'] ?? homeRes['points'],
           };
         }
       } catch (_) {}
@@ -337,12 +377,14 @@ class PocketCitadelAttackPage extends StatefulWidget {
     final isMe =
         (userId == currentUserId) || isDefenseMode || (neighbor?.isMe ?? false);
 
-    // Tertiary fallback: check local SharedPreferences cached stage for this user
+    // Check local SharedPreferences cached stage for this user
     int? localCachedDay;
     try {
       final prefs = await SharedPreferences.getInstance();
       localCachedDay = prefs.getInt('pocket_learning_user_stage_$userId') ??
-          prefs.getInt('learning_day_$userId');
+          prefs.getInt('learning_day_$userId') ??
+          prefs.getInt('learning_stage_$userId') ??
+          prefs.getInt('user_level_$userId');
     } catch (_) {}
 
     final rawCourseDay = targetDay ??
@@ -350,6 +392,7 @@ class PocketCitadelAttackPage extends StatefulWidget {
         (p['learning_stage'] as num?)?.toInt() ??
         (p['stage'] as num?)?.toInt() ??
         (p['level'] as num?)?.toInt() ??
+        (p['day'] as num?)?.toInt() ??
         localCachedDay ??
         1;
     final defenderScore = (p['pocket_score'] as num?)?.toInt() ?? 0;
@@ -443,12 +486,26 @@ class PocketCitadelAttackPage extends StatefulWidget {
         (p['verified'] == true) ||
         (neighbor?.isVip ?? false);
 
+    final contactName =
+        ContactsNameService().getDisplayName(userId: userId, fallbackName: '');
+    String effectiveTargetName = '';
+    if (targetName != null &&
+        targetName.isNotEmpty &&
+        targetName != 'Citadel Defender' &&
+        targetName != 'User' &&
+        targetName != 'Defender') {
+      effectiveTargetName = targetName;
+    } else if (contactName.isNotEmpty) {
+      effectiveTargetName = contactName;
+    }
+
     final userNeighbor = PocketNeighbor(
       id: userId,
       name: p['first_name'] ??
           p['name'] ??
-          targetName ??
-          (isMe ? 'My Fortress' : 'Citadel Defender'),
+          p['display_name'] ??
+          (effectiveTargetName.isNotEmpty ? effectiveTargetName : null) ??
+          (isMe ? 'My Fortress' : (contactName.isNotEmpty ? contactName : 'Pocket Learner')),
       day: effectiveDay,
       streak: (p['streak'] as num?)?.toInt() ?? effectiveDay,
       rank: p['rank']?.toString() ?? 'Citizen',
@@ -701,6 +758,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
   bool _isTargetProtected = false;
   double _protectionHoursLeft = 0;
+  int _protectionSecondsRemaining = 0;
+  Timer? _protectionCountdownTimer;
   bool _inCooldown = false;
   double _cooldownHoursLeft = 0;
   int _retriesRemaining =
@@ -809,6 +868,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     WidgetsBinding.instance.removeObserver(this);
     PocketGameAudioService.instance.stop();
     _combatTimer?.cancel();
+    _protectionCountdownTimer?.cancel();
     _transformationController.dispose();
     _cameraAnimationController.dispose();
     _zoomScaleNotifier.dispose();
@@ -991,6 +1051,41 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     }
   }
 
+  void _startProtectionCountdownTimer() {
+    _protectionCountdownTimer?.cancel();
+    if (!_isTargetProtected || _protectionSecondsRemaining <= 0) return;
+    _protectionCountdownTimer =
+        Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      if (_protectionSecondsRemaining > 0) {
+        setState(() {
+          _protectionSecondsRemaining--;
+          _protectionHoursLeft = _protectionSecondsRemaining / 3600.0;
+        });
+      } else {
+        timer.cancel();
+        setState(() {
+          _isTargetProtected = false;
+          _protectionHoursLeft = 0;
+        });
+      }
+    });
+  }
+
+  String _formatProtectionCountdown(int totalSeconds) {
+    if (totalSeconds <= 0) return '00:00:00';
+    final hours = totalSeconds ~/ 3600;
+    final minutes = (totalSeconds % 3600) ~/ 60;
+    final seconds = totalSeconds % 60;
+    final hStr = hours.toString().padLeft(2, '0');
+    final mStr = minutes.toString().padLeft(2, '0');
+    final sStr = seconds.toString().padLeft(2, '0');
+    return '$hStr:$mStr:$sStr';
+  }
+
   Future<void> _loadBattleState() async {
     if (_attackerDay <= 1) {
       try {
@@ -1019,10 +1114,11 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     final isProtected =
         await PocketFortressDefenseService.isUnderPresidentialProtection(
             targetId);
-    final protectionMinutes = isProtected
+    final protectionSeconds = isProtected
         ? await PocketFortressDefenseService
-            .getPresidentialProtectionMinutesRemaining(targetId)
+            .getPresidentialProtectionSecondsRemaining(targetId)
         : 0;
+    final protectionMinutes = (protectionSeconds / 60).ceil();
     final attacksUsed =
         await PocketFortressDefenseService.getDailyAttacksUsedToday();
     final isDailyLimitReached =
@@ -1067,7 +1163,11 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
           PocketCitadelChallengeGenerator.generateEscortTasks(10, escortRandom);
     }
 
-    // 🏰 2. Load Core Fortress Defense Cards (Strictly matching defenderLevel, e.g. Day 30 = 30 tasks)
+    // 🛡️ Fetch equipped defenses for the defender from Citadel Store (Real military fortifications!)
+    final defenderEquipped = await PocketCitadelStoreService.instance
+        .getEquippedDefenses(userId: widget.neighbor.id);
+
+    // 🏰 2. Load Core Fortress Defense Cards + Equipped Store Defenses (Strictly matching defenderLevel + store military gates)
     final fortressQuestions =
         PocketCitadelChallengeGenerator.generateChallengesForDefender(
       defenderLevel: widget.neighbor.day,
@@ -1075,6 +1175,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       isPresident: widget.neighbor.isPresident,
       isVip: false,
       customArmedQuestions: customArmed,
+      equippedDefenses: defenderEquipped,
     );
 
     final activeQuestions = (requireEscort && !_isEscortDefeated)
@@ -1121,6 +1222,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         _cooldownHoursLeft = cooldownMinutes / 60.0;
         _isTargetProtected = isProtected;
         _protectionHoursLeft = protectionMinutes / 60.0;
+        _protectionSecondsRemaining = protectionSeconds;
         if (isProtected) {
           _isDefenderDamaged = true;
         }
@@ -1133,6 +1235,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         _defenseQuestions = activeQuestions;
         _defenderScore = defenderScore;
       });
+      _startProtectionCountdownTimer();
     }
   }
 
@@ -1276,7 +1379,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       _isDefenderDamaged = true;
       _isTargetProtected = true;
       _protectionHoursLeft = 24.0;
+      _protectionSecondsRemaining = 24 * 3600;
     });
+    _startProtectionCountdownTimer();
 
     await Future.delayed(const Duration(milliseconds: 1400));
 
@@ -2592,7 +2697,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'RESTRICTED SECURITY ZONE • ⏱️ ${_protectionHoursLeft.toStringAsFixed(1)}h COOLDOWN',
+                          'RESTRICTED SECURITY ZONE • ⏱️ ${_formatProtectionCountdown(_protectionSecondsRemaining)}',
                           style: GoogleFonts.outfit(
                             color: const Color(0xFF38BDF8),
                             fontSize: 10,
@@ -2931,7 +3036,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     color: Color(0xFFFFD700), size: 16),
                 const SizedBox(width: 6),
                 Text(
-                  'Active Protection: ${_protectionHoursLeft.toStringAsFixed(1)} hours remaining',
+                  'Active Protection: ${_formatProtectionCountdown(_protectionSecondsRemaining)} remaining',
                   style: GoogleFonts.outfit(
                     color: const Color(0xFFFFD700),
                     fontWeight: FontWeight.bold,
@@ -2941,9 +3046,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               ],
             ),
             const SizedBox(height: 6),
-            const Text(
-              'Raids are strictly prohibited during the 24-hour protection period. Armed guards remain on duty until the decree concludes.',
-              style: TextStyle(color: Colors.white60, fontSize: 11.5),
+            Text(
+              PocketLanguageService.localize(
+                en: 'Raids are strictly prohibited during the 24-hour protection period. Armed guards remain on duty until the decree concludes.',
+                ml: '24 മണിക്കൂർ പ്രസിഡൻഷ്യൽ സുരക്ഷാ കാലയളവിൽ അറ്റാക്ക് ചെയ്യുന്നത് കർശനമായി നിരോധിച്ചിരിക്കുന്നു. സമയം തീരുന്നത് വരെ കോട്ട ലോക്ക് ചെയ്തിരിക്കും.',
+                ta: '24 மணி நேர பாதுகாப்பு காலத்தில் தாக்குதல்கள் முற்றிலும் தடைசெய்யப்பட்டுள்ளன.',
+                hi: '24 घंटे की सुरक्षा अवधि के दौरान हमलों पर कड़ा प्रतिबंध है।',
+              ),
+              style: const TextStyle(color: Colors.white60, fontSize: 11.5),
             ),
           ],
         ),
@@ -4337,9 +4447,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
   /// 🏅 Sleek Global Rank Badge Widget for Citadel Attack page
   Widget _buildGlobalRankBadge({double fontSize = 9.5}) {
-    final isRobot = widget.neighbor.isPocketRobo ||
-        PocketRobotService.isRobotId(widget.neighbor.id) ||
-        !RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(widget.neighbor.id);
+    final isRobot = (widget.neighbor.isPocketRobo ||
+            PocketRobotService.isRobotId(widget.neighbor.id)) &&
+        !widget.neighbor.isPresident;
     final rank = _defenderGlobalRank;
 
     final rankText = isRobot
@@ -5235,57 +5345,116 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               ),
             ),
 
-            // 🪐 Minimal Cosmos Planetary Colony Address Chip
-            Flexible(
-              child: GestureDetector(
-                onTap: () => _showDefenderCosmosAddressSheet(context),
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.70),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: const Color(0xFF38BDF8).withValues(alpha: 0.6),
-                      width: 1.1,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.35),
-                        blurRadius: 6,
+            // 👤 Username Dropdown Header for Logged-In User Profile, or 🪐 Cosmos Address Chip for other defenders
+            if (widget.neighbor.isMe || widget.isDefenseMode)
+              Flexible(
+                child: GestureDetector(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    PocketSavedAccountService.showLoginInfoBottomSheet(context);
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.70),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.7),
+                        width: 1.2,
                       ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        _getPlanetEmoji(widget.neighbor.effectivePlanetCode),
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      const SizedBox(width: 4),
-                      Flexible(
-                        child: Text(
-                          '${_getCleanPlanetName(widget.neighbor.effectivePlanetCode, widget.neighbor.effectivePlanetName)} • #${widget.neighbor.effectivePlotNumber}',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.2,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.20),
+                          blurRadius: 8,
                         ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            (widget.neighbor.name.isNotEmpty &&
+                                    widget.neighbor.name != 'My Fortress' &&
+                                    widget.neighbor.name != 'Citadel Defender' &&
+                                    widget.neighbor.name != 'Pocket Learner')
+                                ? widget.neighbor.name
+                                : (SupaFlow.client.auth.currentUser?.email?.split('@').first ?? 'My Profile'),
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.2,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          size: 18,
+                          color: Color(0xFFFFD700),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              )
+            else
+              // 🪐 Minimal Cosmos Planetary Colony Address Chip
+              Flexible(
+                child: GestureDetector(
+                  onTap: () => _showDefenderCosmosAddressSheet(context),
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.70),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: const Color(0xFF38BDF8).withValues(alpha: 0.6),
+                        width: 1.1,
                       ),
-                      const SizedBox(width: 3),
-                      const Icon(Icons.info_outline_rounded,
-                          size: 11, color: Color(0xFF38BDF8)),
-                    ],
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.35),
+                          blurRadius: 6,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _getPlanetEmoji(widget.neighbor.effectivePlanetCode),
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            '${_getCleanPlanetName(widget.neighbor.effectivePlanetCode, widget.neighbor.effectivePlanetName)} • #${widget.neighbor.effectivePlotNumber}',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.2,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 3),
+                        const Icon(Icons.info_outline_rounded,
+                            size: 11, color: Color(0xFF38BDF8)),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
 
             // Right Minimal Icon Button Group: No text to break/overflow on small screens!
             Row(
@@ -5467,43 +5636,76 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 ),
                 const SizedBox(width: 5),
 
-                // 🛡️ Safety & Options Menu Button
-                PopupMenuButton<String>(
-                  tooltip: 'Citadel Options',
-                  icon: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.70),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white24,
-                        width: 1.2,
+                // 🛡️ Settings Button for own profile, OR Safety & Options Menu Button for other defenders
+                if (widget.neighbor.isMe || widget.isDefenseMode)
+                  Tooltip(
+                    message: 'Settings ⚙️',
+                    child: InkWell(
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SettingsPage(),
+                          ),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.70),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white24,
+                            width: 1.2,
+                          ),
+                        ),
+                        child: const Center(
+                          child: Icon(Icons.settings_rounded,
+                              color: Colors.white, size: 16),
+                        ),
                       ),
                     ),
-                    child: const Center(
-                      child: Icon(Icons.more_vert_rounded,
-                          color: Colors.white70, size: 16),
+                  )
+                else
+                  PopupMenuButton<String>(
+                    tooltip: 'Citadel Options',
+                    icon: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.70),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white24,
+                          width: 1.2,
+                        ),
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.more_vert_rounded,
+                            color: Colors.white70, size: 16),
+                      ),
                     ),
-                  ),
-                  color: const Color(0xFF1E293B),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    side: const BorderSide(color: Colors.white24),
-                  ),
-                  onSelected: (val) {
-                    if (val == 'citadel_stats') {
-                      _showCitadelStatsSheet();
-                    } else if (val == 'view_plot') {
-                      _navigateToDefenderPlotOnIsland();
-                    } else if (val == 'share_vibes') {
-                      _shareCitadelToVibes();
-                    } else if (val == 'report_citadel') {
-                      _showCitadelReportOptions();
-                    } else if (val == 'block_defender') {
-                      _showBlockDefenderDialog();
-                    }
-                  },
+                    color: const Color(0xFF1E293B),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      side: const BorderSide(color: Colors.white24),
+                    ),
+                    onSelected: (val) {
+                      if (val == 'citadel_stats') {
+                        _showCitadelStatsSheet();
+                      } else if (val == 'view_plot') {
+                        _navigateToDefenderPlotOnIsland();
+                      } else if (val == 'share_vibes') {
+                        _shareCitadelToVibes();
+                      } else if (val == 'report_citadel') {
+                        _showCitadelReportOptions();
+                      } else if (val == 'block_defender') {
+                        _showBlockDefenderDialog();
+                      }
+                    },
                   itemBuilder: (ctx) => [
                     const PopupMenuItem(
                       value: 'citadel_stats',
@@ -6000,7 +6202,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 const SizedBox(height: 4),
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFF0369A1), Color(0xFF0C4A6E)],
@@ -6019,7 +6221,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       const Text('🏛️', style: TextStyle(fontSize: 13)),
                       const SizedBox(width: 6),
                       Text(
-                        'PRESIDENTIAL PROTECTION (${_protectionHoursLeft.toStringAsFixed(1)}h)',
+                        'PRESIDENTIAL PROTECTION (${_formatProtectionCountdown(_protectionSecondsRemaining)})',
                         style: GoogleFonts.outfit(
                           color: const Color(0xFFBAE6FD),
                           fontSize: 11.5,
@@ -6027,6 +6229,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           letterSpacing: 0.4,
                         ),
                       ),
+                      const SizedBox(width: 5),
+                      const Icon(Icons.lock_rounded,
+                          size: 12, color: Color(0xFF38BDF8)),
                     ],
                   ),
                 ),
@@ -6298,7 +6503,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       onTap: _onTapBottomAttack,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 7),
+                            horizontal: 14, vertical: 7),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [
@@ -6328,33 +6533,44 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           children: [
                             const Text('🏛️', style: TextStyle(fontSize: 14)),
                             const SizedBox(width: 6),
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  PocketLanguageService.localize(
-                                    en: 'PRESIDENTIAL ESCORT ATTACK',
-                                    ml: 'PRESIDENTIAL ESCORT ATTACK (എസ്കോർട്ട് അറ്റാക്ക്)',
-                                    ta: 'PRESIDENTIAL ESCORT ATTACK (பாதுகாப்புப் படை தாக்குதல்)',
-                                    hi: 'PRESIDENTIAL ESCORT ATTACK (एस्कॉर्ट हमला)',
+                            Flexible(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    PocketLanguageService.localize(
+                                      en: 'PRESIDENTIAL ESCORT',
+                                      ml: 'പ്രസിഡൻഷ്യൽ എസ്കോർട്ട്',
+                                      ta: 'பாதுகாப்புப் படை தாக்குதல்',
+                                      hi: 'प्रेसिडेंशियल एस्कॉर्ट',
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontSize: 12.0,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 0.5,
+                                    ),
                                   ),
-                                  style: GoogleFonts.outfit(
-                                    color: Colors.white,
-                                    fontSize: 12.0,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 0.5,
+                                  Text(
+                                    PocketLanguageService.localize(
+                                      en: '10 Escort Tasks • Defeat to Unlock Attack',
+                                      ml: '10 എസ്കോർട്ട് ടാസ്കുകൾ • അറ്റാക്ക് അൺലോക്ക് ചെയ്യുക',
+                                      ta: '10 பாதுகாப்பு பணிகள் • திறக்க வெல்லுங்கள்',
+                                      hi: '10 एस्कॉर्ट कार्य • हमला अनलॉक करें',
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.inter(
+                                      color: const Color(0xFFFFD700),
+                                      fontSize: 8.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
-                                Text(
-                                  '10 Escort Tasks • Defeat to Unlock Attack',
-                                  style: GoogleFonts.inter(
-                                    color: const Color(0xFFFFD700),
-                                    fontSize: 8.5,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ],
                         ),
@@ -6847,7 +7063,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                     child: Text(
                                       widget.neighbor.isPresident
                                           ? 'The President\'s Sovereign Citadel'
-                                          : '${widget.neighbor.name}\'s Profile',
+                                          : ((widget.neighbor.isMe || widget.isDefenseMode)
+                                              ? 'My Profile & Stats'
+                                              : '${widget.neighbor.name}\'s Profile'),
                                       style: GoogleFonts.outfit(
                                         color: widget.neighbor.isPresident
                                             ? const Color(0xFFFFD700)
@@ -6935,10 +7153,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                 prog > 0.5
                                     ? (widget.neighbor.isPresident
                                         ? 'Sovereign Head of Pocket World'
-                                        : (_shouldShowKidProfile
-                                            ? 'Kid Hero Profile 🎒'
-                                            : 'Citadel Defender Profile'))
-                                    : 'Swipe up or tap to explore profile',
+                                        : ((widget.neighbor.isMe || widget.isDefenseMode)
+                                            ? 'My Profile & Learning Journey 🌟'
+                                            : (_shouldShowKidProfile
+                                                ? 'Kid Hero Profile 🎒'
+                                                : 'Citadel Defender Profile')))
+                                    : ((widget.neighbor.isMe || widget.isDefenseMode)
+                                        ? 'Tap or swipe up to view full profile & stats ➔'
+                                        : 'Swipe up or tap to explore profile'),
                                 style: GoogleFonts.outfit(
                                   color: prog > 0.5
                                       ? (widget.neighbor.isPresident
@@ -6946,7 +7168,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                           : (_shouldShowKidProfile
                                               ? const Color(0xFF38BDF8)
                                               : const Color(0xFFA78BFA)))
-                                      : Colors.white60,
+                                      : ((widget.neighbor.isMe || widget.isDefenseMode)
+                                          ? const Color(0xFFFFD700)
+                                          : Colors.white60),
                                   fontSize: 11,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -7197,16 +7421,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             ),
             const SizedBox(height: 16),
             _buildStatRow(
-              (widget.neighbor.isPocketRobo ||
-                      PocketRobotService.isRobotId(widget.neighbor.id) ||
-                      !RegExp(r'^[0-9a-fA-F-]{36}$')
-                          .hasMatch(widget.neighbor.id))
+              ((widget.neighbor.isPocketRobo ||
+                          PocketRobotService.isRobotId(widget.neighbor.id)) &&
+                      !widget.neighbor.isPresident)
                   ? 'Robot Rank'
                   : 'Global Rank',
-              (widget.neighbor.isPocketRobo ||
-                      PocketRobotService.isRobotId(widget.neighbor.id) ||
-                      !RegExp(r'^[0-9a-fA-F-]{36}$')
-                          .hasMatch(widget.neighbor.id))
+              ((widget.neighbor.isPocketRobo ||
+                          PocketRobotService.isRobotId(widget.neighbor.id)) &&
+                      !widget.neighbor.isPresident)
                   ? '🤖 Robot Rank #${_defenderGlobalRank ?? widget.neighbor.day.clamp(1, 90)}'
                   : (_defenderGlobalRank != null
                       ? '🏆 Global Rank #$_defenderGlobalRank'
@@ -7227,7 +7449,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             if (_isTargetProtected)
               _buildStatRow(
                 'Presidential Guard',
-                '👮‍♂️ ${_protectionHoursLeft.toStringAsFixed(1)}h remaining',
+                '👮‍♂️ ${_formatProtectionCountdown(_protectionSecondsRemaining)} remaining',
               ),
             const SizedBox(height: 12),
             SizedBox(

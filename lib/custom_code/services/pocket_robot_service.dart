@@ -318,8 +318,16 @@ class PocketRobotService {
   /// Find robot by ID or Name (always returns dynamic looped robot)
   static PocketRobot? getRobotById(String id) {
     if (id.isEmpty) return null;
-    if (id.startsWith('kid_bot_')) {
-      final animal = PocketKidsRobotsData.getAnimalById(id);
+    final trimmed = id.trim();
+    // 👤 Real human user with UUID format: NEVER resolve as an AI robot!
+    if (RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$').hasMatch(trimmed)) {
+      return null;
+    }
+    // 🏛️ The President is human and sovereign, never a robot
+    if (PocketPresidentService.isPresidentId(trimmed)) return null;
+
+    if (trimmed.startsWith('kid_bot_')) {
+      final animal = PocketKidsRobotsData.getAnimalById(trimmed);
       if (animal != null) {
         return PocketRobot(
           id: animal.id,
@@ -338,30 +346,36 @@ class PocketRobotService {
       }
     }
     try {
-      final lower = id.toLowerCase().trim();
+      final lower = trimmed.toLowerCase();
       final base = _baseRobots.firstWhere(
         (r) => r.id.toLowerCase() == lower || r.name.toLowerCase() == lower,
       );
       return getDynamicRobot(base);
     } catch (_) {
-      final lower = id.toLowerCase().trim();
-      // Try matching by prefix of name (e.g. 'Maya' matching 'Maya 🤖')
+      final lower = trimmed.toLowerCase();
+      // Try matching by exact name without emoji (e.g. 'Maya' matching 'Maya 🤖')
       final byName = _baseRobots.where((r) {
         final rName = r.name.toLowerCase();
-        return rName.startsWith(lower) ||
-            lower.startsWith(rName.split(' ').first);
+        return rName == lower ||
+            rName.split(' ').first == lower;
       }).firstOrNull;
-      if (byName != null) return getDynamicRobot(byName);
+      if (byName != null && !lower.contains('-')) return getDynamicRobot(byName);
 
-      // Check if it's in the format pocket_robo_18 or pocket_robot_lvl_18 or robo_18
-      final match = RegExp(r'(\d+)').firstMatch(id);
-      if (match != null) {
-        final lvl = int.tryParse(match.group(1) ?? '1') ?? 1;
-        final base = _baseRobots.firstWhere(
-          (r) => r.baseLevel == lvl || r.id == 'pocket_robot_lvl_$lvl',
-          orElse: () => _baseRobots[(lvl - 1).clamp(0, _baseRobots.length - 1)],
-        );
-        return getDynamicRobot(base);
+      // Check if it's explicitly in the format pocket_robo_18 or pocket_robot_lvl_18 or robo_18
+      if (lower.startsWith('pocket_robo') ||
+          lower.startsWith('pocket_robot_') ||
+          lower.startsWith('robot_') ||
+          lower.startsWith('robo_') ||
+          lower.startsWith('kid_bot_')) {
+        final match = RegExp(r'(\d+)').firstMatch(lower);
+        if (match != null) {
+          final lvl = int.tryParse(match.group(1) ?? '1') ?? 1;
+          final base = _baseRobots.firstWhere(
+            (r) => r.baseLevel == lvl || r.id == 'pocket_robot_lvl_$lvl',
+            orElse: () => _baseRobots[(lvl - 1).clamp(0, _baseRobots.length - 1)],
+          );
+          return getDynamicRobot(base);
+        }
       }
       return null;
     }
@@ -370,15 +384,20 @@ class PocketRobotService {
   /// Check if an ID belongs to a Pocket Robot
   static bool isRobotId(String id) {
     if (id.isEmpty) return false;
+    final trimmed = id.trim();
+    // 👤 Real human user with UUID format: NEVER resolve as an AI robot!
+    if (RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$').hasMatch(trimmed)) {
+      return false;
+    }
     // 🏛️ The President is NOT a robot!
-    if (PocketPresidentService.isPresidentId(id)) return false;
-    return id.startsWith('pocket_robot_') ||
-        id.startsWith('robot_') ||
-        id.startsWith('pocket_robo_') ||
-        (id.startsWith('pocket_') && !id.contains('president')) ||
-        id.startsWith('kid_bot_') ||
-        id == 'pocket' ||
-        _baseRobots.any((r) => r.id == id);
+    if (PocketPresidentService.isPresidentId(trimmed)) return false;
+    return trimmed.startsWith('pocket_robot_') ||
+        trimmed.startsWith('robot_') ||
+        trimmed.startsWith('pocket_robo_') ||
+        (trimmed.startsWith('pocket_') && !trimmed.contains('president')) ||
+        trimmed.startsWith('kid_bot_') ||
+        trimmed == 'pocket' ||
+        _baseRobots.any((r) => r.id == trimmed);
   }
 
   /// 💬 Live Typing Indicator Notifier: targetId -> isTyping

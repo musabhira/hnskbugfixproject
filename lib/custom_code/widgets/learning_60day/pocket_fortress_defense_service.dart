@@ -2321,14 +2321,43 @@ class PocketFortressDefenseService {
     return false;
   }
 
-  /// Get minutes remaining in 48-hour Presidential Police Protection
+  /// Get minutes remaining in 24-hour Presidential Police Protection
   static Future<int> getPresidentialProtectionMinutesRemaining(
+      String houseId) async {
+    final seconds = await getPresidentialProtectionSecondsRemaining(houseId);
+    return seconds > 0 ? (seconds / 60).ceil() : 0;
+  }
+
+  /// Get seconds remaining in 24-hour Presidential Police Protection
+  static Future<int> getPresidentialProtectionSecondsRemaining(
       String houseId) async {
     final prefs = await SharedPreferences.getInstance();
     final expiry = prefs.getInt('$_presidentialProtectionPrefix$houseId');
-    if (expiry == null) return 0;
-    final diff = expiry - DateTime.now().millisecondsSinceEpoch;
-    return diff > 0 ? (diff / (1000 * 60)).ceil() : 0;
+    if (expiry != null) {
+      final diff = expiry - DateTime.now().millisecondsSinceEpoch;
+      if (diff > 0) return (diff / 1000).ceil();
+    }
+
+    // Check remote Supabase pocket_homes last_attacked_at
+    try {
+      final res = await SupaFlow.client
+          .from('pocket_homes')
+          .select('last_attacked_at')
+          .eq('user_id', houseId)
+          .maybeSingle();
+      if (res != null && res['last_attacked_at'] != null) {
+        final lastAtk = DateTime.tryParse(res['last_attacked_at'].toString());
+        if (lastAtk != null) {
+          final diff = DateTime.now().difference(lastAtk);
+          final remainingSeconds =
+              (kPresidentialProtectionHours * 3600) - diff.inSeconds;
+          if (remainingSeconds > 0) {
+            return remainingSeconds;
+          }
+        }
+      }
+    } catch (_) {}
+    return 0;
   }
 
   /// Lift protection early when house is repaired/rebuilt

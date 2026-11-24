@@ -115,55 +115,16 @@ class _PoketMatesBrandSplashScreenState
 
                   const SizedBox(height: 32),
 
-                  // 🔤 Animated Wordmark: P O [C] K E T   M A T E S
+                  // 🔤 Brand Wordmark: POKET MATES
                   FadeTransition(
                     opacity: _fadeAnim,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // "PO"
+                        // "POKET"
                         Text(
-                          'PO',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontSize: 28,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 2.0,
-                          ),
-                        ),
-
-                        // Animated "[C]" with strike-through slash
-                        Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 2),
-                              child: Text(
-                                'C',
-                                style: GoogleFonts.outfit(
-                                  color: Color.lerp(
-                                    const Color(0xFFEF4444),
-                                    Colors.white24,
-                                    _strikeAnim.value,
-                                  ),
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 2.0,
-                                ),
-                              ),
-                            ),
-                            // Red strike-through line
-                            CustomPaint(
-                              size: const Size(22, 28),
-                              painter: _StrikeLinePainter(progress: _strikeAnim.value),
-                            ),
-                          ],
-                        ),
-
-                        // "KET"
-                        Text(
-                          'KET',
+                          'POKET',
                           style: GoogleFonts.outfit(
                             color: Colors.white,
                             fontSize: 28,

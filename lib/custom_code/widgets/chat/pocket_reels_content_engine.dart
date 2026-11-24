@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 /// 📖 Reel Short Story Model with Audio Read-Along & Dynamic Native Takeaway
 class ReelStoryCard {
@@ -24,10 +25,10 @@ class ReelStoryCard {
   });
 
   String getMoral(String lang) {
-    return nativeMorals[lang] ??
-        nativeMorals['Malayalam'] ??
-        nativeMorals['English'] ??
-        moralEn;
+    final norm = PocketLanguageService.normalize(lang);
+    if (nativeMorals.containsKey(norm)) return nativeMorals[norm]!;
+    if (norm == 'Malayalam') return nativeMorals['Malayalam'] ?? moralEn;
+    return nativeMorals['English'] ?? moralEn;
   }
 }
 
@@ -58,9 +59,13 @@ class ReelInterviewCard {
   });
 
   String getTip(String lang) {
-    return nativeTips[lang] ??
-        nativeTips['Malayalam'] ??
-        nativeTips['English'] ??
+    final norm = PocketLanguageService.normalize(lang);
+    if (nativeTips.containsKey(norm)) return nativeTips[norm]!;
+    if (norm == 'Malayalam') {
+      return nativeTips['Malayalam'] ??
+          'Deliver your answer with clear pace and calm confidence.';
+    }
+    return nativeTips['English'] ??
         'Deliver your answer with clear pace and calm confidence.';
   }
 }
@@ -90,10 +95,13 @@ class ReelSpeakChallengeCard {
   });
 
   String getGuidance(String lang) {
-    return nativeGuidance[lang] ??
-        nativeGuidance['Malayalam'] ??
-        nativeGuidance['English'] ??
-        'Speak naturally into the microphone!';
+    final norm = PocketLanguageService.normalize(lang);
+    if (nativeGuidance.containsKey(norm)) return nativeGuidance[norm]!;
+    if (norm == 'Malayalam') {
+      return nativeGuidance['Malayalam'] ??
+          'Speak naturally into the microphone!';
+    }
+    return nativeGuidance['English'] ?? 'Speak naturally into the microphone!';
   }
 }
 
@@ -120,10 +128,10 @@ class ReelVocabCard {
   });
 
   String getMeaning(String lang) {
-    return nativeMeanings[lang] ??
-        nativeMeanings['Malayalam'] ??
-        nativeMeanings['English'] ??
-        definitionEn;
+    final norm = PocketLanguageService.normalize(lang);
+    if (nativeMeanings.containsKey(norm)) return nativeMeanings[norm]!;
+    if (norm == 'Malayalam') return nativeMeanings['Malayalam'] ?? definitionEn;
+    return nativeMeanings['English'] ?? definitionEn;
   }
 }
 

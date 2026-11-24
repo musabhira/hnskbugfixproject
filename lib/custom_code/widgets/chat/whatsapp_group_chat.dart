@@ -1275,8 +1275,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             (profileRes['learning_points'] as num?)?.toInt() ??
             (profileRes['xp'] as num?)?.toInt() ??
             0;
-        final rawDay = (profileRes['day'] as num?)?.toInt() ??
-            (profileRes['learning_day'] as num?)?.toInt() ??
+        final rawDay = (profileRes['learning_day'] as num?)?.toInt() ??
             (profileRes['learning_stage'] as num?)?.toInt() ??
             (profileRes['stage'] as num?)?.toInt() ??
             (profileRes['level'] as num?)?.toInt() ??
@@ -1520,8 +1519,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             (profileRes['xp'] as num?)?.toInt() ??
             0;
 
-        final rawDay = (profileRes['day'] as num?)?.toInt() ??
-            (profileRes['learning_day'] as num?)?.toInt() ??
+        final rawDay = (profileRes['learning_day'] as num?)?.toInt() ??
             (profileRes['learning_stage'] as num?)?.toInt() ??
             (profileRes['stage'] as num?)?.toInt() ??
             (profileRes['level'] as num?)?.toInt() ??
@@ -4002,7 +4000,12 @@ Draft: "$draft"''';
                 style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
-              PocketCitadelAttackPage.openForUser(context, userId: userId);
+              PocketCitadelAttackPage.openForUser(
+                context,
+                userId: userId,
+                targetName: name,
+                targetDay: _userPocketStageCache[userId],
+              );
             },
           ),
           ListTile(
@@ -4539,8 +4542,17 @@ Draft: "$draft"''';
                 InkWell(
                   onTap: () {
                     HapticFeedback.lightImpact();
-                    PocketCitadelAttackPage.openForUser(context,
-                        userId: otherUserId);
+                    final pName = ContactsNameService().getDisplayName(
+                      userId: otherUserId,
+                      fallbackName: _currentGroupName,
+                    );
+                    final pDay = _userPocketStageCache[otherUserId];
+                    PocketCitadelAttackPage.openForUser(
+                      context,
+                      userId: otherUserId,
+                      targetName: pName.isNotEmpty ? pName : null,
+                      targetDay: (pDay != null && pDay > 0) ? pDay : null,
+                    );
                   },
                   borderRadius: BorderRadius.circular(5),
                   child: Container(
@@ -4583,8 +4595,17 @@ Draft: "$draft"''';
                 InkWell(
                   onTap: () {
                     HapticFeedback.lightImpact();
-                    PocketCitadelAttackPage.openForUser(context,
-                        userId: otherUserId);
+                    final pName = ContactsNameService().getDisplayName(
+                      userId: otherUserId,
+                      fallbackName: _currentGroupName,
+                    );
+                    final pDay = _userPocketStageCache[otherUserId];
+                    PocketCitadelAttackPage.openForUser(
+                      context,
+                      userId: otherUserId,
+                      targetName: pName.isNotEmpty ? pName : null,
+                      targetDay: (pDay != null && pDay > 0) ? pDay : null,
+                    );
                   },
                   borderRadius: BorderRadius.circular(5),
                   child: Container(
@@ -5325,9 +5346,30 @@ Draft: "$draft"''';
                   if (_isPersonalChat) {
                     final targetId = _personalPeerId;
                     if (targetId.isNotEmpty) {
+                      final displayName = ContactsNameService().getDisplayName(
+                        userId: targetId,
+                        fallbackName: _currentGroupName.isNotEmpty
+                            ? _currentGroupName
+                            : widget.groupName,
+                      );
+                      final userStage = _userPocketStageCache[targetId] ??
+                          (widget.avatarConfig?['stage'] as num?)?.toInt() ??
+                          (widget.avatarConfig?['learning_day'] as num?)?.toInt() ??
+                          (widget.avatarConfig?['level'] as num?)?.toInt() ??
+                          1;
                       PocketCitadelAttackPage.openForUser(
                         context,
                         userId: targetId,
+                        targetName: displayName.isNotEmpty ? displayName : null,
+                        targetDay: userStage > 0 ? userStage : null,
+                        preloadedProfile: {
+                          'id': targetId,
+                          'user_id': targetId,
+                          'name': displayName,
+                          'learning_day': userStage,
+                          'level': userStage,
+                          'avatar_config': widget.avatarConfig,
+                        },
                       );
                     }
                     return;
@@ -5463,9 +5505,30 @@ Draft: "$draft"''';
                     if (_isPersonalChat) {
                       final targetId = _personalPeerId;
                       if (targetId.isNotEmpty) {
+                        final displayName = ContactsNameService().getDisplayName(
+                          userId: targetId,
+                          fallbackName: _currentGroupName.isNotEmpty
+                              ? _currentGroupName
+                              : widget.groupName,
+                        );
+                        final userStage = _userPocketStageCache[targetId] ??
+                            (widget.avatarConfig?['stage'] as num?)?.toInt() ??
+                            (widget.avatarConfig?['learning_day'] as num?)?.toInt() ??
+                            (widget.avatarConfig?['level'] as num?)?.toInt() ??
+                            1;
                         PocketCitadelAttackPage.openForUser(
                           context,
                           userId: targetId,
+                          targetName: displayName.isNotEmpty ? displayName : null,
+                          targetDay: userStage > 0 ? userStage : null,
+                          preloadedProfile: {
+                            'id': targetId,
+                            'user_id': targetId,
+                            'name': displayName,
+                            'learning_day': userStage,
+                            'level': userStage,
+                            'avatar_config': widget.avatarConfig,
+                          },
                         );
                       }
                     } else {
@@ -5745,8 +5808,31 @@ Draft: "$draft"''';
                 tooltip: 'Citadel Challenge 🏰',
                 onPressed: () {
                   final targetId = _personalPeerId;
-                  PocketCitadelAttackPage.openForUser(context,
-                      userId: targetId);
+                  final displayName = ContactsNameService().getDisplayName(
+                    userId: targetId,
+                    fallbackName: _currentGroupName.isNotEmpty
+                        ? _currentGroupName
+                        : widget.groupName,
+                  );
+                  final userStage = _userPocketStageCache[targetId] ??
+                      (widget.avatarConfig?['stage'] as num?)?.toInt() ??
+                      (widget.avatarConfig?['learning_day'] as num?)?.toInt() ??
+                      (widget.avatarConfig?['level'] as num?)?.toInt() ??
+                      1;
+                  PocketCitadelAttackPage.openForUser(
+                    context,
+                    userId: targetId,
+                    targetName: displayName.isNotEmpty ? displayName : null,
+                    targetDay: userStage > 0 ? userStage : null,
+                    preloadedProfile: {
+                      'id': targetId,
+                      'user_id': targetId,
+                      'name': displayName,
+                      'learning_day': userStage,
+                      'level': userStage,
+                      'avatar_config': widget.avatarConfig,
+                    },
+                  );
                 },
               ),
             if (!_isKidMode &&
@@ -7350,12 +7436,14 @@ Draft: "$draft"''';
     }
 
     // 🤖 AI Robot Check: ONLY true robots or explicitly flagged robot messages!
-    final robot = PocketRobotService.getRobotById(senderId);
+    final isUuid = _uuidRegex.hasMatch(senderId);
+    final robot = isUuid ? null : PocketRobotService.getRobotById(senderId);
     final isRobotFlagged = message.metadata?['is_robot'] == true ||
         message.senderProfile?['is_robot'] == true;
-    final isRobot = robot != null ||
-        PocketRobotService.isRobotId(senderId) ||
-        (isRobotFlagged && !_uuidRegex.hasMatch(senderId));
+    final isRobot = !isUuid &&
+        (robot != null ||
+            PocketRobotService.isRobotId(senderId) ||
+            isRobotFlagged);
 
     if (isRobot) {
       final lvl = robot != null
@@ -7407,8 +7495,7 @@ Draft: "$draft"''';
     // 1. Try directly from message.senderProfile
     final msgProf = message.senderProfile;
     if (msgProf != null && msgProf.isNotEmpty) {
-      final rawDay = (msgProf['day'] as num?)?.toInt() ??
-          (msgProf['learning_day'] as num?)?.toInt() ??
+      final rawDay = (msgProf['learning_day'] as num?)?.toInt() ??
           (msgProf['learning_stage'] as num?)?.toInt() ??
           (msgProf['stage'] as num?)?.toInt() ??
           (msgProf['level'] as num?)?.toInt();
@@ -7454,8 +7541,7 @@ Draft: "$draft"''';
       );
       if (member.isNotEmpty) {
         final prof = (member['profile'] as Map<String, dynamic>?) ?? member;
-        final rawDay = (prof['day'] as num?)?.toInt() ??
-            (prof['learning_day'] as num?)?.toInt() ??
+        final rawDay = (prof['learning_day'] as num?)?.toInt() ??
             (prof['learning_stage'] as num?)?.toInt() ??
             (prof['stage'] as num?)?.toInt() ??
             (prof['level'] as num?)?.toInt() ??
@@ -7544,6 +7630,45 @@ Draft: "$draft"''';
     );
   }
 
+  void _openCitadelForMessageSender(ChatMessage message) {
+    final senderId = message.senderId;
+    if (senderId.isEmpty) return;
+
+    // Check _groupMembers for accurate metadata
+    final member = _groupMembers.firstWhere(
+      (m) => m['user_id'] == senderId || m['id'] == senderId,
+      orElse: () => {},
+    );
+    final memberProf = (member['profile'] as Map<String, dynamic>?) ?? member;
+
+    final targetName = message.senderName ??
+        memberProf['name'] ??
+        memberProf['first_name'] ??
+        (message.metadata?['sender_name'] as String?) ??
+        (message.metadata?['robot_name'] as String?) ??
+        'User';
+
+    final effectiveProfile = (message.senderProfile != null && message.senderProfile!.isNotEmpty)
+        ? message.senderProfile
+        : (memberProf.isNotEmpty ? memberProf : null);
+
+    // Calculate effective day/level
+    final rawDay = (effectiveProfile?['learning_day'] as num?)?.toInt() ??
+        (effectiveProfile?['learning_stage'] as num?)?.toInt() ??
+        (effectiveProfile?['stage'] as num?)?.toInt() ??
+        (effectiveProfile?['level'] as num?)?.toInt() ??
+        _userPocketStageCache[senderId] ??
+        1;
+
+    PocketCitadelAttackPage.openForUser(
+      context,
+      userId: senderId,
+      targetName: targetName,
+      preloadedProfile: effectiveProfile,
+      targetDay: rawDay > 0 ? rawDay : null,
+    );
+  }
+
   Widget _buildMessageTile(ChatMessage message, bool isMe) {
     if (message.messageType == 'system') {
       return Center(
@@ -7591,12 +7716,10 @@ Draft: "$draft"''';
         ],
         if (!isMe)
           GestureDetector(
+            behavior: HitTestBehavior.opaque,
             onTap: () {
               HapticFeedback.selectionClick();
-              PocketCitadelAttackPage.openForUser(
-                context,
-                userId: message.senderId,
-              );
+              _openCitadelForMessageSender(message);
             },
             onLongPress: () => _showUserOptionsDialog(
                 message.senderId, message.senderName ?? 'User'),
@@ -7648,36 +7771,32 @@ Draft: "$draft"''';
               children: [
                 if (!isMe)
                   GestureDetector(
+                    behavior: HitTestBehavior.opaque,
                     onTap: () {
                       HapticFeedback.selectionClick();
-                      PocketCitadelAttackPage.openForUser(
-                        context,
-                        userId: message.senderId,
-                      );
+                      _openCitadelForMessageSender(message);
                     },
                     onLongPress: () => _showUserOptionsDialog(
                         message.senderId, message.senderName ?? 'User'),
                     child: Padding(
                       padding: const EdgeInsets.only(left: 4, bottom: 4),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
+                      child: Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 6,
+                        runSpacing: 2,
                         children: [
-                          Flexible(
-                            child: Text(
-                              message.senderName ?? 'User',
-                              style: const TextStyle(
-                                color: Color(0xFFFFFC00),
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                          Text(
+                            message.senderName ?? 'User',
+                            style: const TextStyle(
+                              color: Color(0xFFFFFC00),
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(width: 6),
                           _buildSenderLevelAndRankBadge(message),
                           if (_isAdmin(message.senderId)) ...[
-                            const SizedBox(width: 4),
                             Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 5, vertical: 1.5),
@@ -11932,11 +12051,32 @@ Draft: "$draft"''';
       }
 
       if (targetId.isNotEmpty) {
+        final displayName = ContactsNameService().getDisplayName(
+          userId: targetId,
+          fallbackName: _currentGroupName.isNotEmpty
+              ? _currentGroupName
+              : widget.groupName,
+        );
+        final userStage = _userPocketStageCache[targetId] ??
+            (widget.avatarConfig?['stage'] as num?)?.toInt() ??
+            (widget.avatarConfig?['learning_day'] as num?)?.toInt() ??
+            (widget.avatarConfig?['level'] as num?)?.toInt() ??
+            1;
         PocketCitadelAttackPage.openForUser(
           context,
           userId: targetId,
+          targetName: displayName.isNotEmpty ? displayName : null,
+          targetDay: userStage > 0 ? userStage : null,
           preferredPlanetCode: _islandColonyInfo?.code,
           preferredPlanetName: _islandColonyInfo?.planetName,
+          preloadedProfile: {
+            'id': targetId,
+            'user_id': targetId,
+            'name': displayName,
+            'learning_day': userStage,
+            'level': userStage,
+            'avatar_config': widget.avatarConfig,
+          },
         );
       }
       return;

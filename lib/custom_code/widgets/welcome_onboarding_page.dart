@@ -134,7 +134,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   bool _useCustomPassword = true;
 
   // Onboarding Selections
-  String _selectedNativeLanguage = 'Hindi';
+  String _selectedNativeLanguage = PocketLanguageService.detectDeviceLanguage();
   final String _selectedTargetLanguage = 'English';
   final String _selectedReferralSource = 'Instagram / Reels';
   String _selectedEnglishLevel = 'Level 1: Beginner';

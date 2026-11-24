@@ -21,7 +21,12 @@ class ChatMessage {
   final Map<String, dynamic>? thought;
   final Map<String, dynamic>? tool;
   final Map<String, dynamic>? metadata;
-  String? get senderName => senderProfile?['name'];
+  String? get senderName =>
+      senderProfile?['name'] ??
+      senderProfile?['first_name'] ??
+      senderProfile?['display_name'] ??
+      metadata?['sender_name'] ??
+      metadata?['robot_name'];
 
   ChatMessage({
     required this.id,
