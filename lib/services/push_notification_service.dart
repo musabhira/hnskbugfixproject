@@ -122,19 +122,21 @@ class PushNotificationService {
           onDidReceiveNotificationResponse: _onNotificationTap,
         );
       } catch (localInitError) {
-        debugPrint('PushNotificationService: Local notifications init error: $localInitError');
+        debugPrint(
+            'PushNotificationService: Local notifications init error: $localInitError');
       }
 
       // 4. Create Android High Importance & Alarm Notification Channels
       if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
         try {
-          final androidImpl = _localNotificationsPlugin
-              .resolvePlatformSpecificImplementation<
+          final androidImpl =
+              _localNotificationsPlugin.resolvePlatformSpecificImplementation<
                   AndroidFlutterLocalNotificationsPlugin>();
           await androidImpl?.createNotificationChannel(_androidChannel);
           await androidImpl?.createNotificationChannel(_alarmChannel);
         } catch (channelError) {
-          debugPrint('PushNotificationService: Channel creation error: $channelError');
+          debugPrint(
+              'PushNotificationService: Channel creation error: $channelError');
         }
       }
 
@@ -152,14 +154,17 @@ class PushNotificationService {
         debugPrint(
             'PushNotificationService: Permission status: ${settings.authorizationStatus}');
       } catch (permError) {
-        debugPrint('PushNotificationService: Permission request note: $permError');
+        debugPrint(
+            'PushNotificationService: Permission request note: $permError');
       }
 
       // 6. Register background handler early
       try {
-        FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+        FirebaseMessaging.onBackgroundMessage(
+            _firebaseMessagingBackgroundHandler);
       } catch (bgError) {
-        debugPrint('PushNotificationService: Background handler note: $bgError');
+        debugPrint(
+            'PushNotificationService: Background handler note: $bgError');
       }
 
       // 7. Token management & Supabase sync
@@ -173,7 +178,8 @@ class PushNotificationService {
           _saveTokenToSupabase(newToken);
         });
       } catch (tokenError) {
-        debugPrint('PushNotificationService: FCM Token retrieval note: $tokenError');
+        debugPrint(
+            'PushNotificationService: FCM Token retrieval note: $tokenError');
       }
 
       // 8. Subscribe to general broadcast topic for free marketing & announcements
@@ -181,24 +187,33 @@ class PushNotificationService {
         await fcm.subscribeToTopic('all_users');
         debugPrint('PushNotificationService: Subscribed to topic all_users');
       } catch (topicError) {
-        debugPrint('PushNotificationService: Topic subscription note: $topicError');
+        debugPrint(
+            'PushNotificationService: Topic subscription note: $topicError');
       }
 
       // 9. Foreground notification listener: show heads-up floating banner when app is open
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        debugPrint('PushNotificationService: Foreground message received: ${message.messageId}');
+        debugPrint(
+            'PushNotificationService: Foreground message received: ${message.messageId}');
         RemoteNotification? notification = message.notification;
-        final title = notification?.title ?? message.data['title']?.toString() ?? 'New Message';
-        final body = notification?.body ?? message.data['body']?.toString() ?? message.data['message']?.toString() ?? '';
+        final title = notification?.title ??
+            message.data['title']?.toString() ??
+            'New Message';
+        final body = notification?.body ??
+            message.data['body']?.toString() ??
+            message.data['message']?.toString() ??
+            '';
 
         if (body.isNotEmpty) {
           InAppNotificationService.show(
             title: title,
             message: body,
             avatarUrl: message.data['avatar_url']?.toString(),
-            isRobot: message.data['is_robot'] == 'true' || message.data['is_robot'] == true,
+            isRobot: message.data['is_robot'] == 'true' ||
+                message.data['is_robot'] == true,
             onTap: () {
-              _handleNotificationPayload(message.data['type']?.toString() ?? 'chat');
+              _handleNotificationPayload(
+                  message.data['type']?.toString() ?? 'chat');
             },
           );
         }
@@ -223,7 +238,8 @@ class PushNotificationService {
 
       // 10. Background tap listener (when app is in background and user clicks notification)
       FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-        debugPrint('PushNotificationService: App opened from notification: ${message.data}');
+        debugPrint(
+            'PushNotificationService: App opened from notification: ${message.data}');
         _handleNotificationPayload(message.data['type']?.toString());
       });
 
@@ -262,7 +278,8 @@ class PushNotificationService {
       if (status.isGranted || status.isLimited) {
         granted = true;
       }
-      debugPrint('PushNotificationService: Permission.notification result: $status');
+      debugPrint(
+          'PushNotificationService: Permission.notification result: $status');
     } catch (e) {
       debugPrint('PushNotificationService: Permission.notification error: $e');
     }
@@ -270,15 +287,17 @@ class PushNotificationService {
     // 2. Also request via FlutterLocalNotificationsPlugin platform implementations
     try {
       if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-        final androidImpl = _localNotificationsPlugin
-            .resolvePlatformSpecificImplementation<
+        final androidImpl =
+            _localNotificationsPlugin.resolvePlatformSpecificImplementation<
                 AndroidFlutterLocalNotificationsPlugin>();
-        final androidGranted = await androidImpl?.requestNotificationsPermission();
+        final androidGranted =
+            await androidImpl?.requestNotificationsPermission();
         if (androidGranted == true) granted = true;
-        debugPrint('PushNotificationService: Android local permission: $androidGranted');
+        debugPrint(
+            'PushNotificationService: Android local permission: $androidGranted');
       } else if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
-        final iosImpl = _localNotificationsPlugin
-            .resolvePlatformSpecificImplementation<
+        final iosImpl =
+            _localNotificationsPlugin.resolvePlatformSpecificImplementation<
                 IOSFlutterLocalNotificationsPlugin>();
         final iosGranted = await iosImpl?.requestPermissions(
           alert: true,
@@ -286,10 +305,12 @@ class PushNotificationService {
           sound: true,
         );
         if (iosGranted == true) granted = true;
-        debugPrint('PushNotificationService: iOS local permission: $iosGranted');
+        debugPrint(
+            'PushNotificationService: iOS local permission: $iosGranted');
       }
     } catch (e) {
-      debugPrint('PushNotificationService: Local notification permission error: $e');
+      debugPrint(
+          'PushNotificationService: Local notification permission error: $e');
     }
 
     // 3. Request Firebase Messaging permission (iOS & Android)
@@ -308,10 +329,12 @@ class PushNotificationService {
             settings.authorizationStatus == AuthorizationStatus.provisional) {
           granted = true;
         }
-        debugPrint('PushNotificationService: FCM permission status: ${settings.authorizationStatus}');
+        debugPrint(
+            'PushNotificationService: FCM permission status: ${settings.authorizationStatus}');
       }
     } catch (e) {
-      debugPrint('PushNotificationService: FCM explicit permission request error: $e');
+      debugPrint(
+          'PushNotificationService: FCM explicit permission request error: $e');
     }
 
     // 4. Ensure service is initialized
@@ -322,7 +345,6 @@ class PushNotificationService {
     return granted;
   }
 
-
   /// Configure timezone support safely for repeating daily alarms
   static Future<void> _configureLocalTimeZone() async {
     try {
@@ -330,9 +352,11 @@ class PushNotificationService {
       final timezoneInfo = await FlutterTimezone.getLocalTimezone();
       final String currentTimeZone = timezoneInfo.identifier;
       tz.setLocalLocation(tz.getLocation(currentTimeZone));
-      debugPrint('PushNotificationService: Local timezone configured: $currentTimeZone');
+      debugPrint(
+          'PushNotificationService: Local timezone configured: $currentTimeZone');
     } catch (e) {
-      debugPrint('PushNotificationService: Timezone config warning: $e. Falling back to UTC.');
+      debugPrint(
+          'PushNotificationService: Timezone config warning: $e. Falling back to UTC.');
       try {
         tz.setLocalLocation(tz.getLocation('UTC'));
       } catch (_) {}
@@ -341,7 +365,8 @@ class PushNotificationService {
 
   /// Handle local notification tap
   static void _onNotificationTap(NotificationResponse response) {
-    debugPrint('PushNotificationService: Local notification tapped: ${response.payload}');
+    debugPrint(
+        'PushNotificationService: Local notification tapped: ${response.payload}');
     _handleNotificationPayload(response.payload);
   }
 
@@ -359,7 +384,9 @@ class PushNotificationService {
         targetUserId = payload.substring(5);
       } else if (payload.startsWith('p:')) {
         targetUserId = payload.substring(2);
-      } else if (payload.length >= 20 && !payload.contains(' ') && !payload.contains('/')) {
+      } else if (payload.length >= 20 &&
+          !payload.contains(' ') &&
+          !payload.contains('/')) {
         // Direct UUID or ID
         targetUserId = payload;
       }
@@ -408,7 +435,8 @@ class PushNotificationService {
         debugPrint('PushNotificationService: FCM Token synced with Supabase.');
       }
     } catch (e) {
-      debugPrint('PushNotificationService: Failed to sync token with Supabase: $e');
+      debugPrint(
+          'PushNotificationService: Failed to sync token with Supabase: $e');
     }
   }
 
@@ -470,10 +498,12 @@ class PushNotificationService {
             'send-push-notification',
             body: payload,
           );
-          debugPrint('PushNotificationService: Dispatched FCM push for chat to Edge function.');
+          debugPrint(
+              'PushNotificationService: Dispatched FCM push for chat to Edge function.');
         }
       } catch (e) {
-        debugPrint('PushNotificationService: Note dispatching push notification: $e');
+        debugPrint(
+            'PushNotificationService: Note dispatching push notification: $e');
       }
     });
   }
@@ -502,16 +532,19 @@ class PushNotificationService {
         payload: payload,
       );
     } catch (e) {
-      debugPrint('PushNotificationService: Error showing instant notification: $e');
+      debugPrint(
+          'PushNotificationService: Error showing instant notification: $e');
     }
   }
 
   /// 🌅 Show instant notification when daily mission unlocks
-  static Future<void> showMissionUnlockedNotification({required int day}) async {
+  static Future<void> showMissionUnlockedNotification(
+      {required int day}) async {
     await showInstantNotification(
       id: 9000 + day,
       title: '🌅 Day $day Mission Unlocked!',
-      body: "Today's daily English challenge is ready for you. Keep your streak alive!",
+      body:
+          "Today's daily English challenge is ready for you. Keep your streak alive!",
       payload: 'mission_$day',
     );
   }
@@ -564,7 +597,8 @@ class PushNotificationService {
           ),
         ),
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        matchDateTimeComponents: DateTimeComponents.time, // Repeats daily at specified time
+        matchDateTimeComponents:
+            DateTimeComponents.time, // Repeats daily at specified time
         payload: payload,
       );
 
@@ -572,7 +606,8 @@ class PushNotificationService {
         'PushNotificationService: Daily recurring notification set [ID $id] at $scheduledDate (repeats daily)',
       );
     } catch (e) {
-      debugPrint('PushNotificationService: Error scheduling daily recurring notification: $e');
+      debugPrint(
+          'PushNotificationService: Error scheduling daily recurring notification: $e');
     }
   }
 
@@ -585,7 +620,8 @@ class PushNotificationService {
     await scheduleDailyNotification(
       id: 9000 + day,
       title: '🌅 Day $day Mission Ready!',
-      body: "Good morning! Day $day English challenge is unlocked. Complete it to build fluency and protect your streak!",
+      body:
+          "Good morning! Day $day English challenge is unlocked. Complete it to build fluency and protect your streak!",
       hour: targetHour,
       minute: targetMinute,
       payload: 'mission_$day',
@@ -603,7 +639,8 @@ class PushNotificationService {
     await scheduleDailyNotification(
       id: 9101,
       title: '🌅 Day $currentDay English Mission is Live!',
-      body: 'Good morning! Spend 5 minutes today on Day $currentDay to keep your daily streak alive! 🔥',
+      body:
+          'Good morning! Spend 5 minutes today on Day $currentDay to keep your daily streak alive! 🔥',
       hour: 8,
       minute: 30,
       payload: 'mission_$currentDay',
@@ -614,7 +651,8 @@ class PushNotificationService {
     await scheduleDailyNotification(
       id: 9102,
       title: '☕ Quick 5-Min Spoken Break • Day $currentDay',
-      body: 'Take a quick break! Speak 3 English sentences with your mate or in the English Hub today 🎙️',
+      body:
+          'Take a quick break! Speak 3 English sentences with your mate or in the English Hub today 🎙️',
       hour: 14,
       minute: 15,
       payload: 'mission_$currentDay',
@@ -625,14 +663,16 @@ class PushNotificationService {
     await scheduleDailyNotification(
       id: 9103,
       title: '🌙 Day $currentDay Completion Challenge!',
-      body: 'The day is almost over! Complete Day $currentDay now to unlock Day ${currentDay + 1} for tomorrow! 🚀',
+      body:
+          'The day is almost over! Complete Day $currentDay now to unlock Day ${currentDay + 1} for tomorrow! 🚀',
       hour: 20,
       minute: 0,
       payload: 'mission_$currentDay',
       isAlarm: false,
     );
 
-    debugPrint('PushNotificationService: Scheduled multi-slot study reminders for Day $currentDay (8:30 AM, 2:15 PM, 8:00 PM).');
+    debugPrint(
+        'PushNotificationService: Scheduled multi-slot study reminders for Day $currentDay (8:30 AM, 2:15 PM, 8:00 PM).');
   }
 
   /// Cancel a specific notification
@@ -640,7 +680,8 @@ class PushNotificationService {
     try {
       await _localNotificationsPlugin.cancel(id: id);
     } catch (e) {
-      debugPrint('PushNotificationService: Error canceling notification $id: $e');
+      debugPrint(
+          'PushNotificationService: Error canceling notification $id: $e');
     }
   }
 
@@ -649,7 +690,8 @@ class PushNotificationService {
     try {
       await _localNotificationsPlugin.cancelAll();
     } catch (e) {
-      debugPrint('PushNotificationService: Error canceling all notifications: $e');
+      debugPrint(
+          'PushNotificationService: Error canceling all notifications: $e');
     }
   }
 }
