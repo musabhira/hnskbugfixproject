@@ -807,15 +807,13 @@ class PoketCosmosAllocationService {
   }
 
   /// 🌐 Returns all plots across waves for Search Page Plots Grid with real owner info
-  static List<Map<String, dynamic>> getWavePlotsCatalog({int maxWaves = 2}) {
-    final List<Map<String, dynamic>> list = [];
+  static ({
+    Map<int, Map<String, dynamic>> plotToProfile,
+    Map<String, int> userIdToPlot
+  }) _resolveAllUserPlotAssignments() {
     final profiles = instance._allRegisteredProfiles;
-    final int neededWaves = profiles.isNotEmpty
-        ? (profiles.length / waveCapacity).ceil()
-        : 1;
-
-    // Map globalPlotNumber -> Real User Profile
     final Map<int, Map<String, dynamic>> plotToProfile = {};
+    final Map<String, int> userIdToPlot = {};
     final Set<int> relocatedUserIndices = {};
 
     for (int i = 0; i < profiles.length; i++) {
@@ -828,35 +826,57 @@ class PoketCosmosAllocationService {
         final w = int.tryParse(match.group(1) ?? '1') ?? 1;
         final pCode = match.group(2) ?? 'EP';
         final lPlot = int.tryParse(match.group(4) ?? '1') ?? 1;
-        final g = calculateGlobalPlotNumber(
-            wave: w, planetCode: pCode, localPlotNumber: lPlot);
-        // Collision guard: Only assign if slot is genuinely free.
-        // If another profile previously claimed slot g, don't drop this user;
-        // let them receive their own unique plot in the deterministic allocation below.
-        if (!plotToProfile.containsKey(g)) {
-          plotToProfile[g] = prof;
-          relocatedUserIndices.add(i);
+        // Only honor bio pin if lPlot is a valid island plot (1..maxPlotsPerIsland)
+        if (lPlot >= 1 && lPlot <= maxPlotsPerIsland) {
+          final g = calculateGlobalPlotNumber(
+              wave: w, planetCode: pCode, localPlotNumber: lPlot);
+          if (!plotToProfile.containsKey(g)) {
+            plotToProfile[g] = prof;
+            if (uid.isNotEmpty) userIdToPlot[uid] = g;
+            final pid = prof['id']?.toString() ?? '';
+            if (pid.isNotEmpty) userIdToPlot[pid] = g;
+            relocatedUserIndices.add(i);
+          }
         }
       } else if (instance._userBirthPlots.containsKey(uid)) {
         final p = instance._userBirthPlots[uid]!;
         if (!plotToProfile.containsKey(p.plotNumber)) {
           plotToProfile[p.plotNumber] = prof;
+          userIdToPlot[uid] = p.plotNumber;
           relocatedUserIndices.add(i);
         }
       }
     }
 
-    // Allocate remaining users to their deterministic unoccupied slot (no user dropped!)
+    // Allocate remaining users to their deterministic unoccupied slot (100% unique, no user dropped!)
     int nextSlot = 1;
     for (int i = 0; i < profiles.length; i++) {
       if (!relocatedUserIndices.contains(i)) {
         while (plotToProfile.containsKey(nextSlot)) {
           nextSlot++;
         }
-        plotToProfile[nextSlot] = profiles[i];
+        final prof = profiles[i];
+        plotToProfile[nextSlot] = prof;
+        final uid = (prof['user_id'] ?? prof['id'] ?? '').toString();
+        if (uid.isNotEmpty) userIdToPlot[uid] = nextSlot;
+        final pid = prof['id']?.toString() ?? '';
+        if (pid.isNotEmpty) userIdToPlot[pid] = nextSlot;
         nextSlot++;
       }
     }
+
+    return (plotToProfile: plotToProfile, userIdToPlot: userIdToPlot);
+  }
+
+  static List<Map<String, dynamic>> getWavePlotsCatalog({int maxWaves = 2}) {
+    final List<Map<String, dynamic>> list = [];
+    final profiles = instance._allRegisteredProfiles;
+    final int neededWaves = profiles.isNotEmpty
+        ? (profiles.length / waveCapacity).ceil()
+        : 1;
+
+    final assignments = _resolveAllUserPlotAssignments();
+    final plotToProfile = assignments.plotToProfile;
 
     // Ensure catalog endPlot covers all allocated slots and wave capacities
     final int maxAllocatedPlot = plotToProfile.keys.fold<int>(0, math.max);
@@ -1077,7 +1097,8 @@ class PoketCosmosAllocationService {
       });
       if (profIdx != -1) {
         final prof = _allRegisteredProfiles[profIdx];
-        final gNum = profIdx + 1;
+        final assignments = _resolveAllUserPlotAssignments();
+        final gNum = assignments.userIdToPlot[userId] ?? (profIdx + 1);
         final parsed = parseGlobalPlotNumber(gNum);
         final colony = parsed['colony'] as CelestialColonyInfo;
         final localPlot = parsed['localPlotNumber'] as int;
