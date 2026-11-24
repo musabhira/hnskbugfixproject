@@ -29,6 +29,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dar
 import 'package:pocket_mates_app/custom_code/widgets/admin_games_hub_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/app_store_review_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_release_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_app_update_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_feedback_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/day90_master_certificate_dialog.dart';
@@ -104,7 +105,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   bool isLoadingUpdate = false;
   List<AppReleaseRecord> _allReleases = [];
   String _releaseSearchQuery = '';
-  String _releasePlatformFilter = 'all'; // 'all', 'android', 'ios'
+  String _releasePlatformFilter = 'android'; // 'android', 'ios'
   String _releaseStatusFilter =
       'all'; // 'all', 'active', 'testing', 'production'
   AppReleaseRecord? _activeAndroidRelease;
@@ -4133,10 +4134,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       return const Center(child: CircularProgressIndicator());
     }
 
-    // Filter releases
-    final filteredReleases = _allReleases.where((r) {
-      if (_releasePlatformFilter != 'all' &&
-          r.platform.toLowerCase() != _releasePlatformFilter.toLowerCase()) {
+    final isIosSelected = _releasePlatformFilter == 'ios';
+    final currentPlatform = isIosSelected ? 'ios' : 'android';
+    final activeRelease = isIosSelected ? _activeIosRelease : _activeAndroidRelease;
+
+    // Filter releases for the selected platform
+    final platformReleases = _allReleases.where((r) {
+      if (r.platform.toLowerCase() != currentPlatform) {
         return false;
       }
       if (_releaseStatusFilter == 'active' && !r.isActiveProduction) {
@@ -4159,14 +4163,18 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         if (!match) return false;
       }
       return true;
-    }).toList();
+    }).toList()
+      ..sort((a, b) => b.buildNumber.compareTo(a.buildNumber));
+
+    final androidCount = _allReleases.where((r) => r.platform.toLowerCase() == 'android').length;
+    final iosCount = _allReleases.where((r) => r.platform.toLowerCase() == 'ios').length;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 🚀 HEADER SECTION: Active Production Releases & Quick Stats
+          // 🚀 HEADER SECTION
           Row(
             children: [
               Expanded(
@@ -4174,7 +4182,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Release Management & App Updates',
+                      'App Update & Release Control',
                       style: GoogleFonts.outfit(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
@@ -4183,7 +4191,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Manage Android & iOS builds independently. Set active store release for in-app updates.',
+                      'Manage Android & iOS versions independently. Turn ON in-app alert for approved store releases.',
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         color: Colors.white60,
@@ -4196,51 +4204,148 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFFFC00),
                   foregroundColor: Colors.black,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 icon: const Icon(Icons.add_rounded, size: 20),
                 label: Text(
-                  'Create Release',
+                  'Add $currentPlatform Release',
                   style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
                 ),
-                onPressed: () => _showCreateEditReleaseDialog(),
+                onPressed: () => _showCreateEditReleaseDialog(defaultPlatform: currentPlatform),
               ),
             ],
           ),
           const SizedBox(height: 20),
 
-          // 📊 STATUS CARDS: Active Android vs Active iOS
-          Row(
-            children: [
-              Expanded(
-                child: _buildActiveReleaseBanner(
-                  platformTitle: 'Android Active Production',
-                  icon: Icons.android,
-                  accentColor: Colors.green,
-                  activeRelease: _activeAndroidRelease,
-                  onActivate: () => _pickAndActivateRelease('android'),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildActiveReleaseBanner(
-                  platformTitle: 'iOS Active Production',
-                  icon: Icons.apple,
-                  accentColor: Colors.white,
-                  activeRelease: _activeIosRelease,
-                  onActivate: () => _pickAndActivateRelease('ios'),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          // 🔍 SEARCH & FILTERS
+          // 📱 PLATFORM SEGMENTED TAB SWITCHER
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: const Color(0xFF131B26),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.white10),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _releasePlatformFilter = 'android'),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: !isIosSelected
+                            ? const Color(0xFF22C55E).withValues(alpha: 0.2)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: !isIosSelected ? const Color(0xFF22C55E) : Colors.transparent,
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.android, color: Color(0xFF22C55E), size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Android Releases',
+                            style: GoogleFonts.outfit(
+                              color: !isIosSelected ? Colors.white : Colors.white60,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: !isIosSelected
+                                  ? const Color(0xFF22C55E)
+                                  : Colors.white12,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              '$androidCount',
+                              style: GoogleFonts.inter(
+                                color: !isIosSelected ? Colors.black : Colors.white70,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _releasePlatformFilter = 'ios'),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: isIosSelected
+                            ? const Color(0xFF38BDF8).withValues(alpha: 0.2)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: isIosSelected ? const Color(0xFF38BDF8) : Colors.transparent,
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.apple, color: Colors.white, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            'iOS Releases',
+                            style: GoogleFonts.outfit(
+                              color: isIosSelected ? Colors.white : Colors.white60,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: isIosSelected
+                                  ? const Color(0xFF38BDF8)
+                                  : Colors.white12,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              '$iosCount',
+                              style: GoogleFonts.inter(
+                                color: isIosSelected ? Colors.black : Colors.white70,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // 📊 ACTIVE PRODUCTION TARGET CARD
+          _buildPlatformActiveTargetCard(
+            platform: currentPlatform,
+            activeRelease: activeRelease,
+          ),
+          const SizedBox(height: 20),
+
+          // 🔍 SEARCH & BULK ACTIONS
+          Container(
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: const Color(0xFF131B26),
               borderRadius: BorderRadius.circular(16),
@@ -4250,78 +4355,48 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
               children: [
                 Expanded(
                   child: TextField(
-                    onChanged: (v) =>
-                        setState(() => _releaseSearchQuery = v.trim()),
+                    onChanged: (v) => setState(() => _releaseSearchQuery = v.trim()),
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
-                      prefixIcon:
-                          const Icon(Icons.search, color: Colors.white54),
-                      hintText:
-                          'Search by version, build #, title, or notes...',
-                      hintStyle:
-                          const TextStyle(color: Colors.white38, fontSize: 13),
+                      prefixIcon: const Icon(Icons.search, color: Colors.white54, size: 18),
+                      hintText: 'Search $currentPlatform versions (e.g. 1.0.2, 501)...',
+                      hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
                       filled: true,
                       fillColor: Colors.black26,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide.none,
                       ),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                     ),
                   ),
                 ),
-                const SizedBox(width: 14),
-                // Platform filter
-                DropdownButton<String>(
-                  value: _releasePlatformFilter,
-                  dropdownColor: const Color(0xFF1E293B),
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
-                  underline: const SizedBox(),
-                  items: const [
-                    DropdownMenuItem(
-                        value: 'all', child: Text('All Platforms')),
-                    DropdownMenuItem(
-                        value: 'android', child: Text('Android Only')),
-                    DropdownMenuItem(value: 'ios', child: Text('iOS Only')),
-                  ],
-                  onChanged: (val) {
-                    if (val != null)
-                      setState(() => _releasePlatformFilter = val);
-                  },
+                const SizedBox(width: 12),
+                OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.redAccent,
+                    side: BorderSide(color: Colors.redAccent.withValues(alpha: 0.4)),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  icon: const Icon(Icons.delete_sweep_outlined, size: 18),
+                  label: Text('Clear Inactive Builds',
+                      style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold)),
+                  onPressed: () => _confirmClearInactiveReleases(currentPlatform),
                 ),
-                const SizedBox(width: 14),
-                // Status filter
-                DropdownButton<String>(
-                  value: _releaseStatusFilter,
-                  dropdownColor: const Color(0xFF1E293B),
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
-                  underline: const SizedBox(),
-                  items: const [
-                    DropdownMenuItem(value: 'all', child: Text('All Statuses')),
-                    DropdownMenuItem(
-                        value: 'active', child: Text('Active Live Only')),
-                    DropdownMenuItem(
-                        value: 'testing', child: Text('Testing / Shorebird')),
-                    DropdownMenuItem(
-                        value: 'production', child: Text('Production Builds')),
-                  ],
-                  onChanged: (val) {
-                    if (val != null) setState(() => _releaseStatusFilter = val);
-                  },
-                ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 8),
                 IconButton(
-                  tooltip: 'Refresh Releases',
+                  tooltip: 'Refresh',
                   icon: const Icon(Icons.refresh, color: Color(0xFFFFFC00)),
                   onPressed: _loadAppUpdateData,
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 18),
 
-          // 📋 LIST OF RELEASES
-          if (filteredReleases.isEmpty) ...[
+          // 📋 LIST OF RELEASES FOR SELECTED PLATFORM
+          if (platformReleases.isEmpty) ...[
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 40),
@@ -4332,13 +4407,16 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
               ),
               child: Column(
                 children: [
-                  const Icon(Icons.layers_clear_rounded,
-                      size: 48, color: Colors.white38),
+                  const Icon(Icons.layers_clear_rounded, size: 48, color: Colors.white38),
                   const SizedBox(height: 12),
                   Text(
-                    'No releases found matching current filters',
-                    style:
-                        GoogleFonts.inter(color: Colors.white70, fontSize: 14),
+                    'No $currentPlatform releases recorded yet.',
+                    style: GoogleFonts.inter(color: Colors.white70, fontSize: 14),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Tap "Add $currentPlatform Release" above to register a new build.',
+                    style: GoogleFonts.inter(color: Colors.white38, fontSize: 12),
                   ),
                 ],
               ),
@@ -4347,10 +4425,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: filteredReleases.length,
+              itemCount: platformReleases.length,
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (ctx, i) {
-                final rel = filteredReleases[i];
+                final rel = platformReleases[i];
                 return _buildReleaseCard(rel);
               },
             ),
@@ -4365,14 +4443,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
     );
   }
 
-  Widget _buildActiveReleaseBanner({
-    required String platformTitle,
-    required IconData icon,
-    required Color accentColor,
+  Widget _buildPlatformActiveTargetCard({
+    required String platform,
     required AppReleaseRecord? activeRelease,
-    required VoidCallback onActivate,
   }) {
     final bool hasActive = activeRelease != null;
+    final isIos = platform == 'ios';
+    final accentColor = isIos ? const Color(0xFF38BDF8) : const Color(0xFF22C55E);
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -4380,9 +4457,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         color: const Color(0xFF131B26),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color:
-              hasActive ? accentColor.withValues(alpha: 0.5) : Colors.white10,
-          width: 1.5,
+          color: hasActive ? accentColor.withValues(alpha: 0.6) : Colors.white10,
+          width: hasActive ? 1.5 : 1,
         ),
       ),
       child: Column(
@@ -4390,20 +4466,19 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         children: [
           Row(
             children: [
-              Icon(icon, color: accentColor, size: 24),
+              Icon(isIos ? Icons.apple : Icons.android, color: accentColor, size: 24),
               const SizedBox(width: 10),
               Text(
-                platformTitle,
+                '${platform.toUpperCase()} Live In-App Update Target',
                 style: GoogleFonts.outfit(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
-                  fontSize: 15,
+                  fontSize: 16,
                 ),
               ),
               const Spacer(),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: hasActive
                       ? Colors.green.withValues(alpha: 0.2)
@@ -4411,7 +4486,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  hasActive ? 'ACTIVE LIVE' : 'NO TARGET SET',
+                  hasActive ? 'CITIZEN ALERT LIVE' : 'NO TARGET SET',
                   style: GoogleFonts.outfit(
                     color: hasActive ? Colors.greenAccent : Colors.orangeAccent,
                     fontSize: 10,
@@ -4423,72 +4498,117 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           ),
           const SizedBox(height: 12),
           if (hasActive) ...[
-            Text(
-              'Version ${activeRelease.version} (Build ${activeRelease.buildNumber})',
-              style: GoogleFonts.outfit(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-                fontSize: 18,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              activeRelease.releaseTitle.isNotEmpty
-                  ? activeRelease.releaseTitle
-                  : 'Production Store Release',
-              style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 10),
             Row(
               children: [
-                if (activeRelease.isMandatory) ...[
+                Text(
+                  'v${activeRelease.version} (Build #${activeRelease.buildNumber})',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 20,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                if (activeRelease.isMandatory)
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: Colors.red.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4)),
                     ),
-                    child: Text('Mandatory Update',
-                        style: GoogleFonts.inter(
-                            color: Colors.redAccent, fontSize: 11)),
+                    child: Text('MANDATORY (CANNOT BYPASS)',
+                        style: GoogleFonts.outfit(
+                            color: Colors.redAccent, fontSize: 10, fontWeight: FontWeight.bold)),
+                  )
+                else
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text('RECOMMENDED (DISMISSIBLE)',
+                        style: GoogleFonts.outfit(
+                            color: Colors.lightBlueAccent, fontSize: 10, fontWeight: FontWeight.bold)),
                   ),
-                  const SizedBox(width: 8),
-                ],
-                Text(
-                  'Activated: ${activeRelease.productionActivatedAt?.toLocal().toString().split('.').first ?? 'Recent'}',
-                  style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              activeRelease.releaseTitle.isNotEmpty
+                  ? activeRelease.releaseTitle
+                  : 'POKET Update Available',
+              style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
+            ),
+            if (activeRelease.releaseNotes.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                activeRelease.releaseNotes,
+                style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFFC00),
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  icon: const Icon(Icons.visibility_rounded, size: 16),
+                  label: Text('Preview In-App Dialog',
+                      style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold)),
+                  onPressed: () => PocketAppUpdateService.showPreviewDialog(context, activeRelease),
+                ),
+                const SizedBox(width: 10),
+                OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white70,
+                    side: const BorderSide(color: Colors.white24),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  icon: const Icon(Icons.edit_note_rounded, size: 16),
+                  label: Text('Edit Alert Message',
+                      style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold)),
+                  onPressed: () => _openAlertConfigModal(activeRelease),
+                ),
+                const SizedBox(width: 10),
+                OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.orangeAccent,
+                    side: BorderSide(color: Colors.orangeAccent.withValues(alpha: 0.4)),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  icon: const Icon(Icons.power_settings_new_rounded, size: 16),
+                  label: Text('Deactivate Alert',
+                      style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold)),
+                  onPressed: () => _confirmDeactivatePlatform(platform),
                 ),
               ],
             ),
           ] else ...[
             Text(
-              'No live release currently selected. Older app versions will not be prompted to update.',
-              style: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
+              'No active store update is currently turned ON for $platform citizens.',
+              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Users with older versions will continue using the app without update prompts.',
+              style: GoogleFonts.inter(color: Colors.white38, fontSize: 12),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '💡 To activate: Find the approved store release in the list below and turn ON its toggle.',
+              style: GoogleFonts.inter(color: const Color(0xFFFFFC00), fontSize: 12),
             ),
           ],
-          const SizedBox(height: 14),
-          SizedBox(
-            width: double.infinity,
-            height: 38,
-            child: OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: accentColor.withValues(alpha: 0.5)),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
-              ),
-              onPressed: onActivate,
-              child: Text(
-                hasActive ? 'Change Active Release' : 'Select Active Release',
-                style: GoogleFonts.outfit(
-                    color: accentColor,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12),
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -4505,7 +4625,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: rel.isActiveProduction
-              ? const Color(0xFFFFFC00).withValues(alpha: 0.6)
+              ? const Color(0xFFFFFC00).withValues(alpha: 0.8)
               : Colors.white10,
           width: rel.isActiveProduction ? 1.5 : 1,
         ),
@@ -4516,14 +4636,14 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           Row(
             children: [
               Icon(isIos ? Icons.apple : Icons.android,
-                  color: isIos ? Colors.white : Colors.green, size: 20),
+                  color: isIos ? Colors.white : const Color(0xFF22C55E), size: 20),
               const SizedBox(width: 8),
               Text(
-                '${rel.version} (${rel.buildNumber})',
+                'v${rel.version} (#${rel.buildNumber})',
                 style: GoogleFonts.outfit(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: 17,
                 ),
               ),
               const SizedBox(width: 10),
@@ -4539,8 +4659,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                 child: Text(
                   rel.buildType.toUpperCase(),
                   style: GoogleFonts.inter(
-                    color:
-                        isProd ? Colors.purpleAccent : Colors.lightBlueAccent,
+                    color: isProd ? Colors.purpleAccent : Colors.lightBlueAccent,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
@@ -4563,54 +4682,49 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                   ),
                 ),
               ),
-              const Spacer(),
-              if (rel.isActiveProduction) ...[
+              if (rel.isMandatory) ...[
+                const SizedBox(width: 8),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFFC00),
-                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.red.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(6),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.check_circle,
-                          size: 14, color: Colors.black),
-                      const SizedBox(width: 4),
-                      Text(
-                        'ACTIVE PRODUCTION',
-                        style: GoogleFonts.outfit(
-                          color: Colors.black,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    'MANDATORY',
+                    style: GoogleFonts.inter(
+                      color: Colors.redAccent,
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 8),
               ],
-              // Edit button
-              IconButton(
-                icon: const Icon(Icons.edit_outlined,
-                    color: Colors.white70, size: 18),
-                tooltip: 'Edit Release',
-                onPressed: () => _showCreateEditReleaseDialog(existing: rel),
-              ),
-              // Delete button (blocked if active)
-              IconButton(
-                icon: Icon(Icons.delete_outline,
-                    color: rel.isActiveProduction
-                        ? Colors.white24
-                        : Colors.redAccent,
-                    size: 18),
-                tooltip: rel.isActiveProduction
-                    ? 'Cannot delete active production release'
-                    : 'Delete Release',
-                onPressed: rel.isActiveProduction
-                    ? null
-                    : () => _confirmDeleteRelease(rel),
+              const Spacer(),
+              // 🎛️ IN-APP ALERT TOGGLE SWITCH
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    rel.isActiveProduction ? 'ALERT ON' : 'ALERT OFF',
+                    style: GoogleFonts.outfit(
+                      color: rel.isActiveProduction ? const Color(0xFFFFFC00) : Colors.white38,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Switch(
+                    value: rel.isActiveProduction,
+                    activeColor: const Color(0xFFFFFC00),
+                    activeTrackColor: const Color(0xFFFFFC00).withValues(alpha: 0.3),
+                    inactiveThumbColor: Colors.white38,
+                    inactiveTrackColor: Colors.white12,
+                    onChanged: (val) {
+                      _openAlertConfigModal(rel, forceToggle: val);
+                    },
+                  ),
+                ],
               ),
             ],
           ),
@@ -4633,35 +4747,43 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           // Actions footer
           Row(
             children: [
-              if (rel.shorebirdReleaseId != null &&
-                  rel.shorebirdReleaseId!.isNotEmpty) ...[
-                Text(
-                  'Shorebird ID: ${rel.shorebirdReleaseId}',
-                  style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
-                ),
-                const SizedBox(width: 14),
-              ],
               Text(
                 'Created: ${rel.createdAt.toLocal().toString().split(' ').first}',
                 style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
               ),
               const Spacer(),
-              if (!rel.isActiveProduction)
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1E293B),
-                    foregroundColor: const Color(0xFFFFFC00),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
-                    side: const BorderSide(color: Color(0xFFFFFC00), width: 1),
-                  ),
-                  icon: const Icon(Icons.verified_rounded, size: 16),
-                  label: Text('Set as Active Production',
-                      style: GoogleFonts.outfit(
-                          fontSize: 11, fontWeight: FontWeight.bold)),
-                  onPressed: () => _confirmSetActiveProduction(rel),
+              // Preview Dialog
+              TextButton.icon(
+                icon: const Icon(Icons.remove_red_eye_outlined, size: 15, color: Colors.white70),
+                label: Text('Preview Dialog',
+                    style: GoogleFonts.inter(color: Colors.white70, fontSize: 11)),
+                onPressed: () => PocketAppUpdateService.showPreviewDialog(context, rel),
+              ),
+              const SizedBox(width: 8),
+              // Edit / Configure Alert
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFFFFFC00),
+                  side: const BorderSide(color: Color(0xFFFFFC00)),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
+                icon: const Icon(Icons.edit_notifications_rounded, size: 15),
+                label: Text(rel.isActiveProduction ? 'Edit Alert' : 'Turn ON Alert',
+                    style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold)),
+                onPressed: () => _openAlertConfigModal(rel),
+              ),
+              const SizedBox(width: 8),
+              // Delete button (blocked if active)
+              IconButton(
+                icon: Icon(Icons.delete_outline,
+                    color: rel.isActiveProduction ? Colors.white24 : Colors.redAccent,
+                    size: 18),
+                tooltip: rel.isActiveProduction
+                    ? 'Cannot delete active production release'
+                    : 'Delete Release',
+                onPressed: rel.isActiveProduction ? null : () => _confirmDeleteRelease(rel),
+              ),
             ],
           ),
         ],
@@ -4669,141 +4791,286 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
     );
   }
 
-  Future<void> _pickAndActivateRelease(String platform) async {
-    final matching = _allReleases
-        .where((r) => r.platform.toLowerCase() == platform.toLowerCase())
-        .toList();
-    if (matching.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-              'No $platform releases found! Please create a release first.'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
+  /// 🎛️ Opens the In-App Alert Configuration & Activation Modal
+  Future<void> _openAlertConfigModal(AppReleaseRecord rel, {bool? forceToggle}) async {
+    final isIos = rel.platform.toLowerCase() == 'ios';
+    final defaultStoreUrl = isIos
+        ? PocketReleaseService.defaultIosAppStoreUrl
+        : PocketReleaseService.defaultAndroidPlayStoreUrl;
 
-    showDialog(
+    bool isAlertActive = forceToggle ?? rel.isActiveProduction;
+    bool isMandatory = rel.isMandatory;
+    final titleController = TextEditingController(
+      text: rel.releaseTitle.isNotEmpty ? rel.releaseTitle : 'Important Update Available',
+    );
+    final messageController = TextEditingController(
+      text: rel.releaseNotes.isNotEmpty
+          ? rel.releaseNotes
+          : 'We have launched exciting new features and optimizations! Please update to continue.',
+    );
+    final storeUrlController = TextEditingController(
+      text: (rel.storeUrl != null && rel.storeUrl!.trim().isNotEmpty)
+          ? rel.storeUrl!.trim()
+          : defaultStoreUrl,
+    );
+
+    await showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF131B26),
-        title: Text(
-          'Select Active ${platform.toUpperCase()} Release',
-          style: GoogleFonts.outfit(
-              color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        content: SizedBox(
-          width: 400,
-          child: ListView.separated(
-            shrinkWrap: true,
-            itemCount: matching.length,
-            separatorBuilder: (_, __) => const Divider(color: Colors.white10),
-            itemBuilder: (_, i) {
-              final r = matching[i];
-              return ListTile(
-                title: Text(
-                  '${r.version} (${r.buildNumber}) - ${r.buildType}',
-                  style: GoogleFonts.outfit(
-                      color: Colors.white, fontWeight: FontWeight.bold),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDlgState) => AlertDialog(
+          backgroundColor: const Color(0xFF131B26),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              Icon(isIos ? Icons.apple : Icons.android,
+                  color: isIos ? const Color(0xFF38BDF8) : const Color(0xFF22C55E)),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Citizen In-App Alert Setup',
+                      style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                    ),
+                    Text(
+                      '${rel.platform.toUpperCase()} • v${rel.version} (Build #${rel.buildNumber})',
+                      style: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
+                    ),
+                  ],
                 ),
-                subtitle: Text(
-                  r.releaseTitle,
-                  style: GoogleFonts.inter(color: Colors.white60, fontSize: 12),
-                ),
-                trailing: r.isActiveProduction
-                    ? const Icon(Icons.check_circle, color: Color(0xFFFFFC00))
-                    : const Icon(Icons.chevron_right, color: Colors.white38),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _confirmSetActiveProduction(r);
-                },
-              );
-            },
+              ),
+            ],
           ),
+          content: SizedBox(
+            width: 480,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 1. Live Alert Toggle
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isAlertActive
+                          ? const Color(0xFFFFFC00).withValues(alpha: 0.1)
+                          : Colors.black26,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isAlertActive ? const Color(0xFFFFFC00) : Colors.white12,
+                      ),
+                    ),
+                    child: SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        'Live In-App Alert Status',
+                        style: GoogleFonts.outfit(
+                          color: isAlertActive ? const Color(0xFFFFFC00) : Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      subtitle: Text(
+                        isAlertActive
+                            ? 'ON — Older app versions will see update dialog on launch'
+                            : 'OFF — No update alert will pop up for citizens',
+                        style: const TextStyle(color: Colors.white60, fontSize: 11),
+                      ),
+                      value: isAlertActive,
+                      activeColor: const Color(0xFFFFFC00),
+                      onChanged: (v) => setDlgState(() => isAlertActive = v),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // 2. Mandatory Force Update Toggle
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isMandatory ? Colors.red.withValues(alpha: 0.1) : Colors.black26,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isMandatory ? Colors.redAccent : Colors.white12,
+                      ),
+                    ),
+                    child: SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        'Mandatory Force Update',
+                        style: GoogleFonts.outfit(
+                          color: isMandatory ? Colors.redAccent : Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      subtitle: Text(
+                        isMandatory
+                            ? 'Users CANNOT dismiss without updating from store'
+                            : 'Optional: Users can tap "Not Now" and continue',
+                        style: const TextStyle(color: Colors.white60, fontSize: 11),
+                      ),
+                      value: isMandatory,
+                      activeColor: Colors.redAccent,
+                      onChanged: (v) => setDlgState(() => isMandatory = v),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 3. Alert Title
+                  TextField(
+                    controller: titleController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(
+                      labelText: 'Alert Box Title',
+                      labelStyle: TextStyle(color: Colors.white70),
+                      filled: true,
+                      fillColor: Colors.black26,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // 4. Custom In-App Message (What citizens read)
+                  TextField(
+                    controller: messageController,
+                    maxLines: 4,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(
+                      labelText: 'Custom Alert Message / What\'s New',
+                      hintText: 'Describe the new features and reason to update...',
+                      labelStyle: TextStyle(color: Colors.white70),
+                      filled: true,
+                      fillColor: Colors.black26,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // 5. Store URL
+                  TextField(
+                    controller: storeUrlController,
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                    decoration: InputDecoration(
+                      labelText: '${rel.platform.toUpperCase()} Store URL',
+                      labelStyle: const TextStyle(color: Colors.white70),
+                      filled: true,
+                      fillColor: Colors.black26,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            ),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.remove_red_eye, size: 16),
+              label: const Text('Preview'),
+              style: OutlinedButton.styleFrom(foregroundColor: Colors.white70),
+              onPressed: () {
+                final previewRel = AppReleaseRecord(
+                  id: rel.id,
+                  platform: rel.platform,
+                  version: rel.version,
+                  buildNumber: rel.buildNumber,
+                  releaseTitle: titleController.text.trim(),
+                  releaseNotes: messageController.text.trim(),
+                  isMandatory: isMandatory,
+                  storeUrl: storeUrlController.text.trim(),
+                );
+                PocketAppUpdateService.showPreviewDialog(context, previewRel);
+              },
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFFC00),
+                foregroundColor: Colors.black,
+              ),
+              onPressed: () async {
+                final updated = AppReleaseRecord(
+                  id: rel.id,
+                  platform: rel.platform,
+                  version: rel.version,
+                  buildNumber: rel.buildNumber,
+                  shorebirdReleaseId: rel.shorebirdReleaseId,
+                  releaseTitle: titleController.text.trim().isNotEmpty
+                      ? titleController.text.trim()
+                      : 'POKET Update',
+                  releaseNotes: messageController.text.trim(),
+                  features: rel.features,
+                  improvements: rel.improvements,
+                  bugFixes: rel.bugFixes,
+                  announcementMessage: rel.announcementMessage,
+                  buildType: rel.buildType,
+                  storeStatus: isAlertActive ? 'live' : rel.storeStatus,
+                  isActiveProduction: isAlertActive,
+                  isMandatory: isMandatory,
+                  storeUrl: storeUrlController.text.trim(),
+                  createdAt: rel.createdAt,
+                  updatedAt: DateTime.now(),
+                );
+
+                Navigator.pop(ctx);
+                setState(() => isLoadingUpdate = true);
+
+                try {
+                  await PocketReleaseService.saveReleaseRecord(updated);
+                  if (isAlertActive) {
+                    await PocketReleaseService.setActiveProductionRelease(updated);
+                  } else if (rel.isActiveProduction) {
+                    await PocketReleaseService.deactivateProductionRelease(rel.platform);
+                  }
+                  await _loadAppUpdateData();
+
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(isAlertActive
+                            ? '🚀 v${rel.version} is now LIVE for ${rel.platform.toUpperCase()}! Citizens will see the alert.'
+                            : 'Update alert turned OFF for ${rel.platform.toUpperCase()} v${rel.version}.'),
+                        backgroundColor: isAlertActive ? Colors.green : Colors.orange,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+                    );
+                  }
+                } finally {
+                  if (mounted) setState(() => isLoadingUpdate = false);
+                }
+              },
+              child: Text(
+                isAlertActive ? 'Save & Activate Alert' : 'Save Changes',
+                style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child:
-                const Text('Cancel', style: TextStyle(color: Colors.white54)),
-          ),
-        ],
       ),
     );
   }
 
-  Future<void> _confirmSetActiveProduction(AppReleaseRecord rel) async {
+  /// 🔌 Deactivate production target for platform
+  Future<void> _confirmDeactivatePlatform(String platform) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF131B26),
-        title: Row(
-          children: [
-            const Icon(Icons.warning_amber_rounded, color: Color(0xFFFFFC00)),
-            const SizedBox(width: 8),
-            Text(
-              'Activate Production Release?',
-              style: GoogleFonts.outfit(
-                  color: Colors.white, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Are you sure you want to set this build as the live Production Release for ${rel.platform.toUpperCase()}?',
-              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.black26,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.white12),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('• Version: ${rel.version} (Build ${rel.buildNumber})',
-                      style:
-                          GoogleFonts.inter(color: Colors.white, fontSize: 12)),
-                  Text('• Title: ${rel.releaseTitle}',
-                      style:
-                          GoogleFonts.inter(color: Colors.white, fontSize: 12)),
-                  Text('• Platform: ${rel.platform.toUpperCase()}',
-                      style:
-                          GoogleFonts.inter(color: Colors.white, fontSize: 12)),
-                  Text('• Mandatory: ${rel.isMandatory ? 'YES' : 'NO'}',
-                      style:
-                          GoogleFonts.inter(color: Colors.white, fontSize: 12)),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Note: All users running an older build on this platform will immediately see the update prompt. An official President announcement will also be dispatched once.',
-              style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
-            ),
-          ],
+        title: const Text('Turn OFF Update Alert?',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: Text(
+          'This will deactivate the live update target for $platform. Users will no longer be prompted to update.',
+          style: const TextStyle(color: Colors.white70),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child:
-                const Text('Cancel', style: TextStyle(color: Colors.white54)),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFFFC00),
-              foregroundColor: Colors.black,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text('Confirm Activation',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+            child: const Text('Deactivate', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -4812,24 +5079,59 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
     if (confirmed == true) {
       setState(() => isLoadingUpdate = true);
       try {
-        await PocketReleaseService.setActiveProductionRelease(rel);
+        await PocketReleaseService.deactivateProductionRelease(platform);
         await _loadAppUpdateData();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                  'Successfully activated ${rel.platform.toUpperCase()} version ${rel.version} for production!'),
-              backgroundColor: Colors.green,
-            ),
+            SnackBar(content: Text('Update alerts deactivated for $platform'), backgroundColor: Colors.green),
           );
         }
       } catch (e) {
         if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+        }
+      } finally {
+        if (mounted) setState(() => isLoadingUpdate = false);
+      }
+    }
+  }
+
+  /// 🗑️ Clear all inactive builds for platform
+  Future<void> _confirmClearInactiveReleases(String platform) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF131B26),
+        title: Text('Clear Inactive $platform Builds?',
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: Text(
+          'This will delete all older inactive test/draft builds for $platform. The currently active production build will NOT be touched.',
+          style: const TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Clear Inactive', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      setState(() => isLoadingUpdate = true);
+      try {
+        final count = await PocketReleaseService.clearInactiveReleases(platform);
+        await _loadAppUpdateData();
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text('Error activating release: $e'),
-                backgroundColor: Colors.red),
+            SnackBar(content: Text('Successfully cleared $count inactive $platform build records!'), backgroundColor: Colors.green),
           );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
         }
       } finally {
         if (mounted) setState(() => isLoadingUpdate = false);
@@ -4883,9 +5185,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   }
 
   Future<void> _showCreateEditReleaseDialog(
-      {AppReleaseRecord? existing}) async {
+      {AppReleaseRecord? existing, String? defaultPlatform}) async {
     final isEditing = existing != null;
-    String selectedPlatform = existing?.platform ?? 'android';
+    String selectedPlatform = existing?.platform ?? defaultPlatform ?? 'android';
     final versionController =
         TextEditingController(text: existing?.version ?? '1.0.155');
     final buildController =

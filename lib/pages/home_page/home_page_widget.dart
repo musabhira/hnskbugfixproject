@@ -4,6 +4,7 @@ import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/custom_code/widgets/kids/pocket_pure_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_app_update_service.dart';
 import 'home_page_model.dart';
 export 'home_page_model.dart';
 
@@ -34,7 +35,12 @@ class _HomePageWidgetState extends State<HomePageWidget> {
 
     PocketKidsService.isKidAccountNotifier.addListener(_onModeChanged);
     PocketKidsService.currentWorldModeNotifier.addListener(_onModeChanged);
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        safeSetState(() {});
+        PocketAppUpdateService.checkForUpdate(context);
+      }
+    });
   }
 
   @override

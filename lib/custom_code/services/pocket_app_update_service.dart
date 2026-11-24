@@ -22,10 +22,36 @@ class PocketAppUpdateService {
   PocketAppUpdateService._internal();
 
   static const String defaultAndroidPlayStoreUrl =
-      'https://play.google.com/store/apps/details?id=com.poketmates.app&pcampaignid=web_share';
-  static const String defaultIosStoreUrl = '';
+      'https://play.google.com/store/apps/details?id=com.poketmates.app';
+  static const String defaultIosStoreUrl =
+      'https://apps.apple.com/in/app/poketmates/id6757978594';
 
   static const String _kPromptCountPrefix = 'update_prompt_count_v_';
+
+  /// Show a preview of the in-app update dialog directly (Admin Panel testing)
+  static Future<void> showPreviewDialog(
+    BuildContext context,
+    AppReleaseRecord release,
+  ) async {
+    final storeUrl = (release.storeUrl != null && release.storeUrl!.trim().isNotEmpty)
+        ? release.storeUrl!.trim()
+        : (release.platform.toLowerCase() == 'ios' ? defaultIosStoreUrl : defaultAndroidPlayStoreUrl);
+
+    await showDialog(
+      context: context,
+      barrierDismissible: !release.isMandatory,
+      builder: (dlgCtx) => PopScope(
+        canPop: !release.isMandatory,
+        child: _MinimalUpdateDialog(
+          currentVersion: '1.0.0',
+          latestVersion: release.version,
+          releaseRecord: release,
+          storeUrl: storeUrl,
+          isMandatory: release.isMandatory,
+        ),
+      ),
+    );
+  }
 
   /// Check for update on app startup (Mobile ONLY)
   static Future<void> checkForUpdate(BuildContext context) async {

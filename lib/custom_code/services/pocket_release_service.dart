@@ -165,9 +165,9 @@ class PocketReleaseService {
   static const String _kActiveIosReleaseKey = 'pocket_active_ios_release_v1';
 
   static const String defaultAndroidPlayStoreUrl =
-      'https://play.google.com/store/apps/details?id=com.poketmates.app&pcampaignid=web_share';
+      'https://play.google.com/store/apps/details?id=com.poketmates.app';
   static const String defaultIosAppStoreUrl =
-      'https://apps.apple.com/app/id6748091106';
+      'https://apps.apple.com/in/app/poketmates/id6757978594';
 
   // ---------------------------------------------------------------------------
   // 1. FETCH ALL RELEASES (Admin Panel Table)
@@ -468,6 +468,83 @@ class PocketReleaseService {
     all.removeWhere((r) => r.id == releaseId);
     await saveReleasesLocally(all);
     return true;
+  }
+
+  /// Deactivates active production release for a platform
+  static Future<void> deactivateProductionRelease(String platform) async {
+    final cleanPlatform = platform.toLowerCase().trim();
+    final now = DateTime.now();
+
+    try {
+      await SupaFlow.client
+          .from('app_releases')
+          .update({
+            'is_active_production': false,
+            'updated_at': now.toIso8601String(),
+          })
+          .eq('platform', cleanPlatform);
+
+      final isIos = cleanPlatform == 'ios';
+      await SupaFlow.client.from('app_updates').update({
+        if (isIos) 'ios_active': false,
+        if (!isIos) 'android_active': false,
+      }).eq('id', 1);
+    } catch (e) {
+      debugPrint('PocketReleaseService: Error deactivating remote release: $e');
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = cleanPlatform == 'ios' ? _kActiveIosReleaseKey : _kActiveAndroidReleaseKey;
+    await prefs.remove(cacheKey);
+
+    final all = await fetchAllReleases();
+    for (int i = 0; i < all.length; i++) {
+      if (all[i].platform.toLowerCase() == cleanPlatform && all[i].isActiveProduction) {
+        all[i] = AppReleaseRecord(
+          id: all[i].id,
+          platform: all[i].platform,
+          version: all[i].version,
+          buildNumber: all[i].buildNumber,
+          shorebirdReleaseId: all[i].shorebirdReleaseId,
+          releaseTitle: all[i].releaseTitle,
+          releaseNotes: all[i].releaseNotes,
+          features: all[i].features,
+          improvements: all[i].improvements,
+          bugFixes: all[i].bugFixes,
+          announcementMessage: all[i].announcementMessage,
+          buildType: all[i].buildType,
+          storeStatus: all[i].storeStatus,
+          isActiveProduction: false,
+          productionActivatedAt: null,
+          isMandatory: all[i].isMandatory,
+          storeUrl: all[i].storeUrl,
+          createdBy: all[i].createdBy,
+          createdAt: all[i].createdAt,
+          updatedAt: now,
+        );
+      }
+    }
+    await saveReleasesLocally(all);
+  }
+
+  /// Deletes all inactive builds for a platform, keeping the active production build safe
+  static Future<int> clearInactiveReleases(String platform) async {
+    final cleanPlatform = platform.toLowerCase().trim();
+    final all = await fetchAllReleases();
+
+    final toDelete = all
+        .where((r) => r.platform.toLowerCase() == cleanPlatform && !r.isActiveProduction)
+        .toList();
+
+    for (final rel in toDelete) {
+      try {
+        await SupaFlow.client.from('app_releases').delete().eq('id', rel.id);
+      } catch (_) {}
+    }
+
+    all.removeWhere((r) => r.platform.toLowerCase() == cleanPlatform && !r.isActiveProduction);
+    await saveReleasesLocally(all);
+    return toDelete.length;
   }
 
   // ---------------------------------------------------------------------------
