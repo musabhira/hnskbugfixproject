@@ -21,8 +21,8 @@ import '../avatar/vector_avatar_widget.dart';
 /// 📐 Three Social Aspect Ratios with exact 1080p target scales
 enum CitadelStoryAspectRatio {
   story9x16(9 / 16, 360.0, 640.0, 'Story (9:16)', Icons.stay_current_portrait_rounded),
-  feedPortrait4x5(4 / 5, 360.0, 450.0, 'Portrait (4:5)', Icons.crop_portrait_rounded),
-  square1x1(1 / 1, 360.0, 360.0, 'Square (1:1)', Icons.crop_square_rounded);
+  feedPortrait4x5(4 / 5, 432.0, 540.0, 'Portrait (4:5)', Icons.crop_portrait_rounded),
+  square1x1(1 / 1, 540.0, 540.0, 'Square (1:1)', Icons.crop_square_rounded);
 
   final double ratio;
   final double designWidth;
@@ -42,13 +42,20 @@ enum CitadelStoryAspectRatio {
 /// 📸 High-Aesthetic Full-Screen Citadel Story Card Preview & Sharing Page
 /// Features:
 /// - 3 Aspect Ratios: Story (9:16), Portrait (4:5), Square (1:1)
-/// - 3 Swipeable Design Styles:
-///   1. "Scrapbook Desk Poster" (Warm kraft paper, torn paper header, washi tape, box card, stickers)
-///   2. "Vintage Polaroid Keepsake" (White polaroid card, craft tape, handwritten text, stamp)
-///   3. "Cinematic Showcase" (Edge-to-edge landscape with pinned warm paper tag)
-/// - Background Music (BGM) playback with mute/unmute control
-/// - 15-second Video Export & Image Download
-/// - Native OS Share Sheet integration
+/// - 10 Diverse Aesthetic Templates:
+///   1. Scrapbook Desk Poster (Image 1 Style)
+///   2. Vintage Polaroid Keepsake
+///   3. Cinematic Showcase
+///   4. Spiral Notebook Journal (Image 2 Style)
+///   5. Airmail Expedition Postcard
+///   6. Golden Champion Award
+///   7. Washi Moodboard Collage
+///   8. Minimalist Japanese Editorial
+///   9. Cosmic Celestial Observatory
+///   10. Retro Daily Chronicle
+/// - Background Music (BGM) with live audio toggle
+/// - High-resolution Image (PNG) & 15-second Video (MP4) download
+/// - Direct OS Share Sheet integration
 class PocketCitadelStorySharePage extends StatefulWidget {
   final PocketNeighbor neighbor;
   final int level;
@@ -83,6 +90,13 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
     'Scrapbook Desk Poster',
     'Vintage Polaroid',
     'Cinematic Showcase',
+    'Spiral Notebook Journal',
+    'Airmail Postcard',
+    'Golden Champion Award',
+    'Washi Moodboard Collage',
+    'Japanese Editorial',
+    'Cosmic Observatory',
+    'Retro Daily Chronicle',
   ];
 
   @override
@@ -118,14 +132,16 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
       final boundary = _cardKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
       if (boundary == null) return null;
 
-      final ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+      final double pixelRatio = _selectedFormat == CitadelStoryAspectRatio.square1x1 ? 2.0 : 3.0;
+      final ui.Image image = await boundary.toImage(pixelRatio: pixelRatio);
       final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       if (byteData == null) return null;
 
       final Uint8List pngBytes = byteData.buffer.asUint8List();
       final tempDir = await getTemporaryDirectory();
       final safeName = widget.neighbor.name.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
-      final fileName = 'PoketMates_${_templateTitles[_currentTemplateIndex].replaceAll(' ', '')}_${safeName}_Day${widget.level}_${DateTime.now().millisecondsSinceEpoch}.png';
+      final templateSafe = _templateTitles[_currentTemplateIndex].replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
+      final fileName = 'PoketMates_${templateSafe}_${safeName}_Day${widget.level}_${DateTime.now().millisecondsSinceEpoch}.png';
       final file = File('${tempDir.path}/$fileName');
       await file.writeAsBytes(pngBytes, flush: true);
       return file;
@@ -278,6 +294,28 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
     }
   }
 
+  void _previousTemplate() {
+    if (_currentTemplateIndex > 0) {
+      setState(() => _currentTemplateIndex--);
+      _pageController.animateToPage(
+        _currentTemplateIndex,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  void _nextTemplate() {
+    if (_currentTemplateIndex < _templateTitles.length - 1) {
+      setState(() => _currentTemplateIndex++);
+      _pageController.animateToPage(
+        _currentTemplateIndex,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -379,36 +417,57 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
               ),
             ),
 
-            // 📑 Template Carousel Indicator Title
+            // 📑 Template Carousel Selector Bar with arrows
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    '${_currentTemplateIndex + 1}/3  •  ',
-                    style: GoogleFonts.outfit(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFFD4A373),
+                  IconButton(
+                    icon: const Icon(Icons.chevron_left_rounded, color: Colors.white70, size: 24),
+                    onPressed: _currentTemplateIndex > 0 ? _previousTemplate : null,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  ),
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '${_currentTemplateIndex + 1}/${_templateTitles.length}  •  ',
+                          style: GoogleFonts.outfit(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFFD4A373),
+                          ),
+                        ),
+                        Flexible(
+                          child: Text(
+                            _templateTitles[_currentTemplateIndex],
+                            style: GoogleFonts.outfit(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              letterSpacing: 0.2,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  Text(
-                    _templateTitles[_currentTemplateIndex],
-                    style: GoogleFonts.outfit(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                      letterSpacing: 0.2,
-                    ),
+                  IconButton(
+                    icon: const Icon(Icons.chevron_right_rounded, color: Colors.white70, size: 24),
+                    onPressed: _currentTemplateIndex < _templateTitles.length - 1 ? _nextTemplate : null,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                   ),
-                  const SizedBox(width: 8),
-                  const Icon(Icons.swipe_rounded, size: 14, color: Colors.white38),
                 ],
               ),
             ),
 
-            // 🖼️ Central Swipeable Card Viewport (3 Templates)
+            // 🖼️ Central Swipeable Card Viewport (10 Templates)
             Expanded(
               child: Center(
                 child: Padding(
@@ -432,6 +491,13 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                               _buildTemplate1ScrapbookDesk(),
                               _buildTemplate2PolaroidKeepsake(),
                               _buildTemplate3CinematicShowcase(),
+                              _buildTemplate4SpiralNotebook(),
+                              _buildTemplate5AirmailPostcard(),
+                              _buildTemplate6GoldenAward(),
+                              _buildTemplate7WashiMoodboard(),
+                              _buildTemplate8JapaneseEditorial(),
+                              _buildTemplate9CosmicObservatory(),
+                              _buildTemplate10RetroChronicle(),
                             ],
                           ),
                         ),
@@ -451,68 +517,65 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
   }
 
   // =========================================================================
-  // 🎨 TEMPLATE 1: "Scrapbook Desk Poster" (Exact Match to User's Uploaded Mood Board)
-  // Warm Kraft Paper Desk + Torn Paper Header Banner + Boxed Phone Card + Washi Tape + Stickers
+  // 🎨 TEMPLATE 1: "Scrapbook Desk Poster" (Image 1 Style)
+  // Robust scaling for Square (540x540), Portrait (432x540), and Story (360x640)
   // =========================================================================
   Widget _buildTemplate1ScrapbookDesk() {
-    final isCompact = _selectedFormat == CitadelStoryAspectRatio.square1x1;
+    final isSquare = _selectedFormat == CitadelStoryAspectRatio.square1x1;
     final isPortrait = _selectedFormat == CitadelStoryAspectRatio.feedPortrait4x5;
+
+    final double topMargin = isSquare ? 12 : (isPortrait ? 12 : 14);
+    final double cardTop = isSquare ? 88 : (isPortrait ? 88 : 105);
+    final double cardBottom = isSquare ? 42 : (isPortrait ? 52 : 72);
+    final double cardHorizontal = isSquare ? 28 : (isPortrait ? 22 : 18);
 
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFFE5D5BA), // Warm Kraft Paper Texture tone
+        color: Color(0xFFE5D5BA), // Warm Kraft Paper tone
       ),
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // 📄 Subtle Kraft Paper Flecks & Grain
-          CustomPaint(
-            painter: _KraftPaperTexturePainter(),
+          CustomPaint(painter: _KraftPaperTexturePainter()),
+
+          // 🔖 Top Torn Paper Banner ("Speak English. Meet Your POKETMates.")
+          Positioned(
+            top: topMargin,
+            left: cardHorizontal,
+            right: cardHorizontal,
+            child: _buildTornPaperHeader(isSquare: isSquare),
           ),
 
-          // 🔖 1. Top Torn Paper Banner ("Speak English. Meet Your POKETMates.")
+          // 📱 Center "പെട്ടി കാർഡ്" (Boxed Card with Citadel House Scene)
           Positioned(
-            top: isCompact ? 8 : (isPortrait ? 10 : 14),
-            left: 14,
-            right: 14,
-            child: _buildTornPaperHeader(),
+            top: cardTop,
+            bottom: cardBottom,
+            left: cardHorizontal,
+            right: cardHorizontal,
+            child: _buildBoxedCitadelCard(isSquare: isSquare),
           ),
 
-          // 📱 2. Center "പെട്ടി കാർഡ്" (Boxed Card Frame with Citadel House Scene)
+          // 📎 Paperclip on top-left of torn banner
           Positioned(
-            top: isCompact ? 68 : (isPortrait ? 86 : 105),
-            bottom: isCompact ? 64 : (isPortrait ? 78 : 96),
-            left: 20,
-            right: 20,
-            child: _buildBoxedCitadelCard(),
-          ),
-
-          // 📎 3. Cute Scrapbook Accents (Paperclip, Stickers, Handwritten Doodle)
-          // Paperclip top left of torn banner
-          Positioned(
-            top: isCompact ? 4 : (isPortrait ? 6 : 8),
-            left: 24,
+            top: topMargin - 4,
+            left: cardHorizontal + 10,
             child: _buildRealisticPaperclip(),
           ),
 
           // Pastel Teal Washi Tape on top-left of the Boxed Card
           Positioned(
-            top: isCompact ? 58 : (isPortrait ? 76 : 94),
-            left: 12,
+            top: cardTop - 10,
+            left: cardHorizontal - 8,
             child: Transform.rotate(
               angle: -0.12,
               child: Container(
-                width: 64,
+                width: 60,
                 height: 18,
                 decoration: BoxDecoration(
                   color: const Color(0xFF99F6E4).withValues(alpha: 0.85),
                   borderRadius: BorderRadius.circular(2),
                   boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.12),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
-                    ),
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 4),
                   ],
                 ),
               ),
@@ -521,65 +584,58 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
 
           // Pastel Pink Washi Tape on top-right of the Boxed Card
           Positioned(
-            top: isCompact ? 58 : (isPortrait ? 76 : 94),
-            right: 12,
+            top: cardTop - 10,
+            right: cardHorizontal - 8,
             child: Transform.rotate(
               angle: 0.12,
               child: Container(
-                width: 64,
+                width: 60,
                 height: 18,
                 decoration: BoxDecoration(
                   color: const Color(0xFFFBCFE8).withValues(alpha: 0.85),
                   borderRadius: BorderRadius.circular(2),
                   boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.12),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
-                    ),
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 4),
                   ],
                 ),
               ),
             ),
           ),
 
-          // Handwritten Marker Doodle ("TODAY WAS A LEVEL X")
+          // Handwritten Marker Doodle ("TODAY WAS A LEVEL X!")
           Positioned(
-            right: 10,
-            bottom: isCompact ? 54 : (isPortrait ? 68 : 84),
+            right: cardHorizontal - 12,
+            bottom: cardBottom + 12,
             child: Transform.rotate(
               angle: -0.08,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                child: Text(
-                  'TODAY WAS A ${widget.level}!',
-                  style: GoogleFonts.permanentMarker(
-                    fontSize: 12,
-                    color: const Color(0xFFDC2626),
-                    fontWeight: FontWeight.bold,
-                  ),
+              child: Text(
+                'TODAY WAS A ${widget.level}!',
+                style: GoogleFonts.permanentMarker(
+                  fontSize: isSquare ? 13.5 : 12,
+                  color: const Color(0xFFDC2626),
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
           ),
 
-          // Flower Sticker bottom right
+          // Star Sticker
           Positioned(
-            bottom: isCompact ? 4 : (isPortrait ? 6 : 10),
-            right: 12,
-            child: _buildFlowerSticker(),
-          ),
-
-          // Gold Star Sticker
-          Positioned(
-            left: 12,
-            bottom: isCompact ? 48 : (isPortrait ? 62 : 78),
+            left: cardHorizontal - 10,
+            bottom: cardBottom + 12,
             child: const Text('⭐', style: TextStyle(fontSize: 18)),
           ),
 
-          // 🏷️ 4. Bottom Official Tagline Footer ("PoketMates • Speak English Every Day")
+          // Flower Sticker bottom right
           Positioned(
-            bottom: isCompact ? 8 : (isPortrait ? 10 : 12),
+            bottom: isSquare ? 8 : (isPortrait ? 10 : 12),
+            right: cardHorizontal,
+            child: _buildFlowerSticker(),
+          ),
+
+          // 🏷️ Bottom Official Tagline Footer
+          Positioned(
+            bottom: isSquare ? 10 : (isPortrait ? 12 : 14),
             left: 16,
             right: 16,
             child: _buildVintageBrandFooter(),
@@ -589,10 +645,9 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
     );
   }
 
-  /// 🔖 Torn Paper Header Strip (Image 1 & 2 Style)
-  Widget _buildTornPaperHeader() {
+  Widget _buildTornPaperHeader({bool isSquare = false}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+      padding: EdgeInsets.symmetric(horizontal: 14, vertical: isSquare ? 8 : 6),
       decoration: BoxDecoration(
         color: const Color(0xFFFFFDF8),
         borderRadius: BorderRadius.circular(6),
@@ -612,9 +667,9 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
             child: Text(
               'Speak English.',
               style: GoogleFonts.outfit(
-                fontSize: 17,
+                fontSize: isSquare ? 19 : 17,
                 fontWeight: FontWeight.w900,
-                color: const Color(0xFF2E1810), // Rich espresso brown
+                color: const Color(0xFF2E1810),
                 letterSpacing: -0.2,
               ),
             ),
@@ -624,9 +679,9 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
             child: Text(
               'Meet Your POKETMates.',
               style: GoogleFonts.outfit(
-                fontSize: 15.5,
+                fontSize: isSquare ? 17 : 15.5,
                 fontWeight: FontWeight.w900,
-                color: const Color(0xFFD95D39), // Warm terracotta orange
+                color: const Color(0xFFD95D39),
                 letterSpacing: -0.2,
               ),
             ),
@@ -635,10 +690,9 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
           Text(
             'Chat. Connect. Build your Home.',
             style: GoogleFonts.outfit(
-              fontSize: 9.5,
+              fontSize: isSquare ? 10.5 : 9.5,
               fontWeight: FontWeight.w600,
               color: const Color(0xFF6E5443),
-              letterSpacing: 0.2,
             ),
           ),
         ],
@@ -646,16 +700,12 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
     );
   }
 
-  /// 📱 Center "പെട്ടി കാർഡ്" (Boxed Card with House & Scenery + Bottom Kraft Pod)
-  Widget _buildBoxedCitadelCard() {
+  Widget _buildBoxedCitadelCard({bool isSquare = false}) {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF0F172A),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.18),
-          width: 1.5,
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.18), width: 1.5),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.35),
@@ -669,10 +719,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // House Virtual World
             _buildCitadelScenicViewport(),
-
-            // Soft Dark Vignette at bottom for text contrast
             Positioned(
               left: 0,
               right: 0,
@@ -683,21 +730,16 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.8),
-                    ],
+                    colors: [Colors.transparent, Colors.black.withValues(alpha: 0.8)],
                   ),
                 ),
               ),
             ),
-
-            // 👑 Bottom Kraft Paper Pod (User Name, Rank, PS)
             Positioned(
               bottom: 8,
               left: 8,
               right: 8,
-              child: _buildKraftPlayerPod(),
+              child: _buildKraftPlayerPod(isSquare: isSquare),
             ),
           ],
         ),
@@ -705,33 +747,24 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
     );
   }
 
-  /// 🏷️ Bottom Kraft Paper Player Pod (Terracotta + Espresso + Gold)
-  Widget _buildKraftPlayerPod() {
+  Widget _buildKraftPlayerPod({bool isSquare = false}) {
     final isPresident = widget.neighbor.isPresident;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      padding: EdgeInsets.symmetric(horizontal: 10, vertical: isSquare ? 8 : 6),
       decoration: BoxDecoration(
-        color: const Color(0xFFFAF6EE), // Warm ivory craft paper
+        color: const Color(0xFFFAF6EE),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: const Color(0xFFD4A373),
-          width: 1.2,
-        ),
+        border: Border.all(color: const Color(0xFFD4A373), width: 1.2),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.25),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.25), blurRadius: 8, offset: const Offset(0, 3)),
         ],
       ),
       child: Row(
         children: [
-          // Avatar
           Container(
-            width: 34,
-            height: 34,
+            width: isSquare ? 38 : 34,
+            height: isSquare ? 38 : 34,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
@@ -741,16 +774,14 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
             ),
             child: ClipOval(
               child: isPresident
-                  ? const PresidentAvatarWidget(size: 34, showGlow: false)
+                  ? PresidentAvatarWidget(size: isSquare ? 38 : 34, showGlow: false)
                   : VectorAvatarWidget(
                       config: VectorAvatarConfig.getEvolutionAvatarForStage(widget.neighbor.day),
-                      size: 34,
+                      size: isSquare ? 38 : 34,
                     ),
             ),
           ),
           const SizedBox(width: 8),
-
-          // Name and Rank
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -759,22 +790,20 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                 Text(
                   widget.neighbor.name,
                   style: GoogleFonts.outfit(
-                    fontSize: 13,
+                    fontSize: isSquare ? 14.5 : 13,
                     fontWeight: FontWeight.w900,
                     color: const Color(0xFF2E1810),
-                    letterSpacing: 0.2,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 1),
                 FittedBox(
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerLeft,
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Terracotta Rank Badge
                       _buildTerracottaRankBadge(),
                       const SizedBox(width: 5),
                       Text(
@@ -792,17 +821,12 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
             ),
           ),
           const SizedBox(width: 6),
-
-          // PS Gold Pill
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: const Color(0xFFFEF3C7),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: const Color(0xFFF59E0B),
-                width: 1,
-              ),
+              border: Border.all(color: const Color(0xFFF59E0B), width: 1),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -810,7 +834,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                 Text(
                   '${widget.pocketScore}',
                   style: GoogleFonts.outfit(
-                    fontSize: 11.5,
+                    fontSize: isSquare ? 13 : 11.5,
                     fontWeight: FontWeight.w900,
                     color: const Color(0xFF92400E),
                   ),
@@ -821,7 +845,6 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                     fontSize: 7.5,
                     fontWeight: FontWeight.w900,
                     color: const Color(0xFFD97706),
-                    letterSpacing: 0.4,
                   ),
                 ),
               ],
@@ -833,52 +856,49 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
   }
 
   // =========================================================================
-  // 📷 TEMPLATE 2: "Vintage Polaroid Keepsake"
-  // Authentic white Polaroid photo card + craft yellow washi tape + chin details
+  // 📷 TEMPLATE 2: "Vintage Polaroid Keepsake" (Clean Zero-Overflow)
   // =========================================================================
   Widget _buildTemplate2PolaroidKeepsake() {
+    final isSquare = _selectedFormat == CitadelStoryAspectRatio.square1x1;
+    final isPortrait = _selectedFormat == CitadelStoryAspectRatio.feedPortrait4x5;
+
+    final double polaroidH = isSquare ? 420 : (isPortrait ? 430 : 500);
+    final double photoAspectRatio = isSquare ? 1.45 : (isPortrait ? 1.25 : 1.05);
+
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFFDECDB4), // Warm craft desk
-      ),
+      decoration: const BoxDecoration(color: Color(0xFFDECDB4)),
       child: Stack(
         fit: StackFit.expand,
         children: [
           CustomPaint(painter: _KraftPaperTexturePainter()),
-
-          // Center Polaroid Card
           Center(
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
+              width: isSquare ? 460 : (isPortrait ? 380 : 310),
+              height: polaroidH,
+              margin: const EdgeInsets.symmetric(horizontal: 20),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(10),
                 boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.22),
-                    blurRadius: 16,
-                    offset: const Offset(0, 8),
-                  ),
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.22), blurRadius: 16, offset: const Offset(0, 8)),
                 ],
               ),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Photo area
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: AspectRatio(
-                        aspectRatio: 1.05,
-                        child: _buildCitadelScenicViewport(),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(14, 14, 14, 8),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: AspectRatio(
+                          aspectRatio: photoAspectRatio,
+                          child: _buildCitadelScenicViewport(),
+                        ),
                       ),
                     ),
                   ),
-
-                  // Polaroid Chin with Handwritten milestone & stats
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -889,7 +909,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                               child: Text(
                                 'Day ${widget.level} Citadel • ${widget.neighbor.name}',
                                 style: GoogleFonts.caveat(
-                                  fontSize: 16,
+                                  fontSize: isSquare ? 18 : 16,
                                   fontWeight: FontWeight.bold,
                                   color: const Color(0xFF2E1810),
                                 ),
@@ -906,7 +926,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                           children: [
                             _buildTerracottaRankBadge(),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFFEF3C7),
                                 borderRadius: BorderRadius.circular(6),
@@ -914,7 +934,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                               child: Text(
                                 '🪙 ${widget.pocketScore} PS',
                                 style: GoogleFonts.outfit(
-                                  fontSize: 10.5,
+                                  fontSize: 11,
                                   fontWeight: FontWeight.w900,
                                   color: const Color(0xFF92400E),
                                 ),
@@ -929,10 +949,8 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
               ),
             ),
           ),
-
-          // Yellow Washi Tape at top center of Polaroid
           Positioned(
-            top: 8,
+            top: isSquare ? 16 : 8,
             left: 0,
             right: 0,
             child: Center(
@@ -944,21 +962,13 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                   decoration: BoxDecoration(
                     color: const Color(0xFFFDE047).withValues(alpha: 0.85),
                     borderRadius: BorderRadius.circular(2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.12),
-                        blurRadius: 4,
-                      ),
-                    ],
                   ),
                 ),
               ),
             ),
           ),
-
-          // Bottom Tagline
           Positioned(
-            bottom: 8,
+            bottom: isSquare ? 12 : 8,
             left: 16,
             right: 16,
             child: _buildVintageBrandFooter(),
@@ -970,32 +980,22 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
 
   // =========================================================================
   // 🏔️ TEMPLATE 3: "Cinematic Showcase"
-  // Edge-to-edge landscape with floating craft paper card at bottom
   // =========================================================================
   Widget _buildTemplate3CinematicShowcase() {
     return Stack(
       fit: StackFit.expand,
       children: [
-        // Edge-to-edge Virtual World
         _buildCitadelScenicViewport(),
-
-        // Vignette
         DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [
-                Colors.black.withValues(alpha: 0.3),
-                Colors.transparent,
-                Colors.black.withValues(alpha: 0.75),
-              ],
+              colors: [Colors.black.withValues(alpha: 0.3), Colors.transparent, Colors.black.withValues(alpha: 0.75)],
               stops: const [0.0, 0.4, 1.0],
             ),
           ),
         ),
-
-        // Minimalist Top Pill
         Positioned(
           top: 14,
           left: 14,
@@ -1004,24 +1004,14 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
             decoration: BoxDecoration(
               color: const Color(0xFF2E1810).withValues(alpha: 0.75),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: const Color(0xFFD4A373).withValues(alpha: 0.6),
-                width: 1,
-              ),
+              border: Border.all(color: const Color(0xFFD4A373).withValues(alpha: 0.6)),
             ),
             child: Text(
               '🏰 Day ${widget.level} Citadel',
-              style: GoogleFonts.outfit(
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-                color: Colors.white,
-                letterSpacing: 0.3,
-              ),
+              style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.white),
             ),
           ),
         ),
-
-        // Floating Bottom Kraft Paper Card Pinned with Paperclip
         Positioned(
           bottom: 12,
           left: 14,
@@ -1040,7 +1030,529 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
   }
 
   // =========================================================================
-  // 🏞️ Shared Estate Viewport: Cosmic Sky + Scenic Mountains + Level House
+  // 📓 TEMPLATE 4: "Spiral Notebook Journal" (Image 2 Style)
+  // =========================================================================
+  Widget _buildTemplate4SpiralNotebook() {
+    final isSquare = _selectedFormat == CitadelStoryAspectRatio.square1x1;
+
+    return Container(
+      decoration: const BoxDecoration(color: Color(0xFFDFCFB7)),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          CustomPaint(painter: _KraftPaperTexturePainter()),
+          Center(
+            child: Container(
+              margin: EdgeInsets.symmetric(horizontal: isSquare ? 28 : 20, vertical: isSquare ? 24 : 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFDF9),
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.16), blurRadius: 14, offset: const Offset(0, 4)),
+                ],
+              ),
+              child: Stack(
+                children: [
+                  // Punched Ring Holes on Left Edge
+                  Positioned(
+                    left: 6,
+                    top: 12,
+                    bottom: 12,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: List.generate(
+                        isSquare ? 9 : 12,
+                        (index) => Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFE2E8F0)),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(26, 12, 14, 12),
+                    child: Column(
+                      children: [
+                        // Notebook Header
+                        Row(
+                          children: [
+                            const Text('✏️ ', style: TextStyle(fontSize: 14)),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'DAILY CITADEL JOURNAL',
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w900,
+                                      color: const Color(0xFF1E293B),
+                                      letterSpacing: 0.6,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Learn with PoketMates • Day ${widget.level} Edition',
+                                    style: GoogleFonts.outfit(fontSize: 9.5, color: const Color(0xFF64748B)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const Divider(color: Color(0xFFCBD5E1), height: 16),
+                        // House Photo inside Notebook
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: _buildCitadelScenicViewport(),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        // Stats Line
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              widget.neighbor.name,
+                              style: GoogleFonts.caveat(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF2E1810),
+                              ),
+                            ),
+                            _buildTerracottaRankBadge(),
+                            Text(
+                              '🪙 ${widget.pocketScore} PS',
+                              style: GoogleFonts.outfit(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w900,
+                                color: const Color(0xFFD97706),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Positioned(top: -4, left: 30, child: _buildRealisticPaperclip()),
+                ],
+              ),
+            ),
+          ),
+          Positioned(bottom: 8, left: 16, right: 16, child: _buildVintageBrandFooter()),
+        ],
+      ),
+    );
+  }
+
+  // =========================================================================
+  // ✉️ TEMPLATE 5: "Airmail Postcard"
+  // =========================================================================
+  Widget _buildTemplate5AirmailPostcard() {
+    final isSquare = _selectedFormat == CitadelStoryAspectRatio.square1x1;
+
+    return Container(
+      decoration: const BoxDecoration(color: Color(0xFFDBC9B0)),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          CustomPaint(painter: _KraftPaperTexturePainter()),
+          Center(
+            child: Container(
+              margin: EdgeInsets.symmetric(horizontal: isSquare ? 26 : 18, vertical: isSquare ? 20 : 16),
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFAF7F0),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFD4A373), width: 1.5),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.18), blurRadius: 14),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // Airmail Header Strip with Stamp
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1D4ED8),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          'PAR AVION / AIR MAIL',
+                          style: GoogleFonts.outfit(fontSize: 8.5, fontWeight: FontWeight.w900, color: Colors.white),
+                        ),
+                      ),
+                      // Postage Stamp
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF2F2),
+                          border: Border.all(color: const Color(0xFFEF4444), width: 1),
+                        ),
+                        child: Text(
+                          'POKETMATES • DAY ${widget.level}',
+                          style: GoogleFonts.outfit(fontSize: 8, fontWeight: FontWeight.bold, color: const Color(0xFFEF4444)),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: _buildCitadelScenicViewport(),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  _buildKraftPlayerPod(isSquare: isSquare),
+                ],
+              ),
+            ),
+          ),
+          Positioned(bottom: 8, left: 16, right: 16, child: _buildVintageBrandFooter()),
+        ],
+      ),
+    );
+  }
+
+  // =========================================================================
+  // 🏆 TEMPLATE 6: "Golden Champion Award"
+  // =========================================================================
+  Widget _buildTemplate6GoldenAward() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF0F172A), Color(0xFF020617)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Container(
+            margin: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.workspace_premium_rounded, color: Color(0xFFFFD700), size: 18),
+                    const SizedBox(width: 6),
+                    Text(
+                      'CITADEL MASTER DISTINCTION',
+                      style: GoogleFonts.cinzel(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                        color: const Color(0xFFFFD700),
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: _buildCitadelScenicViewport(),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  widget.neighbor.name,
+                  style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildTerracottaRankBadge(),
+                    const SizedBox(width: 8),
+                    Text(
+                      '🪙 ${widget.pocketScore} PS  •  Day ${widget.level}',
+                      style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFFFFD700)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                _buildVintageBrandFooter(darkTone: false),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // =========================================================================
+  // 🎨 TEMPLATE 7: "Washi Moodboard Collage"
+  // =========================================================================
+  Widget _buildTemplate7WashiMoodboard() {
+    final isSquare = _selectedFormat == CitadelStoryAspectRatio.square1x1;
+
+    return Container(
+      decoration: const BoxDecoration(color: Color(0xFFE8DCB8)),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          CustomPaint(painter: _KraftPaperTexturePainter()),
+          Center(
+            child: Container(
+              margin: EdgeInsets.symmetric(horizontal: isSquare ? 28 : 20, vertical: isSquare ? 20 : 16),
+              child: Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: _buildCitadelScenicViewport(),
+                  ),
+                  // Multiple playful washi tapes
+                  Positioned(
+                    top: -4,
+                    left: 20,
+                    child: Container(width: 50, height: 16, color: const Color(0xFFFDE047).withValues(alpha: 0.85)),
+                  ),
+                  Positioned(
+                    top: -4,
+                    right: 20,
+                    child: Container(width: 50, height: 16, color: const Color(0xFF86EFAC).withValues(alpha: 0.85)),
+                  ),
+                  Positioned(
+                    bottom: 70,
+                    left: -6,
+                    child: Transform.rotate(
+                      angle: 0.15,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        color: const Color(0xFFFBCFE8),
+                        child: Text(
+                          'MY CITADEL ✨',
+                          style: GoogleFonts.permanentMarker(fontSize: 10, color: const Color(0xFF831843)),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(bottom: 8, left: 8, right: 8, child: _buildKraftPlayerPod(isSquare: isSquare)),
+                ],
+              ),
+            ),
+          ),
+          Positioned(bottom: 8, left: 16, right: 16, child: _buildVintageBrandFooter()),
+        ],
+      ),
+    );
+  }
+
+  // =========================================================================
+  // ⛩️ TEMPLATE 8: "Minimalist Japanese Editorial"
+  // =========================================================================
+  Widget _buildTemplate8JapaneseEditorial() {
+    return Container(
+      decoration: const BoxDecoration(color: Color(0xFFF5EFEB)),
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'CITADEL NO. ${widget.level}',
+                style: GoogleFonts.outfit(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                  color: const Color(0xFF1F1D1B),
+                  letterSpacing: 2.0,
+                ),
+              ),
+              Container(
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  border: Border.all(color: const Color(0xFFDC2626), width: 1.5),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                alignment: Alignment.center,
+                child: Text('城', style: GoogleFonts.notoSans(fontSize: 11, color: const Color(0xFFDC2626))),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: _buildCitadelScenicViewport(),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                widget.neighbor.name.toUpperCase(),
+                style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w800, color: const Color(0xFF1F1D1B)),
+              ),
+              Text(
+                'DAY ${widget.level} • ${widget.pocketScore} PS',
+                style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF78716C)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          _buildVintageBrandFooter(),
+        ],
+      ),
+    );
+  }
+
+  // =========================================================================
+  // 🪐 TEMPLATE 9: "Cosmic Celestial Observatory"
+  // =========================================================================
+  Widget _buildTemplate9CosmicObservatory() {
+    return Container(
+      decoration: const BoxDecoration(color: Color(0xFF030712)),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          _buildCitadelScenicViewport(),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                colors: [Colors.transparent, Colors.black.withValues(alpha: 0.85)],
+                radius: 0.85,
+              ),
+            ),
+          ),
+          Positioned(
+            top: 14,
+            left: 14,
+            right: 14,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.7),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: const Color(0xFF38BDF8), width: 1),
+                  ),
+                  child: Text(
+                    'SECTOR ${widget.neighbor.effectivePlanetCode}',
+                    style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: const Color(0xFF38BDF8)),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.7),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: const Color(0xFFA855F7), width: 1),
+                  ),
+                  child: Text(
+                    'ORBIT DAY ${widget.level}',
+                    style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: const Color(0xFFA855F7)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            bottom: 12,
+            left: 14,
+            right: 14,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildKraftPlayerPod(),
+                const SizedBox(height: 6),
+                _buildVintageBrandFooter(darkTone: false),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // =========================================================================
+  // 📰 TEMPLATE 10: "Retro Daily Chronicle"
+  // =========================================================================
+  Widget _buildTemplate10RetroChronicle() {
+    return Container(
+      decoration: const BoxDecoration(color: Color(0xFFF4ECD8)),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Text(
+            'THE POKETMATES CHRONICLE',
+            style: GoogleFonts.cinzel(
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+              color: const Color(0xFF1E1B18),
+              letterSpacing: 1.0,
+            ),
+          ),
+          Text(
+            'Special Spoken English Gazette • Day ${widget.level} Milestone Edition',
+            style: GoogleFonts.playfairDisplay(fontSize: 8.5, fontStyle: FontStyle.italic, color: const Color(0xFF57534E)),
+          ),
+          const Divider(color: Color(0xFF292524), thickness: 1.2, height: 12),
+          Text(
+            'EXTRA! ${widget.neighbor.name.toUpperCase()} EXPANDS CITADEL ESTATE!',
+            style: GoogleFonts.outfit(fontSize: 11.5, fontWeight: FontWeight.w900, color: const Color(0xFF1C1917)),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 6),
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: _buildCitadelScenicViewport(),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(border: Border.all(color: const Color(0xFF44403C))),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'RANK: #${widget.globalRank ?? 1}',
+                  style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: const Color(0xFF1C1917)),
+                ),
+                Text(
+                  'SCORE: ${widget.pocketScore} PS',
+                  style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: const Color(0xFF1C1917)),
+                ),
+                Text(
+                  'STATUS: EXPEDITION READY',
+                  style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: const Color(0xFFD97706)),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+          _buildVintageBrandFooter(),
+        ],
+      ),
+    );
+  }
+
+  // =========================================================================
+  // 🏞️ Shared Scenic Viewport: Cosmic Sky + Scenic Landscape + Level House
   // =========================================================================
   Widget _buildCitadelScenicViewport() {
     final isPresident = widget.neighbor.isPresident;
@@ -1049,7 +1561,6 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
     return Stack(
       fit: StackFit.expand,
       children: [
-        // 🌌 Cosmic Ocean & Sky
         CustomPaint(
           painter: CitadelInfiniteOceanSkyBackdropPainter(
             isNight: widget.isNight,
@@ -1057,8 +1568,6 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
             planetCode: widget.neighbor.effectivePlanetCode,
           ),
         ),
-
-        // 🏔️ Scenic Terrain & House
         FittedBox(
           fit: BoxFit.cover,
           alignment: const Alignment(0, -0.15),
@@ -1140,7 +1649,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: const Color(0xFFD95D39), // Terracotta
+        color: const Color(0xFFD95D39),
         borderRadius: BorderRadius.circular(5),
       ),
       child: Text(
@@ -1216,10 +1725,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
     return Container(
       width: 24,
       height: 24,
-      decoration: const BoxDecoration(
-        shape: BoxShape.circle,
-        color: Color(0xFFFDE8E8),
-      ),
+      decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFFDE8E8)),
       alignment: Alignment.center,
       child: const Text('🌸', style: TextStyle(fontSize: 14)),
     );
@@ -1233,12 +1739,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: const BoxDecoration(
         color: Color(0xFF181512),
-        border: Border(
-          top: BorderSide(
-            color: Color(0xFF26211C),
-            width: 1,
-          ),
-        ),
+        border: Border(top: BorderSide(color: Color(0xFF26211C), width: 1)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1271,7 +1772,6 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
             ),
           Row(
             children: [
-              // 📥 Save Image
               Expanded(
                 child: GestureDetector(
                   onTap: _isExporting ? null : _downloadImage,
@@ -1280,10 +1780,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                     decoration: BoxDecoration(
                       color: const Color(0xFF26211C),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: const Color(0xFFD4A373).withValues(alpha: 0.3),
-                        width: 1,
-                      ),
+                      border: Border.all(color: const Color(0xFFD4A373).withValues(alpha: 0.3), width: 1),
                     ),
                     alignment: Alignment.center,
                     child: Row(
@@ -1293,11 +1790,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                         const SizedBox(width: 6),
                         Text(
                           'Save Image',
-                          style: GoogleFonts.outfit(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                          ),
+                          style: GoogleFonts.outfit(fontSize: 12.5, fontWeight: FontWeight.w800, color: Colors.white),
                         ),
                       ],
                     ),
@@ -1305,8 +1798,6 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                 ),
               ),
               const SizedBox(width: 8),
-
-              // 🎬 Save Video (15s MP4 with BGM)
               Expanded(
                 child: GestureDetector(
                   onTap: _isExporting ? null : _downloadVideo,
@@ -1315,10 +1806,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                     decoration: BoxDecoration(
                       color: const Color(0xFF2E1A11),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: const Color(0xFFD95D39).withValues(alpha: 0.45),
-                        width: 1,
-                      ),
+                      border: Border.all(color: const Color(0xFFD95D39).withValues(alpha: 0.45), width: 1),
                     ),
                     alignment: Alignment.center,
                     child: Row(
@@ -1328,11 +1816,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                         const SizedBox(width: 6),
                         Text(
                           'Save Video',
-                          style: GoogleFonts.outfit(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w800,
-                            color: const Color(0xFFFDBA74),
-                          ),
+                          style: GoogleFonts.outfit(fontSize: 12.5, fontWeight: FontWeight.w800, color: const Color(0xFFFDBA74)),
                         ),
                       ],
                     ),
@@ -1340,8 +1824,6 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                 ),
               ),
               const SizedBox(width: 8),
-
-              // 🚀 Share to Social
               Expanded(
                 child: GestureDetector(
                   onTap: _isExporting ? null : _shareCard,
@@ -1370,12 +1852,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                         const SizedBox(width: 6),
                         Text(
                           'Share',
-                          style: GoogleFonts.outfit(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                            letterSpacing: 0.3,
-                          ),
+                          style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.white),
                         ),
                       ],
                     ),
@@ -1398,7 +1875,6 @@ class _KraftPaperTexturePainter extends CustomPainter {
       ..color = const Color(0xFF7A5C3D).withValues(alpha: 0.05)
       ..strokeWidth = 1;
 
-    // Subtle paper fiber specks
     const spacing = 28.0;
     for (double x = 4; x < size.width; x += spacing) {
       for (double y = 6; y < size.height; y += spacing) {
