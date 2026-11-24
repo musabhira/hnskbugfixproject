@@ -18,7 +18,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_wid
 import '../avatar/vector_avatar_config.dart';
 import '../avatar/vector_avatar_widget.dart';
 
-/// 📐 Three Social Aspect Ratios with exact 1080p target scales
+/// 📐 Three Social Aspect Ratios with generous 540p / 1080p target scales
 enum CitadelStoryAspectRatio {
   story9x16(9 / 16, 360.0, 640.0, 'Story (9:16)', Icons.stay_current_portrait_rounded),
   feedPortrait4x5(4 / 5, 432.0, 540.0, 'Portrait (4:5)', Icons.crop_portrait_rounded),
@@ -42,20 +42,23 @@ enum CitadelStoryAspectRatio {
 /// 📸 High-Aesthetic Full-Screen Citadel Story Card Preview & Sharing Page
 /// Features:
 /// - 3 Aspect Ratios: Story (9:16), Portrait (4:5), Square (1:1)
-/// - 10 Diverse Aesthetic Templates:
-///   1. Scrapbook Desk Poster (Image 1 Style)
+/// - 12 Unique Aesthetic Templates:
+///   1. Scrapbook Desk Poster (Image 1 Style - clean without marker doodle)
 ///   2. Vintage Polaroid Keepsake
 ///   3. Cinematic Showcase
-///   4. Spiral Notebook Journal (Image 2 Style)
-///   5. Airmail Expedition Postcard
-///   6. Golden Champion Award
-///   7. Washi Moodboard Collage
+///   4. Spiral Notebook Journal (Fixed clean footer)
+///   5. Airmail Expedition Postcard (Fixed clean footer)
+///   6. Nordic Editorial Art Book (Brand new luxury architectural design)
+///   7. Washi Moodboard Collage (Fixed clean footer)
 ///   8. Minimalist Japanese Editorial
 ///   9. Cosmic Celestial Observatory
 ///   10. Retro Daily Chronicle
+///   11. Retro Instant Film (Fujifilm Instax / Warm Memory)
+///   12. Pocket Cosmic Passport (Visa Entry Stamp & Coordinates)
+/// - True Horizontal Card Carousel with peek edges & smooth swipe
+/// - Direct Download to user's Downloads folder (Windows, Android, iOS) with auto-reveal
 /// - Background Music (BGM) with live audio toggle
-/// - High-resolution Image (PNG) & 15-second Video (MP4) download
-/// - Direct OS Share Sheet integration
+/// - Minimal, compact bottom action bar
 class PocketCitadelStorySharePage extends StatefulWidget {
   final PocketNeighbor neighbor;
   final int level;
@@ -92,17 +95,22 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
     'Cinematic Showcase',
     'Spiral Notebook Journal',
     'Airmail Postcard',
-    'Golden Champion Award',
+    'Nordic Editorial Art',
     'Washi Moodboard Collage',
     'Japanese Editorial',
     'Cosmic Observatory',
     'Retro Daily Chronicle',
+    'Retro Instant Film',
+    'Cosmic Passport Visa',
   ];
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: 0);
+    _pageController = PageController(
+      initialPage: 0,
+      viewportFraction: 0.86,
+    );
     _initAudio();
   }
 
@@ -125,6 +133,30 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  Future<Directory> _getExportDirectory() async {
+    if (Platform.isWindows) {
+      try {
+        final downloads = await getDownloadsDirectory();
+        if (downloads != null && downloads.existsSync()) return downloads;
+      } catch (_) {}
+      final userProfile = Platform.environment['USERPROFILE'];
+      if (userProfile != null) {
+        final winDownloads = Directory('$userProfile\\Downloads');
+        if (winDownloads.existsSync()) return winDownloads;
+      }
+    } else if (Platform.isAndroid) {
+      try {
+        final downloads = await getDownloadsDirectory();
+        if (downloads != null && downloads.existsSync()) return downloads;
+      } catch (_) {}
+      try {
+        final ext = await getExternalStorageDirectory();
+        if (ext != null && ext.existsSync()) return ext;
+      } catch (_) {}
+    }
+    return await getApplicationDocumentsDirectory();
   }
 
   Future<File?> _captureCardImage() async {
@@ -155,7 +187,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
     if (_isExporting) return;
     setState(() {
       _isExporting = true;
-      _exportStatusText = 'Saving Card Image...';
+      _exportStatusText = 'Saving Image...';
     });
     HapticFeedback.mediumImpact();
 
@@ -163,24 +195,31 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
       final file = await _captureCardImage();
       if (file == null) throw Exception('Could not render image');
 
-      final appDocDir = await getApplicationDocumentsDirectory();
-      final permanentPath = '${appDocDir.path}/${file.uri.pathSegments.last}';
+      final targetDir = await _getExportDirectory();
+      final permanentPath = '${targetDir.path}${Platform.pathSeparator}${file.uri.pathSegments.last}';
       await file.copy(permanentPath);
+
+      if (Platform.isWindows) {
+        try {
+          Process.run('explorer.exe', ['/select,', permanentPath]);
+        } catch (_) {}
+      }
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: const Color(0xFF10B981),
           behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 3),
+          duration: const Duration(seconds: 4),
           content: Row(
             children: [
               const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Citadel Poster saved to Documents! 📸',
-                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white),
+                  'Saved to Downloads: ${file.uri.pathSegments.last} 📸',
+                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 13),
+                  maxLines: 2,
                 ),
               ),
             ],
@@ -193,7 +232,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
         SnackBar(
           backgroundColor: const Color(0xFFEF4444),
           behavior: SnackBarBehavior.floating,
-          content: Text('Failed to save card: $e', style: GoogleFonts.outfit(color: Colors.white)),
+          content: Text('Failed to save: $e', style: GoogleFonts.outfit(color: Colors.white)),
         ),
       );
     } finally {
@@ -205,7 +244,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
     if (_isExporting) return;
     setState(() {
       _isExporting = true;
-      _exportStatusText = 'Creating 15s Story Video with Music...';
+      _exportStatusText = 'Creating 15s Video...';
     });
     HapticFeedback.heavyImpact();
 
@@ -219,14 +258,19 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
       );
 
       if (videoFile == null) {
-        // Fallback for platforms where FFmpeg native is unavailable: save image instead
         await _downloadImage();
         return;
       }
 
-      final appDocDir = await getApplicationDocumentsDirectory();
-      final permanentPath = '${appDocDir.path}/${videoFile.uri.pathSegments.last}';
+      final targetDir = await _getExportDirectory();
+      final permanentPath = '${targetDir.path}${Platform.pathSeparator}${videoFile.uri.pathSegments.last}';
       await videoFile.copy(permanentPath);
+
+      if (Platform.isWindows) {
+        try {
+          Process.run('explorer.exe', ['/select,', permanentPath]);
+        } catch (_) {}
+      }
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -237,11 +281,12 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
           content: Row(
             children: [
               const Icon(Icons.movie_creation_rounded, color: Colors.white, size: 20),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  '15-Second Citadel Story Video with Music saved! 🎬',
-                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white),
+                  '15s Video saved to Downloads: ${videoFile.uri.pathSegments.last} 🎬',
+                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 13),
+                  maxLines: 2,
                 ),
               ),
             ],
@@ -266,7 +311,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
     if (_isExporting) return;
     setState(() {
       _isExporting = true;
-      _exportStatusText = 'Preparing Share Sheet...';
+      _exportStatusText = 'Sharing...';
     });
     HapticFeedback.mediumImpact();
 
@@ -319,19 +364,19 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF181512),
+      backgroundColor: const Color(0xFF141210),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF181512),
+        backgroundColor: const Color(0xFF141210),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          'Citadel Story Card',
+          'Story Card',
           style: GoogleFonts.outfit(
             color: Colors.white,
-            fontSize: 18,
+            fontSize: 17,
             fontWeight: FontWeight.w800,
             letterSpacing: 0.3,
           ),
@@ -342,7 +387,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
             icon: Icon(
               _isBgmMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
               color: _isBgmMuted ? Colors.white38 : const Color(0xFFF59E0B),
-              size: 22,
+              size: 20,
             ),
             tooltip: _isBgmMuted ? 'Unmute BGM' : 'Mute BGM',
             onPressed: _toggleBgm,
@@ -354,14 +399,14 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
           children: [
             // 🏷️ Aspect Ratio Selector Pills (Story 9:16, Portrait 4:5, Square 1:1)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
               child: Container(
-                padding: const EdgeInsets.all(4),
+                padding: const EdgeInsets.all(3.5),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF26211C),
-                  borderRadius: BorderRadius.circular(14),
+                  color: const Color(0xFF221E1A),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: const Color(0xFFD4A373).withValues(alpha: 0.25),
+                    color: const Color(0xFFD4A373).withValues(alpha: 0.2),
                     width: 1,
                   ),
                 ),
@@ -376,18 +421,10 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                         },
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(vertical: 7),
+                          padding: const EdgeInsets.symmetric(vertical: 6),
                           decoration: BoxDecoration(
                             color: isSelected ? const Color(0xFFD95D39) : Colors.transparent,
-                            borderRadius: BorderRadius.circular(10),
-                            boxShadow: isSelected
-                                ? [
-                                    BoxShadow(
-                                      color: const Color(0xFFD95D39).withValues(alpha: 0.4),
-                                      blurRadius: 8,
-                                    ),
-                                  ]
-                                : null,
+                            borderRadius: BorderRadius.circular(9),
                           ),
                           alignment: Alignment.center,
                           child: Row(
@@ -395,14 +432,14 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                             children: [
                               Icon(
                                 format.icon,
-                                size: 13,
+                                size: 12.5,
                                 color: isSelected ? Colors.white : Colors.white60,
                               ),
-                              const SizedBox(width: 5),
+                              const SizedBox(width: 4),
                               Text(
                                 format.label,
                                 style: GoogleFonts.outfit(
-                                  fontSize: 11,
+                                  fontSize: 10.5,
                                   fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                                   color: isSelected ? Colors.white : Colors.white70,
                                 ),
@@ -419,15 +456,15 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
 
             // 📑 Template Carousel Selector Bar with arrows
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.chevron_left_rounded, color: Colors.white70, size: 24),
+                    icon: const Icon(Icons.chevron_left_rounded, color: Colors.white70, size: 22),
                     onPressed: _currentTemplateIndex > 0 ? _previousTemplate : null,
                     padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
                   ),
                   Expanded(
                     child: Row(
@@ -436,7 +473,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                         Text(
                           '${_currentTemplateIndex + 1}/${_templateTitles.length}  •  ',
                           style: GoogleFonts.outfit(
-                            fontSize: 12,
+                            fontSize: 11.5,
                             fontWeight: FontWeight.w700,
                             color: const Color(0xFFD4A373),
                           ),
@@ -445,7 +482,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                           child: Text(
                             _templateTitles[_currentTemplateIndex],
                             style: GoogleFonts.outfit(
-                              fontSize: 12.5,
+                              fontSize: 12,
                               fontWeight: FontWeight.w800,
                               color: Colors.white,
                               letterSpacing: 0.2,
@@ -458,57 +495,57 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.chevron_right_rounded, color: Colors.white70, size: 24),
+                    icon: const Icon(Icons.chevron_right_rounded, color: Colors.white70, size: 22),
                     onPressed: _currentTemplateIndex < _templateTitles.length - 1 ? _nextTemplate : null,
                     padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
                   ),
                 ],
               ),
             ),
 
-            // 🖼️ Central Swipeable Card Viewport (10 Templates)
+            // 🖼️ Horizontal Card-to-Card Carousel Viewport with Peek Edges
             Expanded(
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  child: AspectRatio(
-                    aspectRatio: _selectedFormat.ratio,
-                    child: RepaintBoundary(
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: _templateTitles.length,
+                onPageChanged: (idx) {
+                  HapticFeedback.selectionClick();
+                  setState(() => _currentTemplateIndex = idx);
+                },
+                itemBuilder: (context, index) {
+                  final bool isActive = index == _currentTemplateIndex;
+
+                  Widget cardContent = _buildTemplateByIndex(index);
+
+                  if (isActive) {
+                    cardContent = RepaintBoundary(
                       key: _cardKey,
-                      child: FittedBox(
-                        fit: BoxFit.contain,
-                        child: SizedBox(
-                          width: _selectedFormat.designWidth,
-                          height: _selectedFormat.designHeight,
-                          child: PageView(
-                            controller: _pageController,
-                            onPageChanged: (idx) {
-                              HapticFeedback.selectionClick();
-                              setState(() => _currentTemplateIndex = idx);
-                            },
-                            children: [
-                              _buildTemplate1ScrapbookDesk(),
-                              _buildTemplate2PolaroidKeepsake(),
-                              _buildTemplate3CinematicShowcase(),
-                              _buildTemplate4SpiralNotebook(),
-                              _buildTemplate5AirmailPostcard(),
-                              _buildTemplate6GoldenAward(),
-                              _buildTemplate7WashiMoodboard(),
-                              _buildTemplate8JapaneseEditorial(),
-                              _buildTemplate9CosmicObservatory(),
-                              _buildTemplate10RetroChronicle(),
-                            ],
+                      child: cardContent,
+                    );
+                  }
+
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                      child: AspectRatio(
+                        aspectRatio: _selectedFormat.ratio,
+                        child: FittedBox(
+                          fit: BoxFit.contain,
+                          child: SizedBox(
+                            width: _selectedFormat.designWidth,
+                            height: _selectedFormat.designHeight,
+                            child: cardContent,
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
             ),
 
-            // ⚡ Bottom Action Bar (Save Image, Save Video, Share)
+            // ⚡ Minimal Bottom Action Bar
             _buildBottomActionBar(),
           ],
         ),
@@ -516,9 +553,38 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
     );
   }
 
+  Widget _buildTemplateByIndex(int index) {
+    switch (index) {
+      case 0:
+        return _buildTemplate1ScrapbookDesk();
+      case 1:
+        return _buildTemplate2PolaroidKeepsake();
+      case 2:
+        return _buildTemplate3CinematicShowcase();
+      case 3:
+        return _buildTemplate4SpiralNotebook();
+      case 4:
+        return _buildTemplate5AirmailPostcard();
+      case 5:
+        return _buildTemplate6NordicEditorial();
+      case 6:
+        return _buildTemplate7WashiMoodboard();
+      case 7:
+        return _buildTemplate8JapaneseEditorial();
+      case 8:
+        return _buildTemplate9CosmicObservatory();
+      case 9:
+        return _buildTemplate10RetroChronicle();
+      case 10:
+        return _buildTemplate11RetroInstantFilm();
+      case 11:
+      default:
+        return _buildTemplate12CosmicPassport();
+    }
+  }
+
   // =========================================================================
-  // 🎨 TEMPLATE 1: "Scrapbook Desk Poster" (Image 1 Style)
-  // Robust scaling for Square (540x540), Portrait (432x540), and Story (360x640)
+  // 🎨 TEMPLATE 1: "Scrapbook Desk Poster" (Image 1 Style - Clean)
   // =========================================================================
   Widget _buildTemplate1ScrapbookDesk() {
     final isSquare = _selectedFormat == CitadelStoryAspectRatio.square1x1;
@@ -526,19 +592,17 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
 
     final double topMargin = isSquare ? 12 : (isPortrait ? 12 : 14);
     final double cardTop = isSquare ? 88 : (isPortrait ? 88 : 105);
-    final double cardBottom = isSquare ? 42 : (isPortrait ? 52 : 72);
+    final double cardBottom = isSquare ? 42 : (isPortrait ? 48 : 66);
     final double cardHorizontal = isSquare ? 28 : (isPortrait ? 22 : 18);
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFFE5D5BA), // Warm Kraft Paper tone
-      ),
+      decoration: const BoxDecoration(color: Color(0xFFE5D5BA)),
       child: Stack(
         fit: StackFit.expand,
         children: [
           CustomPaint(painter: _KraftPaperTexturePainter()),
 
-          // 🔖 Top Torn Paper Banner ("Speak English. Meet Your POKETMates.")
+          // Top Torn Paper Header
           Positioned(
             top: topMargin,
             left: cardHorizontal,
@@ -546,7 +610,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
             child: _buildTornPaperHeader(isSquare: isSquare),
           ),
 
-          // 📱 Center "പെട്ടി കാർഡ്" (Boxed Card with Citadel House Scene)
+          // Center Boxed Citadel Card
           Positioned(
             top: cardTop,
             bottom: cardBottom,
@@ -555,85 +619,58 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
             child: _buildBoxedCitadelCard(isSquare: isSquare),
           ),
 
-          // 📎 Paperclip on top-left of torn banner
+          // Paperclip top-left
           Positioned(
             top: topMargin - 4,
             left: cardHorizontal + 10,
             child: _buildRealisticPaperclip(),
           ),
 
-          // Pastel Teal Washi Tape on top-left of the Boxed Card
+          // Washi Tapes on corners
           Positioned(
             top: cardTop - 10,
             left: cardHorizontal - 8,
             child: Transform.rotate(
               angle: -0.12,
               child: Container(
-                width: 60,
+                width: 58,
                 height: 18,
                 decoration: BoxDecoration(
                   color: const Color(0xFF99F6E4).withValues(alpha: 0.85),
                   borderRadius: BorderRadius.circular(2),
-                  boxShadow: [
-                    BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 4),
-                  ],
                 ),
               ),
             ),
           ),
-
-          // Pastel Pink Washi Tape on top-right of the Boxed Card
           Positioned(
             top: cardTop - 10,
             right: cardHorizontal - 8,
             child: Transform.rotate(
               angle: 0.12,
               child: Container(
-                width: 60,
+                width: 58,
                 height: 18,
                 decoration: BoxDecoration(
                   color: const Color(0xFFFBCFE8).withValues(alpha: 0.85),
                   borderRadius: BorderRadius.circular(2),
-                  boxShadow: [
-                    BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 4),
-                  ],
                 ),
               ),
             ),
           ),
 
-          // Handwritten Marker Doodle ("TODAY WAS A LEVEL X!")
+          // Stickers
           Positioned(
-            right: cardHorizontal - 12,
-            bottom: cardBottom + 12,
-            child: Transform.rotate(
-              angle: -0.08,
-              child: Text(
-                'TODAY WAS A ${widget.level}!',
-                style: GoogleFonts.permanentMarker(
-                  fontSize: isSquare ? 13.5 : 12,
-                  color: const Color(0xFFDC2626),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-
-          // Star Sticker
-          Positioned(
-            left: cardHorizontal - 10,
+            left: cardHorizontal - 8,
             bottom: cardBottom + 12,
             child: const Text('⭐', style: TextStyle(fontSize: 18)),
           ),
-
-          // Flower Sticker bottom right
           Positioned(
             bottom: isSquare ? 8 : (isPortrait ? 10 : 12),
             right: cardHorizontal,
             child: _buildFlowerSticker(),
           ),
 
-          // 🏷️ Bottom Official Tagline Footer
+          // Brand Footer
           Positioned(
             bottom: isSquare ? 10 : (isPortrait ? 12 : 14),
             left: 16,
@@ -652,11 +689,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
         color: const Color(0xFFFFFDF8),
         borderRadius: BorderRadius.circular(6),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.14),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.14), blurRadius: 8, offset: const Offset(0, 3)),
         ],
       ),
       child: Column(
@@ -707,11 +740,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
         borderRadius: BorderRadius.circular(22),
         border: Border.all(color: Colors.white.withValues(alpha: 0.18), width: 1.5),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.35),
-            blurRadius: 18,
-            offset: const Offset(0, 6),
-          ),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.35), blurRadius: 18, offset: const Offset(0, 6)),
         ],
       ),
       child: ClipRRect(
@@ -856,7 +885,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
   }
 
   // =========================================================================
-  // 📷 TEMPLATE 2: "Vintage Polaroid Keepsake" (Clean Zero-Overflow)
+  // 📷 TEMPLATE 2: "Vintage Polaroid Keepsake"
   // =========================================================================
   Widget _buildTemplate2PolaroidKeepsake() {
     final isSquare = _selectedFormat == CitadelStoryAspectRatio.square1x1;
@@ -1030,7 +1059,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
   }
 
   // =========================================================================
-  // 📓 TEMPLATE 4: "Spiral Notebook Journal" (Image 2 Style)
+  // 📓 TEMPLATE 4: "Spiral Notebook Journal" (Zero Footer Overlap)
   // =========================================================================
   Widget _buildTemplate4SpiralNotebook() {
     final isSquare = _selectedFormat == CitadelStoryAspectRatio.square1x1;
@@ -1043,7 +1072,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
           CustomPaint(painter: _KraftPaperTexturePainter()),
           Center(
             child: Container(
-              margin: EdgeInsets.symmetric(horizontal: isSquare ? 28 : 20, vertical: isSquare ? 24 : 16),
+              margin: EdgeInsets.symmetric(horizontal: isSquare ? 28 : 18, vertical: isSquare ? 24 : 16),
               decoration: BoxDecoration(
                 color: const Color(0xFFFFFDF9),
                 borderRadius: BorderRadius.circular(8),
@@ -1053,7 +1082,6 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
               ),
               child: Stack(
                 children: [
-                  // Punched Ring Holes on Left Edge
                   Positioned(
                     left: 6,
                     top: 12,
@@ -1074,7 +1102,6 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                     padding: const EdgeInsets.fromLTRB(26, 12, 14, 12),
                     child: Column(
                       children: [
-                        // Notebook Header
                         Row(
                           children: [
                             const Text('✏️ ', style: TextStyle(fontSize: 14)),
@@ -1100,8 +1127,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                             ),
                           ],
                         ),
-                        const Divider(color: Color(0xFFCBD5E1), height: 16),
-                        // House Photo inside Notebook
+                        const Divider(color: Color(0xFFCBD5E1), height: 14),
                         Expanded(
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
@@ -1109,7 +1135,6 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                           ),
                         ),
                         const SizedBox(height: 8),
-                        // Stats Line
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -1132,6 +1157,8 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                             ),
                           ],
                         ),
+                        const SizedBox(height: 6),
+                        _buildVintageBrandFooter(),
                       ],
                     ),
                   ),
@@ -1140,14 +1167,13 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
               ),
             ),
           ),
-          Positioned(bottom: 8, left: 16, right: 16, child: _buildVintageBrandFooter()),
         ],
       ),
     );
   }
 
   // =========================================================================
-  // ✉️ TEMPLATE 5: "Airmail Postcard"
+  // ✉️ TEMPLATE 5: "Airmail Postcard" (Zero Footer Overlap)
   // =========================================================================
   Widget _buildTemplate5AirmailPostcard() {
     final isSquare = _selectedFormat == CitadelStoryAspectRatio.square1x1;
@@ -1161,7 +1187,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
           Center(
             child: Container(
               margin: EdgeInsets.symmetric(horizontal: isSquare ? 26 : 18, vertical: isSquare ? 20 : 16),
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: const Color(0xFFFAF7F0),
                 borderRadius: BorderRadius.circular(10),
@@ -1172,7 +1198,6 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
               ),
               child: Column(
                 children: [
-                  // Airmail Header Strip with Stamp
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -1187,7 +1212,6 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                           style: GoogleFonts.outfit(fontSize: 8.5, fontWeight: FontWeight.w900, color: Colors.white),
                         ),
                       ),
-                      // Postage Stamp
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
@@ -1210,145 +1234,140 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                   ),
                   const SizedBox(height: 6),
                   _buildKraftPlayerPod(isSquare: isSquare),
+                  const SizedBox(height: 6),
+                  _buildVintageBrandFooter(),
                 ],
               ),
             ),
           ),
-          Positioned(bottom: 8, left: 16, right: 16, child: _buildVintageBrandFooter()),
         ],
       ),
     );
   }
 
   // =========================================================================
-  // 🏆 TEMPLATE 6: "Golden Champion Award"
+  // 🏛️ TEMPLATE 6: "Nordic Editorial Art Book" (Luxury Architectural Replacement)
   // =========================================================================
-  Widget _buildTemplate6GoldenAward() {
+  Widget _buildTemplate6NordicEditorial() {
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF0F172A), Color(0xFF020617)],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-      ),
-      child: Stack(
-        fit: StackFit.expand,
+      decoration: const BoxDecoration(color: Color(0xFFFBF9F5)),
+      padding: const EdgeInsets.fromLTRB(18, 14, 18, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            margin: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
-              borderRadius: BorderRadius.circular(16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'POKETMATES ARCHITECTURE',
+                style: GoogleFonts.cinzel(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                  color: const Color(0xFF1E1E1E),
+                  letterSpacing: 1.5,
+                ),
+              ),
+              Text(
+                'ISSUE NO. ${widget.level}',
+                style: GoogleFonts.outfit(fontSize: 9.5, fontWeight: FontWeight.bold, color: const Color(0xFFD95D39)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          const Divider(color: Color(0xFFE2DCD5), height: 10),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                border: Border.all(color: const Color(0xFFD6CEC5), width: 1),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(2),
+                child: _buildCitadelScenicViewport(),
+              ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.workspace_premium_rounded, color: Color(0xFFFFD700), size: 18),
-                    const SizedBox(width: 6),
-                    Text(
-                      'CITADEL MASTER DISTINCTION',
-                      style: GoogleFonts.cinzel(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w900,
-                        color: const Color(0xFFFFD700),
-                        letterSpacing: 1.5,
-                      ),
+          const SizedBox(height: 8),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    widget.neighbor.name.toUpperCase(),
+                    style: GoogleFonts.outfit(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w900,
+                      color: const Color(0xFF1E1E1E),
+                      letterSpacing: 0.5,
                     ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: _buildCitadelScenicViewport(),
                   ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  widget.neighbor.name,
-                  style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildTerracottaRankBadge(),
-                    const SizedBox(width: 8),
-                    Text(
-                      '🪙 ${widget.pocketScore} PS  •  Day ${widget.level}',
-                      style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFFFFD700)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                _buildVintageBrandFooter(darkTone: false),
-              ],
-            ),
+                  Text(
+                    'Level ${widget.level} Citadel • ${widget.pocketScore} PS',
+                    style: GoogleFonts.outfit(fontSize: 10.5, color: const Color(0xFF78716C)),
+                  ),
+                ],
+              ),
+              _buildTerracottaRankBadge(),
+            ],
           ),
+          const SizedBox(height: 6),
+          _buildVintageBrandFooter(),
         ],
       ),
     );
   }
 
   // =========================================================================
-  // 🎨 TEMPLATE 7: "Washi Moodboard Collage"
+  // 🎨 TEMPLATE 7: "Washi Moodboard Collage" (Zero Footer Overlap)
   // =========================================================================
   Widget _buildTemplate7WashiMoodboard() {
     final isSquare = _selectedFormat == CitadelStoryAspectRatio.square1x1;
 
     return Container(
       decoration: const BoxDecoration(color: Color(0xFFE8DCB8)),
-      child: Stack(
-        fit: StackFit.expand,
+      padding: EdgeInsets.symmetric(horizontal: isSquare ? 24 : 16, vertical: isSquare ? 18 : 12),
+      child: Column(
         children: [
-          CustomPaint(painter: _KraftPaperTexturePainter()),
-          Center(
-            child: Container(
-              margin: EdgeInsets.symmetric(horizontal: isSquare ? 28 : 20, vertical: isSquare ? 20 : 16),
-              child: Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: _buildCitadelScenicViewport(),
-                  ),
-                  // Multiple playful washi tapes
-                  Positioned(
-                    top: -4,
-                    left: 20,
-                    child: Container(width: 50, height: 16, color: const Color(0xFFFDE047).withValues(alpha: 0.85)),
-                  ),
-                  Positioned(
-                    top: -4,
-                    right: 20,
-                    child: Container(width: 50, height: 16, color: const Color(0xFF86EFAC).withValues(alpha: 0.85)),
-                  ),
-                  Positioned(
-                    bottom: 70,
-                    left: -6,
-                    child: Transform.rotate(
-                      angle: 0.15,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        color: const Color(0xFFFBCFE8),
-                        child: Text(
-                          'MY CITADEL ✨',
-                          style: GoogleFonts.permanentMarker(fontSize: 10, color: const Color(0xFF831843)),
-                        ),
-                      ),
+          Expanded(
+            child: Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: _buildCitadelScenicViewport(),
+                ),
+                Positioned(
+                  top: -4,
+                  left: 20,
+                  child: Container(width: 50, height: 16, color: const Color(0xFFFDE047).withValues(alpha: 0.85)),
+                ),
+                Positioned(
+                  top: -4,
+                  right: 20,
+                  child: Container(width: 50, height: 16, color: const Color(0xFF86EFAC).withValues(alpha: 0.85)),
+                ),
+                Positioned(
+                  bottom: 12,
+                  left: 10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    color: const Color(0xFFFBCFE8),
+                    child: Text(
+                      'MY CITADEL ✨',
+                      style: GoogleFonts.permanentMarker(fontSize: 10, color: const Color(0xFF831843)),
                     ),
                   ),
-                  Positioned(bottom: 8, left: 8, right: 8, child: _buildKraftPlayerPod(isSquare: isSquare)),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-          Positioned(bottom: 8, left: 16, right: 16, child: _buildVintageBrandFooter()),
+          const SizedBox(height: 6),
+          _buildKraftPlayerPod(isSquare: isSquare),
+          const SizedBox(height: 6),
+          _buildVintageBrandFooter(),
         ],
       ),
     );
@@ -1360,7 +1379,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
   Widget _buildTemplate8JapaneseEditorial() {
     return Container(
       decoration: const BoxDecoration(color: Color(0xFFF5EFEB)),
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1395,7 +1414,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
               child: _buildCitadelScenicViewport(),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -1492,26 +1511,21 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
   Widget _buildTemplate10RetroChronicle() {
     return Container(
       decoration: const BoxDecoration(color: Color(0xFFF4ECD8)),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       child: Column(
         children: [
           Text(
             'THE POKETMATES CHRONICLE',
-            style: GoogleFonts.cinzel(
-              fontSize: 15,
-              fontWeight: FontWeight.w900,
-              color: const Color(0xFF1E1B18),
-              letterSpacing: 1.0,
-            ),
+            style: GoogleFonts.cinzel(fontSize: 14, fontWeight: FontWeight.w900, color: const Color(0xFF1E1B18), letterSpacing: 1.0),
           ),
           Text(
             'Special Spoken English Gazette • Day ${widget.level} Milestone Edition',
             style: GoogleFonts.playfairDisplay(fontSize: 8.5, fontStyle: FontStyle.italic, color: const Color(0xFF57534E)),
           ),
-          const Divider(color: Color(0xFF292524), thickness: 1.2, height: 12),
+          const Divider(color: Color(0xFF292524), thickness: 1.2, height: 10),
           Text(
             'EXTRA! ${widget.neighbor.name.toUpperCase()} EXPANDS CITADEL ESTATE!',
-            style: GoogleFonts.outfit(fontSize: 11.5, fontWeight: FontWeight.w900, color: const Color(0xFF1C1917)),
+            style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.w900, color: const Color(0xFF1C1917)),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -1522,7 +1536,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
               child: _buildCitadelScenicViewport(),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(border: Border.all(color: const Color(0xFF44403C))),
@@ -1531,15 +1545,15 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
               children: [
                 Text(
                   'RANK: #${widget.globalRank ?? 1}',
-                  style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: const Color(0xFF1C1917)),
+                  style: GoogleFonts.outfit(fontSize: 9.5, fontWeight: FontWeight.bold, color: const Color(0xFF1C1917)),
                 ),
                 Text(
                   'SCORE: ${widget.pocketScore} PS',
-                  style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: const Color(0xFF1C1917)),
+                  style: GoogleFonts.outfit(fontSize: 9.5, fontWeight: FontWeight.bold, color: const Color(0xFF1C1917)),
                 ),
                 Text(
-                  'STATUS: EXPEDITION READY',
-                  style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: const Color(0xFFD97706)),
+                  'DEFENSE: ACTIVE',
+                  style: GoogleFonts.outfit(fontSize: 9.5, fontWeight: FontWeight.bold, color: const Color(0xFFD97706)),
                 ),
               ],
             ),
@@ -1552,7 +1566,102 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
   }
 
   // =========================================================================
-  // 🏞️ Shared Scenic Viewport: Cosmic Sky + Scenic Landscape + Level House
+  // 📸 TEMPLATE 11: "Retro Instant Film" (Fujifilm Instax Warmth)
+  // =========================================================================
+  Widget _buildTemplate11RetroInstantFilm() {
+    return Container(
+      decoration: const BoxDecoration(color: Color(0xFFF3E8D8)),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'INSTANT MEMORY // POKETMATES',
+                style: GoogleFonts.spaceMono(fontSize: 9.5, fontWeight: FontWeight.bold, color: const Color(0xFF78716C)),
+              ),
+              Text(
+                '#D${widget.level}',
+                style: GoogleFonts.spaceMono(fontSize: 10, fontWeight: FontWeight.w900, color: const Color(0xFFD95D39)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: _buildCitadelScenicViewport(),
+            ),
+          ),
+          const SizedBox(height: 8),
+          _buildKraftPlayerPod(),
+          const SizedBox(height: 6),
+          _buildVintageBrandFooter(),
+        ],
+      ),
+    );
+  }
+
+  // =========================================================================
+  // 🛂 TEMPLATE 12: "Pocket Cosmic Passport"
+  // =========================================================================
+  Widget _buildTemplate12CosmicPassport() {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFF1E293B),
+      ),
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Text('🛂 ', style: TextStyle(fontSize: 14)),
+                  Text(
+                    'POKET COSMOS PASSPORT',
+                    style: GoogleFonts.spaceMono(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF94A3B8),
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  border: Border.all(color: const Color(0xFF10B981)),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  'VISA VERIFIED',
+                  style: GoogleFonts.spaceMono(fontSize: 8, fontWeight: FontWeight.bold, color: const Color(0xFF10B981)),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: _buildCitadelScenicViewport(),
+            ),
+          ),
+          const SizedBox(height: 6),
+          _buildKraftPlayerPod(),
+          const SizedBox(height: 6),
+          _buildVintageBrandFooter(darkTone: false),
+        ],
+      ),
+    );
+  }
+
+  // =========================================================================
+  // 🏞️ Shared Scenic Viewport
   // =========================================================================
   Widget _buildCitadelScenicViewport() {
     final isPresident = widget.neighbor.isPresident;
@@ -1677,20 +1786,20 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
             borderRadius: BorderRadius.circular(4),
             child: Image.asset(
               'assets/images/pocket_mates_logo.png',
-              width: 14,
-              height: 14,
+              width: 13,
+              height: 13,
               errorBuilder: (_, __, ___) => const Icon(
                 Icons.chat_bubble_rounded,
-                size: 13,
+                size: 12,
                 color: Color(0xFFF59E0B),
               ),
             ),
           ),
-          const SizedBox(width: 5),
+          const SizedBox(width: 4),
           Text(
             'PoketMates',
             style: GoogleFonts.outfit(
-              fontSize: 10.5,
+              fontSize: 10,
               fontWeight: FontWeight.w900,
               color: textColor,
               letterSpacing: 0.3,
@@ -1699,7 +1808,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
           Text(
             ' • Speak English Every Day',
             style: GoogleFonts.outfit(
-              fontSize: 9.5,
+              fontSize: 9,
               fontWeight: FontWeight.w600,
               color: textColor.withValues(alpha: 0.8),
               letterSpacing: 0.2,
@@ -1732,37 +1841,37 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
   }
 
   // =========================================================================
-  // ⚡ Bottom Action Bar (Save Image, Save Video, Share)
+  // ⚡ Minimal Bottom Action Bar
   // =========================================================================
   Widget _buildBottomActionBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: const BoxDecoration(
-        color: Color(0xFF181512),
-        border: Border(top: BorderSide(color: Color(0xFF26211C), width: 1)),
+        color: Color(0xFF141210),
+        border: Border(top: BorderSide(color: Color(0xFF221E1A), width: 1)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (_isExporting)
             Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.only(bottom: 6),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(
-                    width: 14,
-                    height: 14,
+                    width: 12,
+                    height: 12,
                     child: CircularProgressIndicator(
-                      strokeWidth: 2,
+                      strokeWidth: 1.8,
                       valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFD95D39)),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   Text(
                     _exportStatusText,
                     style: GoogleFonts.outfit(
-                      fontSize: 12,
+                      fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFFD4A373),
                     ),
@@ -1772,25 +1881,26 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
             ),
           Row(
             children: [
+              // 📥 Image Button
               Expanded(
                 child: GestureDetector(
                   onTap: _isExporting ? null : _downloadImage,
                   child: Container(
-                    height: 44,
+                    height: 40,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF26211C),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFD4A373).withValues(alpha: 0.3), width: 1),
+                      color: const Color(0xFF221E1A),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFD4A373).withValues(alpha: 0.25), width: 1),
                     ),
                     alignment: Alignment.center,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.image_outlined, color: Colors.white, size: 17),
-                        const SizedBox(width: 6),
+                        const Icon(Icons.image_outlined, color: Colors.white, size: 15),
+                        const SizedBox(width: 5),
                         Text(
-                          'Save Image',
-                          style: GoogleFonts.outfit(fontSize: 12.5, fontWeight: FontWeight.w800, color: Colors.white),
+                          'Image',
+                          style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.white),
                         ),
                       ],
                     ),
@@ -1798,25 +1908,27 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                 ),
               ),
               const SizedBox(width: 8),
+
+              // 🎬 Video Button
               Expanded(
                 child: GestureDetector(
                   onTap: _isExporting ? null : _downloadVideo,
                   child: Container(
-                    height: 44,
+                    height: 40,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2E1A11),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFD95D39).withValues(alpha: 0.45), width: 1),
+                      color: const Color(0xFF261912),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFD95D39).withValues(alpha: 0.35), width: 1),
                     ),
                     alignment: Alignment.center,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.movie_creation_outlined, color: Color(0xFFF97316), size: 17),
-                        const SizedBox(width: 6),
+                        const Icon(Icons.movie_creation_outlined, color: Color(0xFFF97316), size: 15),
+                        const SizedBox(width: 5),
                         Text(
-                          'Save Video',
-                          style: GoogleFonts.outfit(fontSize: 12.5, fontWeight: FontWeight.w800, color: const Color(0xFFFDBA74)),
+                          'Video',
+                          style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w800, color: const Color(0xFFFDBA74)),
                         ),
                       ],
                     ),
@@ -1824,22 +1936,24 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                 ),
               ),
               const SizedBox(width: 8),
+
+              // 🚀 Share Button
               Expanded(
                 child: GestureDetector(
                   onTap: _isExporting ? null : _shareCard,
                   child: Container(
-                    height: 44,
+                    height: 40,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [Color(0xFFD95D39), Color(0xFFB45309)],
                         begin: Alignment.centerLeft,
                         end: Alignment.centerRight,
                       ),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFD95D39).withValues(alpha: 0.35),
-                          blurRadius: 8,
+                          color: const Color(0xFFD95D39).withValues(alpha: 0.3),
+                          blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),
                       ],
@@ -1848,11 +1962,11 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.share_rounded, color: Colors.white, size: 16),
-                        const SizedBox(width: 6),
+                        const Icon(Icons.share_rounded, color: Colors.white, size: 14),
+                        const SizedBox(width: 5),
                         Text(
                           'Share',
-                          style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.white),
+                          style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w900, color: Colors.white),
                         ),
                       ],
                     ),

@@ -6,7 +6,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('Pocket Citadel Story Card & Share Tests (10 Diverse Templates & Robust Square)', () {
+  group('Pocket Citadel Story Card & Share Tests (12 Aesthetic Templates & Robust Carousel)', () {
     test('CitadelStoryAspectRatio has valid dimensions for 1080p target export', () {
       expect(CitadelStoryAspectRatio.story9x16.ratio, closeTo(9 / 16, 0.001));
       expect(CitadelStoryAspectRatio.feedPortrait4x5.ratio, closeTo(4 / 5, 0.001));
@@ -19,7 +19,7 @@ void main() {
       expect(CitadelStoryAspectRatio.square1x1.designHeight, 540.0);
     });
 
-    testWidgets('PocketCitadelStorySharePage renders in Story, Portrait and Square without overflow',
+    testWidgets('PocketCitadelStorySharePage renders 12 templates, minimal action buttons, and zero overflow',
         (WidgetTester tester) async {
       final neighbor = PocketNeighbor(
         id: 'test_user_scrapbook',
@@ -48,21 +48,19 @@ void main() {
 
       await tester.pump();
 
-      // Verify title & brand elements
-      expect(find.text('Citadel Story Card'), findsOneWidget);
-      expect(find.text('Speak English.'), findsWidgets);
-      expect(find.text('Meet Your POKETMates.'), findsWidgets);
-      expect(find.text('Mus\'ab hira'), findsWidgets);
-      expect(find.text('1/10  •  '), findsOneWidget);
+      // Verify title is "Story Card" (as requested)
+      expect(find.text('Story Card'), findsOneWidget);
 
-      // Verify aspect ratio selector pills
-      expect(find.text('Story (9:16)'), findsOneWidget);
-      expect(find.text('Portrait (4:5)'), findsOneWidget);
-      expect(find.text('Square (1:1)'), findsOneWidget);
+      // Verify Template 1 doesn't have "TODAY WAS A 20!" text
+      expect(find.text('TODAY WAS A 20!'), findsNothing);
 
-      // Verify action buttons
-      expect(find.text('Save Image'), findsOneWidget);
-      expect(find.text('Save Video'), findsOneWidget);
+      // Verify initial template indicator
+      expect(find.text('1/12  •  '), findsOneWidget);
+      expect(find.text('Scrapbook Desk Poster'), findsOneWidget);
+
+      // Verify minimal action buttons: Image, Video, Share
+      expect(find.text('Image'), findsOneWidget);
+      expect(find.text('Video'), findsOneWidget);
       expect(find.text('Share'), findsOneWidget);
 
       // Switch to Square 1:1 and ensure no layout overflow
@@ -70,16 +68,17 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       expect(tester.takeException(), isNull);
 
-      // Switch to Portrait 4:5
+      // Switch to Portrait 4:5 and ensure no layout overflow
       await tester.tap(find.text('Portrait (4:5)'));
       await tester.pump(const Duration(milliseconds: 300));
       expect(tester.takeException(), isNull);
 
-      // Navigate templates using next chevron
-      await tester.tap(find.byIcon(Icons.chevron_right_rounded));
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(find.text('2/10  •  '), findsOneWidget);
-      expect(tester.takeException(), isNull);
+      // Navigate through templates using next chevron
+      for (int i = 0; i < 5; i++) {
+        await tester.tap(find.byIcon(Icons.chevron_right_rounded));
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(tester.takeException(), isNull);
+      }
     });
   });
 }
