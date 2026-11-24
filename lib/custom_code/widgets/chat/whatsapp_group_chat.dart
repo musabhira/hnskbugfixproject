@@ -3818,6 +3818,13 @@ Draft: "$draft"''';
     });
     _scrollToBottom();
 
+    // 🏷️ English Hub: Strict channel isolation (Tab 0: Human, Tab 1: Robot)
+    if (_isEnglishHubGroup) {
+      metadata = Map<String, dynamic>.from(metadata ?? {});
+      final channel = _activeChatTabIndex == 1 ? 'robot' : 'human';
+      metadata['hub_channel'] = channel;
+    }
+
     try {
       final message = await ref
           .read(chatMessagesProvider(_currentGroupId).notifier)
@@ -3868,8 +3875,8 @@ Draft: "$draft"''';
         // Award unified Pocket Score for English group conversation
         await PocketFortressDefenseService.awardPoints(pointsToAdd);
 
-        // 🤖 When human learner posts in English Hub, invite 1 level-bracket robot to reply politely
-        if (text != null && text.trim().isNotEmpty) {
+        // 🤖 When human learner posts in English Hub ROBOT TAB (Tab 1), invite 1 level-bracket robot to reply politely
+        if (_activeChatTabIndex == 1 && text != null && text.trim().isNotEmpty) {
           final myMember = _groupMembers.firstWhere(
             (m) => m['user_id'] == _currentUserId,
             orElse: () => {},
@@ -7022,13 +7029,20 @@ Draft: "$draft"''';
                             PocketRobotService.isRobotId(m.senderId) ||
                                 m.metadata?['is_robot'] == true ||
                                 m.senderProfile?['is_robot'] == true;
-                        final isMe = m.senderId == _currentUserId;
+                        final hubChannel = m.metadata?['hub_channel']?.toString();
+
                         if (englishHubFilter == 'human') {
-                          // Tab 0: Humans only (no robots)
-                          return !isRobot;
+                          // Tab 0: Humans only. Robots NEVER appear.
+                          // User messages sent specifically in Robot tab NEVER appear.
+                          if (isRobot) return false;
+                          if (hubChannel == 'robot') return false;
+                          return true;
                         } else if (englishHubFilter == 'robot') {
-                          // Tab 1: Robots + User
-                          return isRobot || isMe;
+                          // Tab 1: Robots + User messages sent specifically in Robot tab.
+                          // Human-to-human messages (hubChannel == 'human') NEVER appear.
+                          if (isRobot) return true;
+                          if (hubChannel == 'robot') return true;
+                          return false;
                         }
                       }
                       return true;

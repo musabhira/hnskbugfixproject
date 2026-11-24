@@ -18,7 +18,8 @@ class AppReleaseRecord {
   final List<String> bugFixes;
   final String announcementMessage;
   final String buildType; // 'Testing', 'Internal', 'TestFlight', 'Production'
-  final String storeStatus; // 'draft', 'submitted', 'in_review', 'approved', 'live'
+  final String
+      storeStatus; // 'draft', 'submitted', 'in_review', 'approved', 'live'
   final bool isActiveProduction;
   final DateTime? productionActivatedAt;
   final bool isMandatory;
@@ -150,7 +151,9 @@ class AppReleaseRecord {
     }
 
     final res = buffer.toString().trim();
-    return res.isNotEmpty ? res : 'Bug fixes, performance improvements, and new features.';
+    return res.isNotEmpty
+        ? res
+        : 'Bug fixes, performance improvements, and new features.';
   }
 }
 
@@ -161,7 +164,8 @@ class PocketReleaseService {
   PocketReleaseService._internal();
 
   static const String _kLocalReleasesStoreKey = 'pocket_app_releases_store_v1';
-  static const String _kActiveAndroidReleaseKey = 'pocket_active_android_release_v1';
+  static const String _kActiveAndroidReleaseKey =
+      'pocket_active_android_release_v1';
   static const String _kActiveIosReleaseKey = 'pocket_active_ios_release_v1';
 
   static const String defaultAndroidPlayStoreUrl =
@@ -226,7 +230,8 @@ class PocketReleaseService {
   // ---------------------------------------------------------------------------
   // 2. FETCH ACTIVE PRODUCTION RELEASE FOR SPECIFIC PLATFORM
   // ---------------------------------------------------------------------------
-  static Future<AppReleaseRecord?> fetchActiveProductionRelease(String platform) async {
+  static Future<AppReleaseRecord?> fetchActiveProductionRelease(
+      String platform) async {
     final cleanPlatform = platform.toLowerCase().trim();
     final prefs = await SharedPreferences.getInstance();
 
@@ -241,16 +246,21 @@ class PocketReleaseService {
 
       if (res != null) {
         final record = AppReleaseRecord.fromJson(res);
-        final cacheKey = cleanPlatform == 'ios' ? _kActiveIosReleaseKey : _kActiveAndroidReleaseKey;
+        final cacheKey = cleanPlatform == 'ios'
+            ? _kActiveIosReleaseKey
+            : _kActiveAndroidReleaseKey;
         await prefs.setString(cacheKey, jsonEncode(record.toJson()));
         return record;
       }
     } catch (e) {
-      debugPrint('PocketReleaseService: Error fetching remote active release: $e');
+      debugPrint(
+          'PocketReleaseService: Error fetching remote active release: $e');
     }
 
     // 2. Check local active cache
-    final cacheKey = cleanPlatform == 'ios' ? _kActiveIosReleaseKey : _kActiveAndroidReleaseKey;
+    final cacheKey = cleanPlatform == 'ios'
+        ? _kActiveIosReleaseKey
+        : _kActiveAndroidReleaseKey;
     final cachedJson = prefs.getString(cacheKey);
     if (cachedJson != null && cachedJson.isNotEmpty) {
       try {
@@ -281,19 +291,23 @@ class PocketReleaseService {
             final desc = legacyRes['description']?.toString() ?? '';
             final rawFeatures = legacyRes['features'];
             List<String> feats = [];
-            if (rawFeatures is List) feats = rawFeatures.map((e) => e.toString()).toList();
+            if (rawFeatures is List)
+              feats = rawFeatures.map((e) => e.toString()).toList();
 
             return AppReleaseRecord(
               id: 'legacy_${cleanPlatform}_1',
               platform: cleanPlatform,
               version: ver,
               buildNumber: 0,
-              releaseTitle: legacyRes['title']?.toString() ?? 'POKET Update Available',
+              releaseTitle:
+                  legacyRes['title']?.toString() ?? 'POKET Update Available',
               releaseNotes: desc,
               features: feats,
               isActiveProduction: true,
               isMandatory: legacyRes['is_mandatory'] == true,
-              storeUrl: isIos ? (legacyRes['ios_link'] ?? defaultIosAppStoreUrl) : (legacyRes['android_link'] ?? defaultAndroidPlayStoreUrl),
+              storeUrl: isIos
+                  ? (legacyRes['ios_link'] ?? defaultIosAppStoreUrl)
+                  : (legacyRes['android_link'] ?? defaultAndroidPlayStoreUrl),
               storeStatus: 'live',
               buildType: 'Production',
             );
@@ -316,7 +330,8 @@ class PocketReleaseService {
             onConflict: 'platform,version,build_number',
           );
     } catch (e) {
-      debugPrint('PocketReleaseService: Remote upsert error (will persist locally): $e');
+      debugPrint(
+          'PocketReleaseService: Remote upsert error (will persist locally): $e');
     }
 
     // 2. Persist locally
@@ -339,19 +354,17 @@ class PocketReleaseService {
   // ---------------------------------------------------------------------------
   // 4. SET AS ACTIVE PRODUCTION RELEASE (Explicit Admin Action)
   // ---------------------------------------------------------------------------
-  static Future<void> setActiveProductionRelease(AppReleaseRecord targetRelease) async {
+  static Future<void> setActiveProductionRelease(
+      AppReleaseRecord targetRelease) async {
     final platform = targetRelease.platform.toLowerCase();
     final now = DateTime.now();
 
     // 1. Deactivate all existing releases for this platform in Supabase
     try {
-      await SupaFlow.client
-          .from('app_releases')
-          .update({
-            'is_active_production': false,
-            'updated_at': now.toIso8601String(),
-          })
-          .eq('platform', platform);
+      await SupaFlow.client.from('app_releases').update({
+        'is_active_production': false,
+        'updated_at': now.toIso8601String(),
+      }).eq('platform', platform);
 
       // 2. Activate the target release
       await SupaFlow.client.from('app_releases').update({
@@ -373,13 +386,16 @@ class PocketReleaseService {
         'description': targetRelease.releaseNotes,
         'features': targetRelease.features,
         'is_mandatory': targetRelease.isMandatory,
-        if (isIos && targetRelease.storeUrl != null) 'ios_link': targetRelease.storeUrl,
-        if (!isIos && targetRelease.storeUrl != null) 'android_link': targetRelease.storeUrl,
+        if (isIos && targetRelease.storeUrl != null)
+          'ios_link': targetRelease.storeUrl,
+        if (!isIos && targetRelease.storeUrl != null)
+          'android_link': targetRelease.storeUrl,
       };
 
       await SupaFlow.client.from('app_updates').update(payload).eq('id', 1);
     } catch (e) {
-      debugPrint('PocketReleaseService: Error syncing active release to Supabase: $e');
+      debugPrint(
+          'PocketReleaseService: Error syncing active release to Supabase: $e');
     }
 
     // 4. Update local cache
@@ -407,7 +423,8 @@ class PocketReleaseService {
     );
 
     final prefs = await SharedPreferences.getInstance();
-    final cacheKey = platform == 'ios' ? _kActiveIosReleaseKey : _kActiveAndroidReleaseKey;
+    final cacheKey =
+        platform == 'ios' ? _kActiveIosReleaseKey : _kActiveAndroidReleaseKey;
     await prefs.setString(cacheKey, jsonEncode(updatedTarget.toJson()));
 
     // Update the local list
@@ -453,16 +470,19 @@ class PocketReleaseService {
   // ---------------------------------------------------------------------------
   static Future<bool> deleteReleaseRecord(String releaseId) async {
     final all = await fetchAllReleases();
-    final target = all.firstWhere((r) => r.id == releaseId, orElse: () => throw Exception('Release not found'));
+    final target = all.firstWhere((r) => r.id == releaseId,
+        orElse: () => throw Exception('Release not found'));
 
     if (target.isActiveProduction) {
-      throw Exception('Cannot delete the currently active production release! Please deactivate or replace it first.');
+      throw Exception(
+          'Cannot delete the currently active production release! Please deactivate or replace it first.');
     }
 
     try {
       await SupaFlow.client.from('app_releases').delete().eq('id', releaseId);
     } catch (e) {
-      debugPrint('PocketReleaseService: Error deleting release from Supabase: $e');
+      debugPrint(
+          'PocketReleaseService: Error deleting release from Supabase: $e');
     }
 
     all.removeWhere((r) => r.id == releaseId);
@@ -476,13 +496,10 @@ class PocketReleaseService {
     final now = DateTime.now();
 
     try {
-      await SupaFlow.client
-          .from('app_releases')
-          .update({
-            'is_active_production': false,
-            'updated_at': now.toIso8601String(),
-          })
-          .eq('platform', cleanPlatform);
+      await SupaFlow.client.from('app_releases').update({
+        'is_active_production': false,
+        'updated_at': now.toIso8601String(),
+      }).eq('platform', cleanPlatform);
 
       final isIos = cleanPlatform == 'ios';
       await SupaFlow.client.from('app_updates').update({
@@ -494,12 +511,15 @@ class PocketReleaseService {
     }
 
     final prefs = await SharedPreferences.getInstance();
-    final cacheKey = cleanPlatform == 'ios' ? _kActiveIosReleaseKey : _kActiveAndroidReleaseKey;
+    final cacheKey = cleanPlatform == 'ios'
+        ? _kActiveIosReleaseKey
+        : _kActiveAndroidReleaseKey;
     await prefs.remove(cacheKey);
 
     final all = await fetchAllReleases();
     for (int i = 0; i < all.length; i++) {
-      if (all[i].platform.toLowerCase() == cleanPlatform && all[i].isActiveProduction) {
+      if (all[i].platform.toLowerCase() == cleanPlatform &&
+          all[i].isActiveProduction) {
         all[i] = AppReleaseRecord(
           id: all[i].id,
           platform: all[i].platform,
@@ -533,7 +553,8 @@ class PocketReleaseService {
     final all = await fetchAllReleases();
 
     final toDelete = all
-        .where((r) => r.platform.toLowerCase() == cleanPlatform && !r.isActiveProduction)
+        .where((r) =>
+            r.platform.toLowerCase() == cleanPlatform && !r.isActiveProduction)
         .toList();
 
     for (final rel in toDelete) {
@@ -542,7 +563,8 @@ class PocketReleaseService {
       } catch (_) {}
     }
 
-    all.removeWhere((r) => r.platform.toLowerCase() == cleanPlatform && !r.isActiveProduction);
+    all.removeWhere((r) =>
+        r.platform.toLowerCase() == cleanPlatform && !r.isActiveProduction);
     await saveReleasesLocally(all);
     return toDelete.length;
   }
@@ -550,22 +572,30 @@ class PocketReleaseService {
   // ---------------------------------------------------------------------------
   // 6. DEDUPLICATED PRODUCTION ANNOUNCEMENT VIA PRESIDENT SERVICE
   // ---------------------------------------------------------------------------
-  static Future<void> _broadcastProductionReleaseAnnouncement(AppReleaseRecord release) async {
+  static Future<void> _broadcastProductionReleaseAnnouncement(
+      AppReleaseRecord release) async {
     final prefs = await SharedPreferences.getInstance();
-    final announcementKey = 'pres_release_announcement_dispatched_${release.platform}_${release.id}';
+    final announcementKey =
+        'pres_release_announcement_dispatched_${release.platform}_${release.id}';
 
     // Prevent duplicate broadcasts if admin toggles or clicks save again
     if (prefs.getBool(announcementKey) == true) {
-      debugPrint('PocketReleaseService: Announcement already dispatched for ${release.id}. Skipping duplicate.');
+      debugPrint(
+          'PocketReleaseService: Announcement already dispatched for ${release.id}. Skipping duplicate.');
       return;
     }
 
-    final platformName = release.platform.toLowerCase() == 'ios' ? 'iOS' : 'Android';
-    final title = release.releaseTitle.isNotEmpty ? release.releaseTitle : 'POKET $platformName Update Available';
+    final platformName =
+        release.platform.toLowerCase() == 'ios' ? 'iOS' : 'Android';
+    final title = release.releaseTitle.isNotEmpty
+        ? release.releaseTitle
+        : 'POKET $platformName Update Available';
 
     final buffer = StringBuffer();
-    buffer.writeln('A new official update is now available for all $platformName citizens!');
-    buffer.writeln('Version: ${release.version} (Build ${release.buildNumber})');
+    buffer.writeln(
+        'A new official update is now available for all $platformName citizens!');
+    buffer
+        .writeln('Version: ${release.version} (Build ${release.buildNumber})');
     buffer.writeln();
 
     if (release.announcementMessage.trim().isNotEmpty) {
@@ -596,7 +626,8 @@ class PocketReleaseService {
     );
 
     await prefs.setBool(announcementKey, true);
-    debugPrint('PocketReleaseService: Official production announcement successfully broadcast for ${release.id}.');
+    debugPrint(
+        'PocketReleaseService: Official production announcement successfully broadcast for ${release.id}.');
   }
 
   // ---------------------------------------------------------------------------
@@ -618,8 +649,10 @@ class PocketReleaseService {
     }
 
     // 2. Semantic version comparison (major.minor.patch)
-    final currParts = currentVersion.split('.').map((e) => int.tryParse(e) ?? 0).toList();
-    final targetParts = targetVersion.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+    final currParts =
+        currentVersion.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+    final targetParts =
+        targetVersion.split('.').map((e) => int.tryParse(e) ?? 0).toList();
 
     final maxLen = mathMax(currParts.length, targetParts.length);
     for (int i = 0; i < maxLen; i++) {
@@ -686,7 +719,8 @@ class PocketReleaseService {
     );
   }
 
-  static Future<List<AppReleaseRecord>> _synthesizeFromLegacyAppUpdates() async {
+  static Future<List<AppReleaseRecord>>
+      _synthesizeFromLegacyAppUpdates() async {
     try {
       final legacy = await SupaFlow.client
           .from('app_updates')
@@ -699,10 +733,12 @@ class PocketReleaseService {
         final desc = legacy['description']?.toString() ?? '';
         final featsRaw = legacy['features'];
         List<String> feats = [];
-        if (featsRaw is List) feats = featsRaw.map((e) => e.toString()).toList();
+        if (featsRaw is List)
+          feats = featsRaw.map((e) => e.toString()).toList();
 
         // Android record
-        final androidVer = legacy['android_version']?.toString().trim() ?? '1.0.155';
+        final androidVer =
+            legacy['android_version']?.toString().trim() ?? '1.0.155';
         list.add(AppReleaseRecord(
           id: 'android_legacy_1',
           platform: 'android',
@@ -742,4 +778,3 @@ class PocketReleaseService {
     return [];
   }
 }
-

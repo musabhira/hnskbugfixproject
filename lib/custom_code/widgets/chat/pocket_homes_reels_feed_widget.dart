@@ -6028,6 +6028,9 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
 
   /// ⚡ 4. Power Vocabulary & Idiom Slide with Dynamic Multi-Language Meaning
   Widget _buildVocabSlide(ReelVocabCard vocab, int index) {
+    if (vocab.phrases.isNotEmpty) {
+      return _buildDailyVocabularyScrapbookSlide(vocab);
+    }
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: _scrollToNextReel,
@@ -6418,6 +6421,354 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       ),
     );
   }
+
+  /// 📓 Aesthetic Scrapbook Torn Notebook Card (Daily English Vocabulary)
+  Widget _buildDailyVocabularyScrapbookSlide(ReelVocabCard vocab) {
+    final activeLang = _userNativeLanguage.isNotEmpty ? _userNativeLanguage : 'Malayalam';
+    final phraseList = vocab.phrases;
+
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: _scrollToNextReel,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // 📜 Warm Kraft Cardboard Backdrop
+          Container(
+            color: const Color(0xFFDECDB4),
+            child: CustomPaint(painter: _ReelKraftCardboardPainter()),
+          ),
+
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(14, 10, 68, 14),
+              child: Center(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Container(
+                    constraints: const BoxConstraints(maxWidth: 420),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFAF7F0),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.18),
+                          blurRadius: 18,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        // Spiral Holes along left edge
+                        Positioned(
+                          left: 8,
+                          top: 16,
+                          bottom: 16,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: List.generate(
+                              12,
+                              (i) => Container(
+                                width: 9,
+                                height: 9,
+                                margin: const EdgeInsets.symmetric(vertical: 3),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: const Color(0xFFDECDB4),
+                                  border: Border.all(
+                                    color: const Color(0xFFB8A082),
+                                    width: 1,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        // Content inside notebook page
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(26, 16, 16, 14),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // 🏷️ Top Ripped Header Banner
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 8, horizontal: 10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                      color: const Color(0xFFE2D6C5)),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.05),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      'DAILY ENGLISH VOCABULARY',
+                                      style: GoogleFonts.outfit(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w900,
+                                        color: const Color(0xFF1E140F),
+                                        letterSpacing: 1.1,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'Learn with PoketMates',
+                                      style: GoogleFonts.outfit(
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF786550),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+
+                              // Subtitle e.g. English - Malayalam • Phrases with 'WHO'
+                              Center(
+                                child: Text(
+                                  'English - $activeLang • ${vocab.word}',
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF5A4838),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+
+                              // Phrases List (Bullet, English, Divider, Native)
+                              ...phraseList.map((p) => _buildScrapbookPhraseRow(p, activeLang)),
+
+                              const SizedBox(height: 10),
+
+                              // Footer inside card with cute sketch icon
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'PoketMates • Speak English Every Day',
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF8A7662),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  const Icon(
+                                    Icons.edit_note_rounded,
+                                    size: 15,
+                                    color: Color(0xFFB4A18D),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Silver Paperclip on top-left of notebook
+                        Positioned(
+                          top: -8,
+                          left: 22,
+                          child: _buildReelSilverPaperclip(),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Right Rail (Jumping Arrow, TTS, Share)
+          Positioned(
+            right: 14,
+            bottom: MediaQuery.of(context).padding.bottom + 24,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildJumpingArrowButton(size: 46),
+                const SizedBox(height: 14),
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    _playTtsForCard(vocab.id, vocab.word);
+                  },
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withValues(alpha: 0.65),
+                      border: Border.all(color: Colors.white24),
+                    ),
+                    child: const Icon(Icons.volume_up_rounded,
+                        color: Color(0xFFFFFC00), size: 20),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.mediumImpact();
+                    PocketFeedVibeShareSheet.show(
+                      context,
+                      customText:
+                          '📓 Daily English Vocabulary: ${vocab.word}\nLearn English phrases on PoketMates!',
+                    );
+                  },
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withValues(alpha: 0.65),
+                      border: Border.all(color: Colors.white24),
+                    ),
+                    child: const Icon(Icons.share_rounded,
+                        color: Colors.white, size: 20),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScrapbookPhraseRow(
+      Map<String, dynamic> phrase, String activeLang) {
+    final enText = phrase['en']?.toString() ?? '';
+    final nativeText = (phrase[activeLang] ??
+            phrase['Malayalam'] ??
+            phrase['Hindi'] ??
+            phrase['Tamil'] ??
+            enText)
+        .toString();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2.5),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // English Phrase with Bullet (Tap to speak)
+          Expanded(
+            flex: 5,
+            child: GestureDetector(
+              onTap: () {
+                HapticFeedback.selectionClick();
+                _playTtsForCard('p_$enText', enText);
+              },
+              child: Row(
+                children: [
+                  const Text('• ',
+                      style: TextStyle(
+                          color: Color(0xFF8B2500),
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold)),
+                  Expanded(
+                    child: Text(
+                      enText,
+                      style: GoogleFonts.outfit(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF1E140F),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Thin Vertical Divider with Tick
+          Container(
+            height: 20,
+            width: 1,
+            color: const Color(0xFFD4A373).withValues(alpha: 0.5),
+            margin: const EdgeInsets.symmetric(horizontal: 6),
+          ),
+
+          // Native Translation
+          Expanded(
+            flex: 5,
+            child: Text(
+              nativeText,
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF8B2500),
+                fontFamily:
+                    activeLang == 'Malayalam' ? 'NotoSansMalayalam' : null,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReelSilverPaperclip() {
+    return Container(
+      width: 16,
+      height: 36,
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFF94A3B8), width: 2.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.18),
+            blurRadius: 4,
+            offset: const Offset(1, 2),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 🎨 Realistic Kraft Cardboard Speckled Texture Painter
+class _ReelKraftCardboardPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFFC7B399).withValues(alpha: 0.28)
+      ..strokeWidth = 1.0;
+
+    final dotPaint = Paint()
+      ..color = const Color(0xFF947B62).withValues(alpha: 0.18)
+      ..style = PaintingStyle.fill;
+
+    // Subtle cardboard fibers and speckles
+    for (double y = 8; y < size.height; y += 28) {
+      final xOffset = (y * 13) % size.width;
+      canvas.drawCircle(Offset(xOffset, y), 0.8, dotPaint);
+      if (y % 56 == 0) {
+        canvas.drawLine(
+          Offset(xOffset, y),
+          Offset(xOffset + 6, y + 2),
+          paint,
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _PocketReelVibeSlideView extends StatefulWidget {

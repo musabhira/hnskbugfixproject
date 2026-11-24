@@ -7180,7 +7180,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                 : VectorAvatarWidget(
                                     config: VectorAvatarConfig
                                         .getEvolutionAvatarForStage(
-                                            widget.neighbor.day),
+                                            _effectiveDefenderLevel),
                                     size: 32,
                                   ),
                           ),
@@ -7198,7 +7198,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                       widget.neighbor.isPresident
                                           ? 'The President\'s Sovereign Citadel'
                                           : ((widget.neighbor.isMe || widget.isDefenseMode)
-                                              ? 'My Profile & Stats'
+                                              ? 'My Profile'
                                               : '${widget.neighbor.name}\'s Profile'),
                                       style: GoogleFonts.outfit(
                                         color: widget.neighbor.isPresident
@@ -7232,7 +7232,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                     child: Text(
                                       widget.neighbor.isPresident
                                           ? '👑 Sovereign Lvl 90'
-                                          : 'Lvl ${widget.neighbor.day}',
+                                          : 'Lvl $_effectiveDefenderLevel',
                                       style: GoogleFonts.outfit(
                                         color: widget.neighbor.isPresident
                                             ? const Color(0xFFFFD700)

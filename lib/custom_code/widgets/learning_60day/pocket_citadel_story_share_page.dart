@@ -1081,7 +1081,8 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
               child: isPresident
                   ? PresidentAvatarWidget(size: isSquare ? 38 : 34, showGlow: false)
                   : VectorAvatarWidget(
-                      config: VectorAvatarConfig.getEvolutionAvatarForStage(widget.neighbor.day),
+                      config: VectorAvatarConfig.getEvolutionAvatarForStage(
+                          widget.level > 0 ? widget.level : widget.neighbor.day),
                       size: isSquare ? 38 : 34,
                     ),
             ),
@@ -2188,80 +2189,52 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
             ),
           Row(
             children: [
-              // 📥 Image Button
+              // 📥 Save Image Button
               Expanded(
                 child: GestureDetector(
                   onTap: _isExporting ? null : _downloadImage,
                   child: Container(
-                    height: 40,
+                    height: 44,
                     decoration: BoxDecoration(
                       color: const Color(0xFF221E1A),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: const Color(0xFFD4A373).withValues(alpha: 0.25), width: 1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFD4A373).withValues(alpha: 0.35), width: 1.2),
                     ),
                     alignment: Alignment.center,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.image_outlined, color: Colors.white, size: 15),
-                        const SizedBox(width: 5),
+                        const Icon(Icons.download_rounded, color: Color(0xFFD4A373), size: 17),
+                        const SizedBox(width: 6),
                         Text(
-                          'Image',
-                          style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.white),
+                          'Save Image',
+                          style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white),
                         ),
                       ],
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-
-              // 🎬 Video Button (With BGM track picker)
-              Expanded(
-                child: GestureDetector(
-                  onTap: _isExporting ? null : _showBgmSelectionModal,
-                  child: Container(
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF261912),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: const Color(0xFFD95D39).withValues(alpha: 0.35), width: 1),
-                    ),
-                    alignment: Alignment.center,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.movie_creation_outlined, color: Color(0xFFF97316), size: 15),
-                        const SizedBox(width: 5),
-                        Text(
-                          'Video',
-                          style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w800, color: const Color(0xFFFDBA74)),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
 
               // 🚀 Share Button
               Expanded(
                 child: GestureDetector(
                   onTap: _isExporting ? null : _shareCard,
                   child: Container(
-                    height: 40,
+                    height: 44,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [Color(0xFFD95D39), Color(0xFFB45309)],
                         begin: Alignment.centerLeft,
                         end: Alignment.centerRight,
                       ),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
                           color: const Color(0xFFD95D39).withValues(alpha: 0.3),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
                         ),
                       ],
                     ),
@@ -2269,11 +2242,11 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.share_rounded, color: Colors.white, size: 14),
-                        const SizedBox(width: 5),
+                        const Icon(Icons.share_rounded, color: Colors.white, size: 17),
+                        const SizedBox(width: 6),
                         Text(
                           'Share',
-                          style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w900, color: Colors.white),
+                          style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white),
                         ),
                       ],
                     ),

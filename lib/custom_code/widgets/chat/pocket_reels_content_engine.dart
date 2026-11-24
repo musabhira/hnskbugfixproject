@@ -115,6 +115,7 @@ class ReelVocabCard {
   final String contextSentence;
   final Map<String, String> nativeMeanings; // Never hardcoded
   final String proTip;
+  final List<Map<String, dynamic>> phrases;
 
   const ReelVocabCard({
     required this.id,
@@ -125,6 +126,7 @@ class ReelVocabCard {
     required this.contextSentence,
     required this.nativeMeanings,
     required this.proTip,
+    this.phrases = const [],
   });
 
   String getMeaning(String lang) {
@@ -430,6 +432,117 @@ class PocketReelsContentEngine {
   ];
 
   static final List<ReelVocabCard> _curatedVocabCards = [
+    // 📖 1. Phrases with 'WHO' (Scrapbook Torn Notebook Deck)
+    const ReelVocabCard(
+      id: 'vocab_phrases_who',
+      word: "Phrases with 'WHO'",
+      partOfSpeech: 'Phrases',
+      phonetic: '/huː/',
+      definitionEn: 'Essential everyday conversational expressions starting with Who.',
+      contextSentence: 'Who is this at the doorstep? Ask politely before answering.',
+      nativeMeanings: {
+        'Malayalam': "ചോദ്യങ്ങൾ ചോദിക്കാൻ ഉപയോഗിക്കുന്ന 'ആര്' (WHO) വാചകങ്ങൾ.",
+        'Tamil': "'யார்' (WHO) கொண்டு தொடங்கும் அன்றாட வாக்கியங்கள்.",
+        'Hindi': "'कौन' (WHO) से शुरू होने वाले दैनिक उपयोगी वाक्य.",
+        'Kannada': "'ಯಾರು' (WHO) ನಿಂದ ಆರಂಭವಾಗುವ ದಿನನಿತ್ಯದ ವಾಕ್ಯಗಳು.",
+        'Telugu': "'ఎవరు' (WHO) తో మొదలయ్యే దైనందిన సంభాషణ వాక్యాలు.",
+      },
+      proTip: 'Use rising intonation at the end when asking questions with Who.',
+      phrases: [
+        {'en': 'Who is this?', 'Malayalam': 'ഇതാരാണ്?', 'Tamil': 'இது யார்?', 'Hindi': 'यह कौन है?', 'Kannada': 'ಇದು ಯಾರು?', 'Telugu': 'ఇది ఎవరు?'},
+        {'en': 'Who is that?', 'Malayalam': 'അതാരാണ്?', 'Tamil': 'அது யார்?', 'Hindi': 'वह कौन है?', 'Kannada': 'ಅದು ಯಾರು?', 'Telugu': 'అది ఎవరు?'},
+        {'en': 'Who are you?', 'Malayalam': 'നിങ്ങൾ ആരാണ്?', 'Tamil': 'நீங்கள் யார்?', 'Hindi': 'आप कौन हैं?', 'Kannada': 'ನೀವು ಯಾರು?', 'Telugu': 'మీరు ఎవరు?'},
+        {'en': 'Who said that?', 'Malayalam': 'അതാരാണ് പറഞ്ഞത്?', 'Tamil': 'அதை யார் சொன்னது?', 'Hindi': 'यह किसने कहा?', 'Kannada': 'ಅದನ್ನು ಯಾರು ಹೇಳಿದರು?', 'Telugu': 'అది ఎవరు చెప్పారు?'},
+        {'en': 'Who knows?', 'Malayalam': 'ആർക്കറിയാം?', 'Tamil': 'யாருக்கு தெரியும்?', 'Hindi': 'किसे पता है?', 'Kannada': 'ಯಾರಿಗೆ ಗೊತ್ತು?', 'Telugu': 'ఎవరికి తెలుసు?'},
+        {'en': 'Who is coming?', 'Malayalam': 'ആരാണ് വരുന്നത്?', 'Tamil': 'யார் வருகிறார்கள்?', 'Hindi': 'कौन आ रहा है?', 'Kannada': 'ಯಾರು ಬರುತ್ತಿದ್ದಾರೆ?', 'Telugu': 'ఎవరు వస్తున్నారు?'},
+        {'en': 'Who called?', 'Malayalam': 'ആരാണ് വിളിച്ചത്?', 'Tamil': 'யார் அழைத்தது?', 'Hindi': 'किसने कॉल किया?', 'Kannada': 'ಯಾರು ಕರೆ ಮಾಡಿದ್ದು?', 'Telugu': 'ఎవరు కాల్ చేశారు?'},
+        {'en': 'Who is next?', 'Malayalam': 'അടുത്തത് ആരാണ്?', 'Tamil': 'அடுத்து யார்?', 'Hindi': 'अगला कौन है?', 'Kannada': 'ಮುಂದೆ ಯಾರು?', 'Telugu': 'తరువాత ఎవరు?'},
+      ],
+    ),
+
+    // 📖 2. Phrases with 'HOW' (Scrapbook Torn Notebook Deck)
+    const ReelVocabCard(
+      id: 'vocab_phrases_how',
+      word: "Phrases with 'HOW'",
+      partOfSpeech: 'Phrases',
+      phonetic: '/haʊ/',
+      definitionEn: 'Key expressions to inquire about state, method, condition, and feelings.',
+      contextSentence: 'How is this working out for you in practice?',
+      nativeMeanings: {
+        'Malayalam': "വിശേഷങ്ങളും രീതികളും ചോദിക്കാൻ ഉപയോഗിക്കുന്ന 'എങ്ങനെ' (HOW) വാചകങ്ങൾ.",
+        'Tamil': "'எப்படி' (HOW) பயன்படுத்தி கேட்கப்படும் பயனுள்ள வாக்கியங்கள்.",
+        'Hindi': "'कैसे' (HOW) से स्थिति और हालचाल पूछने वाले वाक्य.",
+        'Kannada': "'ಹೇಗೆ' (HOW) ಬಳಸಿ ಕೇಳುವ ಮುಖ್ಯ ಪ್ರಶ್ನೆಗಳು.",
+        'Telugu': "'ఎలా' (HOW) తో అడిగే ముఖ్యమైన ప్రశ్నలు.",
+      },
+      proTip: "Great conversation starters for greeting friends and colleagues.",
+      phrases: [
+        {'en': 'How are you?', 'Malayalam': 'സുഖമാണോ?', 'Tamil': 'எப்படி இருக்கிறீர்கள்?', 'Hindi': 'आप कैसे हैं?', 'Kannada': 'ಹೇಗಿದ್ದೀರ?', 'Telugu': 'మీరు ఎలా ఉన్నారు?'},
+        {'en': 'How is this?', 'Malayalam': 'ഇതെങ്ങനെയുണ്ട്?', 'Tamil': 'இது எப்படி இருக்கு?', 'Hindi': 'यह कैसा है?', 'Kannada': 'ಇದು ಹೇಗಿದೆ?', 'Telugu': 'ఇది ఎలా ఉంది?'},
+        {'en': 'How much is it?', 'Malayalam': 'ഇതിന് എത്രയാണ് വില?', 'Tamil': 'இதன் விலை என்ன?', 'Hindi': 'यह कितने का है?', 'Kannada': 'ಇದರ ಬೆಲೆ ಎಷ್ಟು?', 'Telugu': 'దీని ఖరీదు ఎంత?'},
+        {'en': 'How does it work?', 'Malayalam': 'ഇത് എങ്ങനെ പ്രവർത്തിക്കുന്നു?', 'Tamil': 'இது எப்படி செயல்படுகிறது?', 'Hindi': 'यह कैसे काम करता है?', 'Kannada': 'ಇದು ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ?', 'Telugu': 'ఇది ఎలా పనిచేస్తుంది?'},
+        {'en': 'How was your day?', 'Malayalam': 'ഇന്ന് ദിവസം എങ്ങനെയുണ്ടായിരുന്നു?', 'Tamil': 'உங்கள் நாள் எப்படி இருந்தது?', 'Hindi': 'आपका दिन कैसा रहा?', 'Kannada': 'ನಿಮ್ಮ ದಿನ ಹೇಗಿತ್ತು?', 'Telugu': 'ఈ రోజు ఎలా గడిచింది?'},
+        {'en': 'How can I help?', 'Malayalam': 'ഞാൻ എങ്ങനെ സഹായിക്കണം?', 'Tamil': 'நான் எப்படி உதவலாம்?', 'Hindi': 'मैं कैसे मदद करूँ?', 'Kannada': 'ನಾನು ಹೇಗೆ ಸಹಾಯ ಮಾಡಲಿ?', 'Telugu': 'నేను ఎలా సహాయపడగలను?'},
+        {'en': 'How do you know?', 'Malayalam': 'നിങ്ങൾക്കെങ്ങനെ അറിയാം?', 'Tamil': 'உங்களுக்கு எப்படி தெரியும்?', 'Hindi': 'आपको कैसे पता चला?', 'Kannada': 'ನಿಮಗೆ ಹೇಗೆ ಗೊತ್ತು?', 'Telugu': 'మీకు ఎలా తెలుసు?'},
+        {'en': 'How is everyone?', 'Malayalam': 'എല്ലാവർക്കും സുഖമാണോ?', 'Tamil': 'எல்லோரும் எப்படி இருக்கிறார்கள்?', 'Hindi': 'घर पर सब कैसे हैं?', 'Kannada': 'ಎಲ್ಲರೂ ಹೇಗಿದ್ದಾರೆ?', 'Telugu': 'అందరూ ఎలా ఉన్నారు?'},
+      ],
+    ),
+
+    // 📖 3. Phrases with 'WHERE' (Scrapbook Torn Notebook Deck)
+    const ReelVocabCard(
+      id: 'vocab_phrases_where',
+      word: "Phrases with 'WHERE'",
+      partOfSpeech: 'Phrases',
+      phonetic: '/weər/',
+      definitionEn: 'Expressions used to ask about locations, destinations, and origins.',
+      contextSentence: 'Where are you heading this weekend?',
+      nativeMeanings: {
+        'Malayalam': "സ്ഥലങ്ങളും വഴികളും ചോദിക്കാൻ ഉപയോഗിക്കുന്ന 'എവിടെ' (WHERE) വാചകങ്ങൾ.",
+        'Tamil': "'எங்கே' (WHERE) கொண்டு இடங்களை கேட்கும் வாக்கியங்கள்.",
+        'Hindi': "'कहाँ' (WHERE) से स्थान और दिशा पूछने वाले वाक्य.",
+        'Kannada': "'ಎಲ್ಲಿ' (WHERE) ಬಳಸಿ ಜಾಗ ಕೇಳುವ ವಾಕ್ಯಗಳು.",
+        'Telugu': "'ఎక్కడ' (WHERE) తో ప్రదేశాల గురించి అడిగే వాక్యాలు.",
+      },
+      proTip: 'Must-know phrases when traveling or meeting someone at a new venue.',
+      phrases: [
+        {'en': 'Where are you?', 'Malayalam': 'നിങ്ങൾ എവിടെയാണ്?', 'Tamil': 'நீங்கள் எங்கே இருக்கிறீர்கள்?', 'Hindi': 'आप कहाँ हैं?', 'Kannada': 'ನೀವು ಎಲ್ಲಿದ್ದೀರಿ?', 'Telugu': 'మీరు ఎక్కడ ఉన్నారు?'},
+        {'en': 'Where is that?', 'Malayalam': 'അതെവിടെയാണ്?', 'Tamil': 'அது எங்கே இருக்கிறது?', 'Hindi': 'वह कहाँ है?', 'Kannada': 'ಅದು ಎಲ್ಲಿದೆ?', 'Telugu': 'అది ఎక్కడ ఉంది?'},
+        {'en': 'Where are we going?', 'Malayalam': 'നമ്മൾ എങ്ങോട്ടാണ് പോകുന്നത്?', 'Tamil': 'நாம் எங்கே போகிறோம்?', 'Hindi': 'हम कहाँ जा रहे हैं?', 'Kannada': 'ನಾವು ಎಲ್ಲಿಗೆ ಹೋಗುತ್ತಿದ್ದೇವೆ?', 'Telugu': 'మనం ఎక్కడికి వెళ్తున్నాం?'},
+        {'en': 'Where do you live?', 'Malayalam': 'നിങ്ങൾ എവിടെയാണ് താമസിക്കുന്നത്?', 'Tamil': 'நீங்கள் எங்கே வசிக்கிறீர்கள்?', 'Hindi': 'आप कहाँ रहते हैं?', 'Kannada': 'ನೀವು ಎಲ್ಲಿ ವಾಸಿಸುತ್ತಿದ್ದೀರಿ?', 'Telugu': 'మీరు ఎక్కడ నివసిస్తున్నారు?'},
+        {'en': 'Where did you get this?', 'Malayalam': 'ഇത് എവിടെ നിന്നാണ് കിട്ടിയത്?', 'Tamil': 'இது எங்கே கிடைத்தது?', 'Hindi': 'यह आपको कहाँ से मिला?', 'Kannada': 'ಇದು ನಿಮಗೆ ಎಲ್ಲಿ ಸಿಕ್ಕಿತು?', 'Telugu': 'ఇది మీకు ఎక్కడ దొరికింది?'},
+        {'en': 'Where is the way?', 'Malayalam': 'വഴി എങ്ങോട്ടാണ്?', 'Tamil': 'வழி எங்கே?', 'Hindi': 'रास्ता कहाँ है?', 'Kannada': 'ದಾರಿ ಎಲ್ಲಿದೆ?', 'Telugu': 'దారి ఎక్కడ?'},
+        {'en': 'Where have you been?', 'Malayalam': 'നിങ്ങൾ എവിടെയായിരുന്നു?', 'Tamil': 'எங்கே போயிருந்தீர்கள்?', 'Hindi': 'आप इतने समय कहाँ थे?', 'Kannada': 'ಎಲ್ಲಿಗೆ ಹೋಗಿದ್ದಿರಿ?', 'Telugu': 'ఎక్కడ ఉన్నారు ఇంతసేపు?'},
+        {'en': 'Where should we meet?', 'Malayalam': 'നമ്മൾ എവിടെ കാണണം?', 'Tamil': 'நாம் எங்கே சந்திக்கலாம்?', 'Hindi': 'हम कहाँ मिलें?', 'Kannada': 'ನಾವು ಎಲ್ಲಿ ಭೇಟಿಯಾಗೋಣ?', 'Telugu': 'మనం ఎక్కడ కలుద్దాం?'},
+      ],
+    ),
+
+    // 📖 4. Phrases with 'WHAT' (Scrapbook Torn Notebook Deck)
+    const ReelVocabCard(
+      id: 'vocab_phrases_what',
+      word: "Phrases with 'WHAT'",
+      partOfSpeech: 'Phrases',
+      phonetic: '/wɒt/',
+      definitionEn: 'Most widely used expressions asking for information or clarity.',
+      contextSentence: 'What do you think about our new plan?',
+      nativeMeanings: {
+        'Malayalam': "വിവരങ്ങളും കാര്യങ്ങളും അറിയാൻ ഉപയോഗിക്കുന്ന 'എന്ത്' (WHAT) വാചകങ്ങൾ.",
+        'Tamil': "'என்ன' (WHAT) கொண்டு கேட்கப்படும் முக்கிய வாக்கியங்கள்.",
+        'Hindi': "'क्या' (WHAT) से जानकारी मांगने वाले वाक्य.",
+        'Kannada': "'ಏನು' (WHAT) ಬಳಸಿ ವಿವರ ಕೇಳುವ ವಾಕ್ಯಗಳು.",
+        'Telugu': "'ఏమిటి' (WHAT) తో వివరాలు అడిగే వాక్యాలు.",
+      },
+      proTip: 'Keep your voice friendly and open when asking clarification with What.',
+      phrases: [
+        {'en': 'What is this?', 'Malayalam': 'ഇതെന്താണ്?', 'Tamil': 'இது என்ன?', 'Hindi': 'यह क्या है?', 'Kannada': 'ಇದೇನು?', 'Telugu': 'ఇది ఏమిటి?'},
+        {'en': 'What happened?', 'Malayalam': 'എന്താണ് സംഭവിച്ചത്?', 'Tamil': 'என்ன நடந்தது?', 'Hindi': 'क्या हुआ?', 'Kannada': 'ಏನಾಯಿತು?', 'Telugu': 'ఏమైంది?'},
+        {'en': 'What do you mean?', 'Malayalam': 'എന്താണ് ഉദ്ദേശിച്ചത്?', 'Tamil': 'என்ன சொல்ல வருகிறீர்கள்?', 'Hindi': 'आपका क्या मतलब है?', 'Kannada': 'ನಿಮ್ಮ ಅರ್ಥವೇನು?', 'Telugu': 'మీ ఉద్దేశం ఏమిటి?'},
+        {'en': 'What should I do?', 'Malayalam': 'ഞാൻ എന്താണ് ചെയ്യേണ്ടത്?', 'Tamil': 'நான் என்ன செய்ய வேண்டும்?', 'Hindi': 'मुझे क्या करना चाहिए?', 'Kannada': 'ನಾನು ಏನು ಮಾಡಬೇಕು?', 'Telugu': 'నేను ఏమి చేయాలి?'},
+        {'en': 'What time is it?', 'Malayalam': 'സമയം എത്രയായി?', 'Tamil': 'மணி என்ன?', 'Hindi': 'समय क्या हुआ है?', 'Kannada': 'ಸಮಯ ಎಷ್ಟು?', 'Telugu': 'సమయం ఎంతైంది?'},
+        {'en': 'What is your name?', 'Malayalam': 'നിങ്ങളുടെ പേരെന്താണ്?', 'Tamil': 'உங்கள் பெயர் என்ன?', 'Hindi': 'आपका नाम क्या है?', 'Kannada': 'ನಿಮ್ಮ ಹೆಸರೇನು?', 'Telugu': 'మీ పేరు ఏమిటి?'},
+        {'en': "What's going on?", 'Malayalam': 'എന്തൊക്കെയുണ്ട് വിശേഷങ്ങൾ?', 'Tamil': 'என்ன நடக்கிறது?', 'Hindi': 'क्या चल रहा है?', 'Kannada': 'ಏನು ನಡೆಯುತ್ತಿದೆ?', 'Telugu': 'ఏం జరుగుతోంది?'},
+        {'en': 'What else?', 'Malayalam': 'വേറെന്താണ്?', 'Tamil': 'வேறு என்ன?', 'Hindi': 'और क्या?', 'Kannada': 'ಮತ್ತೇನು?', 'Telugu': 'ఇంకేమిటి?'},
+      ],
+    ),
     const ReelVocabCard(
       id: 'vocab_resilient',
       word: 'Resilient',
