@@ -38,6 +38,7 @@
         tools:replace="android:label"
         android:icon="@mipmap/launcher_icon"
         android:largeHeap="true"
+        android:extractNativeLibs="false"
         android:requestLegacyExternalStorage="true"
         android:enableOnBackInvokedCallback="true">
 
