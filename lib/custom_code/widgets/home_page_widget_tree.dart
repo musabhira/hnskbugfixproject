@@ -43,6 +43,7 @@ import 'package:pocket_mates_app/custom_code/widgets/snap/snap_view_dialog.dart'
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
 import 'package:pocket_mates_app/custom_code/services/vibes_seen_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_connectivity_guard_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
@@ -333,6 +334,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       _loadVibesFilterInitial();
       _checkOnboarding();
       AppStoreReviewService.fetchRemoteReviewConfig();
+      PocketConnectivityGuardService.ensureConnected(context, isBlocking: false);
     });
   }
 

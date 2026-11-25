@@ -18,6 +18,7 @@ import 'pocket_score_level_engine.dart';
 import 'pocket_world_game_rules_modal.dart';
 import 'pocket_day1_diagnostic_sheet.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_connectivity_guard_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
@@ -382,6 +383,20 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   void initState() {
     super.initState();
     _targetTabPageController = PageController(initialPage: 0);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        PocketConnectivityGuardService.ensureConnected(context,
+            isBlocking: true);
+      }
+    });
+    Timer.periodic(const Duration(seconds: 6), (t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+      PocketConnectivityGuardService.ensureConnected(context,
+          isBlocking: true);
+    });
     _bobController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1300),
