@@ -2288,6 +2288,7 @@ class StatusViewerWrapper extends StatefulWidget {
 
 class _StatusViewerWrapperState extends State<StatusViewerWrapper> {
   late int _currentGroupIndex;
+  late List<Map<String, dynamic>> _groups;
   bool _showingAd = false;
   int _groupsWatchedSinceAd = 0;
   bool _isSubscribed = false;
@@ -2295,9 +2296,11 @@ class _StatusViewerWrapperState extends State<StatusViewerWrapper> {
   @override
   void initState() {
     super.initState();
+    _groups = List<Map<String, dynamic>>.from(widget.allStatusGroups);
     _currentGroupIndex = widget.initialGroupIndex;
-    if (_currentGroupIndex >= 0 && _currentGroupIndex < widget.allStatusGroups.length) {
-      final grp = widget.allStatusGroups[_currentGroupIndex];
+    _injectRobotDailyEnglishPhraseVibe();
+    if (_currentGroupIndex >= 0 && _currentGroupIndex < _groups.length) {
+      final grp = _groups[_currentGroupIndex];
       final gId = grp['profile']?['id']?.toString() ?? grp['id']?.toString() ?? '';
       final uId = grp['profile']?['user_id']?.toString();
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -2318,6 +2321,70 @@ class _StatusViewerWrapperState extends State<StatusViewerWrapper> {
     });
   }
 
+  Future<void> _injectRobotDailyEnglishPhraseVibe() async {
+    await PocketReelsContentEngine.init();
+    final deck = PocketReelsContentEngine.getVibesUnseenDeck(slotOffset: 1);
+    if (deck == null || deck.phrases.isEmpty) return;
+
+    final robots = PocketRobotService.getAllRobots();
+    final robot = robots.isNotEmpty
+        ? robots[DateTime.now().minute % robots.length]
+        : null;
+    final robotId = robot?.id ?? 'robot_aria_mentor';
+    final robotName = robot?.name ?? 'Aria Mentor';
+    final robotAvatar = robot?.avatarUrl ?? '';
+
+    final now = DateTime.now();
+    final robotPhraseGroup = <String, dynamic>{
+      'id': 'vibe_phrases_grp_${deck.id}',
+      'is_robot': true,
+      'profile': {
+        'id': robotId,
+        'user_id': robotId,
+        'name': robotName,
+        'profile_image_url': robotAvatar,
+        'level': 24,
+        'learning_day': 24,
+        'is_robot': true,
+      },
+      'statuses': [
+        {
+          'id': 'vibe_phrases_${deck.id}',
+          'media_type': 'text',
+          'media_url': '',
+          'caption': deck.word,
+          'created_at': now.toIso8601String(),
+          'expires_at': now.add(const Duration(hours: 12)).toIso8601String(),
+          'profile_id': robotId,
+          'is_active': true,
+          'is_robot': true,
+          'metadata': {
+            'item_type': 'daily_english_phrases',
+            'deck_id': deck.id,
+            'deck_title': deck.word,
+            'phrases': deck.phrases,
+            'hide_caption': true,
+          },
+          'profile': {
+            'id': robotId,
+            'name': robotName,
+            'profile_image_url': robotAvatar,
+            'level': 24,
+            'learning_day': 24,
+            'is_robot': true,
+          },
+        }
+      ],
+    };
+
+    if (mounted) {
+      setState(() {
+        final insertIdx = math.min(_currentGroupIndex + 1, _groups.length);
+        _groups.insert(insertIdx, robotPhraseGroup);
+      });
+    }
+  }
+
   Future<void> _checkVipStatus() async {
     final vip = await PocketAdMobService.instance.isUserVip();
     final sub = await PocketAdService().isUserSubscribed();
@@ -2326,7 +2393,7 @@ class _StatusViewerWrapperState extends State<StatusViewerWrapper> {
 
   void _preloadAdjacentGroups() {
     // Pre-cache images/videos for next and previous groups
-    if (_currentGroupIndex < widget.allStatusGroups.length - 1) {
+    if (_currentGroupIndex < _groups.length - 1) {
       _preCacheFirstStatusOfGroup(_currentGroupIndex + 1);
     }
     if (_currentGroupIndex > 0) {
@@ -2336,7 +2403,7 @@ class _StatusViewerWrapperState extends State<StatusViewerWrapper> {
 
   void _preCacheFirstStatusOfGroup(int index) {
     try {
-      final statuses = widget.allStatusGroups[index]['statuses'] as List;
+      final statuses = _groups[index]['statuses'] as List;
       if (statuses.isNotEmpty) {
         final firstStatus = statuses.first;
         if (firstStatus['media_type'] == 'image') {
@@ -2384,12 +2451,12 @@ class _StatusViewerWrapperState extends State<StatusViewerWrapper> {
       }
     }
 
-    if (_currentGroupIndex < widget.allStatusGroups.length - 1) {
+    if (_currentGroupIndex < _groups.length - 1) {
       setState(() {
         _showingAd = false;
         _currentGroupIndex++;
       });
-      final grp = widget.allStatusGroups[_currentGroupIndex];
+      final grp = _groups[_currentGroupIndex];
       final gId = grp['profile']?['id']?.toString() ?? grp['id']?.toString() ?? '';
       final uId = grp['profile']?['user_id']?.toString();
       widget.onGroupWatched?.call(gId);
@@ -2425,7 +2492,7 @@ class _StatusViewerWrapperState extends State<StatusViewerWrapper> {
         onNext: () {
           // Preload next story ad in background
           PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.vibes);
-          if (_currentGroupIndex < widget.allStatusGroups.length - 1) {
+          if (_currentGroupIndex < _groups.length - 1) {
             setState(() {
               _showingAd = false;
               _currentGroupIndex++;
@@ -2443,7 +2510,7 @@ class _StatusViewerWrapperState extends State<StatusViewerWrapper> {
 
     return StatusViewerScreen(
       key: ValueKey(_currentGroupIndex),
-      statusGroup: widget.allStatusGroups[_currentGroupIndex],
+      statusGroup: _groups[_currentGroupIndex],
       currentUserId: widget.currentUserId,
       currentProfileId: widget.currentProfileId,
       onNextGroup: _goToNextGroup,
@@ -5477,6 +5544,215 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                 ),
               ],
             ),
+        );
+      } else if (itemType == 'daily_english_phrases') {
+        final deckId = meta?['deck_id']?.toString() ?? '';
+        final deckTitle = meta?['deck_title']?.toString() ?? 'Daily English';
+        final rawPhrases = meta?['phrases'];
+        final List<Map<String, dynamic>> phrases = rawPhrases is List
+            ? rawPhrases.map((e) => Map<String, dynamic>.from(e as Map)).toList()
+            : [];
+        if (deckId.isNotEmpty) {
+          PocketReelsContentEngine.markVibesContentViewed(deckId);
+        }
+        final activeLang = PocketLanguageService.currentLanguage.isNotEmpty
+            ? PocketLanguageService.currentLanguage
+            : 'Malayalam';
+
+        content = Container(
+          width: double.infinity,
+          height: double.infinity,
+          color: const Color(0xFFDECDB4),
+          child: SafeArea(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 68, 16, 84),
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 420),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFAF7F0),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.22),
+                        blurRadius: 18,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Positioned(
+                        left: 8,
+                        top: 16,
+                        bottom: 16,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: List.generate(
+                            11,
+                            (_) => Container(
+                              width: 9,
+                              height: 9,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: const Color(0xFFDECDB4),
+                                border: Border.all(
+                                  color: const Color(0xFFB8A082),
+                                  width: 1,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(26, 16, 16, 14),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 8, horizontal: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(8),
+                                border:
+                                    Border.all(color: const Color(0xFFE2D6C5)),
+                              ),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    'DAILY ENGLISH PHRASES',
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w900,
+                                      color: const Color(0xFF1E140F),
+                                      letterSpacing: 1.1,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Learn with PoketMates',
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF786550),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Center(
+                              child: Text(
+                                'English - $activeLang • $deckTitle',
+                                style: GoogleFonts.outfit(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF5A4838),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            ...phrases.take(8).map((p) {
+                              final enText = p['en']?.toString() ?? '';
+                              final nativeText = (p[activeLang] ??
+                                      p['Malayalam'] ??
+                                      p['Hindi'] ??
+                                      p['Tamil'] ??
+                                      enText)
+                                  .toString();
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 2.5),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 5,
+                                      child: Row(
+                                        children: [
+                                          const Text('• ',
+                                              style: TextStyle(
+                                                  color: Color(0xFF8B2500),
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.bold)),
+                                          Expanded(
+                                            child: Text(
+                                              enText,
+                                              style: GoogleFonts.outfit(
+                                                fontSize: 12.5,
+                                                fontWeight: FontWeight.w800,
+                                                color: const Color(0xFF1E140F),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      height: 20,
+                                      width: 1,
+                                      color: const Color(0xFFD4A373)
+                                          .withValues(alpha: 0.5),
+                                      margin: const EdgeInsets.symmetric(
+                                          horizontal: 6),
+                                    ),
+                                    Expanded(
+                                      flex: 5,
+                                      child: Text(
+                                        nativeText,
+                                        style: TextStyle(
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.w700,
+                                          color: const Color(0xFF8B2500),
+                                          fontFamily:
+                                              activeLang == 'Malayalam'
+                                                  ? 'NotoSansMalayalam'
+                                                  : null,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }),
+                            const SizedBox(height: 10),
+                            Center(
+                              child: Text(
+                                'PoketMates • Speak English Every Day',
+                                style: GoogleFonts.outfit(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF8A7662),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Positioned(
+                        top: -8,
+                        left: 22,
+                        child: Container(
+                          width: 16,
+                          height: 34,
+                          decoration: BoxDecoration(
+                            color: Colors.transparent,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                                color: const Color(0xFF94A3B8), width: 2.2),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
         );
       } else if (itemType == 'game_challenge') {
         final category = meta?['category']?.toString() ?? 'CHALLENGE 🎯';
