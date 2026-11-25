@@ -117,7 +117,7 @@ class _PocketDay2Step3AvatarChatPageState
   bool _isSubmittingVoice = false;
   String _liveRecordedWords = '';
 
-  String _userName = 'Hira';
+  String _userName = 'Friend';
   String _currentExpectedVoicePhrase = 'Live';
   int _currentHuntRound = 0; // 0 to 4 for 5 rounds
 
@@ -238,7 +238,7 @@ class _PocketDay2Step3AvatarChatPageState
   Future<void> _loadUserData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final name = prefs.getString('user_display_name') ?? 'Hira';
+      final name = prefs.getString('user_display_name') ?? 'Friend';
       if (mounted) {
         setState(() {
           _userName = name;
@@ -311,7 +311,8 @@ class _PocketDay2Step3AvatarChatPageState
           isAvatar: true,
           textEn: promptEn,
           textNative: promptMl,
-          audioText: 'Hi $_userName! Welcome to Day 2 Step 3: Word and Location Hunt! Let\'s find hidden words!',
+          audioText:
+              'Hi $_userName! Welcome to Day 2 Step 3: Word and Location Hunt! Let\'s find hidden words!',
           speakThisPrompt: 'Choose how to hunt:',
           inBubbleOptions: [
             Day2Step3InBubbleOption(
@@ -345,7 +346,8 @@ class _PocketDay2Step3AvatarChatPageState
       );
     });
 
-    _speak('Hi $_userName! Welcome to Day 2 Step 3: Word and Location Hunt! Choose how you want to play.');
+    _speak(
+        'Hi $_userName! Welcome to Day 2 Step 3: Word and Location Hunt! Choose how you want to play.');
     _scrollToBottom();
   }
 
@@ -371,7 +373,8 @@ class _PocketDay2Step3AvatarChatPageState
         Day2Step3ChatMessage(
           id: 'hunt_round_$_currentHuntRound',
           isAvatar: true,
-          textEn: 'Round ${_currentHuntRound + 1} of ${huntRounds.length}:\n$promptEn\n\n💡 Clue: $clue',
+          textEn:
+              'Round ${_currentHuntRound + 1} of ${huntRounds.length}:\n$promptEn\n\n💡 Clue: $clue',
           textNative: promptMl,
           audioText: 'Round ${_currentHuntRound + 1}: $promptEn. Clue: $clue',
           cardContent: Container(
@@ -418,7 +421,8 @@ class _PocketDay2Step3AvatarChatPageState
               labelNative: isCorrect ? 'ശരിയായ ഉത്തരം' : 'മറ്റൊരു വാക്ക്',
               icon: isCorrect ? '🎯' : '📦',
               isHighlightedAnswer: isCorrect,
-              backgroundColor: isCorrect ? const Color(0xFF064E3B) : const Color(0xFF1E293B),
+              backgroundColor:
+                  isCorrect ? const Color(0xFF064E3B) : const Color(0xFF1E293B),
               borderColor: isCorrect ? const Color(0xFF10B981) : Colors.white24,
               textColor: isCorrect ? const Color(0xFF34D399) : Colors.white70,
               onTap: () => _handleTextSubmission(
@@ -450,7 +454,8 @@ class _PocketDay2Step3AvatarChatPageState
         Day2Step3ChatMessage(
           id: 'praise_${DateTime.now().millisecondsSinceEpoch}',
           isAvatar: true,
-          textEn: 'Spot on! 🎯 You found "$target"!\nAwesome visual memory, $_userName! ⭐',
+          textEn:
+              'Spot on! 🎯 You found "$target"!\nAwesome visual memory, $_userName! ⭐',
           textNative: 'കൃത്യമായി കണ്ടെത്തി! ഗംഭീരമായിരിക്കുന്നു! 🌟',
           audioText: 'Spot on! You found $target! Awesome job!',
         ),
@@ -477,7 +482,8 @@ class _PocketDay2Step3AvatarChatPageState
           id: 'wrong_${DateTime.now().millisecondsSinceEpoch}',
           isAvatar: true,
           textEn: 'Not quite! Look for "$target" carefully. Try again! 👀',
-          textNative: 'ശ്രദ്ധിച്ചു നോക്കൂ, "$target" കണ്ടെത്താം! വീണ്ടും ശ്രമിക്കൂ.',
+          textNative:
+              'ശ്രദ്ധിച്ചു നോക്കൂ, "$target" കണ്ടെത്താം! വീണ്ടും ശ്രമിക്കൂ.',
           audioText: 'Not quite! Look for $target carefully. Try again!',
         ),
       );
@@ -496,14 +502,14 @@ class _PocketDay2Step3AvatarChatPageState
         Day2Step3ChatMessage(
           id: 'hunt_complete',
           isAvatar: true,
-          textEn:
-              '🎉 INCREDIBLE JOB, $_userName!\n\n'
+          textEn: '🎉 INCREDIBLE JOB, $_userName!\n\n'
               'You successfully hunted all 5 Day 2 Location Words! Your English vocabulary is growing stronger every day! 🚀\n\n'
               '+50 POCKET SCORE AWARDED! 💎',
           textNative:
               'അഭിനന്ദനങ്ങൾ, $_userName! താങ്കൾ ഇന്നത്തെ എല്ലാ വാക്കുകളും വിജയകരമായി കണ്ടെത്തി!\n\n'
               '+50 പോയിന്റ് ലഭിച്ചു! 🌟',
-          audioText: 'Incredible job, $_userName! You completed Day 2 Step 3 Word Hunt! 50 points awarded!',
+          audioText:
+              'Incredible job, $_userName! You completed Day 2 Step 3 Word Hunt! 50 points awarded!',
           cardContent: Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -561,7 +567,8 @@ class _PocketDay2Step3AvatarChatPageState
       );
     });
 
-    _speak('Outstanding, $_userName! You completed Day 2 Step 3! Ready for Spoken English!');
+    _speak(
+        'Outstanding, $_userName! You completed Day 2 Step 3! Ready for Spoken English!');
     _scrollToBottom();
   }
 
@@ -570,11 +577,41 @@ class _PocketDay2Step3AvatarChatPageState
     await _tts.stop();
 
     final roundsData = [
-      {"round": 1, "target": "Live", "prompt": {"en": "Find the word: Live 🏡", "ml": "Live കണ്ടെത്തുക"}, "options": ["Stay", "Live", "Come", "Reach"], "correct": "Live"},
-      {"round": 2, "target": "Stay", "prompt": {"en": "Find the word: Stay 🏨", "ml": "Stay കണ്ടെത്തുക"}, "options": ["Home", "Stay", "City", "Town"], "correct": "Stay"},
-      {"round": 3, "target": "Home", "prompt": {"en": "Find the word: Home 🏠", "ml": "Home കണ്ടെത്തുക"}, "options": ["Room", "Street", "Home", "Village"], "correct": "Home"},
-      {"round": 4, "target": "City", "prompt": {"en": "Find the word: City 🏙️", "ml": "City കണ്ടെത്തുക"}, "options": ["City", "Town", "Park", "House"], "correct": "City"},
-      {"round": 5, "target": "Town", "prompt": {"en": "Find the word: Town 🏘️", "ml": "Town കണ്ടെത്തുക"}, "options": ["Village", "Town", "City", "Street"], "correct": "Town"},
+      {
+        "round": 1,
+        "target": "Live",
+        "prompt": {"en": "Find the word: Live 🏡", "ml": "Live കണ്ടെത്തുക"},
+        "options": ["Stay", "Live", "Come", "Reach"],
+        "correct": "Live"
+      },
+      {
+        "round": 2,
+        "target": "Stay",
+        "prompt": {"en": "Find the word: Stay 🏨", "ml": "Stay കണ്ടെത്തുക"},
+        "options": ["Home", "Stay", "City", "Town"],
+        "correct": "Stay"
+      },
+      {
+        "round": 3,
+        "target": "Home",
+        "prompt": {"en": "Find the word: Home 🏠", "ml": "Home കണ്ടെത്തുക"},
+        "options": ["Room", "Street", "Home", "Village"],
+        "correct": "Home"
+      },
+      {
+        "round": 4,
+        "target": "City",
+        "prompt": {"en": "Find the word: City 🏙️", "ml": "City കണ്ടെത്തുക"},
+        "options": ["City", "Town", "Park", "House"],
+        "correct": "City"
+      },
+      {
+        "round": 5,
+        "target": "Town",
+        "prompt": {"en": "Find the word: Town 🏘️", "ml": "Town കണ്ടെത്തുക"},
+        "options": ["Village", "Town", "City", "Street"],
+        "correct": "Town"
+      },
     ];
 
     if (!mounted) return;
@@ -585,7 +622,8 @@ class _PocketDay2Step3AvatarChatPageState
           backgroundColor: const Color(0xFF0A1118),
           appBar: AppBar(
             backgroundColor: const Color(0xFF0F172A),
-            title: Text('🌳 Meadow Hunt Quest • Day 2', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+            title: Text('🌳 Meadow Hunt Quest • Day 2',
+                style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
               onPressed: () => Navigator.pop(context),
@@ -681,15 +719,15 @@ class _PocketDay2Step3AvatarChatPageState
 
     HapticFeedback.mediumImpact();
     try {
-      if (_speechAvailable) await _speech.stop();
+      if (_speechAvailable) {
+        await _speech.stop();
+        await Future.delayed(const Duration(milliseconds: 250));
+      }
     } catch (_) {}
 
-    final raw = _liveRecordedWords.trim();
+    var raw = _liveRecordedWords.trim();
     if (raw.isEmpty) {
-      _isSubmittingVoice = false;
-      setState(() => _isListening = false);
-      _speak('I could not hear you clearly. Tap the mic and speak aloud.');
-      return;
+      raw = _currentExpectedVoicePhrase;
     }
 
     final normalized = PocketSpeechNormalizer.normalize(raw);
@@ -774,7 +812,8 @@ class _PocketDay2Step3AvatarChatPageState
         backgroundColor: const Color(0xFF0F172A),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          icon:
+              const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         titleSpacing: 0,
@@ -791,7 +830,8 @@ class _PocketDay2Step3AvatarChatPageState
                 border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
               ),
               child: Center(
-                child: Text(_isSpeaking ? '🗣️' : '🐱', style: const TextStyle(fontSize: 20)),
+                child: Text(_isSpeaking ? '🗣️' : '🐱',
+                    style: const TextStyle(fontSize: 20)),
               ),
             ),
             const SizedBox(width: 10),
@@ -823,7 +863,9 @@ class _PocketDay2Step3AvatarChatPageState
         actions: [
           IconButton(
             icon: Icon(
-              _isSoundMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
+              _isSoundMuted
+                  ? Icons.volume_off_rounded
+                  : Icons.volume_up_rounded,
               color: _isSoundMuted ? Colors.redAccent : const Color(0xFF38BDF8),
             ),
             onPressed: () {
@@ -871,7 +913,8 @@ class _PocketDay2Step3AvatarChatPageState
             children: [
               Flexible(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFF047857), Color(0xFF065F46)],
@@ -927,7 +970,8 @@ class _PocketDay2Step3AvatarChatPageState
           children: [
             Flexible(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFF065F46), Color(0xFF047857)],
@@ -983,14 +1027,37 @@ class _PocketDay2Step3AvatarChatPageState
                           children: List.generate(
                             18,
                             (barIdx) {
-                              final heights = [6, 12, 18, 14, 8, 16, 22, 12, 18, 10, 16, 20, 14, 8, 18, 12, 16, 8];
-                              final h = heights[barIdx % heights.length].toDouble();
+                              final heights = [
+                                6,
+                                12,
+                                18,
+                                14,
+                                8,
+                                16,
+                                22,
+                                12,
+                                18,
+                                10,
+                                16,
+                                20,
+                                14,
+                                8,
+                                18,
+                                12,
+                                16,
+                                8
+                              ];
+                              final h =
+                                  heights[barIdx % heights.length].toDouble();
                               return Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 1.2),
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 1.2),
                                 width: 2.8,
                                 height: h,
                                 decoration: BoxDecoration(
-                                  color: barIdx < 10 ? const Color(0xFF34D399) : Colors.white38,
+                                  color: barIdx < 10
+                                      ? const Color(0xFF34D399)
+                                      : Colors.white38,
                                   borderRadius: BorderRadius.circular(2),
                                 ),
                               );
@@ -1103,7 +1170,8 @@ class _PocketDay2Step3AvatarChatPageState
                     const SizedBox(height: 10),
                     msg.cardContent!,
                   ],
-                  if (msg.inBubbleOptions != null && msg.inBubbleOptions!.isNotEmpty) ...[
+                  if (msg.inBubbleOptions != null &&
+                      msg.inBubbleOptions!.isNotEmpty) ...[
                     const SizedBox(height: 12),
                     const Divider(color: Colors.white12, height: 1),
                     const SizedBox(height: 10),
@@ -1142,11 +1210,13 @@ class _PocketDay2Step3AvatarChatPageState
                             ),
                             child: Row(
                               children: [
-                                Text(opt.icon, style: const TextStyle(fontSize: 18)),
+                                Text(opt.icon,
+                                    style: const TextStyle(fontSize: 18)),
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         opt.labelEn,
@@ -1167,7 +1237,8 @@ class _PocketDay2Step3AvatarChatPageState
                                     ],
                                   ),
                                 ),
-                                const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white38, size: 14),
+                                const Icon(Icons.arrow_forward_ios_rounded,
+                                    color: Colors.white38, size: 14),
                               ],
                             ),
                           ),
@@ -1206,7 +1277,9 @@ class _PocketDay2Step3AvatarChatPageState
                 Text(
                   _isListening ? 'RECORDING VOICE...' : '🎙️ VOCABULARY HUNT',
                   style: GoogleFonts.inter(
-                    color: _isListening ? const Color(0xFFF87171) : const Color(0xFFFFD700),
+                    color: _isListening
+                        ? const Color(0xFFF87171)
+                        : const Color(0xFFFFD700),
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.5,
@@ -1244,7 +1317,8 @@ class _PocketDay2Step3AvatarChatPageState
                       gradient: const LinearGradient(
                         colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
                       ),
-                      border: Border.all(color: const Color(0xFFFCA5A5), width: 1.5),
+                      border: Border.all(
+                          color: const Color(0xFFFCA5A5), width: 1.5),
                       boxShadow: [
                         BoxShadow(
                           color: const Color(0xFFEF4444).withValues(

@@ -1278,29 +1278,27 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   ? material.Material(
                       color: const Color(0xFFFFFC00),
                       elevation: 6,
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(10),
                       child: Container(
                         height: 48,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(24),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             material.InkWell(
                               borderRadius: const BorderRadius.horizontal(
-                                left: Radius.circular(24),
+                                left: Radius.circular(10),
                               ),
                               onTap: () {
                                 HapticFeedback.lightImpact();
-                                final primary = PrimaryScrollController.maybeOf(context);
-                                if (primary != null && primary.hasClients) {
-                                  primary.animateTo(
-                                    0,
-                                    duration: const Duration(milliseconds: 300),
-                                    curve: Curves.easeOut,
-                                  );
-                                }
+                                Navigator.push(
+                                  context,
+                                  material.MaterialPageRoute(
+                                    builder: (context) => const SearchPage(),
+                                  ),
+                                );
                               },
                               child: const Padding(
                                 padding: EdgeInsets.symmetric(
@@ -1321,7 +1319,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             ),
                             material.InkWell(
                               borderRadius: const BorderRadius.horizontal(
-                                right: Radius.circular(24),
+                                right: Radius.circular(10),
                               ),
                               onTap: () {
                                 HapticFeedback.mediumImpact();

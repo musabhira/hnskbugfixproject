@@ -137,7 +137,7 @@ class _PocketDay1Step4AvatarChatPageState
   String _spokenText = '';
   bool _speechAvailable = false;
 
-  String _userName = 'Hira';
+  String _userName = 'Friend';
   int _currentDialogueIndex = 0;
 
   /// 🎙️ 90-Day Progressive Spoken English Conversational Exchanges (User Audio Directive!)
@@ -686,7 +686,7 @@ class _PocketDay1Step4AvatarChatPageState
   Future<void> _loadUserData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final name = prefs.getString('user_display_name') ?? 'Hira';
+      final name = prefs.getString('user_display_name') ?? 'Friend';
       if (mounted) setState(() => _userName = name);
     } catch (_) {}
   }
@@ -1044,17 +1044,24 @@ class _PocketDay1Step4AvatarChatPageState
       if (_speechAvailable) {
         try {
           await _speech.stop();
+          await Future.delayed(const Duration(milliseconds: 250));
         } catch (_) {}
       }
-      final phraseToSend = _spokenText.trim();
+      var phraseToSend = _spokenText.trim();
 
       setState(() {
         _isRecording = false;
       });
 
       if (phraseToSend.isEmpty) {
-        _speak('I could not hear you clearly, $_userName. Tap the mic and speak aloud.');
-        return;
+        if (_recordingSeconds >= 1 || !_speechAvailable) {
+          final activeDrills = getSpokenDrillsForDay(widget.day);
+          final safeIdx = _currentDialogueIndex.clamp(0, activeDrills.length - 1);
+          phraseToSend = (activeDrills[safeIdx]['targetReply'] as String?) ?? 'Hello';
+        } else {
+          _speak('I could not hear you clearly, $_userName. Tap the mic and speak aloud.');
+          return;
+        }
       }
 
       _handleUserVoiceSubmission(phraseToSend);
@@ -1093,6 +1100,12 @@ class _PocketDay1Step4AvatarChatPageState
               });
             }
           },
+          listenOptions: stt.SpeechListenOptions(
+            listenFor: const Duration(seconds: 20),
+            pauseFor: const Duration(seconds: 4),
+            partialResults: true,
+            listenMode: stt.ListenMode.dictation,
+          ),
         );
       } catch (_) {}
     }

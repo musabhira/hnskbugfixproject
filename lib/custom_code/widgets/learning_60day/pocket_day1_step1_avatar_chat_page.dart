@@ -150,7 +150,7 @@ class _PocketDay1Step1AvatarChatPageState
   bool _showMicGuideArrow = false;
   bool _hasShownMicGuide = false;
 
-  String _userName = 'Hira'; // Default learner name as instructed in user audio
+  String _userName = 'Friend';
   // ignore: unused_field
   String _nativeLanguage = 'Malayalam';
   String _currentExpectedVoicePhrase = 'Yes or No';
@@ -214,7 +214,7 @@ class _PocketDay1Step1AvatarChatPageState
         return;
       }
     }
-    _userName = 'Hira'; // Audio directive: "Hi Hira, I am CyberCat..."
+    _userName = 'Friend';
   }
 
   Future<void> _initTts() async {

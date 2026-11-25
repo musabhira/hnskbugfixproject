@@ -511,7 +511,7 @@ class _PocketKidsTasksMasterHubPageState
     final savedLevel = await PocketSyllabusRepository.getSavedLevel();
 
     final Map<String, bool> subFlags = {};
-    for (int step = 1; step <= 19; step++) {
+    for (int step = 1; step <= 20; step++) {
       final flagKey =
           'pocket_kids_day_${uid}_${calculatedCurrentDay}_step_${step}_done';
       final altKey =
@@ -1152,15 +1152,15 @@ class _PocketKidsTasksMasterHubPageState
     HapticFeedback.lightImpact();
     await _openCardPage(
       title: 'Verb Timeline & Tenses Arcade',
-      stepTag: 'STEP 8',
+      stepTag: 'STEP 11',
       accentColor: const Color(0xFFFF9100),
       childBuilder: (ctx, markDone) => PocketVerbTimelineCard(
         day: day,
-        isCompleted: _subStepFlags['step_verb_timeline'] ?? false,
+        isCompleted: _subStepFlags['step_18'] ?? false,
         onSpeak: (text) {},
         onCompleted: (val) async {
           if (val) {
-            await _onSubStepFinished(day, 8);
+            await _onSubStepFinished(day, 18);
             markDone(true);
           }
         },
@@ -1173,15 +1173,15 @@ class _PocketKidsTasksMasterHubPageState
     HapticFeedback.lightImpact();
     await _openCardPage(
       title: 'Karaoke Sing-Along Rhythm Chant',
-      stepTag: 'STEP 9',
+      stepTag: 'STEP 12',
       accentColor: const Color(0xFFFF4081),
       childBuilder: (ctx, markDone) => PocketKaraokeChantCard(
         day: day,
-        isCompleted: _subStepFlags['step_karaoke_chant'] ?? false,
+        isCompleted: _subStepFlags['step_19'] ?? false,
         onSpeak: (text) {},
         onCompleted: (val) async {
           if (val) {
-            await _onSubStepFinished(day, 9);
+            await _onSubStepFinished(day, 19);
             markDone(true);
           }
         },
@@ -1194,15 +1194,15 @@ class _PocketKidsTasksMasterHubPageState
     HapticFeedback.lightImpact();
     await _openCardPage(
       title: 'Prepositions 2D Spatial Lab',
-      stepTag: 'STEP 10',
+      stepTag: 'STEP 13',
       accentColor: const Color(0xFF00E5FF),
       childBuilder: (ctx, markDone) => PocketPrepositionsGlassCard(
         day: day,
-        isCompleted: _subStepFlags['step_prepositions_visual'] ?? false,
+        isCompleted: _subStepFlags['step_20'] ?? false,
         onSpeak: (text) {},
         onCompleted: (val) async {
           if (val) {
-            await _onSubStepFinished(day, 10);
+            await _onSubStepFinished(day, 20);
             markDone(true);
           }
         },
@@ -1858,7 +1858,7 @@ class _PocketKidsTasksMasterHubPageState
         subtitle: '3-zone arcade sorting & rhythm chant',
         icon: '⏳',
         color: const Color(0xFFFF9100),
-        isCompleted: _subStepFlags['step_verb_timeline'] ?? false,
+        isCompleted: _subStepFlags['step_18'] ?? false,
         isUnlocked: admin || (_subStepFlags['step_10'] ?? false),
         onAction: () => _launchStepVerbTimeline(day),
       ),
@@ -1868,8 +1868,8 @@ class _PocketKidsTasksMasterHubPageState
         subtitle: 'Rhythmic chant recitation & earworm memory',
         icon: '🎤',
         color: const Color(0xFFFF4081),
-        isCompleted: _subStepFlags['step_karaoke_chant'] ?? false,
-        isUnlocked: admin || (_subStepFlags['step_verb_timeline'] ?? false),
+        isCompleted: _subStepFlags['step_19'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_18'] ?? false),
         onAction: () => _launchStepKaraokeChant(day),
       ),
       KidsInPathSubStep(
@@ -1878,8 +1878,8 @@ class _PocketKidsTasksMasterHubPageState
         subtitle: 'Interactive Glass & Object 2D physics',
         icon: '🥛',
         color: const Color(0xFF00E5FF),
-        isCompleted: _subStepFlags['step_prepositions_visual'] ?? false,
-        isUnlocked: admin || (_subStepFlags['step_karaoke_chant'] ?? false),
+        isCompleted: _subStepFlags['step_20'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_19'] ?? false),
         onAction: () => _launchStepPrepositionsVisual(day),
       ),
       KidsInPathSubStep(

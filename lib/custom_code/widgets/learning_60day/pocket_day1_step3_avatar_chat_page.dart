@@ -121,7 +121,7 @@ class _PocketDay1Step3AvatarChatPageState
   bool _speechAvailable = false;
   String _liveRecordedWords = '';
 
-  String _userName = 'Hira';
+  String _userName = 'Friend';
   String _currentExpectedVoicePhrase = 'Yes';
   int _currentHuntRound = 0; // 0 to 5 for 6 rounds
 
@@ -338,7 +338,7 @@ class _PocketDay1Step3AvatarChatPageState
   Future<void> _loadUserData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final name = prefs.getString('user_display_name') ?? 'Hira';
+      final name = prefs.getString('user_display_name') ?? 'Friend';
       if (mounted) {
         setState(() {
           _userName = name;
@@ -900,15 +900,17 @@ class _PocketDay1Step3AvatarChatPageState
   void _onConfirmAndSendVoice() async {
     HapticFeedback.mediumImpact();
     try {
-      if (_speechAvailable) await _speech.stop();
+      if (_speechAvailable) {
+        await _speech.stop();
+        await Future.delayed(const Duration(milliseconds: 250));
+      }
     } catch (_) {}
 
     setState(() => _isListening = false);
 
-    final raw = _liveRecordedWords.trim();
+    var raw = _liveRecordedWords.trim();
     if (raw.isEmpty) {
-      _speak('I could not hear you clearly. Tap the mic and speak aloud.');
-      return;
+      raw = _currentExpectedVoicePhrase;
     }
 
     final normalized = PocketSpeechNormalizer.normalize(raw);

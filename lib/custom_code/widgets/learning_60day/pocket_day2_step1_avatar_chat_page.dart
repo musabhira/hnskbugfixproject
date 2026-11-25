@@ -131,7 +131,7 @@ class _PocketDay2Step1AvatarChatPageState
   bool _showMicGuideArrow = false;
   bool _hasShownMicGuide = false;
 
-  String _userName = 'Hira';
+  String _userName = 'Friend';
   String _currentExpectedVoicePhrase = 'Yes';
   int _drillIndex = 0;
 
@@ -193,8 +193,8 @@ class _PocketDay2Step1AvatarChatPageState
 
   void _initUserName() {
     final user = SupaFlow.client.auth.currentUser;
-    final metaName = user?.userMetadata?['display_name'] ??
-        user?.userMetadata?['full_name'];
+    final metaName =
+        user?.userMetadata?['display_name'] ?? user?.userMetadata?['full_name'];
     if (metaName != null && metaName.toString().trim().isNotEmpty) {
       _userName = metaName.toString().trim();
       return;
@@ -207,7 +207,7 @@ class _PocketDay2Step1AvatarChatPageState
         return;
       }
     }
-    _userName = 'Hira';
+    _userName = 'Friend';
   }
 
   Future<void> _initTts() async {
@@ -356,7 +356,8 @@ class _PocketDay2Step1AvatarChatPageState
               labelNative: 'പഠിക്കാം! 🌟',
               icon: '✅',
               isHighlightedAnswer: true,
-              backgroundColor: const Color(0xFF047857), // Distinct Emerald Green
+              backgroundColor:
+                  const Color(0xFF047857), // Distinct Emerald Green
               borderColor: const Color(0xFF34D399),
               textColor: Colors.white,
               onTap: () => _handleTextSubmission(
@@ -382,11 +383,10 @@ class _PocketDay2Step1AvatarChatPageState
       );
     });
 
-    _speak('Hi $_userName! Welcome to Day 2! Today we learn Where I Am From and Locations. Shall we start?');
+    _speak(
+        'Hi $_userName! Welcome to Day 2! Today we learn Where I Am From and Locations. Shall we start?');
     _scrollToBottom();
   }
-
-
 
   // =========================================================================
   // 🗣️ SPEAKING CHAT FLOW (User Audio Directive!)
@@ -398,8 +398,7 @@ class _PocketDay2Step1AvatarChatPageState
 
   /// Phase 2: Teach Grammar Blueprint & Rules
   void _onUserWantsToLearnDay2() {
-    final textEn =
-        'Great, $_userName! 🚀 Remember this golden rule:\n\n'
+    final textEn = 'Great, $_userName! 🚀 Remember this golden rule:\n\n'
         '• I + am ➔ "I am ready to speak."\n'
         '• He / She / It + is ➔ "He is at home."\n'
         '• We / You / They + are ➔ "They are in Kochi."\n\n'
@@ -407,8 +406,7 @@ class _PocketDay2Step1AvatarChatPageState
         '❌ Don\'t say: "I ready to speak"\n'
         '✅ Always say: "I am ready to speak!"';
 
-    final textMl =
-        '$_userName, ഈ മൂന്ന് കാര്യങ്ങൾ എപ്പോഴും ഓർക്കുക:\n\n'
+    final textMl = '$_userName, ഈ മൂന്ന് കാര്യങ്ങൾ എപ്പോഴും ഓർക്കുക:\n\n'
         '• ഞാൻ (I) പറയുമ്പോൾ: I am ready to speak. (am വിട്ടുപോകരുത്!)\n'
         '• അവൻ / അവൾ (He / She) പറയുമ്പോൾ: He is at home.\n'
         '• ഞങ്ങൾ / അവർ (We / They) പറയുമ്പോൾ: They are in Kochi.\n\n'
@@ -452,7 +450,8 @@ class _PocketDay2Step1AvatarChatPageState
       );
     });
 
-    _speak('Remember this golden rule: I am ready to speak. He is at home. They are in Kochi.');
+    _speak(
+        'Remember this golden rule: I am ready to speak. He is at home. They are in Kochi.');
     _scrollToBottom();
   }
 
@@ -463,7 +462,8 @@ class _PocketDay2Step1AvatarChatPageState
       decoration: BoxDecoration(
         color: const Color(0xFF0F172A),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4), width: 1.2),
+        border: Border.all(
+            color: const Color(0xFF38BDF8).withValues(alpha: 0.4), width: 1.2),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
@@ -490,11 +490,13 @@ class _PocketDay2Step1AvatarChatPageState
             ],
           ),
           const SizedBox(height: 10),
-          _buildRuleRow('I + am', '"I am ready to speak."', 'ഞാൻ സംസാരിക്കാൻ തയ്യാറാണ്'),
+          _buildRuleRow(
+              'I + am', '"I am ready to speak."', 'ഞാൻ സംസാരിക്കാൻ തയ്യാറാണ്'),
           const Divider(color: Colors.white12, height: 16),
           _buildRuleRow('He / She + is', '"He is at home."', 'അവൻ വീട്ടിലാണ്'),
           const Divider(color: Colors.white12, height: 16),
-          _buildRuleRow('We / They + are', '"They are in Kochi."', 'അവർ കൊച്ചിയിലാണ്'),
+          _buildRuleRow(
+              'We / They + are', '"They are in Kochi."', 'അവർ കൊച്ചിയിലാണ്'),
         ],
       ),
     );
@@ -563,13 +565,11 @@ class _PocketDay2Step1AvatarChatPageState
 
     _currentExpectedVoicePhrase = target;
 
-    final promptEn =
-        'Drill ${_drillIndex + 1} of ${_drills.length}:\n'
+    final promptEn = 'Drill ${_drillIndex + 1} of ${_drills.length}:\n'
         'Speak this sentence aloud into the mic below! 👇\n\n'
         '"$target"';
 
-    final promptMl =
-        'പരിശീലനം ${_drillIndex + 1}/${_drills.length}:\n'
+    final promptMl = 'പരിശീലനം ${_drillIndex + 1}/${_drills.length}:\n'
         'ഈ വാചകം മൈക്കിലൂടെ ഉറക്കെ പറയൂ! ($ml)';
 
     setState(() {
@@ -705,7 +705,8 @@ class _PocketDay2Step1AvatarChatPageState
           isAvatar: true,
           textEn: promptEn,
           textNative: promptMl,
-          audioText: 'Great speaking! Now let\'s master the professional formula! Tap below to begin.',
+          audioText:
+              'Great speaking! Now let\'s master the professional formula! Tap below to begin.',
           speakThisPrompt: 'Tap below to enter Formula Master Arena:',
           inBubbleOptions: [
             Day2InBubbleOption(
@@ -805,11 +806,9 @@ class _PocketDay2Step1AvatarChatPageState
     PocketGameAudioService.instance.playCorrectSound();
     HapticFeedback.heavyImpact();
 
-    final promptEn =
-        'Spot on! 🎉 Question 2: Fill in the blank:\n\n'
+    final promptEn = 'Spot on! 🎉 Question 2: Fill in the blank:\n\n'
         '"They ___ in Kochi right now."';
-    final promptMl =
-        'നന്നായി! ചോദ്യം 2: വിട്ടുപോയ വാക്ക് പൂരിപ്പിക്കുക:\n\n'
+    final promptMl = 'നന്നായി! ചോദ്യം 2: വിട്ടുപോയ വാക്ക് പൂരിപ്പിക്കുക:\n\n'
         '"They ___ in Kochi right now."';
 
     _currentExpectedVoicePhrase = 'are';
@@ -869,18 +868,17 @@ class _PocketDay2Step1AvatarChatPageState
     final uid = widget.userId ?? SupaFlow.client.auth.currentUser?.id;
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('pocket_day_${uid ?? "guest"}_2_step_1_completed', true);
+      await prefs.setBool(
+          'pocket_day_${uid ?? "guest"}_2_step_1_completed', true);
       await PocketFortressDefenseService.recordTrainingPoints(25, uid);
     } catch (_) {}
 
-    final replyEn =
-        'CONGRATULATIONS, $_userName! 🏆🎉\n\n'
+    final replyEn = 'CONGRATULATIONS, $_userName! 🏆🎉\n\n'
         'You have mastered Day 2 Step 1: Where I Am From & Locations!\n'
         '+25 XP & Fortress Defense Shield Points Awarded! 🛡️⚡\n\n'
         'Step 2: Vocabulary Drive is now unlocked on the open road! 🚗💨';
 
-    final replyMl =
-        'അഭിനന്ദനങ്ങൾ, $_userName! 🏆\n\n'
+    final replyMl = 'അഭിനന്ദനങ്ങൾ, $_userName! 🏆\n\n'
         'നിങ്ങൾ ഡേ 2 ലെ Step 1 വിജയകരമായി പൂർത്തിയാക്കി!\n'
         '+25 XP നൽകി. റോഡിലേക്ക് മടങ്ങി Step 2 വൊക്കാബുലറി ഡ്രൈവ് ആരംഭിക്കാം!';
 
@@ -913,7 +911,8 @@ class _PocketDay2Step1AvatarChatPageState
       );
     });
 
-    _speak('Congratulations, $_userName! You have mastered Day 2 Step 1. Let us proceed to Step 2!');
+    _speak(
+        'Congratulations, $_userName! You have mastered Day 2 Step 1. Let us proceed to Step 2!');
     _scrollToBottom();
   }
 
@@ -1086,7 +1085,8 @@ class _PocketDay2Step1AvatarChatPageState
         backgroundColor: const Color(0xFF0F172A),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          icon:
+              const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         titleSpacing: 0,
@@ -1104,7 +1104,8 @@ class _PocketDay2Step1AvatarChatPageState
                 border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
               ),
               child: Center(
-                child: Text(_isSpeaking ? '🗣️' : '🐱', style: const TextStyle(fontSize: 20)),
+                child: Text(_isSpeaking ? '🗣️' : '🐱',
+                    style: const TextStyle(fontSize: 20)),
               ),
             ),
             const SizedBox(width: 10),
@@ -1132,7 +1133,8 @@ class _PocketDay2Step1AvatarChatPageState
                           decoration: BoxDecoration(
                             color: _isSoundMuted
                                 ? const Color(0xFFEF4444).withValues(alpha: 0.2)
-                                : const Color(0xFF10B981).withValues(alpha: 0.2),
+                                : const Color(0xFF10B981)
+                                    .withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
@@ -1168,7 +1170,8 @@ class _PocketDay2Step1AvatarChatPageState
             decoration: BoxDecoration(
               color: const Color(0xFFFFD700).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
+              border: Border.all(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -1226,8 +1229,8 @@ class _PocketDay2Step1AvatarChatPageState
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Color(0xFF047857), Color(0xFF065F46)],
@@ -1246,7 +1249,8 @@ class _PocketDay2Step1AvatarChatPageState
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF059669).withValues(alpha: 0.35),
+                            color:
+                                const Color(0xFF059669).withValues(alpha: 0.35),
                             blurRadius: 10,
                             offset: const Offset(0, 3),
                           ),
@@ -1264,7 +1268,8 @@ class _PocketDay2Step1AvatarChatPageState
                     ),
                     if (msg.evaluationResult != null) ...[
                       const SizedBox(height: 4),
-                      PocketPronunciationInlineBadge(result: msg.evaluationResult!),
+                      PocketPronunciationInlineBadge(
+                          result: msg.evaluationResult!),
                     ],
                   ],
                 ),
@@ -1302,7 +1307,8 @@ class _PocketDay2Step1AvatarChatPageState
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [Color(0xFF065F46), Color(0xFF047857)],
@@ -1321,7 +1327,8 @@ class _PocketDay2Step1AvatarChatPageState
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF059669).withValues(alpha: 0.35),
+                          color:
+                              const Color(0xFF059669).withValues(alpha: 0.35),
                           blurRadius: 10,
                           offset: const Offset(0, 3),
                         ),
@@ -1342,7 +1349,8 @@ class _PocketDay2Step1AvatarChatPageState
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: Colors.white.withValues(alpha: 0.2),
-                              border: Border.all(color: Colors.white, width: 1.2),
+                              border:
+                                  Border.all(color: Colors.white, width: 1.2),
                             ),
                             child: const Center(
                               child: Icon(
@@ -1374,7 +1382,8 @@ class _PocketDay2Step1AvatarChatPageState
                               Container(
                                 width: 3,
                                 height: h,
-                                margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 1.5),
                                 decoration: BoxDecoration(
                                   color: Colors.white.withValues(alpha: 0.85),
                                   borderRadius: BorderRadius.circular(2),
@@ -1411,7 +1420,8 @@ class _PocketDay2Step1AvatarChatPageState
                   ),
                   if (msg.evaluationResult != null) ...[
                     const SizedBox(height: 4),
-                    PocketPronunciationInlineBadge(result: msg.evaluationResult!),
+                    PocketPronunciationInlineBadge(
+                        result: msg.evaluationResult!),
                   ],
                 ],
               ),
@@ -1504,7 +1514,8 @@ class _PocketDay2Step1AvatarChatPageState
                   ],
 
                   // Distinct Answer Options inside bubble under divider
-                  if (msg.inBubbleOptions != null && msg.inBubbleOptions!.isNotEmpty) ...[
+                  if (msg.inBubbleOptions != null &&
+                      msg.inBubbleOptions!.isNotEmpty) ...[
                     const SizedBox(height: 12),
                     const Divider(color: Colors.white12, height: 1),
                     const SizedBox(height: 10),
@@ -1543,7 +1554,8 @@ class _PocketDay2Step1AvatarChatPageState
                               boxShadow: opt.isHighlightedAnswer
                                   ? [
                                       BoxShadow(
-                                        color: opt.borderColor.withValues(alpha: 0.25),
+                                        color: opt.borderColor
+                                            .withValues(alpha: 0.25),
                                         blurRadius: 8,
                                       ),
                                     ]
@@ -1552,12 +1564,14 @@ class _PocketDay2Step1AvatarChatPageState
                             child: Row(
                               children: [
                                 if (opt.icon != null) ...[
-                                  Text(opt.icon!, style: const TextStyle(fontSize: 16)),
+                                  Text(opt.icon!,
+                                      style: const TextStyle(fontSize: 16)),
                                   const SizedBox(width: 8),
                                 ],
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         opt.labelEn,
@@ -1571,7 +1585,8 @@ class _PocketDay2Step1AvatarChatPageState
                                         Text(
                                           opt.labelNative,
                                           style: GoogleFonts.notoSansMalayalam(
-                                            color: opt.textColor.withValues(alpha: 0.7),
+                                            color: opt.textColor
+                                                .withValues(alpha: 0.7),
                                             fontSize: 11,
                                           ),
                                         ),
@@ -1695,9 +1710,13 @@ class _PocketDay2Step1AvatarChatPageState
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      _isListening ? 'RECORDING VOICE...' : '🎙️ SPOKEN PRACTICE',
+                      _isListening
+                          ? 'RECORDING VOICE...'
+                          : '🎙️ SPOKEN PRACTICE',
                       style: GoogleFonts.inter(
-                        color: _isListening ? const Color(0xFFF87171) : const Color(0xFFFFD700),
+                        color: _isListening
+                            ? const Color(0xFFF87171)
+                            : const Color(0xFFFFD700),
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 0.5,
@@ -1735,7 +1754,8 @@ class _PocketDay2Step1AvatarChatPageState
                           gradient: const LinearGradient(
                             colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
                           ),
-                          border: Border.all(color: const Color(0xFFFCA5A5), width: 1.5),
+                          border: Border.all(
+                              color: const Color(0xFFFCA5A5), width: 1.5),
                           boxShadow: [
                             BoxShadow(
                               color: const Color(0xFFEF4444).withValues(

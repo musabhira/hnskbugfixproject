@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shimmer/shimmer.dart';
 
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dart';
@@ -299,12 +300,7 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
               // 5. Lazy Loaded Minimal Leaderboard List
               Expanded(
                 child: _isLoading
-                    ? const Center(
-                        child: CircularProgressIndicator(
-                          color: Color(0xFFFFD700),
-                          strokeWidth: 2.5,
-                        ),
-                      )
+                    ? _buildLoadingShimmer()
                     : RefreshIndicator(
                         onRefresh: () => _loadAllRankings(forceRefresh: true),
                         color: const Color(0xFFFFD700),
@@ -1301,6 +1297,83 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingShimmer() {
+    return Shimmer.fromColors(
+      baseColor: const Color(0xFF1E293B),
+      highlightColor: const Color(0xFF334155),
+      period: const Duration(milliseconds: 1200),
+      child: ListView.builder(
+        padding: const EdgeInsets.only(top: 6, bottom: 84, left: 12, right: 12),
+        itemCount: 9,
+        itemBuilder: (context, index) {
+          return Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 28,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 140,
+                        height: 14,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        width: 90,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Container(
+                  width: 54,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

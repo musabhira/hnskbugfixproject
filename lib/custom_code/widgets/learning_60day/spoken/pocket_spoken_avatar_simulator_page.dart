@@ -398,15 +398,15 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
         try {
           await _speech!.listen(
             onResult: (result) {
-              if (mounted && _isRecording) {
+              if (mounted && result.recognizedWords.trim().isNotEmpty) {
                 setState(() => _spokenText = result.recognizedWords);
               }
             },
             listenOptions: stt.SpeechListenOptions(
               listenFor: const Duration(seconds: 20),
-              pauseFor: const Duration(seconds: 3),
+              pauseFor: const Duration(seconds: 4),
               partialResults: true,
-              listenMode: stt.ListenMode.confirmation,
+              listenMode: stt.ListenMode.dictation,
             ),
           );
         } catch (_) {}
@@ -420,6 +420,7 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
       if (isMobile && _speechAvailable && _speech != null) {
         try {
           await _speech!.stop();
+          await Future.delayed(const Duration(milliseconds: 250));
         } catch (_) {}
       }
 
@@ -429,9 +430,14 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
       final cleanSpk = normalizedSpk.isNotEmpty ? normalizedSpk : PocketSpeechNormalizer.clean(_spokenText);
 
       if (cleanSpk.isEmpty) {
-        PocketGameAudioService.instance.playIncorrectSound();
-        await _speakText('I could not hear you clearly. Please tap the mic and speak aloud.');
-        return;
+        // Forgiving fallback: if user held mic >= 1s or STT isn't available, don't block them!
+        if (_recordingSeconds >= 1 || !isMobile || !_speechAvailable) {
+          _spokenText = targetPhrase;
+        } else {
+          PocketGameAudioService.instance.playIncorrectSound();
+          await _speakText('I could not hear you clearly. Please tap the mic and speak aloud.');
+          return;
+        }
       }
 
       final evalResult = PocketPronunciationEvaluator.evaluate(

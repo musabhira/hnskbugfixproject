@@ -124,7 +124,7 @@ class _PocketDay1Step2AvatarChatPageState
   bool _showMicGuideArrow = false;
   bool _hasShownMicGuide = false;
 
-  String _userName = 'Hira';
+  String _userName = 'Friend';
   String _currentExpectedVoicePhrase = 'Yes';
   int _currentWordIndex = 0; // 0 to 19 for 20 words
 
@@ -388,7 +388,7 @@ class _PocketDay1Step2AvatarChatPageState
         return;
       }
     }
-    _userName = 'Hira';
+    _userName = 'Friend';
   }
 
   Future<void> _initTts() async {

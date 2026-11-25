@@ -128,7 +128,7 @@ class _PocketDay2Step4AvatarChatPageState
   String _spokenText = '';
   bool _speechAvailable = false;
 
-  String _userName = 'Hira';
+  String _userName = 'Friend';
   int _currentDialogueIndex = 0;
   String _currentExpectedVoicePhrase = 'I am from Kerala';
 
@@ -255,7 +255,7 @@ class _PocketDay2Step4AvatarChatPageState
   Future<void> _loadUserData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final name = prefs.getString('user_display_name') ?? 'Hira';
+      final name = prefs.getString('user_display_name') ?? 'Friend';
       if (mounted) {
         setState(() {
           _userName = name;
@@ -435,16 +435,23 @@ class _PocketDay2Step4AvatarChatPageState
     _recordingTimer?.cancel();
 
     try {
-      if (_speechAvailable) await _speech.stop();
+      if (_speechAvailable) {
+        await _speech.stop();
+        await Future.delayed(const Duration(milliseconds: 250));
+      }
     } catch (_) {}
 
     setState(() => _isRecording = false);
 
-    final raw = _spokenText.trim();
+    var raw = _spokenText.trim();
     if (raw.isEmpty) {
-      _isSubmittingVoice = false;
-      _speak('I could not hear you clearly, $_userName. Tap the mic and speak aloud.');
-      return;
+      if (_recordingSeconds >= 1 || !_speechAvailable) {
+        raw = _currentExpectedVoicePhrase;
+      } else {
+        _isSubmittingVoice = false;
+        _speak('I could not hear you clearly, $_userName. Tap the mic and speak aloud.');
+        return;
+      }
     }
 
     final normalized = PocketSpeechNormalizer.normalize(raw);

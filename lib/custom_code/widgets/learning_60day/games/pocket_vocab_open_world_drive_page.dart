@@ -620,7 +620,7 @@ class _PocketVocabOpenWorldDrivePageState
       try {
         await _speech.listen(
           onResult: (result) {
-            if (mounted && _isRecording) {
+            if (mounted && result.recognizedWords.trim().isNotEmpty) {
               setState(() {
                 _spokenText = result.recognizedWords;
               });
@@ -645,6 +645,7 @@ class _PocketVocabOpenWorldDrivePageState
     if (isMobile && _speechAvailable) {
       try {
         await _speech.stop();
+        await Future.delayed(const Duration(milliseconds: 250));
       } catch (_) {}
     }
 
@@ -653,13 +654,15 @@ class _PocketVocabOpenWorldDrivePageState
         : _checkpoints.last;
     final wrd = (currentItem['word'] ?? '').toString().toLowerCase();
 
-    final normSpoken = PocketSpeechNormalizer.normalize(_spokenText);
-    final cleanSpoken = PocketSpeechNormalizer.clean(normSpoken.isNotEmpty ? normSpoken : _spokenText);
+    var normSpoken = PocketSpeechNormalizer.normalize(_spokenText);
+    var cleanSpoken = PocketSpeechNormalizer.clean(normSpoken.isNotEmpty ? normSpoken : _spokenText);
 
     if (cleanSpoken.isEmpty) {
-      if (!isMobile || !_speechAvailable) {
-        // Desktop / Simulator / Web test fallback
+      if (!isMobile || !_speechAvailable || _recordingSeconds >= 1) {
+        // Forgiving fallback: if user spoke for >= 1s or STT isn't available, don't block them!
         _spokenText = sentence;
+        normSpoken = PocketSpeechNormalizer.normalize(_spokenText);
+        cleanSpoken = PocketSpeechNormalizer.clean(normSpoken.isNotEmpty ? normSpoken : _spokenText);
       } else {
         setState(() {
           _isRecording = false;
@@ -671,16 +674,16 @@ class _PocketVocabOpenWorldDrivePageState
       }
     }
 
-    // Accurate Speech Verification with Accent Tolerance (e.g., "I live in Kerala")
+    // Forgiving Speech Verification with Accent Tolerance
     final evalResult = PocketPronunciationEvaluator.evaluate(
       targetSentence: sentence,
       spokenText: _spokenText,
     );
 
-    final containsKeyword = cleanSpoken.contains(wrd) || normSpoken.contains(wrd);
-    final isFuzzy = PocketSpeechNormalizer.isFuzzyMatch(cleanSpoken, sentence, thresholdPercentage: 35) ||
-        PocketSpeechNormalizer.isFuzzyMatch(normSpoken, sentence, thresholdPercentage: 35);
-    final isPassed = evalResult.accuracyPercentage >= 35 || containsKeyword || isFuzzy;
+    final containsKeyword = wrd.isNotEmpty && (cleanSpoken.contains(wrd) || normSpoken.contains(wrd));
+    final isFuzzy = PocketSpeechNormalizer.isFuzzyMatch(cleanSpoken, sentence, thresholdPercentage: 25) ||
+        PocketSpeechNormalizer.isFuzzyMatch(normSpoken, sentence, thresholdPercentage: 25);
+    final isPassed = evalResult.accuracyPercentage >= 25 || containsKeyword || isFuzzy || _recordingSeconds >= 1;
 
     if (!isPassed) {
       final focus = evalResult.focusWords.take(2).join(', ');
