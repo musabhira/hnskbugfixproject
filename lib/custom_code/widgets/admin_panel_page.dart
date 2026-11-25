@@ -37,6 +37,7 @@ import 'package:pocket_mates_app/custom_code/widgets/admin_ads_management_tab.da
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_navigator_page.dart';
 import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/admin_design_posters_tab.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -277,7 +278,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 23, vsync: this);
+    _tabController = TabController(length: 24, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showPasswordDialog();
       _loadRobotCycleData();
@@ -1290,6 +1291,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                     Tab(
                         icon: Icon(Icons.movie_creation_rounded, size: 16),
                         text: 'Marketing Studio 🎬'),
+                    Tab(
+                        icon: Icon(Icons.palette_outlined, size: 16),
+                        text: 'Design 🎨'),
                   ],
                 ),
               ),
@@ -1323,6 +1327,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           _buildCosmosAdminTab(),
           _buildFeedbacksTab(),
           const AdminSentenceMarketingStudioTab(),
+          const AdminDesignPostersTab(),
         ],
       ),
     );
