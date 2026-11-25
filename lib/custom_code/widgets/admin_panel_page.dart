@@ -4744,45 +4744,91 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             ),
           ],
           const SizedBox(height: 12),
-          // Actions footer
-          Row(
+          // Actions footer (Wrap prevents RenderFlex overflow on narrow screens)
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 8,
             children: [
               Text(
                 'Created: ${rel.createdAt.toLocal().toString().split(' ').first}',
                 style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
               ),
-              const Spacer(),
-              // Preview Dialog
-              TextButton.icon(
-                icon: const Icon(Icons.remove_red_eye_outlined, size: 15, color: Colors.white70),
-                label: Text('Preview Dialog',
-                    style: GoogleFonts.inter(color: Colors.white70, fontSize: 11)),
-                onPressed: () => PocketAppUpdateService.showPreviewDialog(context, rel),
-              ),
-              const SizedBox(width: 8),
-              // Edit / Configure Alert
-              OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFFFFFC00),
-                  side: const BorderSide(color: Color(0xFFFFFC00)),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                icon: const Icon(Icons.edit_notifications_rounded, size: 15),
-                label: Text(rel.isActiveProduction ? 'Edit Alert' : 'Turn ON Alert',
-                    style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold)),
-                onPressed: () => _openAlertConfigModal(rel),
-              ),
-              const SizedBox(width: 8),
-              // Delete button (blocked if active)
-              IconButton(
-                icon: Icon(Icons.delete_outline,
-                    color: rel.isActiveProduction ? Colors.white24 : Colors.redAccent,
-                    size: 18),
-                tooltip: rel.isActiveProduction
-                    ? 'Cannot delete active production release'
-                    : 'Delete Release',
-                onPressed: rel.isActiveProduction ? null : () => _confirmDeleteRelease(rel),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Preview Dialog
+                  TextButton.icon(
+                    icon: const Icon(Icons.remove_red_eye_outlined,
+                        size: 15, color: Colors.white70),
+                    label: Text('Preview',
+                        style: GoogleFonts.inter(
+                            color: Colors.white70, fontSize: 11)),
+                    onPressed: () =>
+                        PocketAppUpdateService.showPreviewDialog(context, rel),
+                  ),
+                  if (rel.isActiveProduction) ...[
+                    const SizedBox(width: 4),
+                    TextButton.icon(
+                      icon: const Icon(Icons.notifications_off_outlined,
+                          size: 15, color: Colors.orangeAccent),
+                      label: Text('Turn OFF',
+                          style: GoogleFonts.inter(
+                              color: Colors.orangeAccent,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600)),
+                      onPressed: () async {
+                        await PocketReleaseService.deactivateProductionRelease(
+                            rel.platform);
+                        await _loadAppUpdateData();
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                  'Alert turned OFF for ${rel.platform.toUpperCase()} v${rel.version}.'),
+                              backgroundColor: Colors.orange,
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ],
+                  const SizedBox(width: 4),
+                  // Edit / Configure Alert
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFFFFC00),
+                      side: const BorderSide(color: Color(0xFFFFFC00)),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                    ),
+                    icon:
+                        const Icon(Icons.edit_notifications_rounded, size: 15),
+                    label: Text(
+                        rel.isActiveProduction ? 'Edit Alert' : 'Turn ON Alert',
+                        style: GoogleFonts.outfit(
+                            fontSize: 11, fontWeight: FontWeight.bold)),
+                    onPressed: () => _openAlertConfigModal(rel),
+                  ),
+                  const SizedBox(width: 4),
+                  // Delete button (blocked if active)
+                  IconButton(
+                    icon: Icon(Icons.delete_outline,
+                        color: rel.isActiveProduction
+                            ? Colors.white24
+                            : Colors.redAccent,
+                        size: 18),
+                    tooltip: rel.isActiveProduction
+                        ? 'Turn OFF alert first to delete'
+                        : 'Delete Release',
+                    onPressed: rel.isActiveProduction
+                        ? null
+                        : () => _confirmDeleteRelease(rel),
+                  ),
+                ],
               ),
             ],
           ),
