@@ -161,13 +161,13 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
     return await getApplicationDocumentsDirectory();
   }
 
-  Future<File?> _captureCardImage() async {
+  Future<File?> _captureCardImage({double? pixelRatio}) async {
     try {
       final boundary = _cardKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
       if (boundary == null) return null;
 
-      final double pixelRatio = _selectedFormat == CitadelStoryAspectRatio.square1x1 ? 2.0 : 3.0;
-      final ui.Image image = await boundary.toImage(pixelRatio: pixelRatio);
+      final double ratio = pixelRatio ?? 6.0;
+      final ui.Image image = await boundary.toImage(pixelRatio: ratio);
       final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       if (byteData == null) return null;
 
@@ -185,16 +185,206 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
     }
   }
 
-  Future<void> _downloadImage() async {
+  Future<void> _showSaveQualitySheet() async {
+    if (_isExporting) return;
+    double selectedRatio = 6.0; // Default: High / Ultra HD
+
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF141210),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            Widget buildOption({
+              required String title,
+              required String subtitle,
+              required double ratio,
+              String? badge,
+            }) {
+              final isSelected = selectedRatio == ratio;
+              return GestureDetector(
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  setModalState(() => selectedRatio = ratio);
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? const Color(0xFFD95D39).withValues(alpha: 0.14)
+                        : const Color(0xFF1E1B18),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: isSelected
+                          ? const Color(0xFFD95D39)
+                          : Colors.white12,
+                      width: isSelected ? 1.5 : 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        isSelected
+                            ? Icons.radio_button_checked_rounded
+                            : Icons.radio_button_off_rounded,
+                        color: isSelected
+                            ? const Color(0xFFD95D39)
+                            : Colors.white38,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  title,
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                if (badge != null) ...[
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 7, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFD4A373)
+                                          .withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      badge,
+                                      style: GoogleFonts.outfit(
+                                        color: const Color(0xFFD4A373),
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              subtitle,
+                              style: GoogleFonts.inter(
+                                color: Colors.white54,
+                                fontSize: 11.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 36,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.white24,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      'Select Image Quality',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Choose export resolution for your Story Card',
+                      style: GoogleFonts.inter(
+                        color: Colors.white54,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    buildOption(
+                      title: 'Ultra HD (4K)',
+                      subtitle: 'Maximum sharpness for Instagram & WhatsApp Status',
+                      ratio: 6.0,
+                      badge: 'DEFAULT',
+                    ),
+                    buildOption(
+                      title: 'High HD (2K)',
+                      subtitle: 'Crisp quality with balanced file size',
+                      ratio: 4.0,
+                    ),
+                    buildOption(
+                      title: 'Standard HD (1080p)',
+                      subtitle: 'Fast export & lightweight file',
+                      ratio: 3.0,
+                    ),
+                    const SizedBox(height: 8),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFD95D39),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _downloadImage(pixelRatio: selectedRatio);
+                      },
+                      icon: const Icon(Icons.download_rounded, size: 18),
+                      label: Text(
+                        'Save Image',
+                        style: GoogleFonts.outfit(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _downloadImage({double pixelRatio = 6.0}) async {
     if (_isExporting) return;
     setState(() {
       _isExporting = true;
-      _exportStatusText = 'Saving Image...';
+      _exportStatusText =
+          pixelRatio >= 6.0 ? 'Saving Ultra HD Image...' : 'Saving HD Image...';
     });
     HapticFeedback.mediumImpact();
 
     try {
-      final file = await _captureCardImage();
+      final file = await _captureCardImage(pixelRatio: pixelRatio);
       if (file == null) throw Exception('Could not render image');
 
       final targetDir = await _getExportDirectory();
@@ -2192,7 +2382,7 @@ class _PocketCitadelStorySharePageState extends State<PocketCitadelStorySharePag
               // 📥 Save Image Button
               Expanded(
                 child: GestureDetector(
-                  onTap: _isExporting ? null : _downloadImage,
+                  onTap: _isExporting ? null : _showSaveQualitySheet,
                   child: Container(
                     height: 44,
                     decoration: BoxDecoration(

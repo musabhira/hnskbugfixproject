@@ -160,8 +160,8 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                 Expanded(
                   child: Text(
                     item.id == 'fortress_repair'
-                        ? '🛠️ കോട്ട 100% നന്നാക്കി! (Citadel Repaired)'
-                        : 'Unlocked & Equipped ${item.name}! 🛡️',
+                        ? 'Citadel 100% Repaired!'
+                        : 'Unlocked & Equipped ${item.name}',
                     style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -239,7 +239,7 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'യഥാർത്ഥ മിലിട്ടറി ഡിഫൻസ് ട്രാപ്പുകൾ സജ്ജീകരിക്കുക',
+                        'Equip defense upgrades for your Citadel',
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.inter(
                           color: const Color(0xFF38BDF8),
@@ -358,7 +358,7 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'സജ്ജീകരിച്ച ഡിഫൻസ്: ${_equippedDefenses.length}/5 • അധിക ഗേറ്റുകൾ: +$_totalGates',
+                        'Equipped: ${_equippedDefenses.length}/5 • Extra Gates: +$_totalGates',
                         style: GoogleFonts.outfit(
                           color: const Color(0xFFFFD700),
                           fontSize: 12,
@@ -366,7 +366,7 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                         ),
                       ),
                       Text(
-                        'റൈഡർമാർ നിങ്ങളുടെ വീട് ആക്രമിക്കുമ്പോൾ ഈ ട്രാപ്പുകൾ തകർക്കേണ്ടി വരും!',
+                        'Attackers must break through your equipped defenses.',
                         style: GoogleFonts.inter(
                           color: Colors.white70,
                           fontSize: 10.5,
@@ -495,43 +495,33 @@ class _PocketCitadelStoreSheetState extends State<PocketCitadelStoreSheet> {
                       return Container(
                         padding: const EdgeInsets.all(13),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF131826),
-                          borderRadius: BorderRadius.circular(18),
+                          color: const Color(0xFF161B22),
+                          borderRadius: BorderRadius.circular(14),
                           border: Border.all(
                             color: isEquipped
-                                ? item.themeColor.withValues(alpha: 0.8)
+                                ? const Color(0xFFFFD700).withValues(alpha: 0.65)
                                 : Colors.white.withValues(alpha: 0.08),
-                            width: isEquipped ? 1.6 : 1.0,
+                            width: isEquipped ? 1.3 : 1.0,
                           ),
-                          boxShadow: isEquipped
-                              ? [
-                                  BoxShadow(
-                                    color:
-                                        item.themeColor.withValues(alpha: 0.22),
-                                    blurRadius: 14,
-                                    spreadRadius: 1,
-                                  ),
-                                ]
-                              : null,
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Icon Emblem
+                            // Minimal Icon Emblem
                             Container(
-                              width: 50,
-                              height: 50,
+                              width: 48,
+                              height: 48,
                               decoration: BoxDecoration(
-                                color: item.themeColor.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(13),
+                                color: Colors.white.withValues(alpha: 0.05),
+                                borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: item.themeColor.withValues(alpha: 0.45),
+                                  color: Colors.white.withValues(alpha: 0.10),
                                   width: 1,
                                 ),
                               ),
                               child: Center(
                                 child: Text(item.icon,
-                                    style: const TextStyle(fontSize: 24)),
+                                    style: const TextStyle(fontSize: 22)),
                               ),
                             ),
                             const SizedBox(width: 12),
