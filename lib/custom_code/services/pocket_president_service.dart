@@ -1442,7 +1442,7 @@ class PocketPresidentService {
       final supabase = SupaFlow.client;
       await supabase.functions.invoke('send-push-notification', body: {
         'action': 'broadcast',
-        'title': '🏛️ [Presidential Decree] $title',
+        'title': title,
         'body':
             content.length > 120 ? '${content.substring(0, 117)}...' : content,
       });
