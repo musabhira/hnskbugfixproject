@@ -1089,4 +1089,64 @@ class PocketRankingService {
   static VectorAvatarConfig _resolveAvatarConfig(String userId, int level) {
     return VectorAvatarConfig.getEvolutionAvatarForStage(level);
   }
+
+  /// Marks today as played so daily inactivity decay does not trigger.
+  static Future<void> markPlayedToday() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final now = DateTime.now();
+      final todayStr =
+          '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      await prefs.setString('pocket_last_active_play_date', todayStr);
+    } catch (_) {}
+  }
+
+  /// Deducts 10 Pocket Score per missed day if the user hasn't played recently.
+  static Future<void> applyDailyInactivityDecayIfNeeded() async {
+    try {
+      final user = SupaFlow.client.auth.currentUser;
+      if (user == null) return;
+      final prefs = await SharedPreferences.getInstance();
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final todayStr =
+          '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+
+      final lastStr = prefs.getString('pocket_last_active_play_date');
+      if (lastStr == null || lastStr.isEmpty) {
+        await prefs.setString('pocket_last_active_play_date', todayStr);
+        return;
+      }
+
+      final lastDate = DateTime.tryParse(lastStr);
+      if (lastDate == null) return;
+
+      final daysMissed = today.difference(lastDate).inDays;
+      if (daysMissed <= 1) return; // Grace period: 1 day (yesterday) is fine
+
+      final penaltyDays = daysMissed - 1;
+      final penalty = penaltyDays * 10;
+
+      final row = await SupaFlow.client
+          .from('profile')
+          .select('pocket_score')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+      if (row != null) {
+        final currentScore = (row['pocket_score'] as num?)?.toInt() ?? 0;
+        if (currentScore > 0) {
+          final newScore = (currentScore - penalty).clamp(0, currentScore);
+          await SupaFlow.client
+              .from('profile')
+              .update({'pocket_score': newScore})
+              .eq('user_id', user.id);
+          _cachedGlobalTop = []; // Invalidate cache so new score shows
+        }
+      }
+      await prefs.setString('pocket_last_active_play_date', todayStr);
+    } catch (e) {
+      debugPrint('applyDailyInactivityDecayIfNeeded error: $e');
+    }
+  }
 }

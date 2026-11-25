@@ -1275,29 +1275,73 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               backgroundColor: material.Colors.transparent,
               bottomNavigationBar: _buildBottomNavigationBar(context),
               floatingActionButton: _currentIndex == 2
-                  ? material.FloatingActionButton.extended(
-                      heroTag: 'mates_ranking_fab',
-                      onPressed: () {
-                        HapticFeedback.mediumImpact();
-                        PocketWorldRankingTrailWidget.showMatesRankingModal(
-                          context,
-                          userId: _currentUserId,
-                        );
-                      },
-                      backgroundColor: const Color(0xFFFFFC00),
-                      foregroundColor: material.Colors.black,
-                      elevation: 4,
-                      highlightElevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      label: Text(
-                        'Mates Rank',
-                        style: GoogleFonts.outfit(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 13,
-                          color: material.Colors.black,
-                          letterSpacing: 0.3,
+                  ? material.Material(
+                      color: const Color(0xFFFFFC00),
+                      elevation: 6,
+                      borderRadius: BorderRadius.circular(24),
+                      child: Container(
+                        height: 48,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            material.InkWell(
+                              borderRadius: const BorderRadius.horizontal(
+                                left: Radius.circular(24),
+                              ),
+                              onTap: () {
+                                HapticFeedback.lightImpact();
+                                if (_scrollController.hasClients) {
+                                  _scrollController.animateTo(
+                                    0,
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeOut,
+                                  );
+                                }
+                              },
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                                child: Icon(
+                                  Icons.search_rounded,
+                                  color: material.Colors.black,
+                                  size: 22,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              width: 1.2,
+                              height: 24,
+                              color: material.Colors.black.withValues(alpha: 0.22),
+                            ),
+                            material.InkWell(
+                              borderRadius: const BorderRadius.horizontal(
+                                right: Radius.circular(24),
+                              ),
+                              onTap: () {
+                                HapticFeedback.mediumImpact();
+                                PocketWorldRankingTrailWidget.showMatesRankingModal(
+                                  context,
+                                  userId: _currentUserId,
+                                );
+                              },
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                                child: Icon(
+                                  Icons.people_alt_rounded,
+                                  color: material.Colors.black,
+                                  size: 22,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     )
@@ -4020,12 +4064,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
     if (_isLoadingRequests) {
       return const SliverToBoxAdapter(
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 48),
-          child: Center(
-            child: CircularProgressIndicator(color: Color(0xFFFFFC00)),
-          ),
-        ),
+        child: ChatListShimmer(),
       );
     }
 

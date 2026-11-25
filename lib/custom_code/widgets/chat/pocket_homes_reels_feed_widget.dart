@@ -1733,23 +1733,20 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       }
     }
 
-    // 📓 User Directive: Show Daily English Phrases right at the very top (Index 0) on Homes open!
-    if (widget.initialGameId == null && vocabIdx < vocabCards.length) {
-      addReelItem(ReelFeedItem.vocab(vocabCards[vocabIdx++]));
-    }
-
+    // 📓 User Directive: Show first Home, then IMMEDIATELY Daily English Phrases as 2nd slide,
+    // and prioritize Daily English Phrases frequently over Preparation Rule / Games.
     for (int i = 0; i < diversifiedNeighbors.length; i++) {
       // 1. Show a diverse Home
       addReelItem(ReelFeedItem.home(diversifiedNeighbors[i]));
 
-      // 2. Interleave Scrapbook-styled Dialogue Quiz (e.g. Asking the Time)
-      if (gameIdx < games.length) {
-        addReelItem(ReelFeedItem.game(games[gameIdx++]));
-      }
-
-      // 3. Interleave Daily English Phrases Scrapbook Card regularly
+      // 2. Immediately show Daily English Phrases Scrapbook Card right after Home
       if (vocabIdx < vocabCards.length) {
         addReelItem(ReelFeedItem.vocab(vocabCards[vocabIdx++]));
+      }
+
+      // 3. Show Dialogue Quiz / Preparation Rule only every 2nd Home (after index 0)
+      if (i > 0 && i % 2 == 1 && gameIdx < games.length) {
+        addReelItem(ReelFeedItem.game(games[gameIdx++]));
       }
 
       // 4. Interleave Public Vibes occasionally

@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:flame/game.dart';
 
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
@@ -196,6 +197,7 @@ class _PocketWorldRankingTrailWidgetState
     });
 
     try {
+      await PocketRankingService.applyDailyInactivityDecayIfNeeded();
       List<PocketRankedUser> list;
       if (_isWorldMode) {
         if (_communityFilter == 1) {
@@ -329,8 +331,52 @@ class _PocketWorldRankingTrailWidgetState
           // 1. 🏔️ Flame Game Engine Canyon Viewport
           Positioned.fill(
             child: _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(color: Color(0xFFFFD700)),
+                ? Shimmer.fromColors(
+                    baseColor: const Color(0xFF1A222C),
+                    highlightColor: const Color(0xFF2B3544),
+                    child: ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(16, 80, 16, 20),
+                      itemCount: 8,
+                      itemBuilder: (_, __) => Padding(
+                        padding: const EdgeInsets.only(bottom: 14),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 28,
+                              height: 18,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            const CircleAvatar(
+                              radius: 22,
+                              backgroundColor: Colors.white,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Container(
+                                height: 14,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Container(
+                              width: 52,
+                              height: 22,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   )
                 : (_rankedUsers.isEmpty && _errorMessage != null)
                     ? _buildErrorView()
