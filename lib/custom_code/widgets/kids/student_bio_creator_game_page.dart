@@ -453,7 +453,8 @@ class _StudentBioCreatorGameState extends State<StudentBioCreatorGamePage>
                       ),
                       const SizedBox(height: 14),
                       const PocketTrueNativeAdWidget(
-                        placement: PocketAdPlacement.learningStep,
+                        placement: PocketAdPlacement.target,
+                        margin: EdgeInsets.only(bottom: 10),
                       ),
                     ],
                   ),

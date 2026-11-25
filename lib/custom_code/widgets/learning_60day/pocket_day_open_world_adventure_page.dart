@@ -1262,7 +1262,7 @@ class _PocketDayOpenWorldAdventurePageState
     );
   }
 
-  /// 🪧 Roadside Highway Advertising Billboard (Native Ad mounted on 2 steel poles grounded to roadside)
+  /// 🪧 Roadside Highway Advertising Billboard (Native Ad matching Target Page width on 2 steel poles)
   Widget _buildRoadsideBillboardAd(int afterStep) {
     if (PocketAdMobService.instance.isUserVipSync()) {
       return const SizedBox.shrink();
@@ -1271,63 +1271,51 @@ class _PocketDayOpenWorldAdventurePageState
     final posB = getStepPosition(afterStep + 1, totalSteps: _totalSteps);
     final midX = (posA.dx + posB.dx) / 2;
     final groundY = getGroundY(midX);
-    const boardW = 220.0;
+    const boardW = 340.0;
 
     return Positioned(
       left: midX - (boardW / 2),
       bottom: _worldHeight - groundY - 6.0,
       width: boardW,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0F172A),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: const Color(0xFFD4A373).withValues(alpha: 0.7),
-                width: 2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.45),
-                  blurRadius: 12,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: const PocketTrueNativeAdWidget(
-              placement: PocketAdPlacement.learningStep,
-            ),
-          ),
-          // Two vertical steel billboard poles anchored right into the roadside grass
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: boardW),
+        child: PocketNativeAdCard(
+          key: ValueKey('roadside_billboard_ad_$afterStep'),
+          placement: PocketAdPlacement.target,
+          margin: EdgeInsets.zero,
+          frameBuilder: (adChild) => Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 7,
-                height: 62,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF94A3B8), Color(0xFF475569)],
+              adChild,
+              // Two vertical steel billboard poles anchored right into the roadside grass
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Container(
+                    width: 7,
+                    height: 62,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF94A3B8), Color(0xFF475569)],
+                      ),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              Container(
-                width: 7,
-                height: 62,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF94A3B8), Color(0xFF475569)],
+                  Container(
+                    width: 7,
+                    height: 62,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF94A3B8), Color(0xFF475569)],
+                      ),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
-                  borderRadius: BorderRadius.circular(2),
-                ),
+                ],
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }

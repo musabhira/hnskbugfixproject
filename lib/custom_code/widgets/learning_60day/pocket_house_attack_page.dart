@@ -763,6 +763,11 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
                     ),
                   ),
                 ],
+                const SizedBox(height: 16),
+                const PocketTrueNativeAdWidget(
+                  placement: PocketAdPlacement.target,
+                  margin: EdgeInsets.only(bottom: 10),
+                ),
               ],
             ),
           ),

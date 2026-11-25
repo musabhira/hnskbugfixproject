@@ -80,15 +80,16 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
   int _placedCount = 0;
   int _wrongCount = 0;
   late List<String> _bankTiles;
-  late final AnimationController _shakeCtrl =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
+  late final AnimationController _shakeCtrl = AnimationController(
+      vsync: this, duration: const Duration(milliseconds: 400));
 
   _NoticeRound get _currentRound => _rounds[_roundIdx];
 
   @override
   void initState() {
     super.initState();
-    final dayData = StudentCreativeWriting90DayCurriculum.getNoticeData(widget.day);
+    final dayData =
+        StudentCreativeWriting90DayCurriculum.getNoticeData(widget.day);
     _rounds = [
       _NoticeRound(
         title: dayData.title,
@@ -211,8 +212,10 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: kNGold,
                   foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 26, vertical: 12),
                 ),
                 onPressed: () {
                   Navigator.pop(ctx);
@@ -226,8 +229,11 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
                   }
                 },
                 child: Text(
-                  _roundIdx < _rounds.length - 1 ? 'NEXT NOTICE ▶' : 'FINISH QUEST 🏆',
-                  style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 15),
+                  _roundIdx < _rounds.length - 1
+                      ? 'NEXT NOTICE ▶'
+                      : 'FINISH QUEST 🏆',
+                  style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.w900, fontSize: 15),
                 ),
               ),
             ],
@@ -252,12 +258,14 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
         backgroundColor: const Color(0xFF141210),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: Colors.white, size: 20),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
         title: Text(
           'Notice Masterclass',
-          style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 17),
+          style: GoogleFonts.outfit(
+              color: Colors.white, fontWeight: FontWeight.w800, fontSize: 17),
         ),
         centerTitle: true,
       ),
@@ -271,7 +279,9 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
         child: AnimatedBuilder(
           animation: _shakeCtrl,
           builder: (context, child) {
-            final offset = math.sin(_shakeCtrl.value * math.pi * 6) * 8 * (1 - _shakeCtrl.value);
+            final offset = math.sin(_shakeCtrl.value * math.pi * 6) *
+                8 *
+                (1 - _shakeCtrl.value);
             return Transform.translate(offset: Offset(offset, 0), child: child);
           },
           child: SingleChildScrollView(
@@ -283,11 +293,14 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: const Color(0xFF221E1A),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFFD4A373).withValues(alpha: 0.3)),
+                        border: Border.all(
+                            color:
+                                const Color(0xFFD4A373).withValues(alpha: 0.3)),
                       ),
                       child: Text(
                         '${_currentRound.category.toUpperCase()} • ${_roundIdx + 1}/${_rounds.length}',
@@ -319,7 +332,9 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
                   decoration: BoxDecoration(
                     color: const Color(0xFFFDF8EE),
                     borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: const Color(0xFFD4A373).withValues(alpha: 0.55), width: 1.5),
+                    border: Border.all(
+                        color: const Color(0xFFD4A373).withValues(alpha: 0.55),
+                        width: 1.5),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.35),
@@ -333,7 +348,8 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.push_pin_rounded, color: Color(0xFFD95D39), size: 16),
+                          const Icon(Icons.push_pin_rounded,
+                              color: Color(0xFFD95D39), size: 16),
                           const SizedBox(width: 6),
                           Text(
                             'OFFICIAL NOTICE BOARD',
@@ -347,13 +363,17 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
                         ],
                       ),
                       const SizedBox(height: 14),
-                      Divider(color: const Color(0xFFD4A373).withValues(alpha: 0.35), height: 1),
+                      Divider(
+                          color:
+                              const Color(0xFFD4A373).withValues(alpha: 0.35),
+                          height: 1),
                       const SizedBox(height: 16),
 
                       // Slot 1: Institution Name
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 10),
                         decoration: BoxDecoration(
                           color: _placedCount > 0
                               ? const Color(0xFF0F766E).withValues(alpha: 0.1)
@@ -364,16 +384,21 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
                                 ? const Color(0xFF0F766E)
                                 : (_placedCount == 0
                                     ? const Color(0xFFD95D39)
-                                    : const Color(0xFFD4A373).withValues(alpha: 0.4)),
+                                    : const Color(0xFFD4A373)
+                                        .withValues(alpha: 0.4)),
                             width: _placedCount == 0 ? 1.5 : 1,
                           ),
                         ),
                         child: Text(
-                          _placedCount > 0 ? targets[0] : '1. Tap Institution / School Name',
+                          _placedCount > 0
+                              ? targets[0]
+                              : '1. Tap Institution / School Name',
                           style: GoogleFonts.outfit(
                             fontWeight: FontWeight.w800,
                             fontSize: 14.5,
-                            color: _placedCount > 0 ? const Color(0xFF0F766E) : const Color(0xFF8C7456),
+                            color: _placedCount > 0
+                                ? const Color(0xFF0F766E)
+                                : const Color(0xFF8C7456),
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -382,7 +407,8 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
 
                       // Slot 2: NOTICE Header
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 7),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 26, vertical: 7),
                         decoration: BoxDecoration(
                           color: _placedCount > 1
                               ? const Color(0xFFD95D39).withValues(alpha: 0.12)
@@ -393,7 +419,8 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
                                 ? const Color(0xFFD95D39)
                                 : (_placedCount == 1
                                     ? const Color(0xFFD95D39)
-                                    : const Color(0xFFD4A373).withValues(alpha: 0.4)),
+                                    : const Color(0xFFD4A373)
+                                        .withValues(alpha: 0.4)),
                             width: _placedCount == 1 ? 1.5 : 1,
                           ),
                         ),
@@ -403,7 +430,9 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
                             fontSize: 18,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 2.2,
-                            color: _placedCount > 1 ? const Color(0xFFB45309) : const Color(0xFF8C7456),
+                            color: _placedCount > 1
+                                ? const Color(0xFFB45309)
+                                : const Color(0xFF8C7456),
                           ),
                         ),
                       ),
@@ -412,7 +441,8 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
                       // Slot 3: Event Title / Headline
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 10),
                         decoration: BoxDecoration(
                           color: _placedCount > 2
                               ? const Color(0xFFD4A373).withValues(alpha: 0.2)
@@ -423,16 +453,21 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
                                 ? const Color(0xFFB45309)
                                 : (_placedCount == 2
                                     ? const Color(0xFFD95D39)
-                                    : const Color(0xFFD4A373).withValues(alpha: 0.4)),
+                                    : const Color(0xFFD4A373)
+                                        .withValues(alpha: 0.4)),
                             width: _placedCount == 2 ? 1.5 : 1,
                           ),
                         ),
                         child: Text(
-                          _placedCount > 2 ? targets[2] : '3. Tap Event Headline',
+                          _placedCount > 2
+                              ? targets[2]
+                              : '3. Tap Event Headline',
                           style: GoogleFonts.outfit(
                             fontSize: 14.5,
                             fontWeight: FontWeight.w700,
-                            color: _placedCount > 2 ? const Color(0xFF292524) : const Color(0xFF8C7456),
+                            color: _placedCount > 2
+                                ? const Color(0xFF292524)
+                                : const Color(0xFF8C7456),
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -442,7 +477,8 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
                       // Slot 4: Date & Venue
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 9),
                         decoration: BoxDecoration(
                           color: _placedCount > 3
                               ? const Color(0xFF292524).withValues(alpha: 0.06)
@@ -453,16 +489,21 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
                                 ? const Color(0xFF7A5C3D)
                                 : (_placedCount == 3
                                     ? const Color(0xFFD95D39)
-                                    : const Color(0xFFD4A373).withValues(alpha: 0.4)),
+                                    : const Color(0xFFD4A373)
+                                        .withValues(alpha: 0.4)),
                             width: _placedCount == 3 ? 1.5 : 1,
                           ),
                         ),
                         child: Text(
-                          _placedCount > 3 ? '📅 ${targets[3]}' : '4. Tap Date & Venue',
+                          _placedCount > 3
+                              ? '📅 ${targets[3]}'
+                              : '4. Tap Date & Venue',
                           style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: _placedCount > 3 ? const Color(0xFF292524) : const Color(0xFF8C7456),
+                            color: _placedCount > 3
+                                ? const Color(0xFF292524)
+                                : const Color(0xFF8C7456),
                           ),
                         ),
                       ),
@@ -479,14 +520,16 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
                   decoration: BoxDecoration(
                     color: const Color(0xFF1E1B18),
                     borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: const Color(0xFFD4A373).withValues(alpha: 0.3)),
+                    border: Border.all(
+                        color: const Color(0xFFD4A373).withValues(alpha: 0.3)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.touch_app_rounded, color: Color(0xFFD4A373), size: 16),
+                          const Icon(Icons.touch_app_rounded,
+                              color: Color(0xFFD4A373), size: 16),
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
@@ -512,12 +555,15 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
                               onTap: () => _onTileTap(_bankTiles[i]),
                               child: AnimatedContainer(
                                 duration: const Duration(milliseconds: 180),
-                                padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 13, vertical: 9),
                                 decoration: BoxDecoration(
-                                  color: _getTileColor(i).withValues(alpha: 0.16),
+                                  color:
+                                      _getTileColor(i).withValues(alpha: 0.16),
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
-                                    color: _getTileColor(i).withValues(alpha: 0.75),
+                                    color: _getTileColor(i)
+                                        .withValues(alpha: 0.75),
                                     width: 1.2,
                                   ),
                                 ),
@@ -536,9 +582,10 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
                 const PocketTrueNativeAdWidget(
-                  placement: PocketAdPlacement.learningStep,
+                  placement: PocketAdPlacement.target,
+                  margin: EdgeInsets.only(bottom: 10),
                 ),
               ],
             ),

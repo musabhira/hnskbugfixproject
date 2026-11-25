@@ -2563,6 +2563,7 @@ class PocketNativeAdCard extends StatefulWidget {
   final bool? isCompact;
   final bool forceFreeMode;
   final void Function(String status, String? details)? onStatusChange;
+  final Widget Function(Widget adChild)? frameBuilder;
 
   const PocketNativeAdCard({
     super.key,
@@ -2572,6 +2573,7 @@ class PocketNativeAdCard extends StatefulWidget {
     this.isCompact,
     this.forceFreeMode = false,
     this.onStatusChange,
+    this.frameBuilder,
   });
 
   @override
@@ -2761,12 +2763,10 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard>
     }
 
     // ⚡ Preloaded Minimal Mode (For standard banner or compact requests)
-    if (_isCompact) {
-      return _buildCompactCard(context);
-    }
-
-    // 📱 Standard Instagram Feed-Style Native Ad Card
-    return _buildStandardCard(context);
+    final card = _isCompact
+        ? _buildCompactCard(context)
+        : _buildStandardCard(context);
+    return widget.frameBuilder != null ? widget.frameBuilder!(card) : card;
   }
 
   /// 🌟 Sleek, Compact Minimal Native Ad Card
@@ -3857,12 +3857,14 @@ class PocketTrueNativeAdWidget extends StatefulWidget {
   final EdgeInsetsGeometry margin;
   final PocketAdPlacement placement;
   final String? customAdUnitId;
+  final Widget Function(Widget adChild)? frameBuilder;
 
   const PocketTrueNativeAdWidget({
     super.key,
     this.margin = const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
     this.placement = PocketAdPlacement.home,
     this.customAdUnitId,
+    this.frameBuilder,
   });
 
   @override
@@ -3972,7 +3974,7 @@ class _PocketTrueNativeAdWidgetState extends State<PocketTrueNativeAdWidget> {
     }
 
     if (!kIsWeb && Platform.isWindows) {
-      return Container(
+      final winBox = Container(
         margin: widget.margin,
         height: 110,
         width: double.infinity,
@@ -3991,11 +3993,12 @@ class _PocketTrueNativeAdWidgetState extends State<PocketTrueNativeAdWidget> {
           ),
         ),
       );
+      return widget.frameBuilder != null ? widget.frameBuilder!(winBox) : winBox;
     }
 
     // ✅ Native ad ready (from cache or fresh load on Android)
     if (_nativeAd != null && _isLoaded) {
-      return Container(
+      final adBox = Container(
         margin: widget.margin,
         decoration: BoxDecoration(
           color: const Color(0xFF1E293B),
@@ -4013,6 +4016,7 @@ class _PocketTrueNativeAdWidgetState extends State<PocketTrueNativeAdWidget> {
         height: 330, // Responsive height for PocketNativeAdFactory view
         child: AdWidget(ad: _nativeAd!),
       );
+      return widget.frameBuilder != null ? widget.frameBuilder!(adBox) : adBox;
     }
 
     // 🔄 Fallback: Use PocketNativeAdCard (banner-based) on non-Android platforms
@@ -4021,6 +4025,7 @@ class _PocketTrueNativeAdWidgetState extends State<PocketTrueNativeAdWidget> {
       margin: widget.margin,
       placement: widget.placement,
       customAdUnitId: widget.customAdUnitId,
+      frameBuilder: widget.frameBuilder,
     );
   }
 }

@@ -477,6 +477,10 @@ class _PocketPatternPhraseBuilderPageState
             ),
           ),
         ),
+        const SizedBox(height: 14),
+        const PocketBannerAdWidget(
+          margin: EdgeInsets.only(bottom: 10),
+        ),
       ],
     );
   }
@@ -649,6 +653,11 @@ class _PocketPatternPhraseBuilderPageState
               ),
             ),
           ),
+        const SizedBox(height: 14),
+        const PocketTrueNativeAdWidget(
+          placement: PocketAdPlacement.target,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
       ],
     );
   }

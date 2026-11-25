@@ -72,7 +72,8 @@ class StudentSpellingDetectiveGamePage extends StatefulWidget {
       _StudentSpellingDetectiveGameState();
 }
 
-class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveGamePage>
+class _StudentSpellingDetectiveGameState
+    extends State<StudentSpellingDetectiveGamePage>
     with SingleTickerProviderStateMixin {
   final FlutterTts _tts = FlutterTts();
   late final List<_DetectiveCase> _cases;
@@ -81,15 +82,16 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
   int _placedLetterCount = 0;
   int _wrongCount = 0;
   late List<String> _letterBank;
-  late final AnimationController _shakeCtrl =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
+  late final AnimationController _shakeCtrl = AnimationController(
+      vsync: this, duration: const Duration(milliseconds: 400));
 
   _DetectiveCase get _currentCase => _cases[_caseIdx];
 
   @override
   void initState() {
     super.initState();
-    final dayData = StudentCreativeWriting90DayCurriculum.getSpellingData(widget.day);
+    final dayData =
+        StudentCreativeWriting90DayCurriculum.getSpellingData(widget.day);
     _cases = [
       _DetectiveCase(
         wrongWord: dayData.wrongWord,
@@ -191,7 +193,8 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
               ),
               const SizedBox(height: 6),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                 decoration: BoxDecoration(
                   color: kSEm.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
@@ -228,8 +231,10 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
                 style: ElevatedButton.styleFrom(
                   backgroundColor: kSGold,
                   foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 26, vertical: 12),
                 ),
                 onPressed: () {
                   Navigator.pop(ctx);
@@ -243,8 +248,11 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
                   }
                 },
                 child: Text(
-                  _caseIdx < _cases.length - 1 ? 'NEXT MYSTERY ▶' : 'FINISH QUEST 🏆',
-                  style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 15),
+                  _caseIdx < _cases.length - 1
+                      ? 'NEXT MYSTERY ▶'
+                      : 'FINISH QUEST 🏆',
+                  style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.w900, fontSize: 15),
                 ),
               ),
             ],
@@ -270,7 +278,8 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
         backgroundColor: kSBg,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFFE5DEC9), size: 20),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: Color(0xFFE5DEC9), size: 20),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
         title: Text(
@@ -291,7 +300,9 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
         child: AnimatedBuilder(
           animation: _shakeCtrl,
           builder: (context, child) {
-            final offset = math.sin(_shakeCtrl.value * math.pi * 6) * 8 * (1 - _shakeCtrl.value);
+            final offset = math.sin(_shakeCtrl.value * math.pi * 6) *
+                8 *
+                (1 - _shakeCtrl.value);
             return Transform.translate(offset: Offset(offset, 0), child: child);
           },
           child: SingleChildScrollView(
@@ -302,20 +313,26 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: kSCard,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: kSGold.withValues(alpha: 0.35)),
+                        border:
+                            Border.all(color: kSGold.withValues(alpha: 0.35)),
                       ),
                       child: Text(
                         'Case ${_caseIdx + 1} of ${_cases.length}',
-                        style: GoogleFonts.outfit(color: kSGold, fontWeight: FontWeight.w700, fontSize: 12),
+                        style: GoogleFonts.outfit(
+                            color: kSGold,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12),
                       ),
                     ),
                     const Spacer(),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: kSCard,
                         borderRadius: BorderRadius.circular(20),
@@ -324,11 +341,15 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.lightbulb_outline_rounded, color: kSGold, size: 14),
+                          const Icon(Icons.lightbulb_outline_rounded,
+                              color: kSGold, size: 14),
                           const SizedBox(width: 4),
                           Text(
                             _currentCase.clue,
-                            style: GoogleFonts.outfit(color: const Color(0xFFE5DEC9), fontSize: 11.5, fontWeight: FontWeight.w600),
+                            style: GoogleFonts.outfit(
+                                color: const Color(0xFFE5DEC9),
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w600),
                           ),
                         ],
                       ),
@@ -344,7 +365,8 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
                   decoration: BoxDecoration(
                     color: const Color(0xFFFDF8EE),
                     borderRadius: BorderRadius.circular(22),
-                    border: Border.all(color: const Color(0xFFE6D5B8), width: 1.5),
+                    border:
+                        Border.all(color: const Color(0xFFE6D5B8), width: 1.5),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.35),
@@ -357,16 +379,19 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
                     children: [
                       // Incorrect Spelling Tag
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
                           color: const Color(0xFFFEE2E2),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: kSRed.withValues(alpha: 0.35)),
+                          border:
+                              Border.all(color: kSRed.withValues(alpha: 0.35)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.error_outline_rounded, color: kSRed, size: 15),
+                            const Icon(Icons.error_outline_rounded,
+                                color: kSRed, size: 15),
                             const SizedBox(width: 5),
                             Text(
                               'INCORRECT SPELLING FOUND',
@@ -394,7 +419,8 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
                               decoration: BoxDecoration(
                                 color: const Color(0xFFFEF2F2),
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: kSRed.withValues(alpha: 0.45)),
+                                border: Border.all(
+                                    color: kSRed.withValues(alpha: 0.45)),
                               ),
                               child: Text(
                                 ch,
@@ -415,7 +441,8 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.edit_note_rounded, color: kSEm, size: 18),
+                          const Icon(Icons.edit_note_rounded,
+                              color: kSEm, size: 18),
                           const SizedBox(width: 6),
                           Text(
                             'TAP TO SPELL CORRECTLY',
@@ -450,18 +477,24 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
                                 border: Border.all(
                                   color: i < _placedLetterCount
                                       ? kSEm
-                                      : (i == _placedLetterCount ? const Color(0xFFD97706) : const Color(0xFFD6C7AE)),
+                                      : (i == _placedLetterCount
+                                          ? const Color(0xFFD97706)
+                                          : const Color(0xFFD6C7AE)),
                                   width: i == _placedLetterCount ? 2 : 1.3,
                                 ),
                               ),
                               child: Text(
-                                i < _placedLetterCount ? letters[i] : (i == _placedLetterCount ? '?' : ''),
+                                i < _placedLetterCount
+                                    ? letters[i]
+                                    : (i == _placedLetterCount ? '?' : ''),
                                 style: GoogleFonts.outfit(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w900,
                                   color: i < _placedLetterCount
                                       ? kSEm
-                                      : (i == _placedLetterCount ? const Color(0xFFB45309) : Colors.black26),
+                                      : (i == _placedLetterCount
+                                          ? const Color(0xFFB45309)
+                                          : Colors.black26),
                                 ),
                               ),
                             ),
@@ -488,12 +521,16 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.touch_app_rounded, color: kSGold, size: 16),
+                          const Icon(Icons.touch_app_rounded,
+                              color: kSGold, size: 16),
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
                               'Letter Bank • Tap in order to fix the spelling',
-                              style: GoogleFonts.outfit(color: kSGold, fontSize: 12.5, fontWeight: FontWeight.w700),
+                              style: GoogleFonts.outfit(
+                                  color: kSGold,
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w700),
                             ),
                           ),
                         ],
@@ -513,9 +550,13 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
                                   height: 44,
                                   alignment: Alignment.center,
                                   decoration: BoxDecoration(
-                                    color: _getTileColor(i).withValues(alpha: 0.16),
+                                    color: _getTileColor(i)
+                                        .withValues(alpha: 0.16),
                                     borderRadius: BorderRadius.circular(11),
-                                    border: Border.all(color: _getTileColor(i).withValues(alpha: 0.75), width: 1.5),
+                                    border: Border.all(
+                                        color: _getTileColor(i)
+                                            .withValues(alpha: 0.75),
+                                        width: 1.5),
                                   ),
                                   child: Text(
                                     _letterBank[i],
@@ -533,9 +574,10 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
                 const PocketTrueNativeAdWidget(
-                  placement: PocketAdPlacement.learningStep,
+                  placement: PocketAdPlacement.target,
+                  margin: EdgeInsets.only(bottom: 10),
                 ),
               ],
             ),

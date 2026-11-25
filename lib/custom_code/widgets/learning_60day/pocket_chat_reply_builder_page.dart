@@ -160,7 +160,8 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         final max = _scrollController.position.maxScrollExtent;
-        final target = (_chatHistory.length >= 3 ? max - 140.0 : max).clamp(0.0, max);
+        final target =
+            (_chatHistory.length >= 3 ? max - 340.0 : max).clamp(0.0, max);
         _scrollController.animateTo(
           target,
           duration: const Duration(milliseconds: 300),
@@ -457,7 +458,8 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
                     tag: msg['tag'] as String?,
                   );
                   // Native ad at bottom of chat
-                  if (index == _chatHistory.length - 1 && _chatHistory.length >= 3) {
+                  if (index == _chatHistory.length - 1 &&
+                      _chatHistory.length >= 3) {
                     return Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [

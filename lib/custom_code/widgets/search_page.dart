@@ -2759,7 +2759,13 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       itemCount: _searchResults.length + (_hasMoreData ? 1 : 0),
       separatorBuilder: (context, index) => (index + 1) % 4 == 0
-          ? const PocketBannerAdWidget(margin: EdgeInsets.symmetric(vertical: 6))
+          ? const Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(height: 6),
+                PocketBannerAdWidget(margin: EdgeInsets.only(bottom: 6)),
+              ],
+            )
           : const SizedBox(height: 6),
       itemBuilder: (context, index) {
         if (index == _searchResults.length) {

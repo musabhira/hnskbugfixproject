@@ -72,7 +72,8 @@ class StudentDiaryEntryGamePage extends StatefulWidget {
   }
 
   @override
-  State<StudentDiaryEntryGamePage> createState() => _StudentDiaryEntryGameState();
+  State<StudentDiaryEntryGamePage> createState() =>
+      _StudentDiaryEntryGameState();
 }
 
 class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
@@ -85,15 +86,16 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
   int _wrongCount = 0;
   int _currentSentencePhase = 1;
   late List<String> _bankTiles;
-  late final AnimationController _shakeCtrl =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
+  late final AnimationController _shakeCtrl = AnimationController(
+      vsync: this, duration: const Duration(milliseconds: 400));
 
   _DiaryRound get _currentRound => _rounds[_roundIdx];
 
   @override
   void initState() {
     super.initState();
-    final dayData = StudentCreativeWriting90DayCurriculum.getDiaryData(widget.day);
+    final dayData =
+        StudentCreativeWriting90DayCurriculum.getDiaryData(widget.day);
     _rounds = [
       _DiaryRound(
         dateStr: dayData.dateStr,
@@ -119,8 +121,10 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
   void _setupRound() {
     _currentSentencePhase = 1;
     final halfDistractorsCount = (_currentRound.distractors.length / 2).ceil();
-    final s1Distractors = _currentRound.distractors.take(halfDistractorsCount).toList();
-    final s1Bank = [..._currentRound.sentence1Words, ...s1Distractors]..shuffle();
+    final s1Distractors =
+        _currentRound.distractors.take(halfDistractorsCount).toList();
+    final s1Bank = [..._currentRound.sentence1Words, ...s1Distractors]
+      ..shuffle();
     setState(() {
       _bankTiles = s1Bank;
       _placedCount = 0;
@@ -156,9 +160,12 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
         if (_placedCount == _currentRound.sentence1Words.length &&
             _currentRound.sentence2Words.isNotEmpty) {
           _currentSentencePhase = 2;
-          final halfDistractorsCount = (_currentRound.distractors.length / 2).ceil();
-          final s2Distractors = _currentRound.distractors.skip(halfDistractorsCount).toList();
-          _bankTiles = [..._currentRound.sentence2Words, ...s2Distractors]..shuffle();
+          final halfDistractorsCount =
+              (_currentRound.distractors.length / 2).ceil();
+          final s2Distractors =
+              _currentRound.distractors.skip(halfDistractorsCount).toList();
+          _bankTiles = [..._currentRound.sentence2Words, ...s2Distractors]
+            ..shuffle();
         }
       });
 
@@ -185,11 +192,18 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
       final prefs = await SharedPreferences.getInstance();
       final uid = widget.userId;
       if (uid != null && uid.isNotEmpty) {
-        await prefs.setBool('pocket_day_${uid}_${widget.day}_step_${widget.stepIndex}_done', true);
-        await prefs.setBool('pocket_day_${uid}_${widget.day}_step_${widget.stepIndex}_completed', true);
+        await prefs.setBool(
+            'pocket_day_${uid}_${widget.day}_step_${widget.stepIndex}_done',
+            true);
+        await prefs.setBool(
+            'pocket_day_${uid}_${widget.day}_step_${widget.stepIndex}_completed',
+            true);
       }
-      await prefs.setBool('pocket_day_guest_${widget.day}_step_${widget.stepIndex}_done', true);
-      await prefs.setBool('pocket_day_guest_${widget.day}_step_${widget.stepIndex}_completed', true);
+      await prefs.setBool(
+          'pocket_day_guest_${widget.day}_step_${widget.stepIndex}_done', true);
+      await prefs.setBool(
+          'pocket_day_guest_${widget.day}_step_${widget.stepIndex}_completed',
+          true);
     } catch (_) {}
 
     widget.onStepFinished?.call(widget.stepIndex);
@@ -241,8 +255,10 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: kDGold,
                   foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 26, vertical: 12),
                 ),
                 onPressed: () {
                   Navigator.pop(ctx);
@@ -256,8 +272,11 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
                   }
                 },
                 child: Text(
-                  _roundIdx < _rounds.length - 1 ? 'NEXT DIARY ENTRY ▶' : 'FINISH QUEST 🏆',
-                  style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 15),
+                  _roundIdx < _rounds.length - 1
+                      ? 'NEXT DIARY ENTRY ▶'
+                      : 'FINISH QUEST 🏆',
+                  style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.w900, fontSize: 15),
                 ),
               ),
             ],
@@ -296,7 +315,8 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
         ),
         title: Text(
           'Diary Entry Adventure 📖',
-          style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+          style: GoogleFonts.outfit(
+              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
       ),
@@ -304,7 +324,9 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
         child: AnimatedBuilder(
           animation: _shakeCtrl,
           builder: (context, child) {
-            final offset = math.sin(_shakeCtrl.value * math.pi * 6) * 8 * (1 - _shakeCtrl.value);
+            final offset = math.sin(_shakeCtrl.value * math.pi * 6) *
+                8 *
+                (1 - _shakeCtrl.value);
             return Transform.translate(offset: Offset(offset, 0), child: child);
           },
           child: Column(
@@ -320,19 +342,27 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
                         children: [
                           Text(
                             'Entry ${_roundIdx + 1} of ${_rounds.length}',
-                            style: GoogleFonts.outfit(color: kDGold, fontWeight: FontWeight.w700, fontSize: 13),
+                            style: GoogleFonts.outfit(
+                                color: kDGold,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13),
                           ),
                           const Spacer(),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
                               color: kDCard,
                               borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: kDGold.withValues(alpha: 0.4)),
+                              border: Border.all(
+                                  color: kDGold.withValues(alpha: 0.4)),
                             ),
                             child: Text(
                               'Mood: ${_currentRound.mood}',
-                              style: GoogleFonts.outfit(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                              style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold),
                             ),
                           ),
                         ],
@@ -347,7 +377,8 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
                           color: const Color(0xFFFFF9E6),
                           borderRadius: BorderRadius.circular(16),
                           border: const Border(
-                            left: BorderSide(color: Color(0xFFDC2626), width: 5),
+                            left:
+                                BorderSide(color: Color(0xFFDC2626), width: 5),
                           ),
                           boxShadow: [
                             BoxShadow(
@@ -380,12 +411,18 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
                                 ),
                               ],
                             ),
-                            const Divider(height: 16, thickness: 1, color: Color(0xFFE5D5B5)),
+                            const Divider(
+                                height: 16,
+                                thickness: 1,
+                                color: Color(0xFFE5D5B5)),
 
                             // Sentence 1
                             Text(
                               '1. Today\'s highlight:',
-                              style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF78350F)),
+                              style: GoogleFonts.outfit(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFF78350F)),
                             ),
                             const SizedBox(height: 6),
                             Wrap(
@@ -394,12 +431,17 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
                               children: [
                                 for (int i = 0; i < s1.length; i++)
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 9, vertical: 5),
                                     decoration: BoxDecoration(
-                                      color: i < s1Placed ? const Color(0xFFFEF08A) : const Color(0xFFF3F4F6),
+                                      color: i < s1Placed
+                                          ? const Color(0xFFFEF08A)
+                                          : const Color(0xFFF3F4F6),
                                       borderRadius: BorderRadius.circular(8),
                                       border: Border.all(
-                                        color: i < s1Placed ? const Color(0xFFCA8A04) : const Color(0xFFD1D5DB),
+                                        color: i < s1Placed
+                                            ? const Color(0xFFCA8A04)
+                                            : const Color(0xFFD1D5DB),
                                         width: i < s1Placed ? 1.8 : 1,
                                       ),
                                     ),
@@ -408,7 +450,9 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
                                       style: GoogleFonts.caveat(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
-                                        color: i < s1Placed ? const Color(0xFF451A03) : Colors.black26,
+                                        color: i < s1Placed
+                                            ? const Color(0xFF451A03)
+                                            : Colors.black26,
                                       ),
                                     ),
                                   ),
@@ -419,7 +463,10 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
                             // Sentence 2
                             Text(
                               '2. Tomorrow\'s wish:',
-                              style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF78350F)),
+                              style: GoogleFonts.outfit(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFF78350F)),
                             ),
                             const SizedBox(height: 6),
                             Wrap(
@@ -428,12 +475,17 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
                               children: [
                                 for (int i = 0; i < s2.length; i++)
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 9, vertical: 5),
                                     decoration: BoxDecoration(
-                                      color: i < s2Placed ? const Color(0xFFBBF7D0) : const Color(0xFFF3F4F6),
+                                      color: i < s2Placed
+                                          ? const Color(0xFFBBF7D0)
+                                          : const Color(0xFFF3F4F6),
                                       borderRadius: BorderRadius.circular(8),
                                       border: Border.all(
-                                        color: i < s2Placed ? const Color(0xFF16A34A) : const Color(0xFFD1D5DB),
+                                        color: i < s2Placed
+                                            ? const Color(0xFF16A34A)
+                                            : const Color(0xFFD1D5DB),
                                         width: i < s2Placed ? 1.8 : 1,
                                       ),
                                     ),
@@ -442,7 +494,9 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
                                       style: GoogleFonts.caveat(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
-                                        color: i < s2Placed ? const Color(0xFF14532D) : Colors.black26,
+                                        color: i < s2Placed
+                                            ? const Color(0xFF14532D)
+                                            : Colors.black26,
                                       ),
                                     ),
                                   ),
@@ -453,7 +507,8 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
                       ),
                       const SizedBox(height: 14),
                       const PocketTrueNativeAdWidget(
-                        placement: PocketAdPlacement.learningStep,
+                        placement: PocketAdPlacement.target,
+                        margin: EdgeInsets.only(bottom: 10),
                       ),
                     ],
                   ),
@@ -466,9 +521,11 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                 decoration: BoxDecoration(
                   color: kDCard,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(24)),
                   border: Border.all(
-                    color: (_currentSentencePhase == 1 ? kDGold : kDEm).withValues(alpha: 0.35),
+                    color: (_currentSentencePhase == 1 ? kDGold : kDEm)
+                        .withValues(alpha: 0.35),
                   ),
                   boxShadow: [
                     BoxShadow(
@@ -505,7 +562,8 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
                             color: (_currentSentencePhase == 1 ? kDGold : kDEm)
                                 .withValues(alpha: 0.2),
@@ -516,7 +574,9 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
                             ),
                           ),
                           child: Text(
-                            _currentSentencePhase == 1 ? 'Part 1 of 2' : 'Part 2 of 2',
+                            _currentSentencePhase == 1
+                                ? 'Part 1 of 2'
+                                : 'Part 2 of 2',
                             style: GoogleFonts.outfit(
                               color: _currentSentencePhase == 1 ? kDGold : kDEm,
                               fontSize: 10.5,
@@ -536,11 +596,13 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
                             onTap: () => _onTileTap(_bankTiles[i]),
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 180),
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 9),
                               decoration: BoxDecoration(
                                 color: _getTileColor(i).withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: _getTileColor(i), width: 1.6),
+                                border: Border.all(
+                                    color: _getTileColor(i), width: 1.6),
                               ),
                               child: Text(
                                 _bankTiles[i],
