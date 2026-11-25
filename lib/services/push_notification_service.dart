@@ -169,6 +169,13 @@ class PushNotificationService {
 
       // 7. Token management & Supabase sync
       try {
+        if (defaultTargetPlatform == TargetPlatform.iOS) {
+          String? apnsToken = await fcm.getAPNSToken();
+          if (apnsToken == null) {
+            await Future.delayed(const Duration(seconds: 2));
+            await fcm.getAPNSToken();
+          }
+        }
         String? token = await fcm.getToken();
         if (token != null) {
           debugPrint('PushNotificationService: FCM Token: $token');
