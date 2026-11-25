@@ -524,8 +524,9 @@ class _AdminDesignPostersTabState extends State<AdminDesignPostersTab> {
         ? _posters
         : _posters.where((p) => p.category == _selectedCategory).toList();
 
-    return Column(
-      children: [
+    return SingleChildScrollView(
+      child: Column(
+        children: [
         // Top Controls: Aspect Ratio + Category Filter
         Container(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
@@ -598,14 +599,15 @@ class _AdminDesignPostersTabState extends State<AdminDesignPostersTab> {
         ),
 
         // Grid of Minimal Marketing Posters
-        Expanded(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final cols = constraints.maxWidth > 900
-                  ? 4
-                  : (constraints.maxWidth > 600 ? 3 : 2);
-              return GridView.builder(
-                padding: const EdgeInsets.all(14),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final cols = constraints.maxWidth > 900
+                ? 4
+                : (constraints.maxWidth > 600 ? 3 : 2);
+            return GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(14),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: cols,
                   crossAxisSpacing: 12,
@@ -649,8 +651,8 @@ class _AdminDesignPostersTabState extends State<AdminDesignPostersTab> {
               );
             },
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

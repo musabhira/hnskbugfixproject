@@ -1293,8 +1293,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                               ),
                               onTap: () {
                                 HapticFeedback.lightImpact();
-                                if (_scrollController.hasClients) {
-                                  _scrollController.animateTo(
+                                final primary = PrimaryScrollController.maybeOf(context);
+                                if (primary != null && primary.hasClients) {
+                                  primary.animateTo(
                                     0,
                                     duration: const Duration(milliseconds: 300),
                                     curve: Curves.easeOut,
