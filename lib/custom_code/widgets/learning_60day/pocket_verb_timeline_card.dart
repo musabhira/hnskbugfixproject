@@ -5,6 +5,7 @@ import 'curriculum_data/pocket_90day_verb_timeline_data.dart';
 import 'games/verb_timeline_flame_game.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_verb_localization_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 
 /// ⏳ Minimal & Rich Interactive Verb Timeline Practice Card
 /// Can be rendered inside PocketMissionTopicDetailPage and Master Hub.
@@ -417,7 +418,7 @@ class _PocketVerbTimelineCardState extends State<PocketVerbTimelineCard> {
           // 🎓 Master Class Banner: Past, Present, Future Explanation & Quick Demo
           if (_showClassGuide) _buildClassGuideBanner(),
 
-          // 3 Columns Runway
+          // Past & Present Runway
           Row(
             children: [
               Expanded(
@@ -430,7 +431,7 @@ class _PocketVerbTimelineCardState extends State<PocketVerbTimelineCard> {
                   'past',
                 ),
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 8),
               Expanded(
                 child: _buildColumnBox(
                   'TODAY',
@@ -441,18 +442,21 @@ class _PocketVerbTimelineCardState extends State<PocketVerbTimelineCard> {
                   'present',
                 ),
               ),
-              const SizedBox(width: 6),
-              Expanded(
-                child: _buildColumnBox(
-                  'TOMORROW',
-                  'FUTURE • ഇനി',
-                  _placedFuture,
-                  const Color(0xFF00E5FF),
-                  item.futureSentence,
-                  'future',
-                ),
-              ),
             ],
+          ),
+          const SizedBox(height: 10),
+          const PocketBannerAdWidget(
+            margin: EdgeInsets.symmetric(vertical: 4),
+          ),
+          const SizedBox(height: 10),
+          // Future Runway
+          _buildColumnBox(
+            'TOMORROW',
+            'FUTURE • ഇനി',
+            _placedFuture,
+            const Color(0xFF00E5FF),
+            item.futureSentence,
+            'future',
           ),
           const SizedBox(height: 14),
 
@@ -557,6 +561,10 @@ class _PocketVerbTimelineCardState extends State<PocketVerbTimelineCard> {
                 widget.onCompleted(true);
               }
             },
+          ),
+          const SizedBox(height: 14),
+          const PocketTrueNativeAdWidget(
+            placement: PocketAdPlacement.learningStep,
           ),
         ],
       ),

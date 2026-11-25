@@ -5578,6 +5578,8 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF0A0F1D),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+        floatingActionButton: _buildBottomBar(),
         body: SafeArea(
           child: Column(
             children: [
@@ -5586,7 +5588,7 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
                 child: ListView.builder(
                   controller: _scrollController,
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 110),
                   itemCount: _messages.length,
                   itemBuilder: (ctx, idx) {
                     final item = _buildMessageItem(_messages[idx]);
@@ -5608,7 +5610,6 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
                   },
                 ),
               ),
-              _buildBottomBar(),
             ],
           ),
         ),
@@ -6089,181 +6090,90 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
   }
 
   Widget _buildBottomBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: const BoxDecoration(
-        color: Color(0xFF111827),
-        border: Border(top: BorderSide(color: Colors.white12, width: 1)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // 🟢 Animated Green Downward Arrow pointing to Mic Button (First-time guidance!)
-          if (_showMicGuideArrow && !_hasShownMicGuide && !_isListening) ...[
-            AnimatedBuilder(
-              animation: _arrowBounceController,
-              builder: (context, child) {
-                return Transform.translate(
-                  offset: Offset(0, -(_arrowBounceController.value * 8)),
-                  child: child,
-                );
-              },
-              child: GestureDetector(
-                onTap: _toggleLiveListening,
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 10),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF047857), Color(0xFF10B981)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(24),
-                    border:
-                        Border.all(color: const Color(0xFF34D399), width: 2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF10B981).withValues(alpha: 0.65),
-                        blurRadius: 16,
-                        spreadRadius: 3,
-                      ),
-                    ],
+    final bool showOneTimeHint = _messages.length <= 1 &&
+        _showMicGuideArrow &&
+        !_hasShownMicGuide &&
+        !_isListening;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (showOneTimeHint)
+          AnimatedBuilder(
+            animation: _arrowBounceController,
+            builder: (context, child) {
+              return Transform.translate(
+                offset: Offset(0, -(_arrowBounceController.value * 6)),
+                child: child,
+              );
+            },
+            child: GestureDetector(
+              onTap: _toggleLiveListening,
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF047857),
+                  borderRadius: BorderRadius.circular(20),
+                  border:
+                      Border.all(color: const Color(0xFF34D399), width: 1.5),
+                ),
+                child: Text(
+                  PocketLanguageService.localize(
+                    en: 'Tap mic & speak 🎙️',
+                    ml: 'മൈക്കിൽ തൊട്ട് സംസാരിക്കൂ 🎙️',
+                    ta: 'மைக்கைத் தொட்டுப் பேசுங்கள் 🎙️',
+                    hi: 'माइक पर टैप करके बोलें 🎙️',
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.arrow_downward_rounded,
-                              color: Colors.white, size: 20),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Tap Mic to Speak Answer 🎙️',
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0.3,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          const Icon(Icons.arrow_downward_rounded,
-                              color: Colors.white, size: 20),
-                        ],
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        PocketLanguageService.localize(
-                          en: 'Tap mic & speak aloud 🎙️',
-                          ml: 'മൈക്കിൽ തൊട്ട് ഉച്ചരിക്കൂ 🎙️',
-                          ta: 'மைக்கைத் தொட்டுப் பேசுங்கள் 🎙️',
-                          hi: 'माइक पर टैप करके बोलें 🎙️',
-                        ),
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFFA7F3D0),
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
             ),
-          ],
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1E293B),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.record_voice_over_rounded,
-                          color: Color(0xFF38BDF8), size: 18),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          _isListening
-                              ? 'Listening to you... Speak clearly! 🎙️'
-                              : 'Tap mic to speak your answer',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.outfit(
-                            color: _isListening
-                                ? const Color(0xFF34D399)
-                                : Colors.white70,
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              GestureDetector(
-                onTap: _toggleLiveListening,
-                child: AnimatedBuilder(
-                  animation: _micWaveController,
-                  builder: (ctx, child) {
-                    return Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          colors: _isListening
-                              ? [
-                                  const Color(0xFFEF4444),
-                                  const Color(0xFFDC2626)
-                                ]
-                              : [
-                                  const Color(0xFF10B981),
-                                  const Color(0xFF047857)
-                                ],
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: (_isListening
-                                    ? const Color(0xFFEF4444)
-                                    : const Color(0xFF10B981))
-                                .withValues(
-                                    alpha:
-                                        0.3 + (_micWaveController.value * 0.3)),
-                            blurRadius: 10,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: Icon(
-                          _isListening
-                              ? Icons.mic_rounded
-                              : Icons.mic_none_rounded,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
           ),
-        ],
-      ),
+        GestureDetector(
+          onTap: _toggleLiveListening,
+          child: AnimatedBuilder(
+            animation: _micWaveController,
+            builder: (ctx, child) {
+              return Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: _isListening
+                        ? [const Color(0xFFEF4444), const Color(0xFFDC2626)]
+                        : [const Color(0xFF10B981), const Color(0xFF047857)],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (_isListening
+                              ? const Color(0xFFEF4444)
+                              : const Color(0xFF10B981))
+                          .withValues(
+                              alpha: 0.35 + (_micWaveController.value * 0.3)),
+                      blurRadius: 14,
+                      spreadRadius: 3,
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Icon(
+                    _isListening ? Icons.stop_rounded : Icons.mic_rounded,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

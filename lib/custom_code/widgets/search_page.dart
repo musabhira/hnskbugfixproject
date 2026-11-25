@@ -30,6 +30,7 @@ import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_t
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_transit_planner_sheet.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 import 'package:flutter/services.dart';
 
 class SearchPage extends StatefulWidget {
@@ -389,7 +390,9 @@ class _SearchPageState extends State<SearchPage> {
         const SizedBox(height: 10),
 
         // 🪐 Celestial Directory List with 3D Spheres & Natural Moons
-        ...filteredPlanets.map((p) {
+        ...filteredPlanets.asMap().entries.map((entry) {
+          final pIdx = entry.key;
+          final p = entry.value;
           final isApex = p.id == 3;
           final code =
               PoketCosmosDistanceService.instance.resolvePlanetCode(p.name);
@@ -446,12 +449,16 @@ class _SearchPageState extends State<SearchPage> {
                               children: [
                                 Row(
                                   children: [
-                                    Text(
-                                      p.name,
-                                      style: GoogleFonts.outfit(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14.5,
+                                    Flexible(
+                                      child: Text(
+                                        p.name,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: GoogleFonts.outfit(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14.5,
+                                        ),
                                       ),
                                     ),
                                     if (isApex) ...[
@@ -660,6 +667,10 @@ class _SearchPageState extends State<SearchPage> {
                     ),
                   );
                 }),
+              if ((pIdx + 1) % 4 == 0)
+                const PocketBannerAdWidget(
+                  margin: EdgeInsets.only(bottom: 10),
+                ),
             ],
           );
         }),
@@ -1123,18 +1134,26 @@ class _SearchPageState extends State<SearchPage> {
                     ],
                   ),
                 )
-              : GridView.builder(
+              : CustomScrollView(
                   controller: _plotsScrollController,
-                  padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
-                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: 105,
-                    childAspectRatio: 0.78,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
-                  ),
-                  itemCount: countToDisplay,
-                  itemBuilder: (context, idx) {
-                    final plot = filteredPlots[idx];
+                  slivers: [
+                    for (int chunkStart = 0;
+                        chunkStart < countToDisplay;
+                        chunkStart += 16) ...[
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(12, 4, 12, 6),
+                        sliver: SliverGrid(
+                          gridDelegate:
+                              const SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 105,
+                            childAspectRatio: 0.78,
+                            crossAxisSpacing: 8,
+                            mainAxisSpacing: 8,
+                          ),
+                          delegate: SliverChildBuilderDelegate(
+                            (context, localIdx) {
+                              final idx = chunkStart + localIdx;
+                              final plot = filteredPlots[idx];
                     final int gNum = plot['globalPlotNumber'] as int;
                     final int lNum = plot['localPlotNumber'] as int;
                     final int wave = plot['wave'] as int? ?? 1;
@@ -1340,7 +1359,21 @@ class _SearchPageState extends State<SearchPage> {
                         ),
                       ),
                     );
-                  },
+                            },
+                            childCount: math.min(16, countToDisplay - chunkStart),
+                          ),
+                        ),
+                      ),
+                      if (chunkStart + 16 <= countToDisplay)
+                        const SliverToBoxAdapter(
+                          child: PocketBannerAdWidget(
+                            margin: EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                          ),
+                        ),
+                    ],
+                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                  ],
                 ),
         ),
       ],
@@ -1390,9 +1423,12 @@ class _SearchPageState extends State<SearchPage> {
           code.contains(query);
     }).toList();
 
-    return ListView.builder(
+    return ListView.separated(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       itemCount: filteredIslands.length,
+      separatorBuilder: (context, idx) => (idx + 1) % 4 == 0
+          ? const PocketBannerAdWidget(margin: EdgeInsets.only(bottom: 12))
+          : const SizedBox.shrink(),
       itemBuilder: (context, idx) {
         final isl = filteredIslands[idx];
         final colony = isl['colony'] as CelestialColonyInfo;
@@ -2722,7 +2758,9 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
       controller: _scrollController,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       itemCount: _searchResults.length + (_hasMoreData ? 1 : 0),
-      separatorBuilder: (context, index) => const SizedBox(height: 6),
+      separatorBuilder: (context, index) => (index + 1) % 4 == 0
+          ? const PocketBannerAdWidget(margin: EdgeInsets.symmetric(vertical: 6))
+          : const SizedBox(height: 6),
       itemBuilder: (context, index) {
         if (index == _searchResults.length) {
           if (_currentPlan == 'free') {

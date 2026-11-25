@@ -369,8 +369,10 @@ class _PocketDay1Step3AvatarChatPageState
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scrollController.hasClients) return;
+      final max = _scrollController.position.maxScrollExtent;
+      final target = (_messages.length >= 2 ? max - 140.0 : max).clamp(0.0, max);
       _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
+        target,
         duration: const Duration(milliseconds: 320),
         curve: Curves.easeOutCubic,
       );
@@ -379,10 +381,11 @@ class _PocketDay1Step3AvatarChatPageState
     Future.delayed(const Duration(milliseconds: 120), () {
       if (!_scrollController.hasClients) return;
       final max = _scrollController.position.maxScrollExtent;
+      final target = (_messages.length >= 2 ? max - 140.0 : max).clamp(0.0, max);
       final current = _scrollController.position.pixels;
-      if ((max - current).abs() > 4) {
+      if ((target - current).abs() > 4) {
         _scrollController.animateTo(
-          max,
+          target,
           duration: const Duration(milliseconds: 220),
           curve: Curves.easeOutCubic,
         );
@@ -1555,57 +1558,39 @@ class _PocketDay1Step3AvatarChatPageState
       );
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: const BoxDecoration(
-        color: Color(0xFF0F172A),
-        border: Border(top: BorderSide(color: Colors.white12)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'Tap mic below to speak your answer',
-            style: GoogleFonts.inter(
-              color: Colors.white70,
-              fontSize: 11.5,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Center(
-            child: GestureDetector(
-              onTap: _startListeningToCentralMic,
-              child: AnimatedBuilder(
-                animation: _pulseController,
-                builder: (context, child) {
-                  return Container(
-                    width: 54,
-                    height: 54,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF0284C7), Color(0xFF0369A1)],
-                      ),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF0284C7).withValues(alpha: 0.5),
-                          blurRadius: 14,
-                          spreadRadius: 2,
-                        ),
-                      ],
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12, top: 6),
+      child: Center(
+        child: GestureDetector(
+          onTap: _startListeningToCentralMic,
+          child: AnimatedBuilder(
+            animation: _pulseController,
+            builder: (context, child) {
+              return Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF0284C7), Color(0xFF0369A1)],
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF0284C7).withValues(alpha: 0.5),
+                      blurRadius: 14,
+                      spreadRadius: 2,
                     ),
-                    child: const Icon(
-                      Icons.mic_rounded,
-                      color: Colors.white,
-                      size: 26,
-                    ),
-                  );
-                },
-              ),
-            ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.mic_rounded,
+                  color: Colors.white,
+                  size: 26,
+                ),
+              );
+            },
           ),
-        ],
+        ),
       ),
     );
   }

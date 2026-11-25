@@ -3971,6 +3971,28 @@ class _PocketTrueNativeAdWidgetState extends State<PocketTrueNativeAdWidget> {
       return const SizedBox.shrink();
     }
 
+    if (!kIsWeb && Platform.isWindows) {
+      return Container(
+        margin: widget.margin,
+        height: 110,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFF59E0B), width: 1.5),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          '🧪 WINDOWS TEST: NATIVE AD (${widget.placement.name})',
+          style: const TextStyle(
+            color: Color(0xFFF59E0B),
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      );
+    }
+
     // ✅ Native ad ready (from cache or fresh load on Android)
     if (_nativeAd != null && _isLoaded) {
       return Container(
@@ -4338,6 +4360,28 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
   Widget build(BuildContext context) {
     if (_isVip) {
       return const SizedBox.shrink();
+    }
+
+    if (!kIsWeb && Platform.isWindows) {
+      return Container(
+        margin: widget.margin,
+        height: 50,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F172A),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFF38BDF8), width: 1.2),
+        ),
+        alignment: Alignment.center,
+        child: const Text(
+          '🧪 WINDOWS TEST: BANNER AD',
+          style: TextStyle(
+            color: Color(0xFF38BDF8),
+            fontSize: 11.5,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      );
     }
 
     if (_bannerAd != null && _isLoaded) {

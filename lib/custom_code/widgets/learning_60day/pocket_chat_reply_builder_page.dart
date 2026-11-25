@@ -159,8 +159,10 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
+        final max = _scrollController.position.maxScrollExtent;
+        final target = (_chatHistory.length >= 3 ? max - 140.0 : max).clamp(0.0, max);
         _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent + 120,
+          target,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
@@ -454,18 +456,7 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
                     isUser: isUser,
                     tag: msg['tag'] as String?,
                   );
-                  // 📢 Minimal chat bubble native ad placed unobtrusively in conversation flow
-                  if (index == 1 && _chatHistory.length >= 2) {
-                    return Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        bubble,
-                        const PocketChatBubbleAdWidget(
-                          margin: EdgeInsets.only(top: 2, bottom: 12),
-                        ),
-                      ],
-                    );
-                  }
+                  // Native ad at bottom of chat
                   if (index == _chatHistory.length - 1 && _chatHistory.length >= 3) {
                     return Column(
                       mainAxisSize: MainAxisSize.min,

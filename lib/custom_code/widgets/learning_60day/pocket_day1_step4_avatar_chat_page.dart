@@ -714,8 +714,10 @@ class _PocketDay1Step4AvatarChatPageState
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scrollController.hasClients) return;
+      final max = _scrollController.position.maxScrollExtent;
+      final target = (_messages.length >= 2 ? max - 140.0 : max).clamp(0.0, max);
       _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
+        target,
         duration: const Duration(milliseconds: 320),
         curve: Curves.easeOutCubic,
       );
@@ -724,10 +726,11 @@ class _PocketDay1Step4AvatarChatPageState
     Future.delayed(const Duration(milliseconds: 120), () {
       if (!_scrollController.hasClients) return;
       final max = _scrollController.position.maxScrollExtent;
+      final target = (_messages.length >= 2 ? max - 140.0 : max).clamp(0.0, max);
       final current = _scrollController.position.pixels;
-      if ((max - current).abs() > 4) {
+      if ((target - current).abs() > 4) {
         _scrollController.animateTo(
-          max,
+          target,
           duration: const Duration(milliseconds: 220),
           curve: Curves.easeOutCubic,
         );
@@ -1759,61 +1762,38 @@ class _PocketDay1Step4AvatarChatPageState
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: const BoxDecoration(
-        color: Color(0xFF0F172A),
-        border: Border(top: BorderSide(color: Colors.white12)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            '🎙️ Spoken English Practice',
-            style: GoogleFonts.outfit(
-              color: const Color(0xFFFFD700),
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            'Tap the mic below to speak your answer',
-            style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
-          ),
-          const SizedBox(height: 8),
-          Center(
-            child: GestureDetector(
-              onTap: _startListeningToCentralMic,
-              child: AnimatedBuilder(
-                animation: _pulseController,
-                builder: (context, child) {
-                  return Container(
-                    width: 58,
-                    height: 58,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
-                      ),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF8B5CF6).withValues(alpha: 0.55),
-                          blurRadius: 10,
-                          spreadRadius: 1,
-                        ),
-                      ],
+      padding: const EdgeInsets.only(bottom: 12, top: 6),
+      child: Center(
+        child: GestureDetector(
+          onTap: _startListeningToCentralMic,
+          child: AnimatedBuilder(
+            animation: _pulseController,
+            builder: (context, child) {
+              return Container(
+                width: 58,
+                height: 58,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF8B5CF6).withValues(alpha: 0.55),
+                      blurRadius: 12,
+                      spreadRadius: 2,
                     ),
-                    child: const Icon(
-                      Icons.mic_rounded,
-                      color: Colors.white,
-                      size: 28,
-                    ),
-                  );
-                },
-              ),
-            ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.mic_rounded,
+                  color: Colors.white,
+                  size: 28,
+                ),
+              );
+            },
           ),
-        ],
+        ),
       ),
     );
   }

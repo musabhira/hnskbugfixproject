@@ -34,6 +34,7 @@ import 'pocket_practice_speaking_card.dart';
 import 'pocket_fluency_gym_detail_page.dart';
 import 'pocket_level_exam_dialog.dart';
 import 'pocket_alphabet_phonics_game_page.dart';
+import 'games/pocket_opposite_words_game_page.dart';
 import 'zero_foundation_curriculum_db.dart';
 import 'pocket_mission_curriculum_registry.dart';
 import 'pocket_daily_battery_reward_widget.dart';
@@ -41,6 +42,7 @@ import 'pocket_rewarded_score_alert_modal.dart';
 import 'pocket_citadel_store_sheet.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 import 'package:flame/components.dart' show Vector2;
+import 'package:flame/game.dart' show GameWidget;
 import 'flame_english_house_game.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_feedback_service.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -79,6 +81,8 @@ import 'pocket_day1_review_card_page.dart';
 import 'games/verb_timeline_flame_game.dart';
 import 'pocket_house_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_app_update_service.dart';
+import 'pocket_english_library_view.dart';
 
 /// 🗺️ Model for In-Path Syllabus Sub-Steps along the Climbing Trail (Audio Directive)
 class InPathSubStep {
@@ -326,9 +330,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   bool _hasConqueredCitadel = false;
   bool _isSubscribed = false;
 
-  // 🏆 Target Segmented Tabs (0 = Roadmap, 1 = World Rank)
+  // 🏆 Target Segmented Tabs (0 = Roadmap, 1 = Library, 2 = Global Rank)
   int _activeTargetTab = 0;
   late final PageController _targetTabPageController;
+  String? _pendingUpdateStoreUrl;
 
   // ⏱️ Midnight Daily Unlock Ticker
   Timer? _midnightTicker;
@@ -351,9 +356,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   static const double _expandedActiveGap = 0.0;
   static const double _topPadding =
       480.0; // Summit apex spacing with Citadel Palace
-  static const double _bottomPadding = 360.0;
+  static const double _bottomPadding = 590.0;
   double get _ruleNodeY =>
-      _getNodeY(1) + 200.0; // Positioned below Day 1 at the bottom
+      _getNodeY(1) + 150.0; // Positioned below Day 1 at the bottom
   final Map<String, bool> _subStepFlags = {};
   final Set<int> _daysWithStepsCompleted = {};
 
@@ -418,6 +423,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     });
 
     _loadData();
+    PocketAppUpdateService.getAvailableUpdateStoreUrl().then((url) {
+      if (mounted && url != null) {
+        setState(() => _pendingUpdateStoreUrl = url);
+      }
+    });
     // ⚡ Preload Native Ad for roadmap gaps between Gate and next House
     PocketAdPreloadManager.instance
         .preloadForPlacement(PocketAdPlacement.target);
@@ -1140,9 +1150,22 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     );
   }
 
-  // 3: Alphabet & 44 Phonics
+  // 3: Day 1 Alphabet & 44 Phonics; Days 2–90 Unique Opposite Words Quest
   Future<void> _launchStep3_Phonics(int day, LearnerLevel level) async {
     HapticFeedback.lightImpact();
+    if (day >= 2) {
+      final res = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PocketOppositeWordsGamePage(day: day),
+        ),
+      );
+      if (res == true) {
+        await _onSubStepFinished(day, 3);
+      }
+      return;
+    }
+
     List<AlphabetPhonicItem> phonicsList = [];
     try {
       if (level == LearnerLevel.zero) {
@@ -1696,9 +1719,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       ),
       InPathSubStep(
         stepIndex: 3,
-        title: 'Alphabet & 44 Phonics',
-        subtitle: 'Acoustic mouth placement frequencies',
-        icon: '🔤',
+        title: day >= 2 ? 'Opposite Words' : 'Alphabet & 44 Phonics',
+        subtitle: day >= 2
+            ? 'Match unique opposite pairs'
+            : 'Acoustic mouth placement frequencies',
+        icon: day >= 2 ? '🔄' : '🔤',
         color: const Color(0xFFFF9100),
         isCompleted: _subStepFlags['step_3'] ?? false,
         isUnlocked: admin || (_subStepFlags['step_2'] ?? false),
@@ -3277,15 +3302,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   ),
                 ),
 
-                // 2. 🌐 Open World Vocabulary Hill-Climb Adventure (User Audio Directive)
+                // 2. 📚 Minimal English Reading Library
                 Padding(
                   padding: EdgeInsets.only(
                     top: MediaQuery.of(context).padding.top + 76,
                   ),
-                  child: PocketOpenWorldGamePage(
-                    currentDay: prog.currentDay,
-                    streak: prog.streakDays,
-                  ),
+                  child: const PocketEnglishLibraryView(),
                 ),
 
                 // 3. 🏅 Global Leaderboard Tile List (Audio Directive)
@@ -3854,54 +3876,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 ),
                 const SizedBox(width: 8),
 
-                // 🏔️ Canyon Game Fullscreen Launcher (User Audio Directive: "Canon Game-ന്റെ ചെറിയൊരു ഐക്കൺ കൊടുക്കുക. അതിൽ ടാപ്പ് ചെയ്തു കഴിഞ്ഞാൽ Canon Game വന്നോട്ടെ, ഫുൾ സ്ക്രീൻ ആയിട്ട്")
-                GestureDetector(
-                  onTap: () {
-                    HapticFeedback.mediumImpact();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => Scaffold(
-                          backgroundColor: const Color(0xFF070B0E),
-                          appBar: AppBar(
-                            backgroundColor: const Color(0xFF0F1524),
-                            elevation: 0,
-                            leading: IconButton(
-                              icon: const Icon(Icons.arrow_back_ios_rounded,
-                                  color: Colors.white, size: 18),
-                              onPressed: () => Navigator.pop(context),
-                            ),
-                            title: Text(
-                              'CANYON DIRT BIKE 🏔️',
-                              style: GoogleFonts.outfit(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16),
-                            ),
-                          ),
-                          body: PocketWorldRankingTrailWidget(
-                            mode: RankingTrailMode.world,
-                            currentUserId: widget.userId,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFF9100).withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                          color: const Color(0xFFFF9100).withValues(alpha: 0.5),
-                          width: 0.8),
-                    ),
-                    child: const Text('🏔️', style: TextStyle(fontSize: 14)),
-                  ),
-                ),
-                const SizedBox(width: 8),
-
                 // 🔊 Minimal BGM Speaker Toggle (Audio Directive)
                 ValueListenableBuilder<bool>(
                   valueListenable:
@@ -3995,7 +3969,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     ),
                   ),
 
-                  // Tab 1: 🌐 Open World (User Audio Directive: "Open World Game അവിടെ പ്ലേസ് ചെയ്തോ")
+                  // Tab 1: 📚 Library (Minimal Book Reading)
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
@@ -4018,10 +3992,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text('🌐', style: TextStyle(fontSize: 10.5)),
+                            const Text('📚', style: TextStyle(fontSize: 10.5)),
                             const SizedBox(width: 3),
                             Text(
-                              'Open World',
+                              'Library',
                               style: GoogleFonts.outfit(
                                 fontSize: 11.0,
                                 fontWeight: FontWeight.w800,
@@ -4085,30 +4059,77 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               const SizedBox(height: 6),
               _buildMilestonesStrip(prog),
               const SizedBox(height: 5),
-              // ✨ Daily Updated English Content Informational Label
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 5,
-                    height: 5,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF10B981),
-                      shape: BoxShape.circle,
+              // ✨ Daily Updated English Content (or Red Update App Pill when new release is live)
+              if (_pendingUpdateStoreUrl != null)
+                GestureDetector(
+                  onTap: () async {
+                    HapticFeedback.mediumImpact();
+                    final uri = Uri.tryParse(_pendingUpdateStoreUrl!);
+                    if (uri != null) {
+                      try {
+                        await launchUrl(uri,
+                            mode: LaunchMode.externalApplication);
+                      } catch (e) {
+                        debugPrint('Error launching store update URL: $e');
+                      }
+                    }
+                  },
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFDC2626),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFFFCA5A5),
+                        width: 0.9,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('🚀', style: TextStyle(fontSize: 10)),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Please update the new app',
+                          style: GoogleFonts.inter(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.open_in_new_rounded,
+                            color: Colors.white, size: 10),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 5),
-                  Text(
-                    'Daily Updated English Content',
-                    style: GoogleFonts.inter(
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white60,
-                      letterSpacing: 0.2,
+                )
+              else
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 5,
+                      height: 5,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF10B981),
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                    const SizedBox(width: 5),
+                    Text(
+                      'Daily Updated English Content',
+                      style: GoogleFonts.inter(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white60,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ],
+                ),
             ],
           ],
         ),
@@ -4999,156 +5020,114 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     );
   }
 
-  /// 🌿 Grassy Ground Syllabus Notice (User Directive: Under Rules on the green ground)
+  /// 🌿 Grassy Ground Syllabus Notice (or Red New-Build Update Alert when available)
   Widget _buildGroundEnglishSyllabusNotice(double screenWidth) {
     final x = screenWidth / 2;
-    final y = _ruleNodeY + 68.0;
-    const pillWidth = 260.0;
+    final y = _ruleNodeY + 64.0;
+    const pillWidth = 280.0;
+    final bool hasUpdate = _pendingUpdateStoreUrl != null;
 
     return Positioned(
       left: x - (pillWidth / 2),
       top: y,
       width: pillWidth,
       child: Center(
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-          decoration: BoxDecoration(
-            color: const Color(0xFF064E3B).withValues(alpha: 0.70),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: const Color(0xFF34D399).withValues(alpha: 0.5),
-              width: 1.1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.25),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
+        child: GestureDetector(
+          onTap: hasUpdate
+              ? () async {
+                  HapticFeedback.mediumImpact();
+                  final uri = Uri.tryParse(_pendingUpdateStoreUrl!);
+                  if (uri != null) {
+                    try {
+                      await launchUrl(uri,
+                          mode: LaunchMode.externalApplication);
+                    } catch (e) {
+                      debugPrint('Error launching store update URL: $e');
+                    }
+                  }
+                }
+              : null,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            decoration: BoxDecoration(
+              color: hasUpdate
+                  ? const Color(0xFFDC2626)
+                  : const Color(0xFF064E3B).withValues(alpha: 0.70),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: hasUpdate
+                    ? const Color(0xFFFCA5A5)
+                    : const Color(0xFF34D399).withValues(alpha: 0.5),
+                width: 1.2,
               ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('🌱', style: TextStyle(fontSize: 12)),
-              const SizedBox(width: 6),
-              Text(
-                'Daily update the English syllabus',
-                style: GoogleFonts.outfit(
-                  color: const Color(0xFFA7F3D0),
-                  fontWeight: FontWeight.w700,
-                  fontSize: 11,
-                  letterSpacing: 0.2,
+              boxShadow: [
+                BoxShadow(
+                  color: hasUpdate
+                      ? const Color(0xFFDC2626).withValues(alpha: 0.45)
+                      : Colors.black.withValues(alpha: 0.25),
+                  blurRadius: hasUpdate ? 10 : 6,
+                  offset: const Offset(0, 2),
                 ),
-              ),
-            ],
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(hasUpdate ? '🚀' : '🌱',
+                    style: const TextStyle(fontSize: 12)),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    hasUpdate
+                        ? 'Please update the new app'
+                        : 'Daily update the English syllabus',
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.outfit(
+                      color: hasUpdate
+                          ? Colors.white
+                          : const Color(0xFFA7F3D0),
+                      fontWeight: FontWeight.w800,
+                      fontSize: 11.5,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ),
+                if (hasUpdate) ...[
+                  const SizedBox(width: 5),
+                  const Icon(Icons.open_in_new_rounded,
+                      color: Colors.white, size: 12),
+                ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  /// 💡 Grassy Ground Feedback Box (Audio Directive: Startup Feedback Engine)
+  /// 📮 Flame-powered Red Feedback Letter Box at the bottom of the green ground
   Widget _buildGroundFeedbackBox(double screenWidth) {
     final x = screenWidth / 2;
-    final y = _ruleNodeY + 115.0;
-    const pillWidth = 280.0;
+    final y = _ruleNodeY + 236.0;
+    const boxW = 220.0;
+    const boxH = 195.0;
 
     return Positioned(
-      left: x - (pillWidth / 2),
+      left: x - (boxW / 2),
       top: y,
-      width: pillWidth,
-      child: Center(
-        child: InkWell(
-          onTap: () {
-            HapticFeedback.mediumImpact();
-            PocketFeedbackService.showFeedbackBottomSheet(
-              context,
-              dayNumber: _progress?.currentDay ?? 1,
-              defaultType: 'roadmap_idea',
-            );
-          },
-          borderRadius: BorderRadius.circular(20),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF064E3B), Color(0xFF0F172A)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: const Color(0xFFFFD700).withValues(alpha: 0.7),
-                width: 1.2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.4),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
-                ),
-                BoxShadow(
-                  color: const Color(0xFFFFD700).withValues(alpha: 0.15),
-                  blurRadius: 12,
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(7),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFD700).withValues(alpha: 0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Text('💡', style: TextStyle(fontSize: 15)),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        PocketLanguageService.localize(
-                          en: 'Feedback & Suggestions',
-                          ml: 'ഫീഡ്ബാക്ക് & ആശയങ്ങൾ',
-                          hi: 'फ़ीडबैक और सुझाव',
-                          ta: 'கருத்துகள் & யோசனைகள்',
-                          te: 'అభిప్రాయాలు & ఆలోచనలు',
-                        ),
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFFFFD700),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                      Text(
-                        PocketLanguageService.localize(
-                          en: 'Help us make Pocket Mates better',
-                          ml: 'ആപ്പ് മികച്ചതാക്കാൻ സഹായിക്കൂ',
-                          hi: 'ऐप को और बेहतर बनाने में मदद करें',
-                          ta: 'ஆப் மேம்படுத்த உதவுங்கள்',
-                          te: 'యాప్ మెరుగుపరచడంలో సహాయపడండి',
-                        ),
-                        style: GoogleFonts.outfit(
-                          color: Colors.white70,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 13,
-                  color: Color(0xFFFFD700),
-                ),
-              ],
-            ),
-          ),
+      width: boxW,
+      height: boxH,
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.mediumImpact();
+          PocketFeedbackService.showFeedbackBottomSheet(
+            context,
+            dayNumber: _progress?.currentDay ?? 1,
+            defaultType: 'roadmap_idea',
+          );
+        },
+        child: GameWidget(
+          game: PocketFlameFeedbackLetterBoxGame(),
         ),
       ),
     );
@@ -5157,7 +5136,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   /// 🏛️ Official Community & Club Membership Box (WhatsApp & Instagram Community)
   Widget _buildGroundCommunityClubBox(double screenWidth) {
     final x = screenWidth / 2;
-    final y = _ruleNodeY + 175.0;
+    final y = _ruleNodeY + 112.0;
     final cardWidth = (screenWidth * 0.90).clamp(280.0, 360.0);
 
     return Positioned(

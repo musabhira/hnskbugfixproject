@@ -290,33 +290,6 @@ class _StudentBioCreatorGameState extends State<StudentBioCreatorGamePage>
           style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 14),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const FlameIcon(size: 24),
-                const SizedBox(width: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: kPCard,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: kPGold.withValues(alpha: 0.6)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.bolt_rounded, color: kPGold, size: 15),
-                      Text(' $_xp XP', style: GoogleFonts.outfit(color: kPGold, fontWeight: FontWeight.bold, fontSize: 12.5)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
       body: SafeArea(
         child: AnimatedBuilder(
@@ -477,6 +450,10 @@ class _StudentBioCreatorGameState extends State<StudentBioCreatorGamePage>
                             ],
                           ],
                         ),
+                      ),
+                      const SizedBox(height: 14),
+                      const PocketTrueNativeAdWidget(
+                        placement: PocketAdPlacement.learningStep,
                       ),
                     ],
                   ),

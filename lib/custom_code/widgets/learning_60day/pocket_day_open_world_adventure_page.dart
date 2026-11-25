@@ -718,6 +718,10 @@ class _PocketDayOpenWorldAdventurePageState
                   // 🎯 TODAY'S TOPIC / LESSON BILLBOARD (User Audio Directive: Right after house, big title board before Step 1!)
                   _buildDayTopicBillboard(widget.day),
 
+                  // 🪧 Roadside Highway Advertising Billboards (3 Native Ads on 2 steel poles grounded to roadside)
+                  for (final afterStep in const [3, 9, 15])
+                    _buildRoadsideBillboardAd(afterStep),
+
                   // 📮 Large Flame Red Feedback Letter Box before Summit House
                   _buildFlameFeedbackLetterBox(widget.day),
 
@@ -1258,6 +1262,76 @@ class _PocketDayOpenWorldAdventurePageState
     );
   }
 
+  /// 🪧 Roadside Highway Advertising Billboard (Native Ad mounted on 2 steel poles grounded to roadside)
+  Widget _buildRoadsideBillboardAd(int afterStep) {
+    if (PocketAdMobService.instance.isUserVipSync()) {
+      return const SizedBox.shrink();
+    }
+    final posA = getStepPosition(afterStep, totalSteps: _totalSteps);
+    final posB = getStepPosition(afterStep + 1, totalSteps: _totalSteps);
+    final midX = (posA.dx + posB.dx) / 2;
+    final groundY = getGroundY(midX);
+    const boardW = 220.0;
+
+    return Positioned(
+      left: midX - (boardW / 2),
+      bottom: _worldHeight - groundY - 6.0,
+      width: boardW,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F172A),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: const Color(0xFFD4A373).withValues(alpha: 0.7),
+                width: 2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.45),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: const PocketTrueNativeAdWidget(
+              placement: PocketAdPlacement.learningStep,
+            ),
+          ),
+          // Two vertical steel billboard poles anchored right into the roadside grass
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Container(
+                width: 7,
+                height: 62,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF94A3B8), Color(0xFF475569)],
+                  ),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Container(
+                width: 7,
+                height: 62,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF94A3B8), Color(0xFF475569)],
+                  ),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildFlameFeedbackLetterBox(int day) {
     const boxX = 4220.0;
     const boxW = 220.0;
@@ -1278,7 +1352,7 @@ class _PocketDayOpenWorldAdventurePageState
           width: boxW,
           height: boxH,
           child: GameWidget(
-            game: _FlameFeedbackLetterBoxGame(),
+            game: PocketFlameFeedbackLetterBoxGame(),
           ),
         ),
       ),
@@ -4214,7 +4288,7 @@ class _SportsBuggyPainter extends CustomPainter {
 }
 
 /// 📮 Flame-powered Red Feedback Letter Box floating in the Open World
-class _FlameFeedbackLetterBoxGame extends FlameGame {
+class PocketFlameFeedbackLetterBoxGame extends FlameGame {
   @override
   Color backgroundColor() => Colors.transparent;
 

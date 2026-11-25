@@ -7680,7 +7680,8 @@ Draft: "$draft"''';
         orElse: () => {},
       );
       if (member.isNotEmpty) {
-        final prof = (member['profile'] as Map<String, dynamic>?) ?? member;
+        final rawProf = member['profile'];
+        final prof = rawProf is Map ? rawProf : member;
         final rawDay = (prof['learning_day'] as num?)?.toInt() ??
             (prof['learning_stage'] as num?)?.toInt() ??
             (prof['stage'] as num?)?.toInt() ??
@@ -7779,7 +7780,10 @@ Draft: "$draft"''';
       (m) => m['user_id'] == senderId || m['id'] == senderId,
       orElse: () => {},
     );
-    final memberProf = (member['profile'] as Map<String, dynamic>?) ?? member;
+    final rawMemberProf = member['profile'];
+    final Map<String, dynamic> memberProf = rawMemberProf is Map
+        ? Map<String, dynamic>.from(rawMemberProf)
+        : member;
 
     final targetName = message.senderName ??
         memberProf['name'] ??
@@ -11887,7 +11891,8 @@ Draft: "$draft"''';
     if (reply == null) return const SizedBox.shrink();
 
     final replyText = reply['message_text']?.toString() ?? 'Media';
-    final replyMetadata = reply['metadata'] as Map<String, dynamic>?;
+    final rawReplyMeta = reply['metadata'];
+    final replyMetadata = rawReplyMeta is Map ? rawReplyMeta : null;
     final isReplyToStatus = replyMetadata?['reply_type'] == 'status_reply';
     final replyStatusMediaUrl = replyMetadata?['status_media_url'];
     final replyStatusMediaType = replyMetadata?['status_media_type'];
@@ -12017,7 +12022,8 @@ Draft: "$draft"''';
   }
 
   Widget _buildReplyPreview(Map<String, dynamic> message) {
-    final metadata = message['metadata'] as Map<String, dynamic>?;
+    final rawMeta = message['metadata'];
+    final metadata = rawMeta is Map ? rawMeta : null;
     final isStatusReply = metadata?['reply_type'] == 'status_reply';
     final statusMediaUrl = metadata?['status_media_url'];
     final statusMediaType = metadata?['status_media_type'];

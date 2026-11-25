@@ -47,27 +47,32 @@ class EssentialWordModel {
     }
     if (PocketLanguageService.isMalayalam) {
       if (meaningMl.isNotEmpty) return meaningMl;
-      if (nativeMeaning != null && nativeMeaning!.isNotEmpty) return nativeMeaning!;
+      if (nativeMeaning != null && nativeMeaning!.isNotEmpty)
+        return nativeMeaning!;
       return '';
     }
     if (PocketLanguageService.isHindi) {
       if (hindiMeaning.isNotEmpty) return hindiMeaning;
-      if (nativeMeaning != null && nativeMeaning!.isNotEmpty) return nativeMeaning!;
+      if (nativeMeaning != null && nativeMeaning!.isNotEmpty)
+        return nativeMeaning!;
       return '';
     }
     if (PocketLanguageService.isTamil) {
       if (tamilMeaning.isNotEmpty) return tamilMeaning;
-      if (nativeMeaning != null && nativeMeaning!.isNotEmpty) return nativeMeaning!;
+      if (nativeMeaning != null && nativeMeaning!.isNotEmpty)
+        return nativeMeaning!;
       return '';
     }
     if (PocketLanguageService.isTelugu) {
       if (teluguMeaning.isNotEmpty) return teluguMeaning;
-      if (nativeMeaning != null && nativeMeaning!.isNotEmpty) return nativeMeaning!;
+      if (nativeMeaning != null && nativeMeaning!.isNotEmpty)
+        return nativeMeaning!;
       return '';
     }
     if (PocketLanguageService.isKannada) {
       if (kannadaMeaning.isNotEmpty) return kannadaMeaning;
-      if (nativeMeaning != null && nativeMeaning!.isNotEmpty) return nativeMeaning!;
+      if (nativeMeaning != null && nativeMeaning!.isNotEmpty)
+        return nativeMeaning!;
       return '';
     }
     if (nativeMeaning != null && nativeMeaning!.isNotEmpty) {
@@ -296,7 +301,8 @@ class _PocketEssentialSpellingPageState
 
     // Dynamically populate words for widget.day with 0 duplicates!
     if (widget.isKidsMode) {
-      _words = PocketKidsCurriculumAdapter.getKidsSpellingWordsForDay(widget.day);
+      _words =
+          PocketKidsCurriculumAdapter.getKidsSpellingWordsForDay(widget.day);
     } else if (widget.day == 1) {
       _words = _day1DefaultWords;
     } else {
@@ -316,7 +322,8 @@ class _PocketEssentialSpellingPageState
         final item = vocabItems[i];
         final cleanWord = item.word.trim().toLowerCase();
         if (cleanWord.length < 3) continue; // Filter short words
-        final nativeMeaning = item.getMeaning(PocketLanguageService.currentLanguage);
+        final nativeMeaning =
+            item.getMeaning(PocketLanguageService.currentLanguage);
         loadedWords.add(EssentialWordModel(
           word: cleanWord,
           phonetic: item.phonetic,
@@ -344,7 +351,8 @@ class _PocketEssentialSpellingPageState
       await _flutterTts.setLanguage("en-IN");
       await _flutterTts.setSpeechRate(_speechRate);
       await _flutterTts.setPitch(1.05);
-      await PocketVoiceService.instance.configureOptimalFemaleVoice(_flutterTts);
+      await PocketVoiceService.instance
+          .configureOptimalFemaleVoice(_flutterTts);
     } catch (_) {}
   }
 
@@ -467,9 +475,28 @@ class _PocketEssentialSpellingPageState
     final letterChars = targetWord.split('');
 
     // Add 2 distractor letters (chosen randomly from a pool, not in the target word)
-    const distractorPool = ['a', 'b', 'c', 'd', 'e', 'g', 'h', 'k', 'l', 'm', 'n', 'p', 'r', 's', 't', 'w', 'y'];
+    const distractorPool = [
+      'a',
+      'b',
+      'c',
+      'd',
+      'e',
+      'g',
+      'h',
+      'k',
+      'l',
+      'm',
+      'n',
+      'p',
+      'r',
+      's',
+      't',
+      'w',
+      'y'
+    ];
     final rng = math.Random();
-    final distractorPoolFiltered = distractorPool.where((c) => !letterChars.contains(c)).toList();
+    final distractorPoolFiltered =
+        distractorPool.where((c) => !letterChars.contains(c)).toList();
     distractorPoolFiltered.shuffle(rng);
 
     final allLetters = <String>[...letterChars];
@@ -624,7 +651,8 @@ class _PocketEssentialSpellingPageState
         SnackBar(
           content: Text(
             '⚠️ Fill all letter boxes to complete the spelling!',
-            style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+            style: GoogleFonts.outfit(
+                color: Colors.white, fontWeight: FontWeight.bold),
           ),
           backgroundColor: const Color(0xFFF59E0B),
           behavior: SnackBarBehavior.floating,
@@ -643,7 +671,8 @@ class _PocketEssentialSpellingPageState
         _isAnswerValidated = true;
         _isAnswerCorrect = true;
         _scoreCount += 20;
-        _validationFeedback = '🌟 Brilliant! "${_words[_examQuestionIndex].word.toUpperCase()}" is correct (+20 XP)';
+        _validationFeedback =
+            '🌟 Brilliant! "${_words[_examQuestionIndex].word.toUpperCase()}" is correct (+20 XP)';
       });
 
       _speakWord("${_words[_examQuestionIndex].word}! Excellent!");
@@ -654,7 +683,8 @@ class _PocketEssentialSpellingPageState
       setState(() {
         _isAnswerValidated = true;
         _isAnswerCorrect = false;
-        _validationFeedback = '❌ Not quite. Tap slots to change or tap 👂 to listen again.';
+        _validationFeedback =
+            '❌ Not quite. Tap slots to change or tap 👂 to listen again.';
       });
 
       _shakeAnimController.forward(from: 0.0);
@@ -679,12 +709,15 @@ class _PocketEssentialSpellingPageState
     if (widget.isKidsMode) {
       await PocketKidsService.markDayStepCompleted(widget.day, 3);
     } else {
-      final uid = widget.userId ?? Supabase.instance.client.auth.currentUser?.id;
+      final uid =
+          widget.userId ?? Supabase.instance.client.auth.currentUser?.id;
       try {
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('pocket_day_${uid ?? "guest"}_${widget.day}_step_3_done', true);
+        await prefs.setBool(
+            'pocket_day_${uid ?? "guest"}_${widget.day}_step_3_done', true);
         if (uid != null && uid.isNotEmpty) {
-          await prefs.setBool('pocket_day_${uid}_${widget.day}_step_3_done', true);
+          await prefs.setBool(
+              'pocket_day_${uid}_${widget.day}_step_3_done', true);
         }
         await prefs.setBool('pocket_day_guest_${widget.day}_step_3_done', true);
       } catch (_) {}
@@ -744,13 +777,16 @@ class _PocketEssentialSpellingPageState
               ),
               child: Row(
                 children: [
-                  Text(widget.isKidsMode ? '⭐' : '🪙', style: const TextStyle(fontSize: 24)),
+                  Text(widget.isKidsMode ? '⭐' : '🪙',
+                      style: const TextStyle(fontSize: 24)),
                   const SizedBox(width: 12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.isKidsMode ? 'Total Score: $_scoreCount KS' : 'Total Score: $_scoreCount XP',
+                        widget.isKidsMode
+                            ? 'Total Score: $_scoreCount KS'
+                            : 'Total Score: $_scoreCount XP',
                         style: GoogleFonts.outfit(
                           color: const Color(0xFFFFD700),
                           fontWeight: FontWeight.bold,
@@ -790,7 +826,8 @@ class _PocketEssentialSpellingPageState
             },
             child: Text(
               widget.isKidsMode ? 'AWESOME! CONTINUE ➔' : 'CONTINUE ➔',
-              style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15),
+              style:
+                  GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15),
             ),
           ),
         ],
@@ -813,49 +850,49 @@ class _PocketEssentialSpellingPageState
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF0F172A),
-      body: Stack(
-        children: [
-          // 🌲 1. Living Nature Cartoon Open-World Scenery Background (Pocket Kids Universe)
-          // User Audio Directive: "ബാക്ക്ഗ്രൗണ്ടിൽ നമ്മുടെ കിഡ്സിന്റെ ചാറ്റിന്റെ ബാക്ക്ഗ്രൗണ്ടിൽ ഉള്ള ബാക്ക്ഗ്രൗണ്ട്..."
-          const Positioned.fill(
-            child: PocketKidsNatureSceneryBackground(
-              showSun: true,
-              showTrees: true,
-              hillHeightFraction: 0.32,
-              glassOverlayOpacity: 0.22,
+        body: Stack(
+          children: [
+            // 🌲 1. Living Nature Cartoon Open-World Scenery Background (Pocket Kids Universe)
+            // User Audio Directive: "ബാക്ക്ഗ്രൗണ്ടിൽ നമ്മുടെ കിഡ്സിന്റെ ചാറ്റിന്റെ ബാക്ക്ഗ്രൗണ്ടിൽ ഉള്ള ബാക്ക്ഗ്രൗണ്ട്..."
+            const Positioned.fill(
+              child: PocketKidsNatureSceneryBackground(
+                showSun: true,
+                showTrees: true,
+                hillHeightFraction: 0.32,
+                glassOverlayOpacity: 0.22,
+              ),
             ),
-          ),
 
-          // 2. Main Gameplay Surface
-          SafeArea(
-            child: Column(
-              children: [
-                // Top App Bar
-                _buildTopAppBar(),
+            // 2. Main Gameplay Surface
+            SafeArea(
+              child: Column(
+                children: [
+                  // Top App Bar
+                  _buildTopAppBar(),
 
-                // Body: Mode 1 (Study List) OR Mode 2 (Gamified Spelling Exam)
-                Expanded(
-                  child: _isPracticeExamMode
-                      ? _buildGamifiedSpellingExamBody()
-                      : _buildGamifiedStudyListBody(),
-                ),
-
-                // Bottom Action Bar in Study Mode
-                if (!_isPracticeExamMode) _buildBottomStudyBar(),
-
-                // 📢 Sticky Bottom AdMob Banner for Non-VIP players per Master Monetization Plan
-                if (!PocketKidsService.isKidAccount)
-                  const PocketBannerAdWidget(
-                    margin: EdgeInsets.only(top: 4, bottom: 2),
+                  // Body: Mode 1 (Study List) OR Mode 2 (Gamified Spelling Exam)
+                  Expanded(
+                    child: _isPracticeExamMode
+                        ? _buildGamifiedSpellingExamBody()
+                        : _buildGamifiedStudyListBody(),
                   ),
-              ],
+
+                  // Bottom Action Bar in Study Mode
+                  if (!_isPracticeExamMode) _buildBottomStudyBar(),
+
+                  // 📢 Sticky Bottom AdMob Banner for Non-VIP players per Master Monetization Plan
+                  if (!PocketKidsService.isKidAccount)
+                    const PocketBannerAdWidget(
+                      margin: EdgeInsets.only(top: 4, bottom: 2),
+                    ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   /// Top App Bar with Navigation, Title, and Timer/Stats
   Widget _buildTopAppBar() {
@@ -891,7 +928,8 @@ class _PocketEssentialSpellingPageState
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
@@ -999,7 +1037,9 @@ class _PocketEssentialSpellingPageState
                 ],
               ),
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4), width: 1.5),
+              border: Border.all(
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.4),
+                  width: 1.5),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.35),
@@ -1053,117 +1093,133 @@ class _PocketEssentialSpellingPageState
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: GestureDetector(
-                onTap: () => _onStudyWordTapped(idx),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 220),
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: isHighlighted
-                          ? [
-                              item.color.withValues(alpha: 0.35),
-                              const Color(0xFF1E293B).withValues(alpha: 0.92),
-                            ]
-                          : [
-                              const Color(0xFF1E293B).withValues(alpha: 0.85),
-                              const Color(0xFF0F172A).withValues(alpha: 0.85),
-                            ],
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: isHighlighted ? item.color : Colors.white12,
-                      width: isHighlighted ? 2.0 : 1.0,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: isHighlighted
-                            ? item.color.withValues(alpha: 0.35)
-                            : Colors.black.withValues(alpha: 0.25),
-                        blurRadius: isHighlighted ? 14 : 8,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      // Audio Speaker Button
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: item.color.withValues(alpha: 0.2),
-                          border: Border.all(color: item.color.withValues(alpha: 0.5)),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GestureDetector(
+                    onTap: () => _onStudyWordTapped(idx),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 220),
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 18, vertical: 14),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: isHighlighted
+                              ? [
+                                  item.color.withValues(alpha: 0.35),
+                                  const Color(0xFF1E293B)
+                                      .withValues(alpha: 0.92),
+                                ]
+                              : [
+                                  const Color(0xFF1E293B)
+                                      .withValues(alpha: 0.85),
+                                  const Color(0xFF0F172A)
+                                      .withValues(alpha: 0.85),
+                                ],
                         ),
-                        child: Icon(
-                          Icons.volume_up_rounded,
-                          color: isHighlighted ? Colors.white : item.color,
-                          size: 24,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isHighlighted ? item.color : Colors.white12,
+                          width: isHighlighted ? 2.0 : 1.0,
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: isHighlighted
+                                ? item.color.withValues(alpha: 0.35)
+                                : Colors.black.withValues(alpha: 0.25),
+                            blurRadius: isHighlighted ? 14 : 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 16),
+                      child: Row(
+                        children: [
+                          // Audio Speaker Button
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: item.color.withValues(alpha: 0.2),
+                              border: Border.all(
+                                  color: item.color.withValues(alpha: 0.5)),
+                            ),
+                            child: Icon(
+                              Icons.volume_up_rounded,
+                              color: isHighlighted ? Colors.white : item.color,
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
 
-                      // Word + Phonetic + Malayalam Meaning
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
+                          // Word + Phonetic + Malayalam Meaning
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  item.word,
-                                  style: GoogleFonts.outfit(
-                                    color: item.color,
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 22,
-                                    letterSpacing: 0.5,
-                                  ),
+                                Row(
+                                  children: [
+                                    Text(
+                                      item.word,
+                                      style: GoogleFonts.outfit(
+                                        color: item.color,
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 22,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      item.phonetic,
+                                      style: GoogleFonts.inter(
+                                        color: Colors.white54,
+                                        fontSize: 12.5,
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  item.phonetic,
-                                  style: GoogleFonts.inter(
-                                    color: Colors.white54,
-                                    fontSize: 12.5,
-                                    fontStyle: FontStyle.italic,
+                                const SizedBox(height: 4),
+                                // Meaning badge (dynamically resolved)
+                                if (item.meaningText.isNotEmpty) ...[
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.08),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      item.meaningText,
+                                      style: GoogleFonts.outfit(
+                                        color: Colors.white,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                ],
                               ],
                             ),
-                            const SizedBox(height: 4),
-                            // Meaning badge (dynamically resolved)
-                            if (item.meaningText.isNotEmpty) ...[
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.08),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  item.meaningText,
-                                  style: GoogleFonts.outfit(
-                                    color: Colors.white,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
+                          ),
 
-                      // Right Arrow Indicator
-                      Icon(
-                        Icons.chevron_right_rounded,
-                        color: isHighlighted ? item.color : Colors.white24,
-                        size: 26,
+                          // Right Arrow Indicator
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            color: isHighlighted ? item.color : Colors.white24,
+                            size: 26,
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                  if (idx == 2 && !PocketKidsService.isKidAccount)
+                    const PocketBannerAdWidget(
+                      margin: EdgeInsets.only(top: 10, bottom: 2),
+                    ),
+                ],
               ),
             );
           }),
@@ -1212,7 +1268,8 @@ class _PocketEssentialSpellingPageState
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.hearing_rounded, color: Colors.black, size: 22),
+                  const Icon(Icons.hearing_rounded,
+                      color: Colors.black, size: 22),
                   const SizedBox(width: 6),
                   Text(
                     _isAutoPlayingAll ? 'PAUSE' : 'LISTEN ALL',
@@ -1348,7 +1405,8 @@ class _PocketEssentialSpellingPageState
                     GestureDetector(
                       onTap: _speakCurrentExamWord,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 18, vertical: 10),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [Color(0xFF38BDF8), Color(0xFF0284C7)],
@@ -1356,7 +1414,8 @@ class _PocketEssentialSpellingPageState
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF38BDF8).withValues(alpha: 0.45),
+                              color: const Color(0xFF38BDF8)
+                                  .withValues(alpha: 0.45),
                               blurRadius: 12,
                               offset: const Offset(0, 3),
                             ),
@@ -1365,7 +1424,8 @@ class _PocketEssentialSpellingPageState
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.hearing_rounded, color: Colors.black, size: 24),
+                            const Icon(Icons.hearing_rounded,
+                                color: Colors.black, size: 24),
                             const SizedBox(width: 8),
                             Text(
                               PocketLanguageService.localize(
@@ -1392,11 +1452,13 @@ class _PocketEssentialSpellingPageState
 
                 // Clue (Dynamically localized, clean phonetic for English)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                    border: Border.all(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -1423,7 +1485,8 @@ class _PocketEssentialSpellingPageState
                   animation: _shakeAnimController,
                   builder: (context, child) {
                     final offset =
-                        math.sin(_shakeAnimController.value * math.pi * 5) * 8.0;
+                        math.sin(_shakeAnimController.value * math.pi * 5) *
+                            8.0;
                     return Transform.translate(
                       offset: Offset(offset, 0),
                       child: child,
@@ -1446,7 +1509,8 @@ class _PocketEssentialSpellingPageState
                           decoration: BoxDecoration(
                             color: isSlotFilled
                                 ? placedTile.color.withValues(alpha: 0.25)
-                                : const Color(0xFF0F172A).withValues(alpha: 0.6),
+                                : const Color(0xFF0F172A)
+                                    .withValues(alpha: 0.6),
                             borderRadius: BorderRadius.circular(14),
                             border: Border.all(
                               color: _isAnswerCorrect == true
@@ -1461,7 +1525,8 @@ class _PocketEssentialSpellingPageState
                             boxShadow: isSlotFilled
                                 ? [
                                     BoxShadow(
-                                      color: placedTile.color.withValues(alpha: 0.35),
+                                      color: placedTile.color
+                                          .withValues(alpha: 0.35),
                                       blurRadius: 10,
                                       offset: const Offset(0, 2),
                                     ),
@@ -1542,7 +1607,8 @@ class _PocketEssentialSpellingPageState
                           color: const Color(0xFF1E293B),
                           border: Border.all(color: Colors.white24),
                         ),
-                        child: const Icon(Icons.shuffle_rounded, color: Colors.white70, size: 18),
+                        child: const Icon(Icons.shuffle_rounded,
+                            color: Colors.white70, size: 18),
                       ),
                     ),
                     // Clear all button
@@ -1556,7 +1622,8 @@ class _PocketEssentialSpellingPageState
                           color: const Color(0xFF1E293B),
                           border: Border.all(color: Colors.white24),
                         ),
-                        child: const Icon(Icons.refresh_rounded, color: Colors.white70, size: 18),
+                        child: const Icon(Icons.refresh_rounded,
+                            color: Colors.white70, size: 18),
                       ),
                     ),
                     // Backspace button
@@ -1570,7 +1637,8 @@ class _PocketEssentialSpellingPageState
                           color: const Color(0xFF1E293B),
                           border: Border.all(color: Colors.white24),
                         ),
-                        child: const Icon(Icons.backspace_rounded, color: Colors.white70, size: 18),
+                        child: const Icon(Icons.backspace_rounded,
+                            color: Colors.white70, size: 18),
                       ),
                     ),
                   ],
@@ -1686,6 +1754,13 @@ class _PocketEssentialSpellingPageState
               ),
             ),
           ),
+          if (!PocketKidsService.isKidAccount) ...[
+            const SizedBox(height: 16),
+            const PocketTrueNativeAdWidget(
+              placement: PocketAdPlacement.learningStep,
+              margin: EdgeInsets.only(bottom: 10),
+            ),
+          ],
         ],
       ),
     );

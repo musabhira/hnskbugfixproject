@@ -2621,49 +2621,6 @@ class _PocketDay1Step1AvatarChatPageState
           ),
         ],
 
-        // Prompt banner above mic: "Say: ..."
-        Container(
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          decoration: BoxDecoration(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.95),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: const Color(0xFFFFD700).withValues(alpha: 0.8),
-              width: 1.2,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFFFD700).withValues(alpha: 0.3),
-                blurRadius: 10,
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Color(0xFF10B981),
-                ),
-              ),
-              const SizedBox(width: 7),
-              Text(
-                'Tap mic to speak your answer',
-                style: GoogleFonts.outfit(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.3,
-                ),
-              ),
-            ],
-          ),
-        ),
-
         // Floating Action Mic Button
         GestureDetector(
           onTap: _onMicButtonPressed,

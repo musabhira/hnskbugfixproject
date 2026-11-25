@@ -120,6 +120,42 @@ class PocketAppUpdateService {
     }
   }
 
+  /// Returns the store URL if an admin-configured newer build is available for
+  /// Android/iOS, or `null` if up-to-date / non-mobile platform.
+  static Future<String?> getAvailableUpdateStoreUrl() async {
+    try {
+      if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return null;
+
+      final packageInfo = await PackageInfo.fromPlatform();
+      final currentVersion = packageInfo.version;
+      final currentBuild = int.tryParse(packageInfo.buildNumber) ?? 0;
+      final platform = Platform.isIOS ? 'ios' : 'android';
+
+      final activeRelease =
+          await PocketReleaseService.fetchActiveProductionRelease(platform);
+      if (activeRelease == null) return null;
+
+      final bool hasNewerVersion =
+          PocketReleaseService.isInstalledBuildOutdated(
+        currentVersion: currentVersion,
+        currentBuild: currentBuild,
+        targetVersion: activeRelease.version,
+        targetBuild: activeRelease.buildNumber,
+      );
+      if (!hasNewerVersion) return null;
+
+      return (activeRelease.storeUrl != null &&
+              activeRelease.storeUrl!.trim().isNotEmpty)
+          ? activeRelease.storeUrl!.trim()
+          : (Platform.isIOS ? defaultIosStoreUrl : defaultAndroidPlayStoreUrl);
+    } catch (e) {
+      if (kDebugMode) {
+        print('PocketAppUpdateService getAvailableUpdateStoreUrl error: $e');
+      }
+      return null;
+    }
+  }
+
   /// Version comparison helper (Legacy proxy)
   static bool isVersionOutdated({
     required String currentVersion,

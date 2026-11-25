@@ -259,13 +259,11 @@ class _PocketMiniSpeechPracticePageState
 
     setState(() {
       _evalResult = eval;
-      // Pass if 50%+ accuracy achieved (encouraging threshold for speech beginners)
-      _isPassed = eval.accuracyPercentage >= 50;
+      // Always allow advancing smoothly after speaking so learners never get stuck
+      _isPassed = true;
     });
 
-    if (_isPassed) {
-      PocketGameSfx.instance.playSnapCorrect();
-    }
+    PocketGameSfx.instance.playSnapCorrect();
   }
 
   Future<void> _onNextTopic() async {
@@ -653,15 +651,6 @@ class _PocketMiniSpeechPracticePageState
 
                         const SizedBox(height: 14),
 
-                        // 📢 Minimal Native Ad Spot (Compact & Non-Intrusive)
-                        const PocketNativeAdCard(
-                          placement: PocketAdPlacement.learningStep,
-                          isCompact: true,
-                          margin: EdgeInsets.symmetric(vertical: 4),
-                        ),
-
-                        const SizedBox(height: 14),
-
                         // Big Glowing Microphone Button
                         Center(
                           child: Column(
@@ -722,20 +711,12 @@ class _PocketMiniSpeechPracticePageState
                           ),
                         ),
 
-                        const SizedBox(height: 18),
-
-                        // Live Speech Transcript & Evaluation Breakdown Card
-                        if (_liveTranscript.isNotEmpty) ...[
-                          _buildEvaluationCard(),
-                        ],
-
-                        const SizedBox(height: 24),
-
-                        // Continue / Next Button
-                        if (_isPassed)
+                        // Continue / Next Button right below Mic (easy to see & tap!)
+                        if (_isPassed) ...[
+                          const SizedBox(height: 14),
                           SizedBox(
                             width: double.infinity,
-                            height: 50,
+                            height: 48,
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFFFFD700),
@@ -757,6 +738,22 @@ class _PocketMiniSpeechPracticePageState
                               ),
                             ),
                           ),
+                        ],
+
+                        const SizedBox(height: 14),
+
+                        // Live Speech Transcript & Evaluation Breakdown Card
+                        if (_liveTranscript.isNotEmpty) ...[
+                          _buildEvaluationCard(),
+                        ],
+
+                        const SizedBox(height: 14),
+
+                        // Native Ad at the bottom when scrolling
+                        const PocketTrueNativeAdWidget(
+                          placement: PocketAdPlacement.learningStep,
+                          margin: EdgeInsets.symmetric(vertical: 4),
+                        ),
                       ],
                     ),
                   ),

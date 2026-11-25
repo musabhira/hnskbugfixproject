@@ -506,8 +506,10 @@ class _PocketDay1Step5AvatarChatPageState
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scrollController.hasClients) return;
+      final max = _scrollController.position.maxScrollExtent;
+      final target = (_messages.length >= 2 ? max - 140.0 : max).clamp(0.0, max);
       _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
+        target,
         duration: const Duration(milliseconds: 320),
         curve: Curves.easeOutCubic,
       );
@@ -516,10 +518,11 @@ class _PocketDay1Step5AvatarChatPageState
     Future.delayed(const Duration(milliseconds: 120), () {
       if (!_scrollController.hasClients) return;
       final max = _scrollController.position.maxScrollExtent;
+      final target = (_messages.length >= 2 ? max - 140.0 : max).clamp(0.0, max);
       final current = _scrollController.position.pixels;
-      if ((max - current).abs() > 4) {
+      if ((target - current).abs() > 4) {
         _scrollController.animateTo(
-          max,
+          target,
           duration: const Duration(milliseconds: 220),
           curve: Curves.easeOutCubic,
         );

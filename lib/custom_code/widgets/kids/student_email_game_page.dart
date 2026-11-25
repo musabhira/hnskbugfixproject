@@ -530,6 +530,11 @@ class _StudentEmailGameState extends State<StudentEmailGamePage> {
                   ],
                 ),
               ),
+              const SizedBox(height: 16),
+              const PocketTrueNativeAdWidget(
+                placement: PocketAdPlacement.learningStep,
+                margin: EdgeInsets.only(bottom: 10),
+              ),
             ],
           ),
         ),
