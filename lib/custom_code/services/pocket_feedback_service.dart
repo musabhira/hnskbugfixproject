@@ -319,13 +319,12 @@ class _FeedbackBottomSheetContentState
         top: 14,
         bottom: bottomInset + 20,
       ),
-      decoration: const BoxDecoration(
-        color: Color(0xFF0F172A),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        border: Border(
-          top: BorderSide(color: Color(0xFFFFD700), width: 1.2),
-          left: BorderSide(color: Colors.white12, width: 0.5),
-          right: BorderSide(color: Colors.white12, width: 0.5),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border.all(
+          color: const Color(0xFFFFD700).withValues(alpha: 0.45),
+          width: 1.2,
         ),
       ),
       child: SingleChildScrollView(

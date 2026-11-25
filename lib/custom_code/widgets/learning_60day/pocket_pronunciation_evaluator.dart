@@ -717,26 +717,14 @@ class PocketPronunciationInlineBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pct = result.accuracyPercentage;
-    final isHigh = pct >= 80;
-    final isMedium = pct >= 55 && pct < 80;
+    final isHigh = pct >= 55;
 
     final accentColor = isHigh
         ? const Color(0xFF10B981) // Emerald Green
-        : (isMedium ? const Color(0xFFF59E0B) : const Color(0xFFEF4444)); // Amber / Coral Red
+        : const Color(0xFFF59E0B); // Warm Amber
 
-    final badgeIcon = isHigh ? '✨' : (isMedium ? '🎯' : '⚠️');
-    final label = isHigh
-        ? 'Excellent ($pct% Match)'
-        : (isMedium ? 'Good Try ($pct% Match)' : 'Practice Needed ($pct% Match)');
-
-    final mispronouncedOrMissed = result.words
-        .where((w) =>
-            w.status == WordEvaluationStatus.wrong ||
-            w.status == WordEvaluationStatus.missed)
-        .map((w) => w.word.replaceAll(RegExp(r'[^\w\s]'), '').trim())
-        .where((w) => w.isNotEmpty)
-        .toSet()
-        .toList();
+    final badgeIcon = isHigh ? '✨' : '🌟';
+    final label = isHigh ? 'Excellent!' : 'Good Effort!';
 
     return Container(
       margin: const EdgeInsets.only(top: 4, bottom: 2),
@@ -753,52 +741,20 @@ class PocketPronunciationInlineBadge extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(badgeIcon, style: const TextStyle(fontSize: 12)),
-              const SizedBox(width: 5),
-              Text(
-                label,
-                style: GoogleFonts.outfit(
-                  color: accentColor,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.3,
-                ),
-              ),
-            ],
-          ),
-          if (mispronouncedOrMissed.isNotEmpty) ...[
-            const SizedBox(height: 3),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Focus: ',
-                  style: GoogleFonts.inter(
-                    color: Colors.white54,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Flexible(
-                  child: Text(
-                    mispronouncedOrMissed.take(3).map((w) => '"$w"').join(', '),
-                    style: GoogleFonts.outfit(
-                      color: const Color(0xFFFCA5A5),
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ],
+          Text(badgeIcon, style: const TextStyle(fontSize: 12)),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: GoogleFonts.outfit(
+              color: accentColor,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.3,
             ),
-          ],
+          ),
         ],
       ),
     );

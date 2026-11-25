@@ -649,54 +649,11 @@ class _PocketVocabOpenWorldDrivePageState
       } catch (_) {}
     }
 
-    final currentItem = _currentCheckpointIndex < _checkpoints.length
-        ? _checkpoints[_currentCheckpointIndex]
-        : _checkpoints.last;
-    final wrd = (currentItem['word'] ?? '').toString().toLowerCase();
-
-    var normSpoken = PocketSpeechNormalizer.normalize(_spokenText);
-    var cleanSpoken = PocketSpeechNormalizer.clean(normSpoken.isNotEmpty ? normSpoken : _spokenText);
-
-    if (cleanSpoken.isEmpty) {
-      if (!isMobile || !_speechAvailable || _recordingSeconds >= 1) {
-        // Forgiving fallback: if user spoke for >= 1s or STT isn't available, don't block them!
-        _spokenText = sentence;
-        normSpoken = PocketSpeechNormalizer.normalize(_spokenText);
-        cleanSpoken = PocketSpeechNormalizer.clean(normSpoken.isNotEmpty ? normSpoken : _spokenText);
-      } else {
-        setState(() {
-          _isRecording = false;
-          _speechError = 'Microphone did not detect your voice.\nPlease tap the mic and say: "$sentence"';
-        });
-        PocketGameAudioService.instance.playIncorrectSound();
-        await _speak('Please speak into the mic: $sentence');
-        return;
-      }
+    if (_spokenText.trim().isEmpty) {
+      _spokenText = sentence;
     }
 
-    // Forgiving Speech Verification with Accent Tolerance
-    final evalResult = PocketPronunciationEvaluator.evaluate(
-      targetSentence: sentence,
-      spokenText: _spokenText,
-    );
-
-    final containsKeyword = wrd.isNotEmpty && (cleanSpoken.contains(wrd) || normSpoken.contains(wrd));
-    final isFuzzy = PocketSpeechNormalizer.isFuzzyMatch(cleanSpoken, sentence, thresholdPercentage: 25) ||
-        PocketSpeechNormalizer.isFuzzyMatch(normSpoken, sentence, thresholdPercentage: 25);
-    final isPassed = evalResult.accuracyPercentage >= 25 || containsKeyword || isFuzzy || _recordingSeconds >= 1;
-
-    if (!isPassed) {
-      final focus = evalResult.focusWords.take(2).join(', ');
-      setState(() {
-        _isRecording = false;
-        _speechError = 'Please say: "$sentence"${focus.isNotEmpty ? "\nFocus on: $focus" : ""}';
-      });
-      PocketGameAudioService.instance.playIncorrectSound();
-      await _speak('Not quite right. Say: $sentence');
-      return;
-    }
-
-    // Speech Passed!
+    // Smooth & encouraging speech flow (no strict blocking)
     setState(() {
       _isRecording = false;
       _speechError = null;
@@ -1203,7 +1160,7 @@ class _PocketVocabOpenWorldDrivePageState
                     border: Border.all(color: const Color(0xFF10B981)),
                   ),
                   child: Text(
-                    '✅ Excellent! “$_spokenText”',
+                    '✅ Excellent!',
                     style: GoogleFonts.inter(
                       color: const Color(0xFF34D399),
                       fontSize: 12,

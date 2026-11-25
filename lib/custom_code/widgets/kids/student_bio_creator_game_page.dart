@@ -272,6 +272,12 @@ class _StudentBioCreatorGameState extends State<StudentBioCreatorGamePage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kPBg,
+      bottomNavigationBar: const SafeArea(
+        top: false,
+        child: PocketBannerAdWidget(
+          margin: EdgeInsets.symmetric(vertical: 4),
+        ),
+      ),
       appBar: AppBar(
         backgroundColor: kPBg,
         elevation: 0,

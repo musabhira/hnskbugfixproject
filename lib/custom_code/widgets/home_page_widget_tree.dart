@@ -4062,9 +4062,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (_isLoadingRequests) {
-      return const SliverToBoxAdapter(
-        child: ChatListShimmer(),
-      );
+      return const ChatListShimmer();
     }
 
     final unified = _getUnifiedRequests();

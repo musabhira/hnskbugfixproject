@@ -229,258 +229,309 @@ class _StudentEmailGameState extends State<StudentEmailGamePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kEBg,
+      backgroundColor: const Color(0xFF141210),
       appBar: AppBar(
-        backgroundColor: kEBg,
+        backgroundColor: const Color(0xFF141210),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
         title: Text(
-          'Email Etiquette 📧',
-          style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+          'Email',
+          style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 17),
         ),
         centerTitle: true,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 14),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const FlameIcon(size: 24),
-                const SizedBox(width: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: kECard,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: kEGold.withValues(alpha: 0.6)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.bolt_rounded, color: kEGold, size: 15),
-                      Text(' $_xp XP', style: GoogleFonts.outfit(color: kEGold, fontWeight: FontWeight.bold, fontSize: 12.5)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+      ),
+      bottomNavigationBar: const SafeArea(
+        top: false,
+        child: PocketBannerAdWidget(
+          margin: EdgeInsets.symmetric(vertical: 4),
+        ),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Scrollable Futuristic Dark Mail Composer (Zero Overflow)
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1E293B),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: kECy.withValues(alpha: 0.5), width: 1.5),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.45),
-                        blurRadius: 14,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Editorial Story-Card Style Mail Sheet
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFDF8EE),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: const Color(0xFFD4A373).withValues(alpha: 0.55),
+                    width: 1.5,
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.mark_email_read_rounded, color: kECy),
-                          const SizedBox(width: 8),
-                          Text(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.35),
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(7),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFD95D39).withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.mail_outline_rounded,
+                            color: Color(0xFFD95D39),
+                            size: 18,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
                             'To: ${_round.recipient}',
                             style: GoogleFonts.outfit(
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w800,
                               fontSize: 14.5,
-                              color: Colors.white,
+                              color: const Color(0xFF1C1917),
                             ),
                           ),
-                        ],
-                      ),
-                      const Divider(height: 20, thickness: 1, color: Colors.white12),
-
-                      // Subject Line
-                      Text(
-                        'Subject:',
-                        style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.w600, color: kECy),
-                      ),
-                      const SizedBox(height: 4),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: _selectedSubject != null ? kECy.withValues(alpha: 0.2) : Colors.white10,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: _selectedSubject != null ? kECy : Colors.white24,
-                          ),
                         ),
-                        child: Text(
-                          _selectedSubject ?? '[ Choose a polite Subject line below ]',
-                          style: GoogleFonts.outfit(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13.5,
-                            color: _selectedSubject != null ? Colors.white : Colors.white38,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-
-                      // Greeting
-                      Text(
-                        'Greeting:',
-                        style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.w600, color: kECy),
-                      ),
-                      const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                        decoration: BoxDecoration(
-                          color: _selectedGreeting != null ? kEEm.withValues(alpha: 0.2) : Colors.white10,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: _selectedGreeting != null ? kEEm : Colors.white24,
-                          ),
-                        ),
-                        child: Text(
-                          _selectedGreeting ?? '[ Polite Greeting ]',
-                          style: GoogleFonts.outfit(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13.5,
-                            color: _selectedGreeting != null ? const Color(0xFF6EE7B7) : Colors.white38,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-
-                      // Body
-                      Text(
-                        'Message Body:',
-                        style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.w600, color: kECy),
-                      ),
-                      const SizedBox(height: 4),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: _selectedBody != null ? kEGold.withValues(alpha: 0.18) : Colors.white10,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: _selectedBody != null ? kEGold : Colors.white24,
-                          ),
-                        ),
-                        child: Text(
-                          _selectedBody ?? '[ Polite message sentence ]',
-                          style: GoogleFonts.outfit(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w600,
-                            color: _selectedBody != null ? Colors.white : Colors.white38,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Sign off
-                      Text(
-                        'Regards,\nAarav, Class 7B',
-                        style: GoogleFonts.outfit(
-                          fontSize: 12.5,
-                          color: Colors.white70,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            // Word Bank Options Dock
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-              decoration: BoxDecoration(
-                color: kECard,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                border: Border.all(color: kECy.withValues(alpha: 0.35)),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (_step < 3) ...[
-                    Text(
-                      _step == 0
-                          ? 'Step 1: Pick a polite Subject line:'
-                          : _step == 1
-                              ? 'Step 2: Pick a polite Greeting:'
-                              : 'Step 3: Pick a polite Body sentence:',
-                      style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12.5, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        for (final opt in (_step == 0
-                            ? _round.subjectOptions
-                            : _step == 1
-                                ? _round.greetingOptions
-                                : _round.bodyOptions))
-                          GestureDetector(
-                            onTap: () => _onOptionTap(opt),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-                              decoration: BoxDecoration(
-                                color: kEBg,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: kECy, width: 1.5),
-                              ),
-                              child: Text(
-                                opt,
-                                style: GoogleFonts.outfit(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13.5,
-                                ),
-                              ),
-                            ),
-                          ),
                       ],
                     ),
-                  ] else ...[
-                    SizedBox(
+                    const SizedBox(height: 12),
+                    Divider(
+                      height: 1,
+                      color: const Color(0xFFD4A373).withValues(alpha: 0.35),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Subject Line
+                    Text(
+                      'SUBJECT',
+                      style: GoogleFonts.outfit(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.1,
+                        color: const Color(0xFF7A5C3D),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
                       width: double.infinity,
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: kEGold,
-                          foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: _selectedSubject != null
+                            ? const Color(0xFFD4A373).withValues(alpha: 0.18)
+                            : const Color(0xFFF3EAD8),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: _selectedSubject != null
+                              ? const Color(0xFFB45309)
+                              : (_step == 0
+                                  ? const Color(0xFFD95D39)
+                                  : const Color(0xFFD4A373).withValues(alpha: 0.4)),
+                          width: _step == 0 ? 1.5 : 1,
                         ),
-                        onPressed: _isSent ? null : _onSendEmail,
-                        icon: const Icon(Icons.send_rounded),
-                        label: Text(
-                          'SEND POLITE EMAIL 🚀',
-                          style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.bold),
+                      ),
+                      child: Text(
+                        _selectedSubject ?? 'Choose a polite Subject line below',
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13.5,
+                          color: _selectedSubject != null
+                              ? const Color(0xFF1C1917)
+                              : const Color(0xFF8C7456),
                         ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Greeting
+                    Text(
+                      'GREETING',
+                      style: GoogleFonts.outfit(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.1,
+                        color: const Color(0xFF7A5C3D),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                      decoration: BoxDecoration(
+                        color: _selectedGreeting != null
+                            ? const Color(0xFF0F766E).withValues(alpha: 0.1)
+                            : const Color(0xFFF3EAD8),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: _selectedGreeting != null
+                              ? const Color(0xFF0F766E)
+                              : (_step == 1
+                                  ? const Color(0xFFD95D39)
+                                  : const Color(0xFFD4A373).withValues(alpha: 0.4)),
+                          width: _step == 1 ? 1.5 : 1,
+                        ),
+                      ),
+                      child: Text(
+                        _selectedGreeting ?? 'Choose a polite Greeting',
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13.5,
+                          color: _selectedGreeting != null
+                              ? const Color(0xFF0F766E)
+                              : const Color(0xFF8C7456),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Body
+                    Text(
+                      'MESSAGE BODY',
+                      style: GoogleFonts.outfit(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.1,
+                        color: const Color(0xFF7A5C3D),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+                      decoration: BoxDecoration(
+                        color: _selectedBody != null
+                            ? const Color(0xFFD4A373).withValues(alpha: 0.18)
+                            : const Color(0xFFF3EAD8),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: _selectedBody != null
+                              ? const Color(0xFFB45309)
+                              : (_step == 2
+                                  ? const Color(0xFFD95D39)
+                                  : const Color(0xFFD4A373).withValues(alpha: 0.4)),
+                          width: _step == 2 ? 1.5 : 1,
+                        ),
+                      ),
+                      child: Text(
+                        _selectedBody ?? 'Choose a polite message sentence',
+                        style: GoogleFonts.inter(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w600,
+                          color: _selectedBody != null
+                              ? const Color(0xFF1C1917)
+                              : const Color(0xFF8C7456),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Sign off
+                    Text(
+                      'Regards,\nStudent',
+                      style: GoogleFonts.outfit(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF57534E),
                       ),
                     ),
                   ],
-                ],
+                ),
               ),
-            ),
-          ],
+
+              const SizedBox(height: 16),
+
+              // Word Bank Options Card
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E1B18),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: const Color(0xFFD4A373).withValues(alpha: 0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (_step < 3) ...[
+                      Text(
+                        _step == 0
+                            ? 'Step 1 • Pick Subject'
+                            : _step == 1
+                                ? 'Step 2 • Pick Greeting'
+                                : 'Step 3 • Pick Message',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFD4A373),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          for (final opt in (_step == 0
+                              ? _round.subjectOptions
+                              : _step == 1
+                                  ? _round.greetingOptions
+                                  : _round.bodyOptions))
+                            GestureDetector(
+                              onTap: () => _onOptionTap(opt),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF292524),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: const Color(0xFFD4A373).withValues(alpha: 0.45),
+                                    width: 1.2,
+                                  ),
+                                ),
+                                child: Text(
+                                  opt,
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13.5,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ] else ...[
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFD95D39),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          onPressed: _isSent ? null : _onSendEmail,
+                          icon: const Icon(Icons.send_rounded, size: 18),
+                          label: Text(
+                            'Send Email',
+                            style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.w800),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

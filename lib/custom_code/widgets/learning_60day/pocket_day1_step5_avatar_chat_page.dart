@@ -12,6 +12,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 import 'pocket_pronunciation_evaluator.dart';
 import 'pocket_90day_vocab_curriculum.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 
 /// 💬 Chat Message Model for Step 5 Reading Room
 class Step5ChatMessage {
@@ -1078,6 +1079,12 @@ class _PocketDay1Step5AvatarChatPageState
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF070B11),
+        bottomNavigationBar: const SafeArea(
+          top: false,
+          child: PocketBannerAdWidget(
+            margin: EdgeInsets.symmetric(vertical: 4),
+          ),
+        ),
         body: SafeArea(
           child: Column(
             children: [
@@ -1089,7 +1096,20 @@ class _PocketDay1Step5AvatarChatPageState
                   padding: const EdgeInsets.fromLTRB(14, 12, 14, 96),
                   itemCount: _messages.length,
                   itemBuilder: (context, index) {
-                    return _buildMessageItem(_messages[index]);
+                    final item = _buildMessageItem(_messages[index]);
+                    if (index == _messages.length - 1 && _messages.length >= 2) {
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          item,
+                          const PocketTrueNativeAdWidget(
+                            placement: PocketAdPlacement.learningStep,
+                            margin: EdgeInsets.only(top: 10, bottom: 8),
+                          ),
+                        ],
+                      );
+                    }
+                    return item;
                   },
                 ),
               ),
@@ -1190,18 +1210,7 @@ class _PocketDay1Step5AvatarChatPageState
                             : Icons.music_off_rounded,
                         color:
                             !isMuted ? const Color(0xFF10B981) : Colors.white60,
-                        size: 14,
-                      ),
-                      const SizedBox(width: 3),
-                      Text(
-                        !isMuted ? 'BGM' : 'MUTED',
-                        style: GoogleFonts.outfit(
-                          color: !isMuted
-                              ? const Color(0xFF10B981)
-                              : Colors.white60,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w900,
-                        ),
+                        size: 15,
                       ),
                     ],
                   ),

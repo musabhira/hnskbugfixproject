@@ -362,6 +362,12 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A1118),
+      bottomNavigationBar: const SafeArea(
+        top: false,
+        child: PocketBannerAdWidget(
+          margin: EdgeInsets.symmetric(vertical: 4),
+        ),
+      ),
       appBar: AppBar(
         backgroundColor: const Color(0xFF0F172A),
         elevation: 0,
@@ -456,6 +462,18 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
                         bubble,
                         const PocketChatBubbleAdWidget(
                           margin: EdgeInsets.only(top: 2, bottom: 12),
+                        ),
+                      ],
+                    );
+                  }
+                  if (index == _chatHistory.length - 1 && _chatHistory.length >= 3) {
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        bubble,
+                        const PocketTrueNativeAdWidget(
+                          placement: PocketAdPlacement.learningStep,
+                          margin: EdgeInsets.only(top: 6, bottom: 8),
                         ),
                       ],
                     );

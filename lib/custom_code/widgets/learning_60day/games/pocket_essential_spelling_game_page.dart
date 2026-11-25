@@ -1167,6 +1167,13 @@ class _PocketEssentialSpellingPageState
               ),
             );
           }),
+          if (!PocketKidsService.isKidAccount) ...[
+            const SizedBox(height: 6),
+            const PocketTrueNativeAdWidget(
+              placement: PocketAdPlacement.target,
+              margin: EdgeInsets.only(bottom: 10),
+            ),
+          ],
         ],
       ),
     );

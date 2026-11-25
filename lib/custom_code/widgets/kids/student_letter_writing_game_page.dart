@@ -273,6 +273,12 @@ class _StudentLetterWritingGameState extends State<StudentLetterWritingGamePage>
 
     return Scaffold(
       backgroundColor: kLBg,
+      bottomNavigationBar: const SafeArea(
+        top: false,
+        child: PocketBannerAdWidget(
+          margin: EdgeInsets.symmetric(vertical: 4),
+        ),
+      ),
       appBar: AppBar(
         backgroundColor: kLBg,
         elevation: 0,

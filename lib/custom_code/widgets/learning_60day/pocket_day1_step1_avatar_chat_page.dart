@@ -1501,8 +1501,14 @@ class _PocketDay1Step1AvatarChatPageState
     return Scaffold(
       backgroundColor: const Color(0xFF0A1118),
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(62),
+        preferredSize: const Size.fromHeight(78),
         child: SafeArea(child: _buildAppBar()),
+      ),
+      bottomNavigationBar: const SafeArea(
+        top: false,
+        child: PocketBannerAdWidget(
+          margin: EdgeInsets.symmetric(vertical: 4),
+        ),
       ),
       body: ListView.builder(
         controller: _scrollController,
@@ -1857,21 +1863,6 @@ class _PocketDay1Step1AvatarChatPageState
                                       : (_isSoundMuted
                                           ? Colors.white60
                                           : const Color(0xFFFFD700)),
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  _isSpeaking
-                                      ? 'STOP'
-                                      : (_isSoundMuted ? 'MUTED' : 'VOICE'),
-                                  style: GoogleFonts.outfit(
-                                    color: _isSpeaking
-                                        ? const Color(0xFFF87171)
-                                        : (_isSoundMuted
-                                            ? Colors.white60
-                                            : const Color(0xFF34D399)),
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                  ),
                                 ),
                               ],
                             ),

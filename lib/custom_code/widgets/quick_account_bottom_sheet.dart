@@ -544,15 +544,17 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
   Future<void> _logout() async {
     try {
       if (!mounted) return;
+      final rootContext = Navigator.of(context, rootNavigator: true).context;
+      final router = GoRouter.of(rootContext);
       Navigator.of(context).pop();
 
-      GoRouter.of(context).prepareAuthEvent();
+      router.prepareAuthEvent();
       await supabase.auth.signOut();
 
-      if (!mounted) return;
-      GoRouter.of(context).clearRedirectLocation();
-      context.pushReplacementNamed(AuthPageWidget.routeName);
-      context.goNamedAuth(AuthPageWidget.routeName, context.mounted);
+      if (!rootContext.mounted) return;
+      router.clearRedirectLocation();
+      rootContext.pushReplacementNamed(AuthPageWidget.routeName);
+      rootContext.goNamedAuth(AuthPageWidget.routeName, rootContext.mounted);
     } catch (e) {
       _showError('Logout failed: $e');
     }

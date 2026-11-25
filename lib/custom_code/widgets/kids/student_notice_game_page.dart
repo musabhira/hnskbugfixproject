@@ -247,17 +247,17 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
     final targets = _currentRound.targetParts;
 
     return Scaffold(
-      backgroundColor: kNBg,
+      backgroundColor: const Color(0xFF141210),
       appBar: AppBar(
-        backgroundColor: kNBg,
+        backgroundColor: const Color(0xFF141210),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
         title: Text(
-          'Notice Masterclass 📢',
-          style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+          'Notice Masterclass',
+          style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 17),
         ),
         centerTitle: true,
         actions: [
@@ -266,20 +266,27 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const FlameIcon(size: 24),
+                const FlameIcon(size: 22),
                 const SizedBox(width: 4),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: kNCard,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: kNGold.withValues(alpha: 0.6)),
+                    color: const Color(0xFF221E1A),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFD4A373).withValues(alpha: 0.45)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.bolt_rounded, color: kNGold, size: 15),
-                      Text(' $_xp XP', style: GoogleFonts.outfit(color: kNGold, fontWeight: FontWeight.bold, fontSize: 12.5)),
+                      const Icon(Icons.bolt_rounded, color: Color(0xFFD4A373), size: 15),
+                      Text(
+                        ' $_xp XP',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFD4A373),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12.5,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -288,6 +295,12 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
           ),
         ],
       ),
+      bottomNavigationBar: const SafeArea(
+        top: false,
+        child: PocketBannerAdWidget(
+          margin: EdgeInsets.symmetric(vertical: 4),
+        ),
+      ),
       body: SafeArea(
         child: AnimatedBuilder(
           animation: _shakeCtrl,
@@ -295,216 +308,270 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
             final offset = math.sin(_shakeCtrl.value * math.pi * 6) * 8 * (1 - _shakeCtrl.value);
             return Transform.translate(offset: Offset(offset, 0), child: child);
           },
-          child: Column(
-            children: [
-              // Scrollable Notice Board Workspace (Zero Overflow)
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Minimal Header Row
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF221E1A),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFD4A373).withValues(alpha: 0.3)),
+                      ),
+                      child: Text(
+                        '${_currentRound.category.toUpperCase()} • ${_roundIdx + 1}/${_rounds.length}',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFD4A373),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 11,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '$_placedCount / ${targets.length} Placed',
+                      style: GoogleFonts.inter(
+                        color: Colors.white60,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+
+                // Minimal Editorial Story-Card Style Notice Sheet
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFDF8EE),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: const Color(0xFFD4A373).withValues(alpha: 0.55), width: 1.5),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.35),
+                        blurRadius: 18,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
                   child: Column(
                     children: [
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
+                          const Icon(Icons.push_pin_rounded, color: Color(0xFFD95D39), size: 16),
+                          const SizedBox(width: 6),
                           Text(
-                            'Notice ${_roundIdx + 1} of ${_rounds.length}: ${_currentRound.category}',
-                            style: GoogleFonts.outfit(color: kNGold, fontWeight: FontWeight.w700, fontSize: 13),
-                          ),
-                          const Spacer(),
-                          Text(
-                            '$_placedCount/${targets.length} Slotted',
-                            style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13),
+                            'OFFICIAL NOTICE BOARD',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF7A5C3D),
+                              fontSize: 10,
+                              letterSpacing: 2,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 14),
+                      Divider(color: const Color(0xFFD4A373).withValues(alpha: 0.35), height: 1),
+                      const SizedBox(height: 16),
 
-                      // Interactive Bulletin Board Card
+                      // Slot 1: Institution Name
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(18),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1E293B),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: kNGold.withValues(alpha: 0.45), width: 2),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.45),
-                              blurRadius: 14,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
+                          color: _placedCount > 0
+                              ? const Color(0xFF0F766E).withValues(alpha: 0.1)
+                              : const Color(0xFFF3EAD8),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: _placedCount > 0
+                                ? const Color(0xFF0F766E)
+                                : (_placedCount == 0
+                                    ? const Color(0xFFD95D39)
+                                    : const Color(0xFFD4A373).withValues(alpha: 0.4)),
+                            width: _placedCount == 0 ? 1.5 : 1,
+                          ),
                         ),
-                        child: Column(
-                          children: [
-                            // Push Pin
-                            const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.push_pin_rounded, color: kNRed, size: 20),
-                                SizedBox(width: 4),
-                                Text('OFFICIAL BULLETIN BOARD', style: TextStyle(color: Colors.white38, fontSize: 10, letterSpacing: 2, fontWeight: FontWeight.bold)),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
+                        child: Text(
+                          _placedCount > 0 ? targets[0] : '1. Tap Institution / School Name',
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14.5,
+                            color: _placedCount > 0 ? const Color(0xFF0F766E) : const Color(0xFF8C7456),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
 
-                            // Slot 1: Institution Name
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: _placedCount > 0
-                                    ? const Color(0xFF0F766E).withValues(alpha: 0.35)
-                                    : Colors.white10,
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: _placedCount > 0 ? const Color(0xFF14B8A6) : Colors.white24,
-                                  width: _placedCount == 0 ? 1.8 : 1,
-                                ),
-                              ),
-                              child: Text(
-                                _placedCount > 0 ? targets[0] : '[ 1. Tap School Name from bank ]',
-                                style: GoogleFonts.outfit(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                  color: _placedCount > 0 ? const Color(0xFF5EEAD4) : Colors.white38,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
+                      // Slot 2: NOTICE Header
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 7),
+                        decoration: BoxDecoration(
+                          color: _placedCount > 1
+                              ? const Color(0xFFD95D39).withValues(alpha: 0.12)
+                              : const Color(0xFFF3EAD8),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: _placedCount > 1
+                                ? const Color(0xFFD95D39)
+                                : (_placedCount == 1
+                                    ? const Color(0xFFD95D39)
+                                    : const Color(0xFFD4A373).withValues(alpha: 0.4)),
+                            width: _placedCount == 1 ? 1.5 : 1,
+                          ),
+                        ),
+                        child: Text(
+                          _placedCount > 1 ? targets[1] : '2. NOTICE',
+                          style: GoogleFonts.outfit(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 2.2,
+                            color: _placedCount > 1 ? const Color(0xFFB45309) : const Color(0xFF8C7456),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
 
-                            // Slot 2: NOTICE Header
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: _placedCount > 1
-                                    ? kNRed.withValues(alpha: 0.25)
-                                    : Colors.white10,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: _placedCount > 1 ? kNRed : Colors.white24,
-                                  width: _placedCount == 1 ? 1.8 : 1,
-                                ),
-                              ),
-                              child: Text(
-                                _placedCount > 1 ? targets[1] : '[ 2. NOTICE ]',
-                                style: GoogleFonts.outfit(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 2,
-                                  color: _placedCount > 1 ? const Color(0xFFFCA5A5) : Colors.white38,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
+                      // Slot 3: Event Title / Headline
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: _placedCount > 2
+                              ? const Color(0xFFD4A373).withValues(alpha: 0.2)
+                              : const Color(0xFFF3EAD8),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: _placedCount > 2
+                                ? const Color(0xFFB45309)
+                                : (_placedCount == 2
+                                    ? const Color(0xFFD95D39)
+                                    : const Color(0xFFD4A373).withValues(alpha: 0.4)),
+                            width: _placedCount == 2 ? 1.5 : 1,
+                          ),
+                        ),
+                        child: Text(
+                          _placedCount > 2 ? targets[2] : '3. Tap Event Headline',
+                          style: GoogleFonts.outfit(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w700,
+                            color: _placedCount > 2 ? const Color(0xFF292524) : const Color(0xFF8C7456),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
 
-                            // Slot 3: Event Title / Headline
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: _placedCount > 2
-                                    ? kNGold.withValues(alpha: 0.2)
-                                    : Colors.white10,
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: _placedCount > 2 ? kNGold : Colors.white24,
-                                  width: _placedCount == 2 ? 1.8 : 1,
-                                ),
-                              ),
-                              child: Text(
-                                _placedCount > 2 ? targets[2] : '[ 3. Tap Headline from bank ]',
-                                style: GoogleFonts.outfit(
-                                  fontSize: 14.5,
-                                  fontWeight: FontWeight.bold,
-                                  color: _placedCount > 2 ? kNGold : Colors.white38,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-
-                            // Slot 4: Date & Venue
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: _placedCount > 3 ? Colors.white12 : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: _placedCount > 3 ? Colors.white24 : Colors.white12,
-                                  ),
-                                ),
-                                child: Text(
-                                  _placedCount > 3 ? '📅 ${targets[3]}' : '[ 4. Tap Date & Venue from bank ]',
-                                  style: GoogleFonts.outfit(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: _placedCount > 3 ? Colors.white : Colors.white38,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
+                      // Slot 4: Date & Venue
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                        decoration: BoxDecoration(
+                          color: _placedCount > 3
+                              ? const Color(0xFF292524).withValues(alpha: 0.06)
+                              : const Color(0xFFF3EAD8),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: _placedCount > 3
+                                ? const Color(0xFF7A5C3D)
+                                : (_placedCount == 3
+                                    ? const Color(0xFFD95D39)
+                                    : const Color(0xFFD4A373).withValues(alpha: 0.4)),
+                            width: _placedCount == 3 ? 1.5 : 1,
+                          ),
+                        ),
+                        child: Text(
+                          _placedCount > 3 ? '📅 ${targets[3]}' : '4. Tap Date & Venue',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: _placedCount > 3 ? const Color(0xFF292524) : const Color(0xFF8C7456),
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
 
-              // Interactive Word Bank Dock at Bottom
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                decoration: BoxDecoration(
-                  color: kNCard,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                  border: Border.all(color: kNGold.withValues(alpha: 0.35)),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _placedCount < targets.length
-                          ? 'Tap next block: ${_currentRound.partLabels[_placedCount]}'
-                          : '🎉 Notice Complete!',
-                      style: GoogleFonts.outfit(color: kNGold, fontSize: 12.5, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        for (int i = 0; i < _bankTiles.length; i++)
-                          GestureDetector(
-                            onTap: () => _onTileTap(_bankTiles[i]),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 180),
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                              decoration: BoxDecoration(
-                                color: _getTileColor(i).withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: _getTileColor(i), width: 1.6),
-                              ),
-                              child: Text(
-                                _bankTiles[i],
-                                style: GoogleFonts.outfit(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
+                const SizedBox(height: 16),
+
+                // Scrollable Word Bank Card
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E1B18),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: const Color(0xFFD4A373).withValues(alpha: 0.3)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.touch_app_rounded, color: Color(0xFFD4A373), size: 16),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              _placedCount < targets.length
+                                  ? 'Word Bank • Next: ${_currentRound.partLabels[_placedCount]}'
+                                  : '🎉 Notice Complete!',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFD4A373),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          for (int i = 0; i < _bankTiles.length; i++)
+                            GestureDetector(
+                              onTap: () => _onTileTap(_bankTiles[i]),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 180),
+                                padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
+                                decoration: BoxDecoration(
+                                  color: _getTileColor(i).withValues(alpha: 0.16),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: _getTileColor(i).withValues(alpha: 0.75),
+                                    width: 1.2,
+                                  ),
+                                ),
+                                child: Text(
+                                  _bankTiles[i],
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13.5,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

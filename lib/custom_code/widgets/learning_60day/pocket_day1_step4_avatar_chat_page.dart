@@ -12,6 +12,7 @@ import 'pocket_master_curriculum_90.dart';
 import 'pocket_90day_vocab_curriculum.dart';
 import 'pocket_pronunciation_evaluator.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 
 /// 💬 Chat Message Model for Step 4 Spoken English
 class Step4ChatMessage {
@@ -858,52 +859,13 @@ class _PocketDay1Step4AvatarChatPageState
       );
     });
     _scrollToBottom();
-    final targetMl = drill['targetReplyMl'] as String;
-    final avatar = drill['avatar'] as String;
-    final icon = drill['icon'] as String;
-    final color = drill['color'] as Color;
 
-    final isCorrect = PocketSpeechNormalizer.isFuzzyMatch(
-      voiceText,
-      target,
-      thresholdPercentage: 35,
-    );
-
-    // Natural conversation pause before avatar replies
-    Future.delayed(const Duration(milliseconds: 700), () {
+    // Natural conversation pause before avatar replies — always advance smoothly
+    Future.delayed(const Duration(milliseconds: 500), () {
       if (!mounted) return;
-
-      if (isCorrect || _failedDrillAttempts >= 1) {
-        // Correct or gentle advance after coaching
-        _failedDrillAttempts = 0;
-        PocketGameAudioService.instance.playCoinSound();
-        _handleSpokenAnswerSuccess();
-      } else {
-        // Gentle correction for mistakes without breaking conversation
-        _failedDrillAttempts++;
-        HapticFeedback.lightImpact();
-
-        final retryEn = 'Good try, $_userName! Let\'s say it like this:\n\n"$target"\n\nTap the mic below and try again! 🎙️';
-        final retryMl = 'നല്ല ശ്രമം! നമുക്ക് ഒന്നുകൂടി പറഞ്ഞു നോക്കാം:\n"$targetMl"';
-
-        setState(() {
-          _messages.add(
-            Step4ChatMessage(
-              id: 'spoken_retry_${DateTime.now().millisecondsSinceEpoch}',
-              isAvatar: true,
-              avatarName: avatar,
-              avatarIcon: icon,
-              avatarColor: color,
-              textEn: retryEn,
-              textNative: retryMl,
-              audioText: 'Good try, $_userName! Let\'s say it like this: $target. Try again!',
-            ),
-          );
-        });
-
-        _speak('Good try, $_userName! Let\'s say it like this: $target. Try again!');
-        _scrollToBottom();
-      }
+      _failedDrillAttempts = 0;
+      PocketGameAudioService.instance.playCoinSound();
+      _handleSpokenAnswerSuccess();
     });
   }
 
@@ -1139,6 +1101,12 @@ class _PocketDay1Step4AvatarChatPageState
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF070B11),
+        bottomNavigationBar: const SafeArea(
+          top: false,
+          child: PocketBannerAdWidget(
+            margin: EdgeInsets.symmetric(vertical: 4),
+          ),
+        ),
         body: SafeArea(
           child: Column(
             children: [
@@ -1150,7 +1118,20 @@ class _PocketDay1Step4AvatarChatPageState
                   padding: const EdgeInsets.fromLTRB(14, 12, 14, 96),
                   itemCount: _messages.length,
                   itemBuilder: (context, index) {
-                    return _buildMessageItem(_messages[index]);
+                    final item = _buildMessageItem(_messages[index]);
+                    if (index == _messages.length - 1 && _messages.length >= 2) {
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          item,
+                          const PocketTrueNativeAdWidget(
+                            placement: PocketAdPlacement.learningStep,
+                            margin: EdgeInsets.only(top: 10, bottom: 8),
+                          ),
+                        ],
+                      );
+                    }
+                    return item;
                   },
                 ),
               ),
@@ -1238,16 +1219,7 @@ class _PocketDay1Step4AvatarChatPageState
                       Icon(
                         !isMuted ? Icons.music_note_rounded : Icons.music_off_rounded,
                         color: !isMuted ? const Color(0xFF10B981) : Colors.white60,
-                        size: 14,
-                      ),
-                      const SizedBox(width: 3),
-                      Text(
-                        !isMuted ? 'BGM' : 'MUTED',
-                        style: GoogleFonts.outfit(
-                          color: !isMuted ? const Color(0xFF10B981) : Colors.white60,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w900,
-                        ),
+                        size: 15,
                       ),
                     ],
                   ),

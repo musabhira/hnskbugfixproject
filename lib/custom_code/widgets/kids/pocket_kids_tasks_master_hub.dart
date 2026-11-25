@@ -1427,8 +1427,7 @@ class _PocketKidsTasksMasterHubPageState
         },
         {
           'step': 4,
-          'title':
-              day == 1 ? '50+ Essential Beginner Words' : 'Spoken English Chat',
+          'title': day == 1 ? 'Vocabulary' : 'Spoken English Chat',
           'sub': day == 1
               ? 'Foundational word vault with native audio'
               : 'Interactive spoken dialogue practice',
@@ -1607,7 +1606,7 @@ class _PocketKidsTasksMasterHubPageState
         },
         {
           'step': 4,
-          'title': '50+ Essential Beginner Words',
+          'title': 'Vocabulary',
           'sub': 'Foundational word vault with native audio',
           'icon': '📚',
           'color': const Color(0xFF10B981),

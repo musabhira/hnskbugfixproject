@@ -281,6 +281,12 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
 
     return Scaffold(
       backgroundColor: kDBg,
+      bottomNavigationBar: const SafeArea(
+        top: false,
+        child: PocketBannerAdWidget(
+          margin: EdgeInsets.symmetric(vertical: 4),
+        ),
+      ),
       appBar: AppBar(
         backgroundColor: kDBg,
         elevation: 0,

@@ -13,6 +13,7 @@ import 'pocket_fortress_defense_service.dart';
 import 'curriculum_data/pocket_90day_speech_practice_data.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 /// 📢 Model for Mini Speech Exercise
 class MiniSpeechTopic {
@@ -100,8 +101,83 @@ class _PocketMiniSpeechPracticePageState
         .preloadForPlacement(PocketAdPlacement.review);
 
     _topics = Pocket90DaySpeechPracticeData.getTopicsForDay(widget.day);
+    _personalizeIntroTopic();
     _initTts();
     _initStt();
+  }
+
+  Future<void> _personalizeIntroTopic() async {
+    String userName = 'Friend';
+    try {
+      final user = SupaFlow.client.auth.currentUser;
+      final metaName =
+          user?.userMetadata?['display_name'] ?? user?.userMetadata?['full_name'];
+      if (metaName != null && metaName.toString().trim().isNotEmpty) {
+        userName = metaName.toString().trim();
+      } else {
+        final prefs = await SharedPreferences.getInstance();
+        final savedName = prefs.getString('user_display_name');
+        if (savedName != null && savedName.trim().isNotEmpty) {
+          userName = savedName.trim();
+        }
+      }
+    } catch (_) {}
+
+    final lang = PocketLanguageService.activeLanguageNotifier.value.toLowerCase();
+    final String region;
+    final String regionMl;
+    switch (lang) {
+      case 'tamil':
+      case 'ta':
+        region = 'Tamil Nadu';
+        regionMl = 'തമിഴ്നാട്ടിൽ';
+        break;
+      case 'kannada':
+      case 'kn':
+        region = 'Karnataka';
+        regionMl = 'കർണാടകയിൽ';
+        break;
+      case 'telugu':
+      case 'te':
+        region = 'Telangana';
+        regionMl = 'തെലങ്കാനയിൽ';
+        break;
+      case 'hindi':
+      case 'hi':
+        region = 'India';
+        regionMl = 'ഇന്ത്യയിൽ';
+        break;
+      default:
+        region = 'Kerala';
+        regionMl = 'കേരളത്തിൽ';
+    }
+
+    if (!mounted || _topics.isEmpty) return;
+    final updated = _topics.map((t) {
+      if (t.passageEn.contains('My name is Rahul') ||
+          t.passageEn.contains('I am from Kerala')) {
+        return MiniSpeechTopic(
+          id: t.id,
+          title: t.title,
+          emoji: t.emoji,
+          passageEn: t.passageEn
+              .replaceAll('Rahul', userName)
+              .replaceAll('Kerala', region),
+          passageMl: t.passageMl
+              .replaceAll('രാഹുൽ', userName)
+              .replaceAll('കേരളത്തിൽ', regionMl),
+          speechTipEn: t.speechTipEn,
+          speechTipMl: t.speechTipMl,
+        );
+      }
+      return t;
+    }).toList();
+
+    setState(() {
+      _topics
+        ..clear()
+        ..addAll(updated);
+    });
   }
 
   Future<void> _initTts() async {
@@ -340,6 +416,12 @@ class _PocketMiniSpeechPracticePageState
     return Scaffold(
       backgroundColor:
           isKid ? const Color(0xFF1E1035) : const Color(0xFF090D16),
+      bottomNavigationBar: const SafeArea(
+        top: false,
+        child: PocketBannerAdWidget(
+          margin: EdgeInsets.symmetric(vertical: 4),
+        ),
+      ),
       appBar: AppBar(
         backgroundColor:
             isKid ? const Color(0xFF2E1065) : const Color(0xFF0F172A),

@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -454,6 +455,12 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF070B14),
+      bottomNavigationBar: const SafeArea(
+        top: false,
+        child: PocketBannerAdWidget(
+          margin: EdgeInsets.symmetric(vertical: 4),
+        ),
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -1219,6 +1226,14 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
                 ),
               ),
             ),
+          ),
+
+          const SizedBox(height: 14),
+
+          // Native Ad below Attack Button
+          const PocketTrueNativeAdWidget(
+            placement: PocketAdPlacement.attack,
+            margin: EdgeInsets.only(bottom: 10),
           ),
         ],
       ),

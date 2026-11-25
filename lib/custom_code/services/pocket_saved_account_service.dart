@@ -488,17 +488,19 @@ class _SavedAccountBottomSheetContentState
   }
 
   void _handleAddAccount() async {
+    final rootContext = Navigator.of(context, rootNavigator: true).context;
+    final router = GoRouter.of(rootContext);
     Navigator.pop(context);
     // Ensure current user is saved before navigating to login
     await PocketSavedAccountService.saveCurrentLoggedInUser();
 
     // Prepare auth sign out to allow logging into next account
-    GoRouter.of(context).prepareAuthEvent();
+    router.prepareAuthEvent();
     await SupaFlow.client.auth.signOut();
-    GoRouter.of(context).clearRedirectLocation();
+    router.clearRedirectLocation();
 
-    if (mounted) {
-      context.goNamedAuth(AuthPageWidget.routeName, context.mounted);
+    if (rootContext.mounted) {
+      rootContext.goNamedAuth(AuthPageWidget.routeName, true);
     }
   }
 

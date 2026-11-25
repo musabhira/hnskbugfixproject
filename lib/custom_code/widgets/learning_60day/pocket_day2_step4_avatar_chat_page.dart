@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -644,6 +645,12 @@ class _PocketDay2Step4AvatarChatPageState
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF090D16),
+        bottomNavigationBar: const SafeArea(
+          top: false,
+          child: PocketBannerAdWidget(
+            margin: EdgeInsets.symmetric(vertical: 4),
+          ),
+        ),
         appBar: AppBar(
           backgroundColor: const Color(0xFF0F172A),
           elevation: 0,

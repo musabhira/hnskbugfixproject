@@ -107,57 +107,10 @@ class _EnglishLearningGroupChatWidgetState
     const baseColor = Color(0xFF1E293B);
     const highlightColor = Color(0xFF334155);
     const darkBg = Color(0xFF070B0D);
-    const appBarColor = Color(0xFF121B22);
 
-    return Scaffold(
-      backgroundColor: darkBg,
-      appBar: AppBar(
-        backgroundColor: appBarColor,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        titleSpacing: 12,
-        title: Shimmer.fromColors(
-          baseColor: baseColor,
-          highlightColor: highlightColor,
-          child: Row(
-            children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: const BoxDecoration(
-                  color: baseColor,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 110,
-                    height: 14,
-                    decoration: BoxDecoration(
-                      color: baseColor,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Container(
-                    width: 65,
-                    height: 10,
-                    decoration: BoxDecoration(
-                      color: baseColor,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-      body: Shimmer.fromColors(
+    return ColoredBox(
+      color: darkBg,
+      child: Shimmer.fromColors(
         baseColor: baseColor,
         highlightColor: highlightColor,
         child: ListView.builder(

@@ -12,6 +12,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 import 'pocket_pronunciation_evaluator.dart';
 import 'games/pocket_vocab_open_world_drive_page.dart';
 import 'pocket_fortress_defense_service.dart';
@@ -1569,8 +1570,14 @@ class _PocketDay1Step2AvatarChatPageState
     return Scaffold(
       backgroundColor: const Color(0xFF0A1118),
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(62),
+        preferredSize: const Size.fromHeight(74),
         child: SafeArea(child: _buildAppBar()),
+      ),
+      bottomNavigationBar: const SafeArea(
+        top: false,
+        child: PocketBannerAdWidget(
+          margin: EdgeInsets.symmetric(vertical: 4),
+        ),
       ),
       body: ListView.builder(
         controller: _scrollController,
@@ -1579,7 +1586,20 @@ class _PocketDay1Step2AvatarChatPageState
         itemCount: _messages.length,
         itemBuilder: (ctx, index) {
           final msg = _messages[index];
-          return _buildChatMessageItem(msg);
+          final item = _buildChatMessageItem(msg);
+          if (index == _messages.length - 1 && _messages.length >= 2) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                item,
+                const PocketTrueNativeAdWidget(
+                  placement: PocketAdPlacement.learningStep,
+                  margin: EdgeInsets.only(top: 10, bottom: 8),
+                ),
+              ],
+            );
+          }
+          return item;
         },
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
@@ -1843,21 +1863,6 @@ class _PocketDay1Step2AvatarChatPageState
                                             ? Colors.white54
                                             : const Color(0xFF38BDF8)),
                                     size: 13,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    _isSpeaking
-                                        ? 'STOP'
-                                        : (_isSoundMuted ? 'MUTED' : 'VOICE'),
-                                    style: GoogleFonts.outfit(
-                                      color: _isSpeaking
-                                          ? const Color(0xFFF87171)
-                                          : (_isSoundMuted
-                                              ? Colors.white54
-                                              : const Color(0xFF38BDF8)),
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w800,
-                                    ),
                                   ),
                                 ],
                               ),

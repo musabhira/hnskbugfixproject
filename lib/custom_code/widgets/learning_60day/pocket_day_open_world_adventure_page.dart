@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:flame/components.dart' show PositionComponent;
+import 'package:flame/game.dart' show FlameGame, GameWidget;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_feedback_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
@@ -42,6 +45,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_pronu
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_chat_reply_builder_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_negative_sentence_builder_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_mini_speech_practice_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_pattern_phrase_builder_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_review_card_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/student_letter_writing_game_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
@@ -108,7 +112,8 @@ class _PocketDayOpenWorldAdventurePageState
 
   final Map<String, bool> _subStepFlags = {};
   bool _isLoading = true;
-  static const double _zoomScale = 1.05; // Default close-up zoom for clear viewing!
+  static const double _zoomScale =
+      1.05; // Default close-up zoom for clear viewing!
 
   // World Canvas Geometry (Expanded width for breathing room and scenic mountain ascent)
   static const double _worldWidth = 5200.0;
@@ -145,10 +150,14 @@ class _PocketDayOpenWorldAdventurePageState
     );
 
     _riverBoats = [
-      CruisingBoat(x: 400, y: 1380, speed: 28, boatType: CruisingBoatType.kettuvallam),
-      CruisingBoat(x: 1600, y: 1410, speed: 45, boatType: CruisingBoatType.sailboat),
-      CruisingBoat(x: 2900, y: 1390, speed: 36, boatType: CruisingBoatType.cruiseShip),
-      CruisingBoat(x: 4200, y: 1420, speed: 60, boatType: CruisingBoatType.speedboat),
+      CruisingBoat(
+          x: 400, y: 1380, speed: 28, boatType: CruisingBoatType.kettuvallam),
+      CruisingBoat(
+          x: 1600, y: 1410, speed: 45, boatType: CruisingBoatType.sailboat),
+      CruisingBoat(
+          x: 2900, y: 1390, speed: 36, boatType: CruisingBoatType.cruiseShip),
+      CruisingBoat(
+          x: 4200, y: 1420, speed: 60, boatType: CruisingBoatType.speedboat),
     ];
 
     _seagulls = [
@@ -172,7 +181,11 @@ class _PocketDayOpenWorldAdventurePageState
     );
 
     PocketLanguageService.init();
-    PocketLanguageService.activeLanguageNotifier.addListener(_onLanguageChanged);
+    PocketLanguageService.activeLanguageNotifier
+        .addListener(_onLanguageChanged);
+
+    _initialGlobalMuteState = PocketGameAudioService.instance.isMuted;
+    _isPageBgmMuted = _initialGlobalMuteState;
 
     _loadState();
     _loadRuntimeCurriculum();
@@ -213,7 +226,10 @@ class _PocketDayOpenWorldAdventurePageState
 
   @override
   void dispose() {
-    PocketLanguageService.activeLanguageNotifier.removeListener(_onLanguageChanged);
+    PocketGameAudioService.instance
+        .setMuted(_initialGlobalMuteState, persist: false);
+    PocketLanguageService.activeLanguageNotifier
+        .removeListener(_onLanguageChanged);
     _ambientAnimController.removeListener(_onAmbientTick);
     _ambientAnimController.dispose();
     _driveAnimController.dispose();
@@ -245,23 +261,16 @@ class _PocketDayOpenWorldAdventurePageState
   // ignore: unused_field
   Day1Track _day1Track = Day1Track.middle;
   bool _isGateExamPassed = false;
-  int get _totalSteps => 21;
+  bool _isPageBgmMuted = false;
+  bool _initialGlobalMuteState = false;
+  int get _totalSteps => 20;
 
-  /// Exact coordinate of milestone step on the mountain slope (User Audio Directive: Ample gap after Today's Lesson billboard)
-  static Offset getStepPosition(int stepIndex, {int totalSteps = 21}) {
-    if (stepIndex == totalSteps) {
-      // Summit Review Milestone right past the Gate!
-      const x = 4350.0;
-      return Offset(x, getGroundY(x));
-    }
-    if (stepIndex == totalSteps - 1) {
-      // Step 20: Dedicated Spoken English Gate Exam
-      const x = 4220.0;
-      return Offset(x, getGroundY(x));
-    }
-    final stepsForSlope = totalSteps - 2; // Steps 1 to 19 along the scenic slope
-    final denominator = (stepsForSlope > 1) ? (stepsForSlope - 1).toDouble() : 1.0;
-    final progress = (stepIndex - 1) / denominator;
+  /// Exact coordinate of milestone step on the mountain slope (Steps 1 to 20)
+  static Offset getStepPosition(int stepIndex, {int totalSteps = 20}) {
+    final stepsForSlope = totalSteps; // Steps 1 to 19 along the scenic slope
+    final denominator =
+        (stepsForSlope > 1) ? (stepsForSlope - 1).toDouble() : 1.0;
+    final progress = ((stepIndex - 1) / denominator).clamp(0.0, 1.0);
     const startX = 1040.0;
     const endX = 3960.0;
     final x = startX + (endX - startX) * progress;
@@ -278,25 +287,37 @@ class _PocketDayOpenWorldAdventurePageState
     final currentLvl = await PocketSyllabusRepository.getSavedLevel();
     _day1Track = Day1Track.fromLearnerLevel(currentLvl);
 
-    final gatePassedKey = 'pocket_day_${uid ?? "guest"}_${widget.day}_gate_exam_passed';
+    final gatePassedKey =
+        'pocket_day_${uid ?? "guest"}_${widget.day}_gate_exam_passed';
     final gatePassed = prefs.getBool(gatePassedKey) ?? false;
 
     final Map<String, bool> flags = {};
     for (int step = 1; step <= _totalSteps; step++) {
-      final userKey = uid != null ? 'pocket_day_${uid}_${widget.day}_step_${step}_done' : null;
+      final userKey = uid != null
+          ? 'pocket_day_${uid}_${widget.day}_step_${step}_done'
+          : null;
       final guestKey = 'pocket_day_guest_${widget.day}_step_${step}_done';
 
       // Always check BOTH user-scoped keys and fallback guest keys, as well as _completed variants!
       // This ensures that when a learner completes steps 1-5 and exits, takes a phone call, or backgrounds
       // the app, all completed steps are 100% reliably remembered regardless of auth initialization speed.
-      final bool userDone = (uid != null && uid.isNotEmpty) && (
-        (prefs.getBool(userKey!) == true) ||
-        (prefs.getBool('pocket_day_${uid}_${widget.day}_step_${step}_completed') == true) ||
-        (step == 1 && prefs.getBool('pocket_day_${uid}_${widget.day}_step_1_completed') == true)
-      );
+      final bool userDone = (uid != null && uid.isNotEmpty) &&
+          ((prefs.getBool(userKey!) == true) ||
+              (prefs.getBool(
+                      'pocket_day_${uid}_${widget.day}_step_${step}_completed') ==
+                  true) ||
+              (step == 1 &&
+                  prefs.getBool(
+                          'pocket_day_${uid}_${widget.day}_step_1_completed') ==
+                      true));
       final bool guestDone = (prefs.getBool(guestKey) == true) ||
-        (prefs.getBool('pocket_day_guest_${widget.day}_step_${step}_completed') == true) ||
-        (step == 1 && prefs.getBool('pocket_day_guest_${widget.day}_step_1_completed') == true);
+          (prefs.getBool(
+                  'pocket_day_guest_${widget.day}_step_${step}_completed') ==
+              true) ||
+          (step == 1 &&
+              prefs.getBool(
+                      'pocket_day_guest_${widget.day}_step_1_completed') ==
+                  true);
 
       final bool rawDone = userDone || guestDone;
       flags['step_$step'] = rawDone;
@@ -304,7 +325,8 @@ class _PocketDayOpenWorldAdventurePageState
       // Auto self-heal: sync guest progress to user's profile key
       if (rawDone && uid != null && uid.isNotEmpty && !userDone) {
         prefs.setBool(userKey!, true);
-        prefs.setBool('pocket_day_${uid}_${widget.day}_step_${step}_completed', true);
+        prefs.setBool(
+            'pocket_day_${uid}_${widget.day}_step_${step}_completed', true);
       }
     }
 
@@ -323,7 +345,7 @@ class _PocketDayOpenWorldAdventurePageState
         _subStepFlags.addAll(flags);
         _isLoading = false;
         _currentLedgeStep = activeStep;
-        _isGateExamPassed = gatePassed;
+        _isGateExamPassed = gatePassed || (flags['step_19'] == true);
       });
 
       // User Audio Directive: Don't always reset car to House 1 start!
@@ -336,14 +358,16 @@ class _PocketDayOpenWorldAdventurePageState
         _prevPlayerX = targetX;
 
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          _focusOnPoint(targetX, getGroundY(targetX), scale: _zoomScale, animate: false);
+          _focusOnPoint(targetX, getGroundY(targetX),
+              scale: _zoomScale, animate: false);
         });
       }
     }
   }
 
   int _findFirstIncompleteStep(Map<String, bool> flags) {
-    final hasAdvancedBeyond6 = (flags['step_7'] == true) || (flags['step_8'] == true);
+    final hasAdvancedBeyond6 =
+        (flags['step_7'] == true) || (flags['step_8'] == true);
     for (int s = 1; s <= _totalSteps; s++) {
       if (s == 6 && hasAdvancedBeyond6 && !(flags['step_6'] ?? false)) {
         continue;
@@ -354,7 +378,6 @@ class _PocketDayOpenWorldAdventurePageState
     return _totalSteps;
   }
 
-
   void _driveToStep(int stepIndex, {bool openActivityOnArrival = false}) {
     if (!mounted) return;
     final targetPos = getStepPosition(stepIndex, totalSteps: _totalSteps);
@@ -364,7 +387,8 @@ class _PocketDayOpenWorldAdventurePageState
     _driveAnimController.stop();
     final startX = _playerX;
     _driveAnimation = Tween<double>(begin: startX, end: targetX).animate(
-      CurvedAnimation(parent: _driveAnimController, curve: Curves.easeInOutCubic),
+      CurvedAnimation(
+          parent: _driveAnimController, curve: Curves.easeInOutCubic),
     )..addListener(() {
         if (!mounted) return;
         final currentX = _driveAnimation!.value;
@@ -391,7 +415,8 @@ class _PocketDayOpenWorldAdventurePageState
         });
 
         // Smooth camera track while driving
-        _focusOnPoint(currentX, getGroundY(currentX), scale: _zoomScale, animate: false);
+        _focusOnPoint(currentX, getGroundY(currentX),
+            scale: _zoomScale, animate: false);
       });
 
     _driveAnimController.forward(from: 0.0).then((_) {
@@ -410,7 +435,8 @@ class _PocketDayOpenWorldAdventurePageState
   void _focusOnActiveStep({bool animate = true, double? targetScale}) {
     if (!mounted) return;
     final y = getGroundY(_playerX);
-    _focusOnPoint(_playerX, y, scale: targetScale ?? _zoomScale, animate: animate);
+    _focusOnPoint(_playerX, y,
+        scale: targetScale ?? _zoomScale, animate: animate);
   }
 
   void _focusOnPoint(double worldX, double worldY,
@@ -444,11 +470,12 @@ class _PocketDayOpenWorldAdventurePageState
     ).animate(CurvedAnimation(
       parent: _cameraPanAnimController!,
       curve: Curves.easeOutCubic,
-    ))..addListener(() {
-      if (mounted) {
-        _transformController.value = _cameraPanAnimation!.value;
-      }
-    });
+    ))
+      ..addListener(() {
+        if (mounted) {
+          _transformController.value = _cameraPanAnimation!.value;
+        }
+      });
     _cameraPanAnimController!.forward();
   }
 
@@ -456,7 +483,8 @@ class _PocketDayOpenWorldAdventurePageState
     if (!mounted) return;
     final targetWorldX = (fraction * _worldWidth).clamp(0.0, _worldWidth);
     final targetWorldY = getGroundY(targetWorldX);
-    final currentScale = _transformController.value.getMaxScaleOnAxis().clamp(0.52, 1.6);
+    final currentScale =
+        _transformController.value.getMaxScaleOnAxis().clamp(0.52, 1.6);
     final size = MediaQuery.of(context).size;
     final targetTx = -(targetWorldX * currentScale) + (size.width / 2.0);
     final targetTy = -(targetWorldY * currentScale) + (size.height / 2.0);
@@ -475,7 +503,8 @@ class _PocketDayOpenWorldAdventurePageState
   }
 
   double _getCurrentWorldFraction(Size screenSize) {
-    final currentScale = _transformController.value.getMaxScaleOnAxis().clamp(0.52, 1.6);
+    final currentScale =
+        _transformController.value.getMaxScaleOnAxis().clamp(0.52, 1.6);
     final tx = _transformController.value.getTranslation().x;
     final centerWorldX = ((screenSize.width / 2.0) - tx) / currentScale;
     return (centerWorldX / _worldWidth).clamp(0.0, 1.0);
@@ -505,15 +534,19 @@ class _PocketDayOpenWorldAdventurePageState
       final key = 'pocket_day_${uid}_${widget.day}_step_${stepIndex}_done';
       final alreadyDone = prefs.getBool(key) == true;
       await prefs.setBool(key, true);
-      await prefs.setBool('pocket_day_${uid}_${widget.day}_step_${stepIndex}_completed', true);
+      await prefs.setBool(
+          'pocket_day_${uid}_${widget.day}_step_${stepIndex}_completed', true);
 
       if (!alreadyDone) {
-        await PocketFortressDefenseService.recordTrainingPoints(pointsAwarded, uid);
+        await PocketFortressDefenseService.recordTrainingPoints(
+            pointsAwarded, uid);
       }
 
       if (stepIndex == _totalSteps) {
-        await prefs.setBool('pocket_day_${uid}_${widget.day}_steps_completed', true);
-        await prefs.setBool('pocket_day_${uid}_${widget.day}_step_${_totalSteps}_done', true);
+        await prefs.setBool(
+            'pocket_day_${uid}_${widget.day}_steps_completed', true);
+        await prefs.setBool(
+            'pocket_day_${uid}_${widget.day}_step_${_totalSteps}_done', true);
         final now = DateTime.now();
         final todayStr = '${now.year}-${now.month}-${now.day}';
         final existingStepsDate =
@@ -541,11 +574,15 @@ class _PocketDayOpenWorldAdventurePageState
     }
 
     // Always persist to fallback guest key as well
-    await prefs.setBool('pocket_day_guest_${widget.day}_step_${stepIndex}_done', true);
-    await prefs.setBool('pocket_day_guest_${widget.day}_step_${stepIndex}_completed', true);
+    await prefs.setBool(
+        'pocket_day_guest_${widget.day}_step_${stepIndex}_done', true);
+    await prefs.setBool(
+        'pocket_day_guest_${widget.day}_step_${stepIndex}_completed', true);
     if (stepIndex == _totalSteps) {
-      await prefs.setBool('pocket_day_guest_${widget.day}_steps_completed', true);
-      await prefs.setBool('pocket_day_guest_${widget.day}_step_${_totalSteps}_done', true);
+      await prefs.setBool(
+          'pocket_day_guest_${widget.day}_steps_completed', true);
+      await prefs.setBool(
+          'pocket_day_guest_${widget.day}_step_${_totalSteps}_done', true);
     }
 
     HapticFeedback.heavyImpact();
@@ -637,13 +674,20 @@ class _PocketDayOpenWorldAdventurePageState
 
     return Scaffold(
       backgroundColor: const Color(0xFF0284C7),
+      bottomNavigationBar: const SafeArea(
+        top: false,
+        child: PocketBannerAdWidget(
+          margin: EdgeInsets.symmetric(vertical: 4),
+        ),
+      ),
       body: Stack(
         children: [
           // 1. Panoramic Open World Mountain Canvas (2D Panning & Pinch Zoom)
           InteractiveViewer(
             transformationController: _transformController,
             constrained: false,
-            boundaryMargin: EdgeInsets.zero, // Keep contained within vibrant world bounds
+            boundaryMargin:
+                EdgeInsets.zero, // Keep contained within vibrant world bounds
             minScale: 0.52,
             maxScale: 1.6,
             child: SizedBox(
@@ -674,14 +718,15 @@ class _PocketDayOpenWorldAdventurePageState
                   // 🎯 TODAY'S TOPIC / LESSON BILLBOARD (User Audio Directive: Right after house, big title board before Step 1!)
                   _buildDayTopicBillboard(widget.day),
 
-                  // 🚪 SUMMIT GATE: Day Exam Gate (Between Step 7 and Summit House)
-                  _buildSummitGate(widget.day, _isGateExamPassed),
+                  // 📮 Large Flame Red Feedback Letter Box before Summit House
+                  _buildFlameFeedbackLetterBox(widget.day),
 
                   // 🏡 SUMMIT: House 2 (Day ${day + 1} Estate on mountain summit)
                   _buildSummitHouse(widget.day + 1, _isGateExamPassed),
 
                   // Stepping Ledges along the Rolling Mountain Highway
-                  for (int s = 1; s <= _totalSteps; s++) _buildMountainStepNode(s),
+                  for (int s = 1; s <= _totalSteps; s++)
+                    _buildMountainStepNode(s),
 
                   // 🏎️ Player's Sports Buggy Driving Along the Rolling Slope
                   _buildSportsBuggyWidget(),
@@ -704,18 +749,30 @@ class _PocketDayOpenWorldAdventurePageState
               bottom: 24,
               child: SafeArea(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: _isGateExamPassed
-                          ? [const Color(0xFF065F46), const Color(0xFF047857), const Color(0xFF10B981)]
-                          : [const Color(0xFF78350F), const Color(0xFFB45309), const Color(0xFFD97706)],
+                          ? [
+                              const Color(0xFF065F46),
+                              const Color(0xFF047857),
+                              const Color(0xFF10B981)
+                            ]
+                          : [
+                              const Color(0xFF78350F),
+                              const Color(0xFFB45309),
+                              const Color(0xFFD97706)
+                            ],
                     ),
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: const Color(0xFFFFD700), width: 2),
+                    border:
+                        Border.all(color: const Color(0xFFFFD700), width: 2),
                     boxShadow: [
                       BoxShadow(
-                        color: (_isGateExamPassed ? const Color(0xFF10B981) : const Color(0xFFF59E0B))
+                        color: (_isGateExamPassed
+                                ? const Color(0xFF10B981)
+                                : const Color(0xFFF59E0B))
                             .withValues(alpha: 0.5),
                         blurRadius: 20,
                         offset: const Offset(0, 6),
@@ -724,7 +781,8 @@ class _PocketDayOpenWorldAdventurePageState
                   ),
                   child: Row(
                     children: [
-                      Text(_isGateExamPassed ? '🏆' : '🔒', style: const TextStyle(fontSize: 28)),
+                      Text(_isGateExamPassed ? '🏆' : '🔒',
+                          style: const TextStyle(fontSize: 28)),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
@@ -732,7 +790,9 @@ class _PocketDayOpenWorldAdventurePageState
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              _isGateExamPassed ? 'DAY ${widget.day} COMPLETE!' : 'DAY ${widget.day} STEPS COMPLETE!',
+                              _isGateExamPassed
+                                  ? 'DAY ${widget.day} COMPLETE!'
+                                  : 'DAY ${widget.day} STEPS COMPLETE!',
                               style: GoogleFonts.outfit(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -757,8 +817,10 @@ class _PocketDayOpenWorldAdventurePageState
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFFFD700),
                           foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 10),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
                           elevation: 4,
                         ),
                         onPressed: () {
@@ -775,7 +837,8 @@ class _PocketDayOpenWorldAdventurePageState
                                   Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (_) => PocketDayOpenWorldAdventurePage(
+                                      builder: (_) =>
+                                          PocketDayOpenWorldAdventurePage(
                                         day: widget.day + 1,
                                         userId: widget.userId,
                                       ),
@@ -787,8 +850,11 @@ class _PocketDayOpenWorldAdventurePageState
                           }
                         },
                         child: Text(
-                          _isGateExamPassed ? 'ENTER HOUSE ${widget.day + 1} ➔' : 'TAKE GATE ${widget.day} EXAM 🎙️',
-                          style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
+                          _isGateExamPassed
+                              ? 'ENTER HOUSE ${widget.day + 1} ➔'
+                              : 'TAKE GATE ${widget.day} EXAM 🎙️',
+                          style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.w900, fontSize: 13),
                         ),
                       ),
                     ],
@@ -895,40 +961,74 @@ class _PocketDayOpenWorldAdventurePageState
 
               const Spacer(),
 
-              // 📍 Focus Button (Re-centers on vehicle / active step)
+              // 🔊 Page-only Background Music Toggle
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  setState(() => _isPageBgmMuted = !_isPageBgmMuted);
+                  PocketGameAudioService.instance.setMuted(
+                    _isPageBgmMuted,
+                    persist: false,
+                  );
+                },
+                child: Container(
+                  height: 34,
+                  width: 34,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A).withValues(alpha: 0.88),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: _isPageBgmMuted
+                          ? Colors.white24
+                          : const Color(0xFFFFD700).withValues(alpha: 0.6),
+                      width: 1,
+                    ),
+                  ),
+                  child: Icon(
+                    _isPageBgmMuted
+                        ? Icons.volume_off_rounded
+                        : Icons.volume_up_rounded,
+                    color: _isPageBgmMuted
+                        ? Colors.white54
+                        : const Color(0xFFFFD700),
+                    size: 17,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+
+              // 📍 Minimal Focus Button (Re-centers on vehicle / active step)
               GestureDetector(
                 onTap: () {
                   HapticFeedback.lightImpact();
                   _focusOnActiveStep(animate: true);
                 },
                 child: Container(
-                  height: 42,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  height: 34,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A).withValues(alpha: 0.90),
-                    borderRadius: BorderRadius.circular(21),
+                    color: const Color(0xFF0F172A).withValues(alpha: 0.88),
+                    borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: const Color(0xFFFFD700).withValues(alpha: 0.8),
-                      width: 1.2,
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.6),
+                      width: 1,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.35),
-                        blurRadius: 8,
-                      ),
-                    ],
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text('📍', style: TextStyle(fontSize: 14)),
-                      const SizedBox(width: 6),
+                      const Icon(
+                        Icons.my_location_rounded,
+                        color: Color(0xFFFFD700),
+                        size: 14,
+                      ),
+                      const SizedBox(width: 4),
                       Text(
                         'Focus',
                         style: GoogleFonts.outfit(
                           color: const Color(0xFFFFD700),
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
@@ -1047,26 +1147,32 @@ class _PocketDayOpenWorldAdventurePageState
                       builder: (context, _) {
                         final size = MediaQuery.of(context).size;
                         final fraction = _getCurrentWorldFraction(size);
-                        final maxThumbTravel = (trackWidth - thumbWidth - 20).clamp(0.0, trackWidth);
+                        final maxThumbTravel = (trackWidth - thumbWidth - 20)
+                            .clamp(0.0, trackWidth);
                         final thumbLeft = (fraction * maxThumbTravel) + 10;
                         final approxStep = _findStepClosestToFraction(fraction);
 
                         return Positioned(
-                          left: thumbLeft.clamp(6.0, trackWidth - thumbWidth - 6.0),
+                          left: thumbLeft.clamp(
+                              6.0, trackWidth - thumbWidth - 6.0),
                           child: IgnorePointer(
                             child: Container(
                               width: thumbWidth,
                               height: 32,
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
-                                  colors: [Color(0xFFFFD700), Color(0xFFFF9100)],
+                                  colors: [
+                                    Color(0xFFFFD700),
+                                    Color(0xFFFF9100)
+                                  ],
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 ),
                                 borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFFFFD700).withValues(alpha: 0.65),
+                                    color: const Color(0xFFFFD700)
+                                        .withValues(alpha: 0.65),
                                     blurRadius: 10,
                                     spreadRadius: 1,
                                   ),
@@ -1075,7 +1181,8 @@ class _PocketDayOpenWorldAdventurePageState
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Text('🏎️', style: TextStyle(fontSize: 11)),
+                                  const Text('🏎️',
+                                      style: TextStyle(fontSize: 11)),
                                   const SizedBox(width: 3),
                                   Text(
                                     'S$approxStep',
@@ -1109,7 +1216,8 @@ class _PocketDayOpenWorldAdventurePageState
     final dotX = (fraction * (trackWidth - 36)) + 18;
 
     final isDone = _subStepFlags['step_$step'] ?? false;
-    final isPrevDone = step == 1 || (_subStepFlags['step_${step - 1}'] ?? false);
+    final isPrevDone =
+        step == 1 || (_subStepFlags['step_${step - 1}'] ?? false);
     final isUnlocked = _isMasterAdmin || isPrevDone;
     final isCurrent = isUnlocked && !isDone;
 
@@ -1126,7 +1234,8 @@ class _PocketDayOpenWorldAdventurePageState
         onTap: () {
           HapticFeedback.selectionClick();
           final targetX = pos.dx - 48.0;
-          _focusOnPoint(targetX, getGroundY(targetX), scale: _zoomScale, animate: true);
+          _focusOnPoint(targetX, getGroundY(targetX),
+              scale: _zoomScale, animate: true);
         },
         child: Container(
           width: dotSize,
@@ -1149,12 +1258,40 @@ class _PocketDayOpenWorldAdventurePageState
     );
   }
 
+  Widget _buildFlameFeedbackLetterBox(int day) {
+    const boxX = 4220.0;
+    const boxW = 220.0;
+    const boxH = 195.0;
+    final groundY = getGroundY(boxX);
+    return Positioned(
+      left: boxX - (boxW / 2),
+      top: groundY - boxH + 10.0,
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.mediumImpact();
+          PocketFeedbackService.showFeedbackBottomSheet(
+            context,
+            dayNumber: day,
+          );
+        },
+        child: SizedBox(
+          width: boxW,
+          height: boxH,
+          child: GameWidget(
+            game: _FlameFeedbackLetterBoxGame(),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildStartHouse(int day) {
     const houseWidth = 240.0;
     const houseHeight = 145.0;
     const startX = 160.0;
     final groundY = getGroundY(startX);
-    final palette = HousePalette.presets[(day - 1) % HousePalette.presets.length];
+    final palette =
+        HousePalette.presets[(day - 1) % HousePalette.presets.length];
     final estateTitle = FlameEnglishHouseWidget.getEstateStageTitle(day);
 
     return Positioned(
@@ -1167,11 +1304,13 @@ class _PocketDayOpenWorldAdventurePageState
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
                 decoration: BoxDecoration(
                   color: const Color(0xFF0F172A),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFF10B981), width: 1.2),
+                  border:
+                      Border.all(color: const Color(0xFF10B981), width: 1.2),
                 ),
                 child: Text(
                   '🏠 START: DAY $day ($estateTitle)',
@@ -1198,13 +1337,15 @@ class _PocketDayOpenWorldAdventurePageState
                   await _loadState(preserveCarPosition: true);
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFF065F46), Color(0xFF047857)],
                     ),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+                    border:
+                        Border.all(color: const Color(0xFFFFD700), width: 1.2),
                     boxShadow: [
                       BoxShadow(
                         color: const Color(0xFF10B981).withValues(alpha: 0.4),
@@ -1259,7 +1400,8 @@ class _PocketDayOpenWorldAdventurePageState
   Widget _buildDayTopicBillboard(int day) {
     const boardWidth = 240.0;
     const boardHeight = 155.0;
-    const boardX = 560.0; // Ample gap from House 1 (160..400) and before Step 1 (1040)
+    const boardX =
+        560.0; // Ample gap from House 1 (160..400) and before Step 1 (1040)
 
     // Left and right stilt ground intersection points to adapt cleanly to hillside wave/hump
     const leftStiltOffset = 42.0;
@@ -1280,8 +1422,7 @@ class _PocketDayOpenWorldAdventurePageState
             cached?['course']?['topic'],
             lang: userLangCode);
     final grammar = cached?['grammarRule'] as Map<String, dynamic>? ?? {};
-    final formula =
-        grammar['formula']?.toString() ?? 'Daily Speaking Mastery';
+    final formula = grammar['formula']?.toString() ?? 'Daily Speaking Mastery';
 
     // Board bottom sits above highest ground point
     final boardTopY = math.min(leftGroundY, rightGroundY) - boardHeight - 34.0;
@@ -1313,7 +1454,11 @@ class _PocketDayOpenWorldAdventurePageState
                 child: Container(
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF00F0FF), Color(0xFF0284C7), Color(0xFF0F172A)],
+                      colors: [
+                        Color(0xFF00F0FF),
+                        Color(0xFF0284C7),
+                        Color(0xFF0F172A)
+                      ],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ),
@@ -1337,7 +1482,11 @@ class _PocketDayOpenWorldAdventurePageState
                 child: Container(
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFFFFD700), Color(0xFFD97706), Color(0xFF0F172A)],
+                      colors: [
+                        Color(0xFFFFD700),
+                        Color(0xFFD97706),
+                        Color(0xFF0F172A)
+                      ],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ),
@@ -1362,7 +1511,8 @@ class _PocketDayOpenWorldAdventurePageState
                   decoration: BoxDecoration(
                     color: const Color(0xFF0284C7),
                     borderRadius: BorderRadius.circular(5),
-                    border: Border.all(color: const Color(0xFF00F0FF), width: 1.2),
+                    border:
+                        Border.all(color: const Color(0xFF00F0FF), width: 1.2),
                     boxShadow: [
                       BoxShadow(
                         color: const Color(0xFF00F0FF).withValues(alpha: 0.6),
@@ -1381,7 +1531,8 @@ class _PocketDayOpenWorldAdventurePageState
                   decoration: BoxDecoration(
                     color: const Color(0xFFB45309),
                     borderRadius: BorderRadius.circular(5),
-                    border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+                    border:
+                        Border.all(color: const Color(0xFFFFD700), width: 1.2),
                     boxShadow: [
                       BoxShadow(
                         color: const Color(0xFFFFD700).withValues(alpha: 0.6),
@@ -1396,7 +1547,8 @@ class _PocketDayOpenWorldAdventurePageState
               Container(
                 width: boardWidth,
                 height: boardHeight,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [
@@ -1408,7 +1560,8 @@ class _PocketDayOpenWorldAdventurePageState
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: const Color(0xFF00F0FF), width: 2.0),
+                  border:
+                      Border.all(color: const Color(0xFF00F0FF), width: 2.0),
                   boxShadow: [
                     BoxShadow(
                       color: const Color(0xFF00F0FF).withValues(alpha: 0.35),
@@ -1430,7 +1583,8 @@ class _PocketDayOpenWorldAdventurePageState
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 2.5),
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
                               colors: [Color(0xFFFFD700), Color(0xFFF59E0B)],
@@ -1438,7 +1592,8 @@ class _PocketDayOpenWorldAdventurePageState
                             borderRadius: BorderRadius.circular(6),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFFFFD700).withValues(alpha: 0.5),
+                                color: const Color(0xFFFFD700)
+                                    .withValues(alpha: 0.5),
                                 blurRadius: 6,
                               ),
                             ],
@@ -1462,11 +1617,14 @@ class _PocketDayOpenWorldAdventurePageState
                         ),
                         const Spacer(),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF0284C7).withValues(alpha: 0.35),
+                            color:
+                                const Color(0xFF0284C7).withValues(alpha: 0.35),
                             borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: const Color(0xFF00F0FF), width: 0.8),
+                            border: Border.all(
+                                color: const Color(0xFF00F0FF), width: 0.8),
                           ),
                           child: Text(
                             'DAY $day',
@@ -1511,7 +1669,8 @@ class _PocketDayOpenWorldAdventurePageState
                     // Futuristic Formula / Concept Energy Capsule
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: const Color(0xFF1E1B4B),
                         borderRadius: BorderRadius.circular(8),
@@ -1547,7 +1706,8 @@ class _PocketDayOpenWorldAdventurePageState
                       children: [
                         Text(
                           'Tap for Details ℹ️',
-                          style: GoogleFonts.inter(color: Colors.white54, fontSize: 9),
+                          style: GoogleFonts.inter(
+                              color: Colors.white54, fontSize: 9),
                         ),
                         Row(
                           children: [
@@ -1575,17 +1735,24 @@ class _PocketDayOpenWorldAdventurePageState
     );
   }
 
-  void _showTopicBoardDialog(int day, String topicEn, String topicNative, String formula, Map<String, dynamic> grammar) {
+  void _showTopicBoardDialog(int day, String topicEn, String topicNative,
+      String formula, Map<String, dynamic> grammar) {
     final userLangCode = PocketLanguageService.languageCode;
     final isEn = PocketLanguageService.isEnglish;
-    final expEn = PocketDayCurriculumService.getLocalizedText(grammar['explanation'], lang: 'en');
+    final expEn = PocketDayCurriculumService.getLocalizedText(
+        grammar['explanation'],
+        lang: 'en');
     final expNative = isEn
         ? ''
-        : PocketDayCurriculumService.getLocalizedText(grammar['explanation'], lang: userLangCode);
-    final goldenTipEn = PocketDayCurriculumService.getLocalizedText(grammar['goldenTip'], lang: 'en');
+        : PocketDayCurriculumService.getLocalizedText(grammar['explanation'],
+            lang: userLangCode);
+    final goldenTipEn = PocketDayCurriculumService.getLocalizedText(
+        grammar['goldenTip'],
+        lang: 'en');
     final goldenTipNative = isEn
         ? ''
-        : PocketDayCurriculumService.getLocalizedText(grammar['goldenTip'], lang: userLangCode);
+        : PocketDayCurriculumService.getLocalizedText(grammar['goldenTip'],
+            lang: userLangCode);
 
     showModalBottomSheet(
       context: context,
@@ -1628,12 +1795,21 @@ class _PocketDayOpenWorldAdventurePageState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('DAY $day CURRICULUM BOARD',
-                            style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 12, fontWeight: FontWeight.bold)),
+                            style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFD700),
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold)),
                         Text(topicEn,
-                            style: GoogleFonts.outfit(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
+                            style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold)),
                         if (topicNative.isNotEmpty && topicNative != topicEn)
                           Text(topicNative,
-                              style: GoogleFonts.inter(color: const Color(0xFF93C5FD), fontSize: 13, fontWeight: FontWeight.w600)),
+                              style: GoogleFonts.inter(
+                                  color: const Color(0xFF93C5FD),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600)),
                       ],
                     ),
                   ),
@@ -1646,21 +1822,34 @@ class _PocketDayOpenWorldAdventurePageState
                 decoration: BoxDecoration(
                   color: const Color(0xFF1E293B),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.5)),
+                  border: Border.all(
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.5)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('FORMULA / RULE:', style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontSize: 11, fontWeight: FontWeight.bold)),
+                    Text('FORMULA / RULE:',
+                        style: GoogleFonts.outfit(
+                            color: const Color(0xFF38BDF8),
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold)),
                     const SizedBox(height: 4),
-                    Text(formula, style: GoogleFonts.robotoMono(color: const Color(0xFFFFE066), fontSize: 15, fontWeight: FontWeight.bold)),
+                    Text(formula,
+                        style: GoogleFonts.robotoMono(
+                            color: const Color(0xFFFFE066),
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold)),
                     if (expNative.isNotEmpty) ...[
                       const SizedBox(height: 6),
-                      Text(expNative, style: GoogleFonts.inter(color: Colors.white, fontSize: 12.5)),
+                      Text(expNative,
+                          style: GoogleFonts.inter(
+                              color: Colors.white, fontSize: 12.5)),
                     ],
                     if (expEn.isNotEmpty && expEn != expNative) ...[
                       const SizedBox(height: 4),
-                      Text(expEn, style: GoogleFonts.inter(color: Colors.white60, fontSize: 11)),
+                      Text(expEn,
+                          style: GoogleFonts.inter(
+                              color: Colors.white60, fontSize: 11)),
                     ],
                   ],
                 ),
@@ -1673,7 +1862,8 @@ class _PocketDayOpenWorldAdventurePageState
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFD700).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                    border: Border.all(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
                   ),
                   child: Row(
                     children: [
@@ -1681,8 +1871,13 @@ class _PocketDayOpenWorldAdventurePageState
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          goldenTipNative.isNotEmpty ? goldenTipNative : goldenTipEn,
-                          style: GoogleFonts.inter(color: const Color(0xFFFFE066), fontSize: 12, fontWeight: FontWeight.w600),
+                          goldenTipNative.isNotEmpty
+                              ? goldenTipNative
+                              : goldenTipEn,
+                          style: GoogleFonts.inter(
+                              color: const Color(0xFFFFE066),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600),
                         ),
                       ),
                     ],
@@ -1702,14 +1897,17 @@ class _PocketDayOpenWorldAdventurePageState
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF10B981),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                   ),
                   onPressed: () {
                     Navigator.pop(ctx);
                     _driveToStep(1);
                   },
                   icon: const Icon(Icons.play_arrow_rounded, size: 22),
-                  label: Text('START STEP 1 NOW ➔', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14)),
+                  label: Text('START STEP 1 NOW ➔',
+                      style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.bold, fontSize: 14)),
                 ),
               ),
             ],
@@ -1727,7 +1925,8 @@ class _PocketDayOpenWorldAdventurePageState
     _driveAnimController.stop();
     final startX = _playerX;
     _driveAnimation = Tween<double>(begin: startX, end: targetX).animate(
-      CurvedAnimation(parent: _driveAnimController, curve: Curves.easeInOutCubic),
+      CurvedAnimation(
+          parent: _driveAnimController, curve: Curves.easeInOutCubic),
     )..addListener(() {
         if (!mounted) return;
         final currentX = _driveAnimation!.value;
@@ -1752,7 +1951,8 @@ class _PocketDayOpenWorldAdventurePageState
           _isDriving = true;
         });
 
-        _focusOnPoint(currentX, getGroundY(currentX), scale: _zoomScale, animate: false);
+        _focusOnPoint(currentX, getGroundY(currentX),
+            scale: _zoomScale, animate: false);
       });
 
     _driveAnimController.forward(from: 0.0).then((_) {
@@ -1773,7 +1973,8 @@ class _PocketDayOpenWorldAdventurePageState
     _driveAnimController.stop();
     final startX = _playerX;
     _driveAnimation = Tween<double>(begin: startX, end: houseX).animate(
-      CurvedAnimation(parent: _driveAnimController, curve: Curves.easeInOutCubic),
+      CurvedAnimation(
+          parent: _driveAnimController, curve: Curves.easeInOutCubic),
     )..addListener(() {
         if (!mounted) return;
         final currentX = _driveAnimation!.value;
@@ -1798,7 +1999,8 @@ class _PocketDayOpenWorldAdventurePageState
           _isDriving = true;
         });
 
-        _focusOnPoint(currentX, getGroundY(currentX), scale: _zoomScale, animate: false);
+        _focusOnPoint(currentX, getGroundY(currentX),
+            scale: _zoomScale, animate: false);
       });
 
     _driveAnimController.forward(from: 0.0).then((_) {
@@ -1831,15 +2033,21 @@ class _PocketDayOpenWorldAdventurePageState
               duration: const Duration(milliseconds: 300),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: isGatePassed ? const Color(0xFF064E3B) : const Color(0xFF7F1D1D),
+                color: isGatePassed
+                    ? const Color(0xFF064E3B)
+                    : const Color(0xFF7F1D1D),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: isGatePassed ? const Color(0xFF34D399) : const Color(0xFFFFD700),
+                  color: isGatePassed
+                      ? const Color(0xFF34D399)
+                      : const Color(0xFFFFD700),
                   width: 1.4,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: (isGatePassed ? const Color(0xFF10B981) : const Color(0xFFEF4444))
+                    color: (isGatePassed
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFFEF4444))
                         .withValues(alpha: 0.45),
                     blurRadius: 10,
                   ),
@@ -1850,7 +2058,9 @@ class _PocketDayOpenWorldAdventurePageState
                 children: [
                   Icon(
                     isGatePassed ? Icons.lock_open_rounded : Icons.lock_rounded,
-                    color: isGatePassed ? const Color(0xFF34D399) : const Color(0xFFFFD700),
+                    color: isGatePassed
+                        ? const Color(0xFF34D399)
+                        : const Color(0xFFFFD700),
                     size: 13,
                   ),
                   const SizedBox(width: 5),
@@ -1875,9 +2085,12 @@ class _PocketDayOpenWorldAdventurePageState
               width: gateWidth,
               height: 125,
               decoration: BoxDecoration(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(60)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(60)),
                 border: Border.all(
-                  color: isGatePassed ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
+                  color: isGatePassed
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFFF59E0B),
                   width: 3.5,
                 ),
                 gradient: LinearGradient(
@@ -1895,7 +2108,9 @@ class _PocketDayOpenWorldAdventurePageState
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: (isGatePassed ? const Color(0xFF10B981) : const Color(0xFFF59E0B))
+                    color: (isGatePassed
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFFF59E0B))
                         .withValues(alpha: 0.35),
                     blurRadius: 16,
                   ),
@@ -1918,9 +2133,13 @@ class _PocketDayOpenWorldAdventurePageState
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        isGatePassed ? 'GATE ${widget.day} PASSED 🛡️' : 'GATE ${widget.day}: TAP TO SPEAK',
+                        isGatePassed
+                            ? 'GATE ${widget.day} PASSED 🛡️'
+                            : 'GATE ${widget.day}: TAP TO SPEAK',
                         style: GoogleFonts.outfit(
-                          color: isGatePassed ? const Color(0xFF34D399) : Colors.white,
+                          color: isGatePassed
+                              ? const Color(0xFF34D399)
+                              : Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 9.5,
                           letterSpacing: 0.5,
@@ -1946,7 +2165,8 @@ class _PocketDayOpenWorldAdventurePageState
   }
 
   void _showSpokenGateExamModal() {
-    final allQuestions = Pocket90DaySpokenExamCurriculum.getExamForDay(widget.day);
+    final allQuestions =
+        Pocket90DaySpokenExamCurriculum.getExamForDay(widget.day);
     // User Audio Directive: Ask 5-6 questions in spoken English gate 1 (not just 4)
     final questions = allQuestions.take(6).toList();
 
@@ -1972,16 +2192,25 @@ class _PocketDayOpenWorldAdventurePageState
             final isCompleted = currentIdx >= questions.length;
 
             if (isCompleted) {
-              final scorePct = ((correctCount / questions.length) * 100).toInt();
-              final isPassed = correctCount >= (questions.length >= 6 ? 4 : (questions.length >= 4 ? 3 : 1)); // 60%+ pass threshold
+              final scorePct =
+                  ((correctCount / questions.length) * 100).toInt();
+              final isPassed = correctCount >=
+                  (questions.length >= 6
+                      ? 4
+                      : (questions.length >= 4 ? 3 : 1)); // 60%+ pass threshold
 
               if (isPassed && !_isGateExamPassed) {
                 // Award points & unlock Step 21 (Daily Summary)
                 final uid = widget.userId ?? _supabase.auth.currentUser?.id;
                 SharedPreferences.getInstance().then((prefs) async {
-                  await prefs.setBool('pocket_day_${uid ?? "guest"}_${widget.day}_gate_exam_passed', true);
-                  await prefs.setBool('pocket_day_${uid ?? "guest"}_${widget.day}_step_20_done', true);
-                  await PocketFortressDefenseService.recordTrainingPoints(100, uid);
+                  await prefs.setBool(
+                      'pocket_day_${uid ?? "guest"}_${widget.day}_gate_exam_passed',
+                      true);
+                  await prefs.setBool(
+                      'pocket_day_${uid ?? "guest"}_${widget.day}_step_20_done',
+                      true);
+                  await PocketFortressDefenseService.recordTrainingPoints(
+                      100, uid);
                   if (mounted) {
                     setState(() {
                       _isGateExamPassed = true;
@@ -2000,12 +2229,16 @@ class _PocketDayOpenWorldAdventurePageState
                     color: const Color(0xFF0F172A),
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(
-                      color: isPassed ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                      color: isPassed
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFEF4444),
                       width: 2.0,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: (isPassed ? const Color(0xFF10B981) : const Color(0xFFEF4444))
+                        color: (isPassed
+                                ? const Color(0xFF10B981)
+                                : const Color(0xFFEF4444))
                             .withValues(alpha: 0.4),
                         blurRadius: 20,
                       ),
@@ -2014,12 +2247,16 @@ class _PocketDayOpenWorldAdventurePageState
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(isPassed ? '🏆' : '🔒', style: const TextStyle(fontSize: 48)),
+                      Text(isPassed ? '🏆' : '🔒',
+                          style: const TextStyle(fontSize: 48)),
                       const SizedBox(height: 12),
                       Text(
-                        isPassed ? 'GATE ${widget.day} CONQUERED!' : 'GATE ${widget.day} LOCKED',
+                        isPassed
+                            ? 'GATE ${widget.day} CONQUERED!'
+                            : 'GATE ${widget.day} LOCKED',
                         style: GoogleFonts.outfit(
-                          color: isPassed ? const Color(0xFFFFD700) : Colors.white,
+                          color:
+                              isPassed ? const Color(0xFFFFD700) : Colors.white,
                           fontWeight: FontWeight.w900,
                           fontSize: 20,
                         ),
@@ -2030,7 +2267,9 @@ class _PocketDayOpenWorldAdventurePageState
                             ? 'Score: $correctCount / ${questions.length} ($scorePct%) • PASSED (60%+)'
                             : 'Score: $correctCount / ${questions.length} ($scorePct%) • NEED 60% (4/6)',
                         style: GoogleFonts.inter(
-                          color: isPassed ? const Color(0xFF34D399) : const Color(0xFFF87171),
+                          color: isPassed
+                              ? const Color(0xFF34D399)
+                              : const Color(0xFFF87171),
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
                         ),
@@ -2038,11 +2277,13 @@ class _PocketDayOpenWorldAdventurePageState
                       const SizedBox(height: 12),
                       if (isPassed) ...[
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 8),
                           decoration: BoxDecoration(
                             color: const Color(0xFF132238),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+                            border: Border.all(
+                                color: const Color(0xFFFFD700), width: 1.2),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -2063,13 +2304,15 @@ class _PocketDayOpenWorldAdventurePageState
                         const SizedBox(height: 10),
                         Text(
                           'House ${widget.day + 1} (Day ${widget.day + 1}) is officially unlocked on the Summit!',
-                          style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                          style: GoogleFonts.inter(
+                              color: Colors.white70, fontSize: 12),
                           textAlign: TextAlign.center,
                         ),
                       ] else ...[
                         Text(
                           'Tap Retry to speak the questions again and conquer the gate!',
-                          style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                          style: GoogleFonts.inter(
+                              color: Colors.white70, fontSize: 12),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -2088,9 +2331,12 @@ class _PocketDayOpenWorldAdventurePageState
                         height: 48,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: isPassed ? const Color(0xFF10B981) : const Color(0xFFFFD700),
+                            backgroundColor: isPassed
+                                ? const Color(0xFF10B981)
+                                : const Color(0xFFFFD700),
                             foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14)),
                           ),
                           onPressed: () async {
                             if (isPassed) {
@@ -2112,7 +2358,8 @@ class _PocketDayOpenWorldAdventurePageState
                             isPassed
                                 ? 'VIEW DAY ${widget.day} REVIEW & PERFORMANCE CARD 🏆'
                                 : 'RETRY EXAM 🔄',
-                            style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13.5),
+                            style: GoogleFonts.outfit(
+                                fontWeight: FontWeight.bold, fontSize: 13.5),
                           ),
                         ),
                       ),
@@ -2132,7 +2379,8 @@ class _PocketDayOpenWorldAdventurePageState
                 ? (q['question'][userLangCode]?.toString() ?? '')
                 : '';
             final targetText = (q['targetText'] ?? '').toString();
-            final voicePrompt = (q['voicePrompt'] ?? 'Say: $targetText').toString();
+            final voicePrompt =
+                (q['voicePrompt'] ?? 'Say: $targetText').toString();
 
             // User Audio Directive: User must speak fully and tap SEND to verify speech!
             void onSendTap() {
@@ -2159,7 +2407,9 @@ class _PocketDayOpenWorldAdventurePageState
                   spoken.contains(target) ||
                   target.contains(spoken) ||
                   PocketPronunciationEvaluator.isMatch(
-                      spokenText: spoken, targetSentence: target, thresholdPercentage: 35);
+                      spokenText: spoken,
+                      targetSentence: target,
+                      thresholdPercentage: 35);
 
               if (isMatch) {
                 setModalState(() {
@@ -2208,13 +2458,15 @@ class _PocketDayOpenWorldAdventurePageState
 
             return Dialog(
               backgroundColor: Colors.transparent,
-              insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              insetPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
               child: Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
                   color: const Color(0xFF0F172A),
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                  border:
+                      Border.all(color: const Color(0xFFFFD700), width: 1.5),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -2225,7 +2477,8 @@ class _PocketDayOpenWorldAdventurePageState
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
                             color: const Color(0xFF1E293B),
                             borderRadius: BorderRadius.circular(10),
@@ -2247,7 +2500,8 @@ class _PocketDayOpenWorldAdventurePageState
                             ttsEngine.stop();
                             Navigator.pop(dlgCtx);
                           },
-                          icon: const Icon(Icons.close_rounded, color: Colors.white60, size: 20),
+                          icon: const Icon(Icons.close_rounded,
+                              color: Colors.white60, size: 20),
                         ),
                       ],
                     ),
@@ -2261,7 +2515,8 @@ class _PocketDayOpenWorldAdventurePageState
                         value: (currentIdx + 1) / questions.length,
                         minHeight: 6,
                         backgroundColor: Colors.white12,
-                        valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                            Color(0xFF10B981)),
                       ),
                     ),
 
@@ -2339,7 +2594,8 @@ class _PocketDayOpenWorldAdventurePageState
                               await ttsEngine.stop();
                               await ttsEngine.speak(voicePrompt);
                             },
-                            icon: const Icon(Icons.volume_up_rounded, color: Color(0xFF10B981)),
+                            icon: const Icon(Icons.volume_up_rounded,
+                                color: Color(0xFF10B981)),
                           ),
                         ],
                       ),
@@ -2350,7 +2606,8 @@ class _PocketDayOpenWorldAdventurePageState
                     // Live Speech Recognized Box (User Audio Directive: Just tap and speak full, view words)
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
                       decoration: BoxDecoration(
                         color: const Color(0xFF1E293B),
                         borderRadius: BorderRadius.circular(12),
@@ -2366,8 +2623,12 @@ class _PocketDayOpenWorldAdventurePageState
                       child: Row(
                         children: [
                           Icon(
-                            isListening ? Icons.hearing_rounded : Icons.record_voice_over_rounded,
-                            color: isListening ? const Color(0xFFEF4444) : const Color(0xFF38BDF8),
+                            isListening
+                                ? Icons.hearing_rounded
+                                : Icons.record_voice_over_rounded,
+                            color: isListening
+                                ? const Color(0xFFEF4444)
+                                : const Color(0xFF38BDF8),
                             size: 20,
                           ),
                           const SizedBox(width: 8),
@@ -2387,10 +2648,12 @@ class _PocketDayOpenWorldAdventurePageState
                               ),
                             ),
                           ),
-                          if (liveTranscript.isNotEmpty && isCurrentCorrect != true)
+                          if (liveTranscript.isNotEmpty &&
+                              isCurrentCorrect != true)
                             IconButton(
                               visualDensity: VisualDensity.compact,
-                              icon: const Icon(Icons.clear_rounded, size: 16, color: Colors.white54),
+                              icon: const Icon(Icons.clear_rounded,
+                                  size: 16, color: Colors.white54),
                               onPressed: () {
                                 setModalState(() {
                                   liveTranscript = '';
@@ -2434,11 +2697,13 @@ class _PocketDayOpenWorldAdventurePageState
                             if (!sttReady) {
                               sttReady = await sttEngine.initialize(
                                 onStatus: (status) {
-                                  if (status == 'done' || status == 'notListening') {
+                                  if (status == 'done' ||
+                                      status == 'notListening') {
                                     setModalState(() => isListening = false);
                                   }
                                 },
-                                onError: (_) => setModalState(() => isListening = false),
+                                onError: (_) =>
+                                    setModalState(() => isListening = false),
                               );
                             }
 
@@ -2462,7 +2727,8 @@ class _PocketDayOpenWorldAdventurePageState
                               // Fallback for Windows desktop where hardware mic may not initialize
                               setModalState(() {
                                 liveTranscript = targetText;
-                                feedbackMessage = 'Simulated speech for practice: "$targetText"';
+                                feedbackMessage =
+                                    'Simulated speech for practice: "$targetText"';
                               });
                             }
                           },
@@ -2479,7 +2745,9 @@ class _PocketDayOpenWorldAdventurePageState
                                       : const Color(0xFF2563EB)),
                               boxShadow: [
                                 BoxShadow(
-                                  color: (isListening ? const Color(0xFFEF4444) : const Color(0xFF2563EB))
+                                  color: (isListening
+                                          ? const Color(0xFFEF4444)
+                                          : const Color(0xFF2563EB))
                                       .withValues(alpha: 0.5),
                                   blurRadius: isListening ? 18 : 8,
                                   spreadRadius: isListening ? 3 : 1,
@@ -2508,12 +2776,16 @@ class _PocketDayOpenWorldAdventurePageState
                                     ? const Color(0xFF10B981)
                                     : const Color(0xFFFFD700),
                                 foregroundColor: Colors.black,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14)),
                                 elevation: 4,
                               ),
-                              onPressed: isCurrentCorrect == true ? null : onSendTap,
+                              onPressed:
+                                  isCurrentCorrect == true ? null : onSendTap,
                               icon: Icon(
-                                isCurrentCorrect == true ? Icons.check_circle_rounded : Icons.send_rounded,
+                                isCurrentCorrect == true
+                                    ? Icons.check_circle_rounded
+                                    : Icons.send_rounded,
                                 size: 18,
                               ),
                               label: Text(
@@ -2565,7 +2837,8 @@ class _PocketDayOpenWorldAdventurePageState
               SnackBar(
                 content: Text(
                   '🔒 Complete Day ${widget.day} Gate Exam and Daily Summary to unlock House $targetDay!',
-                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.outfit(
+                      color: Colors.white, fontWeight: FontWeight.bold),
                 ),
                 backgroundColor: const Color(0xFF1E2438),
                 behavior: SnackBarBehavior.floating,
@@ -2608,16 +2881,22 @@ class _PocketDayOpenWorldAdventurePageState
                       offset: Offset(0, -bounce),
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 6),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 5),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [Color(0xFF34D399), Color(0xFF10B981), Color(0xFF047857)],
+                            colors: [
+                              Color(0xFF34D399),
+                              Color(0xFF10B981),
+                              Color(0xFF047857)
+                            ],
                           ),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: Colors.white, width: 2),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF10B981).withValues(alpha: 0.65),
+                              color: const Color(0xFF10B981)
+                                  .withValues(alpha: 0.65),
                               blurRadius: 14,
                               spreadRadius: 2,
                             ),
@@ -2645,14 +2924,13 @@ class _PocketDayOpenWorldAdventurePageState
                 ),
               ),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
               decoration: BoxDecoration(
                 color: const Color(0xFF0F172A),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: isUnlocked
-                      ? const Color(0xFFFFD700)
-                      : Colors.white24,
+                  color: isUnlocked ? const Color(0xFFFFD700) : Colors.white24,
                   width: 1.2,
                 ),
               ),
@@ -2690,15 +2968,22 @@ class _PocketDayOpenWorldAdventurePageState
   Widget _buildMountainStepNode(int stepIndex) {
     final pos = getStepPosition(stepIndex, totalSteps: _totalSteps);
     final isDone = _subStepFlags['step_$stepIndex'] ?? false;
-    final isPrevDone = (stepIndex == 1 || (_subStepFlags['step_${stepIndex - 1}'] ?? false));
+    final isPrevDone =
+        (stepIndex == 1 || (_subStepFlags['step_${stepIndex - 1}'] ?? false));
     // Step 6 is an add-on step: always accessible if step 5 is cleared or higher steps reached!
     final bool isUnlocked;
     if (stepIndex == 6) {
-      isUnlocked = isPrevDone || (_subStepFlags['step_5'] ?? false) || (_subStepFlags['step_7'] ?? false);
+      isUnlocked = isPrevDone ||
+          (_subStepFlags['step_5'] ?? false) ||
+          (_subStepFlags['step_7'] ?? false);
     } else if (stepIndex == 7) {
-      isUnlocked = isPrevDone || (_subStepFlags['step_5'] ?? false) || (_subStepFlags['step_7'] ?? false);
+      isUnlocked = isPrevDone ||
+          (_subStepFlags['step_5'] ?? false) ||
+          (_subStepFlags['step_7'] ?? false);
     } else {
-      final hasHigherDone = List.generate(_totalSteps - stepIndex, (i) => _subStepFlags['step_${stepIndex + 1 + i}'] ?? false).contains(true);
+      final hasHigherDone = List.generate(_totalSteps - stepIndex,
+              (i) => _subStepFlags['step_${stepIndex + 1 + i}'] ?? false)
+          .contains(true);
       isUnlocked = isPrevDone || hasHigherDone;
     }
     final isCurrent = isUnlocked && !isDone;
@@ -2755,15 +3040,18 @@ class _PocketDayOpenWorldAdventurePageState
                                     Color(0xFF047857),
                                   ],
                                 ),
-                                border: Border.all(color: Colors.white, width: 2.2),
+                                border:
+                                    Border.all(color: Colors.white, width: 2.2),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF10B981).withValues(alpha: glow),
+                                    color: const Color(0xFF10B981)
+                                        .withValues(alpha: glow),
                                     blurRadius: 16,
                                     spreadRadius: 3,
                                   ),
                                   BoxShadow(
-                                    color: const Color(0xFF34D399).withValues(alpha: 0.45),
+                                    color: const Color(0xFF34D399)
+                                        .withValues(alpha: 0.45),
                                     blurRadius: 24,
                                     spreadRadius: 6,
                                   ),
@@ -2784,7 +3072,8 @@ class _PocketDayOpenWorldAdventurePageState
                                 size: 20,
                                 shadows: [
                                   Shadow(
-                                    color: const Color(0xFF10B981).withValues(alpha: glow),
+                                    color: const Color(0xFF10B981)
+                                        .withValues(alpha: glow),
                                     blurRadius: 8,
                                   ),
                                 ],
@@ -2815,7 +3104,8 @@ class _PocketDayOpenWorldAdventurePageState
                   SnackBar(
                     content: Row(
                       children: [
-                        const Icon(Icons.lock_rounded, color: Color(0xFFFFD700), size: 18),
+                        const Icon(Icons.lock_rounded,
+                            color: Color(0xFFFFD700), size: 18),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
@@ -2856,7 +3146,8 @@ class _PocketDayOpenWorldAdventurePageState
                 // Floating Step Title Pill (Safely bounded width)
                 Container(
                   width: 194,
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3.5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 7, vertical: 3.5),
                   margin: const EdgeInsets.only(bottom: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFF0F172A).withValues(alpha: 0.94),
@@ -2864,7 +3155,9 @@ class _PocketDayOpenWorldAdventurePageState
                     border: Border.all(
                       color: isDone
                           ? const Color(0xFF10B981)
-                          : (isCurrent ? const Color(0xFFFFFC00) : Colors.white24),
+                          : (isCurrent
+                              ? const Color(0xFFFFFC00)
+                              : Colors.white24),
                       width: isDone ? 1.6 : 1.2,
                     ),
                     boxShadow: [
@@ -2888,7 +3181,9 @@ class _PocketDayOpenWorldAdventurePageState
                           style: GoogleFonts.outfit(
                             color: isDone
                                 ? const Color(0xFF6EE7B7)
-                                : (isCurrent ? const Color(0xFFFFFC00) : Colors.white70),
+                                : (isCurrent
+                                    ? const Color(0xFFFFFC00)
+                                    : Colors.white70),
                             fontSize: 9.5,
                             fontWeight: FontWeight.bold,
                           ),
@@ -2897,7 +3192,8 @@ class _PocketDayOpenWorldAdventurePageState
                       if (stepInfo.isNew && !isDone) ...[
                         const SizedBox(width: 4),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 4, vertical: 1),
                           decoration: BoxDecoration(
                             color: const Color(0xFF06B6D4),
                             borderRadius: BorderRadius.circular(4),
@@ -2942,14 +3238,19 @@ class _PocketDayOpenWorldAdventurePageState
                         AnimatedBuilder(
                           animation: _ambientAnimController,
                           builder: (context, _) {
-                            final pulse = 1.0 + (math.sin(_ambientAnimController.value * math.pi * 4) * 0.12);
+                            final pulse = 1.0 +
+                                (math.sin(_ambientAnimController.value *
+                                        math.pi *
+                                        4) *
+                                    0.12);
                             return Transform.scale(
                               scale: pulse,
                               child: Container(
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: const Color(0xFFFFFC00).withValues(alpha: 0.7),
+                                    color: const Color(0xFFFFFC00)
+                                        .withValues(alpha: 0.7),
                                     width: 3.0,
                                   ),
                                 ),
@@ -2964,10 +3265,19 @@ class _PocketDayOpenWorldAdventurePageState
                           shape: BoxShape.circle,
                           gradient: LinearGradient(
                             colors: isDone
-                                ? [const Color(0xFF10B981), const Color(0xFF047857)]
+                                ? [
+                                    const Color(0xFF10B981),
+                                    const Color(0xFF047857)
+                                  ]
                                 : (isCurrent
-                                    ? [const Color(0xFFFFFC00), const Color(0xFFFF8906)]
-                                    : [const Color(0xFF334155), const Color(0xFF1E293B)]),
+                                    ? [
+                                        const Color(0xFFFFFC00),
+                                        const Color(0xFFFF8906)
+                                      ]
+                                    : [
+                                        const Color(0xFF334155),
+                                        const Color(0xFF1E293B)
+                                      ]),
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
@@ -2980,9 +3290,11 @@ class _PocketDayOpenWorldAdventurePageState
                           boxShadow: [
                             BoxShadow(
                               color: isDone
-                                  ? const Color(0xFF10B981).withValues(alpha: 0.6)
+                                  ? const Color(0xFF10B981)
+                                      .withValues(alpha: 0.6)
                                   : (isCurrent
-                                      ? const Color(0xFFFFFC00).withValues(alpha: 0.5)
+                                      ? const Color(0xFFFFFC00)
+                                          .withValues(alpha: 0.5)
                                       : Colors.black.withValues(alpha: 0.4)),
                               blurRadius: (isDone || isCurrent) ? 14 : 6,
                             ),
@@ -2990,7 +3302,8 @@ class _PocketDayOpenWorldAdventurePageState
                         ),
                         child: Center(
                           child: isDone
-                              ? const Icon(Icons.check_rounded, color: Colors.white, size: 28)
+                              ? const Icon(Icons.check_rounded,
+                                  color: Colors.white, size: 28)
                               : (isUnlocked
                                   ? Text(
                                       stepInfo.icon,
@@ -3007,7 +3320,8 @@ class _PocketDayOpenWorldAdventurePageState
                 // ⭐ 3-STAR LEVEL DISPLAY (User Audio Directive: "Tick-um athinte adiyil avinte 3 star-um koode build cheythaal better aavum alle?")
                 const SizedBox(height: 3),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: const Color(0xFF0F172A).withValues(alpha: 0.92),
                     borderRadius: BorderRadius.circular(10),
@@ -3032,11 +3346,15 @@ class _PocketDayOpenWorldAdventurePageState
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 1.0),
                         child: Icon(
-                          isDone ? Icons.star_rounded : Icons.star_outline_rounded,
+                          isDone
+                              ? Icons.star_rounded
+                              : Icons.star_outline_rounded,
                           size: 13,
                           color: isDone
                               ? const Color(0xFFFFD700)
-                              : (isCurrent ? const Color(0xFF94A3B8) : const Color(0xFF475569)),
+                              : (isCurrent
+                                  ? const Color(0xFF94A3B8)
+                                  : const Color(0xFF475569)),
                           shadows: isDone
                               ? const [
                                   BoxShadow(
@@ -3062,7 +3380,9 @@ class _PocketDayOpenWorldAdventurePageState
     switch (s) {
       case 1:
         return _StepInfo(
-          widget.day == 1 ? 'Meet Letters & Phonics' : 'Concept Room & Avatar Chat',
+          widget.day == 1
+              ? 'Meet Letters & Phonics'
+              : 'Concept Room & Avatar Chat',
           '🔤',
           const Color(0xFF00F0FF),
         );
@@ -3080,7 +3400,7 @@ class _PocketDayOpenWorldAdventurePageState
         );
       case 4:
         return _StepInfo(
-          widget.day == 1 ? '50+ Essential Beginner Words' : 'Spoken English Chat',
+          widget.day == 1 ? 'Vocabulary' : 'Spoken English Chat',
           '📚',
           const Color(0xFF10B981),
         );
@@ -3177,15 +3497,9 @@ class _PocketDayOpenWorldAdventurePageState
         );
       case 20:
         return _StepInfo(
-          'Spoken English Gate Exam',
-          '🎙️',
-          const Color(0xFF10B981),
-        );
-      case 21:
-        return _StepInfo(
-          'Day ${widget.day} Summary & Review',
-          '🏆',
-          const Color(0xFFFFD700),
+          'Pattern Phrase Builder & Exam',
+          '🧩',
+          const Color(0xFFD95D39),
         );
       default:
         return const _StepInfo(
@@ -3200,15 +3514,18 @@ class _PocketDayOpenWorldAdventurePageState
     if (_subStepFlags['step_$s'] == true) return; // Already processed!
     final uid = widget.userId ?? _supabase.auth.currentUser?.id;
     final prefs = await SharedPreferences.getInstance();
-    final userKey = uid != null ? 'pocket_day_${uid}_${widget.day}_step_${s}_done' : null;
+    final userKey =
+        uid != null ? 'pocket_day_${uid}_${widget.day}_step_${s}_done' : null;
     final guestKey = 'pocket_day_guest_${widget.day}_step_${s}_done';
 
-    final bool userDone = (uid != null && uid.isNotEmpty) && (
-      (prefs.getBool(userKey!) == true) ||
-      (prefs.getBool('pocket_day_${uid}_${widget.day}_step_${s}_completed') == true)
-    );
+    final bool userDone = (uid != null && uid.isNotEmpty) &&
+        ((prefs.getBool(userKey!) == true) ||
+            (prefs.getBool(
+                    'pocket_day_${uid}_${widget.day}_step_${s}_completed') ==
+                true));
     final bool guestDone = (prefs.getBool(guestKey) == true) ||
-        (prefs.getBool('pocket_day_guest_${widget.day}_step_${s}_completed') == true);
+        (prefs.getBool('pocket_day_guest_${widget.day}_step_${s}_completed') ==
+            true);
     final bool isDone = userDone || guestDone;
 
     if (isDone) {
@@ -3221,319 +3538,301 @@ class _PocketDayOpenWorldAdventurePageState
     final uid = widget.userId ?? _supabase.auth.currentUser?.id;
 
     // Comprehensive step mappings (1-19) for ALL 90 days across all users
-      if (s == 1) {
-        if (day == 1) {
-          await PocketDay1Step1AvatarChatPage.show(
-            context,
-            userId: uid,
-            onStepFinished: (_) => _onStepCompleted(1),
-          );
-        } else if (day == 2) {
-          await PocketDay2Step1AvatarChatPage.show(
-            context,
-            userId: uid,
-            onStepFinished: (_) => _onStepCompleted(1),
-          );
-        } else {
-          await PocketDayAvatarChatPage.show(
-            context,
-            day: day,
-            userId: uid,
-            onStepFinished: (_) => _onStepCompleted(1),
-          );
-        }
-        await _syncStepCompletionIfDone(1);
-        await _loadState(preserveCarPosition: true);
-        return;
-      }
-      if (s == 2) {
-        await PocketSentenceBuilderGamePage.show(
-            context,
-            day: day,
-            userId: uid,
-            onStepFinished: (_) => _onStepCompleted(2),
+    if (s == 1) {
+      if (day == 1) {
+        await PocketDay1Step1AvatarChatPage.show(
+          context,
+          userId: uid,
+          onStepFinished: (_) => _onStepCompleted(1),
         );
-        await _syncStepCompletionIfDone(2);
-        await _loadState(preserveCarPosition: true);
-        return;
-      }
-      if (s == 3) {
-        await PocketEssentialSpellingPage.show(
-            context,
-            day: day,
-            userId: uid,
-            onStepFinished: (_) => _onStepCompleted(3),
+      } else if (day == 2) {
+        await PocketDay2Step1AvatarChatPage.show(
+          context,
+          userId: uid,
+          onStepFinished: (_) => _onStepCompleted(1),
         );
-        await _syncStepCompletionIfDone(3);
-        await _loadState(preserveCarPosition: true);
-        return;
+      } else {
+        await PocketDayAvatarChatPage.show(
+          context,
+          day: day,
+          userId: uid,
+          onStepFinished: (_) => _onStepCompleted(1),
+        );
       }
-      if (s == 4) {
-        if (day == 1) {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => PocketDay1Step2AvatarChatPage(
-                userId: uid,
-                stepIndex: 4,
-                onStepFinished: (_) => _onStepCompleted(4),
-              ),
+      await _syncStepCompletionIfDone(1);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+    if (s == 2) {
+      await PocketSentenceBuilderGamePage.show(
+        context,
+        day: day,
+        userId: uid,
+        onStepFinished: (_) => _onStepCompleted(2),
+      );
+      await _syncStepCompletionIfDone(2);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+    if (s == 3) {
+      await PocketEssentialSpellingPage.show(
+        context,
+        day: day,
+        userId: uid,
+        onStepFinished: (_) => _onStepCompleted(3),
+      );
+      await _syncStepCompletionIfDone(3);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+    if (s == 4) {
+      if (day == 1) {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => PocketDay1Step2AvatarChatPage(
+              userId: uid,
+              stepIndex: 4,
+              onStepFinished: (_) => _onStepCompleted(4),
             ),
-          );
-        } else if (day == 2) {
-          await PocketDay2Step4AvatarChatPage.show(
-            context,
-            userId: uid,
-            onStepFinished: (_) => _onStepCompleted(4),
-          );
-        } else {
-          await PocketDay1Step4AvatarChatPage.show(
-            context,
-            day: day,
-            stepIndex: 4,
-            userId: uid,
-            onStepFinished: (_) => _onStepCompleted(4),
-          );
-        }
-        await _syncStepCompletionIfDone(4);
-        await _loadState(preserveCarPosition: true);
-        return;
-      }
-      if (s == 5) {
-        if (day == 1) {
-          await PocketDay1Step3AvatarChatPage.show(
-            context,
-            day: day,
-            stepIndex: 5,
-            userId: uid,
-            onStepFinished: (_) => _onStepCompleted(5),
-          );
-        } else {
-          await PocketDay1Step5AvatarChatPage.show(
-            context,
-            day: day,
-            stepIndex: 5,
-            userId: uid,
-            onStepFinished: (_) => _onStepCompleted(5),
-          );
-        }
-        await _syncStepCompletionIfDone(5);
-        await _loadState(preserveCarPosition: true);
-        return;
-      }
-      if (s == 6) {
-        await PocketUsefulPhrasesGamePage.show(
-          context,
-          day: day,
-          userId: uid,
-          onStepFinished: (_) => _onStepCompleted(6),
+          ),
         );
-        await _syncStepCompletionIfDone(6);
-        await _loadState(preserveCarPosition: true);
-        return;
-      }
-      if (s == 7) {
-        await StudentLetterWritingGamePage.show(
+      } else if (day == 2) {
+        await PocketDay2Step4AvatarChatPage.show(
           context,
-          day: day,
-          stepIndex: 7,
           userId: uid,
-          onStepFinished: (_) => _onStepCompleted(7),
+          onStepFinished: (_) => _onStepCompleted(4),
         );
-        await _syncStepCompletionIfDone(7);
-        await _loadState(preserveCarPosition: true);
-        return;
-      }
-      if (s == 8) {
-        await StudentDiaryEntryGamePage.show(
+      } else {
+        await PocketDay1Step4AvatarChatPage.show(
           context,
           day: day,
-          stepIndex: 8,
+          stepIndex: 4,
           userId: uid,
-          onStepFinished: (_) => _onStepCompleted(8),
+          onStepFinished: (_) => _onStepCompleted(4),
         );
-        await _syncStepCompletionIfDone(8);
-        await _loadState(preserveCarPosition: true);
-        return;
       }
-      if (s == 9) {
-        await StudentBioCreatorGamePage.show(
+      await _syncStepCompletionIfDone(4);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+    if (s == 5) {
+      if (day == 1) {
+        await PocketDay1Step3AvatarChatPage.show(
           context,
           day: day,
-          stepIndex: 9,
+          stepIndex: 5,
           userId: uid,
-          onStepFinished: (_) => _onStepCompleted(9),
+          onStepFinished: (_) => _onStepCompleted(5),
         );
-        await _syncStepCompletionIfDone(9);
-        await _loadState(preserveCarPosition: true);
-        return;
-      }
-      if (s == 10) {
-        await StudentNoticeGamePage.show(
+      } else {
+        await PocketDay1Step5AvatarChatPage.show(
           context,
           day: day,
-          stepIndex: 10,
+          stepIndex: 5,
           userId: uid,
-          onStepFinished: (_) => _onStepCompleted(10),
+          onStepFinished: (_) => _onStepCompleted(5),
         );
-        await _syncStepCompletionIfDone(10);
-        await _loadState(preserveCarPosition: true);
-        return;
       }
-      if (s == 11) {
-        await StudentEmailGamePage.show(
+      await _syncStepCompletionIfDone(5);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+    if (s == 6) {
+      await PocketUsefulPhrasesGamePage.show(
+        context,
+        day: day,
+        userId: uid,
+        onStepFinished: (_) => _onStepCompleted(6),
+      );
+      await _syncStepCompletionIfDone(6);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+    if (s == 7) {
+      await StudentLetterWritingGamePage.show(
+        context,
+        day: day,
+        stepIndex: 7,
+        userId: uid,
+        onStepFinished: (_) => _onStepCompleted(7),
+      );
+      await _syncStepCompletionIfDone(7);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+    if (s == 8) {
+      await StudentDiaryEntryGamePage.show(
+        context,
+        day: day,
+        stepIndex: 8,
+        userId: uid,
+        onStepFinished: (_) => _onStepCompleted(8),
+      );
+      await _syncStepCompletionIfDone(8);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+    if (s == 9) {
+      await StudentBioCreatorGamePage.show(
+        context,
+        day: day,
+        stepIndex: 9,
+        userId: uid,
+        onStepFinished: (_) => _onStepCompleted(9),
+      );
+      await _syncStepCompletionIfDone(9);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+    if (s == 10) {
+      await StudentNoticeGamePage.show(
+        context,
+        day: day,
+        stepIndex: 10,
+        userId: uid,
+        onStepFinished: (_) => _onStepCompleted(10),
+      );
+      await _syncStepCompletionIfDone(10);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+    if (s == 11) {
+      await StudentEmailGamePage.show(
+        context,
+        day: day,
+        stepIndex: 11,
+        userId: uid,
+        onStepFinished: (_) => _onStepCompleted(11),
+      );
+      await _syncStepCompletionIfDone(11);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+    if (s == 12) {
+      await StudentSpellingDetectiveGamePage.show(
+        context,
+        day: day,
+        stepIndex: 12,
+        userId: uid,
+        onStepFinished: (_) => _onStepCompleted(12),
+      );
+      await _syncStepCompletionIfDone(12);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+    if (s == 13) {
+      if (day == 1) {
+        await PocketDay1Step4AvatarChatPage.show(
           context,
           day: day,
-          stepIndex: 11,
+          stepIndex: 13,
           userId: uid,
-          onStepFinished: (_) => _onStepCompleted(11),
+          onStepFinished: (_) => _onStepCompleted(13),
         );
-        await _syncStepCompletionIfDone(11);
-        await _loadState(preserveCarPosition: true);
-        return;
-      }
-      if (s == 12) {
-        await StudentSpellingDetectiveGamePage.show(
+      } else {
+        final res = await PocketSpokenAvatarSimulatorPage.launch(
           context,
           day: day,
-          stepIndex: 12,
-          userId: uid,
-          onStepFinished: (_) => _onStepCompleted(12),
-        );
-        await _syncStepCompletionIfDone(12);
-        await _loadState(preserveCarPosition: true);
-        return;
-      }
-      if (s == 13) {
-        if (day == 1) {
-          await PocketDay1Step4AvatarChatPage.show(
-            context,
-            day: day,
-            stepIndex: 13,
-            userId: uid,
-            onStepFinished: (_) => _onStepCompleted(13),
-          );
-        } else {
-          final res = await PocketSpokenAvatarSimulatorPage.launch(
-            context,
-            day: day,
-            onCompleted: () => _onStepCompleted(13),
-          );
-          if (res == true) {
-            await _onStepCompleted(13);
-          }
-        }
-        await _syncStepCompletionIfDone(13);
-        await _loadState(preserveCarPosition: true);
-        return;
-      }
-      if (s == 14) {
-        if (day == 1) {
-          await PocketDay1Step5AvatarChatPage.show(
-            context,
-            day: day,
-            stepIndex: 14,
-            userId: uid,
-            onStepFinished: (_) => _onStepCompleted(14),
-          );
-        } else {
-          await PocketVocabOpenWorldDrivePage.show(
-            context,
-            day: day,
-            stepIndex: 14,
-            userId: uid,
-            onCompleted: () => _onStepCompleted(14),
-          );
-        }
-        await _syncStepCompletionIfDone(14);
-        await _loadState(preserveCarPosition: true);
-        return;
-      }
-      if (s == 15) {
-        await PocketVerbTimelineGamePage.show(
-          context,
-          day: day,
-          userId: uid,
-          onStepFinished: (_) => _onStepCompleted(15),
-        );
-        await _syncStepCompletionIfDone(15);
-        await _loadState(preserveCarPosition: true);
-        return;
-      }
-      if (s == 16) {
-        await PocketChatReplyBuilderPage.show(
-          context,
-          day: day,
-          userId: uid,
-          onStepFinished: (_) => _onStepCompleted(16),
-        );
-        await _syncStepCompletionIfDone(16);
-        await _loadState(preserveCarPosition: true);
-        return;
-      }
-      if (s == 17) {
-        await PocketNegativeSentenceBuilderPage.show(
-          context,
-          day: day,
-          userId: uid,
-          onStepFinished: (_) => _onStepCompleted(17),
-        );
-        await _syncStepCompletionIfDone(17);
-        await _loadState(preserveCarPosition: true);
-        return;
-      }
-      if (s == 18) {
-        await PocketMiniSpeechPracticePage.show(
-          context,
-          day: day,
-          userId: uid,
-          onStepFinished: (_) => _onStepCompleted(18),
-        );
-        await _syncStepCompletionIfDone(18);
-        await _loadState(preserveCarPosition: true);
-        return;
-      }
-      if (s == 19) {
-        await PocketHouseAttackPage.show(
-          context,
-          day: day,
-          stepIndex: 19,
-          userId: uid,
-          onStepFinished: (_) => _onStepCompleted(19),
-        );
-        await _syncStepCompletionIfDone(19);
-        await _loadState(preserveCarPosition: true);
-        return;
-      }
-      if (s == 20) {
-        // Step 20: Dedicated Spoken English Gate Exam
-        _showSpokenGateExamModal();
-        return;
-      }
-      if (s == 21) {
-        // Step 21: Daily Summary & Review
-        final res = await PocketDay1ReviewCardPage.showBottomSheet(
-          context,
-          day: day,
-          userId: uid,
-          onProceedToNextDay: () async {
-            await _onStepCompleted(21);
-            widget.onCompleted?.call();
-          },
+          onCompleted: () => _onStepCompleted(13),
         );
         if (res == true) {
-          await _syncStepCompletionIfDone(21);
-          widget.onCompleted?.call();
-          if (mounted) {
-            Navigator.pop(context, true);
-          }
-          return;
+          await _onStepCompleted(13);
         }
-        await _syncStepCompletionIfDone(21);
-        await _loadState(preserveCarPosition: true);
-        return;
       }
-
+      await _syncStepCompletionIfDone(13);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+    if (s == 14) {
+      if (day == 1) {
+        await PocketDay1Step5AvatarChatPage.show(
+          context,
+          day: day,
+          stepIndex: 14,
+          userId: uid,
+          onStepFinished: (_) => _onStepCompleted(14),
+        );
+      } else {
+        await PocketVocabOpenWorldDrivePage.show(
+          context,
+          day: day,
+          stepIndex: 14,
+          userId: uid,
+          onCompleted: () => _onStepCompleted(14),
+        );
+      }
+      await _syncStepCompletionIfDone(14);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+    if (s == 15) {
+      await PocketVerbTimelineGamePage.show(
+        context,
+        day: day,
+        userId: uid,
+        onStepFinished: (_) => _onStepCompleted(15),
+      );
+      await _syncStepCompletionIfDone(15);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+    if (s == 16) {
+      await PocketChatReplyBuilderPage.show(
+        context,
+        day: day,
+        userId: uid,
+        onStepFinished: (_) => _onStepCompleted(16),
+      );
+      await _syncStepCompletionIfDone(16);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+    if (s == 17) {
+      await PocketNegativeSentenceBuilderPage.show(
+        context,
+        day: day,
+        userId: uid,
+        onStepFinished: (_) => _onStepCompleted(17),
+      );
+      await _syncStepCompletionIfDone(17);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+    if (s == 18) {
+      await PocketMiniSpeechPracticePage.show(
+        context,
+        day: day,
+        userId: uid,
+        onStepFinished: (_) => _onStepCompleted(18),
+      );
+      await _syncStepCompletionIfDone(18);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+    if (s == 19) {
+      await PocketHouseAttackPage.show(
+        context,
+        day: day,
+        stepIndex: 19,
+        userId: uid,
+        onStepFinished: (_) => _onStepCompleted(19),
+      );
+      await _syncStepCompletionIfDone(19);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+    if (s == 20) {
+      await PocketPatternPhraseBuilderPage.show(
+        context,
+        day: day,
+        stepIndex: 20,
+        onStepFinished: (_) => _onStepCompleted(20),
+      );
+      await _syncStepCompletionIfDone(20);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
 
     await _onStepCompleted(s);
     await _loadState(preserveCarPosition: true);
@@ -3586,8 +3885,10 @@ class _DayOpenWorldMountainPainter extends CustomPainter {
         ..color = const Color(0xFFFDE047).withValues(alpha: 0.25)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 24),
     );
-    canvas.drawCircle(sunCenter, 44.0, Paint()..color = const Color(0xFFFDE047));
-    canvas.drawCircle(sunCenter, 28.0, Paint()..color = const Color(0xFFFFFBEB));
+    canvas.drawCircle(
+        sunCenter, 44.0, Paint()..color = const Color(0xFFFDE047));
+    canvas.drawCircle(
+        sunCenter, 28.0, Paint()..color = const Color(0xFFFFFBEB));
 
     // 3. Drifting Fluffy Clouds
     for (double cx = 80; cx < worldW; cx += 460) {
@@ -3605,7 +3906,8 @@ class _DayOpenWorldMountainPainter extends CustomPainter {
     distantMountainPath.moveTo(0, worldH);
     distantMountainPath.lineTo(0, 680);
     for (double x = 0; x <= worldW; x += 180) {
-      final my = 560.0 - (math.sin(x * 0.0018) * 80.0) - (math.cos(x * 0.0032) * 45.0);
+      final my =
+          560.0 - (math.sin(x * 0.0018) * 80.0) - (math.cos(x * 0.0032) * 45.0);
       distantMountainPath.lineTo(x, my);
     }
     distantMountainPath.lineTo(worldW, worldH);
@@ -3619,7 +3921,8 @@ class _DayOpenWorldMountainPainter extends CustomPainter {
       ).createShader(Rect.fromLTWH(0, 480, worldW, 600));
     canvas.drawPath(
       distantMountainPath,
-      distantMountainPaint..color = distantMountainPaint.color.withValues(alpha: 0.38),
+      distantMountainPaint
+        ..color = distantMountainPaint.color.withValues(alpha: 0.38),
     );
 
     // 6. Midground Rolling Foothills & Soft Evergreen Pine Ridge
@@ -3682,9 +3985,12 @@ class _DayOpenWorldMountainPainter extends CustomPainter {
       canvas.drawLine(
         Offset(x, y),
         Offset(x, y - 48),
-        Paint()..color = const Color(0xFF334155)..strokeWidth = 3.5,
+        Paint()
+          ..color = const Color(0xFF334155)
+          ..strokeWidth = 3.5,
       );
-      canvas.drawCircle(Offset(x, y - 48), 5.5, Paint()..color = const Color(0xFFFFFC00));
+      canvas.drawCircle(
+          Offset(x, y - 48), 5.5, Paint()..color = const Color(0xFFFFFC00));
       canvas.drawCircle(
         Offset(x, y - 48),
         22.0,
@@ -3776,7 +4082,8 @@ class _DayOpenWorldMountainPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _DayOpenWorldMountainPainter oldDelegate) => true;
+  bool shouldRepaint(covariant _DayOpenWorldMountainPainter oldDelegate) =>
+      true;
 }
 
 /// 🏎️ Red & Gold Sports Buggy Painter with Spinning Rims & Driver Avatar
@@ -3795,7 +4102,9 @@ class _SportsBuggyPainter extends CustomPainter {
     canvas.translate(size.width / 2.0, size.height / 2.0 + 4.0);
 
     // 1. Suspension Springs
-    final springPaint = Paint()..color = const Color(0xFF94A3B8)..strokeWidth = 2.2;
+    final springPaint = Paint()
+      ..color = const Color(0xFF94A3B8)
+      ..strokeWidth = 2.2;
     canvas.drawLine(const Offset(-22, 2), const Offset(-22, 14), springPaint);
     canvas.drawLine(const Offset(24, 2), const Offset(24, 14), springPaint);
 
@@ -3814,7 +4123,9 @@ class _SportsBuggyPainter extends CustomPainter {
         canvas.drawLine(
           Offset(wx, 14),
           Offset(wx + math.cos(a) * 7.0, 14 + math.sin(a) * 7.0),
-          Paint()..color = Colors.white70..strokeWidth = 1.2,
+          Paint()
+            ..color = Colors.white70
+            ..strokeWidth = 1.2,
         );
       }
     }
@@ -3841,7 +4152,9 @@ class _SportsBuggyPainter extends CustomPainter {
     canvas.drawLine(
       const Offset(-30, 6),
       const Offset(34, 6),
-      Paint()..color = const Color(0xFFFFFC00)..strokeWidth = 2.2,
+      Paint()
+        ..color = const Color(0xFFFFFC00)
+        ..strokeWidth = 2.2,
     );
 
     // 4. White Tubular Roll Cage
@@ -3853,7 +4166,8 @@ class _SportsBuggyPainter extends CustomPainter {
     canvas.drawLine(const Offset(-4, -18), const Offset(14, -6), cagePaint);
 
     // 5. Glowing Headlight
-    canvas.drawCircle(const Offset(34, 6), 3.5, Paint()..color = const Color(0xFFFEF08A));
+    canvas.drawCircle(
+        const Offset(34, 6), 3.5, Paint()..color = const Color(0xFFFEF08A));
     canvas.drawCircle(
       const Offset(42, 6),
       9.0,
@@ -3863,12 +4177,24 @@ class _SportsBuggyPainter extends CustomPainter {
     );
 
     // 6. Steering Wheel
-    canvas.drawLine(const Offset(8, -4), const Offset(6, -11), Paint()..color = Colors.black..strokeWidth = 2.5);
-    canvas.drawCircle(const Offset(6, -11), 3.5, Paint()..color = Colors.black..style = PaintingStyle.stroke..strokeWidth = 1.5);
+    canvas.drawLine(
+        const Offset(8, -4),
+        const Offset(6, -11),
+        Paint()
+          ..color = Colors.black
+          ..strokeWidth = 2.5);
+    canvas.drawCircle(
+        const Offset(6, -11),
+        3.5,
+        Paint()
+          ..color = Colors.black
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5);
 
     // 7. Driver Seat
     canvas.drawRRect(
-      RRect.fromRectAndRadius(const Rect.fromLTWH(-8, -12, 16, 12), const Radius.circular(4)),
+      RRect.fromRectAndRadius(
+          const Rect.fromLTWH(-8, -12, 16, 12), const Radius.circular(4)),
       Paint()..color = const Color(0xFF0F172A),
     );
 
@@ -3885,4 +4211,178 @@ class _SportsBuggyPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _SportsBuggyPainter oldDelegate) =>
       oldDelegate.wheelAngle != wheelAngle;
+}
+
+/// 📮 Flame-powered Red Feedback Letter Box floating in the Open World
+class _FlameFeedbackLetterBoxGame extends FlameGame {
+  @override
+  Color backgroundColor() => Colors.transparent;
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    add(_FeedbackLetterBoxComponent());
+  }
+}
+
+class _FeedbackLetterBoxComponent extends PositionComponent {
+  double _time = 0.0;
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    _time += dt;
+  }
+
+  @override
+  void render(Canvas canvas) {
+    super.render(canvas);
+    final pulse = 0.75 + 0.25 * math.sin(_time * 2.6);
+    final envBob = math.sin(_time * 3.0) * 2.0;
+
+    canvas.save();
+    // Center horizontally in 220x195, base planted on the green ground at y = 182
+    canvas.translate(110, 182);
+
+    // 1. Glowing Step-style Ground Light Halo on the green grass
+    canvas.drawOval(
+      Rect.fromCenter(center: const Offset(0, 0), width: 144, height: 24),
+      Paint()
+        ..color = const Color(0xFFFFD700).withValues(alpha: 0.26 * pulse)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+    );
+    canvas.drawOval(
+      Rect.fromCenter(center: const Offset(0, 0), width: 108, height: 15),
+      Paint()..color = const Color(0xFF0F172A).withValues(alpha: 0.48),
+    );
+
+    // 2. Sturdy Post Stand planted on ground
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(-11, -36, 22, 36),
+        const Radius.circular(4),
+      ),
+      Paint()..color = const Color(0xFF7F1D1D),
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(-18, -8, 36, 10),
+        const Radius.circular(5),
+      ),
+      Paint()..color = const Color(0xFF991B1B),
+    );
+
+    // 3. Large, Wide Red Letter Box Body
+    final boxRect = RRect.fromRectAndCorners(
+      const Rect.fromLTWH(-78, -148, 156, 114),
+      topLeft: const Radius.circular(36),
+      topRight: const Radius.circular(36),
+      bottomLeft: const Radius.circular(14),
+      bottomRight: const Radius.circular(14),
+    );
+    canvas.drawRRect(
+      boxRect,
+      Paint()..color = const Color(0xFFDC2626),
+    );
+    // Subtle top dome highlight
+    canvas.drawRRect(
+      RRect.fromRectAndCorners(
+        const Rect.fromLTWH(-72, -144, 144, 34),
+        topLeft: const Radius.circular(32),
+        topRight: const Radius.circular(32),
+      ),
+      Paint()..color = const Color(0xFFEF4444).withValues(alpha: 0.65),
+    );
+    // Crisp Gold/White Border
+    canvas.drawRRect(
+      boxRect,
+      Paint()
+        ..color = const Color(0xFFFFD700).withValues(alpha: 0.85)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.4,
+    );
+
+    // 4. Mail Slot + Peeking White Envelope
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(-44, -124, 88, 10),
+        const Radius.circular(5),
+      ),
+      Paint()..color = const Color(0xFF450A0A),
+    );
+    canvas.save();
+    canvas.translate(0, -128 + envBob);
+    final envRect = RRect.fromRectAndRadius(
+      const Rect.fromLTWH(-22, -13, 44, 22),
+      const Radius.circular(4),
+    );
+    canvas.drawRRect(envRect, Paint()..color = Colors.white);
+    final flap = Path()
+      ..moveTo(-22, -13)
+      ..lineTo(0, -1)
+      ..lineTo(22, -13);
+    canvas.drawPath(
+      flap,
+      Paint()
+        ..color = const Color(0xFFDC2626)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0,
+    );
+    canvas.restore();
+
+    // 5. "FEEDBACK BOX" & "Help us improve app" written INSIDE the box
+    final titlePainter = TextPainter(
+      text: TextSpan(
+        text: 'FEEDBACK BOX',
+        style: GoogleFonts.outfit(
+          color: Colors.white,
+          fontSize: 16.5,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 0.9,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    )..layout(maxWidth: 144);
+    titlePainter.paint(canvas, Offset(-titlePainter.width / 2, -98));
+
+    final subPainter = TextPainter(
+      text: TextSpan(
+        text: 'Help us improve app',
+        style: GoogleFonts.inter(
+          color: const Color(0xFFFEF08A),
+          fontSize: 10.5,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    )..layout(maxWidth: 144);
+    subPainter.paint(canvas, Offset(-subPainter.width / 2, -73));
+
+    // Tap hint pill inside bottom of box
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(-38, -54, 76, 15),
+        const Radius.circular(7.5),
+      ),
+      Paint()..color = Colors.black.withValues(alpha: 0.25),
+    );
+    final tapPainter = TextPainter(
+      text: TextSpan(
+        text: 'TAP TO SEND',
+        style: GoogleFonts.outfit(
+          color: Colors.white,
+          fontSize: 8.5,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.8,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    )..layout(maxWidth: 74);
+    tapPainter.paint(canvas, Offset(-tapPainter.width / 2, -52));
+
+    canvas.restore();
+  }
 }
