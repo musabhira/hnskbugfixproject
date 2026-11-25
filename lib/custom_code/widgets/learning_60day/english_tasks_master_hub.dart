@@ -332,6 +332,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
   // ⏱️ Midnight Daily Unlock Ticker
   Timer? _midnightTicker;
+  // 🌐 Connectivity re-check timer
+  Timer? _connectivityTimer;
   Duration _timeUntilMidnight =
       Learning60DayService.getRemainingTimeUntilMidnight();
   int _lastCompletedDay = 0;
@@ -389,7 +391,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             isBlocking: true);
       }
     });
-    Timer.periodic(const Duration(seconds: 6), (t) {
+    _connectivityTimer = Timer.periodic(const Duration(seconds: 6), (t) {
       if (!mounted) {
         t.cancel();
         return;
@@ -442,6 +444,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     _activeRoadmapAdDays.clear();
     _targetTabPageController.dispose();
     _midnightTicker?.cancel();
+    _connectivityTimer?.cancel();
     _bobController.dispose();
     _scrollController.dispose();
     super.dispose();
