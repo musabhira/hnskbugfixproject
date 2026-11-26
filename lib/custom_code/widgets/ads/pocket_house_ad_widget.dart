@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/services/monetization_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 
 class PocketHouseAdWidget extends StatefulWidget {
   final EdgeInsetsGeometry margin;
@@ -28,7 +29,8 @@ class _PocketHouseAdWidgetState extends State<PocketHouseAdWidget> {
   }
 
   Future<void> _loadCampaign() async {
-    final shouldShow = await MonetizationService().shouldShowHouseAd();
+    final isVip = await PocketAdMobService.instance.isUserVip();
+    final shouldShow = !isVip && await MonetizationService().shouldShowHouseAd();
     if (shouldShow) {
       final campaign = await MonetizationService().getActiveCampaign();
       if (mounted) {
@@ -233,31 +235,32 @@ class _PocketHouseAdWidgetState extends State<PocketHouseAdWidget> {
                 Row(
                   children: [
                     Text(
-                      'PRO DEAL',
+                      'AD-FREE VIP',
                       style: GoogleFonts.outfit(
-                        color: const Color(0xFFFF8906),
+                        color: const Color(0xFFFFD700),
                         fontSize: 9.5,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      '• ${campaign.discountBadge}',
+                      '• ₹${campaign.inAppMonthlyPrice}/mo',
                       style: GoogleFonts.inter(
-                        color: Colors.white54,
-                        fontSize: 9,
+                        color: Colors.white60,
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
                 Text(
-                  campaign.title,
+                  'Pay ₹${campaign.inAppMonthlyPrice}/mo • Remove All Ads',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: 13,
+                    fontSize: 12.5,
                   ),
                 ),
               ],
@@ -267,15 +270,15 @@ class _PocketHouseAdWidgetState extends State<PocketHouseAdWidget> {
           ElevatedButton(
             onPressed: () => MonetizationService().launchCheckout(context),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFFFC00),
+              backgroundColor: const Color(0xFFFFD700),
               foregroundColor: Colors.black,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               minimumSize: const Size(64, 30),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
             child: Text(
-              'Get Pro',
-              style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 11),
+              'Go Ad-Free',
+              style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 11),
             ),
           ),
         ],

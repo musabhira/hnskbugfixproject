@@ -401,8 +401,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         t.cancel();
         return;
       }
-      PocketConnectivityGuardService.ensureConnected(context,
-          isBlocking: true);
+      PocketConnectivityGuardService.ensureConnected(context, isBlocking: true);
     });
     _bobController = AnimationController(
       vsync: this,
@@ -438,7 +437,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(milliseconds: 1800), () {
-        if (mounted) {
+        if (mounted &&
+            !_isSubscribed &&
+            !PocketAdMobService.instance.isUserVipSync()) {
           PocketRewardedScoreAlertModal.checkAndShowPeriodic(context,
               onRewardClaimed: () {
             _loadData();
@@ -604,17 +605,28 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
     final Map<String, bool> subFlags = {};
     for (int step = 1; step <= 20; step++) {
-      final userKey = 'pocket_day_${uid}_${calculatedCurrentDay}_step_${step}_done';
-      final guestKey = 'pocket_day_guest_${calculatedCurrentDay}_step_${step}_done';
+      final userKey =
+          'pocket_day_${uid}_${calculatedCurrentDay}_step_${step}_done';
+      final guestKey =
+          'pocket_day_guest_${calculatedCurrentDay}_step_${step}_done';
 
-      final bool userDone = uid.isNotEmpty && (
-        (prefs.getBool(userKey) == true) ||
-        (prefs.getBool('pocket_day_${uid}_${calculatedCurrentDay}_step_${step}_completed') == true) ||
-        (step == 1 && prefs.getBool('pocket_day_${uid}_${calculatedCurrentDay}_step_1_completed') == true)
-      );
+      final bool userDone = uid.isNotEmpty &&
+          ((prefs.getBool(userKey) == true) ||
+              (prefs.getBool(
+                      'pocket_day_${uid}_${calculatedCurrentDay}_step_${step}_completed') ==
+                  true) ||
+              (step == 1 &&
+                  prefs.getBool(
+                          'pocket_day_${uid}_${calculatedCurrentDay}_step_1_completed') ==
+                      true));
       final bool guestDone = (prefs.getBool(guestKey) == true) ||
-        (prefs.getBool('pocket_day_guest_${calculatedCurrentDay}_step_${step}_completed') == true) ||
-        (step == 1 && prefs.getBool('pocket_day_guest_${calculatedCurrentDay}_step_1_completed') == true);
+          (prefs.getBool(
+                  'pocket_day_guest_${calculatedCurrentDay}_step_${step}_completed') ==
+              true) ||
+          (step == 1 &&
+              prefs.getBool(
+                      'pocket_day_guest_${calculatedCurrentDay}_step_1_completed') ==
+                  true);
 
       final bool isDone = userDone || guestDone;
       subFlags['step_$step'] = isDone;
@@ -622,7 +634,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       // Auto self-heal: sync guest progress to user's profile key
       if (isDone && uid.isNotEmpty && !userDone) {
         prefs.setBool(userKey, true);
-        prefs.setBool('pocket_day_${uid}_${calculatedCurrentDay}_step_${step}_completed', true);
+        prefs.setBool(
+            'pocket_day_${uid}_${calculatedCurrentDay}_step_${step}_completed',
+            true);
       }
     }
 
@@ -817,6 +831,27 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     }
   }
 
+  void _scrollToGate(int day, {bool animate = true}) {
+    if (!_scrollController.hasClients ||
+        !_scrollController.position.hasContentDimensions) return;
+    final gateY = _getNodeY(day) - (_nodeSpacingY * 0.36);
+    final screenH = MediaQuery.of(context).size.height;
+    final targetY = (gateY - (screenH * 0.45)).clamp(
+      0.0,
+      _scrollController.position.maxScrollExtent,
+    );
+
+    if (animate) {
+      _scrollController.animateTo(
+        targetY,
+        duration: const Duration(milliseconds: 750),
+        curve: Curves.easeOutCubic,
+      );
+    } else {
+      _scrollController.jumpTo(targetY);
+    }
+  }
+
   /// Handler when an in-path sub-step is completed
   Future<void> _onSubStepFinished(int day, int stepIndex) async {
     final uid = widget.userId ?? _supabase.auth.currentUser?.id;
@@ -869,7 +904,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     }
     // Always persist to fallback guest keys as well
     await prefs.setBool('pocket_day_guest_${day}_step_${stepIndex}_done', true);
-    await prefs.setBool('pocket_day_guest_${day}_step_${stepIndex}_completed', true);
+    await prefs.setBool(
+        'pocket_day_guest_${day}_step_${stepIndex}_completed', true);
     if (stepIndex == 17) {
       await prefs.setBool('pocket_day_guest_${day}_steps_completed', true);
     }
@@ -1992,7 +2028,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   /// 🎯 Opens the dedicated Open World Level Adventure Page for the Day!
   /// User Audio Directive: "ഡീറ്റെയിൽ പേജ് ഇപ്പോഴത്തെ തന്നെ മതി, ഓരോ ദിവസത്തിലും കാർ ഡ്രൈവ് ചെയ്തു പോയി ടാസ്കുകളിൽ പോകുന്ന സാധനം!"
   Future<void> _startActiveSubStep(int day) async {
-    await Navigator.push(
+    final res = await Navigator.push<dynamic>(
       context,
       MaterialPageRoute(
         builder: (_) => PocketDayOpenWorldAdventurePage(
@@ -2003,6 +2039,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       ),
     );
     await _loadData();
+    if (res == 'enter_gate' && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _scrollToGate(day, animate: true);
+      });
+    }
   }
 
   void _navigateToMissionPage(int day) {
@@ -3264,9 +3305,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
                                     // 📱 Roadmap Native Ad Slots (Repeats persistently across gates without wipeout)
                                     for (int day = 1; day < _totalDays; day++)
-                                      if (_isRoadmapAdInViewport(day, minY, maxY))
-                                        _buildRoadmapNativeAd(
-                                            day, screenWidth),
+                                      if (_isRoadmapAdInViewport(
+                                          day, minY, maxY))
+                                        _buildRoadmapNativeAd(day, screenWidth),
 
                                     // Interactive 3D Level Nodes (Days 1 to 90) (Viewport Culled)
                                     for (int day = 1; day <= _totalDays; day++)
@@ -5083,9 +5124,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         : 'Daily update the English syllabus',
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.outfit(
-                      color: hasUpdate
-                          ? Colors.white
-                          : const Color(0xFFA7F3D0),
+                      color: hasUpdate ? Colors.white : const Color(0xFFA7F3D0),
                       fontWeight: FontWeight.w800,
                       fontSize: 11.5,
                       letterSpacing: 0.2,
@@ -5220,12 +5259,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         padding: const EdgeInsets.symmetric(
                             vertical: 8, horizontal: 8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF25D366)
-                              .withValues(alpha: 0.18),
+                          color:
+                              const Color(0xFF25D366).withValues(alpha: 0.18),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: const Color(0xFF25D366)
-                                .withValues(alpha: 0.6),
+                            color:
+                                const Color(0xFF25D366).withValues(alpha: 0.6),
                             width: 1,
                           ),
                         ),
@@ -5285,18 +5324,15 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              const Color(0xFF833AB4)
-                                  .withValues(alpha: 0.20),
-                              const Color(0xFFFD1D1D)
-                                  .withValues(alpha: 0.20),
-                              const Color(0xFFF77737)
-                                  .withValues(alpha: 0.20),
+                              const Color(0xFF833AB4).withValues(alpha: 0.20),
+                              const Color(0xFFFD1D1D).withValues(alpha: 0.20),
+                              const Color(0xFFF77737).withValues(alpha: 0.20),
                             ],
                           ),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: const Color(0xFFE1306C)
-                                .withValues(alpha: 0.6),
+                            color:
+                                const Color(0xFFE1306C).withValues(alpha: 0.6),
                             width: 1,
                           ),
                         ),
@@ -6921,7 +6957,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
     return Positioned(
       left: cardLeft,
-      top: adY - 170.0, // Centered for full Medium Rectangle card (~340px height)
+      top: adY -
+          170.0, // Centered for full Medium Rectangle card (~340px height)
       width: cardWidth,
       child: Center(
         child: ConstrainedBox(
@@ -8692,7 +8729,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         atRuleNode
                             ? 'Rules & Pledge • Tap to Start 📜'
                             : (sittingAtGate
-                                ? 'Gate $effectiveAvatarDay • Tap to Attack! ⚔️'
+                                ? 'Gate • Tap to Attack! ⚔️'
                                 : 'Day $currentDay • Enter Estate 🚀'),
                         style: GoogleFonts.outfit(
                           color: sittingAtGate ? Colors.white : Colors.black,

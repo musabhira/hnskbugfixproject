@@ -36,7 +36,10 @@ class _PocketDailyBatteryRewardWidgetState
   @override
   void initState() {
     super.initState();
-    PocketAdMobService.instance.preloadRewardedAd();
+    _isVip = PocketAdMobService.instance.isUserVipSync();
+    if (!_isVip) {
+      PocketAdMobService.instance.preloadRewardedAd();
+    }
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
@@ -94,15 +97,55 @@ class _PocketDailyBatteryRewardWidgetState
   Future<void> _onWidgetTapped() async {
     HapticFeedback.mediumImpact();
 
-    if (_isVip) {
+    if (_dailyCount >= 5) {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('👑 VIP Gold: Battery is permanently 100% full!'),
-          backgroundColor: Color(0xFF0F172A),
+        SnackBar(
+          content: Row(
+            children: [
+              Text(_isVip ? '👑' : '🔋', style: const TextStyle(fontSize: 16)),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  'Daily bonus 100% full (5/5)! Resets tomorrow morning ☀️',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF065F46),
           behavior: SnackBarBehavior.floating,
         ),
       );
+      return;
+    }
+
+    // 👑 VIP Direct Instant Score Grant (No Ad, No Cooldown!)
+    if (_isVip) {
+      final newScore = await PocketAdMobService.instance.claimVipDailyBonus();
+      await _refreshState();
+      widget.onRewardClaimed?.call();
+      if (mounted && newScore != null) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Text('👑', style: TextStyle(fontSize: 16)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'VIP Instant Bonus! +50 Pocket Score added (Total: $newScore PS) ⚡✨',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF059669),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
       return;
     }
 
@@ -126,58 +169,6 @@ class _PocketDailyBatteryRewardWidgetState
           behavior: SnackBarBehavior.floating,
         ),
       );
-      return;
-    }
-
-    if (_dailyCount >= 5) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Row(
-            children: [
-              Text('🔋', style: TextStyle(fontSize: 16)),
-              SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Daily battery 100% full (5/5)! Resets tomorrow morning ☀️',
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: Color(0xFF065F46),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
-
-    // 👑 VIP Direct Instant Score Grant (No Ad required!)
-    if (_isVip) {
-      final newScore =
-          await PocketAdMobService.instance.grantRewardedPocketScore();
-      await _refreshState();
-      widget.onRewardClaimed?.call();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Text('👑', style: TextStyle(fontSize: 16)),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'VIP Instant Reward! +50 Pocket Score granted without ads (Total: $newScore PS) ⚡✨',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: const Color(0xFF0F172A),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
       return;
     }
 
@@ -216,51 +207,56 @@ class _PocketDailyBatteryRewardWidgetState
   @override
   Widget build(BuildContext context) {
     if (_isVip) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: const Color(0xFF0F172A),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: const Color(0xFFFFD700).withValues(alpha: 0.6),
-            width: 1.1,
+      final canClaim = _dailyCount < 5;
+      return InkWell(
+        onTap: _onWidgetTapped,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F172A),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: const Color(0xFFFFD700).withValues(alpha: 0.75),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.35),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.35),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('👑', style: TextStyle(fontSize: 14)),
-            const SizedBox(width: 6),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'VIP Gold',
-                  style: GoogleFonts.outfit(
-                    color: const Color(0xFFFFD700),
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w800,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('👑', style: TextStyle(fontSize: 14)),
+              const SizedBox(width: 6),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    canClaim ? 'VIP Bonus' : 'VIP Gold',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFD700),
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
-                ),
-                Text(
-                  '100% Full',
-                  style: GoogleFonts.outfit(
-                    color: Colors.white70,
-                    fontSize: 9.5,
-                    fontWeight: FontWeight.w600,
+                  Text(
+                    canClaim ? '+50 PS ($_dailyCount/5)' : '100% Full ✓',
+                    style: GoogleFonts.outfit(
+                      color: canClaim ? Colors.white : const Color(0xFF4ADE80),
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       );
     }

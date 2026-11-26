@@ -1251,6 +1251,32 @@ class PocketPresidentService {
     }
   }
 
+  /// 👑 Sends an occasional friendly VIP promo message ONLY to non-VIP (free) users
+  static Future<void> checkAndDeliverVipPromoMessage(
+    String userId, {
+    required bool isUserVip,
+  }) async {
+    try {
+      if (userId.isEmpty || isUserVip) return;
+      final prefs = await SharedPreferences.getInstance();
+      final lastPromoTs =
+          prefs.getInt('president_vip_promo_ts_$userId') ?? 0;
+      final now = DateTime.now().millisecondsSinceEpoch;
+      // Send at most once every 24 hours
+      if (now - lastPromoTs < 24 * 60 * 60 * 1000) return;
+
+      await prefs.setInt('president_vip_promo_ts_$userId', now);
+      await sendPresidentReplyToUser(
+        targetUserId: userId,
+        replyText:
+            'Hey friend! 👑 Want to remove all ads, get your Golden Verified Tick, unlock all 90 Days & chat directly with me? Grab Poket VIP for just ₹99/month! 🚀',
+        adminName: 'Presidential Desk',
+      );
+    } catch (e) {
+      debugPrint('Error delivering VIP promo message: $e');
+    }
+  }
+
   /// 🎂 User Birthday Celebration & Presidential Proclamation
   /// If today matches citizen's Date of Birth:
   /// 1. The President sends a personalized royal birthday greeting in President Chat.

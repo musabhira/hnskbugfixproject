@@ -425,6 +425,7 @@ class PocketAdMobService {
   RewardedAd? _rewardedAd;
   bool _isInterstitialLoading = false;
   bool _isRewardedLoading = false;
+  DateTime? _rewardedLoadStartedAt;
   final List<Completer<RewardedAd?>> _rewardedCompleters = [];
   DateTime? _lastInterstitialShownTime;
   static const Duration minInterstitialInterval = Duration(minutes: 3);
@@ -574,6 +575,14 @@ class PocketAdMobService {
       } catch (_) {}
     }
     return newScore;
+  }
+
+  /// 👑 Instant +50 Pocket Score claim for VIP users (zero ads, zero cooldown, max 5/day)
+  Future<int?> claimVipDailyBonus() async {
+    final remaining = await getRewardedDailyRemaining();
+    if (remaining <= 0) return null;
+    await _recordRewardedAdCompletion();
+    return await grantRewardedPocketScore();
   }
 
   /// Records successful rewarded ad completion for daily quota
@@ -1049,19 +1058,19 @@ class PocketAdMobService {
       dynamic profile;
       try {
         profile = await SupaFlow.client
-            .from('profiles')
+            .from('profile')
             .select(
                 'is_vip, is_premium, is_subscribed, subscription_tier, role, verified')
-            .eq('id', uid)
+            .or('user_id.eq.$uid,id.eq.$uid')
             .maybeSingle();
       } catch (_) {}
       if (profile == null) {
         try {
           profile = await SupaFlow.client
-              .from('profile')
+              .from('profiles')
               .select(
                   'is_vip, is_premium, is_subscribed, subscription_tier, role, verified')
-              .or('user_id.eq.$uid,id.eq.$uid')
+              .eq('id', uid)
               .maybeSingle();
         } catch (_) {}
       }
@@ -1247,17 +1256,40 @@ class PocketAdMobService {
 
   void _loadRewardedAd(
       {bool isFallback = false, Completer<RewardedAd?>? completer}) {
-    if (completer != null) {
-      if (_rewardedAd != null) {
-        if (!completer.isCompleted) completer.complete(_rewardedAd);
-        return;
+    if (_rewardedAd != null) {
+      if (completer != null && !completer.isCompleted) {
+        completer.complete(_rewardedAd);
       }
+      return;
+    }
+
+    // 🛡️ Recover from stale Android SDK load lock (> 10s without callback)
+    if (_isRewardedLoading && _rewardedLoadStartedAt != null) {
+      if (DateTime.now().difference(_rewardedLoadStartedAt!) >
+          const Duration(seconds: 10)) {
+        debugPrint(
+            '⚠️ [PocketAdMob] Resetting stale rewarded ad loading lock on Android/iOS.');
+        _isRewardedLoading = false;
+      }
+    }
+
+    if (completer != null) {
       _rewardedCompleters.add(completer);
     }
 
-    if (_isRewardedLoading || _rewardedAd != null) return;
+    if (_isRewardedLoading) return;
     _isRewardedLoading = true;
+    _rewardedLoadStartedAt = DateTime.now();
     _recordAdRequest('rewarded_coins');
+
+    final loadStart = _rewardedLoadStartedAt!;
+    // Watchdog: never let _isRewardedLoading hang forever if Android SDK drops callback
+    Future.delayed(const Duration(seconds: 9), () {
+      if (_isRewardedLoading && _rewardedLoadStartedAt == loadStart) {
+        _isRewardedLoading = false;
+        _flushRewardedCompleters(_rewardedAd);
+      }
+    });
 
     final targetUnitId = isFallback ? testRewardedId : rewardedAdUnitId;
     debugPrint(
@@ -1464,6 +1496,7 @@ class PocketAdMobService {
           ad.dispose();
           _loadRewardedAd();
           onAdClosed?.call();
+          _maybeShowPostAdVipPrompt(context);
         },
         onAdFailedToShowFullScreenContent: (ad, err) {
           ad.dispose();
@@ -1558,7 +1591,7 @@ class PocketAdMobService {
 
     final completer = Completer<RewardedAd?>();
     _loadRewardedAd(completer: completer);
-    final deadline = DateTime.now().add(const Duration(seconds: 15));
+    final deadline = DateTime.now().add(const Duration(seconds: 8));
 
     Timer.periodic(const Duration(milliseconds: 250), (timer) {
       if (_rewardedAd != null) {
@@ -1569,6 +1602,9 @@ class PocketAdMobService {
               _rewardedAd == null &&
               _rewardedCompleters.isEmpty)) {
         timer.cancel();
+        if (DateTime.now().isAfter(deadline)) {
+          _isRewardedLoading = false;
+        }
         if (!completer.isCompleted) completer.complete(null);
       }
     });
@@ -1630,6 +1666,62 @@ class PocketAdMobService {
       onAdClosed?.call();
       _loadRewardedAd();
     }
+  }
+
+  DateTime? _lastPostAdVipPromptTime;
+
+  void _maybeShowPostAdVipPrompt(BuildContext? context) {
+    if (context == null || !context.mounted) return;
+    if (isUserVipSync()) return;
+    final now = DateTime.now();
+    if (_lastPostAdVipPromptTime != null &&
+        now.difference(_lastPostAdVipPromptTime!) < const Duration(minutes: 2)) {
+      return;
+    }
+    _lastPostAdVipPromptTime = now;
+
+    Future.delayed(const Duration(milliseconds: 350), () {
+      if (!context.mounted || isUserVipSync()) return;
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: const Color(0xFF0F172A),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+            side: const BorderSide(color: Color(0xFFFFD700), width: 1.2),
+          ),
+          duration: const Duration(seconds: 5),
+          content: Row(
+            children: [
+              const Text('👑', style: TextStyle(fontSize: 18)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Remove all ads for just ₹99/month!',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          action: SnackBarAction(
+            label: 'Go Ad-Free',
+            textColor: const Color(0xFFFFD700),
+            onPressed: () {
+              if (!context.mounted) return;
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+              );
+            },
+          ),
+        ),
+      );
+    });
   }
 
   /// 📺 Show Interstitial Ad (e.g. after completing major Day milestones or finishing an attack)
@@ -1750,6 +1842,7 @@ class PocketAdMobService {
           _interstitialAd = null;
           _loadInterstitialAd();
           onDismissed?.call();
+          _maybeShowPostAdVipPrompt(context);
           if (!completer.isCompleted) completer.complete();
         },
         onAdFailedToShowFullScreenContent: (ad, err) {
@@ -2963,7 +3056,7 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard>
                         color: Colors.black, size: 15),
                     const SizedBox(width: 6),
                     Text(
-                      'Go VIP & Remove All Ads',
+                      'Just ₹99/mo • Remove All Ads',
                       style: GoogleFonts.outfit(
                         color: Colors.black,
                         fontSize: 11.5,
@@ -3216,7 +3309,7 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard>
                       color: Colors.black, size: 18),
                   const SizedBox(width: 8),
                   Text(
-                    'Go VIP & Remove All Ads',
+                    'Just ₹99/mo • Remove All Ads',
                     style: GoogleFonts.outfit(
                       color: Colors.black,
                       fontSize: 13.5,
@@ -3818,7 +3911,7 @@ class _LegacyDc50278NativeAdCardState extends State<LegacyDc50278NativeAdCard>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Go VIP – Remove All Ads',
+                      'Just ₹99/mo • Remove All Ads',
                       style: GoogleFonts.outfit(
                         color: const Color(0xFFFFD700),
                         fontSize: 12.5,
@@ -4206,7 +4299,7 @@ class _PocketChatBubbleAdWidgetState extends State<PocketChatBubbleAdWidget> {
                   );
                 },
                 child: const Text(
-                  'Go VIP 👑',
+                  '₹99/mo • No Ads 👑',
                   style: TextStyle(
                       color: Color(0xFFFFD700),
                       fontSize: 10.5,

@@ -12625,6 +12625,12 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
           inq['content_type'] != 'defense_question') {
         return false;
       }
+      if (_presidentInquiryStatusFilter == 4) {
+        final meta = inq['metadata'];
+        final isVipSupport = (meta is Map && meta['is_vip_support'] == true) ||
+            inq['is_vip'] == true;
+        if (!isVipSupport) return false;
+      }
       return true;
     }).toList();
 
@@ -12700,6 +12706,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                 const SizedBox(width: 8),
                 _buildInquiryFilterChip(
                     '🚨 Fake Questions ($reportedQuestionsCount)', 3),
+                const SizedBox(width: 8),
+                _buildInquiryFilterChip('👑 VIP Support', 4),
               ],
             ),
           ),

@@ -511,160 +511,23 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
           ],
         ),
         actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 14, top: 12, bottom: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.amber.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.amberAccent.withValues(alpha: 0.3)),
+          if (currentExchange != null)
+            IconButton(
+              icon: Icon(
+                Icons.volume_up_rounded,
+                color: _isSpeaking
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFF38BDF8),
+                size: 24,
+              ),
+              tooltip: 'Replay audio',
+              onPressed: () => _speakText(currentExchange.avatarPrompt),
             ),
-            child: Row(
-              children: [
-                const Icon(Icons.bolt_rounded, color: Colors.amberAccent, size: 16),
-                const SizedBox(width: 4),
-                Text(
-                  '+$_earnedXp XP',
-                  style: GoogleFonts.outfit(color: Colors.amberAccent, fontSize: 12, fontWeight: FontWeight.w900),
-                ),
-              ],
-            ),
-          ),
         ],
       ),
       body: SafeArea(
         child: Column(
           children: [
-            // Progress Line & Exchange Counter
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              color: const Color(0xFF0B1220),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Exchange ${_currentIndex + 1} of ${_plan.exchanges.length}',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white70,
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      Text(
-                        '${(progress * 100).toInt()}% Done',
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFF10B981),
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: progress.clamp(0.0, 1.0),
-                      minHeight: 5,
-                      backgroundColor: Colors.white12,
-                      valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Top Avatar Presence Bar
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0E1726),
-                border: Border(bottom: BorderSide(color: Colors.white.withValues(alpha: 0.06))),
-              ),
-              child: Row(
-                children: [
-                  ScaleTransition(
-                    scale: _isSpeaking ? _pulseAnimation : const AlwaysStoppedAnimation(1.0),
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: (_isSpeaking ? const Color(0xFF38BDF8) : Colors.transparent)
-                                .withValues(alpha: 0.5),
-                            blurRadius: 14,
-                          ),
-                        ],
-                      ),
-                      child: const Center(
-                        child: Text('🧑‍🏫', style: TextStyle(fontSize: 22)),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Coach Sarah',
-                              style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            if (_isSpeaking)
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF10B981).withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  'SPEAKING 🔊',
-                                  style: GoogleFonts.outfit(
-                                    color: const Color(0xFF10B981),
-                                    fontSize: 8.5,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          _plan.scenarioContext,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
-                            color: Colors.white54,
-                            fontSize: 10.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (currentExchange != null)
-                    IconButton(
-                      icon: const Icon(Icons.volume_up_rounded, color: Color(0xFF38BDF8), size: 22),
-                      tooltip: 'Replay audio',
-                      onPressed: () => _speakText(currentExchange.avatarPrompt),
-                    ),
-                ],
-              ),
-            ),
-
             // Chat Timeline
             Expanded(
               child: ListView.builder(
@@ -1143,80 +1006,6 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 10),
-
-          // Quick Tap Options Divider & Chips (for alternative tap answering)
-          Row(
-            children: [
-              const Expanded(child: Divider(color: Colors.white12)),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Text(
-                  'OR TAP TO ANSWER',
-                  style: GoogleFonts.outfit(
-                    color: Colors.white38,
-                    fontSize: 9.5,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
-              const Expanded(child: Divider(color: Colors.white12)),
-            ],
-          ),
-          const SizedBox(height: 8),
-
-          ...exchange.responseOptions.map((opt) {
-            final isPrimary = opt == targetPhrase;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => _onSelectResponse(opt, isVoice: false),
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: isPrimary
-                          ? const Color(0xFF10B981).withValues(alpha: 0.12)
-                          : const Color(0xFF1E293B),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isPrimary
-                            ? const Color(0xFF10B981).withValues(alpha: 0.6)
-                            : Colors.white10,
-                        width: 1.2,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Text(isPrimary ? '⭐' : '💬', style: const TextStyle(fontSize: 14)),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            opt,
-                            style: GoogleFonts.outfit(
-                              color: isPrimary ? const Color(0xFFD1FAE5) : Colors.white70,
-                              fontSize: 13,
-                              fontWeight: isPrimary ? FontWeight.w700 : FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Icon(
-                          Icons.arrow_forward_rounded,
-                          color: isPrimary ? const Color(0xFF10B981) : Colors.white24,
-                          size: 15,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }),
         ],
       ),
     );

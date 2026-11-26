@@ -463,7 +463,7 @@ class _VideoAdModalState extends State<_VideoAdModal> {
                     const Icon(Icons.bolt_rounded, color: Color(0xFFFFD700), size: 14),
                     const SizedBox(width: 4),
                     Text(
-                      'Tired of ads? Remove all ads with Poket VIP ➔',
+                      'Tired of ads? Remove all ads for just ₹99/mo ➔',
                       style: GoogleFonts.outfit(
                         color: const Color(0xFFFFD700),
                         fontSize: 11.5,
@@ -554,7 +554,34 @@ class _PocketVibesStoryAdWidgetState extends State<PocketVibesStoryAdWidget> {
                           }
                         },
                       ),
-                      const SizedBox(height: 18),
+                      const SizedBox(height: 12),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFD700).withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: const Color(0xFFFFD700).withValues(alpha: 0.45),
+                            ),
+                          ),
+                          child: Text(
+                            '👑 Remove all ads • Just ₹99/mo',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFD700),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
                       // Skip / Continue Button (Modern floating glass pill)
                       GestureDetector(
                         onTap: widget.onNext,

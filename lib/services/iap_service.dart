@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '/backend/supabase/supabase.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 
 class IAPService {
   static final IAPService _instance = IAPService._internal();
@@ -62,6 +63,7 @@ class IAPService {
 
     // Certificate
     certificateProductId,
+    'poketmates_certificate_c2',
     'poket_c2_certificate',
     'poketmates_certificate',
 
@@ -421,6 +423,9 @@ class IAPService {
           await prefs.setString('handskill_plan_$userId', 'pro');
         }
 
+        // Immediately sync AdMob cache & dispose preloaded ads so VIP sees zero ads right away
+        PocketAdMobService.instance.updateCachedVipStatus(true);
+
         // 2. Sync to Supabase user profile & entitlements (both 'profiles' and 'profile')
         if (userId != null) {
           String planName = 'monthly';
@@ -432,6 +437,8 @@ class IAPService {
 
           final iapUpdate = {
             'is_vip': true,
+            'is_premium': true,
+            'verified': true,
             'subscription_tier': planName,
             'subscription_status': 'active',
             'vip_product_id': purchase.productID,
@@ -484,6 +491,7 @@ class IAPService {
     await prefs.setString('vip_product_id', 'simulated_$planId');
     await prefs.setString('vip_purchased_at', DateTime.now().toIso8601String());
     _isVipActive = true;
+    PocketAdMobService.instance.updateCachedVipStatus(true);
 
     if (userId != null) {
       try {

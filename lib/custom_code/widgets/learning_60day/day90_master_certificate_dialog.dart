@@ -6,6 +6,11 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
+import 'package:pocket_mates_app/services/iap_service.dart';
 
 /// 🎓 Authentic Day 90 Master Graduate Diploma & Verification Card
 ///
@@ -73,9 +78,121 @@ class _Day90MasterCertificateDialogState extends State<Day90MasterCertificateDia
     }
   }
 
+  Future<bool> _hasCertificateAccess() async {
+    try {
+      final isVip = await PocketAdMobService.instance.isUserVip(forceRefresh: true);
+      if (isVip) return true;
+
+      final prefs = await SharedPreferences.getInstance();
+      final uid = SupaFlow.client.auth.currentUser?.id;
+
+      // On iOS, separate C2 certificate IAP is not live yet; VIP/previous VIP unlock grants download
+      if (Platform.isIOS) {
+        if (prefs.getBool('has_purchased_c2_certificate') == true) return true;
+        if (uid != null && prefs.getBool('is_vip_$uid') == true) return true;
+      } else {
+        // On Android, check dedicated C2 Certificate purchase (or VIP)
+        if (prefs.getBool('has_purchased_c2_certificate') == true) return true;
+      }
+
+      if (uid != null) {
+        final profile = await SupaFlow.client
+            .from('profile')
+            .select('is_vip, has_purchased_c2_certificate')
+            .or('user_id.eq.$uid,id.eq.$uid')
+            .maybeSingle();
+        if (profile != null) {
+          if (profile['is_vip'] == true ||
+              profile['has_purchased_c2_certificate'] == true) {
+            await prefs.setBool('has_purchased_c2_certificate', true);
+            return true;
+          }
+        }
+      }
+    } catch (_) {}
+    return false;
+  }
+
+  void _showCertificateUnlockPrompt() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Color(0xFFFFD700), width: 1.5),
+        ),
+        title: Text(
+          Platform.isIOS
+              ? '👑 Unlock C2 Certificate with VIP'
+              : '🎓 Unlock Official C2 Certificate',
+          style: GoogleFonts.outfit(
+            color: const Color(0xFFFFD700),
+            fontWeight: FontWeight.w800,
+            fontSize: 17,
+          ),
+        ),
+        content: Text(
+          Platform.isIOS
+              ? 'Take Poket VIP (₹99/month) to unlock and download your Official Day 90 C2 Master Certificate along with 100% Ad-Free learning!'
+              : 'Unlock your Official Day 90 C2 Master Certificate for ₹149, or get Poket VIP (₹99/month) where it is included free!',
+          style: GoogleFonts.inter(
+            color: Colors.white70,
+            fontSize: 13,
+            height: 1.45,
+          ),
+        ),
+        actions: [
+          if (!Platform.isIOS)
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                await IAPService().buyVipSubscription(planType: 'certificate');
+              },
+              child: Text(
+                'Unlock Certificate (₹149)',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFF38BDF8),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFFD700),
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+              );
+            },
+            child: Text(
+              'Get Poket VIP (₹99/mo)',
+              style: GoogleFonts.outfit(fontWeight: FontWeight.w900),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _downloadCertificate() async {
     setState(() => _isExporting = true);
     HapticFeedback.mediumImpact();
+
+    final hasAccess = await _hasCertificateAccess();
+    if (!hasAccess) {
+      if (mounted) {
+        setState(() => _isExporting = false);
+        _showCertificateUnlockPrompt();
+      }
+      return;
+    }
 
     try {
       final file = await _captureCertificateImage();

@@ -2640,7 +2640,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                                 color: Color(0xFFFFD700), size: 14),
                             const SizedBox(width: 4),
                             Text(
-                              'Go VIP',
+                              '₹99/mo • No Ads',
                               style: GoogleFonts.outfit(
                                 color: const Color(0xFFFFD700),
                                 fontSize: 11,
@@ -2659,25 +2659,70 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
               Center(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: (index % 2 == 1)
-                      ? const PocketMetaNativeFeedCard()
-                      : PocketNativeAdCard(
-                          placement: PocketAdPlacement.reels,
-                          margin: EdgeInsets.zero,
-                          onStatusChange: (status, details) {
-                            if (status == 'FAILED' || status == 'VIP_BLOCKED') {
-                              if (!_skippedAdIndices.contains(index)) {
-                                _skippedAdIndices.add(index);
-                                Future.delayed(
-                                    const Duration(milliseconds: 250), () {
-                                  if (mounted) {
-                                    _scrollToNextReel();
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      (index % 2 == 1)
+                          ? const PocketMetaNativeFeedCard()
+                          : PocketNativeAdCard(
+                              placement: PocketAdPlacement.reels,
+                              margin: EdgeInsets.zero,
+                              onStatusChange: (status, details) {
+                                if (status == 'FAILED' || status == 'VIP_BLOCKED') {
+                                  if (!_skippedAdIndices.contains(index)) {
+                                    _skippedAdIndices.add(index);
+                                    Future.delayed(
+                                        const Duration(milliseconds: 250), () {
+                                      if (mounted) {
+                                        _scrollToNextReel();
+                                      }
+                                    });
                                   }
-                                });
-                              }
-                            }
-                          },
+                                }
+                              },
+                            ),
+                      const SizedBox(height: 12),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const SubscriptionPage()),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF131726),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: const Color(0xFFFFD700)
+                                  .withValues(alpha: 0.4),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('👑', style: TextStyle(fontSize: 13)),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Pay ₹99/mo • Remove All Ads',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFFD700),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Icon(Icons.arrow_forward_rounded,
+                                  color: Color(0xFFFFD700), size: 14),
+                            ],
+                          ),
                         ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
 

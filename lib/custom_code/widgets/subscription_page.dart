@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:pocket_mates_app/services/iap_service.dart';
 import 'package:pocket_mates_app/custom_code/services/monetization_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import '/backend/supabase/supabase.dart';
 
 class SubscriptionPage extends StatefulWidget {
@@ -30,15 +31,15 @@ class _SubscriptionPageState extends State<SubscriptionPage>
     {
       'id': 'monthly',
       'name': 'Poket VIP Monthly',
-      'tagline': 'Binge Mode • 100% Ad-Free Everywhere',
-      'monthlyPrice': 249,
-      'retailPrice': 999,
-      'discountBadge': 'SAVE 75%',
+      'tagline': '₹99/mo • 100% Ad-Free + Instant Binge Access',
+      'monthlyPrice': 99,
+      'retailPrice': 499,
+      'discountBadge': 'MOST POPULAR • SAVE 80%',
       'periodText': '/month',
       'color': const Color(0xFF38BDF8),
       'gradientColors': [Color(0xFF0284C7), Color(0xFF0369A1)],
       'icon': Icons.flash_on_rounded,
-      'popular': false,
+      'popular': true,
       'features': [
         {
           'text': '🚫 100% Ad-Free Everywhere (Zero Interruptions)',
@@ -72,14 +73,14 @@ class _SubscriptionPageState extends State<SubscriptionPage>
       'id': 'quarterly',
       'name': '90-Day Fluency Pass',
       'tagline': 'Complete 90-Day Mastery • All 90 Houses',
-      'monthlyPrice': 799,
-      'retailPrice': 4999,
-      'discountBadge': 'SAVE 84%',
+      'monthlyPrice': 249,
+      'retailPrice': 1499,
+      'discountBadge': 'SAVE 83%',
       'periodText': 'for 3 Months',
       'color': const Color(0xFFFFD700),
       'gradientColors': [Color(0xFFFFD700), Color(0xFFF59E0B)],
       'icon': Icons.workspace_premium_rounded,
-      'popular': true,
+      'popular': false,
       'features': [
         {
           'text': '⚡ Complete 90-Day Fluency Journey (All 90 Houses)',
@@ -116,9 +117,9 @@ class _SubscriptionPageState extends State<SubscriptionPage>
       'id': 'yearly',
       'name': 'Poket VIP Annual Master',
       'tagline': 'Full Year Mastery • Day 90 C2 Diploma',
-      'monthlyPrice': 1699,
-      'retailPrice': 9999,
-      'discountBadge': 'SAVE 83%',
+      'monthlyPrice': 699,
+      'retailPrice': 4999,
+      'discountBadge': 'SAVE 86%',
       'periodText': '/year',
       'color': const Color(0xFFEC4899),
       'gradientColors': [Color(0xFFDB2777), Color(0xFF9D174D)],
@@ -1216,12 +1217,64 @@ class _SubscriptionPageState extends State<SubscriptionPage>
             ),
           ),
 
-          // Feature comparison note
+          // Feature comparison note + Trust + VIP Direct Support + Coming Soon
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(24),
               child: Column(
                 children: [
+                  // 🚀 Future VIP Updates & Trust Banner
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF1A103D), Color(0xFF0F172A)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: const Color(0xFF8B5CF6).withValues(alpha: 0.4),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Text('🚀', style: TextStyle(fontSize: 18)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'More Exclusive VIP Features Coming Soon!',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Poket VIP is just ₹3.30/day (₹99/mo). Subscribers automatically get all upcoming Pro AI voice coaches, priority matchmaking, Gold Verified Tick across Chats & Global Ranking, and future VIP-only expansions at zero extra cost!',
+                          style: GoogleFonts.inter(
+                            color: Colors.white70,
+                            fontSize: 12,
+                            height: 1.45,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 🏛️ VIP Direct Support (Chat with President / Admin)
+                  _buildVipDirectSupportCard(),
+                  const SizedBox(height: 18),
+
                   const Divider(color: Colors.white12),
                   const SizedBox(height: 16),
                   Text(
@@ -1468,7 +1521,8 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                                 ),
                               ),
                             Text(
-                              price == 0 ? 'FREE' : '₹$price',
+                              (plan['storeKitPrice'] as String?) ??
+                                  (price == 0 ? 'FREE' : '₹$price'),
                               style: GoogleFonts.outfit(
                                 fontSize: 22,
                                 fontWeight: FontWeight.w900,
@@ -1556,6 +1610,336 @@ class _SubscriptionPageState extends State<SubscriptionPage>
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildVipDirectSupportCard() {
+    final bool isVip = _currentPlan != 'free';
+    return InkWell(
+      onTap: () {
+        HapticFeedback.mediumImpact();
+        if (!isVip) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: const Color(0xFF0F172A),
+              behavior: SnackBarBehavior.floating,
+              content: Text(
+                '🔒 VIP Only: Upgrade to Poket VIP (₹99/mo) to chat directly with the President & clear your doubts!',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          );
+          return;
+        }
+        _openVipPresidentChatSheet();
+      },
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: isVip
+                ? [const Color(0xFF064E3B), const Color(0xFF0F172A)]
+                : [const Color(0xFF1E293B), const Color(0xFF0F172A)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: isVip
+                ? const Color(0xFF10B981)
+                : const Color(0xFFFFD700).withValues(alpha: 0.35),
+            width: 1.2,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: (isVip
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFFFFD700))
+                    .withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                isVip ? Icons.support_agent_rounded : Icons.lock_rounded,
+                color: isVip
+                    ? const Color(0xFF34D399)
+                    : const Color(0xFFFFD700),
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          'VIP Direct Support • Chat with President',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: (isVip
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFFFFD700))
+                              .withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          isVip ? 'UNLOCKED' : 'VIP ONLY',
+                          style: GoogleFonts.outfit(
+                            color: isVip
+                                ? const Color(0xFF34D399)
+                                : const Color(0xFFFFD700),
+                            fontSize: 9,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    isVip
+                        ? 'Tap to message the President directly & get personal guidance'
+                        : 'Unlock 2-way direct chat with Admin & President for ₹99/mo',
+                    style: GoogleFonts.inter(
+                      color: Colors.white60,
+                      fontSize: 11.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: isVip ? const Color(0xFF34D399) : Colors.white38,
+              size: 14,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openVipPresidentChatSheet() async {
+    final uid = SupaFlow.client.auth.currentUser?.id;
+    if (uid == null || uid.isEmpty) return;
+
+    final controller = TextEditingController();
+    List<Map<String, dynamic>> messages =
+        await PocketPresidentService.getPresidentChatHistory(uid);
+    if (!mounted) return;
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF0F172A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        bool isSending = false;
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return SizedBox(
+              height: MediaQuery.of(ctx).size.height * 0.72,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: 16,
+                  right: 16,
+                  top: 14,
+                  bottom: MediaQuery.of(ctx).viewInsets.bottom + 14,
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.white24,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        const Text('🏛️', style: TextStyle(fontSize: 22)),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'VIP Direct Support • President Desk',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFFD700),
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 15,
+                                ),
+                              ),
+                              Text(
+                                'Exclusive 2-way support for Poket VIP members',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white54,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.refresh_rounded,
+                              color: Colors.white70, size: 20),
+                          onPressed: () async {
+                            final latest = await PocketPresidentService
+                                .getPresidentChatHistory(uid);
+                            setSheetState(() => messages = latest);
+                          },
+                        ),
+                      ],
+                    ),
+                    const Divider(color: Colors.white12),
+                    Expanded(
+                      child: messages.isEmpty
+                          ? Center(
+                              child: Text(
+                                'Ask any English doubt or app question directly to the President! 👑',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.inter(
+                                  color: Colors.white54,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            )
+                          : ListView.builder(
+                              reverse: true,
+                              itemCount: messages.length,
+                              itemBuilder: (_, i) {
+                                final m = messages[i];
+                                final isMe = m['sender_id'] == uid;
+                                return Align(
+                                  alignment: isMe
+                                      ? Alignment.centerRight
+                                      : Alignment.centerLeft,
+                                  child: Container(
+                                    margin:
+                                        const EdgeInsets.symmetric(vertical: 4),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 9),
+                                    constraints: BoxConstraints(
+                                      maxWidth:
+                                          MediaQuery.of(ctx).size.width * 0.75,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: isMe
+                                          ? const Color(0xFF0284C7)
+                                          : const Color(0xFF1E293B),
+                                      borderRadius: BorderRadius.circular(14),
+                                      border: isMe
+                                          ? null
+                                          : Border.all(
+                                              color: const Color(0xFFFFD700)
+                                                  .withValues(alpha: 0.3),
+                                            ),
+                                    ),
+                                    child: Text(
+                                      (m['message_text'] ?? '').toString(),
+                                      style: GoogleFonts.inter(
+                                        color: Colors.white,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: controller,
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 13),
+                            decoration: InputDecoration(
+                              hintText: 'Write your message to President...',
+                              hintStyle: const TextStyle(
+                                  color: Colors.white38, fontSize: 12.5),
+                              filled: true,
+                              fillColor: const Color(0xFF1E293B),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 10),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          onPressed: isSending
+                              ? null
+                              : () async {
+                                  final text = controller.text.trim();
+                                  if (text.isEmpty) return;
+                                  setSheetState(() => isSending = true);
+                                  controller.clear();
+                                  await PocketPresidentService
+                                      .sendUserMessageToPresident(
+                                    userId: uid,
+                                    messageText: text,
+                                    metadata: const {
+                                      'is_vip_support': true,
+                                      'source': 'subscription_page_vip_chat',
+                                    },
+                                  );
+                                  final latest = await PocketPresidentService
+                                      .getPresidentChatHistory(uid);
+                                  setSheetState(() {
+                                    messages = latest;
+                                    isSending = false;
+                                  });
+                                },
+                          icon: isSending
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2, color: Color(0xFFFFD700)),
+                                )
+                              : const Icon(Icons.send_rounded,
+                                  color: Color(0xFFFFD700)),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 

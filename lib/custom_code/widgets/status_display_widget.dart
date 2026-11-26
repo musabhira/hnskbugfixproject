@@ -38,6 +38,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_house_ad_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_meta_ads_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
@@ -110,7 +111,9 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
   Future<void> _loadSeenStatuses() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final seen = prefs.getStringList('seen_story_groups_${widget.currentUserId}') ?? [];
+      final seen =
+          prefs.getStringList('seen_story_groups_${widget.currentUserId}') ??
+              [];
       if (mounted) {
         setState(() {
           _seenGroupIds.clear();
@@ -133,7 +136,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     );
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList('seen_story_groups_${widget.currentUserId}', _seenGroupIds.toList());
+      await prefs.setStringList(
+          'seen_story_groups_${widget.currentUserId}', _seenGroupIds.toList());
     } catch (_) {}
     if (mounted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -231,7 +235,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       await prefs.setString('vibes_filter_selection', selection);
       setState(() {
         _vibesFilter = selection;
-        _statuses = (selection == 'Public') ? _publicStatuses : _followingStatuses;
+        _statuses =
+            (selection == 'Public') ? _publicStatuses : _followingStatuses;
       });
     } catch (e) {
       debugPrint('Error saving vibes filter: $e');
@@ -257,7 +262,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
           _followingStatuses = List<Map<String, dynamic>>.from(decoded);
           // Assuming public might be similar, or we can just populate both for offline
           _publicStatuses = List<Map<String, dynamic>>.from(decoded);
-          _statuses = (_vibesFilter == 'Public') ? _publicStatuses : _followingStatuses;
+          _statuses =
+              (_vibesFilter == 'Public') ? _publicStatuses : _followingStatuses;
           _isLoading = false;
         });
       }
@@ -340,7 +346,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       final prefs = await SharedPreferences.getInstance();
       final day = prefs.getInt('learning_day_${widget.currentUserId}') ?? 1;
       _currentUserLevel = day.clamp(1, 90);
-      final robotMates = prefs.getStringList('pocket_mates_${widget.currentUserId}') ?? [];
+      final robotMates =
+          prefs.getStringList('pocket_mates_${widget.currentUserId}') ?? [];
       final Set<String> allFollowingIds = {...followingIds, ...robotMates};
 
       var query = supabase
@@ -364,8 +371,10 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       final List<Map<String, dynamic>> data =
           List<Map<String, dynamic>>.from(response)
             ..sort((a, b) {
-              final at = DateTime.tryParse(a['created_at']?.toString() ?? '') ?? DateTime(0);
-              final bt = DateTime.tryParse(b['created_at']?.toString() ?? '') ?? DateTime(0);
+              final at = DateTime.tryParse(a['created_at']?.toString() ?? '') ??
+                  DateTime(0);
+              final bt = DateTime.tryParse(b['created_at']?.toString() ?? '') ??
+                  DateTime(0);
               return at.compareTo(bt);
             });
 
@@ -377,12 +386,14 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
               .from('status_views')
               .select('status_id')
               .eq('viewer_user_id', widget.currentUserId);
-          viewedStatusIds = Set<String>.from(viewsRes.map((e) => e['status_id'].toString()));
+          viewedStatusIds =
+              Set<String>.from(viewsRes.map((e) => e['status_id'].toString()));
         } catch (_) {}
       }
 
       // 3.6 Load hidden user IDs for stories (Instagram-style Hide)
-      final hiddenUserIds = (prefs.getStringList('hidden_vibe_user_ids') ?? []).toSet();
+      final hiddenUserIds =
+          (prefs.getStringList('hidden_vibe_user_ids') ?? []).toSet();
 
       // 4. Grouping logic
       final Map<String, Map<String, dynamic>> followingGroups = {};
@@ -397,7 +408,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
         if (profile == null) continue;
 
-        final bool isOwn = profUserId == widget.currentUserId || profileId == widget.currentProfileId;
+        final bool isOwn = profUserId == widget.currentUserId ||
+            profileId == widget.currentProfileId;
         if (isOwn) {
           profile['learning_day'] = _currentUserLevel;
         }
@@ -407,29 +419,43 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
         final rawMeta = status['metadata'];
         final metadata = rawMeta is Map ? rawMeta : null;
-        final bool isPrivate = metadata != null && (metadata['is_private'] == true || metadata['is_private'] == 'true');
-        final String statusPrivacy = metadata?['status_privacy']?.toString() ?? (isPrivate ? 'my_contacts' : 'public');
-        final List<dynamic> excludedList = metadata?['excluded_user_ids'] is List ? metadata!['excluded_user_ids'] : [];
-        final List<dynamic> includedList = metadata?['included_user_ids'] is List ? metadata!['included_user_ids'] : [];
+        final bool isPrivate = metadata != null &&
+            (metadata['is_private'] == true ||
+                metadata['is_private'] == 'true');
+        final String statusPrivacy = metadata?['status_privacy']?.toString() ??
+            (isPrivate ? 'my_contacts' : 'public');
+        final List<dynamic> excludedList =
+            metadata?['excluded_user_ids'] is List
+                ? metadata!['excluded_user_ids']
+                : [];
+        final List<dynamic> includedList =
+            metadata?['included_user_ids'] is List
+                ? metadata!['included_user_ids']
+                : [];
 
         // 🚫 Instagram-style Hide Story Check:
-        if (!isOwn && profUserId != null && hiddenUserIds.contains(profUserId)) {
+        if (!isOwn &&
+            profUserId != null &&
+            hiddenUserIds.contains(profUserId)) {
           continue;
         }
 
         // 🔒 Status Privacy Check:
         if (!isOwn) {
-          if (statusPrivacy == 'contacts_except' && excludedList.contains(widget.currentUserId)) {
+          if (statusPrivacy == 'contacts_except' &&
+              excludedList.contains(widget.currentUserId)) {
             continue; // Excluded from viewing this status
           }
-          if (statusPrivacy == 'only_share_with' && !includedList.contains(widget.currentUserId)) {
+          if (statusPrivacy == 'only_share_with' &&
+              !includedList.contains(widget.currentUserId)) {
             continue; // Not in the permitted viewer list
           }
         }
 
         // 1. Friends/Following & Contacts Status List
         final bool canShowInFollowing = isFollowing ||
-            (statusPrivacy == 'only_share_with' && (isOwn || includedList.contains(widget.currentUserId)));
+            (statusPrivacy == 'only_share_with' &&
+                (isOwn || includedList.contains(widget.currentUserId)));
 
         if (canShowInFollowing) {
           if (!followingGroups.containsKey(profileId)) {
@@ -445,7 +471,9 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
         // 2. Public Explore Vibes shows only public statuses
         final bool isPublicExplore = statusPrivacy == 'public' ||
-            (!isPrivate && statusPrivacy != 'only_share_with' && statusPrivacy != 'contacts_except');
+            (!isPrivate &&
+                statusPrivacy != 'only_share_with' &&
+                statusPrivacy != 'contacts_except');
 
         if (isPublicExplore) {
           if (!publicGroups.containsKey(profileId)) {
@@ -488,7 +516,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
         for (final v in kidAnimalVibes) {
           final rId = v['profile_id']?.toString() ?? '';
-          final rProfile = v['profile'] ?? {'id': rId, 'name': 'Animal Companion'};
+          final rProfile =
+              v['profile'] ?? {'id': rId, 'name': 'Animal Companion'};
           if (!publicGroups.containsKey(rId)) {
             publicGroups[rId] = {
               'profile': rProfile,
@@ -510,11 +539,12 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
           for (final v in combinedBotVibes) {
             final rId = v['profile_id']?.toString() ?? '';
-            final rProfile = v['profile'] ?? {
-              'id': rId,
-              'name': 'Pocket Mate',
-              'profile_image_url': v['media_url'],
-            };
+            final rProfile = v['profile'] ??
+                {
+                  'id': rId,
+                  'name': 'Pocket Mate',
+                  'profile_image_url': v['media_url'],
+                };
             if (!publicGroups.containsKey(rId)) {
               publicGroups[rId] = {
                 'profile': rProfile,
@@ -547,7 +577,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
       // 4.3 Include President / King Lion Vibes (Top priority with Golden Aura & Golden Tick)
       try {
-        final presVibes = await PocketPresidentService.getActivePresidentVibes();
+        final presVibes =
+            await PocketPresidentService.getActivePresidentVibes();
         if (presVibes.isNotEmpty) {
           final presId = PocketPresidentService.presidentId;
           final presProfile = {
@@ -579,7 +610,9 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       void computeWatched(Map<String, Map<String, dynamic>> groups) {
         for (var group in groups.values) {
           final profile = group['profile'];
-          final gId = profile != null ? (profile['id']?.toString() ?? '') : (group['id']?.toString() ?? '');
+          final gId = profile != null
+              ? (profile['id']?.toString() ?? '')
+              : (group['id']?.toString() ?? '');
           final statuses = group['statuses'] as List;
           bool fullyWatched = statuses.isNotEmpty;
           for (var s in statuses) {
@@ -588,10 +621,11 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
               break;
             }
           }
-          group['is_fully_watched'] = fullyWatched || _seenGroupIds.contains(gId);
+          group['is_fully_watched'] =
+              fullyWatched || _seenGroupIds.contains(gId);
         }
       }
-      
+
       computeWatched(followingGroups);
       computeWatched(publicGroups);
       computeWatched(communityVibeBuckets);
@@ -606,7 +640,9 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
       bool isGroupWatched(Map<String, dynamic> group) {
         final profile = group['profile'];
-        final gId = profile != null ? (profile['id']?.toString() ?? '') : (group['id']?.toString() ?? '');
+        final gId = profile != null
+            ? (profile['id']?.toString() ?? '')
+            : (group['id']?.toString() ?? '');
         return group['is_fully_watched'] == true || _seenGroupIds.contains(gId);
       }
 
@@ -615,8 +651,10 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         if (a['is_own'] != true && b['is_own'] == true) return 1;
 
         // 🏛️ President Vibes always at the top!
-        final aIsPres = a['is_president'] == true || a['profile']?['is_president'] == true;
-        final bIsPres = b['is_president'] == true || b['profile']?['is_president'] == true;
+        final aIsPres =
+            a['is_president'] == true || a['profile']?['is_president'] == true;
+        final bIsPres =
+            b['is_president'] == true || b['profile']?['is_president'] == true;
         if (aIsPres && !bIsPres) return -1;
         if (!aIsPres && bIsPres) return 1;
 
@@ -633,18 +671,30 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         if (bStatuses.isEmpty) return -1;
         final aTime = aStatuses.last['created_at'];
         final bTime = bStatuses.last['created_at'];
-        final aDt = DateTime.tryParse(aTime.toString()) ?? DateTime.fromMillisecondsSinceEpoch(0);
-        final bDt = DateTime.tryParse(bTime.toString()) ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final aDt = DateTime.tryParse(aTime.toString()) ??
+            DateTime.fromMillisecondsSinceEpoch(0);
+        final bDt = DateTime.tryParse(bTime.toString()) ??
+            DateTime.fromMillisecondsSinceEpoch(0);
         return bDt.compareTo(aDt);
       }
 
       followingList.sort(sortingFunc);
 
       // For public list: President stays at the very top (right after own vibes if any), then unseen, then seen
-      final presPublic = publicList.where((p) => p['is_president'] == true || p['profile']?['is_president'] == true).toList();
-      final otherPublic = publicList.where((p) => p['is_president'] != true && p['profile']?['is_president'] != true).toList();
-      final unseenPublic = otherPublic.where((p) => !isGroupWatched(p)).toList()..shuffle();
-      final seenPublic = otherPublic.where((p) => isGroupWatched(p)).toList()..sort(sortingFunc);
+      final presPublic = publicList
+          .where((p) =>
+              p['is_president'] == true ||
+              p['profile']?['is_president'] == true)
+          .toList();
+      final otherPublic = publicList
+          .where((p) =>
+              p['is_president'] != true &&
+              p['profile']?['is_president'] != true)
+          .toList();
+      final unseenPublic = otherPublic.where((p) => !isGroupWatched(p)).toList()
+        ..shuffle();
+      final seenPublic = otherPublic.where((p) => isGroupWatched(p)).toList()
+        ..sort(sortingFunc);
       final sortedPublicList = [...presPublic, ...unseenPublic, ...seenPublic];
 
       // Cache the following list (primary view)
@@ -654,7 +704,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         setState(() {
           _followingStatuses = followingList;
           _publicStatuses = sortedPublicList;
-          _statuses = (_vibesFilter == 'Public') ? sortedPublicList : followingList;
+          _statuses =
+              (_vibesFilter == 'Public') ? sortedPublicList : followingList;
           _isLoading = false;
         });
         _precacheAllStatuses();
@@ -677,11 +728,14 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
           'id': 'kid_bot_1',
           'name': 'Sparky Tiger 🐯',
           'avatar': '🐯',
-          'profile_image_url': 'https://images.unsplash.com/photo-1538099130811-745e64318258?w=800&q=80',
+          'profile_image_url':
+              'https://images.unsplash.com/photo-1538099130811-745e64318258?w=800&q=80',
         },
-        'media_url': 'https://images.unsplash.com/photo-1538099130811-745e64318258?w=800&q=80',
+        'media_url':
+            'https://images.unsplash.com/photo-1538099130811-745e64318258?w=800&q=80',
         'media_type': 'image',
-        'caption': '🐾 Phonics Fun! Letter "T" is for Tiger! Can you say: Tiger, Tree, Treasure? 🌟',
+        'caption':
+            '🐾 Phonics Fun! Letter "T" is for Tiger! Can you say: Tiger, Tree, Treasure? 🌟',
         'created_at': DateTime.now().toIso8601String(),
         'id': 'kid_vibe_st_1',
       },
@@ -691,11 +745,14 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
           'id': 'kid_bot_2',
           'name': 'Pandy Panda 🐼',
           'avatar': '🐼',
-          'profile_image_url': 'https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=800&q=80',
+          'profile_image_url':
+              'https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=800&q=80',
         },
-        'media_url': 'https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=800&q=80',
+        'media_url':
+            'https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=800&q=80',
         'media_type': 'image',
-        'caption': '✨ Manners Matter! Always say "Please" and "Thank You" with a smile! 🎋',
+        'caption':
+            '✨ Manners Matter! Always say "Please" and "Thank You" with a smile! 🎋',
         'created_at': DateTime.now().toIso8601String(),
         'id': 'kid_vibe_pp_1',
       },
@@ -705,11 +762,14 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
           'id': 'kid_bot_3',
           'name': 'Bouncy Bunny 🐰',
           'avatar': '🐰',
-          'profile_image_url': 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=800&q=80',
+          'profile_image_url':
+              'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=800&q=80',
         },
-        'media_url': 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=800&q=80',
+        'media_url':
+            'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=800&q=80',
         'media_type': 'image',
-        'caption': '🥕 Word Quest: "An apple a day keeps the doctor away!" Hop into English learning! 🍎',
+        'caption':
+            '🥕 Word Quest: "An apple a day keeps the doctor away!" Hop into English learning! 🍎',
         'created_at': DateTime.now().toIso8601String(),
         'id': 'kid_vibe_bb_1',
       },
@@ -773,7 +833,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 220),
         reverseTransitionDuration: const Duration(milliseconds: 200),
-        pageBuilder: (context, animation, secondaryAnimation) => StatusViewerWrapper(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            StatusViewerWrapper(
           allStatusGroups: list,
           initialGroupIndex: safeIndex,
           currentUserId: widget.currentUserId,
@@ -789,7 +850,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         ),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(
-            opacity: CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+            opacity:
+                CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
             child: child,
           );
         },
@@ -885,7 +947,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                       color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.add_photo_alternate_rounded, color: Color(0xFFFFFC00), size: 20),
+                    child: const Icon(Icons.add_photo_alternate_rounded,
+                        color: Color(0xFFFFFC00), size: 20),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -911,7 +974,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded, color: Colors.white54),
+                    icon:
+                        const Icon(Icons.close_rounded, color: Colors.white54),
                     onPressed: () => Navigator.pop(ctx),
                   ),
                 ],
@@ -1090,7 +1154,6 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     );
   }
 
-
   Future<void> _pickImageForStory() async {
     try {
       final ImagePicker picker = ImagePicker();
@@ -1251,7 +1314,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                 cacheExtent: 400,
                 addAutomaticKeepAlives: true,
                 addRepaintBoundaries: true,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
                 itemCount: combined.length + 1, // Add 1 for "Add"
                 itemBuilder: (context, index) {
                   if (index == 0) {
@@ -1260,7 +1324,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                       child: _buildAddStatusButton(),
                     );
                   }
-                  
+
                   final item = combined[index - 1];
                   if (item is String && item == 'DIVIDER') {
                     return RepaintBoundary(
@@ -1271,11 +1335,13 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
                   final statusGroup = item as Map<String, dynamic>;
                   final actualMapIndex = onlyGroups.indexOf(statusGroup);
-                  final profileId = statusGroup['profile']?['id']?.toString() ?? '$index';
-                  
+                  final profileId =
+                      statusGroup['profile']?['id']?.toString() ?? '$index';
+
                   final vibeWidget = RepaintBoundary(
                     key: ValueKey('status_h_$profileId'),
-                    child: _buildStatusItem(statusGroup, actualMapIndex, true, listOverride: onlyGroups),
+                    child: _buildStatusItem(statusGroup, actualMapIndex, true,
+                        listOverride: onlyGroups),
                   );
 
                   return vibeWidget;
@@ -1289,20 +1355,27 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     bool isWatched(dynamic item) {
       if (item is! Map<String, dynamic>) return false;
       final profile = item['profile'];
-      final gId = profile != null ? (profile['id']?.toString() ?? '') : (item['id']?.toString() ?? '');
+      final gId = profile != null
+          ? (profile['id']?.toString() ?? '')
+          : (item['id']?.toString() ?? '');
       return item['is_fully_watched'] == true || _seenGroupIds.contains(gId);
     }
 
     // Partition Following: My Vibe first -> Unseen Following -> Seen Following at the end
     final own = _followingStatuses.where((s) => s['is_own'] == true).toList();
-    final unseenFollowing = _followingStatuses.where((s) => s['is_own'] != true && !isWatched(s)).toList();
-    final seenFollowing = _followingStatuses.where((s) => s['is_own'] != true && isWatched(s)).toList();
+    final unseenFollowing = _followingStatuses
+        .where((s) => s['is_own'] != true && !isWatched(s))
+        .toList();
+    final seenFollowing = _followingStatuses
+        .where((s) => s['is_own'] != true && isWatched(s))
+        .toList();
     final followingSorted = [...own, ...unseenFollowing, ...seenFollowing];
 
     // Explore Public Vibes: Unseen first -> Seen at the end
-    final publicRemaining = _publicStatuses.where((p) => 
-      !_followingStatuses.any((f) => f['profile']?['id'] == p['profile']?['id'])
-    ).toList();
+    final publicRemaining = _publicStatuses
+        .where((p) => !_followingStatuses
+            .any((f) => f['profile']?['id'] == p['profile']?['id']))
+        .toList();
     final unseenPublic = publicRemaining.where((p) => !isWatched(p)).toList();
     final seenPublic = publicRemaining.where((p) => isWatched(p)).toList();
     final publicSorted = [...unseenPublic, ...seenPublic];
@@ -1335,8 +1408,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     );
   }
 
-  Widget _buildStatusList(List<dynamic> statusData,
-      {required bool isGrid}) {
+  Widget _buildStatusList(List<dynamic> statusData, {required bool isGrid}) {
     final filteredData = statusData.where((item) {
       if (item is! Map<String, dynamic>) return true; // Keep dividers
       if (widget.searchQuery.isEmpty) return true;
@@ -1434,7 +1506,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
               ),
               itemBuilder: (context, index) {
                 final statusGroup = onlyGroups[index];
-                final profileId = statusGroup['profile']?['id']?.toString() ?? '$index';
+                final profileId =
+                    statusGroup['profile']?['id']?.toString() ?? '$index';
                 return RepaintBoundary(
                   key: ValueKey('grid_status_${profileId}_$index'),
                   child: _buildGridStatusItem(statusGroup, index, onlyGroups),
@@ -1451,46 +1524,48 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       cacheExtent: 400,
       addAutomaticKeepAlives: true,
       addRepaintBoundaries: true,
-      physics: const AlwaysScrollableScrollPhysics(
-          parent: BouncingScrollPhysics()),
+      physics:
+          const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
       itemCount: filteredData.length,
       itemBuilder: (context, index) {
         if (widget.isVertical && index == 0) {
-           if (widget.searchQuery.isNotEmpty) return const SizedBox.shrink();
-           
-           final item = filteredData[0];
-           if (item is String) return const SizedBox.shrink(); // Should not happen with current logic
+          if (widget.searchQuery.isNotEmpty) return const SizedBox.shrink();
 
-           final statusGroup = item as Map<String, dynamic>;
-           final viewerIndex = onlyGroups.indexOf(statusGroup);
-           
-           return RepaintBoundary(
-             key: const ValueKey('vertical_my_vibes'),
-             child: Column(
-               crossAxisAlignment: CrossAxisAlignment.start,
-               children: [
-                 _buildVerticalSectionHeader('My Vibes'),
-                 _buildStatusItem(statusGroup, viewerIndex, false,
-                     listOverride: onlyGroups),
-               ],
-             ),
-           );
+          final item = filteredData[0];
+          if (item is String)
+            return const SizedBox
+                .shrink(); // Should not happen with current logic
+
+          final statusGroup = item as Map<String, dynamic>;
+          final viewerIndex = onlyGroups.indexOf(statusGroup);
+
+          return RepaintBoundary(
+            key: const ValueKey('vertical_my_vibes'),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildVerticalSectionHeader('My Vibes'),
+                _buildStatusItem(statusGroup, viewerIndex, false,
+                    listOverride: onlyGroups),
+              ],
+            ),
+          );
         }
-        
+
         final item = filteredData[index];
-        
+
         if (item is String && item == 'DIVIDER') {
-           return RepaintBoundary(
-             key: const ValueKey('vertical_vibes_divider'),
-             child: _buildVerticalSectionHeader('Explore Public Vibes 🌐'),
-           );
+          return RepaintBoundary(
+            key: const ValueKey('vertical_vibes_divider'),
+            child: _buildVerticalSectionHeader('Explore Public Vibes 🌐'),
+          );
         }
 
         final statusGroup = item as Map<String, dynamic>;
         // Calculate index among Map items for the viewer
         final viewerIndex = onlyGroups.indexOf(statusGroup);
         final profileId = statusGroup['profile']?['id']?.toString() ?? '$index';
-        
+
         final statusItem = RepaintBoundary(
           key: ValueKey('vertical_status_${profileId}_$index'),
           child: _buildStatusItem(statusGroup, viewerIndex, false,
@@ -1501,7 +1576,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         if (widget.isVertical && index > 0 && (index + 1) % 3 == 0) {
           final isAdSlot = ((index + 1) ~/ 3) % 2 == 1;
           // ⚡ Preload upcoming native ad 2 cards ahead of scroll
-          PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.vibes);
+          PocketAdPreloadManager.instance
+              .preloadForPlacement(PocketAdPlacement.vibes);
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -1510,18 +1586,25 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                 PocketUnifiedDualNativeAdWidget(
                   slotIndex: ((index + 1) ~/ 3) - 1,
                   placement: PocketAdPlacement.vibes,
-                  margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 )
-              else if (!PocketAdMobService.instance.isUserVipSync())
+              else if (!PocketAdMobService.instance.isUserVipSync()) ...[
                 PocketMatesSuggestedGridCard(
                   currentUserId: widget.currentUserId,
                 ),
+                const PocketHouseAdWidget(
+                  compact: true,
+                  margin: EdgeInsets.fromLTRB(14, 2, 14, 10),
+                ),
+              ],
             ],
           );
         }
 
         // 📓 Daily English Phrases Scrapbook Card interleaved in Vibes (No-Repeat)
-        if (widget.isVertical && (index == 1 || (index > 2 && index % 4 == 1))) {
+        if (widget.isVertical &&
+            (index == 1 || (index > 2 && index % 4 == 1))) {
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -1798,7 +1881,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-                color: const Color(0xFFFFFC00).withValues(alpha: 0.3), width: 1),
+                color: const Color(0xFFFFFC00).withValues(alpha: 0.3),
+                width: 1),
             color: const Color(0xFFFFFC00).withValues(alpha: 0.05),
           ),
           child: Row(
@@ -1841,7 +1925,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                 color: const Color(0xFF141824),
               ),
               child: const Center(
-                child: Icon(Icons.add_rounded, size: 30, color: Color(0xFFFFFC00)),
+                child:
+                    Icon(Icons.add_rounded, size: 30, color: Color(0xFFFFFC00)),
               ),
             ),
             const SizedBox(height: 5),
@@ -1865,14 +1950,19 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     final profile = statusGroup['profile'];
     final isOwn = statusGroup['is_own'] ?? false;
     final isGroup = statusGroup['is_group'] ?? false;
-    final groupId = profile != null ? (profile['id']?.toString() ?? '') : (statusGroup['id']?.toString() ?? '');
-    final isFullyWatched = statusGroup['is_fully_watched'] == true || _seenGroupIds.contains(groupId);
+    final groupId = profile != null
+        ? (profile['id']?.toString() ?? '')
+        : (statusGroup['id']?.toString() ?? '');
+    final isFullyWatched = statusGroup['is_fully_watched'] == true ||
+        _seenGroupIds.contains(groupId);
     final name = profile != null ? (profile['name'] ?? 'Unknown') : 'Unknown';
-    final profileImageUrl = profile != null ? profile['profile_image_url'] : null;
+    final profileImageUrl =
+        profile != null ? profile['profile_image_url'] : null;
     final statuses = (statusGroup['statuses'] as List?) ?? [];
     final lastStatus = statuses.isNotEmpty ? statuses.first : null;
     final createdAt = lastStatus != null && lastStatus['created_at'] != null
-        ? DateTime.tryParse(lastStatus['created_at'].toString()) ?? DateTime.now()
+        ? DateTime.tryParse(lastStatus['created_at'].toString()) ??
+            DateTime.now()
         : DateTime.now();
     final timeString = timeago.format(createdAt, locale: 'en_short');
     final activeList =
@@ -1880,17 +1970,25 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
     final mediaUrl = lastStatus != null ? lastStatus['media_url'] : null;
     final mediaType = lastStatus != null ? lastStatus['media_type'] : null;
-    final thumbnailUrl = lastStatus != null ? lastStatus['thumbnail_url'] : null;
-    final String? vibePreviewUrl = (mediaType == 'video' && thumbnailUrl != null)
-        ? thumbnailUrl
-        : ((mediaUrl != null && mediaUrl.toString().isNotEmpty) ? mediaUrl.toString() : null);
+    final thumbnailUrl =
+        lastStatus != null ? lastStatus['thumbnail_url'] : null;
+    final String? vibePreviewUrl =
+        (mediaType == 'video' && thumbnailUrl != null)
+            ? thumbnailUrl
+            : ((mediaUrl != null && mediaUrl.toString().isNotEmpty)
+                ? mediaUrl.toString()
+                : null);
 
     final avatarConfigMap = profile != null && profile['avatar_config'] is Map
         ? Map<String, dynamic>.from(profile['avatar_config'])
         : null;
 
-    final isPresident = statusGroup['is_president'] == true || profile?['is_president'] == true || PocketPresidentService.isPresidentId(groupId);
-    final isRobot = statusGroup['is_robot'] == true || profile?['is_robot'] == true || PocketRobotService.isRobotId(groupId);
+    final isPresident = statusGroup['is_president'] == true ||
+        profile?['is_president'] == true ||
+        PocketPresidentService.isPresidentId(groupId);
+    final isRobot = statusGroup['is_robot'] == true ||
+        profile?['is_robot'] == true ||
+        PocketRobotService.isRobotId(groupId);
     final presidentTitle =
         PocketKidsService.isKidAccount ? 'King Lion' : 'President';
 
@@ -1932,9 +2030,13 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                         children: [
                           Flexible(
                             child: Text(
-                              isOwn ? 'My Vibes' : (isPresident ? presidentTitle : name),
+                              isOwn
+                                  ? 'My Vibes'
+                                  : (isPresident ? presidentTitle : name),
                               style: GoogleFonts.outfit(
-                                color: isFullyWatched ? Colors.white70 : Colors.white,
+                                color: isFullyWatched
+                                    ? Colors.white70
+                                    : Colors.white,
                                 fontSize: 15.5,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -1943,17 +2045,27 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                           ),
                           if (isPresident) ...[
                             const SizedBox(width: 4.5),
-                            const Icon(Icons.verified_rounded, color: Color(0xFFFFD700), size: 16),
+                            const Icon(Icons.verified_rounded,
+                                color: Color(0xFFFFD700), size: 16),
                           ] else if (isRobot) ...[
                             const SizedBox(width: 4.5),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 5, vertical: 1.5),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF06B6D4).withValues(alpha: 0.15),
+                                color: const Color(0xFF06B6D4)
+                                    .withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(4),
-                                border: Border.all(color: const Color(0xFF06B6D4).withValues(alpha: 0.4), width: 0.8),
+                                border: Border.all(
+                                    color: const Color(0xFF06B6D4)
+                                        .withValues(alpha: 0.4),
+                                    width: 0.8),
                               ),
-                              child: Text('🤖 Robot', style: GoogleFonts.outfit(color: const Color(0xFF06B6D4), fontSize: 9.5, fontWeight: FontWeight.bold)),
+                              child: Text('🤖 Robot',
+                                  style: GoogleFonts.outfit(
+                                      color: const Color(0xFF06B6D4),
+                                      fontSize: 9.5,
+                                      fontWeight: FontWeight.bold)),
                             ),
                           ],
                         ],
@@ -1962,9 +2074,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                       Text(
                           isGroup
                               ? 'Community Update • $timeString'
-                              : (isOwn
-                                  ? 'Tap to see your vibes'
-                                  : timeString),
+                              : (isOwn ? 'Tap to see your vibes' : timeString),
                           style: GoogleFonts.outfit(
                               color: Colors.white.withValues(alpha: 0.45),
                               fontSize: 13.0)),
@@ -1972,19 +2082,29 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                   ),
                 ),
                 if (!isOwn)
-                  if (!_followingStatuses.any((f) => f['profile']?['id'] == profile?['id']) && !isGroup)
+                  if (!_followingStatuses
+                          .any((f) => f['profile']?['id'] == profile?['id']) &&
+                      !isGroup)
                     TextButton.icon(
                       style: TextButton.styleFrom(
                         backgroundColor: Colors.white.withValues(alpha: 0.08),
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 2),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
                       ),
-                      icon: const Icon(Icons.person_add, color: Color(0xFFFFFC00), size: 14),
-                      label: Text('Friend', style: GoogleFonts.outfit(color: const Color(0xFFFFFC00), fontSize: 11, fontWeight: FontWeight.bold)),
-                      onPressed: () => _addFriend(profile?['id']?.toString() ?? ''),
+                      icon: const Icon(Icons.person_add,
+                          color: Color(0xFFFFFC00), size: 14),
+                      label: Text('Friend',
+                          style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFFC00),
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold)),
+                      onPressed: () =>
+                          _addFriend(profile?['id']?.toString() ?? ''),
                     )
                   else
-                    const Icon(Icons.chevron_right_rounded, 
+                    const Icon(Icons.chevron_right_rounded,
                         color: Colors.white24, size: 20),
               ],
             ),
@@ -2023,7 +2143,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                     style: GoogleFonts.outfit(
                       color: isFullyWatched ? Colors.white60 : Colors.white,
                       fontSize: 12.5,
-                      fontWeight: isFullyWatched ? FontWeight.w400 : FontWeight.w600,
+                      fontWeight:
+                          isFullyWatched ? FontWeight.w400 : FontWeight.w600,
                     ),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
@@ -2031,7 +2152,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                 ),
                 if (isPresident) ...[
                   const SizedBox(width: 3),
-                  const Icon(Icons.verified_rounded, color: Color(0xFFFFD700), size: 12),
+                  const Icon(Icons.verified_rounded,
+                      color: Color(0xFFFFD700), size: 12),
                 ],
               ],
             ),
@@ -2066,7 +2188,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       displayDay = PocketRobotService.getDynamicLevel(robot);
       avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(displayDay);
     } else if (profileId == widget.currentProfileId ||
-        (profile != null && profile['user_id']?.toString() == widget.currentUserId)) {
+        (profile != null &&
+            profile['user_id']?.toString() == widget.currentUserId)) {
       displayDay = _currentUserLevel;
       avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(displayDay);
     } else if (avatarConfigMap != null) {
@@ -2077,7 +2200,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
             avatarConfigMap['level'];
         if (stage != null && stage is num && stage > 0) {
           displayDay = stage.toInt();
-          avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(displayDay);
+          avatarConfig =
+              VectorAvatarConfig.getEvolutionAvatarForStage(displayDay);
         } else {
           avatarConfig = VectorAvatarConfig.fromMap(avatarConfigMap);
         }
@@ -2103,7 +2227,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
     final Widget avatarInner = Container(
       padding: const EdgeInsets.all(2),
-      decoration: const BoxDecoration(color: Colors.black, shape: BoxShape.circle),
+      decoration:
+          const BoxDecoration(color: Colors.black, shape: BoxShape.circle),
       child: ClipOval(
         child: isGroup
             ? Container(
@@ -2167,7 +2292,10 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         decoration: const BoxDecoration(
           shape: BoxShape.circle,
           gradient: LinearGradient(
-            colors: [Color(0xFF475569), Color(0xFF334155)], // Dimmed sleek slate gray for viewed
+            colors: [
+              Color(0xFF475569),
+              Color(0xFF334155)
+            ], // Dimmed sleek slate gray for viewed
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -2222,7 +2350,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
               Positioned(
                 bottom: -2,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                   decoration: BoxDecoration(
                     color: const Color(0xFF0F141C),
                     borderRadius: BorderRadius.circular(8),
@@ -2301,7 +2430,8 @@ class _StatusViewerWrapperState extends State<StatusViewerWrapper> {
     _injectRobotDailyEnglishPhraseVibe();
     if (_currentGroupIndex >= 0 && _currentGroupIndex < _groups.length) {
       final grp = _groups[_currentGroupIndex];
-      final gId = grp['profile']?['id']?.toString() ?? grp['id']?.toString() ?? '';
+      final gId =
+          grp['profile']?['id']?.toString() ?? grp['id']?.toString() ?? '';
       final uId = grp['profile']?['user_id']?.toString();
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
@@ -2316,7 +2446,8 @@ class _StatusViewerWrapperState extends State<StatusViewerWrapper> {
     // ⚡ Preload story ad upfront immediately upon entering Vibes story viewer!
     PocketAdMobService.instance.isUserVip().then((vip) {
       if (!vip) {
-        PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.vibes);
+        PocketAdPreloadManager.instance
+            .preloadForPlacement(PocketAdPlacement.vibes);
       }
     });
   }
@@ -2433,8 +2564,8 @@ class _StatusViewerWrapperState extends State<StatusViewerWrapper> {
     // If not ready, do NOT show an empty "Next Vibe" waiting screen - seamlessly show the next story
     // and trigger background preloading for the next slot!
     if (!_isSubscribed && _groupsWatchedSinceAd >= 2 && !_showingAd) {
-      final bool hasAdReady =
-          PocketAdPreloadManager.instance.hasPreloadedAd(PocketAdPlacement.vibes);
+      final bool hasAdReady = PocketAdPreloadManager.instance
+          .hasPreloadedAd(PocketAdPlacement.vibes);
       if (hasAdReady) {
         setState(() {
           _showingAd = true;
@@ -2457,7 +2588,8 @@ class _StatusViewerWrapperState extends State<StatusViewerWrapper> {
         _currentGroupIndex++;
       });
       final grp = _groups[_currentGroupIndex];
-      final gId = grp['profile']?['id']?.toString() ?? grp['id']?.toString() ?? '';
+      final gId =
+          grp['profile']?['id']?.toString() ?? grp['id']?.toString() ?? '';
       final uId = grp['profile']?['user_id']?.toString();
       widget.onGroupWatched?.call(gId);
       if (uId != null && uId.isNotEmpty && uId != gId) {
@@ -2491,7 +2623,8 @@ class _StatusViewerWrapperState extends State<StatusViewerWrapper> {
       return PocketVibesStoryAdWidget(
         onNext: () {
           // Preload next story ad in background
-          PocketAdPreloadManager.instance.preloadForPlacement(PocketAdPlacement.vibes);
+          PocketAdPreloadManager.instance
+              .preloadForPlacement(PocketAdPlacement.vibes);
           if (_currentGroupIndex < _groups.length - 1) {
             setState(() {
               _showingAd = false;
@@ -2586,7 +2719,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     }
   }
 
-  Widget _buildViewerAvatar(Map<String, dynamic>? profile, {double size = 36.0}) {
+  Widget _buildViewerAvatar(Map<String, dynamic>? profile,
+      {double size = 36.0}) {
     final profileId = profile != null
         ? (profile['id']?.toString() ?? profile['user_id']?.toString() ?? '')
         : '';
@@ -2614,10 +2748,12 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         height: size,
         decoration: const BoxDecoration(
           shape: BoxShape.circle,
-          gradient: LinearGradient(colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)]),
+          gradient:
+              LinearGradient(colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)]),
         ),
         child: Center(
-          child: Icon(Icons.groups_rounded, color: Colors.white, size: size * 0.5),
+          child:
+              Icon(Icons.groups_rounded, color: Colors.white, size: size * 0.5),
         ),
       );
     }
@@ -2631,19 +2767,22 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       displayDay = PocketRobotService.getDynamicLevel(robot);
       avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(displayDay);
     } else if (profileId == widget.currentProfileId ||
-        (profile != null && profile['user_id']?.toString() == widget.currentUserId)) {
+        (profile != null &&
+            profile['user_id']?.toString() == widget.currentUserId)) {
       displayDay = _currentUserLevel;
       avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(displayDay);
     } else if (profile?['avatar_config'] != null) {
       try {
-        final avatarConfigMap = Map<String, dynamic>.from(profile!['avatar_config']);
+        final avatarConfigMap =
+            Map<String, dynamic>.from(profile!['avatar_config']);
         final stage = avatarConfigMap['stage'] ??
             avatarConfigMap['learning_day'] ??
             avatarConfigMap['day'] ??
             avatarConfigMap['level'];
         if (stage != null && stage is num && stage > 0) {
           displayDay = stage.toInt();
-          avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(displayDay);
+          avatarConfig =
+              VectorAvatarConfig.getEvolutionAvatarForStage(displayDay);
         } else {
           avatarConfig = VectorAvatarConfig.fromMap(avatarConfigMap);
         }
@@ -2729,11 +2868,16 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     final statuses = widget.statusGroup['statuses'] as List;
     if (_currentIndex < statuses.length) {
       final status = statuses[_currentIndex];
-      final authorUserId = status['user_id']?.toString() ?? widget.statusGroup['profile']?['user_id']?.toString() ?? '';
+      final authorUserId = status['user_id']?.toString() ??
+          widget.statusGroup['profile']?['user_id']?.toString() ??
+          '';
       if (authorUserId.isNotEmpty && authorUserId != widget.currentUserId) {
-        final isMate = await PocketMateService.isMate(widget.currentUserId, authorUserId);
+        final isMate =
+            await PocketMateService.isMate(widget.currentUserId, authorUserId);
         final prefs = await SharedPreferences.getInstance();
-        final sentList = prefs.getStringList('sent_mate_requests_${widget.currentUserId}') ?? [];
+        final sentList =
+            prefs.getStringList('sent_mate_requests_${widget.currentUserId}') ??
+                [];
         if (mounted) {
           setState(() {
             _isAuthorMate = isMate;
@@ -2754,10 +2898,14 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     final statuses = widget.statusGroup['statuses'] as List;
     if (_currentIndex >= statuses.length) return;
     final status = statuses[_currentIndex];
-    final authorUserId = status['user_id']?.toString() ?? widget.statusGroup['profile']?['user_id']?.toString() ?? '';
+    final authorUserId = status['user_id']?.toString() ??
+        widget.statusGroup['profile']?['user_id']?.toString() ??
+        '';
     if (authorUserId.isEmpty || authorUserId == widget.currentUserId) return;
 
-    final name = status['profile']?['name'] ?? widget.statusGroup['profile']?['name'] ?? 'Mate';
+    final name = status['profile']?['name'] ??
+        widget.statusGroup['profile']?['name'] ??
+        'Mate';
     setState(() => _isMateRequestSent = true);
 
     await PocketMateService.sendMateRequest(
@@ -2816,9 +2964,10 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
   Future<void> _saveWatchProgress() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final targetProfileId = widget.statusGroup['profile']?['id']?.toString() ??
-          widget.statusGroup['id']?.toString() ??
-          '';
+      final targetProfileId =
+          widget.statusGroup['profile']?['id']?.toString() ??
+              widget.statusGroup['id']?.toString() ??
+              '';
       if (targetProfileId.isEmpty) return;
       final key = 'status_progress_${widget.currentUserId}_$targetProfileId';
       await prefs.setInt(key, _currentIndex);
@@ -2830,9 +2979,10 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
   Future<void> _loadWatchProgress() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final targetProfileId = widget.statusGroup['profile']?['id']?.toString() ??
-          widget.statusGroup['id']?.toString() ??
-          '';
+      final targetProfileId =
+          widget.statusGroup['profile']?['id']?.toString() ??
+              widget.statusGroup['id']?.toString() ??
+              '';
       if (targetProfileId.isEmpty) return;
       final key = 'status_progress_${widget.currentUserId}_$targetProfileId';
       final savedIndex = prefs.getInt(key);
@@ -2862,7 +3012,6 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     PocketGameAudioService.instance.stop();
     _vibeTts?.stop();
     super.dispose();
-
   }
 
   bool _isUuid(String id) {
@@ -2950,7 +3099,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                 decoration: InputDecoration(
                   hintText:
                       'Share your feedback, report an issue, or suggest improvements...',
-                  hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
+                  hintStyle:
+                      const TextStyle(color: Colors.white38, fontSize: 13),
                   filled: true,
                   fillColor: const Color(0xFF27272A),
                   border: OutlineInputBorder(
@@ -3017,7 +3167,9 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     if (!_isUuid(statusId)) {
       try {
         final prefs = await SharedPreferences.getInstance();
-        final liked = prefs.getBool('vibe_local_liked_${statusId}_${widget.currentUserId}') ?? false;
+        final liked = prefs.getBool(
+                'vibe_local_liked_${statusId}_${widget.currentUserId}') ??
+            false;
         final count = prefs.getInt('vibe_local_likes_$statusId') ?? 14;
         if (mounted) {
           setState(() {
@@ -3062,7 +3214,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         final prefs = await SharedPreferences.getInstance();
         final newLiked = !_isLiked;
         final newCount = (_likeCount + (newLiked ? 1 : -1)).clamp(0, 999999);
-        await prefs.setBool('vibe_local_liked_${statusId}_${widget.currentUserId}', newLiked);
+        await prefs.setBool(
+            'vibe_local_liked_${statusId}_${widget.currentUserId}', newLiked);
         await prefs.setInt('vibe_local_likes_$statusId', newCount);
         if (mounted) {
           setState(() {
@@ -3094,9 +3247,16 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         try {
           final statuses = widget.statusGroup['statuses'] as List;
           final status = statuses[_currentIndex];
-          final ownerId = status['user_id']?.toString() ?? status['profile']?['user_id']?.toString();
-          if (ownerId != null && ownerId.isNotEmpty && ownerId != widget.currentUserId) {
-            final senderProfile = await supabase.from('profile').select('name').eq('user_id', widget.currentUserId).maybeSingle();
+          final ownerId = status['user_id']?.toString() ??
+              status['profile']?['user_id']?.toString();
+          if (ownerId != null &&
+              ownerId.isNotEmpty &&
+              ownerId != widget.currentUserId) {
+            final senderProfile = await supabase
+                .from('profile')
+                .select('name')
+                .eq('user_id', widget.currentUserId)
+                .maybeSingle();
             final senderName = senderProfile?['name'] ?? 'A mate';
             await supabase.from('notifications').insert({
               'user_id': ownerId,
@@ -3104,7 +3264,6 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
               'type': 'vibe_like',
               'title': 'Vibe Liked ❤️',
               'message': '$senderName liked your Vibe!',
-              
             });
           }
         } catch (_) {}
@@ -3127,32 +3286,49 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
 
     final statuses = widget.statusGroup['statuses'] as List;
     final status = statuses[_currentIndex];
-    final profile = status['profile'] ?? widget.statusGroup['profile'] ?? widget.statusGroup;
+    final profile = status['profile'] ??
+        widget.statusGroup['profile'] ??
+        widget.statusGroup;
 
     // Robustly determine the real receiver auth user_id
     String receiverUserId = '';
     if (status['user_id'] != null && status['user_id'].toString().isNotEmpty) {
       receiverUserId = status['user_id'].toString();
     }
-    if (receiverUserId.isEmpty && status['profile'] is Map && status['profile']['user_id'] != null) {
+    if (receiverUserId.isEmpty &&
+        status['profile'] is Map &&
+        status['profile']['user_id'] != null) {
       receiverUserId = status['profile']['user_id'].toString();
     }
-    if (receiverUserId.isEmpty && widget.statusGroup['profile'] is Map && widget.statusGroup['profile']['user_id'] != null) {
+    if (receiverUserId.isEmpty &&
+        widget.statusGroup['profile'] is Map &&
+        widget.statusGroup['profile']['user_id'] != null) {
       receiverUserId = widget.statusGroup['profile']['user_id'].toString();
     }
-    if (receiverUserId.isEmpty && status['thought'] is Map && status['thought']['user_id'] != null) {
+    if (receiverUserId.isEmpty &&
+        status['thought'] is Map &&
+        status['thought']['user_id'] != null) {
       receiverUserId = status['thought']['user_id'].toString();
     }
     if (receiverUserId.isEmpty) {
       final pid = status['profile_id']?.toString() ??
-          (status['profile'] is Map ? status['profile']['id']?.toString() : null) ??
-          (widget.statusGroup['profile'] is Map ? widget.statusGroup['profile']['id']?.toString() : null);
+          (status['profile'] is Map
+              ? status['profile']['id']?.toString()
+              : null) ??
+          (widget.statusGroup['profile'] is Map
+              ? widget.statusGroup['profile']['id']?.toString()
+              : null);
       if (pid != null && pid.isNotEmpty) {
-        if (PocketRobotService.isRobotId(pid) || PocketPresidentService.isPresidentId(pid)) {
+        if (PocketRobotService.isRobotId(pid) ||
+            PocketPresidentService.isPresidentId(pid)) {
           receiverUserId = pid;
         } else {
           try {
-            final pRow = await supabase.from('profile').select('user_id').eq('id', pid).maybeSingle();
+            final pRow = await supabase
+                .from('profile')
+                .select('user_id')
+                .eq('id', pid)
+                .maybeSingle();
             if (pRow != null && pRow['user_id'] != null) {
               receiverUserId = pRow['user_id'].toString();
             }
@@ -3161,7 +3337,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       }
     }
 
-    if (receiverUserId.isEmpty || receiverUserId == widget.currentUserId) return;
+    if (receiverUserId.isEmpty || receiverUserId == widget.currentUserId)
+      return;
 
     try {
       final originalText = text;
@@ -3173,7 +3350,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       final vibeReplySummary = 'Replied to Vibe: "$originalText"';
       final nowIso = DateTime.now().toIso8601String();
 
-      final areMates = await PocketMateService.isMate(widget.currentUserId, receiverUserId);
+      final areMates =
+          await PocketMateService.isMate(widget.currentUserId, receiverUserId);
 
       // 1. Always record the message in Supabase messages table
       try {
@@ -3230,7 +3408,11 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
 
       // 3. Dispatch in-app notification for vibe reply
       try {
-        final senderProfile = await supabase.from('profile').select('name').eq('user_id', widget.currentUserId).maybeSingle();
+        final senderProfile = await supabase
+            .from('profile')
+            .select('name')
+            .eq('user_id', widget.currentUserId)
+            .maybeSingle();
         final senderName = senderProfile?['name'] ?? 'A mate';
         await supabase.from('notifications').insert({
           'user_id': receiverUserId,
@@ -3238,7 +3420,6 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
           'type': 'vibe_reply',
           'title': 'New Vibe Reply 💬',
           'message': '$senderName replied to your Vibe: "$originalText"',
-          
         });
       } catch (notifErr) {
         debugPrint('Error inserting vibe reply notification: $notifErr');
@@ -3300,19 +3481,22 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
           SnackBar(
             content: Row(
               children: [
-                const Icon(Icons.check_circle_rounded, color: Colors.white, size: 16),
+                const Icon(Icons.check_circle_rounded,
+                    color: Colors.white, size: 16),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     areMates
                         ? 'Reply sent to $authorName!'
                         : 'Reply sent as Message Request to $authorName! 📩',
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.w600),
                   ),
                 ),
               ],
             ),
-            backgroundColor: areMates ? const Color(0xFF10B981) : const Color(0xFF6366F1),
+            backgroundColor:
+                areMates ? const Color(0xFF10B981) : const Color(0xFF6366F1),
             duration: const Duration(seconds: 2),
             behavior: SnackBarBehavior.floating,
           ),
@@ -3354,15 +3538,19 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         if (videoUrl.isNotEmpty) {
           try {
             // Check local disk cache for instant zero-buffering playback at original heavy clarity
-            final fileInfo = await DefaultCacheManager().getFileFromCache(videoUrl);
+            final fileInfo =
+                await DefaultCacheManager().getFileFromCache(videoUrl);
             if (fileInfo != null && await fileInfo.file.exists()) {
-              _currentVideoController = VideoPlayerController.file(fileInfo.file);
+              _currentVideoController =
+                  VideoPlayerController.file(fileInfo.file);
             } else {
               _currentVideoController = VideoPlayerController.networkUrl(
                 Uri.parse(videoUrl),
               );
               // Asynchronously download into local cache for repeated views
-              unawaited(DefaultCacheManager().downloadFile(videoUrl).then((_) {}, onError: (e) {
+              unawaited(DefaultCacheManager()
+                  .downloadFile(videoUrl)
+                  .then((_) {}, onError: (e) {
                 debugPrint('Background video cache error: $e');
               }));
             }
@@ -3385,10 +3573,15 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     if (status['media_type'] != 'video') {
       final rawMeta = status['metadata'];
       final meta = rawMeta is Map ? rawMeta : {};
-      final targetProfileId = widget.statusGroup['profile']?['id']?.toString() ??
-          widget.statusGroup['id']?.toString() ??
-          '';
-      final userId = (status['user_id'] ?? status['userId'] ?? widget.statusGroup['user_id'] ?? targetProfileId).toString();
+      final targetProfileId =
+          widget.statusGroup['profile']?['id']?.toString() ??
+              widget.statusGroup['id']?.toString() ??
+              '';
+      final userId = (status['user_id'] ??
+              status['userId'] ??
+              widget.statusGroup['user_id'] ??
+              targetProfileId)
+          .toString();
       final isRobot = PocketRobotService.isRobotId(userId) ||
           PocketRobotService.isRobotId(targetProfileId) ||
           widget.statusGroup['is_robot'] == true ||
@@ -3410,7 +3603,6 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       PocketGameAudioService.instance.stop();
     }
 
-
     if (status['media_type'] == 'video' && _currentVideoController != null) {
       await _currentVideoController!.play();
       final duration = _currentVideoController!.value.duration;
@@ -3427,7 +3619,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
 
     unawaited(Future.wait([
       _markStatusAsViewed(status['id']),
-      _loadViewCount(status['id'], createdAtStr: status['created_at']?.toString()),
+      _loadViewCount(status['id'],
+          createdAtStr: status['created_at']?.toString()),
       _loadLikeStatus(status['id']),
       _checkMateStatus(),
     ]));
@@ -3461,14 +3654,18 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         final nextVideoUrl = nextStatus['media_url']?.toString() ?? '';
         if (nextVideoUrl.isNotEmpty) {
           try {
-            final fileInfo = await DefaultCacheManager().getFileFromCache(nextVideoUrl);
+            final fileInfo =
+                await DefaultCacheManager().getFileFromCache(nextVideoUrl);
             if (fileInfo != null && await fileInfo.file.exists()) {
-              _preloadedVideoController = VideoPlayerController.file(fileInfo.file);
+              _preloadedVideoController =
+                  VideoPlayerController.file(fileInfo.file);
             } else {
               _preloadedVideoController = VideoPlayerController.networkUrl(
                 Uri.parse(nextVideoUrl),
               );
-              unawaited(DefaultCacheManager().downloadFile(nextVideoUrl).then((_) {}, onError: (_) {}));
+              unawaited(DefaultCacheManager()
+                  .downloadFile(nextVideoUrl)
+                  .then((_) {}, onError: (_) {}));
             }
             await _preloadedVideoController!.initialize();
             _isPreloadedVideoReady = true;
@@ -3500,7 +3697,6 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       }
     }
   }
-
 
   void _onVideoProgress() {
     if (_currentVideoController != null &&
@@ -3552,7 +3748,9 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     if (!_isUuid(statusId)) {
       DateTime? dt;
       if (createdAtStr != null) dt = DateTime.tryParse(createdAtStr);
-      final robotViews = PocketRobotService.getSimulatedRobotViewers(statusId, statusCreatedAt: dt).length;
+      final robotViews = PocketRobotService.getSimulatedRobotViewers(statusId,
+              statusCreatedAt: dt)
+          .length;
       if (mounted) setState(() => _currentViewCount = robotViews);
       return;
     }
@@ -3567,7 +3765,9 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       final baseCount = (response['views_count'] as num?)?.toInt() ?? 0;
       DateTime? dt;
       if (createdAtStr != null) dt = DateTime.tryParse(createdAtStr);
-      final robotViews = PocketRobotService.getSimulatedRobotViewers(statusId, statusCreatedAt: dt).length;
+      final robotViews = PocketRobotService.getSimulatedRobotViewers(statusId,
+              statusCreatedAt: dt)
+          .length;
 
       setState(() {
         _currentViewCount = baseCount + robotViews;
@@ -3692,7 +3892,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                         itemBuilder: (context, index) {
                           final viewer = _currentViewers[index];
                           final profile = viewer['profile'] ?? {};
-                          final isRobot = profile['is_robot'] == true || viewer['is_robot'] == true;
+                          final isRobot = profile['is_robot'] == true ||
+                              viewer['is_robot'] == true;
                           final viewerProfileId = viewer['viewer_profile_id'];
                           final isLiked = isRobot
                               ? (viewer['is_liked'] == true)
@@ -3704,7 +3905,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                               if (isRobot) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('${profile['name'] ?? 'Robot'} is your AI English Mate 🤖'),
+                                    content: Text(
+                                        '${profile['name'] ?? 'Robot'} is your AI English Mate 🤖'),
                                     duration: const Duration(seconds: 2),
                                   ),
                                 );
@@ -3721,8 +3923,11 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                             },
                             leading: isRobot
                                 ? VectorAvatarWidget(
-                                    config: VectorAvatarConfig.getEvolutionAvatarForStage(
-                                        (profile['level'] as num?)?.toInt() ?? 1),
+                                    config: VectorAvatarConfig
+                                        .getEvolutionAvatarForStage(
+                                            (profile['level'] as num?)
+                                                    ?.toInt() ??
+                                                1),
                                     size: 40,
                                     showAura: false,
                                   )
@@ -3735,9 +3940,10 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                             : null,
                                     child: profile['profile_image_url'] == null
                                         ? Text(
-                                            (profile['name'] ?? 'U')[0].toUpperCase(),
-                                            style:
-                                                const TextStyle(color: Colors.white),
+                                            (profile['name'] ?? 'U')[0]
+                                                .toUpperCase(),
+                                            style: const TextStyle(
+                                                color: Colors.white),
                                           )
                                         : null,
                                   ),
@@ -3865,7 +4071,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         'English': meta?['explanation']?.toString() ??
             'Master spoken English with daily practice!',
       },
-      contextHint: meta?['context_hint']?.toString() ?? 'Spoken English Practice',
+      contextHint:
+          meta?['context_hint']?.toString() ?? 'Spoken English Practice',
     );
 
     showModalBottomSheet(
@@ -3913,7 +4120,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                     ],
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded, color: Colors.white60),
+                    icon:
+                        const Icon(Icons.close_rounded, color: Colors.white60),
                     onPressed: () => Navigator.pop(modalCtx),
                   ),
                 ],
@@ -3957,7 +4165,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
 
   void _openAuthorCitadel(Map<String, dynamic>? authorProfile) {
     final statuses = widget.statusGroup['statuses'] as List;
-    final curStatus = _currentIndex < statuses.length ? statuses[_currentIndex] : null;
+    final curStatus =
+        _currentIndex < statuses.length ? statuses[_currentIndex] : null;
     final rawMeta = curStatus?['metadata'];
     final meta = rawMeta is Map ? rawMeta : null;
     final authorUserId = meta?['house_id']?.toString() ??
@@ -4040,7 +4249,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     );
   }
 
-  void _showStatusOptionsMenu(Map<String, dynamic> status, Map<String, dynamic>? profile, bool isOwn) {
+  void _showStatusOptionsMenu(
+      Map<String, dynamic> status, Map<String, dynamic>? profile, bool isOwn) {
     if (!_isPaused) _togglePause();
 
     final statusId = status['id']?.toString() ?? '';
@@ -4081,11 +4291,13 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                     color: Colors.redAccent.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.delete_forever_rounded, color: Colors.redAccent),
+                  child: const Icon(Icons.delete_forever_rounded,
+                      color: Colors.redAccent),
                 ),
                 title: Text(
                   'Delete Vibe',
-                  style: GoogleFonts.outfit(color: Colors.redAccent, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.outfit(
+                      color: Colors.redAccent, fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
                   'Permanently remove this status',
@@ -4105,11 +4317,13 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                     color: Colors.orangeAccent.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.visibility_off_rounded, color: Colors.orangeAccent),
+                  child: const Icon(Icons.visibility_off_rounded,
+                      color: Colors.orangeAccent),
                 ),
                 title: Text(
                   'Hide $authorName\'s Stories',
-                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.outfit(
+                      color: Colors.white, fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
                   'Don\'t show vibes and stories from this user',
@@ -4129,11 +4343,13 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                     color: Colors.redAccent.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.flag_rounded, color: Colors.redAccent),
+                  child:
+                      const Icon(Icons.flag_rounded, color: Colors.redAccent),
                 ),
                 title: Text(
                   'Report Vibe',
-                  style: GoogleFonts.outfit(color: Colors.redAccent, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.outfit(
+                      color: Colors.redAccent, fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
                   'Report inappropriate, abusive, or offensive content',
@@ -4157,7 +4373,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                 ),
                 title: Text(
                   'Block $authorName',
-                  style: GoogleFonts.outfit(color: Colors.red, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.outfit(
+                      color: Colors.red, fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
                   'Block this user from messaging you or seeing your profile',
@@ -4185,7 +4402,9 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF161922),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Block $authorName?', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text('Block $authorName?',
+            style: GoogleFonts.outfit(
+                color: Colors.white, fontWeight: FontWeight.bold)),
         content: Text(
           'They will not be able to send you messages or view your vibes. You won\'t see their content anywhere on Poket Mates.',
           style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
@@ -4193,7 +4412,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            child:
+                const Text('Cancel', style: TextStyle(color: Colors.white54)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -4218,7 +4438,9 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                 debugPrint('Error blocking user: $e');
               }
             },
-            child: const Text('Block', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text('Block',
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -4450,8 +4672,11 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                     Row(
                       children: [
                         GestureDetector(
-                          onTap: () => _openAuthorCitadel(currentStatus['profile'] ?? profile),
-                          child: _buildViewerAvatar(currentStatus['profile'] ?? profile, size: 36),
+                          onTap: () => _openAuthorCitadel(
+                              currentStatus['profile'] ?? profile),
+                          child: _buildViewerAvatar(
+                              currentStatus['profile'] ?? profile,
+                              size: 36),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
@@ -4461,7 +4686,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                             children: [
                               Row(
                                 children: [
-                                  if (widget.statusGroup['is_group'] == true) ...[
+                                  if (widget.statusGroup['is_group'] ==
+                                      true) ...[
                                     Flexible(
                                       child: Text(
                                         profile['name'] ?? 'Group',
@@ -4482,7 +4708,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                   ],
                                   Flexible(
                                     child: GestureDetector(
-                                      onTap: () => _openAuthorCitadel(currentStatus['profile'] ?? profile),
+                                      onTap: () => _openAuthorCitadel(
+                                          currentStatus['profile'] ?? profile),
                                       child: Text(
                                         currentStatus['profile']?['name'] ??
                                             'Unknown',
@@ -4497,9 +4724,12 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                       ),
                                     ),
                                   ),
-                                  if (currentStatus['profile']?['is_verified'] == true) ...[
+                                  if (currentStatus['profile']
+                                          ?['is_verified'] ==
+                                      true) ...[
                                     const SizedBox(width: 4),
-                                    const Icon(Icons.verified, color: Color(0xFF38BDF8), size: 14),
+                                    const Icon(Icons.verified,
+                                        color: Color(0xFF38BDF8), size: 14),
                                   ],
                                 ],
                               ),
@@ -4519,17 +4749,25 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                   Builder(
                                     builder: (context) {
                                       final rawMeta = currentStatus['metadata'];
-                                      final meta = rawMeta is Map ? rawMeta : null;
-                                      final bool isPriv = meta != null && (meta['is_private'] == true || meta['is_private'] == 'true');
+                                      final meta =
+                                          rawMeta is Map ? rawMeta : null;
+                                      final bool isPriv = meta != null &&
+                                          (meta['is_private'] == true ||
+                                              meta['is_private'] == 'true');
                                       return Container(
                                         width: 6.5,
                                         height: 6.5,
                                         decoration: BoxDecoration(
-                                          color: isPriv ? const Color(0xFF38BDF8) : const Color(0xFF10B981),
+                                          color: isPriv
+                                              ? const Color(0xFF38BDF8)
+                                              : const Color(0xFF10B981),
                                           shape: BoxShape.circle,
                                           boxShadow: [
                                             BoxShadow(
-                                              color: (isPriv ? const Color(0xFF38BDF8) : const Color(0xFF10B981)).withValues(alpha: 0.8),
+                                              color: (isPriv
+                                                      ? const Color(0xFF38BDF8)
+                                                      : const Color(0xFF10B981))
+                                                  .withValues(alpha: 0.8),
                                               blurRadius: 4,
                                               spreadRadius: 0.5,
                                             ),
@@ -4541,15 +4779,19 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                   if (!isOwnStatus && !_isAuthorMate) ...[
                                     const SizedBox(width: 8),
                                     GestureDetector(
-                                      onTap: _isMateRequestSent ? null : _sendAddMateFromStatus,
+                                      onTap: _isMateRequestSent
+                                          ? null
+                                          : _sendAddMateFromStatus,
                                       child: Container(
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 7, vertical: 2.5),
                                         decoration: BoxDecoration(
                                           color: _isMateRequestSent
-                                              ? Colors.white.withValues(alpha: 0.18)
+                                              ? Colors.white
+                                                  .withValues(alpha: 0.18)
                                               : const Color(0xFFFFFC00),
-                                          borderRadius: BorderRadius.circular(10),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
                                         ),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,
@@ -4572,8 +4814,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                                 fontSize: 10,
                                                 fontWeight: FontWeight.bold,
                                                 color: _isMateRequestSent
-                                                  ? Colors.white70
-                                                  : Colors.black,
+                                                    ? Colors.white70
+                                                    : Colors.black,
                                               ),
                                             ),
                                           ],
@@ -4589,12 +4831,14 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                   padding: const EdgeInsets.only(top: 2),
                                   child: Row(
                                     children: [
-                                      if (currentStatus['mentioned_group_id'] != null)
+                                      if (currentStatus['mentioned_group_id'] !=
+                                          null)
                                         FutureBuilder(
                                           future: supabase
                                               .from('groups')
                                               .select('name')
-                                              .eq('id',
+                                              .eq(
+                                                  'id',
                                                   currentStatus[
                                                       'mentioned_group_id'])
                                               .maybeSingle(),
@@ -4614,12 +4858,15 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                             );
                                           },
                                         ),
-                                      if (currentStatus['mentioned_profile_id'] != null)
+                                      if (currentStatus[
+                                              'mentioned_profile_id'] !=
+                                          null)
                                         FutureBuilder(
                                           future: supabase
                                               .from('profile')
                                               .select('name')
-                                              .eq('id',
+                                              .eq(
+                                                  'id',
                                                   currentStatus[
                                                       'mentioned_profile_id'])
                                               .maybeSingle(),
@@ -4651,7 +4898,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                           GestureDetector(
                             onTap: () => _loadViewers(
                               currentStatus['id'],
-                              createdAtStr: currentStatus['created_at']?.toString(),
+                              createdAtStr:
+                                  currentStatus['created_at']?.toString(),
                             ),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
@@ -4692,24 +4940,31 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                         Builder(
                           builder: (context) {
                             final statusAuthorId = (currentStatus['user_id'] ??
-                                currentStatus['profile_id'] ??
-                                (currentStatus['profile'] ?? profile)?['id'] ??
-                                widget.statusGroup['user_id'] ??
-                                '')
+                                    currentStatus['profile_id'] ??
+                                    (currentStatus['profile'] ??
+                                        profile)?['id'] ??
+                                    widget.statusGroup['user_id'] ??
+                                    '')
                                 .toString();
-                            final statusAuthorMeta = currentStatus['metadata'] is Map
-                                ? currentStatus['metadata'] as Map
-                                : null;
-                            final isRobotAuthor = currentStatus['is_robot'] == true ||
-                                (currentStatus['profile'] ?? profile)?['is_robot'] == true ||
+                            final statusAuthorMeta =
+                                currentStatus['metadata'] is Map
+                                    ? currentStatus['metadata'] as Map
+                                    : null;
+                            final isRobotAuthor = currentStatus['is_robot'] ==
+                                    true ||
+                                (currentStatus['profile'] ??
+                                        profile)?['is_robot'] ==
+                                    true ||
                                 widget.statusGroup['is_robot'] == true ||
                                 (statusAuthorMeta?['is_robot'] == true) ||
                                 PocketRobotService.isRobotId(statusAuthorId);
-                            final isPresidentAuthor =
-                                PocketPresidentService.isPresidentId(statusAuthorId) ||
+                            final isPresidentAuthor = PocketPresidentService
+                                    .isPresidentId(statusAuthorId) ||
                                 (statusAuthorMeta?['is_president'] == true) ||
                                 widget.statusGroup['is_president'] == true ||
-                                (currentStatus['profile'] ?? profile)?['is_president'] == true;
+                                (currentStatus['profile'] ??
+                                        profile)?['is_president'] ==
+                                    true;
 
                             if (!isRobotAuthor && !isPresidentAuthor) {
                               return const SizedBox.shrink();
@@ -4719,19 +4974,21 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 ValueListenableBuilder<bool>(
-                                  valueListenable:
-                                      PocketGameAudioService.instance.isMutedNotifier,
+                                  valueListenable: PocketGameAudioService
+                                      .instance.isMutedNotifier,
                                   builder: (context, isMuted, _) {
                                     return GestureDetector(
                                       onTap: () {
                                         HapticFeedback.lightImpact();
-                                        PocketGameAudioService.instance.toggleMute();
+                                        PocketGameAudioService.instance
+                                            .toggleMute();
                                       },
                                       child: Container(
                                         width: 32,
                                         height: 32,
                                         decoration: BoxDecoration(
-                                          color: Colors.black.withValues(alpha: 0.35),
+                                          color: Colors.black
+                                              .withValues(alpha: 0.35),
                                           shape: BoxShape.circle,
                                         ),
                                         alignment: Alignment.center,
@@ -4754,7 +5011,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                           },
                         ),
                         GestureDetector(
-                          onTap: () => _showStatusOptionsMenu(currentStatus, profile, isOwnStatus),
+                          onTap: () => _showStatusOptionsMenu(
+                              currentStatus, profile, isOwnStatus),
                           child: Container(
                             width: 32,
                             height: 32,
@@ -4796,8 +5054,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
             ),
 
             // Floating Reaction Bursts
-            ..._reactionBursts.map(
-                (b) => _AnimatedFloatingReactionItem(key: ValueKey(b.id), burst: b)),
+            ..._reactionBursts.map((b) =>
+                _AnimatedFloatingReactionItem(key: ValueKey(b.id), burst: b)),
 
             // Caption (Audio directive: never duplicate/clash captions over rich cards or spoken dialogues)
             if (currentStatus['caption'] != null &&
@@ -4824,7 +5082,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                   constraints: BoxConstraints(
                     maxHeight: MediaQuery.of(context).size.height * 0.22,
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.68),
                     borderRadius: BorderRadius.circular(16),
@@ -4857,7 +5116,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                 right: 14,
                 child: Center(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.75),
                       borderRadius: BorderRadius.circular(22),
@@ -4875,12 +5135,14 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: ['🔥', '❤️', '😂', '👏', '😮', '💯'].map((emoji) {
+                      children:
+                          ['🔥', '❤️', '😂', '👏', '😮', '💯'].map((emoji) {
                         return InkWell(
                           onTap: () => _onTapQuickReaction(emoji),
                           borderRadius: BorderRadius.circular(16),
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 7, vertical: 3),
                             child: Text(
                               emoji,
                               style: const TextStyle(fontSize: 21),
@@ -4927,7 +5189,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                               splashRadius: 18,
                               onPressed: () {
                                 HapticFeedback.lightImpact();
-                                setState(() => _showEmojiPicker = !_showEmojiPicker);
+                                setState(
+                                    () => _showEmojiPicker = !_showEmojiPicker);
                               },
                             ),
                             Expanded(
@@ -4945,8 +5208,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                     color: Colors.white.withValues(alpha: 0.6),
                                     fontSize: 14,
                                   ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 8),
+                                  contentPadding:
+                                      const EdgeInsets.symmetric(horizontal: 8),
                                   border: InputBorder.none,
                                   enabledBorder: InputBorder.none,
                                   focusedBorder: InputBorder.none,
@@ -4964,7 +5227,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                         ),
                       ),
                     ),
-                  
+
                   if (!isOwnStatus) const SizedBox(width: 12),
                   if (isOwnStatus) const Spacer(),
 
@@ -5033,16 +5296,18 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                         currentStatus['media_type'] == 'thought'
                                     ? (currentStatus['caption'] ?? '')
                                     : (currentStatus['media_url'] ?? ''),
-                                contentId: currentStatus['thought_id']
-                                        ?.toString() ??
-                                    currentStatus['gallery_id']?.toString(),
+                                contentId:
+                                    currentStatus['thought_id']?.toString() ??
+                                        currentStatus['gallery_id']?.toString(),
                                 contentType: currentStatus['thought_id'] != null
                                     ? 'thought'
                                     : (currentStatus['gallery_id'] != null
                                         ? 'gallery'
-                                        : (currentStatus['media_type'] == 'image'
+                                        : (currentStatus['media_type'] ==
+                                                'image'
                                             ? 'image'
-                                            : (currentStatus['media_type'] == 'video'
+                                            : (currentStatus['media_type'] ==
+                                                    'video'
                                                 ? 'video'
                                                 : 'text'))),
                                 currentUserId: widget.currentUserId,
@@ -5141,7 +5406,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
 
     if (status['media_type'] == 'thought') {
       final thoughtData = status['thought'];
-      final String? profileId = (status['profile_id'] ?? status['user_id'])?.toString();
+      final String? profileId =
+          (status['profile_id'] ?? status['user_id'])?.toString();
       final isRobot = status['is_robot'] == true ||
           (profileId != null && PocketRobotService.isRobotId(profileId));
 
@@ -5173,7 +5439,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         }
       }
 
-      final String? authorAvatar = profile['profile_image_url'] ?? status['user_avatar'];
+      final String? authorAvatar =
+          profile['profile_image_url'] ?? status['user_avatar'];
       final thoughtContent =
           (thoughtData != null && thoughtData['content'] != null)
               ? thoughtData['content']
@@ -5182,18 +5449,23 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       final rawMetadata = status['metadata'];
       final Map<String, dynamic>? meta = rawMetadata is Map<String, dynamic>
           ? rawMetadata
-          : (rawMetadata is Map ? Map<String, dynamic>.from(rawMetadata) : null);
+          : (rawMetadata is Map
+              ? Map<String, dynamic>.from(rawMetadata)
+              : null);
       final itemType = meta?['item_type']?.toString();
 
       if (itemType == 'home_showcase') {
         final residentName = meta?['resident_name']?.toString() ?? 'Learner';
-        final int residentDay = int.tryParse(meta?['resident_day']?.toString() ?? '1') ?? 1;
-        final int residentStreak = int.tryParse(meta?['resident_streak']?.toString() ?? '1') ?? 1;
+        final int residentDay =
+            int.tryParse(meta?['resident_day']?.toString() ?? '1') ?? 1;
+        final int residentStreak =
+            int.tryParse(meta?['resident_streak']?.toString() ?? '1') ?? 1;
         final residentRank = meta?['resident_rank']?.toString() ?? 'Explorer';
         final houseId = meta?['house_id']?.toString() ?? 'resident';
         final String? paletteId = meta?['palette_id']?.toString();
         final isDamaged = meta?['is_damaged'] == true;
-        final isPresident = houseId == 'pocket_president' || meta?['is_president'] == true;
+        final isPresident =
+            houseId == 'pocket_president' || meta?['is_president'] == true;
         final bool isVip = isPresident ||
             meta?['is_vip'] == true ||
             residentRank.toLowerCase().contains('sovereign') ||
@@ -5210,347 +5482,364 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
           child: Stack(
             fit: StackFit.expand,
             children: [
-                // 🌄 1. Full-bleed Living Citadel Scenery Backdrop
-                Positioned.fill(
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Color(0xFF0F172A), // Deep navy starry sky
-                          Color(0xFF1E293B), // Twilight horizon
-                          Color(0xFF1B4D3E), // Emerald foothills
-                          Color(0xFF0B251E), // Lush lawn ground
-                        ],
-                        stops: [0.0, 0.38, 0.65, 1.0],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                    ),
-                  ),
-                ),
-
-                // 🌿 2. Subtle ambient hills glow at bottom
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: MediaQuery.of(context).size.height * 0.45,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          const Color(0xFF10B981).withValues(alpha: 0.15),
-                          const Color(0xFF064E3B).withValues(alpha: 0.4),
-                          const Color(0xFF022C22).withValues(alpha: 0.85),
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(36),
-                        topRight: Radius.circular(36),
-                      ),
-                    ),
-                  ),
-                ),
-
-                // 🏷️ 3. Top Resident Profile Header Pill (Clear of top progress bar)
-                Positioned(
-                  top: MediaQuery.of(context).padding.top + 52,
-                  left: 16,
-                  right: 16,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.55),
-                      borderRadius: BorderRadius.circular(22),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.18),
-                        width: 1.2,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.4),
-                          blurRadius: 14,
-                          offset: const Offset(0, 4),
-                        ),
+              // 🌄 1. Full-bleed Living Citadel Scenery Backdrop
+              Positioned.fill(
+                child: Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Color(0xFF0F172A), // Deep navy starry sky
+                        Color(0xFF1E293B), // Twilight horizon
+                        Color(0xFF1B4D3E), // Emerald foothills
+                        Color(0xFF0B251E), // Lush lawn ground
                       ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 38,
-                          height: 38,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Color(0xFF0F172A),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(19),
-                            child: VectorAvatarWidget(
-                              config: VectorAvatarConfig.getEvolutionAvatarForStage(residentDay),
-                              size: 38,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                '$residentName\'s Citadel',
-                                style: GoogleFonts.outfit(
-                                  color: Colors.white,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              Text(
-                                '🔥 Day $residentDay • $residentRank',
-                                style: GoogleFonts.outfit(
-                                  color: const Color(0xFFFFFC00),
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () {
-                            _togglePause();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => PocketHomesReelsFeedWidget(
-                                  initialHouseId: houseId,
-                                ),
-                              ),
-                            ).then((_) => _togglePause());
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFFFC00).withValues(alpha: 0.18),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: const Color(0xFFFFFC00).withValues(alpha: 0.5),
-                                width: 1,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.touch_app_rounded, color: Color(0xFFFFFC00), size: 13),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Explore',
-                                  style: GoogleFonts.outfit(
-                                    color: const Color(0xFFFFFC00),
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
+                      stops: [0.0, 0.38, 0.65, 1.0],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
                     ),
                   ),
                 ),
+              ),
 
-                // 🛡️ Top VIP Protection Banner (Per User Directive)
-                if (isVip)
-                  Positioned(
-                    top: MediaQuery.of(context).padding.top + 108,
-                    left: 20,
-                    right: 20,
-                    child: Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              const Color(0xFF1E293B).withValues(alpha: 0.95),
-                              const Color(0xFF0F172A).withValues(alpha: 0.95),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: const Color(0xFF38BDF8),
-                            width: 1.4,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF0284C7).withValues(alpha: 0.35),
-                              blurRadius: 14,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
+              // 🌿 2. Subtle ambient hills glow at bottom
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: MediaQuery.of(context).size.height * 0.45,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0xFF10B981).withValues(alpha: 0.15),
+                        const Color(0xFF064E3B).withValues(alpha: 0.4),
+                        const Color(0xFF022C22).withValues(alpha: 0.85),
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(36),
+                      topRight: Radius.circular(36),
+                    ),
+                  ),
+                ),
+              ),
+
+              // 🏷️ 3. Top Resident Profile Header Pill (Clear of top progress bar)
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 52,
+                left: 16,
+                right: 16,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.55),
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.18),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.4),
+                        blurRadius: 14,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFF0F172A),
                         ),
-                        child: Row(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(19),
+                          child: VectorAvatarWidget(
+                            config:
+                                VectorAvatarConfig.getEvolutionAvatarForStage(
+                                    residentDay),
+                            size: 38,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Text('🛡️', style: TextStyle(fontSize: 13)),
-                            const SizedBox(width: 6),
                             Text(
-                              'VIP CITADEL • HIGH SECURITY ZONE',
+                              '$residentName\'s Citadel',
                               style: GoogleFonts.outfit(
-                                color: const Color(0xFF7DD3FC),
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.6,
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              '🔥 Day $residentDay • $residentRank',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFFC00),
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                            const SizedBox(width: 6),
-                            const Text('🪖', style: TextStyle(fontSize: 13)),
                           ],
                         ),
                       ),
-                    ),
-                  ),
-
-                // 🏠 4. Full & Prominent FlameEnglishHouseWidget in screen center
-                Positioned(
-                  top: MediaQuery.of(context).padding.top + 105,
-                  bottom: MediaQuery.of(context).padding.bottom + 140,
-                  left: 12,
-                  right: 12,
-                  child: Center(
-                    child: SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.94,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          IgnorePointer(
-                            child: FlameEnglishHouseWidget(
-                              currentDay: residentDay,
-                              streak: residentStreak,
-                              isDamaged: isDamaged,
-                              houseId: houseId,
-                              paletteId: paletteId,
-                              isPresident: isPresident,
-                            ),
-                          ),
-                          // 🛡️ VIP Protective Dome Perimeter
-                          if (isVip)
-                            IgnorePointer(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(36),
-                                  border: Border.all(
-                                    color: const Color(0xFF38BDF8).withValues(alpha: 0.45),
-                                    width: 2.0,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF0284C7).withValues(alpha: 0.22),
-                                      blurRadius: 28,
-                                      spreadRadius: 2,
-                                    ),
-                                  ],
-                                ),
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          _togglePause();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PocketHomesReelsFeedWidget(
+                                initialHouseId: houseId,
                               ),
                             ),
-                        ],
+                          ).then((_) => _togglePause());
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 9, vertical: 4),
+                          decoration: BoxDecoration(
+                            color:
+                                const Color(0xFFFFFC00).withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: const Color(0xFFFFFC00)
+                                  .withValues(alpha: 0.5),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.touch_app_rounded,
+                                  color: Color(0xFFFFFC00), size: 13),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Explore',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFFFC00),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
+              ),
 
-                // 🪖 Soldiers Surrounding VIP Home ("പട്ടാളക്കാരെ ചുറ്റും കാണിക്കണം")
-                if (isVip) ...[
-                  // Left Army Soldier
-                  Positioned(
-                    bottom: MediaQuery.of(context).padding.bottom + 142,
-                    left: 16,
-                    child: const ArmySoldierGuardWidget(
-                      isLeft: false,
-                      vocalText: 'VIP PROTOCOL 🪖',
-                    ),
-                  ),
-                  // Right Army Soldier
-                  Positioned(
-                    bottom: MediaQuery.of(context).padding.bottom + 142,
-                    right: 16,
-                    child: const ArmySoldierGuardWidget(
-                      isLeft: true,
-                      vocalText: 'ARMED DEFENSE 🛑',
-                    ),
-                  ),
-                ],
-
-                // 🏠 5. Bottom "Visit Home" Button ONLY (Per User Directive: Title removed completely)
+              // 🛡️ Top VIP Protection Banner (Per User Directive)
+              if (isVip)
                 Positioned(
-                  bottom: MediaQuery.of(context).padding.bottom + 68,
+                  top: MediaQuery.of(context).padding.top + 108,
                   left: 20,
                   right: 20,
                   child: Center(
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () {
-                        _togglePause();
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PocketHomesReelsFeedWidget(
-                              initialHouseId: houseId,
-                            ),
-                          ),
-                        ).then((_) => _togglePause());
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 13),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFFFFC00), Color(0xFFFFB700)],
-                          ),
-                          borderRadius: BorderRadius.circular(28),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFFFFC00).withValues(alpha: 0.45),
-                              blurRadius: 18,
-                              offset: const Offset(0, 4),
-                            ),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 6),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFF1E293B).withValues(alpha: 0.95),
+                            const Color(0xFF0F172A).withValues(alpha: 0.95),
                           ],
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.home_work_rounded, color: Colors.black, size: 20),
-                            const SizedBox(width: 9),
-                            Text(
-                              'Visit Home',
-                              style: GoogleFonts.outfit(
-                                color: Colors.black,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.3,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            const Icon(Icons.arrow_forward_rounded, color: Colors.black87, size: 16),
-                          ],
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: const Color(0xFF38BDF8),
+                          width: 1.4,
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                const Color(0xFF0284C7).withValues(alpha: 0.35),
+                            blurRadius: 14,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('🛡️', style: TextStyle(fontSize: 13)),
+                          const SizedBox(width: 6),
+                          Text(
+                            'VIP CITADEL • HIGH SECURITY ZONE',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF7DD3FC),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.6,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const Text('🪖', style: TextStyle(fontSize: 13)),
+                        ],
                       ),
                     ),
                   ),
                 ),
+
+              // 🏠 4. Full & Prominent FlameEnglishHouseWidget in screen center
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 105,
+                bottom: MediaQuery.of(context).padding.bottom + 140,
+                left: 12,
+                right: 12,
+                child: Center(
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.94,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        IgnorePointer(
+                          child: FlameEnglishHouseWidget(
+                            currentDay: residentDay,
+                            streak: residentStreak,
+                            isDamaged: isDamaged,
+                            houseId: houseId,
+                            paletteId: paletteId,
+                            isPresident: isPresident,
+                          ),
+                        ),
+                        // 🛡️ VIP Protective Dome Perimeter
+                        if (isVip)
+                          IgnorePointer(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(36),
+                                border: Border.all(
+                                  color: const Color(0xFF38BDF8)
+                                      .withValues(alpha: 0.45),
+                                  width: 2.0,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF0284C7)
+                                        .withValues(alpha: 0.22),
+                                    blurRadius: 28,
+                                    spreadRadius: 2,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // 🪖 Soldiers Surrounding VIP Home ("പട്ടാളക്കാരെ ചുറ്റും കാണിക്കണം")
+              if (isVip) ...[
+                // Left Army Soldier
+                Positioned(
+                  bottom: MediaQuery.of(context).padding.bottom + 142,
+                  left: 16,
+                  child: const ArmySoldierGuardWidget(
+                    isLeft: false,
+                    vocalText: 'VIP PROTOCOL 🪖',
+                  ),
+                ),
+                // Right Army Soldier
+                Positioned(
+                  bottom: MediaQuery.of(context).padding.bottom + 142,
+                  right: 16,
+                  child: const ArmySoldierGuardWidget(
+                    isLeft: true,
+                    vocalText: 'ARMED DEFENSE 🛑',
+                  ),
+                ),
               ],
-            ),
+
+              // 🏠 5. Bottom "Visit Home" Button ONLY (Per User Directive: Title removed completely)
+              Positioned(
+                bottom: MediaQuery.of(context).padding.bottom + 68,
+                left: 20,
+                right: 20,
+                child: Center(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      _togglePause();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PocketHomesReelsFeedWidget(
+                            initialHouseId: houseId,
+                          ),
+                        ),
+                      ).then((_) => _togglePause());
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 32, vertical: 13),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFFFC00), Color(0xFFFFB700)],
+                        ),
+                        borderRadius: BorderRadius.circular(28),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                const Color(0xFFFFFC00).withValues(alpha: 0.45),
+                            blurRadius: 18,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.home_work_rounded,
+                              color: Colors.black, size: 20),
+                          const SizedBox(width: 9),
+                          Text(
+                            'Visit Home',
+                            style: GoogleFonts.outfit(
+                              color: Colors.black,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const Icon(Icons.arrow_forward_rounded,
+                              color: Colors.black87, size: 16),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         );
       } else if (itemType == 'daily_english_phrases') {
         final deckId = meta?['deck_id']?.toString() ?? '';
         final deckTitle = meta?['deck_title']?.toString() ?? 'Daily English';
         final rawPhrases = meta?['phrases'];
         final List<Map<String, dynamic>> phrases = rawPhrases is List
-            ? rawPhrases.map((e) => Map<String, dynamic>.from(e as Map)).toList()
+            ? rawPhrases
+                .map((e) => Map<String, dynamic>.from(e as Map))
+                .toList()
             : [];
         if (deckId.isNotEmpty) {
           PocketReelsContentEngine.markVibesContentViewed(deckId);
@@ -5708,10 +5997,9 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                           fontSize: 12.5,
                                           fontWeight: FontWeight.w700,
                                           color: const Color(0xFF8B2500),
-                                          fontFamily:
-                                              activeLang == 'Malayalam'
-                                                  ? 'NotoSansMalayalam'
-                                                  : null,
+                                          fontFamily: activeLang == 'Malayalam'
+                                              ? 'NotoSansMalayalam'
+                                              : null,
                                         ),
                                       ),
                                     ),
@@ -5783,278 +6071,291 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
           child: Stack(
             fit: StackFit.expand,
             children: [
-                // Ambient Radial Glow
-                Positioned(
-                  top: -80,
-                  right: -80,
-                  child: Container(
-                    width: 260,
-                    height: 260,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFFFFFC00).withValues(alpha: 0.08),
-                    ),
+              // Ambient Radial Glow
+              Positioned(
+                top: -80,
+                right: -80,
+                child: Container(
+                  width: 260,
+                  height: 260,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFFFFFC00).withValues(alpha: 0.08),
                   ),
                 ),
-                Positioned(
-                  bottom: 60,
-                  left: -60,
-                  child: Container(
-                    width: 260,
-                    height: 260,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFF6366F1).withValues(alpha: 0.12),
-                    ),
-                  ),
-                ),
-
-                // Main Game Card Content in Center
-                Center(
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    padding: const EdgeInsets.all(22),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(26),
-                      border: Border.all(
-                        color: const Color(0xFFFFFC00).withValues(alpha: 0.45),
-                        width: 1.8,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.65),
-                          blurRadius: 30,
-                          offset: const Offset(0, 14),
-                        ),
-                        BoxShadow(
-                          color: const Color(0xFFFFFC00).withValues(alpha: 0.12),
-                          blurRadius: 20,
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Category Pill
-                        GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () {
-                            _openInteractiveVibeChallenge(
-                              meta: meta,
-                              gameId: gameId,
-                              prompt: prompt,
-                              category: category,
-                              options: options,
-                            );
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: const Color(0xFFFFFC00).withValues(alpha: 0.6),
-                                width: 1.2,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.sports_esports_rounded,
-                                    color: Color(0xFFFFFC00), size: 15),
-                                const SizedBox(width: 6),
-                                Text(
-                                  category,
-                                  style: GoogleFonts.outfit(
-                                    color: const Color(0xFFFFFC00),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 18),
-
-                        // Prompt Container
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.4),
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.1),
-                            ),
-                          ),
-                          child: Text(
-                            prompt,
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: 16.5,
-                              fontWeight: FontWeight.bold,
-                              height: 1.4,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-
-                        // Options preview if available
-                        if (options.isNotEmpty) ...[
-                          const SizedBox(height: 14),
-                          Wrap(
-                            alignment: WrapAlignment.center,
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: options.take(4).map((opt) {
-                              return Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF334155).withValues(alpha: 0.6),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.15),
-                                  ),
-                                ),
-                                child: Text(
-                                  opt,
-                                  style: GoogleFonts.inter(
-                                    color: Colors.white.withValues(alpha: 0.9),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ],
-
-                        const SizedBox(height: 20),
-
-                        // Play Game Button
-                        GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () {
-                            _openInteractiveVibeChallenge(
-                              meta: meta,
-                              gameId: gameId,
-                              prompt: prompt,
-                              category: category,
-                              options: options,
-                            );
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 11),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFFFFFC00), Color(0xFFFFB700)],
-                              ),
-                              borderRadius: BorderRadius.circular(24),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
-                                  blurRadius: 14,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.play_arrow_rounded, color: Colors.black, size: 20),
-                                const SizedBox(width: 6),
-                                Text(
-                                  'Play Challenge',
-                                  style: GoogleFonts.outfit(
-                                    color: Colors.black,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 0.3,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        } else {
-          content = Container(
-            width: double.infinity,
-            height: double.infinity,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF0F172A), Color(0xFF070B14)],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
               ),
-            ),
-            child: Center(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 24),
-                padding: const EdgeInsets.all(22),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1E293B).withValues(alpha: 0.85),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.12),
-                    width: 1.2,
+              Positioned(
+                bottom: 60,
+                left: -60,
+                child: Container(
+                  width: 260,
+                  height: 260,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFF6366F1).withValues(alpha: 0.12),
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.4),
-                      blurRadius: 24,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 44,
-                          height: 44,
+              ),
+
+              // Main Game Card Content in Center
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.all(22),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(26),
+                    border: Border.all(
+                      color: const Color(0xFFFFFC00).withValues(alpha: 0.45),
+                      width: 1.8,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.65),
+                        blurRadius: 30,
+                        offset: const Offset(0, 14),
+                      ),
+                      BoxShadow(
+                        color: const Color(0xFFFFFC00).withValues(alpha: 0.12),
+                        blurRadius: 20,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Category Pill
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          _openInteractiveVibeChallenge(
+                            meta: meta,
+                            gameId: gameId,
+                            prompt: prompt,
+                            category: category,
+                            options: options,
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 7),
                           decoration: BoxDecoration(
-                            shape: BoxShape.circle,
+                            color:
+                                const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: isRobot
-                                  ? const Color(0xFF06B6D4)
-                                  : const Color(0xFFFFFC00).withValues(alpha: 0.6),
-                              width: 1.5,
+                              color: const Color(0xFFFFFC00)
+                                  .withValues(alpha: 0.6),
+                              width: 1.2,
                             ),
                           ),
-                          child: ClipOval(
-                            child: isRobot
-                                ? VectorAvatarWidget(
-                                    config: VectorAvatarConfig.getEvolutionAvatarForStage(robotLevel),
-                                    size: 44,
-                                    showAura: false,
-                                  )
-                                : (authorAvatar != null && authorAvatar.isNotEmpty
-                                    ? CachedNetworkImage(
-                                        imageUrl: authorAvatar,
-                                        fit: BoxFit.cover,
-                                        errorWidget: (_, __, ___) => Container(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.sports_esports_rounded,
+                                  color: Color(0xFFFFFC00), size: 15),
+                              const SizedBox(width: 6),
+                              Text(
+                                category,
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFFFC00),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      // Prompt Container
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 18, vertical: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.4),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.1),
+                          ),
+                        ),
+                        child: Text(
+                          prompt,
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 16.5,
+                            fontWeight: FontWeight.bold,
+                            height: 1.4,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+
+                      // Options preview if available
+                      if (options.isNotEmpty) ...[
+                        const SizedBox(height: 14),
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: options.take(4).map((opt) {
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF334155)
+                                    .withValues(alpha: 0.6),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.15),
+                                ),
+                              ),
+                              child: Text(
+                                opt,
+                                style: GoogleFonts.inter(
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+
+                      const SizedBox(height: 20),
+
+                      // Play Game Button
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          _openInteractiveVibeChallenge(
+                            meta: meta,
+                            gameId: gameId,
+                            prompt: prompt,
+                            category: category,
+                            options: options,
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 11),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFFFFC00), Color(0xFFFFB700)],
+                            ),
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFFFFC00)
+                                    .withValues(alpha: 0.35),
+                                blurRadius: 14,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.play_arrow_rounded,
+                                  color: Colors.black, size: 20),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Play Challenge',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.black,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      } else {
+        content = Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF0F172A), Color(0xFF070B14)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          child: Center(
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B).withValues(alpha: 0.85),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.4),
+                    blurRadius: 24,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isRobot
+                                ? const Color(0xFF06B6D4)
+                                : const Color(0xFFFFFC00)
+                                    .withValues(alpha: 0.6),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: ClipOval(
+                          child: isRobot
+                              ? VectorAvatarWidget(
+                                  config: VectorAvatarConfig
+                                      .getEvolutionAvatarForStage(robotLevel),
+                                  size: 44,
+                                  showAura: false,
+                                )
+                              : (authorAvatar != null && authorAvatar.isNotEmpty
+                                  ? CachedNetworkImage(
+                                      imageUrl: authorAvatar,
+                                      fit: BoxFit.cover,
+                                      errorWidget: (_, __, ___) => Container(
                                         color: const Color(0xFF0F172A),
                                         alignment: Alignment.center,
                                         child: Text(
-                                          authorName.isNotEmpty ? authorName[0].toUpperCase() : 'M',
+                                          authorName.isNotEmpty
+                                              ? authorName[0].toUpperCase()
+                                              : 'M',
                                           style: const TextStyle(
                                             color: Colors.white,
                                             fontWeight: FontWeight.bold,
@@ -6067,7 +6368,9 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                       color: const Color(0xFF0F172A),
                                       alignment: Alignment.center,
                                       child: Text(
-                                        authorName.isNotEmpty ? authorName[0].toUpperCase() : 'M',
+                                        authorName.isNotEmpty
+                                            ? authorName[0].toUpperCase()
+                                            : 'M',
                                         style: const TextStyle(
                                           color: Colors.white,
                                           fontWeight: FontWeight.bold,
@@ -6091,7 +6394,9 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                               ),
                             ),
                             Text(
-                              isRobot ? 'AI Companion • Shared thought' : 'Shared a thought',
+                              isRobot
+                                  ? 'AI Companion • Shared thought'
+                                  : 'Shared a thought',
                               style: GoogleFonts.inter(
                                 color: const Color(0xFF94A3B8),
                                 fontSize: 11.5,
@@ -6102,7 +6407,9 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                       ),
                       Icon(
                         Icons.format_quote_rounded,
-                        color: isRobot ? const Color(0xFF06B6D4) : const Color(0xFFFFFC00),
+                        color: isRobot
+                            ? const Color(0xFF06B6D4)
+                            : const Color(0xFFFFFC00),
                         size: 24,
                       ),
                       const SizedBox(width: 8),
@@ -6142,7 +6449,9 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                       onTap: () {
                         final tid = status['thought_id'] ??
                             status['thought']?['id'] ??
-                            (isRobot ? 'thread_${profileId ?? 'robot'}_1' : null);
+                            (isRobot
+                                ? 'thread_${profileId ?? 'robot'}_1'
+                                : null);
                         if (tid == null) return;
                         _togglePause(); // Pause status while viewing thought
                         Navigator.push(
@@ -6316,7 +6625,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                               context,
                               MaterialPageRoute(
                                 builder: (context) => CourseDetailPage(
-                                  courseData: Map<String, dynamic>.from(metadata),
+                                  courseData:
+                                      Map<String, dynamic>.from(metadata),
                                 ),
                               ),
                             ).then((_) {
@@ -6367,7 +6677,6 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         ),
       );
     } else if (status['media_type'] == 'tool') {
-
       final metadata = status['metadata'] ?? {};
       final title = metadata['title'] ?? 'Tool';
       final description = metadata['description'] ?? '';
@@ -6502,12 +6811,20 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         ),
       );
     } else if (status['media_type'] == 'text') {
-      final metadata = status['metadata'] is Map ? status['metadata'] as Map : {};
-      final category = metadata['tag'] ?? metadata['category'] ?? (status['is_robot'] == true ? '🤖 Robot English Vibe' : '✨ Pocket Vibe');
+      final metadata =
+          status['metadata'] is Map ? status['metadata'] as Map : {};
+      final category = metadata['tag'] ??
+          metadata['category'] ??
+          (status['is_robot'] == true
+              ? '🤖 Robot English Vibe'
+              : '✨ Pocket Vibe');
       final List<dynamic>? gradientList = metadata['gradient_colors'];
-      final List<Color> bgColors = (gradientList != null && gradientList.length >= 2)
-          ? gradientList.map((c) => Color(int.tryParse(c.toString()) ?? 0xFF7C3AED)).toList()
-          : const [Color(0xFF7C3AED), Color(0xFFDB2777)];
+      final List<Color> bgColors =
+          (gradientList != null && gradientList.length >= 2)
+              ? gradientList
+                  .map((c) => Color(int.tryParse(c.toString()) ?? 0xFF7C3AED))
+                  .toList()
+              : const [Color(0xFF7C3AED), Color(0xFFDB2777)];
 
       content = Container(
         width: double.infinity,
@@ -6527,7 +6844,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.35),
                     borderRadius: BorderRadius.circular(20),
@@ -6536,7 +6854,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.auto_awesome, color: Color(0xFFFFFC00), size: 14),
+                      const Icon(Icons.auto_awesome,
+                          color: Color(0xFFFFFC00), size: 14),
                       const SizedBox(width: 6),
                       Text(
                         category.toString(),
@@ -6574,9 +6893,13 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         ),
       );
     } else if (status['media_type'] == 'citadel_fortress') {
-      final metadata = status['metadata'] is Map ? status['metadata'] as Map : {};
-      final targetUserId = metadata['target_user_id']?.toString() ?? status['user_id']?.toString() ?? '';
-      final targetUserName = metadata['target_user_name']?.toString() ?? (status['profile']?['name']?.toString() ?? 'Hero');
+      final metadata =
+          status['metadata'] is Map ? status['metadata'] as Map : {};
+      final targetUserId = metadata['target_user_id']?.toString() ??
+          status['user_id']?.toString() ??
+          '';
+      final targetUserName = metadata['target_user_name']?.toString() ??
+          (status['profile']?['name']?.toString() ?? 'Hero');
       final bool isPresident = metadata['is_president'] == true ||
           PocketPresidentService.isPresidentId(targetUserId) ||
           targetUserId == 'pocket_president';
@@ -6592,8 +6915,16 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: isPresident
-                ? const [Color(0xFF0F172A), Color(0xFF1E1B4B), Color(0xFF030712)]
-                : const [Color(0xFF021B35), Color(0xFF0B192C), Color(0xFF030712)],
+                ? const [
+                    Color(0xFF0F172A),
+                    Color(0xFF1E1B4B),
+                    Color(0xFF030712)
+                  ]
+                : const [
+                    Color(0xFF021B35),
+                    Color(0xFF0B192C),
+                    Color(0xFF030712)
+                  ],
           ),
         ),
         child: Stack(
@@ -6636,7 +6967,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                   });
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.68),
                     borderRadius: BorderRadius.circular(18),
@@ -6676,17 +7008,22 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                           ),
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
                               color: isPresident
-                                  ? const Color(0xFFFFD700).withValues(alpha: 0.25)
-                                  : const Color(0xFF0284C7).withValues(alpha: 0.3),
+                                  ? const Color(0xFFFFD700)
+                                      .withValues(alpha: 0.25)
+                                  : const Color(0xFF0284C7)
+                                      .withValues(alpha: 0.3),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(
                               'LV $level • $rank',
                               style: TextStyle(
-                                color: isPresident ? const Color(0xFFFFD700) : const Color(0xFF38BDF8),
+                                color: isPresident
+                                    ? const Color(0xFFFFD700)
+                                    : const Color(0xFF38BDF8),
                                 fontSize: 11,
                                 fontWeight: FontWeight.w800,
                               ),
@@ -6700,14 +7037,20 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                         children: [
                           Icon(
                             Icons.touch_app_rounded,
-                            color: isPresident ? const Color(0xFFFFD700) : const Color(0xFF38BDF8),
+                            color: isPresident
+                                ? const Color(0xFFFFD700)
+                                : const Color(0xFF38BDF8),
                             size: 13,
                           ),
                           const SizedBox(width: 5),
                           Text(
-                            isPresident ? 'Tap to Visit Sovereign Palace 🏛️' : 'Tap to Raid / Visit Citadel ⚔️',
+                            isPresident
+                                ? 'Tap to Visit Sovereign Palace 🏛️'
+                                : 'Tap to Raid / Visit Citadel ⚔️',
                             style: GoogleFonts.inter(
-                              color: isPresident ? const Color(0xFFFFD700) : const Color(0xFF38BDF8),
+                              color: isPresident
+                                  ? const Color(0xFFFFD700)
+                                  : const Color(0xFF38BDF8),
                               fontSize: 11.5,
                               fontWeight: FontWeight.w600,
                             ),
@@ -6731,7 +7074,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                     _showPresidentFeedbackBottomSheet(context);
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 22, vertical: 12),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [Color(0xFFFFD700), Color(0xFFF59E0B)],
@@ -6739,7 +7083,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                       borderRadius: BorderRadius.circular(30),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFFFD700).withValues(alpha: 0.55),
+                          color:
+                              const Color(0xFFFFD700).withValues(alpha: 0.55),
                           blurRadius: 18,
                           offset: const Offset(0, 4),
                         ),
@@ -6748,7 +7093,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.rate_review_rounded, color: Colors.black, size: 20),
+                        const Icon(Icons.rate_review_rounded,
+                            color: Colors.black, size: 20),
                         const SizedBox(width: 8),
                         Text(
                           '✍️ GIVE APP FEEDBACK & SUGGESTIONS',
@@ -6779,7 +7125,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                     });
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: isPresident
@@ -6789,7 +7136,10 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                       borderRadius: BorderRadius.circular(30),
                       boxShadow: [
                         BoxShadow(
-                          color: (isPresident ? const Color(0xFFFFD700) : const Color(0xFFEF4444)).withValues(alpha: 0.5),
+                          color: (isPresident
+                                  ? const Color(0xFFFFD700)
+                                  : const Color(0xFFEF4444))
+                              .withValues(alpha: 0.5),
                           blurRadius: 18,
                           offset: const Offset(0, 4),
                         ),
@@ -6798,10 +7148,13 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.shield_rounded, color: Colors.white, size: 20),
+                        const Icon(Icons.shield_rounded,
+                            color: Colors.white, size: 20),
                         const SizedBox(width: 8),
                         Text(
-                          isPresident ? '⚔️ VISIT SOVEREIGN PALACE' : '⚔️ RAID / VISIT CITADEL',
+                          isPresident
+                              ? '⚔️ VISIT SOVEREIGN PALACE'
+                              : '⚔️ RAID / VISIT CITADEL',
                           style: GoogleFonts.outfit(
                             color: Colors.white,
                             fontWeight: FontWeight.w900,
@@ -6925,7 +7278,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
   /// "ഇതിൽ ഇങ്ങനെ ചാറ്റിന്റെ ബബിൾ ആക്കി കൊടുക്കുക! ഇവിടെ ഇങ്ങനെ ചോദിക്കുന്നു, ഇതിന് ഉത്തരം കൊടുക്കുന്നു...
   /// ആൾക്കാർക്ക് കുറച്ചും കൂടി സ്പോക്കൺ ഇംഗ്ലീഷ് ബേസ് ചെയ്തിട്ടുള്ള കാര്യങ്ങൾ പഠിക്കാൻ പറ്റും.
   /// സ്പോക്കൺ ഇംഗ്ലീഷിനാണ് ആൾക്കാർ വരുന്നത്! മിനിമൽ ആയിട്ട് അയക്കുക, ടെക്സ്റ്റ് കൊളാഷ് ആവരുത്."
-  Widget _buildSpokenDialogueVibeCard(Map<String, dynamic> status, Map<String, dynamic>? meta) {
+  Widget _buildSpokenDialogueVibeCard(
+      Map<String, dynamic> status, Map<String, dynamic>? meta) {
     final rawColors = meta?['gradient_colors'];
     List<Color> bgColors = const [Color(0xFF4F46E5), Color(0xFF7C3AED)];
     if (rawColors is List && rawColors.length >= 2) {
@@ -6940,12 +7294,11 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     final question = meta?['dialogue_question']?.toString() ??
         status['caption']?.toString() ??
         'How are you doing today?';
-    final answer = meta?['dialogue_answer']?.toString() ??
-        'I am doing great, thank you!';
+    final answer =
+        meta?['dialogue_answer']?.toString() ?? 'I am doing great, thank you!';
     final rawAlts = meta?['dialogue_alternatives'];
-    final List<String> alternatives = (rawAlts is List)
-        ? rawAlts.map((e) => e.toString()).toList()
-        : [];
+    final List<String> alternatives =
+        (rawAlts is List) ? rawAlts.map((e) => e.toString()).toList() : [];
     final preposition = meta?['preposition']?.toString();
     final ruleTitle = meta?['rule_title']?.toString();
     final rawCollocations = meta?['collocations'];
@@ -6954,7 +7307,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         : [];
     final malayalamNote = meta?['malayalam_note']?.toString() ?? '';
 
-    final String? profileId = (status['profile_id'] ?? status['user_id'])?.toString();
+    final String? profileId =
+        (status['profile_id'] ?? status['user_id'])?.toString();
     final isRobot = status['is_robot'] == true ||
         (profileId != null && PocketRobotService.isRobotId(profileId));
 
@@ -7025,11 +7379,11 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                 children: [
                   // 1. Interactive Spoken Dialogue Card
 
-
                   // 2. Preposition Rule Banner (If Preposition Rule)
                   if (preposition != null && preposition.isNotEmpty) ...[
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.45),
                         borderRadius: BorderRadius.circular(18),
@@ -7044,7 +7398,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                           Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFFFFC00),
                                   borderRadius: BorderRadius.circular(8),
@@ -7061,7 +7416,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  ruleTitle ?? 'Words that ALWAYS pair with "$preposition":',
+                                  ruleTitle ??
+                                      'Words that ALWAYS pair with "$preposition":',
                                   style: GoogleFonts.outfit(
                                     color: Colors.white,
                                     fontSize: 14,
@@ -7078,12 +7434,14 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                               runSpacing: 6,
                               children: collocations.map((coll) {
                                 return Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withValues(alpha: 0.12),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: Colors.white.withValues(alpha: 0.2),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.2),
                                       width: 0.8,
                                     ),
                                   ),
@@ -7107,7 +7465,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
 
                   // 3. Chat Dialogue Bubbles Card (WhatsApp / iMessage layout)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 18),
                     decoration: BoxDecoration(
                       color: const Color(0xFF0F172A).withValues(alpha: 0.75),
                       borderRadius: BorderRadius.circular(24),
@@ -7131,7 +7490,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                           alignment: Alignment.centerLeft,
                           child: ConstrainedBox(
                             constraints: BoxConstraints(
-                              maxWidth: MediaQuery.of(context).size.width * 0.76,
+                              maxWidth:
+                                  MediaQuery.of(context).size.width * 0.76,
                             ),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -7141,21 +7501,28 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                 Container(
                                   width: 34,
                                   height: 34,
-                                  margin: const EdgeInsets.only(right: 8, top: 4),
+                                  margin:
+                                      const EdgeInsets.only(right: 8, top: 4),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF06B6D4).withValues(alpha: 0.2),
+                                    color: const Color(0xFF06B6D4)
+                                        .withValues(alpha: 0.2),
                                     shape: BoxShape.circle,
-                                    border: Border.all(color: const Color(0xFF06B6D4), width: 1.2),
+                                    border: Border.all(
+                                        color: const Color(0xFF06B6D4),
+                                        width: 1.2),
                                   ),
                                   child: const Center(
-                                    child: Text('🤖', style: TextStyle(fontSize: 16)),
+                                    child: Text('🤖',
+                                        style: TextStyle(fontSize: 16)),
                                   ),
                                 ),
                                 Flexible(
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 14, vertical: 10),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF1E293B).withValues(alpha: 0.95),
+                                      color: const Color(0xFF1E293B)
+                                          .withValues(alpha: 0.95),
                                       borderRadius: const BorderRadius.only(
                                         topLeft: Radius.circular(4),
                                         topRight: Radius.circular(18),
@@ -7163,12 +7530,14 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                         bottomRight: Radius.circular(18),
                                       ),
                                       border: Border.all(
-                                        color: const Color(0xFF38BDF8).withValues(alpha: 0.4),
+                                        color: const Color(0xFF38BDF8)
+                                            .withValues(alpha: 0.4),
                                         width: 1,
                                       ),
                                     ),
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           robotName,
@@ -7194,12 +7563,16 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              const Icon(Icons.volume_up_rounded, color: Color(0xFF38BDF8), size: 14),
+                                              const Icon(
+                                                  Icons.volume_up_rounded,
+                                                  color: Color(0xFF38BDF8),
+                                                  size: 14),
                                               const SizedBox(width: 4),
                                               Text(
                                                 'Tap to listen',
                                                 style: GoogleFonts.inter(
-                                                  color: const Color(0xFF38BDF8).withValues(alpha: 0.8),
+                                                  color: const Color(0xFF38BDF8)
+                                                      .withValues(alpha: 0.8),
                                                   fontSize: 10.5,
                                                 ),
                                               ),
@@ -7222,7 +7595,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                           alignment: Alignment.centerRight,
                           child: ConstrainedBox(
                             constraints: BoxConstraints(
-                              maxWidth: MediaQuery.of(context).size.width * 0.76,
+                              maxWidth:
+                                  MediaQuery.of(context).size.width * 0.76,
                             ),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -7231,10 +7605,14 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                               children: [
                                 Flexible(
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 14, vertical: 10),
                                     decoration: BoxDecoration(
                                       gradient: const LinearGradient(
-                                        colors: [Color(0xFF059669), Color(0xFF10B981)],
+                                        colors: [
+                                          Color(0xFF059669),
+                                          Color(0xFF10B981)
+                                        ],
                                         begin: Alignment.topLeft,
                                         end: Alignment.bottomRight,
                                       ),
@@ -7246,19 +7624,22 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                       ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                                          color: const Color(0xFF10B981)
+                                              .withValues(alpha: 0.3),
                                           blurRadius: 10,
                                           offset: const Offset(0, 3),
                                         ),
                                       ],
                                     ),
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
                                       children: [
                                         Text(
                                           'You (Natural Reply) 👤',
                                           style: GoogleFonts.outfit(
-                                            color: Colors.white.withValues(alpha: 0.85),
+                                            color: Colors.white
+                                                .withValues(alpha: 0.85),
                                             fontSize: 11,
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -7280,12 +7661,16 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              const Icon(Icons.volume_up_rounded, color: Colors.white, size: 14),
+                                              const Icon(
+                                                  Icons.volume_up_rounded,
+                                                  color: Colors.white,
+                                                  size: 14),
                                               const SizedBox(width: 4),
                                               Text(
                                                 'Tap to pronounce',
                                                 style: GoogleFonts.inter(
-                                                  color: Colors.white.withValues(alpha: 0.9),
+                                                  color: Colors.white
+                                                      .withValues(alpha: 0.9),
                                                   fontSize: 10.5,
                                                 ),
                                               ),
@@ -7299,22 +7684,25 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                 Container(
                                   width: 34,
                                   height: 34,
-                                  margin: const EdgeInsets.only(left: 8, top: 4),
+                                  margin:
+                                      const EdgeInsets.only(left: 8, top: 4),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF10B981).withValues(alpha: 0.25),
+                                    color: const Color(0xFF10B981)
+                                        .withValues(alpha: 0.25),
                                     shape: BoxShape.circle,
-                                    border: Border.all(color: const Color(0xFF10B981), width: 1.2),
+                                    border: Border.all(
+                                        color: const Color(0xFF10B981),
+                                        width: 1.2),
                                   ),
                                   child: const Center(
-                                    child: Text('👤', style: TextStyle(fontSize: 16)),
+                                    child: Text('👤',
+                                        style: TextStyle(fontSize: 16)),
                                   ),
                                 ),
                               ],
                             ),
                           ),
                         ),
-
-
                       ],
                     ),
                   ),
@@ -7323,12 +7711,14 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                   if (malayalamNote.isNotEmpty) ...[
                     const SizedBox(height: 14),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                          color:
+                              const Color(0xFFFFD700).withValues(alpha: 0.35),
                           width: 1,
                         ),
                       ),
@@ -7337,7 +7727,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                         children: [
                           const Padding(
                             padding: EdgeInsets.only(top: 2),
-                            child: Icon(Icons.lightbulb_rounded, color: Color(0xFFFFD700), size: 16),
+                            child: Icon(Icons.lightbulb_rounded,
+                                color: Color(0xFFFFD700), size: 16),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
@@ -7366,7 +7757,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                           HapticFeedback.lightImpact();
                           _speakFullDialogue(question, answer);
                         },
-                        icon: const Icon(Icons.volume_up_rounded, color: Colors.black, size: 18),
+                        icon: const Icon(Icons.volume_up_rounded,
+                            color: Colors.black, size: 18),
                         label: Text(
                           'Listen Dialogue',
                           style: GoogleFonts.outfit(
@@ -7377,7 +7769,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFFFFC00),
-                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 18, vertical: 10),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
@@ -7392,14 +7785,16 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                             SnackBar(
                               content: Text(
                                 '🗣️ Speak out loud: "$answer"!',
-                                style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                                style: GoogleFonts.outfit(
+                                    fontWeight: FontWeight.bold),
                               ),
                               backgroundColor: const Color(0xFF10B981),
                               duration: const Duration(seconds: 3),
                             ),
                           );
                         },
-                        icon: const Icon(Icons.mic_rounded, color: Colors.white, size: 18),
+                        icon: const Icon(Icons.mic_rounded,
+                            color: Colors.white, size: 18),
                         label: Text(
                           'Practice Aloud',
                           style: GoogleFonts.outfit(
@@ -7409,8 +7804,10 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                           ),
                         ),
                         style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Colors.white38, width: 1.2),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          side: const BorderSide(
+                              color: Colors.white38, width: 1.2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 10),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
@@ -7651,9 +8048,10 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                         contentType = 'status_mention';
                         contentId = status['id']?.toString();
                         metadataToShare = {
-                           'status_media_url': status['media_url'],
-                           'media_type': status['media_type'],
-                           'sender_name': status['profile']?['name'] ?? 'Someone',
+                          'status_media_url': status['media_url'],
+                          'media_type': status['media_type'],
+                          'sender_name':
+                              status['profile']?['name'] ?? 'Someone',
                         };
                       }
                     }
@@ -7722,7 +8120,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
   }
 }
 
-Widget _buildMentionTag(String name, IconData icon, {bool isUnderName = false}) {
+Widget _buildMentionTag(String name, IconData icon,
+    {bool isUnderName = false}) {
   return Container(
     margin: EdgeInsets.only(left: isUnderName ? 0 : 8),
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -7797,7 +8196,8 @@ class _AnimatedFloatingReactionItemState
       animation: _anim,
       builder: (context, child) {
         final progress = _anim.value;
-        final dy = (1.0 - progress) * (size.height * 0.45) + (size.height * 0.35);
+        final dy =
+            (1.0 - progress) * (size.height * 0.45) + (size.height * 0.35);
         final opacity = (1.0 - (progress * 1.1)).clamp(0.0, 1.0);
         final scale = 0.8 + (math.sin(progress * math.pi) * 0.7);
 
@@ -7847,7 +8247,8 @@ class StatusUploadWidget extends StatefulWidget {
 }
 
 class _StatusUploadWidgetState extends State<StatusUploadWidget> {
-  final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+  final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey =
+      GlobalKey<ScaffoldMessengerState>();
   final ImagePicker _picker = ImagePicker();
   final TextEditingController _captionController = TextEditingController();
   bool _isUploading = false;
@@ -8199,8 +8600,8 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
                     itemBuilder: (context, index) {
                       final c = courses[index];
                       return ListTile(
-                        leading:
-                            const Icon(Icons.school_rounded, color: Colors.yellow),
+                        leading: const Icon(Icons.school_rounded,
+                            color: Colors.yellow),
                         title: Text(c['course_title'] ?? '',
                             maxLines: 2,
                             style: const TextStyle(color: Colors.white)),
@@ -8232,7 +8633,6 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
   }
 
   void _showCaptionDialog(XFile file, String mediaType) {
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -8271,7 +8671,8 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            child:
+                const Text('Cancel', style: TextStyle(color: Colors.white54)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -8282,7 +8683,8 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Request submitted! Our team will contact you shortly.'),
+                  content: Text(
+                      'Request submitted! Our team will contact you shortly.'),
                   backgroundColor: Colors.green,
                 ),
               );
@@ -8355,8 +8757,8 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
             decoration: BoxDecoration(
               color: const Color(0xFF262626),
               borderRadius: BorderRadius.circular(24),
-              border:
-                  Border.all(color: Colors.yellow.withValues(alpha: 0.2), width: 1),
+              border: Border.all(
+                  color: Colors.yellow.withValues(alpha: 0.2), width: 1),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.5),
@@ -8377,7 +8779,8 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                            color: Colors.yellow.withValues(alpha: 0.5), width: 1.5),
+                            color: Colors.yellow.withValues(alpha: 0.5),
+                            width: 1.5),
                       ),
                       child: CircleAvatar(
                         backgroundColor: Colors.black,
@@ -8442,7 +8845,8 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
                     decoration: BoxDecoration(
                       color: Colors.yellow.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.yellow.withValues(alpha: 0.3)),
+                      border: Border.all(
+                          color: Colors.yellow.withValues(alpha: 0.3)),
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
@@ -8487,8 +8891,8 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(24),
-              border:
-                  Border.all(color: Colors.indigo.withValues(alpha: 0.3), width: 1),
+              border: Border.all(
+                  color: Colors.indigo.withValues(alpha: 0.3), width: 1),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -8580,8 +8984,8 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(30),
-              border:
-                  Border.all(color: Colors.indigo.withValues(alpha: 0.5), width: 1.5),
+              border: Border.all(
+                  color: Colors.indigo.withValues(alpha: 0.5), width: 1.5),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -8644,7 +9048,6 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         ),
       );
     } else if (sType == 'tool') {
-
       contentWidget = Container(
         width: double.infinity,
         height: double.infinity,
@@ -8662,8 +9065,8 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(30),
-              border:
-                  Border.all(color: Colors.yellow.withValues(alpha: 0.3), width: 1.5),
+              border: Border.all(
+                  color: Colors.yellow.withValues(alpha: 0.3), width: 1.5),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -8776,7 +9179,10 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
             children: [
               GestureDetector(
                 onTap: () {
-                  final email = SupaFlow.client.auth.currentUser?.email?.toLowerCase().trim() ?? '';
+                  final email = SupaFlow.client.auth.currentUser?.email
+                          ?.toLowerCase()
+                          .trim() ??
+                      '';
                   final isAdmin = email == 'musabthonippadam@gmail.com' ||
                       email == 'hira@gmail.com' ||
                       email == 'musabhira@gmail.com' ||
@@ -8787,7 +9193,8 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
                       SnackBar(
                         content: Text(
                           'Only Admin can post Public Vibes. Your vibes are shared with Poket Mates! 🔒',
-                          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                          style:
+                              GoogleFonts.outfit(fontWeight: FontWeight.bold),
                         ),
                         backgroundColor: const Color(0xFF1E293B),
                         behavior: SnackBarBehavior.floating,
@@ -8802,7 +9209,10 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
                 },
                 child: Builder(
                   builder: (context) {
-                    final email = SupaFlow.client.auth.currentUser?.email?.toLowerCase().trim() ?? '';
+                    final email = SupaFlow.client.auth.currentUser?.email
+                            ?.toLowerCase()
+                            .trim() ??
+                        '';
                     final isAdmin = email == 'musabthonippadam@gmail.com' ||
                         email == 'hira@gmail.com' ||
                         email == 'musabhira@gmail.com' ||
@@ -8810,7 +9220,8 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
                         email.contains('musabhira');
                     final isPrivate = _isPrivateStory || !isAdmin;
                     return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 7),
                       decoration: BoxDecoration(
                         color: isPrivate
                             ? const Color(0xFF38BDF8).withValues(alpha: 0.16)
@@ -9698,126 +10109,129 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
   @override
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
-      key: _scaffoldMessengerKey,
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        appBar: AppBar(
-          title: const Text('Add to Vibes',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+        key: _scaffoldMessengerKey,
+        child: Scaffold(
           backgroundColor: Colors.black,
-          elevation: 0,
-          centerTitle: true,
-        ),
-        body: Stack(
-          children: [
-            if (_isUploading || _isCompressingImage)
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(
-                      value: _isCompressingImage ? null : _uploadProgress,
-                      color: Colors.yellow),
-                  const SizedBox(height: 20),
-                  Text(
-                      _isCompressingImage
-                          ? 'Optimizing...'
-                          : 'Sharing Vibes...',
-                      style: const TextStyle(color: Colors.yellow)),
-                ],
-              ),
-            )
-          else if (_isSharingMode)
-            _buildEditorUI()
-          else
-            SingleChildScrollView(
-              child: Column(
-                children: [
-                  const SizedBox(height: 60),
-                  const Icon(Icons.auto_awesome,
-                      size: 80, color: Colors.yellow),
-                  const SizedBox(height: 24),
-                  const Text('What\'s on your mind?',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold)),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-                    child: Text(
-                        'Share a photo, video, thought, tool or course with your mates.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white70, fontSize: 14)),
+          appBar: AppBar(
+            title: const Text('Add to Vibes',
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w700)),
+            backgroundColor: Colors.black,
+            elevation: 0,
+            centerTitle: true,
+          ),
+          body: Stack(
+            children: [
+              if (_isUploading || _isCompressingImage)
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(
+                          value: _isCompressingImage ? null : _uploadProgress,
+                          color: Colors.yellow),
+                      const SizedBox(height: 20),
+                      Text(
+                          _isCompressingImage
+                              ? 'Optimizing...'
+                              : 'Sharing Vibes...',
+                          style: const TextStyle(color: Colors.yellow)),
+                    ],
                   ),
-                  const SizedBox(height: 40),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                    child: GridView.count(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      crossAxisCount: 3,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                      children: [
-                        _buildUploadOption(
-                          icon: Icons.image_rounded,
-                          label: 'Gallery',
-                          color: Colors.pink,
-                          onTap: _pickImage,
+                )
+              else if (_isSharingMode)
+                _buildEditorUI()
+              else
+                SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 60),
+                      const Icon(Icons.auto_awesome,
+                          size: 80, color: Colors.yellow),
+                      const SizedBox(height: 24),
+                      const Text('What\'s on your mind?',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold)),
+                      const Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                        child: Text(
+                            'Share a photo, video, thought, tool or course with your mates.',
+                            textAlign: TextAlign.center,
+                            style:
+                                TextStyle(color: Colors.white70, fontSize: 14)),
+                      ),
+                      const SizedBox(height: 40),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: GridView.count(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          crossAxisCount: 3,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          children: [
+                            _buildUploadOption(
+                              icon: Icons.image_rounded,
+                              label: 'Gallery',
+                              color: Colors.pink,
+                              onTap: _pickImage,
+                            ),
+                            // 🚫 User Audio Directive: Video Vibes hidden for now
+                            _buildUploadOption(
+                              icon: Icons.lightbulb_outline,
+                              label: 'Thought',
+                              color: Color(0xFFFFFC00),
+                              onTap: _showThoughtPicker,
+                            ),
+                            _buildUploadOption(
+                              icon: Icons.grid_view_rounded,
+                              label: 'Shop',
+                              color: Colors.teal,
+                              onTap: _showGalleryPicker,
+                            ),
+                            _buildUploadOption(
+                              icon: Icons.construction_rounded,
+                              label: 'Tool',
+                              color: Colors.deepOrange,
+                              onTap: _showToolPicker,
+                            ),
+                            _buildUploadOption(
+                              icon: Icons.text_fields_rounded,
+                              label: 'Text',
+                              color: Colors.blue,
+                              onTap: () {
+                                setState(() {
+                                  _localSharedContent = 'Type something...';
+                                  _localSharedContentType = 'text';
+                                  _isSharingMode = true;
+                                });
+                              },
+                            ),
+                            _buildUploadOption(
+                              icon: Icons.school_rounded,
+                              label: 'Course',
+                              color: Colors.indigo,
+                              onTap: _showCoursePicker,
+                            ),
+                            _buildUploadOption(
+                              icon: Icons.business_center_rounded,
+                              label: 'E-Learning',
+                              color: Colors.cyan,
+                              onTap: _showElearningRequest,
+                            ),
+                          ],
                         ),
-                        // 🚫 User Audio Directive: Video Vibes hidden for now
-                        _buildUploadOption(
-                          icon: Icons.lightbulb_outline,
-                          label: 'Thought',
-                          color: Color(0xFFFFFC00),
-                          onTap: _showThoughtPicker,
-                        ),
-                        _buildUploadOption(
-                          icon: Icons.grid_view_rounded,
-                          label: 'Shop',
-                          color: Colors.teal,
-                          onTap: _showGalleryPicker,
-                        ),
-                        _buildUploadOption(
-                          icon: Icons.construction_rounded,
-                          label: 'Tool',
-                          color: Colors.deepOrange,
-                          onTap: _showToolPicker,
-                        ),
-                        _buildUploadOption(
-                          icon: Icons.text_fields_rounded,
-                          label: 'Text',
-                          color: Colors.blue,
-                          onTap: () {
-                            setState(() {
-                              _localSharedContent = 'Type something...';
-                              _localSharedContentType = 'text';
-                              _isSharingMode = true;
-                            });
-                          },
-                        ),
-                        _buildUploadOption(
-                          icon: Icons.school_rounded,
-                          label: 'Course',
-                          color: Colors.indigo,
-                          onTap: _showCoursePicker,
-                        ),
-                        _buildUploadOption(
-                          icon: Icons.business_center_rounded,
-                          label: 'E-Learning',
-                          color: Colors.cyan,
-                          onTap: _showElearningRequest,
-                        ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 40),
+                    ],
                   ),
-                  const SizedBox(height: 40),
-                ],
-              ),
-            ),
-        ],
-      ),
-    ));
+                ),
+            ],
+          ),
+        ));
   }
 
   Widget _buildUploadOption({
@@ -9841,7 +10255,8 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
             Icon(icon, size: 28, color: color),
             const SizedBox(height: 6),
             Text(label,
-                style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 11)),
+                style: TextStyle(
+                    color: color, fontWeight: FontWeight.w600, fontSize: 11)),
           ],
         ),
       ),
@@ -9873,8 +10288,8 @@ class _VibesDailyEnglishScrapbookCardState
 
   Future<void> _loadDeck() async {
     await PocketReelsContentEngine.init();
-    final deck =
-        PocketReelsContentEngine.getVibesUnseenDeck(slotOffset: widget.slotOffset);
+    final deck = PocketReelsContentEngine.getVibesUnseenDeck(
+        slotOffset: widget.slotOffset);
     if (mounted) {
       setState(() => _deck = deck);
       if (deck != null) {
@@ -10048,7 +10463,8 @@ class _VibesDailyEnglishScrapbookCardState
                           Container(
                             height: 18,
                             width: 1,
-                            color: const Color(0xFFD4A373).withValues(alpha: 0.5),
+                            color:
+                                const Color(0xFFD4A373).withValues(alpha: 0.5),
                             margin: const EdgeInsets.symmetric(horizontal: 6),
                           ),
                           Expanded(
@@ -10131,4 +10547,3 @@ class _VibesDailyEnglishScrapbookCardState
     );
   }
 }
-

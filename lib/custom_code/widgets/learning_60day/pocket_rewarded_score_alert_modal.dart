@@ -43,7 +43,9 @@ class PocketRewardedScoreAlertModal extends StatefulWidget {
   /// ⏱️ Periodically checks and gracefully prompts the user (max once every 15-20 min, non-annoying)
   static Future<void> checkAndShowPeriodic(BuildContext context,
       {VoidCallback? onRewardClaimed}) async {
-    final isVip = await PocketAdMobService.instance.isUserVip();
+    if (PocketAdMobService.instance.isUserVipSync()) return;
+    final isVip =
+        await PocketAdMobService.instance.isUserVip(forceRefresh: true);
     if (isVip) return;
 
     final remaining =
@@ -617,7 +619,7 @@ class _PocketRewardedScoreAlertModalState
                                 ),
                               ),
                               Text(
-                                'Upgrade to VIP Gold for instant +500 PS',
+                                'Upgrade to Poket VIP (₹99/mo) for Zero Ads & +50 PS Bonus',
                                 style: GoogleFonts.inter(
                                   color: const Color(0xFFFFD700),
                                   fontSize: 10.5,

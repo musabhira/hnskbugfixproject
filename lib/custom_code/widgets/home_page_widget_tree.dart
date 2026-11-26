@@ -912,6 +912,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         await PocketPresidentService.checkAndDeliverInstalledReleaseNotes(uid);
         await PocketPresidentService.checkAndDeliverFeedbackPrompt(uid);
         await PocketPresidentService.checkAndDeliverBirthdayWish(uid);
+        final isVip = await PocketAdMobService.instance.isUserVip();
+        await PocketPresidentService.checkAndDeliverVipPromoMessage(
+          uid,
+          isUserVip: isVip,
+        );
       }
     } catch (e) {
       debugPrint('Update check error: $e');

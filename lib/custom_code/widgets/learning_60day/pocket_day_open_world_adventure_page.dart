@@ -830,7 +830,10 @@ class _PocketDayOpenWorldAdventurePageState
                         onPressed: () {
                           HapticFeedback.heavyImpact();
                           if (!_isGateExamPassed) {
-                            _driveToGate(openExamOnArrival: true);
+                            widget.onCompleted?.call();
+                            if (mounted) {
+                              Navigator.of(context).pop('enter_gate');
+                            }
                           } else {
                             PocketAdMobService.instance.showInterstitialAd(
                               context: context,
@@ -856,7 +859,7 @@ class _PocketDayOpenWorldAdventurePageState
                         child: Text(
                           _isGateExamPassed
                               ? 'ENTER HOUSE ${widget.day + 1} ➔'
-                              : 'TAKE GATE ${widget.day} EXAM 🎙️',
+                              : 'ENTER GATE ➔',
                           style: GoogleFonts.outfit(
                               fontWeight: FontWeight.w900, fontSize: 13),
                         ),
@@ -2889,16 +2892,30 @@ class _PocketDayOpenWorldAdventurePageState
         HousePalette.presets[(targetDay - 1) % HousePalette.presets.length];
     final estateTitle = FlameEnglishHouseWidget.getEstateStageTitle(targetDay);
 
+    final int completedCount = List.generate(
+            _totalSteps, (i) => _subStepFlags['step_${i + 1}'] ?? false)
+        .where((v) => v)
+        .length;
+    final bool readyForGate = !isUnlocked && completedCount >= _totalSteps;
+
     return Positioned(
       left: summitX,
       top: groundY - houseHeight - 8.0,
       child: GestureDetector(
         onTap: () {
+          if (readyForGate) {
+            HapticFeedback.heavyImpact();
+            widget.onCompleted?.call();
+            if (mounted) {
+              Navigator.of(context).pop('enter_gate');
+            }
+            return;
+          }
           if (!isUnlocked) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  '🔒 Complete Day ${widget.day} Gate Exam and Daily Summary to unlock House $targetDay!',
+                  '🔒 Complete all $_totalSteps steps first to unlock Gate ${widget.day}!',
                   style: GoogleFonts.outfit(
                       color: Colors.white, fontWeight: FontWeight.bold),
                 ),
@@ -2931,8 +2948,8 @@ class _PocketDayOpenWorldAdventurePageState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 🎯 Bouncing Green Down-Arrow Indicator when House is unlocked!
-            if (isUnlocked)
+            // 🎯 Bouncing Green Down-Arrow Indicator when House or Gate is ready!
+            if (isUnlocked || readyForGate)
               Center(
                 child: AnimatedBuilder(
                   animation: _ambientAnimController,
@@ -2946,18 +2963,26 @@ class _PocketDayOpenWorldAdventurePageState
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 5),
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [
-                              Color(0xFF34D399),
-                              Color(0xFF10B981),
-                              Color(0xFF047857)
-                            ],
+                          gradient: LinearGradient(
+                            colors: readyForGate
+                                ? const [
+                                    Color(0xFFEF4444),
+                                    Color(0xFFDC2626),
+                                    Color(0xFF991B1B),
+                                  ]
+                                : const [
+                                    Color(0xFF34D399),
+                                    Color(0xFF10B981),
+                                    Color(0xFF047857)
+                                  ],
                           ),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: Colors.white, width: 2),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF10B981)
+                              color: (readyForGate
+                                      ? const Color(0xFFEF4444)
+                                      : const Color(0xFF10B981))
                                   .withValues(alpha: 0.65),
                               blurRadius: 14,
                               spreadRadius: 2,
@@ -2967,10 +2992,13 @@ class _PocketDayOpenWorldAdventurePageState
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Text('👇', style: TextStyle(fontSize: 14)),
+                            Text(readyForGate ? '⚔️' : '👇',
+                                style: const TextStyle(fontSize: 14)),
                             const SizedBox(width: 5),
                             Text(
-                              'ENTER HOUSE $targetDay ➔',
+                              readyForGate
+                                  ? 'ENTER GATE ➔'
+                                  : 'ENTER HOUSE $targetDay ➔',
                               style: GoogleFonts.outfit(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w900,
