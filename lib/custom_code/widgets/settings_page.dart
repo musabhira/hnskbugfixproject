@@ -48,6 +48,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void initState() {
     super.initState();
+    PocketGameAudioService.instance.stop();
     _initPackageInfo();
     _checkAdminAccess();
     _loadUserSettings();
@@ -309,7 +310,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       Text(
                         _isVip
                             ? 'Instant Binge Mode • 100% Ad-Free • Golden Verified • Presidential Guard'
-                            : 'Unlock Instant Binge Mode, Zero Ads & Golden Verified Tick (from ₹249)',
+                            : 'Unlock Instant Binge Mode, Zero Ads & Golden Verified Tick (from ₹99/mo)',
                         style: GoogleFonts.inter(
                             color: Colors.white70, fontSize: 12),
                       ),

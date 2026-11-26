@@ -20,6 +20,7 @@ import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/pocket_privacy_avatar_flip_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_street_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_navigator_page.dart';
 import 'package:pocket_mates_app/custom_code/services/poket_cosmos_distance_service.dart';
@@ -3063,8 +3064,13 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                           child: Container(
                             color:
                                 FlutterFlowTheme.of(context).primaryBackground,
-                            child: VectorAvatarWidget(
-                              config: isRobot
+                            child: PocketPrivacyAvatarFlipWidget(
+                              profileImageUrl:
+                                  profile['profile_image_url']?.toString(),
+                              isPrivate:
+                                  PocketPrivacyAvatarFlipWidget.isProfilePrivate(
+                                      profile),
+                              avatarConfig: isRobot
                                   ? VectorAvatarConfig
                                       .getEvolutionAvatarForStage(
                                           (profile['robot_level'] as num?)

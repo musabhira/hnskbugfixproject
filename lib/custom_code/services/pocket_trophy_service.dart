@@ -841,6 +841,47 @@ class PocketTrophyService {
     return PactEvaluationResult(pact: pact);
   }
 
+  /// 🤝 Friendship Score Helpers (Builds up as two mates chat & speak together!)
+  static Future<int> getFriendshipScore(String myId, String otherUserId) async {
+    if (myId.isEmpty || otherUserId.isEmpty) return 0;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final pactId = _generatePactId(myId, otherUserId);
+      return prefs.getInt('pocket_friendship_score_$pactId') ?? 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  static Future<int> addFriendshipScore({
+    required String myId,
+    required String otherUserId,
+    int points = 2,
+  }) async {
+    if (myId.isEmpty || otherUserId.isEmpty) return 0;
+    if (PocketRobotService.isRobotId(otherUserId) ||
+        PocketPresidentService.isPresidentId(otherUserId)) {
+      return 0;
+    }
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final pactId = _generatePactId(myId, otherUserId);
+      final key = 'pocket_friendship_score_$pactId';
+      final next = (prefs.getInt(key) ?? 0) + points;
+      await prefs.setInt(key, next);
+      return next;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  static String getFriendshipTierLabel(int score) {
+    if (score >= 300) return 'Best Mates 🔥';
+    if (score >= 150) return 'Close Friends 🤝';
+    if (score >= 50) return 'Warming Up 💬';
+    return 'New Connection 🌱';
+  }
+
   /// 📅 Record daily chat/spoken activity for a specific user in a 4-day pact.
   /// When sender sends any message (text or voice) on a calendar day:
   /// 1. Adds today's date (YYYY-MM-DD) to that user's completed dates for this pact.
@@ -874,6 +915,11 @@ class PocketTrophyService {
       if (isNewDay) {
         completedDates.add(today);
         await prefs.setStringList(datesKey, completedDates.toList());
+        await addFriendshipScore(
+            myId: senderId, otherUserId: receiverId, points: 25);
+      } else {
+        await addFriendshipScore(
+            myId: senderId, otherUserId: receiverId, points: 2);
       }
 
       // Check trophy award status for sender (Requirements: 4 days spoken chat in English)

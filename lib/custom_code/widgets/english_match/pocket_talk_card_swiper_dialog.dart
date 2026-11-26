@@ -8,7 +8,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
-import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/pocket_privacy_avatar_flip_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/main_profile_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
@@ -27,6 +27,8 @@ class PocketTalkCandidate {
   final String speciesTitle;
   final String goals;
   final String bio;
+  final String? gender;
+  final bool isPrivate;
   bool isRequestSent;
   bool isMateRequestSent;
 
@@ -41,6 +43,8 @@ class PocketTalkCandidate {
     required this.speciesTitle,
     required this.goals,
     required this.bio,
+    this.gender,
+    this.isPrivate = false,
     this.isRequestSent = false,
     this.isMateRequestSent = false,
   });
@@ -219,7 +223,7 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
       try {
         final profiles = await _supabase
             .from('profile')
-            .select('user_id, name, profile_image_url, avatar_config, bio, pocket_score, learning_day')
+            .select('user_id, name, profile_image_url, avatar_config, bio, pocket_score, learning_day, gender, is_private')
             .limit(50)
             .timeout(const Duration(seconds: 4));
 
@@ -299,6 +303,10 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
               bio: (p['bio'] != null && p['bio'].toString().isNotEmpty)
                   ? p['bio'].toString()
                   : 'Passionate about English fluency & 4-day spoken challenges.',
+              gender: p['gender']?.toString(),
+              isPrivate: PocketPrivacyAvatarFlipWidget.isProfilePrivate(
+                p is Map<String, dynamic> ? p : null,
+              ),
             ),
           );
         }
@@ -884,10 +892,11 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  'Explore 4-Day Spoken partners',
+                  '🇬🇧 English Only • Talk 4 Days ➔ 🥈 Silver + Friendship Score',
                   style: GoogleFonts.inter(
-                    color: Colors.white60,
-                    fontSize: 11,
+                    color: const Color(0xFF93C5FD),
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w600,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -1262,9 +1271,11 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(16),
                       child: Center(
-                        child: VectorAvatarWidget(
-                          config: candidate.avatarConfig,
-                          size: 142,
+                        child: PocketPrivacyAvatarFlipWidget(
+                          profileImageUrl: candidate.avatarUrl,
+                          avatarConfig: candidate.avatarConfig,
+                          size: 136,
+                          isPrivate: candidate.isPrivate,
                           showAura: true,
                         ),
                       ),
@@ -1293,6 +1304,26 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
                               ),
                             ),
                             const SizedBox(width: 8),
+                            if (candidate.gender != null &&
+                                (candidate.gender == 'male' ||
+                                    candidate.gender == 'female')) ...[
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2.5),
+                                decoration: BoxDecoration(
+                                  color: (candidate.gender == 'female'
+                                          ? const Color(0xFFEC4899)
+                                          : const Color(0xFF38BDF8))
+                                      .withValues(alpha: 0.16),
+                                  borderRadius: BorderRadius.circular(7),
+                                ),
+                                child: Text(
+                                  candidate.gender == 'female' ? '👩' : '👨',
+                                  style: const TextStyle(fontSize: 10),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                            ],
                             Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 7, vertical: 2.5),

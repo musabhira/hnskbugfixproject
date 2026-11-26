@@ -21,6 +21,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:pocket_mates_app/custom_code/widgets/avatar/jackie_chan_talisman_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/flame_profile_banner_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/nft_trading_card_dialog.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/pocket_privacy_avatar_flip_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/flame_english_house_game.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_defense_trap_modal.dart';
@@ -5378,14 +5379,22 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final rank = _getUserGlobalRank();
     final isTop10 = rank > 0 && rank <= 10;
 
+    final bool isPrivate =
+        PocketPrivacyAvatarFlipWidget.isProfilePrivate(_profileData);
+
     Widget avatarCircle = SizedBox(
       width: size,
       height: size,
       child: _showAvatarMode
-          ? VectorAvatarWidget(
-              config: _getAvatarConfig(),
+          ? PocketPrivacyAvatarFlipWidget(
+              avatarConfig: _getAvatarConfig(),
+              profileImageUrl: profileUrl,
               size: size,
+              isPrivate: isPrivate,
+              isMate: _isFollowing,
+              isSelf: isMe,
               showAura: true,
+              enableAutoShowcaseFlip: true,
             )
           : (profileUrl != null && profileUrl.isNotEmpty)
               ? ClipOval(

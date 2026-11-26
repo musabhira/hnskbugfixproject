@@ -302,9 +302,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     PocketGameAudioService.instance.stop();
     _pageController = PageController(initialPage: _chatTabIndex);
     PocketHomeNavigationController.switchToHomes = () {
+      PocketGameAudioService.instance.stop();
       if (mounted) setState(() => _currentIndex = 0);
     };
     PocketHomeNavigationController.switchToChat = () {
+      PocketGameAudioService.instance.stop();
       if (mounted) setState(() => _currentIndex = 2);
     };
     ContactsNameService().initialize();
@@ -5912,7 +5914,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 _buildNavItem(
                   icon: material.Icons.cottage_rounded,
                   isSelected: _currentIndex == 0,
-                  onTap: () => setState(() => _currentIndex = 0),
+                  onTap: () {
+                    PocketGameAudioService.instance.stop();
+                    setState(() => _currentIndex = 0);
+                  },
                 ),
 
                 // 2. English Hub / Community Chat
@@ -5920,6 +5925,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   icon: material.Icons.group_rounded,
                   isSelected: _currentIndex == 1,
                   onTap: () async {
+                    PocketGameAudioService.instance.stop();
                     if (_currentUserId == null || _currentUserId!.isEmpty) {
                       final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
                         context: context,
@@ -5939,7 +5945,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 _buildNavItem(
                   icon: material.Icons.chat_bubble_rounded,
                   isSelected: _currentIndex == 2,
-                  onTap: () => setState(() => _currentIndex = 2),
+                  onTap: () {
+                    PocketGameAudioService.instance.stop();
+                    setState(() => _currentIndex = 2);
+                  },
                 ),
 
                 // 4. Target
@@ -6152,6 +6161,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       behavior: HitTestBehavior.opaque,
       onTap: () async {
         HapticFeedback.selectionClick();
+        PocketGameAudioService.instance.stop();
         final isAuthenticated = await AuthAlertBox.checkAuthAndShowAlert(
           context: context,
           customMessage: "Please login to view your profile",

@@ -17,6 +17,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart'
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/pocket_privacy_avatar_flip_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/in_app_notification_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
@@ -168,6 +169,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   static final Map<String, int> _userPocketScoreCache = {};
   static final Map<String, int> _userPocketStageCache = {};
   static final Map<String, int> _userGlobalRankCache = {};
+  static final Map<String, String?> _userPhotoUrlCache = {};
+  static final Map<String, bool> _userIsPrivateCache = {};
   final Set<String> _fetchingAvatarUserIds = {};
 
   late String _currentUserId;
@@ -1361,7 +1364,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       final profileRes = await _supabase
           .from('profile')
           .select(
-              'pocket_score, learning_points, xp, day, learning_day, learning_stage, stage, level, avatar_config, equipped_talisman, talisman_id')
+              'pocket_score, learning_points, xp, day, learning_day, learning_stage, stage, level, avatar_config, equipped_talisman, talisman_id, profile_image_url, is_private')
           .eq('user_id', targetId)
           .maybeSingle();
 
@@ -1390,6 +1393,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         _userAvatarConfigCache[targetId] = cfg;
         _userPocketScoreCache[targetId] = score;
         _userPocketStageCache[targetId] = stage;
+        _userPhotoUrlCache[targetId] =
+            profileRes['profile_image_url']?.toString();
+        _userIsPrivateCache[targetId] =
+            PocketPrivacyAvatarFlipWidget.isProfilePrivate(profileRes);
 
         await prefs.setInt('user_pocket_score_$targetId', score);
         await prefs.setInt('user_pocket_stage_$targetId', stage);
@@ -4765,13 +4772,13 @@ Draft: "$draft"''';
           ),
           const SizedBox(height: 4),
 
-          // Bottom Dashboard Summary text
+          // Bottom Dashboard Summary text + Live Friendship Score
           Text(
             isCompleted
                 ? '🥈 4-Day Spoken Pact Mastered! Silver Trophy awarded to your profile.'
                 : currentStreak >= 4
-                    ? '⚡ 4 Days Chat Done! Tap Raid / Fight to finish and mint 🥈 Silver Trophy!'
-                    : '💬 Day $currentStreak/4 Chatting • Complete 4 days + 1 Raid + 1 Fight for 🥈 Silver Trophy',
+                    ? '🥈 4 Days Chat Done! Silver Trophy unlocked • Keep chatting to boost Friendship Score!'
+                    : '💬 Day $currentStreak/4 English Chat • Talk 4 days to earn 🥈 Silver Trophy!',
             style: GoogleFonts.inter(
               color: isCompleted
                   ? const Color(0xFFE2E8F0)
@@ -4779,6 +4786,26 @@ Draft: "$draft"''';
               fontSize: 9.0,
               fontWeight: isCompleted ? FontWeight.bold : FontWeight.normal,
             ),
+          ),
+          FutureBuilder<int>(
+            future: PocketTrophyService.getFriendshipScore(
+                _currentUserId, otherUserId),
+            builder: (context, fSnap) {
+              final fScore = fSnap.data ?? 0;
+              final tierLabel =
+                  PocketTrophyService.getFriendshipTierLabel(fScore);
+              return Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  '🤝 Friendship Score: $fScore pts • $tierLabel',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFF38BDF8),
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              );
+            },
           ),
 
           if (isCompleted && !isMates) ...[
@@ -5519,13 +5546,18 @@ Draft: "$draft"''';
                                   decoration: const BoxDecoration(
                                     shape: BoxShape.circle,
                                   ),
-                                  child: ClipOval(
-                                    child: VectorAvatarWidget(
-                                      config: _getPersonalAvatarConfig(
-                                        _personalPeerId,
-                                      ),
-                                      size: 34,
+                                  child: PocketPrivacyAvatarFlipWidget(
+                                    avatarConfig: _getPersonalAvatarConfig(
+                                      _personalPeerId,
                                     ),
+                                    profileImageUrl:
+                                        _userPhotoUrlCache[_personalPeerId],
+                                    size: 34,
+                                    isPrivate:
+                                        _userIsPrivateCache[_personalPeerId] ??
+                                            false,
+                                    isMate: true,
+                                    enableTapPeekFlip: true,
                                   ),
                                 ),
                                 Positioned(
@@ -7893,10 +7925,14 @@ Draft: "$draft"''';
                           ]
                         : null,
                   ),
-                  child: VectorAvatarWidget(
-                    config: _getPersonalAvatarConfig(message.senderId),
+                  child: PocketPrivacyAvatarFlipWidget(
+                    avatarConfig: _getPersonalAvatarConfig(message.senderId),
+                    profileImageUrl: _userPhotoUrlCache[message.senderId],
                     size: 28,
                     showAura: isRobot,
+                    isPrivate: _userIsPrivateCache[message.senderId] ?? false,
+                    isMate: true,
+                    enableTapPeekFlip: !isRobot,
                   ),
                 );
               }(),

@@ -12869,6 +12869,30 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                                               fontSize: 15,
                                             ),
                                           ),
+                                          if (inq['is_vip'] == true ||
+                                              (inq['metadata'] is Map &&
+                                                  inq['metadata']
+                                                          ['is_vip_support'] ==
+                                                      true))
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 6,
+                                                      vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFFFFD700),
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                              ),
+                                              child: const Text(
+                                                '👑 VIP SUPPORT',
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 9.5,
+                                                  fontWeight: FontWeight.w900,
+                                                ),
+                                              ),
+                                            ),
                                           // Planet Badge
                                           Container(
                                             padding: const EdgeInsets.symmetric(

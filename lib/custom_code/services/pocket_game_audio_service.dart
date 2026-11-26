@@ -72,6 +72,7 @@ class PocketGameAudioService with WidgetsBindingObserver {
   AudioPlayer? _player;
   String? _currentTrackUrl;
   String? _currentTrackTitle;
+  int _playGeneration = 0;
   bool _isDisposed = false;
   Completer<void>? _initCompleter;
 
@@ -107,7 +108,9 @@ class PocketGameAudioService with WidgetsBindingObserver {
 
       // Listen for playback completion to auto-chain next shuffle track (no boredom!)
       _player?.onPlayerComplete.listen((_) {
-        playNextShuffleTrack();
+        if (_currentTrackUrl != null) {
+          playNextShuffleTrack();
+        }
       });
 
       _player?.onPlayerStateChanged.listen((state) {
@@ -415,7 +418,9 @@ class PocketGameAudioService with WidgetsBindingObserver {
   /// Play any specific track with automatic error fallback
   Future<void> playTrack(PocketMusicTrack track, {double? volume}) async {
     if (_isDisposed) return;
+    final int gen = ++_playGeneration;
     await _ensureInitialized();
+    if (gen != _playGeneration || _isDisposed) return;
 
     if (_currentTrackUrl == track.url && isPlayingNotifier.value) {
       return; // Already playing this track
@@ -430,20 +435,24 @@ class PocketGameAudioService with WidgetsBindingObserver {
         _player = AudioPlayer();
         await _player?.setReleaseMode(ReleaseMode.stop);
         _player?.onPlayerComplete.listen((_) {
-          playNextShuffleTrack();
+          if (_currentTrackUrl != null) {
+            playNextShuffleTrack();
+          }
         });
         _player?.onPlayerStateChanged.listen((state) {
           isPlayingNotifier.value = (state == PlayerState.playing);
         });
       }
 
+      if (gen != _playGeneration) return;
       final isMuted = isMutedNotifier.value;
       final targetVolume = volume ?? kDefaultBgmVolume;
       await _player?.setVolume(isMuted ? 0.0 : targetVolume);
 
-      if (!isMuted) {
+      if (!isMuted && gen == _playGeneration) {
         await _player?.stop();
         final source = await _resolveAudioSource(track.url);
+        if (gen != _playGeneration || _currentTrackUrl == null) return;
         await _player?.play(source);
       }
     } catch (e) {
@@ -453,6 +462,7 @@ class PocketGameAudioService with WidgetsBindingObserver {
 
   /// Stop current playback
   Future<void> stop() async {
+    _playGeneration++;
     try {
       _currentTrackUrl = null;
       _currentTrackTitle = null;
@@ -465,6 +475,7 @@ class PocketGameAudioService with WidgetsBindingObserver {
 
   /// Pause current playback
   Future<void> pause() async {
+    _playGeneration++;
     try {
       await _player?.pause();
     } catch (e) {

@@ -27,46 +27,55 @@ class _SubscriptionPageState extends State<SubscriptionPage>
   final bool _isYearly = false;
   late AnimationController _shimmerController;
 
+  final List<Map<String, dynamic>> _vipAllBenefits = const [
+    {'icon': '🚫', 'title': '100% Ad-Free Everywhere', 'desc': 'Zero banners, popups, or video interruptions across the entire app'},
+    {'icon': '⚡', 'title': 'Instant 90-Day Binge Mode', 'desc': 'Unlock all 90 houses immediately with zero midnight waiting locks'},
+    {'icon': '👑', 'title': 'Golden Verified VIP Tick', 'desc': 'Stand out with a Gold Tick in Chats, WhatsApp Groups & Global Ranking'},
+    {'icon': '🏛️', 'title': 'Direct VIP Support with President', 'desc': 'Exclusive 2-way chat with the President to clear doubts anytime'},
+    {'icon': '📜', 'title': 'Official Day 90 C2 Certificate', 'desc': 'Download your verified C2 Mastery Diploma included at no extra cost'},
+    {'icon': '🔋', 'title': 'Instant +50 PS VIP Bonus (5x/Day)', 'desc': 'Tap VIP Bonus to claim +250 Pocket Score daily without watching ads'},
+    {'icon': '💬', 'title': 'Unlimited Pocket Talk Pacts', 'desc': 'No 4-talk limit or 5-hour cooldown — connect with mates unlimited'},
+    {'icon': '🎙️', 'title': 'Unlimited AI Voice & Pronunciation', 'desc': 'Practice speaking & get instant AI fluency feedback all day'},
+    {'icon': '🌍', 'title': 'Unlimited Global Random Calls', 'desc': 'Priority WebRTC voice & video matchmaking with English learners'},
+    {'icon': '🛡️', 'title': 'Presidential Escort Guard', 'desc': '10 bonus defense questions & stronger Citadel protection'},
+    {'icon': '⚔️', 'title': 'Unlimited Citadel Raids & Fights', 'desc': 'Challenge any learner or robot without energy restrictions'},
+    {'icon': '📖', 'title': 'All 90 Houses & 17 Daily Steps', 'desc': 'Full access to Theory, Vocab, Phonics, Slang, Code English & Exams'},
+    {'icon': '💼', 'title': 'IELTS & Job Interview Simulators', 'desc': 'Real-world interview & fluency practice scenarios unlocked'},
+    {'icon': '🎮', 'title': 'All English Arcade & Quest Games', 'desc': 'Play every 3D open-world adventure & word factory game freely'},
+    {'icon': '🤝', 'title': 'Friendship Score Boost', 'desc': 'Build faster streaks, Silver Trophies & permanent Best Mate status'},
+    {'icon': '🔥', 'title': '24/7 Streak Protector', 'desc': 'Keep your learning streak & progress safely backed up in the cloud'},
+    {'icon': '🏅', 'title': 'VIP Crown Badge on Leaderboard', 'desc': 'Premium gold styling on your Profile, Vibes & Ranking trail'},
+    {'icon': '🎧', 'title': 'Low-Latency HD Audio Calls', 'desc': 'Priority routing for crystal-clear speaking sessions'},
+    {'icon': '📚', 'title': 'All Story Cards & Vocab Decks', 'desc': 'Unlock complete idioms, phrases & reading library stories'},
+    {'icon': '✨', 'title': 'Smooth, Bug-Free VIP Experience', 'desc': 'Zero ad-loader lag, zero cooldown interruptions, pure learning'},
+    {'icon': '🚀', 'title': 'All Future Pro Updates Free', 'desc': 'Automatic access to upcoming AI coaches & VIP expansions'},
+    {'icon': '💸', 'title': 'Just ₹3.30/Day — Cancel Anytime', 'desc': 'Unbeatable ₹99/month value; cancel anytime in Play/App Store'},
+  ];
+
   final List<Map<String, dynamic>> _plans = [
     {
       'id': 'monthly',
       'name': 'Poket VIP Monthly',
-      'tagline': '₹99/mo • 100% Ad-Free + Instant Binge Access',
+      'tagline': 'Just ₹3.30/day • All 22+ VIP Benefits Unlocked',
       'monthlyPrice': 99,
       'retailPrice': 499,
-      'discountBadge': 'MOST POPULAR • SAVE 80%',
+      'discountBadge': 'SAVE 80%',
       'periodText': '/month',
-      'color': const Color(0xFF38BDF8),
-      'gradientColors': [Color(0xFF0284C7), Color(0xFF0369A1)],
+      'color': const Color(0xFFFFD700),
+      'gradientColors': [Color(0xFFFFD700), Color(0xFFF59E0B)],
       'icon': Icons.flash_on_rounded,
-      'popular': true,
+      'popular': false,
       'features': [
-        {
-          'text': '🚫 100% Ad-Free Everywhere (Zero Interruptions)',
-          'included': true
-        },
-        {
-          'text': '⚡ Instant 90-Day Binge Mode (No Waiting Locks)',
-          'included': true
-        },
-        {'text': '👑 Golden Verified VIP Tick & Badge', 'included': true},
-        {
-          'text': '🛡️ Presidential Escort Guard (10 Bonus Defense Qs)',
-          'included': true
-        },
-        {
-          'text': '🎙️ Unlimited AI Pronunciation & Voice Coach',
-          'included': true
-        },
-        {
-          'text': '💬 Unlimited Random Speaking Chat (No Daily Limit)',
-          'included': true
-        },
-        {
-          'text': '📜 Official Verified Day 90 C2 Diploma Included',
-          'included': true
-        },
-        {'text': 'Priority Instant Peer Matchmaking Routing', 'included': true},
+        {'text': '🚫 100% Ad-Free Everywhere (Zero Interruptions)', 'included': true},
+        {'text': '⚡ Instant 90-Day Binge Mode (No Midnight Locks)', 'included': true},
+        {'text': '👑 Golden Verified Tick (Chat, WhatsApp & Ranking)', 'included': true},
+        {'text': '🏛️ Direct 2-Way VIP Support Chat with President', 'included': true},
+        {'text': '🔋 Instant +250 PS/Day VIP Bonus (No Ads)', 'included': true},
+        {'text': '💬 Unlimited Pocket Talk & Global Voice Calls', 'included': true},
+        {'text': '📜 Official Day 90 C2 Certificate Included', 'included': true},
+        {'text': '🎙️ Unlimited AI Pronunciation & IELTS Simulators', 'included': true},
+        {'text': '🛡️ Presidential Escort Guard & 24/7 Streak Protector', 'included': true},
+        {'text': '🚀 Smooth Bug-Free Experience + All Future Pro Updates', 'included': true},
       ],
     },
     {
@@ -77,72 +86,43 @@ class _SubscriptionPageState extends State<SubscriptionPage>
       'retailPrice': 1499,
       'discountBadge': 'SAVE 83%',
       'periodText': 'for 3 Months',
-      'color': const Color(0xFFFFD700),
-      'gradientColors': [Color(0xFFFFD700), Color(0xFFF59E0B)],
+      'color': const Color(0xFF38BDF8),
+      'gradientColors': [Color(0xFF0284C7), Color(0xFF0369A1)],
       'icon': Icons.workspace_premium_rounded,
       'popular': false,
       'features': [
-        {
-          'text': '⚡ Complete 90-Day Fluency Journey (All 90 Houses)',
-          'included': true
-        },
+        {'text': '⚡ Complete 90-Day Fluency Journey (All 90 Houses)', 'included': true},
         {'text': '🚫 100% Zero Ads for the Entire 3 Months', 'included': true},
-        {
-          'text': '👑 Golden Verified VIP Tick across Entire App',
-          'included': true
-        },
-        {
-          'text': '🛡️ Presidential Escort Guard (10 Bonus Defense Qs)',
-          'included': true
-        },
-        {
-          'text': '📜 Free High-Res Cryptographic C2 Mastery Diploma',
-          'included': true
-        },
-        {
-          'text': '🎙️ Unlimited AI Voice Practice & Speaking Simulators',
-          'included': true
-        },
-        {
-          'text': '💬 Unlimited Community Speaking & Peer Practice',
-          'included': true
-        },
-        {
-          'text': 'Exclusive 24/7 Streak Protector & Cloud Backup',
-          'included': true
-        },
+        {'text': '👑 Golden Verified VIP Tick across Entire App', 'included': true},
+        {'text': '🏛️ Direct 2-Way VIP Support Chat with President', 'included': true},
+        {'text': '📜 Official Day 90 C2 Mastery Diploma Included', 'included': true},
+        {'text': '🔋 Instant +250 PS/Day VIP Bonus (No Ads)', 'included': true},
+        {'text': '🎙️ Unlimited AI Voice Practice & Speaking Simulators', 'included': true},
+        {'text': '💬 Unlimited Pocket Talk & Community Speaking', 'included': true},
+        {'text': '🛡️ Exclusive 24/7 Streak Protector & Cloud Backup', 'included': true},
       ],
     },
     {
       'id': 'yearly',
       'name': 'Poket VIP Annual Master',
-      'tagline': 'Full Year Mastery • Day 90 C2 Diploma',
+      'tagline': 'Full Year Mastery • Maximum Savings',
       'monthlyPrice': 699,
       'retailPrice': 4999,
       'discountBadge': 'SAVE 86%',
       'periodText': '/year',
-      'color': const Color(0xFFEC4899),
-      'gradientColors': [Color(0xFFDB2777), Color(0xFF9D174D)],
+      'color': const Color(0xFF34D399),
+      'gradientColors': [Color(0xFF10B981), Color(0xFF059669)],
       'icon': Icons.stars_rounded,
       'popular': false,
       'features': [
-        {'text': 'Full Year 100% Ad-Free VIP Pass', 'included': true},
-        {'text': 'All 90-Day Fluency Pass Features Included', 'included': true},
-        {'text': 'IELTS & Job Interview Speaking Simulators', 'included': true},
-        {'text': 'Unlimited AI Pronunciation Scoring', 'included': true},
-        {
-          'text': '👑 Golden Verified VIP Tick & Elite Crown Profile',
-          'included': true
-        },
-        {
-          'text': 'Official Cryptographic Day 90 C2 Diploma Included',
-          'included': true
-        },
-        {
-          'text': 'Full Access to All Future Masterclass Expansions',
-          'included': true
-        },
-        {'text': '24/7 Priority Support & Streak Protector', 'included': true},
+        {'text': '🚫 Full Year 100% Ad-Free VIP Pass', 'included': true},
+        {'text': '⚡ All 90-Day Fluency Pass Features Included', 'included': true},
+        {'text': '👑 Golden Verified VIP Tick & Elite Crown Profile', 'included': true},
+        {'text': '🏛️ Direct 2-Way VIP Support Chat with President', 'included': true},
+        {'text': '📜 Official Cryptographic Day 90 C2 Diploma Included', 'included': true},
+        {'text': '🎯 IELTS & Job Interview Speaking Simulators', 'included': true},
+        {'text': '🚀 Full Access to All Future VIP Expansions', 'included': true},
+        {'text': '🛡️ 24/7 Priority Support & Streak Protector', 'included': true},
       ],
     },
   ];
@@ -242,17 +222,17 @@ class _SubscriptionPageState extends State<SubscriptionPage>
             p['monthlyPrice'] = campaign.inAppMonthlyPrice;
             p['retailPrice'] = campaign.inAppMonthlyRetailPrice;
             p['tagline'] =
-                '₹${campaign.inAppMonthlyPrice}/mo • 100% Ad-Free + Instant Binge Access';
+                '₹${campaign.inAppMonthlyPrice}/mo • Ad-Free + Instant 90-Day Binge';
           } else if (p['id'] == 'quarterly') {
             p['monthlyPrice'] = campaign.inAppQuarterlyPrice;
             p['retailPrice'] = campaign.inAppQuarterlyRetailPrice;
             p['tagline'] =
-                '₹${campaign.inAppQuarterlyPrice} (One-Time) • Best Value for 90-Day Mastery!';
+                '₹${campaign.inAppQuarterlyPrice} • Complete 90-Day Mastery';
           } else if (p['id'] == 'yearly') {
             p['monthlyPrice'] = campaign.inAppYearlyPrice;
             p['retailPrice'] = campaign.inAppYearlyRetailPrice;
             p['tagline'] =
-                '₹${campaign.inAppYearlyPrice}/year • Full Year VIP + C2 Diploma Included';
+                '₹${campaign.inAppYearlyPrice}/yr • Full Year + C2 Diploma';
           }
         }
       });
@@ -1075,19 +1055,24 @@ class _SubscriptionPageState extends State<SubscriptionPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D0D12),
+      backgroundColor: const Color(0xFF090C12),
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
           SliverAppBar(
-            expandedHeight: 200,
+            expandedHeight: _currentPlan == 'free' ? 245 : 190,
             pinned: true,
-            backgroundColor: const Color(0xFF0D0D12),
+            backgroundColor: const Color(0xFF090C12),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white70, size: 20),
+              onPressed: () => Navigator.of(context).maybePop(),
+            ),
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Color(0xFF1A0A2E), Color(0xFF0D0D12)],
+                    colors: [Color(0xFF141B2D), Color(0xFF090C12)],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                   ),
@@ -1098,49 +1083,76 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const SizedBox(height: 48),
+                      const SizedBox(height: 36),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 6),
+                            horizontal: 14, vertical: 5),
                         decoration: BoxDecoration(
                           color:
-                              const Color(0xFFFFD700).withValues(alpha: 0.15),
+                              const Color(0xFFFFD700).withValues(alpha: 0.14),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
                               color: const Color(0xFFFFD700)
-                                  .withValues(alpha: 0.3)),
+                                  .withValues(alpha: 0.35)),
                         ),
                         child: Text(
-                          '✦ POKET MATES FLUENT PRO',
+                          '✦ POKET MATES VIP',
                           textAlign: TextAlign.center,
                           style: GoogleFonts.outfit(
                             color: const Color(0xFFFFD700),
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 2,
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.8,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       Text(
-                        'Master Spoken English',
+                        'Ad-Free English Master',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.outfit(
-                          fontSize: 26,
+                          fontSize: 25,
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
                         ),
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        '100% Ad-Free calls, AI grammar feedback & global mates',
+                        'Zero Ads • Instant 90-Day Binge Mode • Global Mates',
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.outfit(
+                        style: GoogleFonts.inter(
                           color: Colors.white60,
-                          fontSize: 13.5,
+                          fontSize: 12.5,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
+                      const SizedBox(height: 14),
+                      if (_currentPlan == 'free')
+                        SizedBox(
+                          width: double.infinity,
+                          height: 44,
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFFFD700),
+                              foregroundColor: Colors.black,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            onPressed: () => _selectPlan('monthly'),
+                            icon: const Icon(Icons.bolt_rounded, size: 19),
+                            label: Text(
+                              'Unlock All 22+ VIP Benefits • ₹99/mo',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.outfit(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 13.5,
+                              ),
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -1154,38 +1166,35 @@ class _SubscriptionPageState extends State<SubscriptionPage>
             SliverToBoxAdapter(
               child: Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                 child: Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                      colors: [Color(0xFF141B2D), Color(0xFF0F172A)],
                     ),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                        color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.45)),
                   ),
                   child: Row(
                     children: [
                       const Icon(Icons.workspace_premium_rounded,
                           color: Color(0xFFFFD700), size: 20),
                       const SizedBox(width: 10),
-                      Text(
-                        'Active Plan: ',
-                        style: GoogleFonts.outfit(
-                            color: Colors.white70, fontSize: 13),
-                      ),
-                      Text(
-                        _plans.firstWhere(
-                            (p) => p['id'] == _currentPlan)['name'] as String,
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFFFFD700),
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
+                      Expanded(
+                        child: Text(
+                          'Active Plan: ${_plans.firstWhere((p) => p['id'] == _currentPlan)['name']}',
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFD700),
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                      const Spacer(),
+                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 3),
@@ -1207,9 +1216,8 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                 ),
               ),
             ),
-          const SliverToBoxAdapter(child: SizedBox(height: 12)),
 
-          // Plan Cards
+          // 3 Standard Story-Card Plan Cards (Each with full details & direct Buy button)
           SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) => _buildPlanCard(_plans[index]),
@@ -1217,25 +1225,98 @@ class _SubscriptionPageState extends State<SubscriptionPage>
             ),
           ),
 
-          // Feature comparison note + Trust + VIP Direct Support + Coming Soon
+          // Coming Soon + Complete 22-Point VIP Value Stack + VIP Direct Support + Legal Links
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.fromLTRB(18, 18, 18, 28),
               child: Column(
                 children: [
-                  // 🚀 Future VIP Updates & Trust Banner
+                  // 🔥 Complete 22-Point Value Stack Card
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF111726),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '👑 EVERYTHING YOU UNLOCK WITH POKET VIP',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFD700),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'All 22+ premium features included starting at ₹99/month:',
+                          style: GoogleFonts.inter(
+                            color: Colors.white60,
+                            fontSize: 11.5,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        ..._vipAllBenefits.map(
+                          (b) => Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(b['icon']!,
+                                    style: const TextStyle(fontSize: 15)),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        b['title']!,
+                                        style: GoogleFonts.outfit(
+                                          color: Colors.white,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      Text(
+                                        b['desc']!,
+                                        style: GoogleFonts.inter(
+                                          color: Colors.white54,
+                                          fontSize: 11.5,
+                                          height: 1.35,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF1A103D), Color(0xFF0F172A)],
+                        colors: [Color(0xFF16132E), Color(0xFF0F172A)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(18),
                       border: Border.all(
-                        color: const Color(0xFF8B5CF6).withValues(alpha: 0.4),
+                        color: const Color(0xFF8B5CF6).withValues(alpha: 0.35),
                       ),
                     ),
                     child: Column(
@@ -1257,9 +1338,9 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         Text(
-                          'Poket VIP is just ₹3.30/day (₹99/mo). Subscribers automatically get all upcoming Pro AI voice coaches, priority matchmaking, Gold Verified Tick across Chats & Global Ranking, and future VIP-only expansions at zero extra cost!',
+                          'Active VIP members automatically receive all upcoming AI voice coaches, priority matchmaking & VIP expansions at zero extra cost!',
                           style: GoogleFonts.inter(
                             color: Colors.white70,
                             fontSize: 12,
@@ -1269,23 +1350,22 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
 
                   // 🏛️ VIP Direct Support (Chat with President / Admin)
                   _buildVipDirectSupportCard(),
                   const SizedBox(height: 18),
 
                   const Divider(color: Colors.white12),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
                   Text(
                     '🔒 Real-time AI encryption • 100% Secure calls\n⚡ Low latency WebRTC voice & video\n🌏 Connect with spoken English learners worldwide',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.outfit(
-                        color: Colors.white38, fontSize: 13, height: 1.8),
+                        color: Colors.white38, fontSize: 12.5, height: 1.75),
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 14),
 
-                  // Duolingo & Apple-compliant Restore Purchases Button
                   TextButton.icon(
                     onPressed: () async {
                       HapticFeedback.lightImpact();
@@ -1316,9 +1396,8 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                       ),
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
 
-                  // Apple StoreKit Guideline 3.1.1 Mandatory Legal Links
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -1355,7 +1434,7 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                       ),
                     ],
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 16),
                 ],
               ),
             ),
@@ -1368,247 +1447,282 @@ class _SubscriptionPageState extends State<SubscriptionPage>
   Widget _buildPlanCard(Map<String, dynamic> plan) {
     final isSelected = _currentPlan == plan['id'];
     final isPopular = plan['popular'] as bool;
+    final popularLabel =
+        (plan['popularLabel'] as String?) ?? '★ MOST POPULAR';
     final color = plan['color'] as Color;
     final price = plan['monthlyPrice'] as int;
     final features = plan['features'] as List<Map<String, dynamic>>;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
-      child: GestureDetector(
-        onTap: () => _selectPlan(plan['id'] as String),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1A1A22),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: isSelected ? color : Colors.white.withValues(alpha: 0.08),
-              width: isSelected ? 2 : 1,
-            ),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: color.withValues(alpha: 0.2),
-                      blurRadius: 20,
-                      offset: const Offset(0, 4),
-                    )
-                  ]
-                : [],
+      padding: const EdgeInsets.fromLTRB(18, 12, 18, 0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF111726),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: isSelected
+                ? color
+                : (isPopular
+                    ? color.withValues(alpha: 0.45)
+                    : Colors.white.withValues(alpha: 0.08)),
+            width: isSelected ? 2 : 1.2,
           ),
-          child: Column(
-            children: [
-              // Header
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: (plan['gradientColors'] as List<Color>)
-                        .map((c) => c.withValues(alpha: 0.15))
-                        .toList(),
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(24)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.32),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            // Card Header (Story-Card inspired gradient + responsive Wrap badges)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: (plan['gradientColors'] as List<Color>)
+                      .map((c) => c.withValues(alpha: 0.14))
+                      .toList(),
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Top Badges Row (Ensures badges never cram or squash title text)
-                    if (isPopular || plan['discountBadge'] != null)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: Row(
-                          children: [
-                            if (isPopular)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: color,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  '★ MOST POPULAR',
-                                  style: GoogleFonts.outfit(
-                                    fontSize: 9.5,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.black,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ),
-                            if (isPopular && plan['discountBadge'] != null)
-                              const SizedBox(width: 8),
-                            if (plan['discountBadge'] != null)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF10B981)
-                                      .withValues(alpha: 0.18),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                      color: const Color(0xFF10B981), width: 1),
-                                ),
-                                child: Text(
-                                  plan['discountBadge'] as String,
-                                  style: GoogleFonts.outfit(
-                                    fontSize: 9.5,
-                                    fontWeight: FontWeight.w900,
-                                    color: const Color(0xFF34D399),
-                                    letterSpacing: 0.3,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-
-                    // Main Row: Icon + Title/Subtitle on Left, Clear Price on Right
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: color.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Icon(plan['icon'] as IconData,
-                              color: color, size: 24),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                plan['name'] as String,
-                                style: GoogleFonts.outfit(
-                                  fontSize: 16.5,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const SizedBox(height: 3),
-                              Text(
-                                plan['tagline'] as String,
-                                style: GoogleFonts.outfit(
-                                  color: Colors.white60,
-                                  fontSize: 11.5,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (plan['retailPrice'] != null &&
-                                (plan['retailPrice'] as int) > 0)
-                              Text(
-                                '₹${plan['retailPrice']}',
-                                style: GoogleFonts.outfit(
-                                  fontSize: 12,
-                                  color: Colors.white38,
-                                  decoration: TextDecoration.lineThrough,
-                                  decorationColor: Colors.white38,
-                                ),
-                              ),
-                            Text(
-                              (plan['storeKitPrice'] as String?) ??
-                                  (price == 0 ? 'FREE' : '₹$price'),
-                              style: GoogleFonts.outfit(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w900,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(21)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (isPopular || plan['discountBadge'] != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 6,
+                        children: [
+                          if (isPopular)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
                                 color: color,
-                                letterSpacing: -0.5,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                popularLabel,
+                                style: GoogleFonts.outfit(
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.black,
+                                  letterSpacing: 0.4,
+                                ),
                               ),
                             ),
-                            if (price > 0)
-                              Text(
-                                plan['periodText'] != null &&
-                                        (plan['periodText'] as String)
-                                            .isNotEmpty
-                                    ? plan['periodText'] as String
-                                    : (_isYearly ? '/year' : '/month'),
+                          if (plan['discountBadge'] != null)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF10B981)
+                                    .withValues(alpha: 0.18),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                    color: const Color(0xFF10B981), width: 1),
+                              ),
+                              child: Text(
+                                plan['discountBadge'] as String,
                                 style: GoogleFonts.outfit(
-                                  color: Colors.white54,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w900,
+                                  color: const Color(0xFF34D399),
+                                  letterSpacing: 0.3,
                                 ),
                               ),
-                          ],
-                        ),
-                      ],
+                            ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-              ),
 
-              // Features
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    ...features.take(6).map((f) => _buildFeatureRow(f, color)),
-                    if (features.length > 6)
-                      Theme(
-                        data: Theme.of(context)
-                            .copyWith(dividerColor: Colors.transparent),
-                        child: ExpansionTile(
-                          title: Text(
-                            'See all features',
-                            style:
-                                GoogleFonts.outfit(color: color, fontSize: 13),
-                          ),
-                          iconColor: color,
-                          collapsedIconColor: color,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: color.withValues(alpha: 0.16),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Icon(plan['icon'] as IconData,
+                            color: color, size: 22),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            ...features
-                                .skip(6)
-                                .map((f) => _buildFeatureRow(f, color)),
+                            Text(
+                              plan['name'] as String,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.outfit(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              plan['tagline'] as String,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.inter(
+                                color: Colors.white60,
+                                fontSize: 11.5,
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: isSelected
-                              ? Colors.white10
-                              : (isPopular
-                                  ? color
-                                  : color.withValues(alpha: 0.15)),
-                          foregroundColor: isSelected
-                              ? Colors.white54
-                              : (isPopular ? Colors.black : color),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14)),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                      const SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (plan['retailPrice'] != null &&
+                              (plan['retailPrice'] as int) > 0)
+                            Text(
+                              '₹${plan['retailPrice']}',
+                              style: GoogleFonts.outfit(
+                                fontSize: 11.5,
+                                color: Colors.white38,
+                                decoration: TextDecoration.lineThrough,
+                                decorationColor: Colors.white38,
+                              ),
+                            ),
+                          Text(
+                            (plan['storeKitPrice'] as String?) ??
+                                (price == 0 ? 'FREE' : '₹$price'),
+                            style: GoogleFonts.outfit(
+                              fontSize: 21,
+                              fontWeight: FontWeight.w900,
+                              color: color,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                          if (price > 0)
+                            Text(
+                              plan['periodText'] != null &&
+                                      (plan['periodText'] as String).isNotEmpty
+                                  ? plan['periodText'] as String
+                                  : (_isYearly ? '/year' : '/month'),
+                              style: GoogleFonts.outfit(
+                                color: Colors.white54,
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // Features & Per-Card Direct Buy Button
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  ...features.take(6).map((f) => _buildFeatureRow(f, color)),
+                  if (features.length > 6)
+                    Theme(
+                      data: Theme.of(context)
+                          .copyWith(dividerColor: Colors.transparent),
+                      child: ExpansionTile(
+                        tilePadding: EdgeInsets.zero,
+                        title: Text(
+                          'See all features',
+                          style: GoogleFonts.outfit(color: color, fontSize: 13),
                         ),
-                        onPressed: isSelected
-                            ? null
-                            : () => _selectPlan(plan['id'] as String),
-                        child: Text(
-                          isSelected ? '✓ Active Plan' : 'Get ${plan['name']}',
-                          style: GoogleFonts.outfit(
-                              fontWeight: FontWeight.bold, fontSize: 15),
-                        ),
+                        iconColor: color,
+                        collapsedIconColor: color,
+                        children: [
+                          ...features
+                              .skip(6)
+                              .map((f) => _buildFeatureRow(f, color)),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isSelected
+                            ? Colors.white10
+                            : (isPopular
+                                ? color
+                                : color.withValues(alpha: 0.16)),
+                        foregroundColor: isSelected
+                            ? Colors.white54
+                            : (isPopular ? Colors.black : color),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      onPressed: isSelected
+                          ? null
+                          : () => _selectPlan(plan['id'] as String),
+                      child: Text(
+                        isSelected
+                            ? '✓ Active Plan'
+                            : 'Get ${plan['name']} • ${(plan['storeKitPrice'] as String?) ?? '₹$price'}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.bold, fontSize: 14.5),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildFeatureRow(Map<String, dynamic> feature, Color planColor) {
+    final included = feature['included'] as bool;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.5),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Icon(
+              included ? Icons.check_circle_rounded : Icons.cancel_rounded,
+              size: 16,
+              color: included ? planColor : Colors.white12,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              feature['text'] as String,
+              style: GoogleFonts.outfit(
+                color: included ? Colors.white70 : Colors.white24,
+                fontSize: 13,
+                decoration: included ? null : TextDecoration.lineThrough,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1940,37 +2054,6 @@ class _SubscriptionPageState extends State<SubscriptionPage>
           },
         );
       },
-    );
-  }
-
-  Widget _buildFeatureRow(Map<String, dynamic> feature, Color planColor) {
-    final included = feature['included'] as bool;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 2),
-            child: Icon(
-              included ? Icons.check_circle_rounded : Icons.cancel_rounded,
-              size: 16,
-              color: included ? planColor : Colors.white12,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              feature['text'] as String,
-              style: GoogleFonts.outfit(
-                color: included ? Colors.white70 : Colors.white24,
-                fontSize: 13,
-                decoration: included ? null : TextDecoration.lineThrough,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

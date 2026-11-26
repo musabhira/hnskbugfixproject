@@ -51,9 +51,13 @@ class _ProfileSetupOnboardingPageState
   final _supabase = SupaFlow.client;
   final _pageController = PageController();
   int _currentStep = 0;
-  static const int _totalSteps = 3;
+  static const int _totalSteps = 4;
   bool _isLoading = false;
   bool _isRedirectingHome = false;
+
+  // Gender & Privacy Identity
+  String? _selectedGender; // 'male', 'female', 'other'
+  bool _isPrivateProfile = false; // false = Public (Photo visible), true = Private (Avatar until Mates)
 
   // Birthday & Age for Smart Matching (3 columns: Day, Month, Year)
   DateTime? _selectedDob;
@@ -193,6 +197,12 @@ class _ProfileSetupOnboardingPageState
             if (existing['learning_goal']?.toString().isNotEmpty ?? false) {
               _selectedLearningGoal = existing['learning_goal'];
             }
+            if (existing['gender']?.toString().isNotEmpty ?? false) {
+              _selectedGender = existing['gender']?.toString().toLowerCase();
+            }
+            if (existing['is_private'] == true) {
+              _isPrivateProfile = true;
+            }
             final d = (existing['day'] as num?)?.toInt();
             final m = (existing['month'] as num?)?.toInt();
             final y = (existing['year'] as num?)?.toInt();
@@ -229,9 +239,9 @@ class _ProfileSetupOnboardingPageState
     try {
       final picked = await _picker.pickImage(
         source: ImageSource.gallery,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 85,
+        maxWidth: 640,
+        maxHeight: 640,
+        imageQuality: 72,
       );
       if (picked == null) return;
 
@@ -274,9 +284,13 @@ class _ProfileSetupOnboardingPageState
     FocusScope.of(context).unfocus();
 
     if (_currentStep == 0) {
-      // Step 1: Validate Name
+      // Step 1: Validate Name & Gender
       if (_nameController.text.trim().isEmpty) {
         _showError('Please enter your name to proceed');
+        return;
+      }
+      if (_selectedGender == null || _selectedGender!.isEmpty) {
+        _showError('Please select Male or Female to help mates connect');
         return;
       }
       _pageController.nextPage(
@@ -284,7 +298,13 @@ class _ProfileSetupOnboardingPageState
         curve: Curves.easeInOutCubic,
       );
     } else if (_currentStep == 1) {
-      // Step 2: Validate Date of Birth & Age
+      // Step 2: Profile Photo / Avatar & Public vs Private choice (Photo optional / Avatar fallback)
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 320),
+        curve: Curves.easeInOutCubic,
+      );
+    } else if (_currentStep == 2) {
+      // Step 3: Validate Date of Birth & Age
       if (_selectedDob == null) {
         _showError('Please select your Date of Birth to match with peers');
         return;
@@ -298,8 +318,8 @@ class _ProfileSetupOnboardingPageState
         duration: const Duration(milliseconds: 320),
         curve: Curves.easeInOutCubic,
       );
-    } else if (_currentStep == 2) {
-      // Step 3: Validate Phone Number & Complete Profile
+    } else if (_currentStep == 3) {
+      // Step 4: Validate Phone Number & Complete Profile
       final phone = _phoneController.text.trim();
       if (phone.isEmpty || phone.replaceAll(RegExp(r'\D'), '').length < 7) {
         _showError(
@@ -369,6 +389,8 @@ class _ProfileSetupOnboardingPageState
         'native_language': _selectedNativeLanguage,
         'english_level': _selectedEnglishLevel,
         'learning_goal': _selectedLearningGoal,
+        if (_selectedGender != null) 'gender': _selectedGender,
+        'is_private': _isPrivateProfile,
         'learning_day': 1,
         'learning_stage': 1,
         'learning_points': 50,
@@ -408,6 +430,10 @@ class _ProfileSetupOnboardingPageState
 
       // 4. Cache state and flags locally so onboarding is never shown again
       final prefs = await SharedPreferences.getInstance();
+      if (_selectedGender != null) {
+        await prefs.setString('pm_gender_$userId', _selectedGender!);
+      }
+      await prefs.setBool('pm_is_private_$userId', _isPrivateProfile);
       await prefs.setString(
           'cached_profile_$userId', jsonEncode(profilePayload));
       await prefs.setString(
@@ -760,6 +786,7 @@ class _ProfileSetupOnboardingPageState
                   onPageChanged: (page) => setState(() => _currentStep = page),
                   children: [
                     _buildStep1Name(),
+                    _buildStep2PhotoAndPrivacy(),
                     _buildStep2Dob(),
                     _buildStep3Phone(),
                   ],
@@ -969,12 +996,12 @@ class _ProfileSetupOnboardingPageState
               ),
             ],
           ),
-          // Optional Avatar / Profile Picture Row
+          // Gender Identity Selection (Male / Female)
           const SizedBox(height: 24),
           Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              'Profile Photo or Avatar (Optional)',
+              'Select Gender *',
               style: GoogleFonts.outfit(
                 color: Colors.white,
                 fontSize: 14,
@@ -982,90 +1009,314 @@ class _ProfileSetupOnboardingPageState
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Row(
             children: [
-              GestureDetector(
-                onTap: _pickImage,
-                child: Container(
-                  width: 58,
-                  height: 58,
+              Expanded(
+                child: _buildGenderOptionCard(
+                  value: 'male',
+                  label: 'Male',
+                  emoji: '👨',
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildGenderOptionCard(
+                  value: 'female',
+                  label: 'Female',
+                  emoji: '👩',
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGenderOptionCard({
+    required String value,
+    required String label,
+    required String emoji,
+  }) {
+    final isSelected = _selectedGender == value;
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        setState(() => _selectedGender = value);
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color(0xFFFFD700).withValues(alpha: 0.14)
+              : const Color(0xFF18181B),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFFFFD700)
+                : Colors.white.withValues(alpha: 0.14),
+            width: isSelected ? 1.8 : 1.0,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 20)),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: GoogleFonts.outfit(
+                color: isSelected ? const Color(0xFFFFD700) : Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ==========================================
+  // STEP 2: Profile Photo (WhatsApp style) / Avatar & Public vs Private
+  // ==========================================
+  Widget _buildStep2PhotoAndPrivacy() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const SizedBox(height: 8),
+          Text(
+            'Add your Profile Photo',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontSize: 23,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Tap + to pick a photo (fast auto-compressed) or choose an Avatar below.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              color: Colors.white70,
+              fontSize: 13.5,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 22),
+
+          // Big WhatsApp-style + Profile Photo Picker
+          GestureDetector(
+            onTap: _pickImage,
+            child: Stack(
+              alignment: Alignment.bottomRight,
+              children: [
+                Container(
+                  width: 112,
+                  height: 112,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xFF27272A),
+                    color: const Color(0xFF1E293B),
                     border: Border.all(
-                      color: _selectedImageBytes != null
-                          ? const Color(0xFFFFD700)
-                          : Colors.white24,
-                      width: 2,
+                      color: const Color(0xFFFFD700),
+                      width: 2.2,
                     ),
                   ),
                   child: _selectedImageBytes != null
                       ? ClipOval(
                           child: Image.memory(
                             _selectedImageBytes!,
-                            width: 58,
-                            height: 58,
+                            width: 112,
+                            height: 112,
                             fit: BoxFit.cover,
                           ),
                         )
-                      : const Center(
-                          child: Icon(Icons.add_a_photo_rounded,
-                              color: Color(0xFFFFD700), size: 24),
+                      : Center(
+                          child: _selectedPresetAvatar != null
+                              ? Text(_selectedPresetAvatar!,
+                                  style: const TextStyle(fontSize: 48))
+                              : const Icon(Icons.person_rounded,
+                                  color: Colors.white38, size: 52),
                         ),
                 ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: SizedBox(
-                  height: 52,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: _presetAvatars.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 8),
-                    itemBuilder: (context, index) {
-                      final avatar = _presetAvatars[index];
-                      final isSelected = _selectedPresetAvatar == avatar &&
-                          _selectedImageBytes == null;
-                      return GestureDetector(
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          setState(() {
-                            _selectedPresetAvatar = avatar;
-                            _selectedImageBytes = null;
-                          });
-                        },
-                        child: Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: isSelected
-                                ? const Color(0xFFFFD700).withValues(alpha: 0.2)
-                                : const Color(0xFF1E293B),
-                            border: Border.all(
-                              color: isSelected
-                                  ? const Color(0xFFFFD700)
-                                  : Colors.transparent,
-                              width: 2,
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              avatar,
-                              style: const TextStyle(fontSize: 22),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFF0F111A), width: 2),
                   ),
+                  child: const Icon(Icons.add_rounded,
+                      color: Colors.black, size: 22),
                 ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Or choose an Avatar (Skip photo)',
+              style: GoogleFonts.outfit(
+                color: Colors.white70,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
               ),
-            ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 52,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              itemCount: _presetAvatars.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (context, index) {
+                final avatar = _presetAvatars[index];
+                final isSelected = _selectedPresetAvatar == avatar &&
+                    _selectedImageBytes == null;
+                return GestureDetector(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    setState(() {
+                      _selectedPresetAvatar = avatar;
+                      _selectedImageBytes = null;
+                    });
+                  },
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isSelected
+                          ? const Color(0xFFFFD700).withValues(alpha: 0.2)
+                          : const Color(0xFF1E293B),
+                      border: Border.all(
+                        color: isSelected
+                            ? const Color(0xFFFFD700)
+                            : Colors.transparent,
+                        width: 2,
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(avatar, style: const TextStyle(fontSize: 22)),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Public vs Private Profile Selector
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Profile Privacy',
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          _buildPrivacyOptionTile(
+            isPrivateOption: false,
+            icon: Icons.public_rounded,
+            title: 'Public Profile 🌍',
+            subtitle:
+                'Your photo is visible to learners in Search & Pocket Talk so mates connect faster.',
+          ),
+          const SizedBox(height: 10),
+          _buildPrivacyOptionTile(
+            isPrivateOption: true,
+            icon: Icons.lock_rounded,
+            title: 'Private Profile 🔒',
+            subtitle:
+                'Shows your Avatar outside; only confirmed Mates can tap to peek at your photo.',
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPrivacyOptionTile({
+    required bool isPrivateOption,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
+    final isSelected = _isPrivateProfile == isPrivateOption;
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        setState(() => _isPrivateProfile = isPrivateOption);
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color(0xFF1E293B)
+              : const Color(0xFF141622),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFFFFD700)
+                : Colors.white.withValues(alpha: 0.12),
+            width: isSelected ? 1.6 : 1.0,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? const Color(0xFFFFD700) : Colors.white54,
+              size: 22,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.outfit(
+                      color: isSelected ? const Color(0xFFFFD700) : Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.inter(
+                      color: Colors.white60,
+                      fontSize: 11.5,
+                      height: 1.35,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              isSelected
+                  ? Icons.radio_button_checked_rounded
+                  : Icons.radio_button_off_rounded,
+              color: isSelected ? const Color(0xFFFFD700) : Colors.white38,
+              size: 20,
+            ),
+          ],
+        ),
       ),
     );
   }
