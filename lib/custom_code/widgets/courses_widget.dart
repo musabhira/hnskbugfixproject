@@ -623,7 +623,7 @@ class _CoursesWidgetState extends State<CoursesWidget> {
                               Row(
                                 children: [
                                   Text(
-                                    'â‚¹${course['course_price'] ?? '0'}',
+                                    '₹${course['course_price'] ?? '0'}',
                                     style: theme.headlineSmall.override(
                                       fontFamily: theme.headlineSmallFamily,
                                       color: theme.primary,
@@ -633,7 +633,7 @@ class _CoursesWidgetState extends State<CoursesWidget> {
                                   if (course['course_retail_price'] != null) ...[
                                     const SizedBox(width: 12),
                                     Text(
-                                      'â‚¹${course['course_retail_price']}',
+                                      '₹${course['course_retail_price']}',
                                       style: theme.labelMedium.override(
                                         fontFamily: theme.labelMediumFamily,
                                         decoration: TextDecoration.lineThrough,
@@ -2154,7 +2154,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> with WidgetsBinding
                                       borderRadius: BorderRadius.circular(25),
                                     ),
                                     child: Text(
-                                      'â‚¹${widget.courseData['course_price'] ?? 'Free'}',
+                                      '₹${widget.courseData['course_price'] ?? 'Free'}',
                                       style: const TextStyle(
                                         color: Colors.black,
                                         fontSize: 22,
@@ -2170,7 +2170,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> with WidgetsBinding
                                           .courseData['course_retail_price'] !=
                                       null)
                                     Text(
-                                      'â‚¹${widget.courseData['course_retail_price']}',
+                                      '₹${widget.courseData['course_retail_price']}',
                                       style: TextStyle(
                                         color: Colors.grey.shade400,
                                         fontSize: 16,
@@ -2704,7 +2704,7 @@ class _CouponCodeWidgetState extends State<CouponCodeWidget> {
         'https://handskilllearn.web.app/courseDetailPage?courseId=${widget.courseId}';
     final message = 'Check out this amazing course: ${widget.courseTitle}!\n\n'
         'The first lesson is FREE!\n\n'
-        'Use my coupon code $couponCode to get â‚¹50 off when you purchase the full course.\n\n'
+        'Use my coupon code $couponCode to get ₹50 off when you purchase the full course.\n\n'
         'name : $name\n\n'
         '$courseLink';
 
@@ -2854,7 +2854,7 @@ class _CouponCodeWidgetState extends State<CouponCodeWidget> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Start Earning â‚¹300 Today!',
+                              'Start Earning ₹300 Today!',
                               style: TextStyle(
                                 color: Colors.yellow.shade200,
                                 fontSize: 16,
@@ -2915,7 +2915,7 @@ class _CouponCodeWidgetState extends State<CouponCodeWidget> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                'Your friends get â‚¹50 off with your code',
+                                'Your friends get ₹50 off with your code',
                                 style: TextStyle(
                                   color: Colors.yellow.shade100,
                                   fontSize: 12,
@@ -2932,7 +2932,7 @@ class _CouponCodeWidgetState extends State<CouponCodeWidget> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                'You earn â‚¹300 when they purchase',
+                                'You earn ₹300 when they purchase',
                                 style: TextStyle(
                                   color: Colors.yellow.shade100,
                                   fontSize: 12,
@@ -3048,7 +3048,7 @@ class _CouponCodeWidgetState extends State<CouponCodeWidget> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Share & Earn â‚¹300',
+                            'Share & Earn ₹300',
                             style: TextStyle(
                               color: Colors.yellow.shade200,
                               fontSize: 16,
@@ -3057,7 +3057,7 @@ class _CouponCodeWidgetState extends State<CouponCodeWidget> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Friends get â‚¹50 off, you get â‚¹300 when they purchase!',
+                            'Friends get ₹50 off, you get ₹300 when they purchase!',
                             style: TextStyle(
                               color: Colors.yellow.shade100,
                               fontSize: 12,
@@ -3304,7 +3304,7 @@ class WhatsAppShareHelper {
     }
 
     String itemLink = _generateItemLink(item);
-    message += '\nðŸ”— Check it out here: $itemLink';
+    message += '\n🔗 Check it out here: $itemLink';
 
     return message;
   }
@@ -3318,7 +3318,7 @@ class WhatsAppShareHelper {
     }
 
     String itemLink = _generateItemLink(item);
-    message += '\n\nðŸ”— Link: $itemLink';
+    message += '\n\n🔗 Link: $itemLink';
 
     return message;
   }

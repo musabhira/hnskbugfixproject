@@ -442,6 +442,9 @@ class _ConversationTileState extends State<ConversationTile> {
     if (widget.conversation.isActiveTimer) return material.Icons.timer_outlined;
     if (widget.conversation.isTool) {
       switch (widget.conversation.toolTitle) {
+        case 'German Learning Tasks':
+        case '90-Day German Tasks':
+        case 'German Tasks':
         case 'English Learning Tasks':
         case '90-Day English Tasks':
         case 'English Tasks':
@@ -490,6 +493,12 @@ class _ConversationTileState extends State<ConversationTile> {
           return material.Icons.schema_rounded;
         case 'Teams':
           return material.Icons.diversity_3_rounded;
+        case 'Poket Spend':
+        case 'Pocket Spend':
+          return material.Icons.account_balance_wallet_rounded;
+        case 'Poket Focus':
+        case 'Pocket Focus':
+          return material.Icons.school_rounded;
         case 'POS Tool':
         case 'POS & Billing':
           return material.Icons.admin_panel_settings_rounded;
@@ -517,6 +526,10 @@ class _ConversationTileState extends State<ConversationTile> {
     if (widget.conversation.isActiveTimer) return material.Colors.greenAccent;
     if (widget.conversation.isTool) {
       switch (widget.conversation.toolTitle) {
+        case 'German Learning Tasks':
+        case '90-Day German Tasks':
+        case 'German Tasks':
+          return const Color(0xFFFFCE00);
         case 'English Learning Tasks':
         case '90-Day English Tasks':
         case 'English Tasks':
@@ -565,6 +578,12 @@ class _ConversationTileState extends State<ConversationTile> {
           return const Color(0xFF8B5CF6);
         case 'Teams':
           return const Color(0xFFEC4899);
+        case 'Poket Spend':
+        case 'Pocket Spend':
+          return const Color(0xFF10B981);
+        case 'Poket Focus':
+        case 'Pocket Focus':
+          return const Color(0xFF38BDF8);
         case 'POS Tool':
         case 'POS & Billing':
           return const Color(0xFF2563EB);
@@ -730,10 +749,11 @@ class _ConversationTileState extends State<ConversationTile> {
       );
     }
 
-    // 5. Group Chats with Group Blue/Cyan Aura Spread (Special Icons for Pocket Couple ❤️ & Island Neighbors 🏝️)
+    // 5. Group Chats with Group Blue/Cyan Aura Spread (Special Icons for Poket Couple ❤️ & Island Neighbors 🏝️)
     if (widget.conversation.isGroup) {
       final lowerName = widget.conversation.name.toLowerCase();
-      final isPocketCouple = lowerName == 'pocket couple' ||
+      final isPocketCouple = lowerName == 'poket couple' ||
+          lowerName == 'pocket couple' ||
           widget.conversation.id == 'pocket_couple_default';
       final isIslandNeighbors = lowerName.contains('island neighbors');
 

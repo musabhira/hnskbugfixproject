@@ -23,9 +23,11 @@ import 'avatar/vector_avatar_widget.dart';
 import 'avatar/vector_avatar_config.dart';
 import 'learning_60day/pocket_syllabus_repository.dart';
 import 'learning_60day/pocket_generating_syllabus_page.dart';
+import 'german_90day/german_generating_syllabus_page.dart';
 import 'tools_page.dart';
 import '../services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_learning_track_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_onboarding_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
@@ -88,7 +90,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   WelcomeMode _mode = WelcomeMode.welcome;
   final PageController _pageController = PageController();
   int _currentStep = 0;
-  static const int _totalSteps = 9;
+  static const int _totalSteps = 10;
 
   // Background Audio
   AudioPlayer? _bgmPlayer;
@@ -138,7 +140,10 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       (PocketLanguageService.detectDeviceLanguage() == 'English')
           ? 'Malayalam'
           : PocketLanguageService.detectDeviceLanguage();
-  final String _selectedTargetLanguage = 'English';
+  String _selectedTargetLanguage =
+      PocketLearningTrackService.isGerman ? 'German' : 'English';
+  bool get _isGermanTarget => _selectedTargetLanguage == 'German';
+  String get _targetLabel => _isGermanTarget ? 'German' : 'English';
   final String _selectedReferralSource = 'Instagram / Reels';
   String _selectedEnglishLevel = 'Level 1: Beginner';
   String _selectedLearningGoal = 'Daily Fluency & Real Conversations';
@@ -159,22 +164,30 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   int? _selectedQuizAnswer;
 
   List<Map<String, dynamic>> get _placementQuestions =>
-      PocketLanguageService.getPlacementQuestions(_selectedNativeLanguage);
+      PocketLanguageService.getTargetPlacementQuestions(
+        _selectedNativeLanguage,
+        isGerman: _isGermanTarget,
+      );
 
-  // Options Data (English removed because the app is learning English)
-  final List<Map<String, String>> _nativeLanguages = [
-    {'code': 'Malayalam', 'name': 'മലയാളം (Malayalam)', 'flag': '🌴'},
-    {'code': 'Hindi', 'name': 'हिन्दी (Hindi)', 'flag': '🪷'},
-    {'code': 'Tamil', 'name': 'தமிழ் (Tamil)', 'flag': '🦚'},
-    {'code': 'Kannada', 'name': 'ಕನ್ನಡ (Kannada)', 'flag': '🌸'},
-    {'code': 'Telugu', 'name': 'తెలుగు (Telugu)', 'flag': '🌺'},
-    {'code': 'Arabic', 'name': 'العربية (Arabic)', 'flag': '🇸🇦'},
-    {'code': 'Bengali', 'name': 'বাংলা (Bengali)', 'flag': '🌊'},
-    {'code': 'Other', 'name': 'Other Language', 'flag': '✨'},
-  ];
+  // Include English as a native language only when learning German
+  List<Map<String, String>> get _nativeLanguages => [
+        {'code': 'Malayalam', 'name': 'മലയാളം (Malayalam)', 'flag': '🌴'},
+        {'code': 'Hindi', 'name': 'हिन्दी (Hindi)', 'flag': '🪷'},
+        {'code': 'Tamil', 'name': 'தமிழ் (Tamil)', 'flag': '🦚'},
+        {'code': 'Kannada', 'name': 'ಕನ್ನಡ (Kannada)', 'flag': '🌸'},
+        {'code': 'Telugu', 'name': 'తెలుగు (Telugu)', 'flag': '🌺'},
+        if (_isGermanTarget)
+          {'code': 'English', 'name': 'English (Mother Tongue)', 'flag': '🇬🇧'},
+        {'code': 'Arabic', 'name': 'العربية (Arabic)', 'flag': '🇸🇦'},
+        {'code': 'Bengali', 'name': 'বাংলা (Bengali)', 'flag': '🌊'},
+        {'code': 'Other', 'name': 'Other Language', 'flag': '✨'},
+      ];
 
   List<Map<String, String>> get _englishLevels =>
-      PocketLanguageService.getEnglishLevels(_selectedNativeLanguage);
+      PocketLanguageService.getTargetLevels(
+        _selectedNativeLanguage,
+        isGerman: _isGermanTarget,
+      );
 
   final List<Map<String, dynamic>> _studyTimeSlots = [
     {
@@ -303,9 +316,12 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     // Study slot (Alarm ALWAYS ON by default as requested!)
     final studyItem = OnboardingRoutineItem(
       id: 'onboarding_study_slot',
-      title: 'English Speaking & Practice 🗣️',
-      description:
-          'Daily speaking sprint & voice coffee table with peers (${_selectedDailyGoalMins}m)',
+      title: _isGermanTarget
+          ? 'German Speaking & Practice 🇩🇪'
+          : 'English Speaking & Practice 🗣️',
+      description: _isGermanTarget
+          ? 'Daily German alphabet, vocab & speaking practice (${_selectedDailyGoalMins}m)'
+          : 'Daily speaking sprint & voice coffee table with peers (${_selectedDailyGoalMins}m)',
       startTime: studyStartDT,
       endTime: studyEndDT,
       color: const Color(0xFF10B981),
@@ -865,27 +881,30 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   }
 
   String _getPromptForStep(int step) {
+    final targetName = _isGermanTarget ? 'German' : 'English';
     switch (step) {
       case 0:
         return "Notice something missing? There is no C in Poket Mates! No Comparison, No Criticism, No Classroom. The only C you need is Confidence!";
       case 1:
-        return "What is your native language?";
+        return "Which language would you like to learn? Choose English or German!";
       case 2:
-        return "Who is learning English? Choose the personalized track suited for your learning journey.";
+        return "What is your native language?";
       case 3:
-        return "What time of day works best for your daily English practice?";
+        return "Who is learning $targetName? Choose the personalized track suited for your learning journey.";
       case 4:
-        return "How much time can you commit each day to practice speaking?";
+        return "What time of day works best for your daily $targetName practice?";
       case 5:
-        return "Here is your personalized daily routine and study schedule. Take a look!";
+        return "How much time can you commit each day to practice speaking $targetName?";
       case 6:
-        return "Turn on reminders so you never miss your daily speaking practice.";
+        return "Here is your personalized daily routine and study schedule. Take a look!";
       case 7:
-        return "Commit to your daily streak and watch what you will achieve in 3 months!";
+        return "Turn on reminders so you never miss your daily speaking practice.";
       case 8:
-        return "How would you like to start your English journey today?";
+        return "Commit to your daily streak and watch what you will achieve in 3 months!";
+      case 9:
+        return "How would you like to start your $targetName journey today?";
       default:
-        return "Let's continue your English learning journey!";
+        return "Let's continue your $targetName learning journey!";
     }
   }
 
@@ -1029,6 +1048,12 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       await PocketLanguageService.setNativeLanguage(_selectedNativeLanguage,
           userId: user?.id);
       await prefs.setString('pm_target_language', _selectedTargetLanguage);
+      await PocketLearningTrackService.setTrack(
+        _isGermanTarget
+            ? PocketLearningTrackService.trackGerman
+            : PocketLearningTrackService.trackEnglish,
+        userId: user?.id,
+      );
       await prefs.setString('pm_referral_source', _selectedReferralSource);
       await prefs.setString('pm_english_level', _selectedEnglishLevel);
       final resolvedLvl =
@@ -1119,21 +1144,25 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
         favTools = [
           {'title': 'Schedule', 'timeAdded': DateTime.now().toIso8601String()},
           {
-            'title': '90-Day English Tasks',
+            'title': _isGermanTarget
+                ? 'German Learning Tasks'
+                : '90-Day English Tasks',
             'timeAdded': DateTime.now().toIso8601String()
           },
-          {
-            'title': '1-on-1 English Match',
-            'timeAdded': DateTime.now()
-                .subtract(const Duration(minutes: 1))
-                .toIso8601String()
-          },
-          {
-            'title': 'Voice Speaking Sprint',
-            'timeAdded': DateTime.now()
-                .subtract(const Duration(minutes: 2))
-                .toIso8601String()
-          },
+          if (!_isGermanTarget) ...[
+            {
+              'title': '1-on-1 English Match',
+              'timeAdded': DateTime.now()
+                  .subtract(const Duration(minutes: 1))
+                  .toIso8601String()
+            },
+            {
+              'title': 'Voice Speaking Sprint',
+              'timeAdded': DateTime.now()
+                  .subtract(const Duration(minutes: 2))
+                  .toIso8601String()
+            },
+          ],
         ];
       }
 
@@ -1159,10 +1188,14 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
             await PushNotificationService.scheduleDailyNotification(
               id: notifId,
               title: item.isStudySlot
-                  ? '⏰ English Speaking Practice Time!'
+                  ? (_isGermanTarget
+                      ? '⏰ German Speaking Practice Time!'
+                      : '⏰ English Speaking Practice Time!')
                   : '⏰ ${item.title}',
               body: item.isStudySlot
-                  ? 'Time for your daily English speaking session! Hop in, practice with friends and keep your streak strong! 🔥'
+                  ? (_isGermanTarget
+                      ? 'Time for your daily German learning session! Practice German and keep your streak strong! 🔥'
+                      : 'Time for your daily English speaking session! Hop in, practice with friends and keep your streak strong! 🔥')
                   : (item.description ?? 'Scheduled routine reminder'),
               hour: item.startTime.hour,
               minute: item.startTime.minute,
@@ -1333,18 +1366,31 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           PocketSyllabusRepository.resolveLevelFromText(_selectedEnglishLevel);
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (ctx) => PocketGeneratingSyllabusPage(
-            level: lvl,
-            nativeLanguage: _selectedNativeLanguage,
-            onContinue: () {
-              Navigator.of(ctx).pop();
-              _bgmPlayer?.stop();
-              PocketGameAudioService.instance.stop();
-              if (mounted) {
-                context.goNamed(HomePageWidget.routeName);
-              }
-            },
-          ),
+          builder: (ctx) => _isGermanTarget
+              ? GermanGeneratingSyllabusPage(
+                  level: lvl,
+                  nativeLanguage: _selectedNativeLanguage,
+                  onContinue: () {
+                    Navigator.of(ctx).pop();
+                    _bgmPlayer?.stop();
+                    PocketGameAudioService.instance.stop();
+                    if (mounted) {
+                      context.goNamed(HomePageWidget.routeName);
+                    }
+                  },
+                )
+              : PocketGeneratingSyllabusPage(
+                  level: lvl,
+                  nativeLanguage: _selectedNativeLanguage,
+                  onContinue: () {
+                    Navigator.of(ctx).pop();
+                    _bgmPlayer?.stop();
+                    PocketGameAudioService.instance.stop();
+                    if (mounted) {
+                      context.goNamed(HomePageWidget.routeName);
+                    }
+                  },
+                ),
         ),
       );
     }
@@ -2035,6 +2081,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                     physics: const NeverScrollableScrollPhysics(),
                     children: [
                       _buildStep0Greeting(),
+                      _buildStep1TargetLanguage(),
                       _buildStep2NativeLanguage(),
                       _buildStepLearnerTrack(),
                       _buildStepPreferredStudyTime(),
@@ -2206,12 +2253,80 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     );
   }
 
+  // --- Step 1: Target Language (Asked BEFORE Native Language) ---
+  Widget _buildStep1TargetLanguage() {
+    final targets = [
+      {
+        'code': 'English',
+        'title': 'English 🇬🇧',
+        'subtitle': '90-Day Spoken English Mastery, Phonics & Real Fluency',
+        'badge': 'POPULAR',
+        'color': const Color(0xFF10B981),
+        'flag': '🇬🇧',
+      },
+      {
+        'code': 'German',
+        'title': 'Deutsch (German) 🇩🇪',
+        'subtitle':
+            '90-Day German A1 → B2: Alphabet (Ä, Ö, Ü, ß), Speaking & Cases',
+        'badge': 'SEPARATE TRACK',
+        'color': const Color(0xFF38BDF8),
+        'flag': '🇩🇪',
+      },
+    ];
+
+    void selectTarget(String code) {
+      HapticFeedback.selectionClick();
+      setState(() {
+        _selectedTargetLanguage = code;
+        if (code == 'English' && _selectedNativeLanguage == 'English') {
+          _selectedNativeLanguage = 'Malayalam';
+          PocketLanguageService.setNativeLanguage('Malayalam');
+        }
+        _selectedEnglishLevel = _englishLevels.first['title']!;
+        _generateOnboardingRoutine();
+      });
+      PocketLearningTrackService.setTrack(
+        code == 'German'
+            ? PocketLearningTrackService.trackGerman
+            : PocketLearningTrackService.trackEnglish,
+      );
+    }
+
+    return _buildStepContainer(
+      title: 'Which language do you want to learn?',
+      mascotHint:
+          'Choose your learning language first. English and German are kept 100% separate!',
+      child: Column(
+        children: targets.map((t) {
+          final code = t['code'] as String;
+          final isSelected = _selectedTargetLanguage == code;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: _buildOptionCard(
+              title: t['title'] as String,
+              subtitle: t['subtitle'] as String,
+              badge: t['badge'] as String,
+              badgeColor: t['color'] as Color,
+              leadingEmoji: t['flag'] as String,
+              isSelected: isSelected,
+              onTap: () => selectTarget(code),
+            ),
+          );
+        }).toList(),
+      ),
+      onContinue: _nextStep,
+      buttonText: 'CONTINUE',
+    );
+  }
+
   // --- Step 2: Native Language ---
   Widget _buildStep2NativeLanguage() {
     return _buildStepContainer(
-      title: 'What is your native language?\nआपकी मातृभाषा क्या है?',
-      mascotHint:
-          'Select your native language so all daily explanations, phonics, and grammar hints are personalized for you.',
+      title: 'What is your native language?',
+      mascotHint: _isGermanTarget
+          ? 'Learning 🇩🇪 German! Pick your mother tongue so every German explanation & meaning is shown in your own language.'
+          : 'Select your native language so all daily explanations, phonics, and grammar hints are personalized for you.',
       child: ListView.separated(
         shrinkWrap: true,
         physics: const BouncingScrollPhysics(),
@@ -2241,12 +2356,14 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     );
   }
 
-  // --- Step 2: Learner Track Choice (Adult 18+ vs Student 9-18 vs Kids Up to 8) ---
+  // --- Step 3: Learner Track Choice (Adult 9+ vs Kids Up to 8) ---
   Widget _buildStepLearnerTrack() {
-    final trans = PocketLanguageService.getLearnerTypeTranslations(
-        _selectedNativeLanguage);
+    final trans = PocketLanguageService.getTargetLearnerTypeTranslations(
+      _selectedNativeLanguage,
+      isGerman: _isGermanTarget,
+    );
     return _buildStepContainer(
-      title: trans['title'] ?? 'Who is learning English?',
+      title: trans['title'] ?? 'Who is learning $_targetLabel?',
       mascotHint: trans['subtitle'] ??
           'Choose the personalized track suited for your learning journey.',
       child: Column(
@@ -2299,7 +2416,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                           children: [
                             Text(
                               trans['adultTitle'] ??
-                                  'English Mastery (9+ Years)',
+                                  '$_targetLabel Mastery (9+ Years)',
                               style: GoogleFonts.outfit(
                                 color: Colors.white,
                                 fontSize: 15,
@@ -2490,7 +2607,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     return _buildStepContainer(
       title: 'When do you prefer to practice?',
       mascotHint:
-          'Set your ideal daily English speaking time. Tap the clock steppers or presets below to customize!',
+          'Set your ideal daily $_targetLabel speaking time. Tap the clock steppers or presets below to customize!',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -3117,7 +3234,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     return _buildStepContainer(
       title: 'Daily Language Learning Commitment',
       mascotHint:
-          'How much time can you comfortably dedicate to English speaking daily?',
+          'How much time can you comfortably dedicate to $_targetLabel practice daily?',
       child: ListView.separated(
         shrinkWrap: true,
         physics: const BouncingScrollPhysics(),
@@ -3328,21 +3445,25 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
         favTools = [
           {'title': 'Schedule', 'timeAdded': DateTime.now().toIso8601String()},
           {
-            'title': '90-Day English Tasks',
+            'title': _isGermanTarget
+                ? 'German Learning Tasks'
+                : '90-Day English Tasks',
             'timeAdded': DateTime.now().toIso8601String()
           },
-          {
-            'title': '1-on-1 English Match',
-            'timeAdded': DateTime.now()
-                .subtract(const Duration(minutes: 1))
-                .toIso8601String()
-          },
-          {
-            'title': 'Voice Speaking Sprint',
-            'timeAdded': DateTime.now()
-                .subtract(const Duration(minutes: 2))
-                .toIso8601String()
-          },
+          if (!_isGermanTarget) ...[
+            {
+              'title': '1-on-1 English Match',
+              'timeAdded': DateTime.now()
+                  .subtract(const Duration(minutes: 1))
+                  .toIso8601String()
+            },
+            {
+              'title': 'Voice Speaking Sprint',
+              'timeAdded': DateTime.now()
+                  .subtract(const Duration(minutes: 2))
+                  .toIso8601String()
+            },
+          ],
         ];
       }
 
@@ -3370,10 +3491,14 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
             await PushNotificationService.scheduleDailyNotification(
               id: notifId,
               title: item.isStudySlot
-                  ? '⏰ English Speaking Practice Time!'
+                  ? (_isGermanTarget
+                      ? '⏰ German Speaking Practice Time!'
+                      : '⏰ English Speaking Practice Time!')
                   : '⏰ ${item.title}',
               body: item.isStudySlot
-                  ? 'Time for your daily English speaking session! Hop in, practice with friends and keep your streak strong! 🔥'
+                  ? (_isGermanTarget
+                      ? 'Time for your daily German learning session! Practice German and keep your streak strong! 🔥'
+                      : 'Time for your daily English speaking session! Hop in, practice with friends and keep your streak strong! 🔥')
                   : (item.description ?? 'Scheduled routine reminder'),
               hour: item.startTime.hour,
               minute: item.startTime.minute,
@@ -4503,9 +4628,12 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                   );
                   await PushNotificationService.scheduleDailyNotification(
                     id: 7777,
-                    title: '⏰ English Speaking Practice Time!',
-                    body:
-                        'Time for your daily English speaking session! Hop in, practice with friends and keep your streak strong! 🔥',
+                    title: _isGermanTarget
+                        ? '⏰ German Speaking Practice Time!'
+                        : '⏰ English Speaking Practice Time!',
+                    body: _isGermanTarget
+                        ? 'Time for your daily German learning session! Keep your streak strong! 🔥'
+                        : 'Time for your daily English speaking session! Hop in, practice with friends and keep your streak strong! 🔥',
                     hour: studySlot.startTime.hour,
                     minute: studySlot.startTime.minute,
                     payload: 'tool_Schedule',
@@ -4534,11 +4662,12 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     );
   }
 
-  // --- Step 7: Streak & 3-Month Achievement Motivation ---
+  // --- Step 8: Streak & 3-Month Achievement Motivation ---
   Widget _buildStep7StreakAndPromiseCombined() {
     return _buildStepContainer(
       title: 'Commit to your daily streak 🔥',
-      mascotHint: "Consistency is the fastest route to spoken English fluency.",
+      mascotHint:
+          'Consistency is the fastest route to spoken $_targetLabel fluency.',
       child: Column(
         children: [
           Container(
@@ -4599,7 +4728,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           _buildWidgetInstructionItem(
             stepNumber: '1',
             text:
-                'Bite-sized practice: $_selectedDailyGoalMins minutes a day builds lasting English fluency.',
+                'Bite-sized practice: $_selectedDailyGoalMins minutes a day builds lasting $_targetLabel fluency.',
           ),
           const SizedBox(height: 10),
           _buildWidgetInstructionItem(
@@ -4630,7 +4759,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
             emoji: '🎓',
             title: 'Official CEFR-Aligned Certificate',
             desc:
-                'Earn an official, verified Certificate of English Spoken Fluency upon Day 90 graduation.',
+                'Earn an official, verified Certificate of $_targetLabel Fluency upon Day 90 graduation.',
             badge: 'CERTIFIED',
             badgeColor: const Color(0xFFFACC15),
           ),
@@ -4666,7 +4795,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
             emoji: '☕',
             title: 'Live Voice Lounges & Coffee Tables',
             desc:
-                'Practice spoken English with peer learners in friendly 1-on-1 audio rooms & coffee tables.',
+                'Practice spoken $_targetLabel with peer learners in friendly audio rooms & guided sessions.',
             badge: 'COMMUNITY',
             badgeColor: const Color(0xFF38BDF8),
           ),
@@ -4675,7 +4804,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
             emoji: '🗣️',
             title: 'Confident Accent & Speaking Stamina',
             desc:
-                'Conquer fear, master 1,500+ everyday idioms, and speak fluent English without hesitation.',
+                'Conquer fear, master 1,500+ everyday expressions, and speak fluent $_targetLabel without hesitation.',
             badge: 'FLUENCY',
             badgeColor: const Color(0xFF10B981),
           ),
@@ -4700,8 +4829,9 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           // Start from Scratch
           _buildOptionCard(
             title: 'Start from scratch',
-            subtitle:
-                'Begin with Day 1 basics: greetings, alphabet & essentials.',
+            subtitle: _isGermanTarget
+                ? 'Begin with Day 1 basics: German greetings, A–Z & ÄÖÜß letters & essentials.'
+                : 'Begin with Day 1 basics: greetings, alphabet & essentials.',
             leadingEmoji: '🟢',
             isSelected: _selectedPath == 'scratch',
             onTap: () {

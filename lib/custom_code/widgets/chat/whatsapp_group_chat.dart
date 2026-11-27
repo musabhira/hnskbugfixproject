@@ -44,11 +44,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_language_guard_serv
 import 'package:pocket_mates_app/custom_code/services/pocket_gang_group_language_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_language_picker.dart';
 import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_models.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_habit_tracker_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_memory_vault_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_quick_poll_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_split_wishlist_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_student_tools_widgets.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/poket_focus_page.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:google_fonts/google_fonts.dart' hide Config;
@@ -192,12 +188,13 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   bool _showMentionSuggestions = false;
   String? _mentionQuery;
 
-  // ðŸ† Segmented Chat / Ranking Trail View State
+  // 🏆 Segmented Chat / Ranking Trail View State
   int _activeChatTabIndex = 0; // 0 = Chat, 1 = Ranking Trail
   late final PageController _chatTabPageController;
 
   // Mate Fluency Streak & Conversation Starters
   int _mateStreakDays = 1;
+  bool _isCoupledPartner = false;
   int _selectedTopicIndex = 0;
 
   // Editing state
@@ -248,14 +245,16 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         id.contains('hub');
   }
 
-  /// ðŸ’‘ Detects if the current conversation is the Private Pocket Couple Group
+  /// 💑 Detects if the current conversation is the Private Poket Couple Group
   bool get _isPocketCoupleGroup {
+    final lower = _currentGroupName.toLowerCase();
     return _currentGroupId == 'pocket_couple_default' ||
-        _currentGroupName == 'Pocket Couple' ||
-        _currentGroupName.startsWith('ðŸ’‘ ');
+        lower == 'poket couple' ||
+        lower == 'pocket couple' ||
+        _currentGroupName.startsWith('💑 ');
   }
 
-  /// ðŸï¸ Detects if the current conversation is an Island Neighbors Group
+  /// 🏝️ Detects if the current conversation is an Island Neighbors Group
   bool get _isIslandNeighborsGroup {
     return PocketIslandGroupService.isIslandGroup(
         _currentGroupId, _currentGroupName);
@@ -302,7 +301,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     }
   }
 
-  // ðŸ¤– English Hub Autonomous Robot Simulation Timers & Rate Limiters
+  // 🤖 English Hub Autonomous Robot Simulation Timers & Rate Limiters
   Timer? _hubRobotIdleConversationTimer;
   Timer? _hubRobotReplyCooldownTimer;
   Timer? _hubCloudCleanupTimer;
@@ -316,19 +315,19 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   bool _isOutgoingPendingRequest = false;
   Map<String, dynamic>? _incomingPendingRequest;
 
-  // ðŸ† PocketTalk 4-Day Spoken Pact State
+  // 🏆 PocketTalk 4-Day Spoken Pact State
   PocketTalkPact? _activePocketTalkPact;
   // ignore: unused_field
   int _userTrophyCount = 0;
   Timer? _pactActiveTimer;
   DateTime? _lastPactMinuteLogTime;
 
-  // ðŸ› ï¸ PocketGang Modular Tools & Dynamic Tabs State
+  // 🛠️ PocketGang Modular Tools & Dynamic Tabs State
   List<String> _gangInstalledTools = ['team_mgmt'];
   List<PocketGangTask> _gangTasks = [];
   RealtimeChannel? _gangToolsSubscription;
 
-  // ðŸŒ PocketGang Allowed Languages State (Group-Wide)
+  // 🌐 PocketGang Allowed Languages State (Group-Wide)
   List<String> _gangAllowedLanguages = ['en', 'ml'];
   RealtimeChannel? _gangLanguagesSubscription;
   List<PinnedGroupMessage> _gangPinnedMessages = [];
@@ -388,16 +387,16 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
   void _showEnglishTopicStartersModal() {
     final topics = [
-      'ðŸŒŸ What is the most exciting goal you are working towards this year?',
-      'ðŸŽ¬ If you could only rewatch one movie for the rest of your life, which one and why?',
-      'ðŸŒ What is the most interesting place you have ever visited or dream of exploring?',
-      'ðŸ’¡ What is a valuable lesson you learned recently that changed your thinking?',
-      'â˜• Are you a morning person or a night owl? What does your ideal productive day look like?',
-      'ðŸš€ If you were given \$1,000,000 to start any business tomorrow, what would you build?',
-      'ðŸ“š What is an English idiom or phrase you recently discovered and found fascinating?',
-      'ðŸŽ§ What music, podcast, or creator inspires you the most when studying or working?',
-      'ðŸ² What is your absolute favorite comfort food, and what memories does it bring back?',
-      'ðŸ† What is an accomplishment you are proud of, whether big or small?',
+      '🌟 What is the most exciting goal you are working towards this year?',
+      '🎬 If you could only rewatch one movie for the rest of your life, which one and why?',
+      '🌍 What is the most interesting place you have ever visited or dream of exploring?',
+      '💡 What is a valuable lesson you learned recently that changed your thinking?',
+      '☕ Are you a morning person or a night owl? What does your ideal productive day look like?',
+      '🚀 If you were given \$1,000,000 to start any business tomorrow, what would you build?',
+      '📚 What is an English idiom or phrase you recently discovered and found fascinating?',
+      '🎧 What music, podcast, or creator inspires you the most when studying or working?',
+      '🍲 What is your absolute favorite comfort food, and what memories does it bring back?',
+      '🏆 What is an accomplishment you are proud of, whether big or small?',
     ];
 
     showModalBottomSheet(
@@ -424,7 +423,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             const SizedBox(height: 12),
             Row(
               children: [
-                const Text('ðŸ’¡', style: TextStyle(fontSize: 20)),
+                const Text('💡', style: TextStyle(fontSize: 20)),
                 const SizedBox(width: 8),
                 Text(
                   'ENGLISH TOPIC STARTERS',
@@ -527,7 +526,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('ðŸ°', style: TextStyle(fontSize: 11)),
+                const Text('🏰', style: TextStyle(fontSize: 11)),
                 const SizedBox(width: 4),
                 Text(
                   'POCKET GANG',
@@ -544,7 +543,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'ðŸŽ® Play, chat & conquer quests together!',
+              '🎮 Play, chat & conquer quests together!',
               style: GoogleFonts.outfit(
                 color: const Color(0xFF1E293B),
                 fontSize: 11.5,
@@ -575,7 +574,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('âš”ï¸', style: TextStyle(fontSize: 10)),
+                  const Text('⚔️', style: TextStyle(fontSize: 10)),
                   const SizedBox(width: 2),
                   Text(
                     'Citadel',
@@ -622,7 +621,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('ðŸ‡¬ðŸ‡§', style: TextStyle(fontSize: 10.5)),
+                const Text('🇬🇧', style: TextStyle(fontSize: 10.5)),
                 const SizedBox(width: 4),
                 Text(
                   widget.groupName.contains('Lvl')
@@ -826,7 +825,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         .read(chatMessagesProvider(widget.groupId).notifier)
         .cleanupOldMessages());
 
-    // ðŸ¤– Initialize English Hub Autonomous Robot Participation & 15m cloud purge
+    // 🤖 Initialize English Hub Autonomous Robot Participation & 15m cloud purge
     if (_isEnglishHubGroup) {
       _initEnglishHubRobotParticipation();
       _hubCloudCleanupTimer = Timer.periodic(const Duration(minutes: 2), (_) {
@@ -838,7 +837,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       });
     }
 
-    // ðŸ› ï¸ Initialize PocketGang Group-Wide Tools & Tasks
+    // 🛠️ Initialize PocketGang Group-Wide Tools & Tasks
     if (_isEligibleForPocketGangWorkspace) {
       _initPocketGangToolsAndTasks();
     }
@@ -939,7 +938,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     _hubRobotIdleConversationTimer?.cancel();
     if (!_isEnglishHubRobotsEnabled && _activeChatTabIndex != 1) return;
     final isRobotTab = _activeChatTabIndex == 1;
-    // â±ï¸ Start within 1-2 seconds on first open!
+    // ⏱️ Start within 1-2 seconds on first open!
     // On Robot tab, robots continuously converse back and forth every 10-18 seconds!
     // On other tabs, steady background cadence every 35-50 seconds.
     final delaySeconds = initial
@@ -958,7 +957,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     });
   }
 
-  /// ðŸ¤– Trigger quick robot dialogue if the user specifically navigated to the Robot tab
+  /// 🤖 Trigger quick robot dialogue if the user specifically navigated to the Robot tab
   void _triggerImmediateRobotDialogueIfQuiet() {
     _hubRobotIdleConversationTimer?.cancel();
     _hubRobotIdleConversationTimer =
@@ -971,7 +970,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     });
   }
 
-  /// ðŸ¤– Posts a natural gentle robot conversation (single topic turn) with real typing indicators
+  /// 🤖 Posts a natural gentle robot conversation (single topic turn) with real typing indicators
   Future<void> _postAutonomousRobotComboDialogueIfIdle() async {
     try {
       if (!mounted || !_isEnglishHubGroup) return;
@@ -1082,7 +1081,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     }
   }
 
-  /// ðŸ¤ When a human learner speaks in English Hub, allow a relevant robot to respond
+  /// 🤝 When a human learner speaks in English Hub, allow a relevant robot to respond
   /// politely after a natural delay (with live typing indicator), directly answering their input!
   void _triggerPoliteRobotReplyToHuman({
     required String humanText,
@@ -1205,7 +1204,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
   bool _isPresidentReplying = false;
 
-  /// ðŸ›ï¸ Trigger autonomous dignified reply from The President of Pocket World
+  /// 🏛️ Trigger autonomous dignified reply from The President of Pocket World
   void _triggerPresidentialReplyToHuman({
     required String humanText,
     required String senderName,
@@ -1544,7 +1543,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         }
       }
 
-      // ðŸï¸ If this is an Island Neighbors group, show ONLY the 25 plot residents of THIS island!
+      // 🏝️ If this is an Island Neighbors group, show ONLY the 25 plot residents of THIS island!
       if (_isIslandNeighborsGroup) {
         final colony = _islandColonyInfo;
         if (colony != null) {
@@ -1656,6 +1655,11 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       }
 
       final prefs = await SharedPreferences.getInstance();
+      final couplePartnerId =
+          prefs.getString('pocket_spend_partner_id_$_currentUserId');
+      if (couplePartnerId != null && couplePartnerId == mateUserId) {
+        if (mounted) safeSetState(() => _isCoupledPartner = true);
+      }
       final cachedStreak = prefs.getInt('mate_streak_${widget.groupId}');
       if (cachedStreak != null && cachedStreak > 0) {
         safeSetState(() {
@@ -1732,7 +1736,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     final uid = _supabase.auth.currentUser?.id ?? '';
     if (uid.isEmpty || otherUserId.isEmpty) return;
 
-    // ðŸ¤– Robots & Presidents do NOT have PocketTalk Pacts / Streaks
+    // 🤖 Robots & Presidents do NOT have PocketTalk Pacts / Streaks
     if (PocketRobotService.isRobotId(otherUserId) ||
         PocketPresidentService.isPresidentId(otherUserId) ||
         otherUserId.startsWith('robot_') ||
@@ -1872,11 +1876,11 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             SnackBar(
               content: Row(
                 children: [
-                  const Text('ðŸŽ‰', style: TextStyle(fontSize: 18)),
+                  const Text('🎉', style: TextStyle(fontSize: 18)),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Day ${res.pact!.streakDays} Goal Achieved! (15 mins done today) ðŸ† Keep it up tomorrow!',
+                      'Day ${res.pact!.streakDays} Goal Achieved! (15 mins done today) 🏆 Keep it up tomorrow!',
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 12.5),
                     ),
@@ -1907,7 +1911,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         ),
         title: Column(
           children: [
-            const Text('ðŸ†', style: TextStyle(fontSize: 48)),
+            const Text('🏆', style: TextStyle(fontSize: 48)),
             const SizedBox(height: 8),
             Text(
               'PACT COMPLETED!',
@@ -1945,7 +1949,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                       color: Color(0xFFFFD700), size: 24),
                   const SizedBox(width: 8),
                   Text(
-                    '+1 Spoken Trophy Earned! ðŸ†',
+                    '+1 Spoken Trophy Earned! 🏆',
                     style: GoogleFonts.outfit(
                       color: const Color(0xFFFFD700),
                       fontWeight: FontWeight.bold,
@@ -1996,14 +2000,14 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                         });
                         await _sendMessage(
                           text:
-                              'ðŸ¤ We graduated to Permanent Pocket Mates! ðŸ†âœ¨',
+                              '🤝 We graduated to Permanent Pocket Mates! 🏆✨',
                           messageType: 'text',
                         );
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text(
-                                  'ðŸ¤ Connected as permanent Pocket Mates! Profiles unlocked.'),
+                                  '🤝 Connected as permanent Pocket Mates! Profiles unlocked.'),
                               backgroundColor: Color(0xFF10B981),
                             ),
                           );
@@ -2012,7 +2016,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                       _checkMateStatus();
                     },
                     child: Text(
-                      'Become Permanent Pocket Mates ðŸ¤',
+                      'Become Permanent Pocket Mates 🤝',
                       style: GoogleFonts.outfit(
                           fontWeight: FontWeight.bold, fontSize: 13),
                     ),
@@ -2049,7 +2053,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                       }
                     },
                     child: Text(
-                      'Find Next Speaking Partner âš¡',
+                      'Find Next Speaking Partner ⚡',
                       style: GoogleFonts.outfit(
                           fontWeight: FontWeight.w600, fontSize: 12),
                     ),
@@ -2089,7 +2093,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         SnackBar(
           content: Row(
             children: [
-              const Text('ðŸŽ‰', style: TextStyle(fontSize: 18)),
+              const Text('🎉', style: TextStyle(fontSize: 18)),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -2129,6 +2133,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   }
 
   void _showMateFluencyStreakSheet(BuildContext context) {
+    if (_isPocketCoupleGroup || _isCoupledPartner) return;
     HapticFeedback.mediumImpact();
     showModalBottomSheet(
       context: context,
@@ -2176,7 +2181,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                     ),
                   ],
                 ),
-                child: const Text('ðŸ”¥', style: TextStyle(fontSize: 34)),
+                child: const Text('🔥', style: TextStyle(fontSize: 34)),
               ),
               const SizedBox(height: 14),
               Text(
@@ -2231,7 +2236,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            'Citadel Streak Freeze Insurance Active ðŸ›¡ï¸',
+                            'Citadel Streak Freeze Insurance Active 🛡️',
                             style: GoogleFonts.outfit(
                               color: Colors.white70,
                               fontSize: 13,
@@ -2256,7 +2261,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                   child: Text(
-                    'Keep Practicing English ðŸ’¬',
+                    'Keep Practicing English 💬',
                     style: GoogleFonts.outfit(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
@@ -2271,7 +2276,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     );
   }
 
-  /// ðŸŒŸ Friendship & Connection Emotional Dashboard (User Audio Directive: Right-swipe or tap opens connection dashboard)
+  /// 🌟 Friendship & Connection Emotional Dashboard (User Audio Directive: Right-swipe or tap opens connection dashboard)
   void _showFriendshipDashboardSheet(BuildContext context) {
     HapticFeedback.mediumImpact();
     final messages = ref.read(chatMessagesProvider(widget.groupId)).value ?? [];
@@ -2312,19 +2317,19 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     final Color tierColor;
     final IconData tierIcon;
     if (score >= 85) {
-      tierTitle = 'Soul Mates âš¡';
+      tierTitle = 'Soul Mates ⚡';
       tierColor = const Color(0xFFFFD600);
       tierIcon = Icons.bolt_rounded;
     } else if (score >= 60) {
-      tierTitle = 'Close Mates ðŸ”¥';
+      tierTitle = 'Close Mates 🔥';
       tierColor = const Color(0xFFFF8A00);
       tierIcon = Icons.local_fire_department_rounded;
     } else if (score >= 35) {
-      tierTitle = 'Growing Bond ðŸŒ±';
+      tierTitle = 'Growing Bond 🌱';
       tierColor = const Color(0xFF10B981);
       tierIcon = Icons.eco_rounded;
     } else {
-      tierTitle = 'Sparking Friendship âœ¨';
+      tierTitle = 'Sparking Friendship ✨';
       tierColor = const Color(0xFF38BDF8);
       tierIcon = Icons.auto_awesome_rounded;
     }
@@ -2627,7 +2632,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     );
   }
 
-  /// ðŸŒŸ Right-to-Left Swipe Friendship & Compatibility Dashboard Drawer
+  /// 🌟 Right-to-Left Swipe Friendship & Compatibility Dashboard Drawer
   /// (User Audio Directive: Swiping right-to-left reveals full friendship, compatibility,
   /// love score, spoken streak & mate analytics dashboard. Dragging halfway snaps back to chat.)
   Widget _buildFriendshipDashboardDrawer(BuildContext context) {
@@ -2669,22 +2674,22 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     final IconData tierIcon;
     final String tierSubtitle;
     if (score >= 85) {
-      tierTitle = 'Soul Mates âš¡';
+      tierTitle = 'Soul Mates ⚡';
       tierColor = const Color(0xFFFFD600);
       tierIcon = Icons.bolt_rounded;
       tierSubtitle = 'Deep mutual connection & regular English practice';
     } else if (score >= 60) {
-      tierTitle = 'Close Companions ðŸ”¥';
+      tierTitle = 'Close Companions 🔥';
       tierColor = const Color(0xFFFF8A00);
       tierIcon = Icons.local_fire_department_rounded;
       tierSubtitle = 'High compatibility & active spoken conversation';
     } else if (score >= 40) {
-      tierTitle = 'Growing Bond ðŸŒ±';
+      tierTitle = 'Growing Bond 🌱';
       tierColor = const Color(0xFF10B981);
       tierIcon = Icons.eco_rounded;
       tierSubtitle = 'Consistent progress & daily conversation exchange';
     } else {
-      tierTitle = 'Sparking Friendship âœ¨';
+      tierTitle = 'Sparking Friendship ✨';
       tierColor = const Color(0xFF38BDF8);
       tierIcon = Icons.auto_awesome_rounded;
       tierSubtitle =
@@ -2969,7 +2974,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                             children: [
                               Row(
                                 children: [
-                                  const Text('ðŸ”¥',
+                                  const Text('🔥',
                                       style: TextStyle(fontSize: 18)),
                                   const Spacer(),
                                   Text(
@@ -3274,7 +3279,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'ðŸŽ¯ Matched Practice Topics',
+                          '🎯 Matched Practice Topics',
                           style: GoogleFonts.outfit(
                             color: Colors.white,
                             fontSize: 13,
@@ -3351,56 +3356,56 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
   static const List<Map<String, String>> _icebreakerTopics = [
     {
-      'cat': 'ðŸ§  Deep & Fun',
-      'emoji': 'âœ¨',
+      'cat': '🧠 Deep & Fun',
+      'emoji': '✨',
       'en':
           'If you could travel anywhere in the world tomorrow, which destination would you pick and why?',
       'hint': 'Talk about places you have always dreamed of visiting.'
     },
     {
-      'cat': 'ðŸŽ¬ Entertainment',
-      'emoji': 'ðŸ¿',
+      'cat': '🎬 Entertainment',
+      'emoji': '🍿',
       'en':
           'What is the most memorable movie or show you have watched recently? What made it so good?',
       'hint': 'Describe the story or your favorite character.'
     },
     {
-      'cat': 'ðŸš€ Ambition',
-      'emoji': 'ðŸŽ¯',
+      'cat': '🚀 Ambition',
+      'emoji': '🎯',
       'en':
           'What is one major skill or habit you are determined to master this year?',
       'hint': 'Share your learning or career goal.'
     },
     {
-      'cat': 'ðŸ• Food & Taste',
-      'emoji': 'ðŸ³',
+      'cat': '🍕 Food & Taste',
+      'emoji': '🍳',
       'en':
           'If you could only eat one cuisine or favorite comfort food forever, what would it be?',
       'hint': 'Describe the taste and why it is special to you.'
     },
     {
-      'cat': 'âš¡ Fast Debate',
-      'emoji': 'ðŸ”¥',
+      'cat': '⚡ Fast Debate',
+      'emoji': '🔥',
       'en':
           'Do you prefer early mornings with quiet peace or late nights with high focus?',
       'hint': 'Explain when you feel most productive and creative.'
     },
     {
-      'cat': 'ðŸ’¡ Inspiration',
-      'emoji': 'ðŸŒŸ',
+      'cat': '💡 Inspiration',
+      'emoji': '🌟',
       'en':
           'What is the most useful piece of advice someone has ever given you?',
       'hint': 'Explain how that advice helped you in life.'
     },
     {
-      'cat': 'ðŸŽ§ Hobbies',
-      'emoji': 'ðŸŽµ',
+      'cat': '🎧 Hobbies',
+      'emoji': '🎵',
       'en': 'What song or playlist always lifts your mood no matter what?',
       'hint': 'Tell why music plays an important role in your day.'
     },
     {
-      'cat': 'ðŸ° Superpowers',
-      'emoji': 'ðŸ¦¸',
+      'cat': '🏰 Superpowers',
+      'emoji': '🦸',
       'en':
           'If you could have any superpower for 24 hours, how would you spend that day?',
       'hint': 'Think about flying, teleportation, or invisibility!'
@@ -3471,7 +3476,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                         ),
                       ),
                       IconButton(
-                        tooltip: 'Shuffle Topic ðŸŽ²',
+                        tooltip: 'Shuffle Topic 🎲',
                         icon: const Icon(Icons.shuffle_rounded,
                             color: Color(0xFFFFFC00)),
                         onPressed: () {
@@ -3549,7 +3554,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                             });
                           },
                           icon: const Icon(Icons.casino_outlined, size: 18),
-                          label: const Text('ðŸŽ² Shuffle'),
+                          label: const Text('🎲 Shuffle'),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.white,
                             side: const BorderSide(color: Colors.white24),
@@ -3575,7 +3580,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                             _focusNode.requestFocus();
                           },
                           icon: const Icon(Icons.send_rounded, size: 18),
-                          label: const Text('Insert into Chat ðŸ’¬'),
+                          label: const Text('Insert into Chat 💬'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFFFFC00),
                             foregroundColor: Colors.black,
@@ -3599,7 +3604,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   void _showInstantEnglishStarters() {
     HapticFeedback.lightImpact();
     const starters = [
-      "Hey! How is your day going so far? ðŸ˜Š",
+      "Hey! How is your day going so far? 😊",
       "What exciting projects or tasks are you working on today?",
       "I was just thinking about our English practice goal!",
       "Any good movie, podcast, or series recommendations?",
@@ -3626,7 +3631,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             children: [
               Row(
                 children: [
-                  const Text('âœ¨', style: TextStyle(fontSize: 20)),
+                  const Text('✨', style: TextStyle(fontSize: 20)),
                   const SizedBox(width: 8),
                   Text(
                     'Instant English Starters',
@@ -3733,7 +3738,7 @@ Draft: "$draft"''';
             SnackBar(
               content: Row(
                 children: const [
-                  Text('âœ¨ ', style: TextStyle(fontSize: 16)),
+                  Text('✨ ', style: TextStyle(fontSize: 16)),
                   Expanded(
                     child: Text(
                       'Polished to Fluent English!',
@@ -3857,7 +3862,7 @@ Draft: "$draft"''';
     });
     _scrollToBottom();
 
-    // ðŸ·ï¸ English Hub: Strict channel isolation (Tab 0: Human, Tab 1: Robot)
+    // 🏷️ English Hub: Strict channel isolation (Tab 0: Human, Tab 1: Robot)
     if (_isEnglishHubGroup) {
       metadata = Map<String, dynamic>.from(metadata ?? {});
       final channel = _activeChatTabIndex == 1 ? 'robot' : 'human';
@@ -3893,7 +3898,7 @@ Draft: "$draft"''';
           final mins = (voiceSecs / 60).ceil().clamp(1, 5);
           _logPactMinute(mins);
         } else {
-          // ðŸ’¬ Interactive text chatting also increments spoken/chat engagement (throttled by _logPactMinute)
+          // 💬 Interactive text chatting also increments spoken/chat engagement (throttled by _logPactMinute)
           _logPactMinute(1);
         }
       }
@@ -3904,7 +3909,7 @@ Draft: "$draft"''';
         int pointsToAdd = messageType == 'voice' ? 5 : 1;
         await prefs.setInt('english_hub_points', currentPoints + pointsToAdd);
 
-        // ðŸ“ Track daily message count for 15-message verification
+        // 📝 Track daily message count for 15-message verification
         final now = DateTime.now();
         final key =
             'english_hub_msgs_${_currentUserId}_${now.year}_${now.month}_${now.day}';
@@ -3914,7 +3919,7 @@ Draft: "$draft"''';
         // Award unified Pocket Score for English group conversation
         await PocketFortressDefenseService.awardPoints(pointsToAdd);
 
-        // ðŸ¤– When human learner posts in English Hub ROBOT TAB (Tab 1), invite 1 level-bracket robot to reply politely
+        // 🤖 When human learner posts in English Hub ROBOT TAB (Tab 1), invite 1 level-bracket robot to reply politely
         if (_activeChatTabIndex == 1 &&
             text != null &&
             text.trim().isNotEmpty) {
@@ -3935,7 +3940,7 @@ Draft: "$draft"''';
         PocketFortressDefenseService.recordActivityPoints('group_chat');
       }
 
-      // ðŸ—£ï¸ ASYNC REGIONAL LANGUAGE DETECTION & PRESIDENTIAL WARNING
+      // 🗣️ ASYNC REGIONAL LANGUAGE DETECTION & PRESIDENTIAL WARNING
       // Note: Normal PocketGang groups allow multi-language communication as selected upon creation.
       // Language enforcement strictly applies to English Hub, Pocket Talk pacts, and Direct 1-on-1 English learning chats.
       if (text != null &&
@@ -3963,7 +3968,7 @@ Draft: "$draft"''';
                   ),
                   content: Row(
                     children: [
-                      const Text('ðŸ›ï¸', style: TextStyle(fontSize: 18)),
+                      const Text('🏛️', style: TextStyle(fontSize: 18)),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -4002,7 +4007,7 @@ Draft: "$draft"''';
             PocketMateService.addMateLocally(_currentUserId, otherUserId);
           }
 
-          // ðŸ›ï¸ If communicating with The President, log inquiry and trigger autonomous dignified reply!
+          // 🏛️ If communicating with The President, log inquiry and trigger autonomous dignified reply!
           if (PocketPresidentService.isPresidentId(otherUserId)) {
             final myName = ContactsNameService().getDisplayName(
                 userId: _currentUserId, fallbackName: 'Learner');
@@ -4367,7 +4372,7 @@ Draft: "$draft"''';
     );
   }
 
-  // --- ðŸ† POCKET TALK: 4-DAY SPOKEN PACT & TROPHY HEADER RIBBON ---
+  // --- 🏆 POCKET TALK: 4-DAY SPOKEN PACT & TROPHY HEADER RIBBON ---
   Widget _buildPocketTalkPactHeaderRibbon() {
     final pact = _activePocketTalkPact;
     if (pact == null || (pact.isCompleted && _isMate)) {
@@ -4386,7 +4391,7 @@ Draft: "$draft"''';
       return const SizedBox.shrink();
     }
 
-    // âš¡ If pending request, show accept / waiting invite ribbon
+    // ⚡ If pending request, show accept / waiting invite ribbon
     if (!pact.isAccepted) {
       final isSender = _currentUserId == pact.initiatorId;
       if (isSender) {
@@ -4409,7 +4414,7 @@ Draft: "$draft"''';
           ),
           child: Row(
             children: [
-              const Text('âš¡', style: TextStyle(fontSize: 16)),
+              const Text('⚡', style: TextStyle(fontSize: 16)),
               const SizedBox(width: 8),
               Expanded(
                 child: Column(
@@ -4425,7 +4430,7 @@ Draft: "$draft"''';
                       ),
                     ),
                     Text(
-                      'Chat daily for 4 days â€¢ English only â€¢ +1 Silver Trophy ðŸ¥ˆ',
+                      'Chat daily for 4 days • English only • +1 Silver Trophy 🥈',
                       style: GoogleFonts.inter(
                         color: Colors.white60,
                         fontSize: 9.5,
@@ -4486,7 +4491,7 @@ Draft: "$draft"''';
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text(
-                            'ðŸ¤ PoketTalk 4-Day Pact Accepted! Day 1 starts now.'),
+                            '🤝 PoketTalk 4-Day Pact Accepted! Day 1 starts now.'),
                         backgroundColor: Color(0xFF10B981),
                       ),
                     );
@@ -4501,7 +4506,7 @@ Draft: "$draft"''';
                       borderRadius: BorderRadius.circular(8)),
                 ),
                 child: Text(
-                  'Accept ðŸ¤',
+                  'Accept 🤝',
                   style: GoogleFonts.outfit(
                     fontWeight: FontWeight.bold,
                     fontSize: 11.5,
@@ -4559,8 +4564,8 @@ Draft: "$draft"''';
             children: [
               Text(
                 isCompleted
-                    ? 'ðŸ¥ˆ POKETTALK MASTERED'
-                    : 'âš¡ POKETTALK 4-DAY PACT',
+                    ? '🥈 POKETTALK MASTERED'
+                    : '⚡ POKETTALK 4-DAY PACT',
                 style: GoogleFonts.outfit(
                   color: isCompleted
                       ? const Color(0xFFE2E8F0)
@@ -4580,7 +4585,7 @@ Draft: "$draft"''';
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  isMates ? 'MATES ðŸ¤' : 'SILVER TROPHY ðŸ¥ˆ',
+                  isMates ? 'MATES 🤝' : 'SILVER TROPHY 🥈',
                   style: GoogleFonts.inter(
                     color: isMates
                         ? const Color(0xFF4ADE80)
@@ -4637,7 +4642,7 @@ Draft: "$draft"''';
                           width: 0.8),
                     ),
                     child: Text(
-                      'SWAP ðŸ”„',
+                      'SWAP 🔄',
                       style: GoogleFonts.outfit(
                         color: const Color(0xFFA5B4FC),
                         fontSize: 8.5,
@@ -4651,7 +4656,7 @@ Draft: "$draft"''';
           ),
           const SizedBox(height: 5),
 
-          // ðŸ“Š Interactive Step-by-Step Row: Day 1-4, Raid, Fight
+          // 📊 Interactive Step-by-Step Row: Day 1-4, Raid, Fight
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -4737,10 +4742,10 @@ Draft: "$draft"''';
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text('âš”ï¸', style: TextStyle(fontSize: 9.5)),
+                        const Text('⚔️', style: TextStyle(fontSize: 9.5)),
                         const SizedBox(width: 3),
                         Text(
-                          hasAttacked ? 'Raid Done âœ“' : '1 Raid Needed âž”',
+                          hasAttacked ? 'Raid Done ✓' : '1 Raid Needed ➔',
                           style: GoogleFonts.outfit(
                             color: hasAttacked
                                 ? const Color(0xFF4ADE80)
@@ -4789,10 +4794,10 @@ Draft: "$draft"''';
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text('ðŸ¥Š', style: TextStyle(fontSize: 9.5)),
+                        const Text('🥊', style: TextStyle(fontSize: 9.5)),
                         const SizedBox(width: 3),
                         Text(
-                          hasFought ? 'Fight Done âœ“' : '1 Fight Needed âž”',
+                          hasFought ? 'Fight Done ✓' : '1 Fight Needed ➔',
                           style: GoogleFonts.outfit(
                             color: hasFought
                                 ? const Color(0xFF4ADE80)
@@ -4813,10 +4818,10 @@ Draft: "$draft"''';
           // Bottom Dashboard Summary text + Live Friendship Score
           Text(
             isCompleted
-                ? 'ðŸ¥ˆ 4-Day Spoken Pact Mastered! Silver Trophy awarded to your profile.'
+                ? '🥈 4-Day Spoken Pact Mastered! Silver Trophy awarded to your profile.'
                 : currentStreak >= 4
-                    ? 'ðŸ¥ˆ 4 Days Chat Done! Silver Trophy unlocked â€¢ Keep chatting to boost Friendship Score!'
-                    : 'ðŸ’¬ Day $currentStreak/4 English Chat â€¢ Talk 4 days to earn ðŸ¥ˆ Silver Trophy!',
+                    ? '🥈 4 Days Chat Done! Silver Trophy unlocked • Keep chatting to boost Friendship Score!'
+                    : '💬 Day $currentStreak/4 English Chat • Talk 4 days to earn 🥈 Silver Trophy!',
             style: GoogleFonts.inter(
               color: isCompleted
                   ? const Color(0xFFE2E8F0)
@@ -4835,7 +4840,7 @@ Draft: "$draft"''';
               return Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
-                  'ðŸ¤ Friendship Score: $fScore pts â€¢ $tierLabel',
+                  '🤝 Friendship Score: $fScore pts • $tierLabel',
                   style: GoogleFonts.outfit(
                     color: const Color(0xFF38BDF8),
                     fontSize: 9.5,
@@ -4860,7 +4865,7 @@ Draft: "$draft"''';
               ),
               child: Row(
                 children: [
-                  const Text('ðŸŽ‰', style: TextStyle(fontSize: 14)),
+                  const Text('🎉', style: TextStyle(fontSize: 14)),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -4887,14 +4892,14 @@ Draft: "$draft"''';
                         });
                         await _sendMessage(
                           text:
-                              'ðŸ¤ We graduated to Permanent Pocket Mates! ðŸ†âœ¨',
+                              '🤝 We graduated to Permanent Pocket Mates! 🏆✨',
                           messageType: 'text',
                         );
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text(
-                                  'ðŸ¤ Connected as permanent Pocket Mates! Profiles unlocked.'),
+                                  '🤝 Connected as permanent Pocket Mates! Profiles unlocked.'),
                               backgroundColor: Color(0xFF10B981),
                             ),
                           );
@@ -4910,7 +4915,7 @@ Draft: "$draft"''';
                           borderRadius: BorderRadius.circular(8)),
                     ),
                     child: Text(
-                      'Become Mates ðŸ¤',
+                      'Become Mates 🤝',
                       style: GoogleFonts.outfit(
                         fontWeight: FontWeight.bold,
                         fontSize: 11,
@@ -4938,7 +4943,7 @@ Draft: "$draft"''';
                       foregroundColor: Colors.white60,
                     ),
                     child: Text(
-                      'Next Partner âš¡',
+                      'Next Partner ⚡',
                       style: GoogleFonts.outfit(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -4980,14 +4985,14 @@ Draft: "$draft"''';
             const SizedBox(height: 16),
             Row(
               children: [
-                const Text('ðŸ†', style: TextStyle(fontSize: 24)),
+                const Text('🏆', style: TextStyle(fontSize: 24)),
                 const SizedBox(width: 8),
                 Text(
                   PocketLanguageService.localize(
                     en: 'PocketTalk 4-Day Spoken Pact',
-                    ml: 'à´ªàµ‹à´•àµà´•à´±àµà´±àµà´Ÿàµ‹à´•àµà´•àµ 4-à´¡àµ‡ à´¸àµà´ªàµ‹à´•àµà´•àµº à´ªà´¾à´•àµà´Ÿàµ',
-                    ta: 'à®ªà®¾à®•à¯à®•à¯†à®Ÿà¯à®Ÿà®¾à®•à¯ 4-à®¨à®¾à®³à¯ à®ªà¯‡à®šà¯à®®à¯ à®‰à®Ÿà®©à¯à®ªà®Ÿà®¿à®•à¯à®•à¯ˆ',
-                    hi: 'à¤ªà¥‰à¤•à¥‡à¤Ÿà¤Ÿà¥‰à¤• 4-à¤¦à¤¿à¤µà¤¸à¥€à¤¯ à¤¸à¥à¤ªà¥‹à¤•à¤¨ à¤ªà¥ˆà¤•à¥à¤Ÿ',
+                    ml: 'പോക്കറ്റ്ടോക്ക് 4-ഡേ സ്പോക്കൺ പാക്ട്',
+                    ta: 'பாக்கெட்டாக் 4-நாள் பேசும் உடன்படிக்கை',
+                    hi: 'पॉकेटटॉक 4-दिवसीय स्पोकन पैक्ट',
                   ),
                   style: GoogleFonts.outfit(
                     color: Colors.white,
@@ -5001,9 +5006,9 @@ Draft: "$draft"''';
             Text(
               PocketLanguageService.localize(
                 en: 'A serious mutual agreement to build real conversational fluency in English.',
-                ml: 'à´‡à´‚à´—àµà´²àµ€à´·àµ à´¸à´‚à´¸à´¾à´°à´¿à´•àµà´•à´¾à´¨àµà´³àµà´³ à´•à´´à´¿à´µàµ à´µà´³àµ¼à´¤àµà´¤à´¿à´¯àµ†à´Ÿàµà´•àµà´•à´¾à´¨àµà´³àµà´³ à´ªà´°à´¸àµà´ªà´° à´ªàµà´°à´¤à´¿à´œàµà´ž.',
-                ta: 'à®†à®™à¯à®•à®¿à®²à®¤à¯à®¤à®¿à®²à¯ à®ªà¯‡à®šà¯à®®à¯ à®¤à®¿à®±à®©à¯ˆ à®µà®³à®°à¯à®ªà¯à®ªà®¤à®±à¯à®•à®¾à®© à®ªà®°à®¸à¯à®ªà®° à®‰à®Ÿà®©à¯à®ªà®Ÿà®¿à®•à¯à®•à¯ˆ.',
-                hi: 'à¤…à¤‚à¤—à¥à¤°à¥‡à¤œà¥€ à¤®à¥‡à¤‚ à¤µà¤¾à¤¸à¥à¤¤à¤µà¤¿à¤• à¤¬à¤¾à¤¤à¤šà¥€à¤¤ à¤•à¤¾ à¤ªà¥à¤°à¤µà¤¾à¤¹ à¤¬à¤¨à¤¾à¤¨à¥‡ à¤•à¥‡ à¤²à¤¿à¤ à¤à¤• à¤—à¤‚à¤­à¥€à¤° à¤†à¤ªà¤¸à¥€ à¤¸à¤®à¤à¥Œà¤¤à¤¾à¥¤',
+                ml: 'ഇംഗ്ലീഷ് സംസാരിക്കാനുള്ള കഴിവ് വളർത്തിയെടുക്കാനുള്ള പരസ്പര പ്രതിജ്ഞ.',
+                ta: 'ஆங்கிலத்தில் பேசும் திறனை வளர்ப்பதற்கான பரஸ்பர உடன்படிக்கை.',
+                hi: 'अंग्रेजी में वास्तविक बातचीत का प्रवाह बनाने के लिए एक गंभीर आपसी समझौता।',
               ),
               style: GoogleFonts.inter(color: Colors.white60, fontSize: 12.5),
             ),
@@ -5012,15 +5017,15 @@ Draft: "$draft"''';
               icon: Icons.timer_outlined,
               title: PocketLanguageService.localize(
                 en: '15 Minutes Daily (1 Hour Total)',
-                ml: 'à´ªàµà´°à´¤à´¿à´¦à´¿à´¨à´‚ 15 à´®à´¿à´¨à´¿à´±àµà´±àµ (à´†à´•àµ† 1 à´®à´£à´¿à´•àµà´•àµ‚àµ¼)',
-                ta: 'à®¤à®¿à®©à®šà®°à®¿ 15 à®¨à®¿à®®à®¿à®Ÿà®™à¯à®•à®³à¯ (à®®à¯Šà®¤à¯à®¤à®®à¯ 1 à®®à®£à®¿à®¨à¯‡à®°à®®à¯)',
-                hi: 'à¤ªà¥à¤°à¤¤à¤¿à¤¦à¤¿à¤¨ 15 à¤®à¤¿à¤¨à¤Ÿ (à¤•à¥à¤² 1 à¤˜à¤‚à¤Ÿà¤¾)',
+                ml: 'പ്രതിദിനം 15 മിനിറ്റ് (ആകെ 1 മണിക്കൂർ)',
+                ta: 'தினசரி 15 நிமிடங்கள் (மொத்தம் 1 மணிநேரம்)',
+                hi: 'प्रतिदिन 15 मिनट (कुल 1 घंटा)',
               ),
               desc: PocketLanguageService.localize(
                 en: 'Speak or chat for at least 15 minutes each day for 4 consecutive days (15m x 4 = 60 mins total).',
-                ml: 'à´¤àµà´Ÿàµ¼à´šàµà´šà´¯à´¾à´¯à´¿ 4 à´¦à´¿à´µà´¸à´™àµà´™à´³à´¿àµ½ à´ªàµà´°à´¤à´¿à´¦à´¿à´¨à´‚ à´•àµà´±à´žàµà´žà´¤àµ 15 à´®à´¿à´¨à´¿à´±àµà´±àµ à´‡à´‚à´—àµà´²àµ€à´·à´¿àµ½ à´¸à´‚à´¸à´¾à´°à´¿à´•àµà´•àµà´• à´…à´²àµà´²àµ†à´™àµà´•à´¿àµ½ à´šà´¾à´±àµà´±àµ à´šàµ†à´¯àµà´¯àµà´• (à´†à´•àµ† 60 à´®à´¿à´¨à´¿à´±àµà´±àµ).',
-                ta: 'à®¤à¯Šà®Ÿà®°à¯à®¨à¯à®¤à¯ 4 à®¨à®¾à®Ÿà¯à®•à®³à¯à®•à¯à®•à¯ à®¤à®¿à®©à®®à¯à®®à¯ à®•à¯à®±à¯ˆà®¨à¯à®¤à®¤à¯ 15 à®¨à®¿à®®à®¿à®Ÿà®™à¯à®•à®³à¯ à®ªà¯‡à®šà®µà¯à®®à¯ à®…à®²à¯à®²à®¤à¯ à®…à®°à®Ÿà¯à®Ÿà¯ˆà®¯à®Ÿà®¿à®•à¯à®•à®µà¯à®®à¯ (à®®à¯Šà®¤à¯à®¤à®®à¯ 60 à®¨à®¿à®®à®¿à®Ÿà®™à¯à®•à®³à¯).',
-                hi: 'à¤²à¤—à¤¾à¤¤à¤¾à¤° 4 à¤¦à¤¿à¤¨à¥‹à¤‚ à¤¤à¤• à¤ªà¥à¤°à¤¤à¤¿à¤¦à¤¿à¤¨ à¤•à¤® à¤¸à¥‡ à¤•à¤® 15 à¤®à¤¿à¤¨à¤Ÿ à¤¬à¥‹à¤²à¥‡à¤‚ à¤¯à¤¾ à¤šà¥ˆà¤Ÿ à¤•à¤°à¥‡à¤‚ (à¤•à¥à¤² 60 à¤®à¤¿à¤¨à¤Ÿ)à¥¤',
+                ml: 'തുടർച്ചയായി 4 ദിവസങ്ങളിൽ പ്രതിദിനം കുറഞ്ഞത് 15 മിനിറ്റ് ഇംഗ്ലീഷിൽ സംസാരിക്കുക അല്ലെങ്കിൽ ചാറ്റ് ചെയ്യുക (ആകെ 60 മിനിറ്റ്).',
+                ta: 'தொடர்ந்து 4 நாட்களுக்கு தினமும் குறைந்தது 15 நிமிடங்கள் பேசவும் அல்லது அரட்டையடிக்கவும் (மொத்தம் 60 நிமிடங்கள்).',
+                hi: 'लगातार 4 दिनों तक प्रतिदिन कम से कम 15 मिनट बोलें या चैट करें (कुल 60 मिनट)।',
               ),
               color: const Color(0xFF38BDF8),
             ),
@@ -5029,15 +5034,15 @@ Draft: "$draft"''';
               icon: Icons.trending_down_rounded,
               title: PocketLanguageService.localize(
                 en: 'Loss Aversion: Trophy Penalty',
-                ml: 'à´Ÿàµà´°àµ‹à´«à´¿ à´ªàµ†à´¨à´¾àµ½à´±àµà´±à´¿ (à´•à´®àµà´®à´¿à´¯à´¾à´µàµà´‚)',
-                ta: 'à®•à¯‹à®ªà¯à®ªà¯ˆ à®…à®ªà®°à®¾à®¤à®®à¯ (à®•à¯à®±à¯ˆà®•à¯à®•à®ªà¯à®ªà®Ÿà¯à®®à¯)',
-                hi: 'à¤Ÿà¥à¤°à¥‰à¤«à¥€ à¤ªà¥‡à¤¨à¤²à¥à¤Ÿà¥€ (à¤¨à¥à¤•à¤¸à¤¾à¤¨)',
+                ml: 'ട്രോഫി പെനാൽറ്റി (കമ്മിയാവും)',
+                ta: 'கோப்பை அபராதம் (குறைக்கப்படும்)',
+                hi: 'ट्रॉफी पेनल्टी (नुकसान)',
               ),
               desc: PocketLanguageService.localize(
                 en: 'If either person misses a day or stops chatting before completing 15 mins, the pact breaks and 1 Trophy is deducted from your profile!',
-                ml: 'à´†à´°àµ†à´™àµà´•à´¿à´²àµà´‚ à´’à´°àµ à´¦à´¿à´µà´¸à´‚ à´¨à´·àµà´Ÿà´ªàµà´ªàµ†à´Ÿàµà´¤àµà´¤àµà´•à´¯àµ‹ 15 à´®à´¿à´¨à´¿à´±àµà´±àµ à´¤à´¿à´•à´¯àµà´•àµà´•à´¾à´¤à´¿à´°à´¿à´•àµà´•àµà´•à´¯àµ‹ à´šàµ†à´¯àµà´¤à´¾àµ½ à´ªà´¾à´•àµà´Ÿàµ à´±à´¦àµà´¦à´¾à´•àµà´•à´¯àµà´‚ à´ªàµà´°àµŠà´«àµˆà´²à´¿àµ½ à´¨à´¿à´¨àµà´¨àµ 1 à´Ÿàµà´°àµ‹à´«à´¿ à´•à´®àµà´®à´¿à´¯à´¾à´µàµà´•à´¯àµà´‚ à´šàµ†à´¯àµà´¯àµà´‚!',
-                ta: 'à®¯à®¾à®°à®¾à®µà®¤à¯ à®’à®°à¯ à®¨à®¾à®³à¯ˆ à®¤à®µà®±à®µà®¿à®Ÿà¯à®Ÿà®¾à®²à¯ à®…à®²à¯à®²à®¤à¯ 15 à®¨à®¿à®®à®¿à®Ÿà®™à¯à®•à®³à¯ˆ à®®à¯à®Ÿà®¿à®ªà¯à®ªà®¤à®±à¯à®•à¯à®³à¯ à®…à®°à®Ÿà¯à®Ÿà¯ˆà®¯à¯ˆ à®¨à®¿à®±à¯à®¤à¯à®¤à®¿à®©à®¾à®²à¯, à®’à®ªà¯à®ªà®¨à¯à®¤à®®à¯ à®®à¯à®±à®¿à®¨à¯à®¤à¯ 1 à®•à¯‹à®ªà¯à®ªà¯ˆ à®•à®´à®¿à®•à¯à®•à®ªà¯à®ªà®Ÿà¯à®®à¯!',
-                hi: 'à¤¯à¤¦à¤¿ à¤•à¥‹à¤ˆ à¤­à¥€ à¤µà¥à¤¯à¤•à¥à¤¤à¤¿ à¤à¤• à¤¦à¤¿à¤¨ à¤›à¥‹à¤¡à¤¼ à¤¦à¥‡à¤¤à¤¾ à¤¹à¥ˆ à¤¯à¤¾ 15 à¤®à¤¿à¤¨à¤Ÿ à¤ªà¥‚à¤°à¤¾ à¤•à¤°à¤¨à¥‡ à¤¸à¥‡ à¤ªà¤¹à¤²à¥‡ à¤šà¥ˆà¤Ÿ à¤¬à¤‚à¤¦ à¤•à¤° à¤¦à¥‡à¤¤à¤¾ à¤¹à¥ˆ, à¤¤à¥‹ à¤ªà¥ˆà¤•à¥à¤Ÿ à¤Ÿà¥‚à¤Ÿ à¤œà¤¾à¤¤à¤¾ à¤¹à¥ˆ à¤”à¤° 1 à¤Ÿà¥à¤°à¥‰à¤«à¥€ à¤•à¤¾à¤Ÿ à¤²à¥€ à¤œà¤¾à¤¤à¥€ à¤¹à¥ˆ!',
+                ml: 'ആരെങ്കിലും ഒരു ദിവസം നഷ്ടപ്പെടുത്തുകയോ 15 മിനിറ്റ് തികയ്ക്കാതിരിക്കുകയോ ചെയ്താൽ പാക്ട് റദ്ദാകുകയും പ്രൊഫൈലിൽ നിന്ന് 1 ട്രോഫി കമ്മിയാവുകയും ചെയ്യും!',
+                ta: 'யாராவது ஒரு நாளை தவறவிட்டால் அல்லது 15 நிமிடங்களை முடிப்பதற்குள் அரட்டையை நிறுத்தினால், ஒப்பந்தம் முறிந்து 1 கோப்பை கழிக்கப்படும்!',
+                hi: 'यदि कोई भी व्यक्ति एक दिन छोड़ देता है या 15 मिनट पूरा करने से पहले चैट बंद कर देता है, तो पैक्ट टूट जाता है और 1 ट्रॉफी काट ली जाती है!',
               ),
               color: Colors.redAccent,
             ),
@@ -5046,15 +5051,15 @@ Draft: "$draft"''';
               icon: Icons.g_translate_rounded,
               title: PocketLanguageService.localize(
                 en: 'Strict English Only',
-                ml: 'à´‡à´‚à´—àµà´²àµ€à´·àµ à´®à´¾à´¤àµà´°à´‚ à´¸à´‚à´¸à´¾à´°à´¿à´•àµà´•àµà´•',
-                ta: 'à®•à®£à¯à®Ÿà®¿à®ªà¯à®ªà®¾à®© à®†à®™à¯à®•à®¿à®²à®®à¯ à®®à®Ÿà¯à®Ÿà¯à®®à¯‡',
-                hi: 'à¤•à¥‡à¤µà¤² à¤¸à¤–à¥à¤¤ à¤…à¤‚à¤—à¥à¤°à¥‡à¤œà¥€',
+                ml: 'ഇംഗ്ലീഷ് മാത്രം സംസാരിക്കുക',
+                ta: 'கண்டிப்பான ஆங்கிலம் மட்டுமே',
+                hi: 'केवल सख्त अंग्रेजी',
               ),
               desc: PocketLanguageService.localize(
                 en: 'All messages must be in English. Speaking other languages can be reported via AI check, resetting streak and deducting 50 Pocket Score.',
-                ml: 'à´Žà´²àµà´²à´¾ à´¸à´¨àµà´¦àµ‡à´¶à´™àµà´™à´³àµà´‚ à´‡à´‚à´—àµà´²àµ€à´·à´¿àµ½ à´®à´¾à´¤àµà´°à´®à´¾à´¯à´¿à´°à´¿à´•àµà´•à´£à´‚. à´®à´±àµà´±àµ à´­à´¾à´·à´•àµ¾ à´‰à´ªà´¯àµ‹à´—à´¿à´šàµà´šà´¾àµ½ AI à´šàµ†à´•àµà´•àµ à´µà´´à´¿ 50 à´ªàµ‹à´•àµà´•à´±àµà´±àµ à´¸àµà´•àµ‹àµ¼ à´•àµà´±à´¯àµà´¨àµà´¨à´¤à´¾à´£àµ.',
-                ta: 'à®…à®©à¯ˆà®¤à¯à®¤à¯ à®šà¯†à®¯à¯à®¤à®¿à®•à®³à¯à®®à¯ à®†à®™à¯à®•à®¿à®²à®¤à¯à®¤à®¿à®²à¯ à®®à®Ÿà¯à®Ÿà¯à®®à¯‡ à®‡à®°à¯à®•à¯à®• à®µà¯‡à®£à¯à®Ÿà¯à®®à¯. à®ªà®¿à®± à®®à¯Šà®´à®¿à®•à®³à¯ˆà®ªà¯ à®ªà®¯à®©à¯à®ªà®Ÿà¯à®¤à¯à®¤à®¿à®©à®¾à®²à¯ 50 à®ªà®¾à®•à¯à®•à¯†à®Ÿà¯ à®®à®¤à®¿à®ªà¯à®ªà¯†à®£à¯ à®•à®´à®¿à®•à¯à®•à®ªà¯à®ªà®Ÿà®²à®¾à®®à¯.',
-                hi: 'à¤¸à¤­à¥€ à¤¸à¤‚à¤¦à¥‡à¤¶ à¤…à¤‚à¤—à¥à¤°à¥‡à¤œà¥€ à¤®à¥‡à¤‚ à¤¹à¥‹à¤¨à¥‡ à¤šà¤¾à¤¹à¤¿à¤à¥¤ à¤…à¤¨à¥à¤¯ à¤­à¤¾à¤·à¤¾à¤“à¤‚ à¤®à¥‡à¤‚ à¤¬à¥‹à¤²à¤¨à¥‡ à¤ªà¤° AI à¤šà¥‡à¤• à¤¦à¥à¤µà¤¾à¤°à¤¾ 50 à¤ªà¥‰à¤•à¥‡à¤Ÿ à¤¸à¥à¤•à¥‹à¤° à¤•à¤¾à¤Ÿà¤¾ à¤œà¤¾ à¤¸à¤•à¤¤à¤¾ à¤¹à¥ˆà¥¤',
+                ml: 'എല്ലാ സന്ദേശങ്ങളും ഇംഗ്ലീഷിൽ മാത്രമായിരിക്കണം. മറ്റ് ഭാഷകൾ ഉപയോഗിച്ചാൽ AI ചെക്ക് വഴി 50 പോക്കറ്റ് സ്കോർ കുറയുന്നതാണ്.',
+                ta: 'அனைத்து செய்திகளும் ஆங்கிலத்தில் மட்டுமே இருக்க வேண்டும். பிற மொழிகளைப் பயன்படுத்தினால் 50 பாக்கெட் மதிப்பெண் கழிக்கப்படலாம்.',
+                hi: 'सभी संदेश अंग्रेजी में होने चाहिए। अन्य भाषाओं में बोलने पर AI चेक द्वारा 50 पॉकेट स्कोर काटा जा सकता है।',
               ),
               color: Colors.amberAccent,
             ),
@@ -5063,15 +5068,15 @@ Draft: "$draft"''';
               icon: Icons.emoji_events_rounded,
               title: PocketLanguageService.localize(
                 en: '150-Trophy Master Graduation',
-                ml: '150-à´Ÿàµà´°àµ‹à´«à´¿ à´®à´¾à´¸àµà´±àµà´±àµ¼ à´—àµà´°à´¾à´œàµà´µàµ‡à´·àµ»',
-                ta: '150-à®•à¯‹à®ªà¯à®ªà¯ˆ à®®à®¾à®¸à¯à®Ÿà®°à¯ à®ªà®Ÿà¯à®Ÿà®®à®³à®¿à®ªà¯à®ªà¯',
-                hi: '150-à¤Ÿà¥à¤°à¥‰à¤«à¥€ à¤®à¤¾à¤¸à¥à¤Ÿà¤° à¤—à¥à¤°à¥‡à¤œà¥à¤à¤¶à¤¨',
+                ml: '150-ട്രോഫി മാസ്റ്റർ ഗ്രാജ്വേഷൻ',
+                ta: '150-கோப்பை மாஸ்டர் பட்டமளிப்பு',
+                hi: '150-ट्रॉफी मास्टर ग्रेजुएशन',
               ),
               desc: PocketLanguageService.localize(
-                en: 'Completing all 4 days awards 1 Spoken Trophy ðŸ† and unlocks mutual full profiles. Reach 150 Trophies to graduate at Level 90!',
-                ml: '4 à´¦à´¿à´µà´¸à´µàµà´‚ à´µà´¿à´œà´¯à´•à´°à´®à´¾à´¯à´¿ à´ªàµ‚àµ¼à´¤àµà´¤à´¿à´¯à´¾à´•àµà´•à´¿à´¯à´¾àµ½ 1 à´¸à´¿àµ½à´µàµ¼ à´Ÿàµà´°àµ‹à´«à´¿à´¯àµà´‚ ðŸ† à´«àµàµ¾ à´ªàµà´°àµŠà´«àµˆàµ½ à´…àµºà´²àµ‹à´•àµà´•àµà´‚ à´²à´­à´¿à´•àµà´•àµà´‚. à´²àµ†à´µàµ½ 90-àµ½ à´—àµà´°à´¾à´œàµà´µàµ‡à´±àµà´±àµ à´šàµ†à´¯àµà´¯à´¾àµ» 150 à´Ÿàµà´°àµ‹à´«à´¿à´•àµ¾ à´¨àµ‡à´Ÿàµà´•!',
-                ta: '4 à®¨à®¾à®Ÿà¯à®•à®³à¯ˆà®¯à¯à®®à¯ à®®à¯à®Ÿà®¿à®¤à¯à®¤à®¾à®²à¯ 1 à®ªà¯‡à®šà¯à®®à¯ à®•à¯‹à®ªà¯à®ªà¯ˆ ðŸ† à®®à®±à¯à®±à¯à®®à¯ à®®à¯à®´à¯ à®šà¯à®¯à®µà®¿à®µà®°à®®à¯ à®¤à®¿à®±à®•à¯à®•à®ªà¯à®ªà®Ÿà¯à®®à¯. à®¨à®¿à®²à¯ˆ 90 à®‡à®²à¯ à®¤à¯‡à®°à¯à®šà¯à®šà®¿ à®ªà¯†à®± 150 à®•à¯‹à®ªà¯à®ªà¯ˆà®•à®³à¯ˆ à®…à®Ÿà¯ˆà®¯à¯à®™à¯à®•à®³à¯!',
-                hi: 'à¤¸à¤­à¥€ 4 à¤¦à¤¿à¤¨ à¤ªà¥‚à¤°à¥‡ à¤•à¤°à¤¨à¥‡ à¤ªà¤° 1 à¤¸à¥à¤ªà¥‹à¤•à¤¨ à¤Ÿà¥à¤°à¥‰à¤«à¥€ ðŸ† à¤®à¤¿à¤²à¤¤à¥€ à¤¹à¥ˆ à¤”à¤° à¤ªà¥‚à¤°à¥à¤£ à¤ªà¥à¤°à¥‹à¤«à¤¾à¤‡à¤² à¤…à¤¨à¤²à¥‰à¤• à¤¹à¥‹à¤¤à¥€ à¤¹à¥ˆà¥¤ à¤²à¥‡à¤µà¤² 90 à¤ªà¤° à¤¸à¥à¤¨à¤¾à¤¤à¤• à¤¹à¥‹à¤¨à¥‡ à¤•à¥‡ à¤²à¤¿à¤ 150 à¤Ÿà¥à¤°à¥‰à¤«à¤¿à¤¯à¤¾à¤‚ à¤¹à¤¾à¤¸à¤¿à¤² à¤•à¤°à¥‡à¤‚!',
+                en: 'Completing all 4 days awards 1 Spoken Trophy 🏆 and unlocks mutual full profiles. Reach 150 Trophies to graduate at Level 90!',
+                ml: '4 ദിവസവും വിജയകരമായി പൂർത്തിയാക്കിയാൽ 1 സിൽവർ ട്രോഫിയും 🏆 ഫുൾ പ്രൊഫൈൽ അൺലോക്കും ലഭിക്കും. ലെവൽ 90-ൽ ഗ്രാജ്വേറ്റ് ചെയ്യാൻ 150 ട്രോഫികൾ നേടുക!',
+                ta: '4 நாட்களையும் முடித்தால் 1 பேசும் கோப்பை 🏆 மற்றும் முழு சுயவிவரம் திறக்கப்படும். நிலை 90 இல் தேர்ச்சி பெற 150 கோப்பைகளை அடையுங்கள்!',
+                hi: 'सभी 4 दिन पूरे करने पर 1 स्पोकन ट्रॉफी 🏆 मिलती है और पूर्ण प्रोफाइल अनलॉक होती है। लेवल 90 पर स्नातक होने के लिए 150 ट्रॉफियां हासिल करें!',
               ),
               color: const Color(0xFFFFD700),
             ),
@@ -5080,15 +5085,15 @@ Draft: "$draft"''';
               icon: Icons.swap_horiz_rounded,
               title: PocketLanguageService.localize(
                 en: 'Day 1 Safe Swap Grace Period',
-                ml: 'à´¡àµ‡ 1 à´¸àµ‡à´«àµ à´¸àµà´µà´¾à´ªàµà´ªàµ à´—àµà´°àµ‡à´¸àµ à´ªà´¿à´°àµ€à´¡àµ',
-                ta: 'à®¨à®¾à®³à¯ 1 à®ªà®¾à®¤à¯à®•à®¾à®ªà¯à®ªà®¾à®© à®®à®¾à®±à¯à®± à®šà®²à¯à®•à¯ˆà®•à¯ à®•à®¾à®²à®®à¯',
-                hi: 'à¤¡à¥‡ 1 à¤¸à¥à¤°à¤•à¥à¤·à¤¿à¤¤ à¤¸à¥à¤µà¥ˆà¤ª à¤›à¥‚à¤Ÿ à¤…à¤µà¤§à¤¿',
+                ml: 'ഡേ 1 സേഫ് സ്വാപ്പ് ഗ്രേസ് പിരീഡ്',
+                ta: 'நாள் 1 பாதுகாப்பான மாற்ற சலுகைக் காலம்',
+                hi: 'डे 1 सुरक्षित स्वैप छूट अवधि',
               ),
               desc: PocketLanguageService.localize(
                 en: 'Not feeling the vibe or partner inactive on Day 1? Swap partners with zero Trophy penalty! Automatic match refills ensure you never get stuck.',
-                ml: 'à´¡àµ‡ 1-àµ½ à´ªà´™àµà´•à´¾à´³à´¿ à´¸à´œàµ€à´µà´®à´²àµà´²àµ†à´™àµà´•à´¿à´²àµ‹ à´®à´¾à´±àµà´±à´‚ à´µàµ‡à´£à´®àµ†à´™àµà´•à´¿à´²àµ‹ à´Ÿàµà´°àµ‹à´«à´¿ à´¨à´·àµà´Ÿà´®à´¿à´²àµà´²à´¾à´¤àµ† à´ªà´¾àµ¼à´Ÿàµà´£à´±àµ† à´®à´¾à´±àµà´±à´¾à´‚!',
-                ta: 'à®¨à®¾à®³à¯ 1 à®‡à®²à¯ à®ªà®¾à®°à¯à®Ÿà¯à®©à®°à¯ à®šà¯†à®¯à®²à¯à®ªà®Ÿà®µà®¿à®²à¯à®²à¯ˆà®¯à®¾? à®Žà®¨à¯à®¤à®•à¯ à®•à¯‹à®ªà¯à®ªà¯ˆ à®…à®ªà®°à®¾à®¤à®®à¯à®®à¯ à®‡à®²à¯à®²à®¾à®®à®²à¯ à®ªà®¾à®°à¯à®Ÿà¯à®©à®°à¯ˆ à®®à®¾à®±à¯à®±à®¿à®•à¯ à®•à¯Šà®³à¯à®³à¯à®™à¯à®•à®³à¯!',
-                hi: 'à¤¡à¥‡ 1 à¤ªà¤° à¤ªà¤¾à¤°à¥à¤Ÿà¤¨à¤° à¤¸à¤•à¥à¤°à¤¿à¤¯ à¤¨à¤¹à¥€à¤‚ à¤¹à¥ˆ? à¤¬à¤¿à¤¨à¤¾ à¤•à¤¿à¤¸à¥€ à¤Ÿà¥à¤°à¥‰à¤«à¥€ à¤ªà¥‡à¤¨à¤²à¥à¤Ÿà¥€ à¤•à¥‡ à¤ªà¤¾à¤°à¥à¤Ÿà¤¨à¤° à¤¬à¤¦à¤²à¥‡à¤‚!',
+                ml: 'ഡേ 1-ൽ പങ്കാളി സജീവമല്ലെങ്കിലോ മാറ്റം വേണമെങ്കിലോ ട്രോഫി നഷ്ടമില്ലാതെ പാർട്ണറെ മാറ്റാം!',
+                ta: 'நாள் 1 இல் பார்ட்னர் செயல்படவில்லையா? எந்தக் கோப்பை அபராதமும் இல்லாமல் பார்ட்னரை மாற்றிக் கொள்ளுங்கள்!',
+                hi: 'डे 1 पर पार्टनर सक्रिय नहीं है? बिना किसी ट्रॉफी पेनल्टी के पार्टनर बदलें!',
               ),
               color: const Color(0xFF818CF8),
             ),
@@ -5221,7 +5226,7 @@ Draft: "$draft"''';
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text(
-                        'ðŸš¨ Non-English confirmed! 50 Pocket Score deducted from offender and streak reset to Day 1.'),
+                        '🚨 Non-English confirmed! 50 Pocket Score deducted from offender and streak reset to Day 1.'),
                     backgroundColor: Colors.red,
                   ),
                 );
@@ -5251,7 +5256,7 @@ Draft: "$draft"''';
       'Speaking level mismatch',
       'Incompatible conversation style',
       'Looking for a different topic focus',
-      'ðŸš¨ Inappropriate behavior (Report & Swap)',
+      '🚨 Inappropriate behavior (Report & Swap)',
     ];
 
     showModalBottomSheet(
@@ -5308,7 +5313,7 @@ Draft: "$draft"''';
                             ),
                           ),
                           Text(
-                            'Exchange partner today without losing any Trophies ðŸ›¡ï¸',
+                            'Exchange partner today without losing any Trophies 🛡️',
                             style: GoogleFonts.inter(
                               color: const Color(0xFF4ADE80),
                               fontSize: 11,
@@ -5331,7 +5336,7 @@ Draft: "$draft"''';
                 const SizedBox(height: 10),
                 ...reasons.map((r) {
                   final isSelected = selectedReason == r;
-                  final isReport = r.startsWith('ðŸš¨');
+                  final isReport = r.startsWith('🚨');
                   return InkWell(
                     onTap: () {
                       setModalState(() {
@@ -5410,7 +5415,7 @@ Draft: "$draft"''';
                       flex: 2,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: selectedReason.startsWith('ðŸš¨')
+                          backgroundColor: selectedReason.startsWith('🚨')
                               ? Colors.redAccent
                               : const Color(0xFF6366F1),
                           foregroundColor: Colors.white,
@@ -5423,7 +5428,7 @@ Draft: "$draft"''';
                           Navigator.pop(ctx);
                           HapticFeedback.mediumImpact();
 
-                          if (selectedReason.startsWith('ðŸš¨')) {
+                          if (selectedReason.startsWith('🚨')) {
                             ReportHelper.showReportDialog(
                               context: context,
                               contentType: 'user',
@@ -5454,7 +5459,7 @@ Draft: "$draft"''';
                             messenger.showSnackBar(
                               const SnackBar(
                                 content: Text(
-                                    'ðŸ”„ Partner swapped safely (0 Trophy penalty). Matching new speaking companion! âš¡'),
+                                    '🔄 Partner swapped safely (0 Trophy penalty). Matching new speaking companion! ⚡'),
                                 backgroundColor: Color(0xFF10B981),
                                 behavior: SnackBarBehavior.floating,
                               ),
@@ -5463,9 +5468,9 @@ Draft: "$draft"''';
                           }
                         },
                         child: Text(
-                          selectedReason.startsWith('ðŸš¨')
-                              ? 'Report & Swap ðŸ”„'
-                              : 'Confirm Swap (0 Penalty) ðŸ”„',
+                          selectedReason.startsWith('🚨')
+                              ? 'Report & Swap 🔄'
+                              : 'Confirm Swap (0 Penalty) 🔄',
                           style: GoogleFonts.outfit(
                             fontWeight: FontWeight.bold,
                             fontSize: 12.5,
@@ -5733,13 +5738,14 @@ Draft: "$draft"''';
                                           ),
                                         )
                                       : (widget.groupImage != null &&
-                                              !widget.groupImage!
-                                                  .startsWith('assets')
+                                              widget.groupImage!
+                                                  .startsWith('http')
                                           ? CircleAvatar(
                                               radius: 17,
                                               backgroundColor: Colors.grey[800],
                                               backgroundImage: NetworkImage(
                                                   widget.groupImage!),
+                                              onBackgroundImageError: (_, __) {},
                                             )
                                           : Container(
                                               width: 34,
@@ -5910,7 +5916,7 @@ Draft: "$draft"''';
                                         activeTypingId)
                                     : null;
                                 final namePrefix = robot != null
-                                    ? 'ðŸ¤– ${robot.name}'
+                                    ? '🤖 ${robot.name}'
                                     : (isRobot
                                         ? (PocketRobotService.getRobotById(
                                                     activeTypingId)
@@ -5948,7 +5954,7 @@ Draft: "$draft"''';
                                 return const Padding(
                                   padding: EdgeInsets.only(top: 1.5),
                                   child: Text(
-                                    'Supreme Animal King â€¢ Kids Mentor',
+                                    'Supreme Animal King • Kids Mentor',
                                     style: TextStyle(
                                       fontSize: 10.5,
                                       color: Color(0xFFFFD700),
@@ -5987,11 +5993,11 @@ Draft: "$draft"''';
                                         robot)
                                     : 0;
                                 final trophyBadge =
-                                    trophies > 0 ? ' â€¢ ðŸ†x$trophies' : '';
+                                    trophies > 0 ? ' • 🏆x$trophies' : '';
                                 return Padding(
                                   padding: const EdgeInsets.only(top: 1.5),
                                   child: Text(
-                                    'Pocket Robot â€¢ Lvl $dynLvl$trophyBadge',
+                                    'Pocket Robot • Lvl $dynLvl$trophyBadge',
                                     style: const TextStyle(
                                       fontSize: 11,
                                       color: Color(0xFF38BDF8),
@@ -6021,7 +6027,7 @@ Draft: "$draft"''';
                                 return Padding(
                                   padding: const EdgeInsets.only(top: 1.5),
                                   child: Text(
-                                    'Lvl $stage â€¢ $rankText',
+                                    'Lvl $stage • $rankText',
                                     style: const TextStyle(
                                       fontSize: 11,
                                       color: Color(0xFF38BDF8),
@@ -6041,8 +6047,8 @@ Draft: "$draft"''';
                                   padding: const EdgeInsets.only(top: 1.5),
                                   child: Text(
                                     neighborCount > 0
-                                        ? '$islandName â€¢ $neighborCount/25 Neighbors'
-                                        : '$islandName â€¢ Island Neighbors',
+                                        ? '$islandName • $neighborCount/25 Neighbors'
+                                        : '$islandName • Island Neighbors',
                                     style: TextStyle(
                                       fontSize: 11,
                                       color: appBarSubTextColor,
@@ -6065,7 +6071,7 @@ Draft: "$draft"''';
                                   totalCount > 0
                                       ? (_isEnglishHubGroup &&
                                               hubRobots.isNotEmpty
-                                          ? '$totalCount members (${_groupMembers.length} Learners â€¢ ${hubRobots.length} AI Mates)'
+                                          ? '$totalCount members (${_groupMembers.length} Learners • ${hubRobots.length} AI Mates)'
                                           : '$totalCount members')
                                       : 'Group',
                                   style: TextStyle(
@@ -6086,11 +6092,18 @@ Draft: "$draft"''';
                 ],
               ),
               actions: [
-                if (_isPocketCoupleGroup)
+                if (_isPocketCoupleGroup) ...[
+                  IconButton(
+                    icon: Icon(Icons.person_add_alt_1_rounded,
+                        color: accentColor, size: 22),
+                    tooltip: 'Add People 💑',
+                    onPressed: () =>
+                        _showCoupleAddPeopleSheet(coupleTheme: coupleTheme),
+                  ),
                   IconButton(
                     icon: Icon(Icons.account_balance_wallet_rounded,
                         color: accentColor, size: 22),
-                    tooltip: 'Open Pocket Spend ðŸ’°',
+                    tooltip: 'Open Poket Spend 💰',
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -6099,11 +6112,12 @@ Draft: "$draft"''';
                       );
                     },
                   ),
+                ],
                 if (_isKidMode)
                   IconButton(
                     icon: const Icon(Icons.shield_rounded,
                         color: Color(0xFFFFD700), size: 22),
-                    tooltip: 'Citadel Challenge ðŸ°',
+                    tooltip: 'Citadel Challenge 🏰',
                     onPressed: () {
                       final targetId = _personalPeerId;
                       final displayName = ContactsNameService().getDisplayName(
@@ -6135,27 +6149,29 @@ Draft: "$draft"''';
                     },
                   ),
                 if (!_isKidMode &&
-                    !PocketPresidentService.isPresidentId(_personalPeerId)) ...[
+                    !PocketPresidentService.isPresidentId(_personalPeerId) &&
+                    !_isPocketCoupleGroup &&
+                    !_isCoupledPartner) ...[
                   if (_isPersonalChat) ...[
                     IconButton(
-                      icon: const Text('ðŸ”¥', style: TextStyle(fontSize: 18)),
-                      tooltip: 'Fluency Streak ðŸ”¥',
+                      icon: const Text('🔥', style: TextStyle(fontSize: 18)),
+                      tooltip: 'Fluency Streak 🔥',
                       onPressed: () => _showMateFluencyStreakSheet(context),
                     ),
                     IconButton(
                       icon: const Icon(Icons.favorite_outline_rounded,
                           color: Color(0xFFF43F5E), size: 20),
-                      tooltip: 'Friendship Dashboard â¤ï¸',
+                      tooltip: 'Friendship Dashboard ❤️',
                       onPressed: () => _showFriendshipDashboardSheet(context),
                     ),
                   ],
                 ],
                 if (_isEnglishHubGroup) ...[
-                  // ðŸŽ² MINIMAL IN-PLACE SHUFFLE BUTTON (User Audio Directive: No page route change, in-place reload with smooth feedback)
+                  // 🎲 MINIMAL IN-PLACE SHUFFLE BUTTON (User Audio Directive: No page route change, in-place reload with smooth feedback)
                   IconButton(
                     icon: const Icon(Icons.casino_rounded,
                         color: Color(0xFFFFD600), size: 22),
-                    tooltip: 'Shuffle English Hub Room ðŸŽ²',
+                    tooltip: 'Shuffle English Hub Room 🎲',
                     onPressed: _isShuffling
                         ? null
                         : () async {
@@ -6207,7 +6223,7 @@ Draft: "$draft"''';
                   IconButton(
                     icon: const Icon(Icons.public_rounded,
                         color: Color(0xFF38BDF8), size: 22),
-                    tooltip: 'Island Map ðŸ—ºï¸',
+                    tooltip: 'Island Map 🗺️',
                     onPressed: _openIslandMapDirectly,
                   ),
                 PopupMenuButton<String>(
@@ -6260,7 +6276,7 @@ Draft: "$draft"''';
                           SnackBar(
                             content: Row(
                               children: [
-                                Text(newState ? 'ðŸ¤–' : 'â¸ï¸',
+                                Text(newState ? '🤖' : '⏸️',
                                     style: const TextStyle(fontSize: 16)),
                                 const SizedBox(width: 8),
                                 Text(
@@ -6411,7 +6427,7 @@ Draft: "$draft"''';
                           value: 'switch_world',
                           child: Row(
                             children: [
-                              Text('ðŸŒ', style: TextStyle(fontSize: 16)),
+                              Text('🌐', style: TextStyle(fontSize: 16)),
                               SizedBox(width: 10),
                               Text('Switch World Mode',
                                   style: TextStyle(color: Color(0xFFFFD700))),
@@ -6539,10 +6555,10 @@ Draft: "$draft"''';
                   ),
                   Column(
                     children: [
-                      // ðŸ“Œ Minimal Responsive Segmented Tab Bar (Chat | Tools... | Ranking | +)
+                      // 📌 Minimal Responsive Segmented Tab Bar (Chat | Tools... | Ranking | +)
                       _buildChatHeaderTabs(coupleTheme: coupleTheme),
 
-                      // ðŸ“± Dynamic View Controller (Page 0: Chat, 1..N: Tools, N+1: Ranking)
+                      // 📱 Dynamic View Controller (Page 0: Chat, 1..N: Tools, N+1: Ranking)
                       Expanded(
                         child: PageView(
                           controller: _chatTabPageController,
@@ -6661,67 +6677,33 @@ Draft: "$draft"''';
                                       currentUserId: _currentUserId,
                                       coupleTheme: coupleTheme,
                                     )
-                                  else if (toolKey == 'expense_tracker')
+                                  else if (toolKey == 'expense_tracker' ||
+                                      toolKey == 'split_wishlist')
                                     PocketSpendPage(
                                       groupId: widget.groupId,
                                       groupName: widget.groupName,
                                       embeddedInGroup: true,
                                     )
-                                  else if (toolKey == 'habit_tracker')
-                                    PocketGangHabitTrackerWidget(
+                                  else if (toolKey == 'poket_focus' ||
+                                      toolKey == 'study_timer' ||
+                                      toolKey == 'exam_tracker' ||
+                                      toolKey == 'flashcards' ||
+                                      toolKey == 'habit_tracker' ||
+                                      toolKey == 'memory_vault' ||
+                                      toolKey == 'quick_poll')
+                                    PoketFocusPage(
                                       groupId: widget.groupId,
                                       groupName: widget.groupName,
-                                      currentUserId: _currentUserId,
-                                      memberCount: _groupMembers.length,
+                                      embeddedInGroup: true,
                                       coupleTheme: coupleTheme,
-                                    )
-                                  else if (toolKey == 'memory_vault')
-                                    PocketGangMemoryVaultWidget(
-                                      groupId: widget.groupId,
-                                      groupName: widget.groupName,
-                                      currentUserId: _currentUserId,
-                                      memberCount: _groupMembers.length,
-                                      coupleTheme: coupleTheme,
-                                    )
-                                  else if (toolKey == 'quick_poll')
-                                    PocketGangQuickPollWidget(
-                                      groupId: widget.groupId,
-                                      groupName: widget.groupName,
-                                      currentUserId: _currentUserId,
-                                      memberCount: _groupMembers.length,
-                                      coupleTheme: coupleTheme,
-                                    )
-                                  else if (toolKey == 'split_wishlist')
-                                    PocketGangSplitWishlistWidget(
-                                      groupId: widget.groupId,
-                                      groupName: widget.groupName,
-                                      currentUserId: _currentUserId,
-                                      memberCount: _groupMembers.length,
-                                      coupleTheme: coupleTheme,
-                                    )
-                                  else if (toolKey == 'study_timer')
-                                    PocketGangStudyTimerWidget(
-                                      groupId: widget.groupId,
-                                      groupName: widget.groupName,
-                                      currentUserId: _currentUserId,
-                                      memberCount: _groupMembers.length,
-                                      coupleTheme: coupleTheme,
-                                    )
-                                  else if (toolKey == 'exam_tracker')
-                                    PocketGangExamTrackerWidget(
-                                      groupId: widget.groupId,
-                                      groupName: widget.groupName,
-                                      currentUserId: _currentUserId,
-                                      memberCount: _groupMembers.length,
-                                      coupleTheme: coupleTheme,
-                                    )
-                                  else if (toolKey == 'flashcards')
-                                    PocketGangFlashcardsWidget(
-                                      groupId: widget.groupId,
-                                      groupName: widget.groupName,
-                                      currentUserId: _currentUserId,
-                                      memberCount: _groupMembers.length,
-                                      coupleTheme: coupleTheme,
+                                      initialTab: toolKey == 'study_timer'
+                                          ? 1
+                                          : toolKey == 'exam_tracker'
+                                              ? 2
+                                              : (toolKey == 'flashcards' ||
+                                                      toolKey == 'memory_vault')
+                                                  ? 3
+                                                  : 0,
                                     )
                                 ],
                               ],
@@ -6752,7 +6734,7 @@ Draft: "$draft"''';
   Widget _buildChatHeaderTabs({PocketSpendCoupleTheme? coupleTheme}) {
     final isKid = PocketKidsService.isKidAccount;
 
-    // ðŸ‡¬ðŸ‡§ Dedicated English Hub Segmented 3-Tab Bar (Chat | Robot | Ranking)
+    // 🇬🇧 Dedicated English Hub Segmented 3-Tab Bar (Chat | Robot | Ranking)
     if (_isEnglishHubGroup) {
       return Container(
         width: double.infinity,
@@ -7011,8 +6993,8 @@ Draft: "$draft"''';
                       children: [
                         Text(
                           isKid
-                              ? 'ðŸ…'
-                              : (_activeChatTabIndex == 1 ? 'ðŸ‘‘' : 'ðŸ†'),
+                              ? '🏅'
+                              : (_activeChatTabIndex == 1 ? '👑' : '🏆'),
                           style: const TextStyle(fontSize: 13),
                         ),
                         const SizedBox(width: 5),
@@ -7037,7 +7019,7 @@ Draft: "$draft"''';
       );
     }
 
-    // ðŸŒŸ NORMAL POCKETGANG GROUP: Horizontally scrollable minimal strip
+    // 🌟 NORMAL POCKETGANG GROUP: Horizontally scrollable minimal strip
     // Tab Order: Chat (0) | Tool 1 (1) ... Tool N (N) | Ranking (N+1) | + (Button)
     final rankingTabIndex = _gangInstalledTools.length + 1;
 
@@ -7112,7 +7094,7 @@ Draft: "$draft"''';
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      'âœ¨ Gang workspace updated (${updatedTools.length} tools active)',
+                      '✨ Gang workspace updated (${updatedTools.length} tools active)',
                       style: GoogleFonts.outfit(
                           color: Colors.black, fontWeight: FontWeight.bold),
                     ),
@@ -7172,22 +7154,16 @@ Draft: "$draft"''';
       title = 'Ideas Board';
     } else if (toolKey == 'calendar') {
       title = 'Calendar';
-    } else if (toolKey == 'expense_tracker') {
+    } else if (toolKey == 'expense_tracker' || toolKey == 'split_wishlist') {
       title = 'Poket Spend';
-    } else if (toolKey == 'habit_tracker') {
-      title = 'Habits';
-    } else if (toolKey == 'memory_vault') {
-      title = 'Vault';
-    } else if (toolKey == 'quick_poll') {
-      title = 'Polls';
-    } else if (toolKey == 'split_wishlist') {
-      title = 'Split & Wish';
-    } else if (toolKey == 'study_timer') {
-      title = 'Study Timer';
-    } else if (toolKey == 'exam_tracker') {
-      title = 'Study & Exams';
-    } else if (toolKey == 'flashcards') {
-      title = 'Flashcards';
+    } else if (toolKey == 'poket_focus' ||
+        toolKey == 'study_timer' ||
+        toolKey == 'exam_tracker' ||
+        toolKey == 'flashcards' ||
+        toolKey == 'habit_tracker' ||
+        toolKey == 'memory_vault' ||
+        toolKey == 'quick_poll') {
+      title = 'Poket Focus';
     }
 
     return _buildModularGangTab(
@@ -7382,7 +7358,7 @@ Draft: "$draft"''';
                               ? targetUserId
                               : _currentUserId,
                           messageText:
-                              'âš¡ Pocket Talk Challenge: Invited you to a 4-Day Spoken English Pact! Tap to accept and start Day 1.',
+                              '⚡ Pocket Talk Challenge: Invited you to a 4-Day Spoken English Pact! Tap to accept and start Day 1.',
                           messageType: 'pocket_talk_request',
                           createdAt: _activePocketTalkPact!.startedAt,
                           metadata: {
@@ -7423,7 +7399,7 @@ Draft: "$draft"''';
                           senderId: senderId,
                           receiverId: receiverId,
                           messageText:
-                              'ðŸ¤ Pocket Mate Request: Sent you a Mate connection request!',
+                              '🤝 Pocket Mate Request: Sent you a Mate connection request!',
                           messageType: 'mate_request',
                           createdAt: DateTime.now(),
                           metadata: {
@@ -7439,8 +7415,15 @@ Draft: "$draft"''';
                     }
 
                     if (filteredMessages.isEmpty) {
-                      if (widget.groupId == 'pocket_couple_default' ||
-                          widget.groupName == 'Pocket Couple') {
+                      if (_isPocketCoupleGroup) {
+                        final coupleActiveColor =
+                            coupleTheme?.accent ?? const Color(0xFFFF4D8D);
+                        final coupleFgColor = coupleTheme?.onAccentTextColor ??
+                            Colors.white;
+                        final coupleTitleColor =
+                            coupleTheme?.textColor ?? Colors.white;
+                        final coupleSubColor =
+                            coupleTheme?.subTextColor ?? Colors.white70;
                         return Center(
                           child: Padding(
                             padding: const EdgeInsets.all(24),
@@ -7451,61 +7434,56 @@ Draft: "$draft"''';
                                   width: 74,
                                   height: 74,
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFEF4444)
-                                        .withValues(alpha: 0.16),
+                                    color: coupleActiveColor.withValues(
+                                        alpha: 0.16),
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                      color: const Color(0xFFEF4444)
-                                          .withValues(alpha: 0.5),
+                                      color: coupleActiveColor.withValues(
+                                          alpha: 0.55),
                                       width: 1.5,
                                     ),
                                   ),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.favorite_rounded,
-                                    color: Color(0xFFEF4444),
+                                    color: coupleActiveColor,
                                     size: 38,
                                   ),
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  'Pocket Couple',
+                                  'Poket Couple',
                                   style: GoogleFonts.outfit(
-                                    color: Colors.white,
+                                    color: coupleTitleColor,
                                     fontSize: 20,
                                     fontWeight: FontWeight.w900,
                                   ),
                                 ),
                                 const SizedBox(height: 6),
-                                const Text(
+                                Text(
                                   'Add your partner to start a private couple chat, shared expenses & whispers.',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                      color: Colors.white60, fontSize: 13),
+                                      color: coupleSubColor, fontSize: 13),
                                 ),
                                 const SizedBox(height: 18),
                                 ElevatedButton.icon(
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFFEF4444),
-                                    foregroundColor: Colors.white,
+                                    backgroundColor: coupleActiveColor,
+                                    foregroundColor: coupleFgColor,
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 20, vertical: 12),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(14),
                                     ),
                                   ),
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (_) =>
-                                              const PocketSpendPage()),
-                                    );
-                                  },
+                                  onPressed: () => _showCoupleAddPeopleSheet(
+                                    coupleTheme: coupleTheme,
+                                  ),
                                   icon: const Icon(
                                       Icons.person_add_alt_1_rounded,
                                       size: 18),
                                   label: Text(
-                                    'Add Couple',
+                                    'Add People',
                                     style: GoogleFonts.outfit(
                                       fontWeight: FontWeight.w800,
                                       fontSize: 14,
@@ -7526,7 +7504,7 @@ Draft: "$draft"''';
                             const SizedBox(height: 16),
                             Text(
                               englishHubFilter == 'human'
-                                  ? 'No human learner messages yet.\nSay hello to your fellow learners! ðŸ‡¬ðŸ‡§'
+                                  ? 'No human learner messages yet.\nSay hello to your fellow learners! 🇬🇧'
                                   : (englishHubFilter == 'robot'
                                       ? 'AI Mates are tuning in...\nSay hello to start practicing English!'
                                       : 'No messages yet'),
@@ -7614,7 +7592,7 @@ Draft: "$draft"''';
                                     message.createdAt, nextMessage.createdAt);
                               }
 
-                              // ðŸ“¢ Minimal Banner Ad under receiver messages every 6 messages
+                              // 📢 Minimal Banner Ad under receiver messages every 6 messages
                               final showNativeAd = msgIndex > 0 &&
                                   (msgIndex + 1) % 6 == 0 &&
                                   !isMe;
@@ -7763,7 +7741,7 @@ Draft: "$draft"''';
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        'â€¢ by ${topPin.pinnedByName}',
+                        '• by ${topPin.pinnedByName}',
                         style: const TextStyle(
                             color: Colors.white38, fontSize: 9.5),
                       ),
@@ -7900,7 +7878,7 @@ Draft: "$draft"''';
     return '${date.day}/${date.month}/${date.year}';
   }
 
-  /// ðŸ… Minimal Level & Rank Badge above message bubbles (Audio Directive)
+  /// 🏅 Minimal Level & Rank Badge above message bubbles (Audio Directive)
   Widget _buildSenderLevelAndRankBadge(ChatMessage message) {
     final senderId = message.senderId;
     final isPresident = PocketPresidentService.isPresidentId(senderId);
@@ -7964,7 +7942,7 @@ Draft: "$draft"''';
       );
     }
 
-    // ðŸ¤– AI Robot Check: ONLY true robots or explicitly flagged robot messages!
+    // 🤖 AI Robot Check: ONLY true robots or explicitly flagged robot messages!
     final isUuid = _uuidRegex.hasMatch(senderId);
     final robot = isUuid ? null : PocketRobotService.getRobotById(senderId);
     final isRobotFlagged = message.metadata?['is_robot'] == true ||
@@ -8018,7 +7996,7 @@ Draft: "$draft"''';
       );
     }
 
-    // ðŸ‘¤ Real Human user: ALWAYS Global Rank, NEVER Robot Rank!
+    // 👤 Real Human user: ALWAYS Global Rank, NEVER Robot Rank!
     int level = 1;
     int? rank;
 
@@ -8757,7 +8735,7 @@ Draft: "$draft"''';
                     ),
                   ),
                 ),
-                // âš ï¸ Inline Language Warning (Below Message Bubble)
+                // ⚠️ Inline Language Warning (Below Message Bubble)
                 if (message.metadata?['language_warning'] != null &&
                     message.metadata!['language_warning']
                             ['has_language_warning'] ==
@@ -8783,7 +8761,7 @@ Draft: "$draft"''';
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Text('âš ï¸ ', style: TextStyle(fontSize: 11)),
+                              const Text('⚠️ ', style: TextStyle(fontSize: 11)),
                               Flexible(
                                 child: Text(
                                   message.metadata!['language_warning']
@@ -8846,7 +8824,7 @@ Draft: "$draft"''';
     );
   }
 
-  /// ðŸ”— Helper to render message text with clickable, light blue URLs
+  /// 🔗 Helper to render message text with clickable, light blue URLs
   Widget _buildLinkedMessageText(String text, {required TextStyle baseStyle}) {
     final urlRegex = RegExp(
       r'((?:https?:\/\/|www\.)[^\s]+)',
@@ -9113,10 +9091,15 @@ Draft: "$draft"''';
                 children: [
                   CircleAvatar(
                     radius: 14,
-                    backgroundImage:
-                        avatar != null ? NetworkImage(avatar) : null,
+                    backgroundImage: (avatar != null && avatar.startsWith('http'))
+                        ? NetworkImage(avatar)
+                        : null,
+                    onBackgroundImageError:
+                        (avatar != null && avatar.startsWith('http'))
+                            ? (_, __) {}
+                            : null,
                     backgroundColor: Colors.grey[800],
-                    child: avatar == null
+                    child: (avatar == null || !avatar.startsWith('http'))
                         ? const Icon(Icons.person, size: 14)
                         : null,
                   ),
@@ -9253,14 +9236,14 @@ Draft: "$draft"''';
                           if (galleryData['profile_image_url'] != null &&
                               galleryData['profile_image_url']
                                   .toString()
-                                  .isNotEmpty) {
+                                  .startsWith('http')) {
                             return NetworkImage(
                                 galleryData['profile_image_url'].toString());
                           }
                           final profileList = galleryData['user']?['profile'];
                           if (profileList is List && profileList.isNotEmpty) {
                             final url = profileList[0]['profile_image_url'];
-                            if (url is String && url.isNotEmpty) {
+                            if (url is String && url.startsWith('http')) {
                               return NetworkImage(url);
                             }
                           }
@@ -9579,7 +9562,7 @@ Draft: "$draft"''';
                         child: Text(
                           isBurned
                               ? 'Opened'
-                              : (isMe ? 'Delivered Snap' : 'Snap ðŸ”¥'),
+                              : (isMe ? 'Delivered Snap' : 'Snap 🔥'),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.outfit(
@@ -9617,9 +9600,9 @@ Draft: "$draft"''';
                   ),
                   Text(
                     isBurned
-                        ? 'Opened â€¢ Storage purged'
+                        ? 'Opened • Storage purged'
                         : (isMe
-                            ? 'Tap to view â€¢ Self-destructs'
+                            ? 'Tap to view • Self-destructs'
                             : 'Tap to view (Burns on seen)'),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -9706,7 +9689,7 @@ Draft: "$draft"''';
                           ),
                         ),
                         child: const Center(
-                          child: Text('âš¡', style: TextStyle(fontSize: 18)),
+                          child: Text('⚡', style: TextStyle(fontSize: 18)),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -9753,7 +9736,7 @@ Draft: "$draft"''';
                           ),
                         ),
                         child: Text(
-                          accepted ? 'Day $streakDays/4 ðŸ¤' : 'Pending',
+                          accepted ? 'Day $streakDays/4 🤝' : 'Pending',
                           style: GoogleFonts.outfit(
                             color: accepted
                                 ? const Color(0xFF10B981)
@@ -9792,7 +9775,7 @@ Draft: "$draft"''';
                         children: [
                           Row(
                             children: [
-                              const Text('ðŸ“œ', style: TextStyle(fontSize: 12)),
+                              const Text('📜', style: TextStyle(fontSize: 12)),
                               const SizedBox(width: 6),
                               Expanded(
                                 child: Text(
@@ -9823,7 +9806,7 @@ Draft: "$draft"''';
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('1ï¸âƒ£ ',
+                                const Text('1️⃣ ',
                                     style: TextStyle(fontSize: 11)),
                                 Expanded(
                                   child: Text(
@@ -9843,7 +9826,7 @@ Draft: "$draft"''';
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('2ï¸âƒ£ ',
+                                const Text('2️⃣ ',
                                     style: TextStyle(fontSize: 11)),
                                 Expanded(
                                   child: Text(
@@ -9877,7 +9860,7 @@ Draft: "$draft"''';
                           );
                           await _sendMessage(
                             text:
-                                'ðŸ¤ Accepted Pocket Talk! 4-day spoken pact is ON! ðŸ†',
+                                '🤝 Accepted Pocket Talk! 4-day spoken pact is ON! 🏆',
                             messageType: 'text',
                           );
                           safeSetState(() {});
@@ -9901,7 +9884,7 @@ Draft: "$draft"''';
                           ),
                           child: Center(
                             child: Text(
-                              'Accept 4-Day Pact ðŸ¤',
+                              'Accept 4-Day Pact 🤝',
                               style: GoogleFonts.outfit(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -9916,7 +9899,7 @@ Draft: "$draft"''';
                         padding: const EdgeInsets.symmetric(vertical: 4),
                         child: Center(
                           child: Text(
-                            'Waiting for mate to accept â³',
+                            'Waiting for mate to accept ⏳',
                             style: GoogleFonts.inter(
                               color: Colors.white54,
                               fontSize: 11,
@@ -9941,7 +9924,7 @@ Draft: "$draft"''';
                       ),
                       child: Row(
                         children: [
-                          const Text('ðŸ›¡ï¸', style: TextStyle(fontSize: 13)),
+                          const Text('🛡️', style: TextStyle(fontSize: 13)),
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
@@ -10033,7 +10016,7 @@ Draft: "$draft"''';
                           ),
                         ),
                         child: const Center(
-                          child: Text('ðŸ¤', style: TextStyle(fontSize: 18)),
+                          child: Text('🤝', style: TextStyle(fontSize: 18)),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -10051,7 +10034,7 @@ Draft: "$draft"''';
                             ),
                             Text(
                               isMate
-                                  ? 'Connected Mates âœ¨'
+                                  ? 'Connected Mates ✨'
                                   : 'Mutual Connection',
                               style: GoogleFonts.inter(
                                 color: isMate
@@ -10069,10 +10052,10 @@ Draft: "$draft"''';
                   const SizedBox(height: 10),
                   Text(
                     isMate
-                        ? 'âœ¨ You and ${isMe ? 'opponent' : message.senderName} are now official Mates! Chat is active in All Chats.'
+                        ? '✨ You and ${isMe ? 'opponent' : message.senderName} are now official Mates! Chat is active in All Chats.'
                         : (isMe
-                            ? 'You sent a Mates Request ðŸ¤ â€¢ You can chat anytime!'
-                            : '${message.senderName} sent you a Mates Request ðŸ¤'),
+                            ? 'You sent a Mates Request 🤝 • You can chat anytime!'
+                            : '${message.senderName} sent you a Mates Request 🤝'),
                     style: GoogleFonts.inter(
                       color: isMate ? const Color(0xFFD1FAE5) : Colors.white70,
                       fontSize: 12.5,
@@ -10101,7 +10084,7 @@ Draft: "$draft"''';
                                   .refreshNow();
                               setBubbleState(() {});
                               _showSnackBar(
-                                  'âœ¨ Connected as Mates! Moved to All Chats.');
+                                  '✨ Connected as Mates! Moved to All Chats.');
                             },
                             child: Container(
                               height: 36,
@@ -10118,7 +10101,7 @@ Draft: "$draft"''';
                               ),
                               child: Center(
                                 child: Text(
-                                  'Accept Mate ðŸ¤',
+                                  'Accept Mate 🤝',
                                   style: GoogleFonts.outfit(
                                     color: Colors.black,
                                     fontWeight: FontWeight.w900,
@@ -10183,7 +10166,7 @@ Draft: "$draft"''';
         seconds.toDouble();
     final score = (metadata['challenger_score'] as num?)?.toInt() ?? 0;
     final correct = (metadata['challenger_correct'] as num?)?.toInt() ?? 0;
-    final chalAvatar = metadata['challenger_avatar']?.toString() ?? 'âš”ï¸';
+    final chalAvatar = metadata['challenger_avatar']?.toString() ?? '⚔️';
     final timeStr = timeSec > 0 ? timeSec.toStringAsFixed(1) : '$seconds';
     final correctStr = correct > 0 ? '$correct/$qCount correct' : '$score pts';
 
@@ -10229,7 +10212,7 @@ Draft: "$draft"''';
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isMe ? 'Fight Initiated ðŸ¥Š' : 'Fight Challenge ðŸ¥Š',
+                      isMe ? 'Fight Initiated 🥊' : 'Fight Challenge 🥊',
                       style: GoogleFonts.outfit(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
@@ -10237,7 +10220,7 @@ Draft: "$draft"''';
                       ),
                     ),
                     Text(
-                      'Citadel Speed Duel â€¢ $qCount Qs',
+                      'Citadel Speed Duel • $qCount Qs',
                       style: GoogleFonts.inter(
                         color: const Color(0xFFFCA5A5),
                         fontSize: 11,
@@ -10253,11 +10236,11 @@ Draft: "$draft"''';
           Text(
             isMe
                 ? (seconds == 0 && score == 0
-                    ? 'You initiated a Citadel Fight! Waiting for opponent to duel! â³'
-                    : 'You finished the duel in ${timeStr}s â€¢ $correctStr. Waiting for opponent to fight back! â³')
+                    ? 'You initiated a Citadel Fight! Waiting for opponent to duel! ⏳'
+                    : 'You finished the duel in ${timeStr}s • $correctStr. Waiting for opponent to fight back! ⏳')
                 : (seconds == 0 && score == 0
-                    ? '${(message.senderName != null && message.senderName!.isNotEmpty) ? message.senderName : "Opponent"} started a Fight challenge with you! Can you win the duel? âš”ï¸'
-                    : '${(message.senderName != null && message.senderName!.isNotEmpty) ? message.senderName : "Opponent"} initiated a Fight and finished in ${timeStr}s â€¢ $correctStr. Can you beat their time & score? âš”ï¸'),
+                    ? '${(message.senderName != null && message.senderName!.isNotEmpty) ? message.senderName : "Opponent"} started a Fight challenge with you! Can you win the duel? ⚔️'
+                    : '${(message.senderName != null && message.senderName!.isNotEmpty) ? message.senderName : "Opponent"} initiated a Fight and finished in ${timeStr}s • $correctStr. Can you beat their time & score? ⚔️'),
             style: GoogleFonts.inter(
               color: Colors.white70,
               fontSize: 12.5,
@@ -10276,7 +10259,7 @@ Draft: "$draft"''';
                   challengerAvatar: chalAvatar,
                   opponentId: _currentUserId,
                   opponentName: 'You',
-                  opponentAvatar: 'ðŸ¥Š',
+                  opponentAvatar: '🥊',
                   gameFormat: 'citadel_speed_duel',
                   gameTitle: 'Citadel Speed Duel',
                   scheduledTime: 'Instant',
@@ -10315,7 +10298,7 @@ Draft: "$draft"''';
                 ),
                 child: Center(
                   child: Text(
-                    'FIGHT BACK NOW âš”ï¸',
+                    'FIGHT BACK NOW ⚔️',
                     style: GoogleFonts.outfit(
                       color: Colors.white,
                       fontWeight: FontWeight.w900,
@@ -10338,7 +10321,7 @@ Draft: "$draft"''';
             ? widget.groupId.substring(2)
             : message.senderId;
     final damage = metadata['damage'] ?? '100%';
-    final weapon = metadata['weapon'] ?? 'âš¡ Laser Strike';
+    final weapon = metadata['weapon'] ?? '⚡ Laser Strike';
     final lootedCoins = metadata['coins_looted'] ?? 15;
 
     return Container(
@@ -10374,7 +10357,7 @@ Draft: "$draft"''';
                   color: Color(0xFF1E293B),
                 ),
                 child: const Center(
-                  child: Text('ðŸ°', style: TextStyle(fontSize: 18)),
+                  child: Text('🏰', style: TextStyle(fontSize: 18)),
                 ),
               ),
               const SizedBox(width: 10),
@@ -10384,8 +10367,8 @@ Draft: "$draft"''';
                   children: [
                     Text(
                       isMe
-                          ? 'Attack Successful âš”ï¸'
-                          : 'House Intrusion Alert ðŸ’¥',
+                          ? 'Attack Successful ⚔️'
+                          : 'House Intrusion Alert 💥',
                       style: GoogleFonts.outfit(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
@@ -10445,7 +10428,7 @@ Draft: "$draft"''';
                 ),
                 child: Center(
                   child: Text(
-                    'REVENGE ATTACK âš”ï¸',
+                    'REVENGE ATTACK ⚔️',
                     style: GoogleFonts.outfit(
                       color: Colors.white,
                       fontWeight: FontWeight.w900,
@@ -10471,11 +10454,11 @@ Draft: "$draft"''';
     if (existingPact != null) {
       if (existingPact.isAccepted && !existingPact.isForfeited) {
         _showSnackBar(
-            'Active 4-Day Pocket Talk already in progress! Day ${existingPact.streakDays}/4 ðŸ”¥');
+            'Active 4-Day Pocket Talk already in progress! Day ${existingPact.streakDays}/4 🔥');
         return;
       } else if (!existingPact.isAccepted && !existingPact.isForfeited) {
         _showSnackBar(
-            'Pocket Talk invite already sent! Waiting for acceptance â³');
+            'Pocket Talk invite already sent! Waiting for acceptance ⏳');
         return;
       }
     }
@@ -10488,7 +10471,7 @@ Draft: "$draft"''';
     );
 
     await _sendMessage(
-      text: 'ðŸ”¥ Pocket Talk 4-Day Spoken Pact Request',
+      text: '🔥 Pocket Talk 4-Day Spoken Pact Request',
       messageType: 'pocket_talk_request',
       metadata: {
         'is_pocket_talk': true,
@@ -10707,7 +10690,7 @@ Draft: "$draft"''';
                     .withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Text(isDiagram ? 'ðŸ“' : 'ðŸ“‹',
+              child: Text(isDiagram ? '📐' : '📋',
                   style: const TextStyle(fontSize: 22)),
             ),
             const SizedBox(width: 12),
@@ -11005,7 +10988,7 @@ Draft: "$draft"''';
       _replyMessage = {
         'id': message.id,
         'message_text': message.messageText ??
-            (message.messageType == 'voice' ? 'ðŸŽ¤ Voice note' : 'ðŸ“· Media'),
+            (message.messageType == 'voice' ? '🎤 Voice note' : '📷 Media'),
         'sender_id': message.senderId,
         'sender_name': senderDisplayName,
         'metadata': message.metadata,
@@ -11059,7 +11042,7 @@ Draft: "$draft"''';
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: ['ðŸ”¥', 'âš¡', 'ðŸ†', 'ðŸ’¯', 'â¤ï¸', 'ðŸ‘', 'ðŸŽ¯'].map((emoji) {
+              children: ['🔥', '⚡', '🏆', '💯', '❤️', '👏', '🎯'].map((emoji) {
                 return InkWell(
                   borderRadius: BorderRadius.circular(16),
                   onTap: () {
@@ -11128,7 +11111,7 @@ Draft: "$draft"''';
                           .getPinnedMessages(_currentGroupId);
                       if (mounted)
                         safeSetState(() => _gangPinnedMessages = updated);
-                      _showSnackBar('ðŸ“Œ Message unpinned');
+                      _showSnackBar('📌 Message unpinned');
                     } else {
                       final currentSenderName = message.senderName ??
                           (message.senderProfile?['name'] ?? 'Member');
@@ -11149,8 +11132,8 @@ Draft: "$draft"''';
                         messageId: message.id,
                         messageText: message.messageText ??
                             (message.messageType == 'voice'
-                                ? 'ðŸŽ¤ Voice message'
-                                : 'ðŸ“· Media'),
+                                ? '🎤 Voice message'
+                                : '📷 Media'),
                         senderId: message.senderId,
                         senderName: currentSenderName,
                         messageType: message.messageType,
@@ -11161,7 +11144,7 @@ Draft: "$draft"''';
                           .getPinnedMessages(_currentGroupId);
                       if (mounted)
                         safeSetState(() => _gangPinnedMessages = updated);
-                      _showSnackBar('ðŸ“Œ Message pinned to group!');
+                      _showSnackBar('📌 Message pinned to group!');
                     }
                   },
                 );
@@ -11468,7 +11451,7 @@ Draft: "$draft"''';
                         decoration: InputDecoration(
                           hintText: (_isEnglishHubGroup ||
                                   widget.groupId.startsWith('p:'))
-                              ? 'Type in English only... ðŸ‡¬ðŸ‡§'
+                              ? 'Type in English only... 🇬🇧'
                               : 'Type a message...',
                           hintStyle:
                               TextStyle(color: inputHintColor, fontSize: 14),
@@ -11508,7 +11491,7 @@ Draft: "$draft"''';
                                   constraints: const BoxConstraints(
                                       minWidth: 34, minHeight: 36),
                                   padding: EdgeInsets.zero,
-                                  tooltip: 'Pocket Talk âš¡',
+                                  tooltip: 'Pocket Talk ⚡',
                                   icon: const Icon(Icons.bolt_rounded,
                                       color: Color(0xFF00E5FF)),
                                   onPressed: _sendPocketTalkInvite,
@@ -11525,7 +11508,7 @@ Draft: "$draft"''';
                                 constraints: const BoxConstraints(
                                     minWidth: 32, minHeight: 36),
                                 padding: EdgeInsets.zero,
-                                tooltip: 'Polish My English âœ¨',
+                                tooltip: 'Polish My English ✨',
                                 icon: _isCorrectingText
                                     ? const SizedBox(
                                         width: 14,
@@ -11723,7 +11706,7 @@ Draft: "$draft"''';
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _buildAttachOption(Icons.local_fire_department_rounded,
-                      const Color(0xFFFF8A00), 'Snap ðŸ”¥', () {
+                      const Color(0xFFFF8A00), 'Snap 🔥', () {
                     Navigator.pop(ctx);
                     _pickAndSendSnap();
                   }),
@@ -11748,7 +11731,7 @@ Draft: "$draft"''';
                       !PocketPresidentService.isPresidentId(
                           widget.groupId.substring(2)))
                     _buildAttachOption(Icons.bolt_rounded,
-                        const Color(0xFF00E5FF), 'Pocket Talk âš¡', () {
+                        const Color(0xFF00E5FF), 'Pocket Talk ⚡', () {
                       Navigator.pop(ctx);
                       _sendPocketTalkInvite();
                     }),
@@ -11916,7 +11899,7 @@ Draft: "$draft"''';
       String? caption, String path, String type) async {
     // 1. Immediate optimistic send
     final messageId = await _sendMessage(
-      text: caption ?? (type == 'document' ? 'Document ðŸ“' : 'Audio ðŸŽµ'),
+      text: caption ?? (type == 'document' ? 'Document 📁' : 'Audio 🎵'),
       messageType: type,
       metadata: {'local_path': path}, // Store local path for preview
     );
@@ -12012,7 +11995,7 @@ Draft: "$draft"''';
 
     // 1. Immediate optimistic send
     final messageId = await _sendMessage(
-      text: caption ?? 'Video ðŸ“¹',
+      text: caption ?? 'Video 📹',
       messageType: 'video',
       metadata: {'local_path': path},
     );
@@ -12200,7 +12183,7 @@ Draft: "$draft"''';
 
       // 1. Immediate optimistic send
       final messageId = await _sendMessage(
-        text: 'ðŸ”¥ 12h Disappearing Snap',
+        text: '🔥 12h Disappearing Snap',
         messageType: type,
         metadata: {
           'local_path': path,
@@ -12218,7 +12201,7 @@ Draft: "$draft"''';
       safeSetState(() {
         _showEmojiPicker = false;
       });
-      _showSnackBar('Snap sent! ðŸ”¥ (12h Disappearing)');
+      _showSnackBar('Snap sent! 🔥 (12h Disappearing)');
     } catch (e) {
       debugPrint('Error capturing snap: $e');
       _showErrorSnackBar('Error capturing snap: $e');
@@ -12784,13 +12767,19 @@ Draft: "$draft"''';
                                     backgroundColor: Colors.grey[800],
                                     backgroundImage:
                                         widget.groupImage != null &&
-                                                !widget.groupImage!
-                                                    .startsWith('assets')
+                                                widget.groupImage!
+                                                    .startsWith('http')
                                             ? NetworkImage(widget.groupImage!)
                                             : null,
+                                    onBackgroundImageError:
+                                        widget.groupImage != null &&
+                                                widget.groupImage!
+                                                    .startsWith('http')
+                                            ? (_, __) {}
+                                            : null,
                                     child: (widget.groupImage == null ||
-                                            widget.groupImage!
-                                                .startsWith('assets'))
+                                            !widget.groupImage!
+                                                .startsWith('http'))
                                         ? const Icon(Icons.group,
                                             color: Colors.white, size: 50)
                                         : null,
@@ -13524,7 +13513,368 @@ Draft: "$draft"''';
     }
   }
 
+  void _showCoupleAddPeopleSheet({PocketSpendCoupleTheme? coupleTheme}) {
+    final uid = _supabase.auth.currentUser?.id;
+    if (uid == null || uid.isEmpty) return;
+
+    final themeIdx = PocketSpendPage.coupleThemeNotifier.value;
+    final t = coupleTheme ?? PocketSpendPage.getCoupleTheme(themeIdx);
+    final searchCtrl = TextEditingController();
+    List<Map<String, dynamic>> results = [];
+    bool searching = true;
+    bool didInitLoad = false;
+    final Set<String> sendingToIds = {};
+    final Set<String> sentToIds = {};
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheet) {
+          Future<void> runSearch(String query) async {
+            if (!ctx.mounted) return;
+            setSheet(() => searching = true);
+            try {
+              final trimmed = query.trim();
+              final res = trimmed.isEmpty
+                  ? await _supabase
+                      .from('profile')
+                      .select(
+                          'user_id, name, display_name, profile_image_url, learning_stage, stage')
+                      .neq('user_id', uid)
+                      .limit(12)
+                  : await _supabase
+                      .from('profile')
+                      .select(
+                          'user_id, name, display_name, profile_image_url, learning_stage, stage')
+                      .or('name.ilike.%$trimmed%,display_name.ilike.%$trimmed%')
+                      .neq('user_id', uid)
+                      .limit(15);
+              if (ctx.mounted) {
+                setSheet(() {
+                  results = List<Map<String, dynamic>>.from(res as List);
+                  searching = false;
+                });
+              }
+            } catch (e) {
+              debugPrint('Error searching couple users: $e');
+              if (ctx.mounted) setSheet(() => searching = false);
+            }
+          }
+
+          if (!didInitLoad) {
+            didInitLoad = true;
+            Future.microtask(() => runSearch(''));
+          }
+
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: t.bgGradient,
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(26)),
+              border: Border(top: BorderSide(color: t.borderColor, width: 1.2)),
+            ),
+            padding: EdgeInsets.fromLTRB(
+              20,
+              12,
+              20,
+              MediaQuery.of(ctx).viewInsets.bottom + 24,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 14),
+                    decoration: BoxDecoration(
+                      color: t.textColor.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    Icon(Icons.favorite_rounded, color: t.accent, size: 22),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Add People • Poket Couple',
+                        style: GoogleFonts.outfit(
+                          color: t.textColor,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Search by name and send a partner request directly to their Notifications.',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: t.subTextColor,
+                    fontSize: 12.5,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: searchCtrl,
+                  style: TextStyle(color: t.textColor),
+                  decoration: InputDecoration(
+                    hintText: 'Search partner name...',
+                    hintStyle: TextStyle(color: t.subTextColor),
+                    prefixIcon: Icon(Icons.search_rounded, color: t.accent),
+                    suffixIcon: searchCtrl.text.isNotEmpty
+                        ? IconButton(
+                            icon: Icon(Icons.close_rounded,
+                                color: t.subTextColor, size: 18),
+                            onPressed: () {
+                              searchCtrl.clear();
+                              runSearch('');
+                            },
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: t.cardColor,
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: t.borderColor),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: t.accent, width: 1.4),
+                    ),
+                  ),
+                  onChanged: runSearch,
+                ),
+                const SizedBox(height: 12),
+                if (searching)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 28),
+                    child: Center(
+                      child: CircularProgressIndicator(color: t.accent),
+                    ),
+                  )
+                else if (results.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Center(
+                      child: Text(
+                        'No users found matching your search.',
+                        style: GoogleFonts.inter(
+                            color: t.subTextColor, fontSize: 13),
+                      ),
+                    ),
+                  )
+                else
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(ctx).size.height * 0.42,
+                    ),
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: results.length,
+                      separatorBuilder: (_, __) => Divider(
+                        height: 1,
+                        color: t.borderColor.withValues(alpha: 0.4),
+                      ),
+                      itemBuilder: (_, i) {
+                        final u = results[i];
+                        final targetId = u['user_id']?.toString() ?? '';
+                        final rawName =
+                            u['display_name']?.toString().trim().isNotEmpty ==
+                                    true
+                                ? u['display_name'].toString().trim()
+                                : (u['name']?.toString().trim() ?? 'Poket User');
+                        final img = u['profile_image_url']?.toString();
+                        final stage = ((u['learning_stage'] ??
+                                    u['stage'] ??
+                                    1) as num)
+                                .toInt();
+                        final isSending = sendingToIds.contains(targetId);
+                        final isSent = sentToIds.contains(targetId);
+
+                        return ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 4, vertical: 4),
+                          leading: CircleAvatar(
+                            radius: 21,
+                            backgroundColor: t.cardColor,
+                            backgroundImage:
+                                (img != null && img.startsWith('http'))
+                                    ? NetworkImage(img)
+                                    : null,
+                            onBackgroundImageError:
+                                (img != null && img.startsWith('http'))
+                                    ? (_, __) {}
+                                    : null,
+                            child: (img == null || !img.startsWith('http'))
+                                ? ClipOval(
+                                    child: VectorAvatarWidget(
+                                      config: VectorAvatarConfig
+                                          .getEvolutionAvatarForStage(
+                                              stage.clamp(1, 90)),
+                                      size: 42,
+                                      showAura: false,
+                                    ),
+                                  )
+                                : null,
+                          ),
+                          title: Text(
+                            rawName,
+                            style: GoogleFonts.outfit(
+                              color: t.textColor,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14.5,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Text(
+                            'Level ${stage.clamp(1, 90)}',
+                            style: GoogleFonts.inter(
+                              color: t.subTextColor,
+                              fontSize: 11.5,
+                            ),
+                          ),
+                          trailing: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isSent
+                                  ? t.cardColor
+                                  : t.accent,
+                              foregroundColor: isSent
+                                  ? t.accent
+                                  : t.onAccentTextColor,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                side: isSent
+                                    ? BorderSide(color: t.accent)
+                                    : BorderSide.none,
+                              ),
+                            ),
+                            onPressed: (targetId.isEmpty || isSending || isSent)
+                                ? null
+                                : () async {
+                                    setSheet(() => sendingToIds.add(targetId));
+                                    try {
+                                      String myName = 'Your Mate';
+                                      try {
+                                        final myProf = await _supabase
+                                            .from('profile')
+                                            .select('display_name, name')
+                                            .eq('user_id', uid)
+                                            .maybeSingle();
+                                        final cand = myProf?['display_name'] ??
+                                            myProf?['name'];
+                                        if (cand != null &&
+                                            cand
+                                                .toString()
+                                                .trim()
+                                                .isNotEmpty) {
+                                          myName = cand.toString().trim();
+                                        }
+                                      } catch (_) {}
+
+                                      await _supabase
+                                          .from('notifications')
+                                          .insert({
+                                        'user_id': targetId,
+                                        'sender_id': uid,
+                                        'source_id': uid,
+                                        'type': 'couple_spend_invite',
+                                        'message':
+                                            '$myName invited you to Poket Couple Mode!',
+                                        'status': 'unread',
+                                      });
+
+                                      if (ctx.mounted) {
+                                        setSheet(() {
+                                          sendingToIds.remove(targetId);
+                                          sentToIds.add(targetId);
+                                        });
+                                        Navigator.pop(ctx);
+                                      }
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              '💑 Couple request sent to $rawName!',
+                                              style: GoogleFonts.outfit(
+                                                color: t.onAccentTextColor,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            backgroundColor: t.accent,
+                                            behavior: SnackBarBehavior.floating,
+                                          ),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      debugPrint(
+                                          'Error sending Poket Couple request: $e');
+                                      if (ctx.mounted) {
+                                        setSheet(() =>
+                                            sendingToIds.remove(targetId));
+                                      }
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                                'Could not send request. Please try again.'),
+                                            backgroundColor: Colors.redAccent,
+                                            behavior: SnackBarBehavior.floating,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                            child: isSending
+                                ? SizedBox(
+                                    width: 14,
+                                    height: 14,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: t.onAccentTextColor,
+                                    ),
+                                  )
+                                : Text(
+                                    isSent ? 'Sent ✓' : 'Send',
+                                    style: GoogleFonts.outfit(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 12.5,
+                                    ),
+                                  ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   void _showAddMemberDialog() {
+    if (_isPocketCoupleGroup) {
+      _showCoupleAddPeopleSheet();
+      return;
+    }
     showDialog(
       context: context,
       builder: (context) => UserSearchDialog(
@@ -13778,10 +14128,22 @@ Draft: "$draft"''';
           return ListTile(
             leading: CircleAvatar(
               radius: 16,
-              backgroundImage: profile?['profile_image_url'] != null
-                  ? NetworkImage(profile['profile_image_url'])
+              backgroundImage: (profile?['profile_image_url'] != null &&
+                      profile!['profile_image_url']
+                          .toString()
+                          .startsWith('http'))
+                  ? NetworkImage(profile['profile_image_url'].toString())
                   : null,
-              child: profile?['profile_image_url'] == null
+              onBackgroundImageError: (profile?['profile_image_url'] != null &&
+                      profile!['profile_image_url']
+                          .toString()
+                          .startsWith('http'))
+                  ? (_, __) {}
+                  : null,
+              child: (profile?['profile_image_url'] == null ||
+                      !profile!['profile_image_url']
+                          .toString()
+                          .startsWith('http'))
                   ? const Icon(Icons.person, size: 16)
                   : null,
             ),

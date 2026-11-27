@@ -24,6 +24,7 @@ import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart'
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/german_90day/master_track_selector_pill.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'pocket_citadel_attack_page.dart';
 import 'day90_master_certificate_dialog.dart';
@@ -3321,9 +3322,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             ),
                           ),
 
-                          // 🎯 Unified Syllabus Track Pill (Single Unified Syllabus)
-                          _buildSyllabusSelectorMenu(screenWidth),
-
                           // 🌿 Grassy Ground Syllabus Notice (Above Day 1 on green ground)
                           _buildGroundEnglishSyllabusNotice(screenWidth),
 
@@ -3335,6 +3333,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
                           // Bouncing Animated Character Avatar at Current Level or Rules Node
                           _buildAnimatedAvatar(screenWidth, targetActiveDay),
+
+                          // 🎯 Unified Syllabus Track Pill (Top Z-Order so dropdown expands cleanly over ground cards)
+                          _buildSyllabusSelectorMenu(screenWidth),
                         ],
                       ),
                     ),
@@ -4840,40 +4841,16 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final x = screenWidth / 2;
     // Positioned cleanly right above the Rules node (_ruleNodeY is 240, top of sphere is 203)
     final y = _ruleNodeY - 54.0;
-    const pillWidth = 200.0;
+    const pillWidth = 250.0;
 
     return Positioned(
       left: x - (pillWidth / 2),
       top: y,
       width: pillWidth,
       child: Center(
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.45),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.16),
-              width: 0.9,
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text('🎯', style: TextStyle(fontSize: 11)),
-              const SizedBox(width: 5),
-              Text(
-                'ENGLISH MASTERY TRACK',
-                style: GoogleFonts.outfit(
-                  color: Colors.white.withValues(alpha: 0.9),
-                  fontWeight: FontWeight.w700,
-                  fontSize: 10,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ],
-          ),
+        child: MasterTrackSelectorPill(
+          isGermanActive: false,
+          userId: widget.userId ?? _supabase.auth.currentUser?.id,
         ),
       ),
     );

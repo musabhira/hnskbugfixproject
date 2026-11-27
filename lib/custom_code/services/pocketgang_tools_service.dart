@@ -21,15 +21,17 @@ class PocketGangToolsService {
 
   /// Student-focused Default Tools for Under-20 Users
   static const List<String> studentDefaultTools = [
-    'study_timer',
-    'exam_tracker',
-    'flashcards',
+    'poket_focus',
+    'calendar',
   ];
 
   /// Reads the current user's age from SharedPreferences (defaults to 20 if unset).
   static Future<int> getCurrentUserAge() async {
     final prefs = await SharedPreferences.getInstance();
-    final uid = Supabase.instance.client.auth.currentUser?.id ?? '';
+    String uid = '';
+    try {
+      uid = Supabase.instance.client.auth.currentUser?.id ?? '';
+    } catch (_) {}
     if (uid.isNotEmpty) {
       final age = prefs.getInt('pm_age_$uid');
       if (age != null) return age;
@@ -53,7 +55,8 @@ class PocketGangToolsService {
     if (groupId.startsWith('p:')) return false;
 
     // Check English Hub classification (IDs and standard naming rules)
-    if (EnglishHubLevelGroupService.isEnglishHub(groupId, groupName: groupName)) {
+    if (EnglishHubLevelGroupService.isEnglishHub(groupId,
+        groupName: groupName)) {
       return false;
     }
 
@@ -91,7 +94,11 @@ class PocketGangToolsService {
             .order('display_order', ascending: true);
 
         if (res.isNotEmpty) {
-          final tools = res.map((r) => r['tool_key']?.toString() ?? '').where((k) => k.isNotEmpty).toSet().toList();
+          final tools = res
+              .map((r) => r['tool_key']?.toString() ?? '')
+              .where((k) => k.isNotEmpty)
+              .toSet()
+              .toList();
           await prefs.setString(cacheKey, jsonEncode(tools));
           return tools;
         }
@@ -129,7 +136,10 @@ class PocketGangToolsService {
     final cached = prefs.getString(cacheKey);
     if (cached != null) {
       try {
-        final list = (jsonDecode(cached) as List).map((e) => e.toString()).toSet().toList();
+        final list = (jsonDecode(cached) as List)
+            .map((e) => e.toString())
+            .toSet()
+            .toList();
         if (list.isNotEmpty) return list;
       } catch (_) {}
     }
@@ -176,7 +186,11 @@ class PocketGangToolsService {
           'group_id': groupId,
           'activity_type': 'gang_installed_tools',
           'title': 'PocketGang Tools',
-          'data': {'tools': uniqueTools, 'updated_by': userId, 'timestamp': DateTime.now().toIso8601String()},
+          'data': {
+            'tools': uniqueTools,
+            'updated_by': userId,
+            'timestamp': DateTime.now().toIso8601String()
+          },
           'created_by': userId,
           'is_active': true,
         });
@@ -206,7 +220,8 @@ class PocketGangToolsService {
               value: groupId,
             ),
             callback: (payload) {
-              if (payload.newRecord['activity_type'] == 'gang_installed_tools') {
+              if (payload.newRecord['activity_type'] ==
+                  'gang_installed_tools') {
                 onToolsChanged();
               }
             },
@@ -219,4 +234,3 @@ class PocketGangToolsService {
     }
   }
 }
-

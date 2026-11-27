@@ -707,6 +707,7 @@ class PocketMateService {
             'mate_request',
             'pocket_talk',
             'poket_talk',
+            'couple_spend_invite',
             'follow_request',
             'friend_request',
             'citadel_fight',
@@ -718,9 +719,12 @@ class PocketMateService {
       for (final item in (response as List)) {
         final map = Map<String, dynamic>.from(item);
         final senderId = map['sender_id']?.toString() ?? '';
+        final itemType = map['type']?.toString() ?? '';
 
-        // Exclude if already connected as a Pocket Mate
-        if (senderId.isNotEmpty && matesList.contains(senderId)) {
+        // Exclude if already connected as a Pocket Mate (except Couple invites!)
+        if (itemType != 'couple_spend_invite' &&
+            senderId.isNotEmpty &&
+            matesList.contains(senderId)) {
           continue;
         }
 

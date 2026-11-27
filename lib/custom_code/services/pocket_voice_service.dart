@@ -2,6 +2,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'pocket_learning_track_service.dart';
 
 /// 🎙️ PocketVoiceService: Free Native Multi-Persona Voice Engine
 ///
@@ -58,6 +59,24 @@ class PocketVoiceService {
       }
 
       await tts.setVolume(1.0);
+
+      // 🇩🇪 When German Master Track is active, switch TTS automatically to German (de-DE)
+      if (PocketLearningTrackService.isGerman) {
+        await tts.setLanguage('de-DE');
+        await tts.setSpeechRate(isIos ? 0.47 : 0.44);
+        final double pitch = _currentPersona == 'cybercat'
+            ? 1.24
+            : (_currentPersona == 'male' ? 0.95 : 1.08);
+        await tts.setPitch(pitch);
+        await _applyVoiceCandidates(
+          tts,
+          _currentPersona == 'male'
+              ? ['markus', 'yannick', 'martin', 'de-de-x-nfh', 'de-de', 'de_de', 'german']
+              : ['anna', 'helena', 'petra', 'katrin', 'de-de-x-deg', 'de-de', 'de_de', 'german'],
+          localePrefix: 'de',
+        );
+        return;
+      }
 
       switch (_currentPersona) {
         case 'cybercat':
@@ -129,7 +148,11 @@ class PocketVoiceService {
     }
   }
 
-  Future<void> _applyVoiceCandidates(FlutterTts tts, List<String> candidateNames) async {
+  Future<void> _applyVoiceCandidates(
+    FlutterTts tts,
+    List<String> candidateNames, {
+    String localePrefix = 'en',
+  }) async {
     try {
       final rawVoices = await tts.getVoices;
       if (rawVoices is! List || rawVoices.isEmpty) return;
@@ -140,7 +163,8 @@ class PocketVoiceService {
           if (v is Map) {
             final name = (v['name'] ?? '').toString().toLowerCase();
             final locale = (v['locale'] ?? '').toString().toLowerCase();
-            if (locale.startsWith('en') && (name.contains(candidate) || locale.contains(candidate))) {
+            if (locale.startsWith(localePrefix) &&
+                (name.contains(candidate) || locale.contains(candidate))) {
               selectedVoice = v;
               break;
             }

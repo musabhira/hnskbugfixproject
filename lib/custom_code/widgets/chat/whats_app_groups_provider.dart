@@ -13,6 +13,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_president_service.d
 import 'package:pocket_mates_app/custom_code/services/vibes_seen_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_island_group_service.dart';
 import 'package:pocket_mates_app/custom_code/services/poket_cosmos_allocation_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocketgang_tools_service.dart';
 
 part 'whats_app_groups_provider.g.dart';
 
@@ -528,20 +529,28 @@ class Conversations extends _$Conversations {
       final pinnedIds = await PocketPinnedConversationsService.instance
           .getPinnedConversationIds(userId);
 
-      // Default-pin Pocket Spend once for new users (long-press can unpin anytime)
-      if (prefs.getBool('pocket_spend_default_pinned_done_$userId') != true) {
+      // Default-pin age-appropriate flagship tool once (long-press can unpin anytime)
+      final isUnder20 = await PocketGangToolsService.isUnder20User();
+      final flagshipTitle = isUnder20 ? 'Poket Focus' : 'Poket Spend';
+      final flagshipPinnedId = 'tool_$flagshipTitle';
+      if (prefs.getBool('pocket_spend_default_pinned_done_$userId') != true &&
+          prefs.getBool('poket_flagship_default_pinned_done_$userId') != true) {
         await prefs.setBool('pocket_spend_default_pinned_done_$userId', true);
-        if (!pinnedIds.contains('tool_Pocket Spend')) {
+        await prefs.setBool(
+            'poket_flagship_default_pinned_done_$userId', true);
+        if (!pinnedIds.contains(flagshipPinnedId) &&
+            !(flagshipTitle == 'Poket Spend' &&
+                pinnedIds.contains('tool_Pocket Spend'))) {
           await PocketPinnedConversationsService.instance
               .togglePinConversation(
             userId: userId,
-            conversationId: 'tool_Pocket Spend',
+            conversationId: flagshipPinnedId,
           );
-          pinnedIds.add('tool_Pocket Spend');
+          pinnedIds.add(flagshipPinnedId);
         }
       }
 
-      // Load Favorited Tools (Ensure Schedule is at top for all users)
+      // Load Favorited Tools (Ensure Schedule & flagship tool are ready)
       var favoritedToolsRaw = prefs.getString('favorited_tools_$userId');
       if (favoritedToolsRaw == null || favoritedToolsRaw == '[]') {
         favoritedToolsRaw = prefs.getString('favorited_tools_guest');
@@ -551,7 +560,7 @@ class Conversations extends _$Conversations {
         favoritedTools = [
           {'title': 'Schedule', 'timeAdded': DateTime.now().toIso8601String()},
           {
-            'title': 'Pocket Spend',
+            'title': flagshipTitle,
             'timeAdded': DateTime.now()
                 .subtract(const Duration(seconds: 10))
                 .toIso8601String()
@@ -568,7 +577,7 @@ class Conversations extends _$Conversations {
           favoritedTools = [];
         }
 
-        // Purge deleted / legacy / Zoyarex tools from cached favorites so they never reappear
+        // Purge deleted / legacy / boring micro-tools & normalize naming
         const blockedTitles = {
           'zoyarex',
           'zoyarex admin',
@@ -578,14 +587,53 @@ class Conversations extends _$Conversations {
           '1-on-1 english match',
           'voice speaking sprint',
           'test feature',
+          'quick poll',
+          'split & wish',
+        };
+        const legacyStudyTitles = {
+          'study timer',
+          'study & exams',
+          'flashcards',
+          'goal & habit vault',
+          'memory vault',
+          'habit tracker',
         };
         final beforeLen = favoritedTools.length;
-        favoritedTools = favoritedTools.where((t) {
-          if (t is! Map) return false;
-          final title = (t['title']?.toString() ?? '').trim().toLowerCase();
-          if (title.isEmpty || title.contains('zoyarex')) return false;
-          return !blockedTitles.contains(title);
-        }).toList();
+        bool normalized = false;
+        final List<Map<String, dynamic>> cleaned = [];
+        final seenTitles = <String>{};
+        for (final t in favoritedTools) {
+          if (t is! Map) {
+            normalized = true;
+            continue;
+          }
+          var rawTitle = (t['title']?.toString() ?? '').trim();
+          final lowerTitle = rawTitle.toLowerCase();
+          if (rawTitle.isEmpty ||
+              lowerTitle.contains('zoyarex') ||
+              blockedTitles.contains(lowerTitle)) {
+            normalized = true;
+            continue;
+          }
+          if (rawTitle == 'Pocket Spend') {
+            rawTitle = 'Poket Spend';
+            normalized = true;
+          } else if (rawTitle == 'Pocket Focus' ||
+              legacyStudyTitles.contains(lowerTitle)) {
+            rawTitle = 'Poket Focus';
+            normalized = true;
+          }
+          if (seenTitles.contains(rawTitle)) {
+            normalized = true;
+            continue;
+          }
+          seenTitles.add(rawTitle);
+          cleaned.add({
+            ...Map<String, dynamic>.from(t),
+            'title': rawTitle,
+          });
+        }
+        favoritedTools = cleaned;
 
         final hasSchedule =
             favoritedTools.any((t) => t is Map && t['title'] == 'Schedule');
@@ -595,13 +643,16 @@ class Conversations extends _$Conversations {
             'timeAdded': DateTime.now().toIso8601String(),
           });
         }
-        final hasPocketSpend =
-            favoritedTools.any((t) => t is Map && t['title'] == 'Pocket Spend');
-        if (!hasPocketSpend) {
+        final hasFlagship = favoritedTools.any((t) =>
+            t is Map &&
+            (t['title'] == flagshipTitle ||
+                (isUnder20 && t['title'] == 'Poket Spend') ||
+                (!isUnder20 && t['title'] == 'Poket Focus')));
+        if (!hasFlagship) {
           favoritedTools.insert(
             favoritedTools.isNotEmpty ? 1 : 0,
             {
-              'title': 'Pocket Spend',
+              'title': flagshipTitle,
               'timeAdded': DateTime.now()
                   .subtract(const Duration(seconds: 10))
                   .toIso8601String(),
@@ -609,8 +660,9 @@ class Conversations extends _$Conversations {
           );
         }
         if (favoritedTools.length != beforeLen ||
+            normalized ||
             !hasSchedule ||
-            !hasPocketSpend) {
+            !hasFlagship) {
           await prefs.setString(
               'favorited_tools_$userId', jsonEncode(favoritedTools));
           await prefs.setString(
@@ -623,21 +675,24 @@ class Conversations extends _$Conversations {
         final timeAdded = timeAddedStr != null
             ? DateTime.parse(timeAddedStr)
             : DateTime(2000);
+        final titleStr = (t['title'] ?? 'Tool').toString();
 
         return ChatConversation(
-          id: 'tool_${t['title']}',
-          name: t['title'] ?? 'Tool',
+          id: 'tool_$titleStr',
+          name: titleStr,
           lastMessage: 'Tap to open your favorited tool',
           lastMessageTime: timeAdded,
           unreadCount: 0,
           isGroup: false,
           isTool: true,
-          toolTitle: t['title'],
-          isPinned: pinnedIds.contains('tool_${t['title']}'),
+          toolTitle: titleStr,
+          isPinned: pinnedIds.contains('tool_$titleStr') ||
+              (titleStr == 'Poket Spend' &&
+                  pinnedIds.contains('tool_Pocket Spend')),
         );
       }).toList();
 
-      // Update isPinned for groups (convert private Couple Spend group or show default Pocket Couple group)
+      // Update isPinned for groups (convert private Couple Spend group or show default Poket Couple group)
       final coupleGroupId = prefs.getString('pocket_spend_couple_group_$userId');
       final couplePartnerName =
           prefs.getString('pocket_spend_partner_name_$userId');
@@ -645,7 +700,7 @@ class Conversations extends _$Conversations {
         final isCoupleSpace = c.name.startsWith('💑 ') || c.id == coupleGroupId;
         return ChatConversation(
           id: c.id,
-          name: isCoupleSpace ? 'Pocket Couple' : c.name,
+          name: isCoupleSpace ? 'Poket Couple' : c.name,
           imageUrl: c.imageUrl,
           lastMessage: isCoupleSpace && couplePartnerName != null
               ? '💑 Private chat with $couplePartnerName'
@@ -668,11 +723,11 @@ class Conversations extends _$Conversations {
         );
       }).toList();
 
-      if (!updatedGroups.any((g) => g.name == 'Pocket Couple')) {
+      if (!updatedGroups.any((g) => g.name == 'Poket Couple')) {
         updatedGroups.add(
           ChatConversation(
             id: coupleGroupId ?? 'pocket_couple_default',
-            name: 'Pocket Couple',
+            name: 'Poket Couple',
             lastMessage: couplePartnerName != null
                 ? '💑 Private chat with $couplePartnerName'
                 : '❤️ Tap to add your Couple Partner',

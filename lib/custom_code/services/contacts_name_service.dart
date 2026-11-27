@@ -28,6 +28,29 @@ class ContactsNameService {
   List<Map<String, dynamic>> get matchedProfiles => List.unmodifiable(_matchedProfiles);
   List<String> get allSyncedContactUserIds => _userIdToContactName.keys.toList();
 
+  /// Returns true if contacts are already synced locally or contact read permission is granted.
+  Future<bool> hasContactsSyncedOrPermitted() async {
+    if (_userIdToContactName.isNotEmpty || _matchedProfiles.isNotEmpty) {
+      return true;
+    }
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cachedStr = prefs.getString('cached_contacts_name_map');
+      if (cachedStr != null && cachedStr.isNotEmpty && cachedStr != '{}') {
+        return true;
+      }
+      if (!kIsWeb &&
+          (defaultTargetPlatform == TargetPlatform.android ||
+              defaultTargetPlatform == TargetPlatform.iOS)) {
+        final perm = await FlutterContacts.permissions.check(PermissionType.read);
+        if (perm == PermissionStatus.granted || perm == PermissionStatus.limited) {
+          return true;
+        }
+      }
+    } catch (_) {}
+    return false;
+  }
+
   /// Initialize local contact mappings and trigger background Supabase sync if permitted
   Future<void> initialize() async {
     if (_isInitialized) return;

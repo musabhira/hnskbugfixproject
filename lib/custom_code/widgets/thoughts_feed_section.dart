@@ -382,43 +382,7 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
       color: Colors.transparent,
       child: Column(
         children: [
-        // Minimal Sleek Tab Switcher
-        Container(
-          height: 30,
-          margin: const EdgeInsets.symmetric(horizontal: 48, vertical: 4),
-          decoration: BoxDecoration(
-            color: isDark
-                ? const Color(0xFF1E293B).withValues(alpha: 0.5)
-                : Colors.black.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(15),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.08)
-                  : Colors.black.withValues(alpha: 0.06),
-            ),
-          ),
-          child: TabBar(
-            controller: _tabController,
-            indicator: BoxDecoration(
-              color: const Color(0xFFFFFC00),
-              borderRadius: BorderRadius.circular(15),
-            ),
-            indicatorSize: TabBarIndicatorSize.tab,
-            labelColor: Colors.black,
-            unselectedLabelColor: isDark ? Colors.white60 : Colors.black54,
-            labelStyle:
-                GoogleFonts.outfit(fontWeight: FontWeight.w700, fontSize: 11.5),
-            unselectedLabelStyle:
-                GoogleFonts.outfit(fontWeight: FontWeight.w600, fontSize: 11.5),
-            dividerColor: Colors.transparent,
-            tabs: [
-              Tab(text: _isKid ? '💭 Thoughts' : 'Public'),
-              Tab(text: _isKid ? '🐾 My Gangs' : 'Mates'),
-            ],
-          ),
-        ),
-
-        // Thoughts Compose Prompt Bar
+        // Thoughts Compose Prompt Bar (Public only - no Mates filter)
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
           child: InkWell(

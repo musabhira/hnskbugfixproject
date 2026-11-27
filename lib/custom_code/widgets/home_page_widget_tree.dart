@@ -26,6 +26,8 @@ import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
 import 'dart:io' as io;
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_learning_track_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/german_90day/german_tasks_master_hub.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:math' as math;
@@ -66,11 +68,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart'
 import 'package:pocket_mates_app/custom_code/services/pocket_app_update_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ads/admob_dual_engine_inspector_sheet.dart';
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_student_tools_widgets.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_habit_tracker_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_memory_vault_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_quick_poll_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_split_wishlist_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/poket_focus_page.dart';
 
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
 typedef ChatConversation = groups_provider.ChatConversation;
@@ -117,6 +115,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   final _searchController = TextEditingController();
   String _searchQuery = '';
   int _chatTabIndex = 0;
+  int _vibesSubTabIndex = 0; // 0: Vibes, 1: Thoughts
   int _refreshKeyCount = 0;
   late PageController _pageController;
   int _searchTabIndex = 0; // 0 for People, 1 for Products
@@ -354,6 +353,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     try {
       final prefs = await SharedPreferences.getInstance();
       if (prefs.getBool('pocket_contacts_sync_prompted_$uid') == true) return;
+      final alreadySynced =
+          await ContactsNameService().hasContactsSyncedOrPermitted();
+      if (alreadySynced) {
+        await prefs.setBool('pocket_contacts_sync_prompted_$uid', true);
+        return;
+      }
       await prefs.setBool('pocket_contacts_sync_prompted_$uid', true);
       await Future.delayed(const Duration(seconds: 2));
       if (!mounted) return;
@@ -915,6 +920,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       if (profileResponse != null) {
         await PocketLanguageService.syncWithUserProfile(profileResponse,
             userId: userId);
+        await PocketLearningTrackService.init(force: true, userId: userId);
       }
 
       safeSetState(() {
@@ -1223,7 +1229,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         initialTab = 1;
         break;
       case 'Challenges':
-      case 'Habit Tracker':
         initialTab = 2;
         break;
       case 'Diagrams':
@@ -1234,91 +1239,25 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         break;
       case 'Poket Spend':
       case 'Pocket Spend':
+      case 'Split & Wish':
         page = const PocketSpendPage();
         break;
+      case 'Poket Focus':
+      case 'Pocket Focus':
+      case 'Habit Tracker':
+      case 'Goal & Habit Vault':
+      case 'Quick Poll':
+        page = const PoketFocusPage(initialTab: 0);
+        break;
       case 'Study Timer':
-        final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? 'guest';
-        page = PocketGangStandaloneToolPage(
-          title: 'Study Timer',
-          child: PocketGangStudyTimerWidget(
-            groupId: 'personal_tools_$uid',
-            groupName: 'Personal Study',
-            currentUserId: uid,
-            memberCount: 1,
-          ),
-        );
+        page = const PoketFocusPage(initialTab: 1);
         break;
       case 'Study & Exams':
-        final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? 'guest';
-        page = PocketGangStandaloneToolPage(
-          title: 'Study & Exams',
-          child: PocketGangExamTrackerWidget(
-            groupId: 'personal_tools_$uid',
-            groupName: 'Personal Study',
-            currentUserId: uid,
-            memberCount: 1,
-          ),
-        );
+        page = const PoketFocusPage(initialTab: 2);
         break;
       case 'Flashcards':
-        final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? 'guest';
-        page = PocketGangStandaloneToolPage(
-          title: 'Flashcards',
-          child: PocketGangFlashcardsWidget(
-            groupId: 'personal_tools_$uid',
-            groupName: 'Personal Study',
-            currentUserId: uid,
-            memberCount: 1,
-          ),
-        );
-        break;
-      case 'Goal & Habit Vault':
-        final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? 'guest';
-        page = PocketGangStandaloneToolPage(
-          title: 'Goal & Habit Vault',
-          child: PocketGangHabitTrackerWidget(
-            groupId: 'personal_tools_$uid',
-            groupName: 'Personal Goals',
-            currentUserId: uid,
-            memberCount: 1,
-          ),
-        );
-        break;
       case 'Memory Vault':
-        final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? 'guest';
-        page = PocketGangStandaloneToolPage(
-          title: 'Memory Vault',
-          child: PocketGangMemoryVaultWidget(
-            groupId: 'personal_tools_$uid',
-            groupName: 'Personal Vault',
-            currentUserId: uid,
-            memberCount: 1,
-          ),
-        );
-        break;
-      case 'Quick Poll':
-        final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? 'guest';
-        page = PocketGangStandaloneToolPage(
-          title: 'Quick Poll',
-          child: PocketGangQuickPollWidget(
-            groupId: 'personal_tools_$uid',
-            groupName: 'Quick Poll',
-            currentUserId: uid,
-            memberCount: 1,
-          ),
-        );
-        break;
-      case 'Split & Wish':
-        final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? 'guest';
-        page = PocketGangStandaloneToolPage(
-          title: 'Split & Wish',
-          child: PocketGangSplitWishlistWidget(
-            groupId: 'personal_tools_$uid',
-            groupName: 'Split & Wish',
-            currentUserId: uid,
-            memberCount: 1,
-          ),
-        );
+        page = const PoketFocusPage(initialTab: 3);
         break;
       case 'AI Tools':
         initialTab = 5;
@@ -1349,12 +1288,24 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       case 'Voice Speaking Sprint':
         page = const EnglishLearningHubPage();
         break;
+      case 'German Learning Tasks':
+      case '90-Day German Tasks':
+      case 'German Tasks':
+        final uid = _currentUserId ?? supabase.auth.currentUser?.id;
+        PocketLearningTrackService.setTrack(
+          PocketLearningTrackService.trackGerman,
+          userId: uid,
+        );
+        page = GermanTasksMasterHubPage(userId: uid);
+        break;
       case '90-Day English Tasks':
       case 'English Tasks':
       case 'English Learning Tasks':
       case '90-Day Tasks':
-        page = EnglishTasksMasterHubPage(
-            userId: _currentUserId ?? supabase.auth.currentUser?.id);
+        final uid = _currentUserId ?? supabase.auth.currentUser?.id;
+        page = PocketLearningTrackService.isGerman
+            ? GermanTasksMasterHubPage(userId: uid)
+            : EnglishTasksMasterHubPage(userId: uid);
         break;
       case '1-on-1 English Match':
       case 'Stage Match':
@@ -1530,9 +1481,44 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                     setState(() => _currentIndex = 2),
                               )
                             : _currentIndex == 3
-                                ? EnglishTasksMasterHubPage(
-                                    userId: _currentUserId ??
-                                        supabase.auth.currentUser?.id)
+                                ? ValueListenableBuilder<String>(
+                                    valueListenable: PocketLearningTrackService
+                                        .activeTrackNotifier,
+                                    builder: (context, track, _) {
+                                      final uid = _currentUserId ??
+                                          supabase.auth.currentUser?.id;
+                                      final isDe = track ==
+                                          PocketLearningTrackService
+                                              .trackGerman;
+                                      return AnimatedSwitcher(
+                                        duration:
+                                            const Duration(milliseconds: 450),
+                                        switchInCurve: Curves.easeOutCubic,
+                                        switchOutCurve: Curves.easeInCubic,
+                                        transitionBuilder: (child, anim) =>
+                                            FadeTransition(
+                                          opacity: anim,
+                                          child: ScaleTransition(
+                                            scale: Tween<double>(
+                                                    begin: 0.96, end: 1.0)
+                                                .animate(anim),
+                                            child: child,
+                                          ),
+                                        ),
+                                        child: isDe
+                                            ? GermanTasksMasterHubPage(
+                                                key: const ValueKey(
+                                                    'german_master_hub'),
+                                                userId: uid,
+                                              )
+                                            : EnglishTasksMasterHubPage(
+                                                key: const ValueKey(
+                                                    'english_master_hub'),
+                                                userId: uid,
+                                              ),
+                                      );
+                                    },
+                                  )
                                 : PocketSnapFlameRefresh(
                                     onRefresh: _handleRefresh,
                                     triggerDistance: 85.0,
@@ -1631,23 +1617,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                                 ),
                                               ),
                                               _buildVibesSection(),
-                                              ThoughtsFeedSection(
-                                                key: ValueKey(
-                                                    'thoughts_feed_$_refreshKeyCount'),
-                                                currentUserId:
-                                                    _currentUserId ?? '',
-                                                currentProfileId:
-                                                    profileId ?? '',
-                                                onStatusShared: _handleRefresh,
-                                                searchQuery: _chatTabIndex == 2
-                                                    ? _searchQuery
-                                                    : '',
-                                              ),
                                               ToolsPage(
                                                 onFavoriteToggled:
                                                     _handleRefresh,
                                                 externalSearchQuery:
-                                                    _chatTabIndex == 3
+                                                    _chatTabIndex == 2
                                                         ? _searchQuery
                                                         : null,
                                               ),
@@ -1780,21 +1754,91 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   }
 
   Widget _buildVibesSection() {
-    return StatusDisplayWidget(
-      key: ValueKey('vibes_list_$_refreshKeyCount'),
-      currentUserId: _currentUserId ?? '',
-      currentProfileId: profileId ?? '',
-      searchQuery: _chatTabIndex == 1 ? _searchQuery : '',
-      filterNotifier: _vibesFilterNotifier,
-      isVertical: true,
-      onStatusWatched: () {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            ref.read(conversationsProvider.notifier).refreshNow();
-            safeSetState(() {});
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(48, 8, 48, 4),
+          child: Container(
+            height: 34,
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              color: const Color(0xFF131722),
+              borderRadius: BorderRadius.circular(17),
+              border: Border.all(
+                color: material.Colors.white.withValues(alpha: 0.08),
+              ),
+            ),
+            child: Row(
+              children: [
+                _buildVibesSubTabItem('Vibes', 0),
+                _buildVibesSubTabItem('Thoughts', 1),
+              ],
+            ),
+          ),
+        ),
+        Expanded(
+          child: _vibesSubTabIndex == 0
+              ? StatusDisplayWidget(
+                  key: ValueKey('vibes_list_$_refreshKeyCount'),
+                  currentUserId: _currentUserId ?? '',
+                  currentProfileId: profileId ?? '',
+                  searchQuery: _chatTabIndex == 1 ? _searchQuery : '',
+                  filterNotifier: _vibesFilterNotifier,
+                  isVertical: true,
+                  onStatusWatched: () {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) {
+                        ref.read(conversationsProvider.notifier).refreshNow();
+                        safeSetState(() {});
+                      }
+                    });
+                  },
+                )
+              : ThoughtsFeedSection(
+                  key: ValueKey('thoughts_feed_$_refreshKeyCount'),
+                  currentUserId: _currentUserId ?? '',
+                  currentProfileId: profileId ?? '',
+                  onStatusShared: _handleRefresh,
+                  searchQuery: _chatTabIndex == 1 ? _searchQuery : '',
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVibesSubTabItem(String label, int subIndex) {
+    final isSelected = _vibesSubTabIndex == subIndex;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          if (_vibesSubTabIndex != subIndex) {
+            HapticFeedback.selectionClick();
+            safeSetState(() {
+              _vibesSubTabIndex = subIndex;
+            });
           }
-        });
-      },
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: isSelected
+                ? const Color(0xFFFFFC00)
+                : material.Colors.transparent,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Text(
+            label,
+            style: GoogleFonts.outfit(
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+              color: isSelected
+                  ? material.Colors.black
+                  : material.Colors.white.withValues(alpha: 0.65),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -1804,6 +1848,60 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     final senderId =
         req['sender_id']?.toString() ?? req['source_id']?.toString() ?? '';
     final notifId = req['id']?.toString() ?? '';
+
+    if (req['type'] == 'couple_spend_invite') {
+      final prefs = await SharedPreferences.getInstance();
+      final senderName = req['sender_name']?.toString() ?? 'Partner';
+      final senderAvatar = req['avatar_url']?.toString();
+      await prefs.setString('pocket_spend_partner_id_$uid', senderId);
+      await prefs.setString('pocket_spend_partner_name_$uid', senderName);
+      if (senderAvatar != null && senderAvatar.isNotEmpty) {
+        await prefs.setString('pocket_spend_partner_avatar_$uid', senderAvatar);
+      }
+      String myName = 'Partner';
+      try {
+        final prof = await supabase
+            .from('profile')
+            .select('display_name, name')
+            .eq('user_id', uid)
+            .maybeSingle();
+        final cand = prof?['display_name'] ?? prof?['name'];
+        if (cand != null && cand.toString().trim().isNotEmpty) {
+          myName = cand.toString().trim();
+        }
+        final groupRes = await supabase
+            .from('groups')
+            .insert({
+              'name': '💑 $myName & $senderName',
+              'description': 'Private Poket Couple Space',
+              'created_by': uid,
+            })
+            .select('id')
+            .single();
+        final gid = groupRes['id'].toString();
+        await supabase.from('group_members').insert([
+          {'group_id': gid, 'user_id': uid, 'role': 'admin', 'is_active': true},
+          {'group_id': gid, 'user_id': senderId, 'role': 'admin', 'is_active': true},
+        ]);
+        await prefs.setString('pocket_spend_couple_group_$uid', gid);
+        await supabase.from('notifications').insert({
+          'user_id': senderId,
+          'sender_id': uid,
+          'source_id': uid,
+          'type': 'couple_spend_accepted',
+          'message': '$myName accepted your Poket Couple Mode invite!',
+          'status': 'unread',
+        });
+        if (notifId.isNotEmpty) {
+          await supabase.from('notifications').delete().eq('id', notifId);
+        }
+      } catch (_) {}
+      setState(() {
+        _pendingRequests.removeWhere((r) => r['id'] == notifId);
+      });
+      _handleRefresh();
+      return;
+    }
 
     final success = await PocketMateService.acceptMateRequest(
       notificationId: notifId,
@@ -2034,10 +2132,16 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   radius: 20,
                   backgroundColor:
                       const Color(0xFFFFFC00).withValues(alpha: 0.2),
-                  backgroundImage: conversation.imageUrl != null
+                  backgroundImage: (conversation.imageUrl != null &&
+                          conversation.imageUrl!.startsWith('http'))
                       ? NetworkImage(conversation.imageUrl!)
                       : null,
-                  child: conversation.imageUrl == null
+                  onBackgroundImageError: (conversation.imageUrl != null &&
+                          conversation.imageUrl!.startsWith('http'))
+                      ? (_, __) {}
+                      : null,
+                  child: (conversation.imageUrl == null ||
+                          !conversation.imageUrl!.startsWith('http'))
                       ? Text(
                           conversation.name.isNotEmpty
                               ? conversation.name[0].toUpperCase()
@@ -3892,10 +3996,15 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         CircleAvatar(
           radius: 23,
           backgroundColor: const Color(0xFFFFB300).withValues(alpha: 0.2),
-          backgroundImage: (peerAvatar != null && peerAvatar.isNotEmpty)
-              ? NetworkImage(peerAvatar)
-              : null,
-          child: (peerAvatar == null || peerAvatar.isEmpty)
+          backgroundImage:
+              (peerAvatar != null && peerAvatar.startsWith('http'))
+                  ? NetworkImage(peerAvatar)
+                  : null,
+          onBackgroundImageError:
+              (peerAvatar != null && peerAvatar.startsWith('http'))
+                  ? (_, __) {}
+                  : null,
+          child: (peerAvatar == null || !peerAvatar.startsWith('http'))
               ? Text(
                   peerName.isNotEmpty ? peerName[0].toUpperCase() : 'P',
                   style: const TextStyle(
@@ -4002,18 +4111,23 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         CircleAvatar(
           radius: 23,
           backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.2),
-          backgroundImage: (fight.challengerAvatar.isNotEmpty)
+          backgroundImage: fight.challengerAvatar.startsWith('http')
               ? NetworkImage(fight.challengerAvatar)
               : null,
-          child: (fight.challengerAvatar.isEmpty)
+          onBackgroundImageError: fight.challengerAvatar.startsWith('http')
+              ? (_, __) {}
+              : null,
+          child: !fight.challengerAvatar.startsWith('http')
               ? Text(
-                  fight.challengerName.isNotEmpty
-                      ? fight.challengerName[0].toUpperCase()
-                      : 'C',
-                  style: const TextStyle(
-                    color: Color(0xFFEF4444),
+                  fight.challengerAvatar.isNotEmpty
+                      ? fight.challengerAvatar
+                      : (fight.challengerName.isNotEmpty
+                          ? fight.challengerName[0].toUpperCase()
+                          : 'C'),
+                  style: TextStyle(
+                    color: const Color(0xFFEF4444),
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    fontSize: fight.challengerAvatar.isNotEmpty ? 20 : 16,
                   ),
                 )
               : null,
@@ -4111,10 +4225,15 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         CircleAvatar(
           radius: 23,
           backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.2),
-          backgroundImage: (peerAvatar != null && peerAvatar.isNotEmpty)
-              ? NetworkImage(peerAvatar)
-              : null,
-          child: (peerAvatar == null || peerAvatar.isEmpty)
+          backgroundImage:
+              (peerAvatar != null && peerAvatar.startsWith('http'))
+                  ? NetworkImage(peerAvatar)
+                  : null,
+          onBackgroundImageError:
+              (peerAvatar != null && peerAvatar.startsWith('http'))
+                  ? (_, __) {}
+                  : null,
+          child: (peerAvatar == null || !peerAvatar.startsWith('http'))
               ? Text(
                   peerName.isNotEmpty ? peerName[0].toUpperCase() : '⚔️',
                   style: const TextStyle(
@@ -7318,10 +7437,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     image: DecorationImage(
-                      image: product['image_url'] != null
-                          ? CachedNetworkImageProvider(product['image_url'])
+                      image: (product['image_url'] != null &&
+                              product['image_url']
+                                  .toString()
+                                  .startsWith('http'))
+                          ? CachedNetworkImageProvider(
+                              product['image_url'].toString())
                           : const material.AssetImage(
-                                  'assets/images/placeholder.png')
+                                  'assets/images/pocket_mates_logo.png')
                               as material.ImageProvider,
                       fit: BoxFit.cover,
                     ),
@@ -7929,7 +8052,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Tab Bar (Chats, Vibes, Thoughts, Tools) - Modern Segmented Capsule
+                // Tab Bar (Chats, Vibes, Tools) - Modern Segmented Capsule
                 Container(
                   height: tabBarHeight,
                   color: headerColor,
@@ -7949,8 +8072,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                       children: [
                         _buildTabItem(context, 'Chats', 0),
                         _buildTabItem(context, 'Vibes', 1),
-                        _buildTabItem(context, 'Thoughts', 2),
-                        _buildTabItem(context, 'Tools', 3),
+                        _buildTabItem(context, 'Tools', 2),
                       ],
                     ),
                   ),
@@ -7978,13 +8100,11 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                       cursorColor: const Color(0xFFFFFC00),
                       decoration: material.InputDecoration(
                         isDense: true,
-                        hintText: selectedIndex == 3
+                        hintText: selectedIndex == 2
                             ? 'Search tools, games, or features...'
-                            : selectedIndex == 2
-                                ? 'Search thoughts...'
-                                : selectedIndex == 1
-                                    ? 'Search vibes & stories...'
-                                    : 'Search chats, mates, tools...',
+                            : selectedIndex == 1
+                                ? 'Search vibes & thoughts...'
+                                : 'Search chats, mates, tools...',
                         hintStyle: GoogleFonts.outfit(
                           color: material.Colors.white.withValues(alpha: 0.35),
                           fontSize: 13,

@@ -16,6 +16,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_president_service.d
 import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_learning_track_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_world_mode_selection_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_parental_pattern_lock.dart';
@@ -1311,9 +1312,79 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  void _showLearningTrackPicker() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF0F172A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Choose Learning Language Track',
+              style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'English & German tracks are separated cleanly.',
+              style: GoogleFonts.inter(color: Colors.white60, fontSize: 12),
+            ),
+            const SizedBox(height: 14),
+            for (final opt in [
+              {
+                'code': PocketLearningTrackService.trackEnglish,
+                'title': '🇬🇧 English (90-Day Mastery Track)',
+              },
+              {
+                'code': PocketLearningTrackService.trackGerman,
+                'title': '🇩🇪 Deutsch / German (90-Day Track)',
+              },
+            ])
+              ListTile(
+                title: Text(opt['title']!,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w600)),
+                trailing: PocketLearningTrackService.currentTrack == opt['code']
+                    ? const Icon(Icons.check_circle_rounded,
+                        color: Color(0xFFFFFC00))
+                    : null,
+                onTap: () async {
+                  final uid = SupaFlow.client.auth.currentUser?.id;
+                  final code = opt['code']!;
+                  await PocketLearningTrackService.setTrack(code, userId: uid);
+                  if (code == PocketLearningTrackService.trackEnglish &&
+                      _selectedLanguage.toLowerCase() == 'english') {
+                    await PocketLanguageService.setNativeLanguage('Malayalam',
+                        userId: uid);
+                    if (mounted) {
+                      setState(() => _selectedLanguage = 'Malayalam');
+                    }
+                  } else if (mounted) {
+                    setState(() {});
+                  }
+                  if (ctx.mounted) Navigator.pop(ctx);
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _showLanguagePicker() {
+    final isGerman = PocketLearningTrackService.isGerman;
     final languages = [
-      {'name': 'English', 'native': 'English'},
+      if (isGerman) {'name': 'English', 'native': 'English'},
       {'name': 'Malayalam', 'native': 'മലയാളം'},
       {'name': 'Tamil', 'native': 'தமிழ்'},
       {'name': 'Hindi', 'native': 'हिन्दी'},
@@ -2059,6 +2130,26 @@ class _SettingsPageState extends State<SettingsPage> {
 
               // ⚙️ App Preferences & Performance
               const _SectionHeader(title: 'Preferences & Storage'),
+              ValueListenableBuilder<String>(
+                valueListenable: PocketLearningTrackService.activeTrackNotifier,
+                builder: (context, track, _) {
+                  final isDe = track == PocketLearningTrackService.trackGerman;
+                  return _SettingsTile(
+                    icon: Icons.school_rounded,
+                    iconColor: const Color(0xFF38BDF8),
+                    title: 'Learning Language (Target)',
+                    subtitle: isDe ? 'Deutsch (German)' : 'English',
+                    trailingWidget: Text(
+                      isDe ? '🇩🇪 German' : '🇬🇧 English',
+                      style: const TextStyle(
+                          color: Color(0xFF38BDF8),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13),
+                    ),
+                    onTap: _showLearningTrackPicker,
+                  );
+                },
+              ),
               _SettingsTile(
                 icon: Icons.language_rounded,
                 iconColor: const Color(0xFF3B82F6),

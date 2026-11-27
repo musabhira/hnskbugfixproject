@@ -1,0 +1,10421 @@
+import 'dart:async';
+import 'dart:math' as math;
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_models.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/nft_trading_card_dialog.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/jackie_chan_talisman_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_street_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_open_world_game_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_defense_trap_modal.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_game_rules_modal.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_diagnostic_sheet.dart';
+import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_connectivity_guard_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/day90_master_certificate_dialog.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_syllabus_repository.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_practice_speaking_card.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fluency_gym_detail_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_level_exam_dialog.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_alphabet_phonics_game_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/pocket_opposite_words_game_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/zero_foundation_curriculum_db.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_mission_curriculum_registry.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_daily_battery_reward_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_rewarded_score_alert_modal.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_store_sheet.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
+import 'package:flame/components.dart' show Vector2;
+import 'package:flame/game.dart' show GameWidget;
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/flame_english_house_game.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_feedback_service.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_90day_vocab_curriculum.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day_detail_overview_page.dart';
+import 'german_day_open_world_adventure_page.dart';
+import 'curriculum_data/pocket_german_90day_master_data.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_learning_track_service.dart';
+import 'master_track_selector_pill.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/english_tasks_master_hub.dart'
+    show InPathSubStep, HouseMasterPainter, TargetMilestoneItem;
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day_open_world_adventure_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_interactive_teacher_game.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_secret_code_grammar_card.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_sentence_builder_card.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_slang_smart_english_card.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_time_machine_practice_card.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_verb_timeline_card.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_karaoke_chant_card.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_prepositions_glass_card.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_code_english_decoder_modal.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/career_adventure/cyber_vocab_game_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_tutor_curriculum.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_interactive_flow_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_home_visit_modal.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/pocket_day_curriculum_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_ranking_trail_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_global_rank_list_view.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/student_letter_writing_game_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/student_diary_entry_game_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/student_bio_creator_game_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/student_notice_game_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/student_email_game_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/student_spelling_detective_game_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_chat_reply_builder_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_negative_sentence_builder_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_mini_speech_practice_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_review_card_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/verb_timeline_flame_game.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_house_attack_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_world_mode_selection_dialog.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_app_update_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_english_library_view.dart';
+
+final List<TargetMilestoneItem> kGermanTargetMilestones = [
+  const TargetMilestoneItem(
+    stageNumber: -3,
+    title: 'Profile',
+    rangeText: 'Step -3',
+    targetDay: -3,
+    houseStage: 'Identity & Voice',
+    houseEmoji: '👤',
+    rewardSummary: 'Learner Profile & Avatar Calibration',
+    defenseSummary: 'Voice & Account Setup',
+    themeColor: Color(0xFF818CF8),
+  ),
+  const TargetMilestoneItem(
+    stageNumber: -2,
+    title: 'Routine',
+    rangeText: 'Step -2',
+    targetDay: -2,
+    houseStage: 'Daily Schedule',
+    houseEmoji: '⏱️',
+    rewardSummary: '15-Min Habit Commitment',
+    defenseSummary: 'Study Anchor & Streak Shield',
+    themeColor: Color(0xFFF472B6),
+  ),
+  const TargetMilestoneItem(
+    stageNumber: -1,
+    title: 'Diagnostic',
+    rangeText: 'Step -1',
+    targetDay: -1,
+    houseStage: 'Fluency Level Check',
+    houseEmoji: '📋',
+    rewardSummary: 'Speech Diagnostic Placement',
+    defenseSummary: 'Pronunciation & Track Calibration',
+    themeColor: Color(0xFFA78BFA),
+  ),
+  const TargetMilestoneItem(
+    stageNumber: 0,
+    title: 'Rules',
+    rangeText: 'Charter',
+    targetDay: 0,
+    houseStage: 'Rules & Pledge',
+    houseEmoji: '📜',
+    rewardSummary: 'Charter Badge • 12 Rules',
+    defenseSummary: 'Complete Rule Guide',
+    themeColor: Color(0xFF38BDF8),
+  ),
+  const TargetMilestoneItem(
+    stageNumber: 1,
+    title: 'Levels 1–7',
+    rangeText: 'Days 1–7',
+    targetDay: 7,
+    houseStage: 'Wooden Cabin',
+    houseEmoji: '🌱',
+    rewardSummary: '+50 Coins • Beginner Pass',
+    defenseSummary: '2 Shield Trap Qs',
+    themeColor: Color(0xFF10B981),
+  ),
+  const TargetMilestoneItem(
+    stageNumber: 2,
+    title: 'Levels 8–20',
+    rangeText: 'Days 8–20',
+    targetDay: 20,
+    houseStage: 'Brick Villa',
+    houseEmoji: '🏡',
+    rewardSummary: '+150 Coins • Habit Anchor',
+    defenseSummary: 'Army Knight Guard',
+    themeColor: Color(0xFF38BDF8),
+  ),
+  const TargetMilestoneItem(
+    stageNumber: 3,
+    title: 'Levels 21–45',
+    rangeText: 'Days 21–45',
+    targetDay: 45,
+    houseStage: 'Stone Fortress',
+    houseEmoji: '🏰',
+    rewardSummary: '+300 Coins • Silver Knight',
+    defenseSummary: 'Iron Dome Shield Core',
+    themeColor: Color(0xFFA855F7),
+  ),
+  const TargetMilestoneItem(
+    stageNumber: 4,
+    title: 'Levels 46–70',
+    rangeText: 'Days 46–70',
+    targetDay: 70,
+    houseStage: 'Imperial Manor',
+    houseEmoji: '🏛️',
+    rewardSummary: '+600 Coins • Gold Sovereign',
+    defenseSummary: '15 Question Shield Traps',
+    themeColor: Color(0xFFF59E0B),
+  ),
+  const TargetMilestoneItem(
+    stageNumber: 5,
+    title: 'Levels 71–89',
+    rangeText: 'Days 71–89',
+    targetDay: 89,
+    houseStage: 'Cyber Citadel',
+    houseEmoji: '💎',
+    rewardSummary: '+1000 Coins • Royal Platoon',
+    defenseSummary: 'Titanium Dome + 22 Qs',
+    themeColor: Color(0xFFEC4899),
+  ),
+  const TargetMilestoneItem(
+    stageNumber: 6,
+    title: 'Level 90 Master',
+    rangeText: 'Day 90 Master',
+    targetDay: 90,
+    houseStage: 'Supreme Empire',
+    houseEmoji: '👑',
+    rewardSummary: 'VIP Limousine + 2 Armed Escorts + NFT Card',
+    defenseSummary: 'Max 25 Q Shield + Citadel',
+    themeColor: Color(0xFFFFD700),
+  ),
+  const TargetMilestoneItem(
+    stageNumber: 7,
+    title: 'Level 91 (Palace Raid ⚔️)',
+    rangeText: 'Presidential Citadel',
+    targetDay: 91,
+    houseStage: 'Sovereign Citadel Raid',
+    houseEmoji: '⚔️',
+    rewardSummary: 'Official Fluency Diploma + Presidential Honors',
+    defenseSummary: '250 Boss Trials • Sovereign Citadel Raid',
+    themeColor: Color(0xFFFFD700),
+  ),
+];
+
+/// 🎮 91-Day Full English Transformation Gamified Adventure Map
+/// Super Mario World / Candy Crush / Duolingo style snaking level progression trail (Days 1–91)
+class GermanTasksMasterHubPage extends StatefulWidget {
+  final String? userId;
+
+  const GermanTasksMasterHubPage({super.key, this.userId});
+
+  @override
+  State<GermanTasksMasterHubPage> createState() =>
+      _GermanTasksMasterHubPageState();
+}
+
+class _GermanTasksMasterHubPageState extends State<GermanTasksMasterHubPage>
+    with SingleTickerProviderStateMixin {
+  final _supabase = SupaFlow.client;
+  // Initialize with large offset so Flutter clamps to maxScrollExtent on frame 1 without flashing the summit top!
+  final ScrollController _scrollController =
+      ScrollController(initialScrollOffset: 999999.0);
+  late AnimationController _bobController;
+
+  bool _isLoading = true;
+  bool _isRefreshing = false;
+  int _unifiedPocketScore = 0;
+  int _unifiedTrophies = 0;
+  UserLearningProgress? _progress;
+  String? _equippedTalismanId;
+  bool _hasAcceptedRules = false;
+  LearnerLevel _currentLearnerLevel = LearnerLevel.zero;
+  final int _totalDays = 91;
+  bool _hasConqueredCitadel = false;
+  bool _isSubscribed = false;
+
+  // 🏆 Target Segmented Tabs (0 = Roadmap, 1 = Library, 2 = Global Rank)
+  int _activeTargetTab = 0;
+  late final PageController _targetTabPageController;
+  String? _pendingUpdateStoreUrl;
+
+  // ⏱️ Midnight Daily Unlock Ticker
+  Timer? _midnightTicker;
+  // 🌐 Connectivity re-check timer
+  Timer? _connectivityTimer;
+  Duration _timeUntilMidnight =
+      Learning60DayService.getRemainingTimeUntilMidnight();
+  int _lastCompletedDay = 0;
+  String? _lastCompletedDateStr;
+  final Set<int> _completedDays = {};
+  bool _hasCheckedConsistencyToday = false;
+  final Map<int, String> _completedDates = {};
+  final Map<int, String> _stepsCompletedDates = {};
+  int _levelRivalShuffleSeed = 0;
+
+  // Spacing & node dimensions for upward climbing roadmap with 90 English Houses
+  // User audio directive: "ഒരു വീട് കഴിഞ്ഞ് ഒരു ഗ്യാപ്പ് ഇട്ടിട്ട് ഗേറ്റ്... ഗേറ്റ് കഴിഞ്ഞ ഉടനെ കുറച്ച് ഗ്യാപ്പ് വേണം. എന്നിട്ട് ആഡിന്റെ ഇത് കഴിഞ്ഞിട്ട് പിന്നെയും കുറച്ച് ഗ്യാപ്പ് വേണം. അടുപ്പിച്ച് വേണ്ട കുറച്ച് ലൂസ് ആക്കുക. കുറച്ചുകൂടി ഗ്യാപ്പ് കൂട്ടുക. കുറച്ചുകൂടി നീളം വരും അപ്പോൾ നമ്മുടെ ടാർഗറ്റിലേക്ക്."
+  // Expanded node spacing to 1080.0 so there is a generous, loose, breathable gap after the Gate for the Native Ad Card before the next House!
+  static const double _nodeSpacingY = 1080.0;
+  static const double _expandedActiveGap = 0.0;
+  static const double _topPadding =
+      480.0; // Summit apex spacing with Citadel Palace
+  static const double _bottomPadding = 590.0;
+  double get _ruleNodeY =>
+      _getNodeY(1) + 150.0; // Positioned below Day 1 at the bottom
+  final Map<String, bool> _subStepFlags = {};
+  final Set<int> _daysWithStepsCompleted = {};
+
+  bool _isDayStepsCompleted(int day) {
+    if (_isMasterAdmin) return true;
+    if (_isDayCompleted(day)) return true;
+    return _daysWithStepsCompleted.contains(day);
+  }
+
+  bool _hasInitiallyScrolled = false;
+  final Set<int> _activeRoadmapAdDays = {};
+  int? _adminSelectedDay;
+
+  /// 🔐 Master Admin check for musabthonippadam@gmail.com (Audio Directive: all days, gates, steps unlocked)
+  bool get _isMasterAdmin {
+    final email = _supabase.auth.currentUser?.email;
+    if (AdminAuthService.isMasterAdminEmail(email)) return true;
+    final uid = widget.userId;
+    if (uid != null &&
+        (AdminAuthService.isMasterAdminEmail(uid) ||
+            uid.toLowerCase().contains('musab') ||
+            uid.toLowerCase().contains('admin'))) return true;
+    return false;
+  }
+
+  bool get _effectiveRulesAccepted => _hasAcceptedRules || _isMasterAdmin;
+
+  @override
+  void initState() {
+    super.initState();
+    _targetTabPageController = PageController(initialPage: 0);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        PocketConnectivityGuardService.ensureConnected(context,
+            isBlocking: true);
+      }
+    });
+    _connectivityTimer = Timer.periodic(const Duration(seconds: 6), (t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+      PocketConnectivityGuardService.ensureConnected(context, isBlocking: true);
+    });
+    _bobController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1300),
+    )..repeat(reverse: true);
+
+    // Live countdown to Midnight 12:00 AM
+    _midnightTicker = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return;
+      final remaining = Learning60DayService.getRemainingTimeUntilMidnight();
+      setState(() {
+        _timeUntilMidnight = remaining;
+      });
+      // If midnight just passed, refresh progress to unlock the next level
+      if (remaining.inSeconds <= 0 && _lastCompletedDay > 0) {
+        _loadData();
+      }
+    });
+
+    _loadData();
+    PocketAppUpdateService.getAvailableUpdateStoreUrl().then((url) {
+      if (mounted && url != null) {
+        setState(() => _pendingUpdateStoreUrl = url);
+      }
+    });
+    // ⚡ Preload Native Ad for roadmap gaps between Gate and next House
+    PocketAdPreloadManager.instance
+        .preloadForPlacement(PocketAdPlacement.target);
+    // 🎵 Play gentle ambient target roadmap loop music
+    PocketGameAudioService.instance.playTargetTheme();
+    PocketSyllabusRepository.getSavedLevel().then((lvl) {
+      if (mounted) setState(() => _currentLearnerLevel = lvl);
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 1800), () {
+        if (mounted &&
+            !_isSubscribed &&
+            !PocketAdMobService.instance.isUserVipSync()) {
+          PocketRewardedScoreAlertModal.checkAndShowPeriodic(context,
+              onRewardClaimed: () {
+            _loadData();
+          });
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    PocketGameAudioService.instance.pause();
+    _activeRoadmapAdDays.clear();
+    _targetTabPageController.dispose();
+    _midnightTicker?.cancel();
+    _connectivityTimer?.cancel();
+    _bobController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  bool _isDayWaitingForMidnight(int day) {
+    if (_isMasterAdmin)
+      return false; // 🔐 Master Admin bypasses all midnight locks
+    if (_isSubscribed)
+      return false; // VIP Subscribers bypass the 24-hour midnight wait lock!
+    if (day <= 1) return false;
+    if (_isDayCompleted(day))
+      return false; // Completed days never wait for midnight!
+    if (!_isDayCompleted(day - 1)) return false;
+
+    final now = DateTime.now();
+    final todayStr = '${now.year}-${now.month}-${now.day}';
+
+    // 🎯 If the previous day's learning steps were completed on a prior date (e.g. yesterday),
+    // the user has ALREADY waited overnight! Attacking the gate today must NOT trigger another 24-hour wait!
+    final stepsDate = _stepsCompletedDates[day - 1];
+    if (stepsDate != null && stepsDate.isNotEmpty && stepsDate != todayStr) {
+      return false; // Steps finished on an earlier date -> Unlock immediately!
+    }
+
+    final lastCompDate = _completedDates[day - 1] ?? _lastCompletedDateStr;
+    if (lastCompDate == null || lastCompDate.isEmpty) return false;
+    return lastCompDate == todayStr;
+  }
+
+  /// Strictly checks if a day has actually been completed
+  bool _isDayCompleted(int day) {
+    if (day < 1) return true;
+    return _completedDays.contains(day);
+  }
+
+  /// Level N can ONLY be unlocked if:
+  /// 1. Rules accepted (if Level 1)
+  /// 2. Level N-1 has been COMPLETED with exam passed
+  /// 3. Pocket Score >= getRequiredScoreForLevel(N)
+  /// 4. Not waiting for midnight digestion interval (bypassed by VIP subscription or admin)
+  /// 🔐 Note: musabthonippadam@gmail.com (Master Admin) bypasses all locks instantly!
+  bool _isDayUnlocked(int day, int currentDay) {
+    if (_isMasterAdmin)
+      return true; // 🔐 Master admin bypass: All 90 days unlocked!
+    if (day == 1) return true;
+    // Sequential prerequisite check: previous level MUST be completed!
+    if (!_isDayCompleted(day - 1)) return false;
+    // VIP Subscribers bypass score requirement and midnight lock, but still play sequentially!
+    if (_isSubscribed) return true;
+    // Pocket Score threshold check (Audio Directive: pocket score base cheythu level unlock)
+    final reqScore = PocketScoreLevelEngine.getRequiredScoreForLevel(day);
+    if (_unifiedPocketScore < reqScore) return false;
+    // Audio Directive: "Trophy restriction illa tto. Trophy restriction illa."
+    // If waiting for midnight countdown (waits until 12:00 AM next day unless subscribed)
+    if (_isDayWaitingForMidnight(day)) return false;
+    return true;
+  }
+
+  Future<void> _loadData() async {
+    final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+    if (uid == null) {
+      if (mounted) setState(() => _isLoading = false);
+      return;
+    }
+
+    final progRaw = await Learning60DayService().fetchProgress(uid);
+    final score = await PocketFortressDefenseService.getUnifiedScore(uid, true);
+    final trophies = await PocketTrophyService.getTrophyCount(uid);
+
+    final prefs = await SharedPreferences.getInstance();
+    final lastCompDay =
+        prefs.getInt('learning_de_last_completed_day_$uid') ?? 0;
+
+    // Collect all actually completed days and completion dates for this user
+    final Set<int> completed = {};
+    final Set<int> stepsCompleted = {};
+    final Map<int, String> compDates = {};
+    final Map<int, String> stepsDates = {};
+    for (int d = 1; d <= _totalDays; d++) {
+      if (prefs.getBool('pocket_de_day_${uid}_${d}_completed') == true) {
+        completed.add(d);
+        final dDate =
+            prefs.getString('learning_de_day_${uid}_${d}_completed_date');
+        if (dDate != null && dDate.isNotEmpty) {
+          compDates[d] = dDate;
+        }
+      }
+      final sDate = prefs.getString('learning_de_day_${uid}_${d}_steps_date');
+      if (sDate != null && sDate.isNotEmpty) {
+        stepsDates[d] = sDate;
+      }
+      if (prefs.getBool('pocket_de_day_${uid}_${d}_steps_completed') == true ||
+          prefs.getBool('pocket_de_day_${uid}_${d}_completed') == true) {
+        stepsCompleted.add(d);
+      }
+    }
+
+    // If a brand new user (Day 1 with 0 score), ensure Day 1 is pristine and uncompleted
+    if (progRaw.currentDay <= 1 && score == 0) {
+      completed.remove(1);
+      stepsCompleted.remove(1);
+      prefs.remove('pocket_de_day_${uid}_1_completed');
+      prefs.remove('pocket_de_day_${uid}_1_steps_completed');
+    }
+
+    final int effectiveLastCompDay =
+        completed.isNotEmpty ? completed.reduce(math.max) : lastCompDay;
+    final String? effectiveLastCompDate = compDates[effectiveLastCompDay] ??
+        prefs.getString(
+            'learning_de_day_${uid}_${effectiveLastCompDay}_completed_date');
+
+    // 🪙 Find the current active incomplete level sequentially
+    int activeDay = 1;
+    for (int d = 1; d <= _totalDays; d++) {
+      if (!completed.contains(d)) {
+        activeDay = d;
+        break;
+      }
+    }
+
+    int calculatedCurrentDay = activeDay.clamp(1, _totalDays);
+
+    // Sync persisted state with active level
+    await prefs.setInt('pocket_learning_de_stage_$uid', calculatedCurrentDay);
+    await prefs.setInt('learning_de_day_$uid', calculatedCurrentDay);
+
+    final effectiveDay = calculatedCurrentDay;
+    final prog = progRaw.copyWith(currentDay: effectiveDay);
+
+    String? talismanId;
+    try {
+      final talisman = await JackieChanTalismanService.getEquippedTalisman();
+      talismanId = talisman.id;
+    } catch (_) {}
+
+    final rulesAccepted = (prog.currentDay > 1) ||
+        (prefs.getBool('pm_onboarding_completed') ?? false) ||
+        (prefs.getBool('pm_onboarding_completed_$uid') ?? false) ||
+        (prefs.getBool('pocket_world_rules_accepted_${uid}_v1') ??
+            prefs.getBool('pocket_world_rules_accepted_v1') ??
+            false);
+
+    final isVip = await PocketAdService().isUserSubscribed();
+    final isCitadelConquered =
+        await PocketPresidentService.hasConqueredPresidentialCitadel(uid);
+    final savedLevel = await PocketSyllabusRepository.getSavedLevel();
+
+    final Map<String, bool> subFlags = {};
+    for (int step = 1; step <= 20; step++) {
+      final userKey =
+          'pocket_de_day_${uid}_${calculatedCurrentDay}_step_${step}_done';
+      final guestKey =
+          'pocket_de_day_guest_${calculatedCurrentDay}_step_${step}_done';
+
+      final bool userDone = uid.isNotEmpty &&
+          ((prefs.getBool(userKey) == true) ||
+              (prefs.getBool(
+                      'pocket_de_day_${uid}_${calculatedCurrentDay}_step_${step}_completed') ==
+                  true) ||
+              (step == 1 &&
+                  prefs.getBool(
+                          'pocket_de_day_${uid}_${calculatedCurrentDay}_step_1_completed') ==
+                      true));
+      final bool guestDone = (prefs.getBool(guestKey) == true) ||
+          (prefs.getBool(
+                  'pocket_de_day_guest_${calculatedCurrentDay}_step_${step}_completed') ==
+              true) ||
+          (step == 1 &&
+              prefs.getBool(
+                      'pocket_de_day_guest_${calculatedCurrentDay}_step_1_completed') ==
+                  true);
+
+      final bool isDone = userDone || guestDone;
+      subFlags['step_$step'] = isDone;
+
+      // Auto self-heal: sync guest progress to user's profile key
+      if (isDone && uid.isNotEmpty && !userDone) {
+        prefs.setBool(userKey, true);
+        prefs.setBool(
+            'pocket_de_day_${uid}_${calculatedCurrentDay}_step_${step}_completed',
+            true);
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _isSubscribed = isVip;
+        _hasConqueredCitadel = isCitadelConquered;
+        _currentLearnerLevel = savedLevel;
+        _progress = prog;
+        _unifiedPocketScore = score;
+        _unifiedTrophies = trophies;
+        _completedDays
+          ..clear()
+          ..addAll(completed);
+        _daysWithStepsCompleted
+          ..clear()
+          ..addAll(stepsCompleted);
+        _completedDates
+          ..clear()
+          ..addAll(compDates);
+        _stepsCompletedDates
+          ..clear()
+          ..addAll(stepsDates);
+        _subStepFlags
+          ..clear()
+          ..addAll(subFlags);
+        _equippedTalismanId = talismanId;
+        _hasAcceptedRules = rulesAccepted;
+        _lastCompletedDay = effectiveLastCompDay;
+        _lastCompletedDateStr = effectiveLastCompDate;
+        _isLoading = false;
+        _isRefreshing = false;
+      });
+
+      // Instant initial positioning to current active day or Rules node without animated downward scroll
+      // User Audio Directive: "keri varumbol thanne ... scroll cheythu adiyil pokunna feeling undu, athu venda. Starting thanne scrollingil ninnu thudangiyaal mathi... speed-il athu venda"
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!_hasInitiallyScrolled) {
+          _hasInitiallyScrolled = true;
+          if (!rulesAccepted) {
+            _scrollToRule(animate: false);
+          } else {
+            _scrollToDay(prog.currentDay, animate: false);
+          }
+        }
+
+        // 🚨 Check Daily Consistency (User Audio Directive: Consistency loss / focus loss downgrade)
+        if (!_hasCheckedConsistencyToday) {
+          _hasCheckedConsistencyToday = true;
+          final consistencyRes =
+              await PocketFortressDefenseService.checkDailyConsistency(
+            prog.currentDay,
+            prog.streakDays,
+          );
+          if (consistencyRes.didDowngrade && mounted) {
+            _showConsistencyLossDialog(consistencyRes);
+          }
+        }
+      });
+    }
+  }
+
+  /// Returns the systematic stage-evolved avatar for the day, matching the Main Profile view exactly!
+  VectorAvatarConfig _getAvatarForDay(int day) {
+    return VectorAvatarConfig.getEvolutionAvatarForStage(day,
+        talismanId: _equippedTalismanId);
+  }
+
+  double _getNodeXFractional(double dayFraction, double screenWidth) {
+    final center = screenWidth / 2;
+    if (dayFraction >= 33) {
+      // 🎯 Audio Directive: From Day 33 onwards, track goes straight through center with subtle micro-bends!
+      // This prevents big estates and castles (Day 33, 51, 52, 55, 56, 64 etc.) from clipping on screen edges.
+      final subtleWave = math.sin((dayFraction - 33) * 0.55) * 14.0;
+      return center + subtleWave;
+    }
+    // Days 1 to 32: Gentle pleasant bends, safely bounded so houses never clip
+    final maxAmp = ((screenWidth - 250) / 2).clamp(16.0, 36.0);
+    final wave = math.sin((dayFraction - 1) * 0.65);
+    return center + (wave * maxAmp);
+  }
+
+  double _getNodeX(int day, double screenWidth) {
+    return _getNodeXFractional(day.toDouble(), screenWidth);
+  }
+
+  /// Inverted coordinate system:
+  /// Day 91 is at the summit apex (_topPadding = 480).
+  /// Day 1 is at the bottom.
+  /// Rules node is placed below Day 1 (_ruleNodeY).
+  double _getNodeY(int day) {
+    final int daysFromTop = _totalDays - day;
+    return _topPadding + (daysFromTop * _nodeSpacingY);
+  }
+
+  double _getSubStepY(int activeDay, int stepNumber, {int totalSteps = 17}) {
+    final denom = (totalSteps + 1).toDouble();
+    final fraction = stepNumber / denom;
+    return _getNodeY(activeDay) -
+        (fraction * (_nodeSpacingY + _expandedActiveGap));
+  }
+
+  double _getSubStepX(int activeDay, int stepNumber, double screenWidth,
+      {int totalSteps = 17}) {
+    final denom = (totalSteps + 1).toDouble();
+    final fraction = stepNumber / denom;
+    final startX = _getNodeX(activeDay, screenWidth);
+    final endX = _getNodeX(activeDay + 1, screenWidth);
+    final linearX = startX + (endX - startX) * fraction;
+    final amplitude = (screenWidth - 150) / 2;
+    // Winding mountain switchback S-curves along the steps
+    final wave = math.sin(fraction * math.pi * 3.0) * (amplitude * 0.72);
+    return (linearX + wave).clamp(65.0, screenWidth - 65.0);
+  }
+
+  /// Lightweight Viewport Culling Check (User Audio Directive: "hang aavaruthu... lightweight aayirikkanam... lazy loading okke koduthittu")
+  bool _isDayInViewport(int day, double minY, double maxY) {
+    final y = _getNodeY(day);
+    return (y >= minY - 520.0) && (y <= maxY + 520.0);
+  }
+
+  bool _isRoadmapAdInViewport(int day, double minY, double maxY) {
+    if (!_hasInitiallyScrolled) return false;
+    // Spaced along mountain trail at alternate gates (Day 1, 3, 5, 7, 9...)
+    // so ads repeat persistently without overlapping houses
+    if (day % 2 == 0) return false;
+    final adY = _getNodeY(day) - (_nodeSpacingY * 0.68);
+
+    // 🛡️ Hysteresis Culling Window (Anti-Wipeout & Anti-Flicker):
+    // Enter buffer (1400px): Mounts smoothly ~1.5 screens before user arrives.
+    // Exit buffer (2600px): Unmounts ONLY after user scrolls ~2.5–3 screens away.
+    // When the user scrolls slightly up or down to inspect the ad, it NEVER unmounts or vanishes!
+    final bool isCurrentlyActive = _activeRoadmapAdDays.contains(day);
+    const double enterBuffer = 1400.0;
+    const double exitBuffer = 2600.0;
+
+    if (isCurrentlyActive) {
+      final bool stillInRange =
+          (adY >= minY - exitBuffer) && (adY <= maxY + exitBuffer);
+      if (!stillInRange) {
+        _activeRoadmapAdDays.remove(day);
+        return false;
+      }
+      return true;
+    } else {
+      final bool shouldEnter =
+          (adY >= minY - enterBuffer) && (adY <= maxY + enterBuffer);
+      if (shouldEnter) {
+        _activeRoadmapAdDays.add(day);
+        return true;
+      }
+      return false;
+    }
+  }
+
+  void _scrollToRule({bool animate = false}) {
+    if (!_scrollController.hasClients ||
+        !_scrollController.position.hasContentDimensions) return;
+    final targetY = _ruleNodeY - 280.0;
+    final clampedY = targetY.clamp(
+      0.0,
+      _scrollController.position.maxScrollExtent,
+    );
+    if (animate) {
+      _scrollController.animateTo(
+        clampedY,
+        duration: const Duration(milliseconds: 700),
+        curve: Curves.easeOutCubic,
+      );
+    } else {
+      _scrollController.jumpTo(clampedY);
+    }
+  }
+
+  void _scrollToDay(int day, {bool animate = false}) {
+    if (!_scrollController.hasClients ||
+        !_scrollController.position.hasContentDimensions) return;
+    final targetY = _getNodeY(day) - 280.0;
+    final clampedY = targetY.clamp(
+      0.0,
+      _scrollController.position.maxScrollExtent,
+    );
+
+    if (animate) {
+      _scrollController.animateTo(
+        clampedY,
+        duration: const Duration(milliseconds: 950),
+        curve: Curves.easeOutCubic,
+      );
+    } else {
+      _scrollController.jumpTo(clampedY);
+    }
+  }
+
+  void _scrollToGate(int day, {bool animate = true}) {
+    if (!_scrollController.hasClients ||
+        !_scrollController.position.hasContentDimensions) return;
+    final gateY = _getNodeY(day) - (_nodeSpacingY * 0.36);
+    final screenH = MediaQuery.of(context).size.height;
+    final targetY = (gateY - (screenH * 0.45)).clamp(
+      0.0,
+      _scrollController.position.maxScrollExtent,
+    );
+
+    if (animate) {
+      _scrollController.animateTo(
+        targetY,
+        duration: const Duration(milliseconds: 750),
+        curve: Curves.easeOutCubic,
+      );
+    } else {
+      _scrollController.jumpTo(targetY);
+    }
+  }
+
+  /// Handler when an in-path sub-step is completed
+  Future<void> _onSubStepFinished(int day, int stepIndex) async {
+    final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+    int pointsAwarded = (stepIndex == 17) ? 120 : 30;
+    final prefs = await SharedPreferences.getInstance();
+    if (uid != null && uid.isNotEmpty) {
+      final alreadyDone =
+          prefs.getBool('pocket_de_day_${uid}_${day}_step_${stepIndex}_done') ==
+              true;
+      await prefs.setBool(
+          'pocket_de_day_${uid}_${day}_step_${stepIndex}_done', true);
+      await prefs.setBool(
+          'pocket_de_day_${uid}_${day}_step_${stepIndex}_completed', true);
+
+      // Award marks / Pocket Score for each step (User audio directive: 500-600 PS per day)
+      // Steps 1 to 16 = 30 PS each, Step 17 Mastery Exam = 120 PS bonus (Total: 600 PS/day)
+      if (!alreadyDone) {
+        await PocketFortressDefenseService.recordTrainingPoints(
+            pointsAwarded, uid);
+      }
+
+      // Passing the 17th step (Mastery Exam) certifies Day learning steps and records steps completion date
+      if (stepIndex == 17) {
+        await prefs.setBool(
+            'pocket_de_day_${uid}_${day}_steps_completed', true);
+        await prefs.setInt('learning_de_last_completed_day_$uid', day);
+        final now = DateTime.now();
+        final todayStr = '${now.year}-${now.month}-${now.day}';
+        final existingStepsDate =
+            prefs.getString('learning_de_day_${uid}_${day}_steps_date');
+        if (existingStepsDate == null || existingStepsDate.isEmpty) {
+          await prefs.setString(
+              'learning_de_day_${uid}_${day}_steps_date', todayStr);
+        }
+
+        // 🚀 User Audio Requirement: As soon as Day D learning missions are completed,
+        // user has mastered Day D! Upgrade their level & learning_day in Supabase profile immediately:
+        final nextDay = day + 1;
+        await prefs.setInt('pocket_learning_de_stage_$uid', nextDay);
+        await prefs.setInt('learning_de_day_$uid', nextDay);
+        final stage = LearningMilestoneStage.getStageForDay(nextDay);
+        try {
+          await _supabase.from('profile').update({
+            'learning_day': nextDay,
+            'learning_stage': stage.stageNumber,
+            'level': nextDay,
+            'last_learning_date': now.toIso8601String(),
+          }).eq('user_id', uid);
+        } catch (_) {}
+      }
+    }
+    // Always persist to fallback guest keys as well
+    await prefs.setBool(
+        'pocket_de_day_guest_${day}_step_${stepIndex}_done', true);
+    await prefs.setBool(
+        'pocket_de_day_guest_${day}_step_${stepIndex}_completed', true);
+    if (stepIndex == 17) {
+      await prefs.setBool('pocket_de_day_guest_${day}_steps_completed', true);
+    }
+    HapticFeedback.heavyImpact();
+    await _loadData();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Text('🪙', style: TextStyle(fontSize: 18)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  stepIndex == 17
+                      ? '🎉 Day $day Mastered! +$pointsAwarded PS 🪙 • House ${day + 1} Gate Unlocked!'
+                      : 'Step $stepIndex / 17 Done! +$pointsAwarded PS 🪙 Keep climbing up the trail 🚀',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF10B981),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  /// Helper to open any practice card cleanly in a dedicated full-width modal page
+  Future<void> _openCardPage({
+    required String title,
+    required String stepTag,
+    required Color accentColor,
+    required Widget Function(BuildContext ctx, void Function(bool) markDone)
+        childBuilder,
+  }) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (pageCtx) => Scaffold(
+          backgroundColor: const Color(0xFF0A1118),
+          appBar: AppBar(
+            backgroundColor: const Color(0xFF131722),
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white),
+              onPressed: () => Navigator.pop(pageCtx),
+            ),
+            title: Row(
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: accentColor.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(8),
+                    border:
+                        Border.all(color: accentColor.withValues(alpha: 0.6)),
+                  ),
+                  child: Text(
+                    stepTag,
+                    style: GoogleFonts.outfit(
+                      color: accentColor,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: childBuilder(pageCtx, (completed) {
+                if (completed) {
+                  Navigator.pop(pageCtx);
+                }
+              }),
+            ),
+          ),
+          bottomNavigationBar: (!PocketKidsService.isKidsWorld &&
+                  !PocketKidsService.isKidAccount)
+              ? Container(
+                  color: const Color(0xFF131722),
+                  child: const SafeArea(
+                    top: false,
+                    child: PocketBannerAdWidget(
+                      margin: EdgeInsets.symmetric(vertical: 4),
+                    ),
+                  ),
+                )
+              : null,
+        ),
+      ),
+    );
+  }
+
+  // --- 17 DEDICATED IN-PATH SUB-STEP LAUNCHERS ---
+
+  // 1: Interactive Teacher Game (Replaced static theory page!)
+  Future<void> _launchStep1_Theory(int day) async {
+    HapticFeedback.lightImpact();
+    await PocketInteractiveTeacherGameModal.show(
+      context,
+      day: day,
+      userId: widget.userId ?? _supabase.auth.currentUser?.id,
+      initialLevel: _currentLearnerLevel,
+      onCompleted: () async {
+        await _onSubStepFinished(day, 1);
+      },
+    );
+  }
+
+  // 2: 10 Core Vocabulary Words
+  Future<void> _launchStep2_Vocab(int day) async {
+    HapticFeedback.lightImpact();
+    final vocabList = PocketGerman90DayMasterData.getVocabForDay(day);
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (pageCtx) => Scaffold(
+          backgroundColor: const Color(0xFF0A1118),
+          appBar: AppBar(
+            backgroundColor: const Color(0xFF131722),
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white),
+              onPressed: () => Navigator.pop(pageCtx),
+            ),
+            title: Text(
+              'Day $day • 10 Core Vocabulary Words',
+              style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16),
+            ),
+          ),
+          body: SafeArea(
+            child: ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: vocabList.length + 1,
+              separatorBuilder: (_, __) => const SizedBox(height: 10),
+              itemBuilder: (ctx, i) {
+                if (i == vocabList.length) {
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 12, bottom: 24),
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () async {
+                        Navigator.pop(pageCtx);
+                        await _onSubStepFinished(day, 2);
+                      },
+                      icon: const Icon(Icons.check_circle_rounded, size: 20),
+                      label: Text(
+                        'I MEMORIZED ALL 10 WORDS ✓',
+                        style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.w900, fontSize: 13),
+                      ),
+                    ),
+                  );
+                }
+                final item = vocabList[i];
+                return Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF131728),
+                    borderRadius: BorderRadius.circular(14),
+                    border:
+                        Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 28,
+                        height: 28,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFFF8906),
+                          shape: BoxShape.circle,
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          '${i + 1}',
+                          style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  item.word,
+                                  style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 1.5),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.08),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    item.partOfSpeech.toUpperCase(),
+                                    style: GoogleFonts.inter(
+                                        color: Colors.white60,
+                                        fontSize: 8.5,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (!PocketLanguageService.isEnglish &&
+                                item.localizedMeaning.isNotEmpty &&
+                                item.localizedMeaning != item.definition) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                item.localizedMeaning,
+                                style: GoogleFonts.inter(
+                                    color: const Color(0xFFFFD700),
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                            const SizedBox(height: 4),
+                            Text(
+                              item.definition,
+                              style: GoogleFonts.inter(
+                                  color: Colors.white70, fontSize: 11.5),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 3: Day 1 Alphabet & 44 Phonics; Days 2–90 Unique Opposite Words Quest
+  Future<void> _launchStep3_Phonics(int day, LearnerLevel level) async {
+    HapticFeedback.lightImpact();
+    if (day >= 2) {
+      final res = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PocketOppositeWordsGamePage(day: day),
+        ),
+      );
+      if (res == true) {
+        await _onSubStepFinished(day, 3);
+      }
+      return;
+    }
+
+    List<AlphabetPhonicItem> phonicsList = [];
+    try {
+      if (level == LearnerLevel.zero) {
+        final zeroPlan = ZeroFoundationCurriculumDB.getDayPlan(day);
+        if (zeroPlan.phonicsDrills.isNotEmpty) {
+          phonicsList = zeroPlan.phonicsDrills;
+        }
+      }
+      if (phonicsList.isEmpty) {
+        phonicsList = PocketMissionCurriculumRegistry.getAlphabetPhonics(day);
+      }
+    } catch (_) {}
+
+    if (phonicsList.isNotEmpty) {
+      final res = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PocketAlphabetPhonicsGamePage(
+            day: day,
+            selectedLanguage: 'Malayalam',
+            phonicsList: phonicsList,
+          ),
+        ),
+      );
+      if (res == true) {
+        await _onSubStepFinished(day, 3);
+      }
+    } else {
+      await _onSubStepFinished(day, 3);
+    }
+  }
+
+  // 4: Fluency Gym
+  Future<void> _launchStep4_FluencyGym(int day, LearnerLevel level) async {
+    HapticFeedback.lightImpact();
+    final res = await PocketFluencyGymDetailPage.open(
+      context,
+      day: day,
+      selectedLanguage: 'Malayalam',
+      isInitiallyCompleted: _subStepFlags['step_4'] ?? false,
+      onCompleted: (val) {
+        if (val) _onSubStepFinished(day, 4);
+      },
+    );
+    if (res == true) {
+      await _onSubStepFinished(day, 4);
+    }
+  }
+
+  // 5: Secret Code Grammar
+  Future<void> _launchStep5_SecretCode(int day) async {
+    HapticFeedback.lightImpact();
+    await _openCardPage(
+      title: 'Secret Code Grammar Matrix',
+      stepTag: 'STEP 5',
+      accentColor: const Color(0xFFFFD700),
+      childBuilder: (ctx, markDone) => PocketSecretCodeGrammarCard(
+        day: day,
+        selectedLanguage: 'Malayalam',
+        isCompleted: _subStepFlags['step_5'] ?? false,
+        onSpeak: (text) {},
+        onCompleted: (val) async {
+          if (val) {
+            await _onSubStepFinished(day, 5);
+            markDone(true);
+          }
+        },
+      ),
+    );
+  }
+
+  // 6: Sentence Builder Puzzle
+  Future<void> _launchStep6_SentenceBuilder(int day) async {
+    HapticFeedback.lightImpact();
+    await _openCardPage(
+      title: 'Sentence Builder Gym',
+      stepTag: 'STEP 6',
+      accentColor: const Color(0xFF00E5FF),
+      childBuilder: (ctx, markDone) => PocketSentenceBuilderCard(
+        day: day,
+        isCompleted: _subStepFlags['step_6'] ?? false,
+        onSpeak: (text) {},
+        onCompleted: (val) async {
+          if (val) {
+            await _onSubStepFinished(day, 6);
+            markDone(true);
+          }
+        },
+      ),
+    );
+  }
+
+  // 7: Daily Slang to Smart English
+  Future<void> _launchStep7_Slang(int day) async {
+    HapticFeedback.lightImpact();
+    await _openCardPage(
+      title: 'Daily Slang to Smart English',
+      stepTag: 'STEP 7',
+      accentColor: const Color(0xFFFF6D00),
+      childBuilder: (ctx, markDone) => PocketSlangSmartEnglishCard(
+        day: day,
+        selectedLanguage: 'Malayalam',
+        isCompleted: _subStepFlags['step_7'] ?? false,
+        onSpeak: (text) {},
+        onCompleted: (val) async {
+          if (val) {
+            await _onSubStepFinished(day, 7);
+            markDone(true);
+          }
+        },
+      ),
+    );
+  }
+
+  // 8: Practice Speaking Aloud
+  Future<void> _launchStep8_Speaking(int day) async {
+    HapticFeedback.lightImpact();
+    await _openCardPage(
+      title: 'Practice Speaking Aloud',
+      stepTag: 'STEP 8',
+      accentColor: const Color(0xFFE040FB),
+      childBuilder: (ctx, markDone) => PocketPracticeSpeakingCard(
+        day: day,
+        isCompleted: _subStepFlags['step_8'] ?? false,
+        onCompleted: (val) async {
+          if (val) {
+            await _onSubStepFinished(day, 8);
+            markDone(true);
+          }
+        },
+      ),
+    );
+  }
+
+  // 9: Time Machine Verbs Trainer
+  Future<void> _launchStep9_TimeMachine(int day) async {
+    HapticFeedback.lightImpact();
+    await _openCardPage(
+      title: 'Time Machine Verbs Trainer',
+      stepTag: 'STEP 9',
+      accentColor: const Color(0xFFFFC107),
+      childBuilder: (ctx, markDone) => PocketTimeMachinePracticeCard(
+        day: day,
+        selectedLanguage: 'Malayalam',
+        isCompleted: _subStepFlags['step_9'] ?? false,
+        onCompleted: (val) async {
+          if (val) {
+            await _onSubStepFinished(day, 9);
+            markDone(true);
+          }
+        },
+      ),
+    );
+  }
+
+  // 10: English Hub Community Chat
+  Future<void> _launchStep10_CommunityChat(int day) async {
+    HapticFeedback.lightImpact();
+    final currentUserId = _supabase.auth.currentUser?.id;
+    EnglishHubLevelGroup levelGroup;
+    if (currentUserId != null) {
+      levelGroup = await EnglishHubLevelGroupService.ensureUserInLevelGroup(
+        userLevel: day,
+        userId: currentUserId,
+      );
+    } else {
+      levelGroup = await EnglishHubLevelGroupService.getGroupByLevel(day);
+    }
+    if (!mounted) return;
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => WhatsAppGroupChat(
+          groupId: levelGroup.groupId,
+          groupName: levelGroup.groupName,
+        ),
+      ),
+    );
+    await _onSubStepFinished(day, 10);
+  }
+
+  // 10B: Verb Timeline & Tenses Arcade
+  Future<void> _launchStepVerbTimeline(int day) async {
+    HapticFeedback.lightImpact();
+    await _openCardPage(
+      title: 'Verb Timeline & Tenses Arcade',
+      stepTag: 'STEP 11',
+      accentColor: const Color(0xFFFF9100),
+      childBuilder: (ctx, markDone) => PocketVerbTimelineCard(
+        day: day,
+        isCompleted: _subStepFlags['step_18'] ?? false,
+        onSpeak: (text) {},
+        onCompleted: (val) async {
+          if (val) {
+            await _onSubStepFinished(day, 18);
+            markDone(true);
+          }
+        },
+      ),
+    );
+  }
+
+  // 10C: Karaoke Sing-Along Rhythm Chant
+  Future<void> _launchStepKaraokeChant(int day) async {
+    HapticFeedback.lightImpact();
+    await _openCardPage(
+      title: 'Karaoke Sing-Along Rhythm Chant',
+      stepTag: 'STEP 12',
+      accentColor: const Color(0xFFFF4081),
+      childBuilder: (ctx, markDone) => PocketKaraokeChantCard(
+        day: day,
+        isCompleted: _subStepFlags['step_19'] ?? false,
+        onSpeak: (text) {},
+        onCompleted: (val) async {
+          if (val) {
+            await _onSubStepFinished(day, 19);
+            markDone(true);
+          }
+        },
+      ),
+    );
+  }
+
+  // 10D: Prepositions 2D Spatial Lab
+  Future<void> _launchStepPrepositionsVisual(int day) async {
+    HapticFeedback.lightImpact();
+    await _openCardPage(
+      title: 'Prepositions 2D Spatial Lab',
+      stepTag: 'STEP 13',
+      accentColor: const Color(0xFF00E5FF),
+      childBuilder: (ctx, markDone) => PocketPrepositionsGlassCard(
+        day: day,
+        isCompleted: _subStepFlags['step_20'] ?? false,
+        onSpeak: (text) {},
+        onCompleted: (val) async {
+          if (val) {
+            await _onSubStepFinished(day, 20);
+            markDone(true);
+          }
+        },
+      ),
+    );
+  }
+
+  // 11: AI Speech Practice Lab (Replaced broken phone call!)
+  Future<void> _launchStep11_PeerCall(int day) async {
+    HapticFeedback.lightImpact();
+    await _openCardPage(
+      title: 'AI Speech Practice Lab',
+      stepTag: 'STEP 11',
+      accentColor: const Color(0xFF38BDF8),
+      childBuilder: (ctx, markDone) => PocketPracticeSpeakingCard(
+        day: day,
+        isCompleted: _subStepFlags['step_11'] ?? false,
+        onCompleted: (val) async {
+          if (val) {
+            await _onSubStepFinished(day, 11);
+            markDone(true);
+          }
+        },
+      ),
+    );
+  }
+
+  // 12: Daily 2D Adventure Quest
+  Future<void> _launchStep12_AdventureQuest(int day) async {
+    HapticFeedback.lightImpact();
+    if (day == 1) {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => CyberVocabGamePage(
+            onCompleted: (_) => _onSubStepFinished(day, 12),
+          ),
+        ),
+      );
+    } else {
+      await _onSubStepFinished(day, 12);
+    }
+  }
+
+  // 13: Core Reading Notes & Story Aloud
+  Future<void> _launchStep13_ReadingStory(int day) async {
+    HapticFeedback.lightImpact();
+    await PocketDayDetailOverviewPage.show(context, day);
+    await _onSubStepFinished(day, 13);
+  }
+
+  // 14: Code English Decoder
+  Future<void> _launchStep14_CodeEnglish(int day) async {
+    HapticFeedback.lightImpact();
+    await PocketCodeEnglishDecoderModal.show(context, currentDay: day);
+    await _onSubStepFinished(day, 14);
+  }
+
+  // 15: Sovereign Fluency Shortcut
+  Future<void> _launchStep15_Shortcut(int day) async {
+    HapticFeedback.lightImpact();
+    await PocketDayDetailOverviewPage.show(context, day);
+    await _onSubStepFinished(day, 15);
+  }
+
+  // 16: Arm Home Defense Shield
+  Future<void> _launchStep16_DefenseShield(int day) async {
+    HapticFeedback.lightImpact();
+    final myId = _supabase.auth.currentUser?.id;
+    if (myId != null && myId.isNotEmpty) {
+      await PocketCitadelAttackPage.openForUser(
+        context,
+        userId: myId,
+        attackerDay: day,
+        isDefenseMode: true,
+      );
+    } else {
+      await PocketDefenseTrapModal.show(context, day, isLevelComplete: true);
+    }
+    await _onSubStepFinished(day, 16);
+  }
+
+  // 17: Level Mastery Boss Exam
+  Future<void> _launchStep17_MasteryExam(int day, LearnerLevel level) async {
+    HapticFeedback.heavyImpact();
+    final passed = await PocketLevelExamDialog.show(
+      context,
+      level: day,
+      trackLevel: level,
+      onExamPassed: () async {
+        await _onSubStepFinished(day, 17);
+      },
+    );
+    if (passed == true) {
+      await _onSubStepFinished(day, 17);
+    }
+  }
+
+  /// Returns the sequential sub-steps along the climbing mountain trail (User Audio Directive!)
+  List<InPathSubStep> _getSubStepsForDay(int day, LearnerLevel level) {
+    final bool admin = _isMasterAdmin;
+    if (day >= 1 && day <= 90) {
+      final track = Day1Track.fromLearnerLevel(level);
+      return Day1Curriculum.getSteps(track, day).map((step) {
+        final flagKey = 'step_${step.stepNumber}';
+        final isComp = _subStepFlags[flagKey] ?? false;
+        final isUnlocked = admin ||
+            step.stepNumber == 1 ||
+            (_subStepFlags['step_${step.stepNumber - 1}'] ?? false);
+        return InPathSubStep(
+          stepIndex: step.stepNumber,
+          title: step.title,
+          subtitle: step.description,
+          icon: step.icon,
+          color: step.color,
+          isCompleted: isComp,
+          isUnlocked: isUnlocked,
+          onAction: () async {
+            int targetStepNumber = step.stepNumber;
+            if (day == 1 && step.stepNumber == 1 && !isComp) {
+              final prefs = await SharedPreferences.getInstance();
+              final uid = widget.userId ?? _supabase.auth.currentUser?.id ?? '';
+              final diagDone = uid.isNotEmpty
+                  ? (prefs.getBool('pm_day1_diagnostic_done_$uid') ?? false)
+                  : false;
+              if (!diagDone && mounted) {
+                final diag =
+                    await PocketDay1DiagnosticSheet.show(context, userId: uid);
+                if (diag != null) {
+                  final skip1 = diag['skipStep1'] ?? false;
+                  final skip2 = diag['skipStep2'] ?? false;
+                  if (skip1 && skip2) {
+                    await _onSubStepFinished(1, 1);
+                    await _onSubStepFinished(1, 2);
+                    targetStepNumber = 3;
+                  } else if (skip1) {
+                    await _onSubStepFinished(1, 1);
+                    targetStepNumber = 2;
+                  }
+                }
+              }
+            }
+            if (!mounted) return;
+            final activeUid =
+                widget.userId ?? _supabase.auth.currentUser?.id ?? '';
+
+            if (step.type == 'letter_writing') {
+              await StudentLetterWritingGamePage.show(
+                context,
+                day: day,
+                stepIndex: step.stepNumber,
+                userId: activeUid,
+                onStepFinished: (_) => _onSubStepFinished(day, step.stepNumber),
+              );
+              await _loadData();
+              return;
+            }
+            if (step.type == 'diary_entry') {
+              await StudentDiaryEntryGamePage.show(
+                context,
+                day: day,
+                stepIndex: step.stepNumber,
+                userId: activeUid,
+                onStepFinished: (_) => _onSubStepFinished(day, step.stepNumber),
+              );
+              await _loadData();
+              return;
+            }
+            if (step.type == 'bio_creator') {
+              await StudentBioCreatorGamePage.show(
+                context,
+                day: day,
+                stepIndex: step.stepNumber,
+                userId: activeUid,
+                onStepFinished: (_) => _onSubStepFinished(day, step.stepNumber),
+              );
+              await _loadData();
+              return;
+            }
+            if (step.type == 'notice_writing') {
+              await StudentNoticeGamePage.show(
+                context,
+                day: day,
+                stepIndex: step.stepNumber,
+                userId: activeUid,
+                onStepFinished: (_) => _onSubStepFinished(day, step.stepNumber),
+              );
+              await _loadData();
+              return;
+            }
+            if (step.type == 'email_writing') {
+              await StudentEmailGamePage.show(
+                context,
+                day: day,
+                stepIndex: step.stepNumber,
+                userId: activeUid,
+                onStepFinished: (_) => _onSubStepFinished(day, step.stepNumber),
+              );
+              await _loadData();
+              return;
+            }
+            if (step.type == 'spelling_detective') {
+              await StudentSpellingDetectiveGamePage.show(
+                context,
+                day: day,
+                stepIndex: step.stepNumber,
+                userId: activeUid,
+                onStepFinished: (_) => _onSubStepFinished(day, step.stepNumber),
+              );
+              await _loadData();
+              return;
+            }
+            if (step.type == 'verb_timeline_game') {
+              await PocketVerbTimelineGamePage.show(
+                context,
+                day: day,
+                userId: activeUid,
+                onStepFinished: (_) => _onSubStepFinished(day, step.stepNumber),
+              );
+              await _loadData();
+              return;
+            }
+            if (step.type == 'chat_reply_builder') {
+              await PocketChatReplyBuilderPage.show(
+                context,
+                day: day,
+                userId: activeUid,
+                onStepFinished: (_) => _onSubStepFinished(day, step.stepNumber),
+              );
+              await _loadData();
+              return;
+            }
+            if (step.type == 'negative_sentence_builder') {
+              await PocketNegativeSentenceBuilderPage.show(
+                context,
+                day: day,
+                userId: activeUid,
+                onStepFinished: (_) => _onSubStepFinished(day, step.stepNumber),
+              );
+              await _loadData();
+              return;
+            }
+            if (step.type == 'mini_speech_practice') {
+              await PocketMiniSpeechPracticePage.show(
+                context,
+                day: day,
+                userId: activeUid,
+                onStepFinished: (_) => _onSubStepFinished(day, step.stepNumber),
+              );
+              await _loadData();
+              return;
+            }
+            if (step.type == 'house_attack_quest') {
+              await PocketHouseAttackPage.show(
+                context,
+                day: day,
+                stepIndex: step.stepNumber,
+                userId: activeUid,
+                onStepFinished: (_) => _onSubStepFinished(day, step.stepNumber),
+              );
+              await _loadData();
+              return;
+            }
+            if (step.type == 'day_review_card') {
+              await PocketDay1ReviewCardPage.showBottomSheet(
+                context,
+                day: day,
+                userId: activeUid,
+                onProceedToNextDay: () async =>
+                    _onSubStepFinished(day, step.stepNumber),
+              );
+              await _loadData();
+              return;
+            }
+
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => PocketDay1InteractiveFlowPage(
+                  initialTrack: track,
+                  initialStep: targetStepNumber,
+                  day: day,
+                  userId: activeUid,
+                  onStepFinished: (s) => _onSubStepFinished(day, s),
+                  onCompleted: () => _completeTodayTasks(),
+                ),
+              ),
+            );
+            await _loadData();
+          },
+        );
+      }).toList();
+    }
+    return [
+      InPathSubStep(
+        stepIndex: 1,
+        title: 'Interactive Teacher Class',
+        subtitle: '1-on-1 Avatar game & sentence builder',
+        icon: '🎮',
+        color: const Color(0xFF3B82F6),
+        isCompleted: _subStepFlags['step_1'] ?? false,
+        isUnlocked: admin || _effectiveRulesAccepted,
+        onAction: () => _launchStep1_Theory(day),
+      ),
+      InPathSubStep(
+        stepIndex: 2,
+        title: '10 Core Vocabulary Words',
+        subtitle: 'Definitions, audio & native meanings',
+        icon: '🧠',
+        color: const Color(0xFFFF8906),
+        isCompleted: _subStepFlags['step_2'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_1'] ?? false),
+        onAction: () => _launchStep2_Vocab(day),
+      ),
+      InPathSubStep(
+        stepIndex: 3,
+        title: day >= 2 ? 'Opposite Words' : 'Alphabet & 44 Phonics',
+        subtitle: day >= 2
+            ? 'Match unique opposite pairs'
+            : 'Acoustic mouth placement frequencies',
+        icon: day >= 2 ? '🔄' : '🔤',
+        color: const Color(0xFFFF9100),
+        isCompleted: _subStepFlags['step_3'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_2'] ?? false),
+        onAction: () => _launchStep3_Phonics(day, level),
+      ),
+      InPathSubStep(
+        stepIndex: 4,
+        title: 'Fluency Gym Workout',
+        subtitle: '8 vocal stations & speech reflexes',
+        icon: '🎙️',
+        color: const Color(0xFF10B981),
+        isCompleted: _subStepFlags['step_4'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_3'] ?? false),
+        onAction: () => _launchStep4_FluencyGym(day, level),
+      ),
+      InPathSubStep(
+        stepIndex: 5,
+        title: 'Secret Code Grammar',
+        subtitle: 'Formula-based sentence codes',
+        icon: '⚡',
+        color: const Color(0xFFFFD700),
+        isCompleted: _subStepFlags['step_5'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_4'] ?? false),
+        onAction: () => _launchStep5_SecretCode(day),
+      ),
+      InPathSubStep(
+        stepIndex: 6,
+        title: 'Sentence Builder Puzzle',
+        subtitle: 'Scrambled word block assembly',
+        icon: '🏗️',
+        color: const Color(0xFF00E5FF),
+        isCompleted: _subStepFlags['step_6'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_5'] ?? false),
+        onAction: () => _launchStep6_SentenceBuilder(day),
+      ),
+      InPathSubStep(
+        stepIndex: 7,
+        title: 'Slang to Smart English',
+        subtitle: 'Professional native idioms',
+        icon: '💬',
+        color: const Color(0xFFFF6D00),
+        isCompleted: _subStepFlags['step_7'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_6'] ?? false),
+        onAction: () => _launchStep7_Slang(day),
+      ),
+      InPathSubStep(
+        stepIndex: 8,
+        title: 'Practice Speaking Aloud',
+        subtitle: 'Speech tone & voice accuracy',
+        icon: '🎤',
+        color: const Color(0xFFE040FB),
+        isCompleted: _subStepFlags['step_8'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_7'] ?? false),
+        onAction: () => _launchStep8_Speaking(day),
+      ),
+      InPathSubStep(
+        stepIndex: 9,
+        title: 'Time Machine Verbs Trainer',
+        subtitle: 'Past, present & future reflex drills',
+        icon: '⏳',
+        color: const Color(0xFFFFC107),
+        isCompleted: _subStepFlags['step_9'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_8'] ?? false),
+        onAction: () => _launchStep9_TimeMachine(day),
+      ),
+      InPathSubStep(
+        stepIndex: 10,
+        title: 'English Hub Community Chat',
+        subtitle: 'Send 15 English peer messages',
+        icon: '💬',
+        color: const Color(0xFFFFFC00),
+        isCompleted: _subStepFlags['step_10'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_9'] ?? false),
+        onAction: () => _launchStep10_CommunityChat(day),
+      ),
+      InPathSubStep(
+        stepIndex: 11,
+        title: 'Verb Timeline & Tenses Arcade',
+        subtitle: '3-zone arcade sorting & rhythm chant',
+        icon: '⏳',
+        color: const Color(0xFFFF9100),
+        isCompleted: _subStepFlags['step_18'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_10'] ?? false),
+        onAction: () => _launchStepVerbTimeline(day),
+      ),
+      InPathSubStep(
+        stepIndex: 12,
+        title: 'Karaoke Sing-Along Rhythm Chant',
+        subtitle: 'Rhythmic chant recitation & earworm memory',
+        icon: '🎤',
+        color: const Color(0xFFFF4081),
+        isCompleted: _subStepFlags['step_19'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_18'] ?? false),
+        onAction: () => _launchStepKaraokeChant(day),
+      ),
+      InPathSubStep(
+        stepIndex: 13,
+        title: 'Prepositions 2D Spatial Lab',
+        subtitle: 'Interactive Glass & Object 2D physics',
+        icon: '🥛',
+        color: const Color(0xFF00E5FF),
+        isCompleted: _subStepFlags['step_20'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_19'] ?? false),
+        onAction: () => _launchStepPrepositionsVisual(day),
+      ),
+      InPathSubStep(
+        stepIndex: 14,
+        title: 'AI Speech Practice Lab',
+        subtitle: 'Listen, repeat & AI pronunciation scoring',
+        icon: '🗣️',
+        color: const Color(0xFF38BDF8),
+        isCompleted: _subStepFlags['step_11'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_10'] ?? false),
+        onAction: () => _launchStep11_PeerCall(day),
+      ),
+      InPathSubStep(
+        stepIndex: 12,
+        title: 'Daily Adventure Quest',
+        subtitle: 'Cyber vocab & career challenges',
+        icon: '🎮',
+        color: const Color(0xFFE11D48),
+        isCompleted: _subStepFlags['step_12'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_11'] ?? false),
+        onAction: () => _launchStep12_AdventureQuest(day),
+      ),
+      InPathSubStep(
+        stepIndex: 13,
+        title: 'Grammar Notes & Story Aloud',
+        subtitle: 'Authentic multi-page story reading',
+        icon: '📖',
+        color: const Color(0xFF60A5FA),
+        isCompleted: _subStepFlags['step_13'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_12'] ?? false),
+        onAction: () => _launchStep13_ReadingStory(day),
+      ),
+      InPathSubStep(
+        stepIndex: 14,
+        title: 'Code English Decoder',
+        subtitle: 'Mnemonic syntax algorithms',
+        icon: '⚡',
+        color: const Color(0xFF00FFCC),
+        isCompleted: _subStepFlags['step_14'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_13'] ?? false),
+        onAction: () => _launchStep14_CodeEnglish(day),
+      ),
+      InPathSubStep(
+        stepIndex: 15,
+        title: 'Sovereign Fluency Shortcut',
+        subtitle: 'Colloquial speech contractions and lightning rules',
+        icon: '⚡',
+        color: const Color(0xFFFFB300),
+        isCompleted: _subStepFlags['step_15'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_14'] ?? false),
+        onAction: () => _launchStep15_Shortcut(day),
+      ),
+      InPathSubStep(
+        stepIndex: 16,
+        title: 'Arm Home Defense Shield',
+        subtitle: 'Fortify front gate with grammar trap',
+        icon: '🛡️',
+        color: const Color(0xFF8B5CF6),
+        isCompleted: _subStepFlags['step_16'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_15'] ?? false),
+        onAction: () => _launchStep16_DefenseShield(day),
+      ),
+      InPathSubStep(
+        stepIndex: 17,
+        title: 'Level $day Mastery Exam',
+        subtitle: 'Pass exam to certify & unlock House ${day + 1}',
+        icon: '🎓',
+        color: const Color(0xFF10B981),
+        isCompleted: _subStepFlags['step_17'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_16'] ?? false),
+        onAction: () => _launchStep17_MasteryExam(day, level),
+      ),
+    ];
+  }
+
+  void _openAvatarCard(int day) {
+    final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+    if (uid == null || uid.isEmpty) {
+      AuthAlertBox.checkAuthAndShowAlert(context: context);
+      return;
+    }
+    final config = _getAvatarForDay(day);
+    NftTradingCardDialog.show(
+      context,
+      day: day,
+      config: config,
+      userId: uid,
+      isOwner: true,
+    );
+  }
+
+  Future<void> _completeTodayTasks() async {
+    final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+    if (uid == null || uid.isEmpty) {
+      AuthAlertBox.checkAuthAndShowAlert(context: context);
+      return;
+    }
+    if (_progress == null) return;
+
+    HapticFeedback.heavyImpact();
+    for (var task in _progress!.todayTasks) {
+      await Learning60DayService().completeTask(userId: uid, taskId: task.id);
+    }
+    await PocketFortressDefenseService.recordActivityPoints('daily_mission');
+
+    await _loadData();
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Text('🎉', style: TextStyle(fontSize: 22)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Today\'s English Missions Complete! +70 Score • +30 FDC Awarded.',
+                  style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF10B981),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+
+      // Prompt to craft Day's Defense Shield immediately in Citadel View
+      Future.delayed(const Duration(milliseconds: 700), () {
+        if (mounted) {
+          final myId = _supabase.auth.currentUser?.id;
+          if (myId != null && myId.isNotEmpty) {
+            PocketCitadelAttackPage.openForUser(
+              context,
+              userId: myId,
+              attackerDay: _progress?.currentDay ?? 1,
+              isDefenseMode: true,
+            );
+          } else {
+            PocketDefenseTrapModal.show(
+              context,
+              _progress?.currentDay ?? 1,
+              isLevelComplete: true,
+            );
+          }
+        }
+      });
+
+      // 💡 Prompt user for Day Review / Startup Feedback
+      Future.delayed(const Duration(milliseconds: 1600), () {
+        if (mounted) {
+          PocketFeedbackService.showFeedbackBottomSheet(
+            context,
+            dayNumber: _progress?.currentDay ?? 1,
+            defaultType: 'day_completion',
+          );
+        }
+      });
+    }
+  }
+
+  /// 🎯 Opens the dedicated Open World Level Adventure Page for the Day!
+  /// User Audio Directive: "ഡീറ്റെയിൽ പേജ് ഇപ്പോഴത്തെ തന്നെ മതി, ഓരോ ദിവസത്തിലും കാർ ഡ്രൈവ് ചെയ്തു പോയി ടാസ്കുകളിൽ പോകുന്ന സാധനം!"
+  Future<void> _startActiveSubStep(int day) async {
+    final res = await Navigator.push<dynamic>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => GermanDayOpenWorldAdventurePage(
+          day: day,
+          userId: widget.userId ?? _supabase.auth.currentUser?.id,
+          onCompleted: () => _loadData(),
+        ),
+      ),
+    );
+    await _loadData();
+    if (res == 'enter_gate' && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _scrollToGate(day, animate: true);
+      });
+    }
+  }
+
+  void _navigateToMissionPage(int day) {
+    final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+    if (uid == null || uid.isEmpty) {
+      AuthAlertBox.checkAuthAndShowAlert(context: context);
+      return;
+    }
+    HapticFeedback.selectionClick();
+    // User Audio Directive: "DETAIL PAGE ILLA ennaanu njan parayaan ponathu. Onnum detail page-ilekku pondaaa!"
+    // Directly launch the active in-path sub-step on the climbing trail!
+    _startActiveSubStep(day);
+  }
+
+  // ignore: unused_element
+  void _showLevelMissionDialog(int day) {
+    HapticFeedback.lightImpact();
+    final prog =
+        _progress ?? UserLearningProgress(lastActiveDate: DateTime.now());
+    final isCompleted = _isDayCompleted(day);
+    final isUnlocked = _isDayUnlocked(day, prog.currentDay);
+    final isCurrent = (day == prog.currentDay) && isUnlocked && !isCompleted;
+    final lesson = EnglishCurriculumLesson.getLessonForDay(day);
+    final stage = LearningMilestoneStage.getStageForDay(day);
+    final avatarConfig = _getAvatarForDay(day);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF131722),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Minimal drag handle
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Top Header: Level & Tier & Close
+                Row(
+                  children: [
+                    Text(
+                      'Level $day',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        stage.fluencyTier.toUpperCase(),
+                        style: GoogleFonts.inter(
+                          color: Colors.white70,
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.16),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.5),
+                          width: 0.8,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.auto_awesome_rounded,
+                            size: 10,
+                            color: Color(0xFFFFD700),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Deutsch 90-Tage-Kurs',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFFFFD700),
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Spacer(),
+                    InkWell(
+                      onTap: () => Navigator.pop(ctx),
+                      borderRadius: BorderRadius.circular(16),
+                      child: const Padding(
+                        padding: EdgeInsets.all(4),
+                        child: Icon(Icons.close_rounded,
+                            color: Colors.white54, size: 20),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Lesson Title & Avatar Row
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        _openAvatarCard(day);
+                      },
+                      child: Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color:
+                                const Color(0xFFFFFC00).withValues(alpha: 0.6),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: ClipOval(
+                          child: VectorAvatarWidget(
+                            config: avatarConfig,
+                            size: 36,
+                            showAura: false,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            lesson.title,
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14.5,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            lesson.focusArea,
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFFFFD700),
+                              fontWeight: FontWeight.w500,
+                              fontSize: 11.5,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Clean Minimal Tasks List
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.04),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildMissionRow(
+                        icon: Icons.chat_bubble_outline_rounded,
+                        color: const Color(0xFF10B981),
+                        title: 'Peer Chat',
+                        subtitle: lesson.peerChatMission,
+                        isDone: isCompleted,
+                      ),
+                      const SizedBox(height: 6),
+                      _buildMissionRow(
+                        icon: Icons.mic_none_rounded,
+                        color: const Color(0xFF38BDF8),
+                        title: 'Speaking Drill',
+                        subtitle: lesson.speakingDrill,
+                        isDone: isCompleted,
+                      ),
+                      const SizedBox(height: 6),
+                      _buildMissionRow(
+                        icon: Icons.psychology_outlined,
+                        color: const Color(0xFFFFD700),
+                        title: 'Grammar',
+                        subtitle: lesson.grammarConcept,
+                        isDone: isCompleted,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // Minimal Rewards Tag
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                            color:
+                                const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                      ),
+                      child: Text(
+                        'PS ${PocketScoreLevelEngine.getRequiredScoreForLevel(day)}',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontWeight: FontWeight.w900,
+                          fontSize: 11.5,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text('•',
+                        style: TextStyle(color: Colors.white30, fontSize: 11)),
+                    const SizedBox(width: 8),
+                    Text(
+                      '+${lesson.xpReward} XP',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFFC00),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text('•',
+                        style: TextStyle(color: Colors.white30, fontSize: 11)),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${lesson.targetMinutes}m Practice',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF38BDF8),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 11.5,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // ⚔️ Direct Citadel Attack Action (User Audio Directive: House 4+ Attack Arena)
+                if (day >= 4) ...[
+                  StatefulBuilder(
+                    builder: (context, setModalState) {
+                      return FutureBuilder<PocketNeighbor>(
+                        future: PocketFortressDefenseService
+                            .getRecommendedRivalTarget(
+                          userDay: day,
+                          shuffleOffset: _levelRivalShuffleSeed,
+                        ),
+                        builder: (context, snapshot) {
+                          final rival = snapshot.data;
+                          final targetLevel = rival?.day ??
+                              PocketFortressDefenseService
+                                  .getRecommendedTargetLevel(day);
+                          final rivalName =
+                              rival?.name ?? 'Challenger Lvl $targetLevel';
+                          final isRobo = rival?.isPocketRobo ?? false;
+
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color(0xFF881337)
+                                      .withValues(alpha: 0.35),
+                                  const Color(0xFF4C0519)
+                                      .withValues(alpha: 0.5),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                  color: const Color(0xFFFB7185)
+                                      .withValues(alpha: 0.4),
+                                  width: 1.2),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE11D48)
+                                        .withValues(alpha: 0.25),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(isRobo ? '🤖' : '⚔️',
+                                      style: const TextStyle(fontSize: 18)),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(
+                                            'CITADEL RAID CHALLENGE',
+                                            style: GoogleFonts.outfit(
+                                              color: const Color(0xFFFECDD3),
+                                              fontSize: 9.5,
+                                              fontWeight: FontWeight.w900,
+                                              letterSpacing: 0.5,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          InkWell(
+                                            onTap: () {
+                                              HapticFeedback.selectionClick();
+                                              setModalState(() {
+                                                _levelRivalShuffleSeed++;
+                                              });
+                                            },
+                                            borderRadius:
+                                                BorderRadius.circular(6),
+                                            child: Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 5,
+                                                      vertical: 1.5),
+                                              decoration: BoxDecoration(
+                                                color: Colors.white
+                                                    .withValues(alpha: 0.12),
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: const [
+                                                  Icon(Icons.shuffle_rounded,
+                                                      size: 10,
+                                                      color: Color(0xFFFDA4AF)),
+                                                  SizedBox(width: 2),
+                                                  Text('Reroll 🎲',
+                                                      style: TextStyle(
+                                                          color:
+                                                              Color(0xFFFDA4AF),
+                                                          fontSize: 8.5,
+                                                          fontWeight:
+                                                              FontWeight.bold)),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Text(
+                                        '$rivalName (Lvl $targetLevel)',
+                                        style: GoogleFonts.outfit(
+                                          color: Colors.white,
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      Text(
+                                        isRobo
+                                            ? '🤖 AI Robot Citadel • Balanced Fair Defense'
+                                            : '👤 Real Human House • Higher Loot',
+                                        style: const TextStyle(
+                                          color: Colors.white60,
+                                          fontSize: 9.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    final hubContext = context;
+                                    Navigator.pop(ctx);
+                                    HapticFeedback.heavyImpact();
+                                    final activeRival = rival ??
+                                        await PocketFortressDefenseService
+                                            .getRecommendedRivalTarget(
+                                                userDay: day);
+                                    if (!mounted || !hubContext.mounted) return;
+                                    PocketCitadelAttackPage.openForUser(
+                                      hubContext,
+                                      userId: activeRival.id,
+                                      neighbor: activeRival,
+                                      attackerDay: day,
+                                    );
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFE11D48),
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 14, vertical: 10),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
+                                    elevation: 0,
+                                  ),
+                                  child: Text(
+                                    'ATTACK ⚔️',
+                                    style: GoogleFonts.outfit(
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ] else ...[
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.04),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.08)),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(7),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.withValues(alpha: 0.12),
+                            shape: BoxShape.circle,
+                          ),
+                          child:
+                              const Text('🔒', style: TextStyle(fontSize: 14)),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'HOUSE RAIDS UNLOCK AT HOUSE 4',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFBBF24),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              Text(
+                                'Master foundational grammar in Houses 1–3 first. Level 4–10+ student fortresses unlock at Day 4!',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white60,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+
+                // Action Buttons
+                if (isCurrent || isUnlocked) ...[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            _navigateToMissionPage(day);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isCurrent
+                                ? const Color(0xFFFFFC00)
+                                : const Color(0xFF00E5FF),
+                            foregroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            elevation: 0,
+                          ),
+                          child: Text(
+                            isCurrent ? 'START MISSION' : 'ENTER LEVEL $day',
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 13.5,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (isCurrent) ...[
+                        const SizedBox(width: 8),
+                        IconButton(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            _completeTodayTasks();
+                          },
+                          icon: const Icon(Icons.check_circle_outline_rounded,
+                              color: Color(0xFF10B981), size: 24),
+                          tooltip: 'Complete tasks',
+                        ),
+                      ],
+                    ],
+                  ),
+                ] else if (isCompleted) ...[
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _startActiveSubStep(day);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Color(0xFF10B981)),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text(
+                        'REVIEW LEVEL $day (COMPLETED ✓)',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFF10B981),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ),
+                ] else ...[
+                  // 1. Check if previous level is not completed
+                  if (day > 1 && !_isDayCompleted(day - 1)) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.redAccent.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                            color: Colors.redAccent.withValues(alpha: 0.4)),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('🔒', style: TextStyle(fontSize: 14)),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              'Level $day is locked! You must complete Level ${day - 1} and pass its exam first.',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFF87171),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11.5,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+
+                  // 2. Check if waiting for midnight
+                  if (_isDayWaitingForMidnight(day)) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                            color: Colors.amber.withValues(alpha: 0.3)),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text('⏳', style: TextStyle(fontSize: 16)),
+                              const SizedBox(width: 8),
+                              Text(
+                                'House $day Unlocks At Midnight',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFFD700),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            Learning60DayService.formatRemainingCountdown(
+                                _timeUntilMidnight),
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 18,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Free learners pace at 1 House per day to build retention.',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.inter(
+                              color: Colors.white54,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // 👑 Poket VIP: Instant Binge Mode
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const SubscriptionPage()),
+                          );
+                        },
+                        icon: const Icon(Icons.workspace_premium_rounded,
+                            size: 18, color: Colors.black),
+                        label: Text(
+                          '👑 UNLOCK INSTANT BINGE MODE • Poket VIP',
+                          style: GoogleFonts.outfit(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 12,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFFD700),
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          elevation: 2,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _navigateToMissionPage(day);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.2)),
+                        padding: const EdgeInsets.symmetric(vertical: 11),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: Text(
+                        'Preview Level $day',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white70,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// ⚔️ Citadel Matchmaking Modal (User Audio Directive: House 4+ Attack Arena)
+  /// Features target rival matchmaking (Levels 4 to 10+), profile details, 🎲 Reroll/Shuffle, and direct attack launcher.
+  // ignore: unused_element
+  void _showCitadelMatchmakingModal(int userDay) {
+    HapticFeedback.mediumImpact();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (modalCtx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFF1E112A), Color(0xFF0F0B18)],
+                ),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(24)),
+                border: Border.all(
+                    color: const Color(0xFFFB7185).withValues(alpha: 0.35),
+                    width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFE11D48).withValues(alpha: 0.25),
+                    blurRadius: 20,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                top: false,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Handle
+                    Container(
+                      width: 44,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.white24,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Header
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color:
+                                const Color(0xFFE11D48).withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child:
+                              const Text('⚔️', style: TextStyle(fontSize: 20)),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'CITADEL RAID ARENA',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFDA4AF),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              Text(
+                                'Attack Rival Student Fortresses (Lvl 4–10+)',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white70,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(modalCtx),
+                          icon: const Icon(Icons.close_rounded,
+                              color: Colors.white54, size: 20),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Rival Card Builder
+                    FutureBuilder<PocketNeighbor>(
+                      future: PocketFortressDefenseService
+                          .getRecommendedRivalTarget(
+                        userDay: userDay,
+                        shuffleOffset: _levelRivalShuffleSeed,
+                      ),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Container(
+                            height: 140,
+                            alignment: Alignment.center,
+                            child: const CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Color(0xFFFB7185),
+                            ),
+                          );
+                        }
+
+                        final rival = snapshot.data;
+                        final targetLevel = rival?.day ??
+                            PocketFortressDefenseService
+                                .getRecommendedTargetLevel(userDay);
+                        final rivalName =
+                            rival?.name ?? 'Challenger Lvl $targetLevel';
+                        final isRobo = rival?.isPocketRobo ?? false;
+                        final bio = (rival != null &&
+                                rival.statusMessage.isNotEmpty)
+                            ? rival.statusMessage
+                            : (isRobo
+                                ? 'Pocket AI Sentinel • Automated 4-Defense Trap System'
+                                : 'Dedicated English Learner');
+
+                        return Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                const Color(0xFF881337).withValues(alpha: 0.4),
+                                const Color(0xFF4C0519).withValues(alpha: 0.6),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: const Color(0xFFFB7185)
+                                  .withValues(alpha: 0.4),
+                              width: 1.2,
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  // Avatar
+                                  Container(
+                                    width: 52,
+                                    height: 52,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: const Color(0xFFFDA4AF),
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    child: ClipOval(
+                                      child: VectorAvatarWidget(
+                                        config: _getAvatarForDay(targetLevel),
+                                        size: 52,
+                                        showAura: false,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              isRobo
+                                                  ? '🤖 AI ROBOT CITADEL'
+                                                  : '👤 RIVAL LEARNER',
+                                              style: GoogleFonts.outfit(
+                                                color: const Color(0xFFFECDD3),
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w800,
+                                                letterSpacing: 0.6,
+                                              ),
+                                            ),
+                                            const Spacer(),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 7,
+                                                      vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFFE11D48)
+                                                    .withValues(alpha: 0.3),
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                              ),
+                                              child: Text(
+                                                'House Lvl $targetLevel',
+                                                style: GoogleFonts.outfit(
+                                                  color:
+                                                      const Color(0xFFFDA4AF),
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w900,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          rivalName,
+                                          style: GoogleFonts.outfit(
+                                            color: Colors.white,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          bio,
+                                          style: GoogleFonts.inter(
+                                            color: Colors.white60,
+                                            fontSize: 11,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 14),
+
+                              // Matchmaking Stats / Loot Bar
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.25),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const Text('🪙 ',
+                                            style: TextStyle(fontSize: 12)),
+                                        Text('+50 Coins',
+                                            style: GoogleFonts.outfit(
+                                                color: const Color(0xFFFFD700),
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                                    Container(
+                                        width: 1,
+                                        height: 14,
+                                        color: Colors.white12),
+                                    Row(
+                                      children: [
+                                        const Text('🏆 ',
+                                            style: TextStyle(fontSize: 12)),
+                                        Text('+30 Trophies',
+                                            style: GoogleFonts.outfit(
+                                                color: const Color(0xFF38BDF8),
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                                    Container(
+                                        width: 1,
+                                        height: 14,
+                                        color: Colors.white12),
+                                    Row(
+                                      children: [
+                                        const Text('🛡️ ',
+                                            style: TextStyle(fontSize: 12)),
+                                        Text('4 Trap Shields',
+                                            style: GoogleFonts.outfit(
+                                                color: const Color(0xFF34D399),
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+
+                              // Actions: Shuffle / Launch
+                              Row(
+                                children: [
+                                  OutlinedButton.icon(
+                                    onPressed: () {
+                                      HapticFeedback.selectionClick();
+                                      setModalState(() {
+                                        _levelRivalShuffleSeed++;
+                                      });
+                                    },
+                                    icon: const Icon(Icons.shuffle_rounded,
+                                        size: 14, color: Color(0xFFFDA4AF)),
+                                    label: Text(
+                                      'Reroll 🎲',
+                                      style: GoogleFonts.outfit(
+                                        color: const Color(0xFFFDA4AF),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    style: OutlinedButton.styleFrom(
+                                      side: const BorderSide(
+                                          color: Color(0xFFFDA4AF)),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10)),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 10),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: ElevatedButton.icon(
+                                      onPressed: () async {
+                                        final hubContext = context;
+                                        Navigator.pop(modalCtx);
+                                        HapticFeedback.heavyImpact();
+                                        final activeRival = rival ??
+                                            await PocketFortressDefenseService
+                                                .getRecommendedRivalTarget(
+                                                    userDay: userDay);
+                                        if (!mounted || !hubContext.mounted)
+                                          return;
+                                        PocketCitadelAttackPage.openForUser(
+                                          hubContext,
+                                          userId: activeRival.id,
+                                          neighbor: activeRival,
+                                          attackerDay: userDay,
+                                        );
+                                      },
+                                      icon: const Icon(Icons.flash_on_rounded,
+                                          size: 16),
+                                      label: Text(
+                                        'LAUNCH RAID ⚔️',
+                                        style: GoogleFonts.outfit(
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 13,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            const Color(0xFFE11D48),
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 11),
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10)),
+                                        elevation: 2,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildMissionRow({
+    required IconData icon,
+    required Color color,
+    required String title,
+    required String subtitle,
+    required bool isDone,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(5),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: color, size: 14),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
+              ),
+              Text(
+                subtitle,
+                style: GoogleFonts.inter(color: Colors.white60, fontSize: 10.5),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+        if (isDone)
+          const Padding(
+            padding: EdgeInsets.only(left: 6),
+            child: Icon(Icons.check_circle_rounded,
+                color: Color(0xFF10B981), size: 15),
+          ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final prog =
+        _progress ?? UserLearningProgress(lastActiveDate: DateTime.now());
+    final screenWidth = MediaQuery.of(context).size.width;
+    final totalMapHeight = _ruleNodeY + _bottomPadding;
+    final targetActiveDay = _adminSelectedDay ?? prog.currentDay;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF0A1118),
+      body: Stack(
+        children: [
+          // 📱 Swipeable View: Page 0 = Roadmap, Page 1 = World Rank
+          Positioned.fill(
+            child: PageView(
+              controller: _targetTabPageController,
+              onPageChanged: (index) {
+                if (mounted && _activeTargetTab != index) {
+                  setState(() => _activeTargetTab = index);
+                }
+              },
+              children: [
+                // 1. The Scrollable Game World Map with Pull-to-Refresh
+                RefreshIndicator(
+                  onRefresh: _loadData,
+                  color: const Color(0xFFFFD700),
+                  backgroundColor: const Color(0xFF13172A),
+                  child: SingleChildScrollView(
+                    controller: _scrollController,
+                    physics: const AlwaysScrollableScrollPhysics(
+                      parent: BouncingScrollPhysics(),
+                    ),
+                    child: SizedBox(
+                      width: screenWidth,
+                      height: totalMapHeight,
+                      child: Stack(
+                        children: [
+                          // Background Biomes & Curved Trail Road
+                          Positioned.fill(
+                            child: CustomPaint(
+                              painter: _AdventureMapRoadPainter(
+                                totalDays: _totalDays,
+                                currentDay: targetActiveDay,
+                                screenWidth: screenWidth,
+                                nodeSpacingY: _nodeSpacingY,
+                                topPadding: _topPadding,
+                                ruleNodeY: _ruleNodeY,
+                                hasAcceptedRules: _effectiveRulesAccepted,
+                              ),
+                            ),
+                          ),
+
+                          // Biome Zone Banners & Scenery Props
+                          ..._buildBiomeProps(screenWidth),
+
+                          // 🏡 Viewport-Culled 90 Progressive Architectural English Houses & 3D Level Nodes
+                          // User Audio Directive: "hang aavaruthu... lightweight aayirikkanam... lazy loading okke koduthittu"
+                          Positioned.fill(
+                            child: AnimatedBuilder(
+                              animation: _scrollController,
+                              builder: (context, _) {
+                                final scrollOffset =
+                                    _scrollController.hasClients
+                                        ? _scrollController.offset
+                                        : 999999.0;
+                                final screenH =
+                                    MediaQuery.of(context).size.height;
+                                final minY = scrollOffset;
+                                final maxY = scrollOffset + screenH;
+
+                                return Stack(
+                                  children: [
+                                    // 🏡 90 Progressive Architectural English Houses (Viewport Culled)
+                                    for (int day = 1; day <= _totalDays; day++)
+                                      if (_isDayInViewport(day, minY, maxY))
+                                        _buildRoadmapHouse(
+                                            day, screenWidth, targetActiveDay),
+
+                                    // 🏰 Dedicated Home Visit Button (Spaced cleanly before the house)
+                                    for (int day = 1; day <= _totalDays; day++)
+                                      if (_isDayInViewport(day, minY, maxY))
+                                        _buildRoadmapHomeVisit(
+                                            day, screenWidth, targetActiveDay),
+
+                                    // 🌟 Prominent Resident Guardian Avatars (User Audio Directive: after Home Visit with generous space!)
+                                    for (int day = 1; day <= _totalDays; day++)
+                                      if (_isDayInViewport(day, minY, maxY))
+                                        _buildRoadmapResidentAvatar(
+                                            day, screenWidth, targetActiveDay),
+
+                                    // 🏰 Fortress Exam Gates & Stone Walls between Houses (User Audio Directive!)
+                                    for (int day = 1; day < _totalDays; day++)
+                                      if (_isDayInViewport(day, minY, maxY))
+                                        _buildRoadmapGate(
+                                            day, screenWidth, targetActiveDay),
+
+                                    // 📱 Roadmap Native Ad Slots (Repeats persistently across gates without wipeout)
+                                    for (int day = 1; day < _totalDays; day++)
+                                      if (_isRoadmapAdInViewport(
+                                          day, minY, maxY))
+                                        _buildRoadmapNativeAd(day, screenWidth),
+
+                                    // Interactive 3D Level Nodes (Days 1 to 90) (Viewport Culled)
+                                    for (int day = 1; day <= _totalDays; day++)
+                                      if (_isDayInViewport(day, minY, maxY))
+                                        _buildLevelNode(
+                                            day, screenWidth, targetActiveDay),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+
+                          // 🌿 Grassy Ground Syllabus Notice (Above Day 1 on green ground)
+                          _buildGroundEnglishSyllabusNotice(screenWidth),
+
+                          // 💡 Grassy Ground Startup Feedback & Step Suggestion Box (Audio Directive)
+                          _buildGroundFeedbackBox(screenWidth),
+
+                          // 🏛️ Official Community & Club Membership Box (WhatsApp & Instagram)
+                          _buildGroundCommunityClubBox(screenWidth),
+
+                          // Bouncing Animated Character Avatar at Current Level or Rules Node
+                          _buildAnimatedAvatar(screenWidth, targetActiveDay),
+
+                          // 🎯 Unified Syllabus Track Pill (Top Z-Order so dropdown expands cleanly over ground cards)
+                          _buildSyllabusSelectorMenu(screenWidth),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // 2. 📚 Minimal English Reading Library
+                Padding(
+                  padding: EdgeInsets.only(
+                    top: MediaQuery.of(context).padding.top + 76,
+                  ),
+                  child: const PocketEnglishLibraryView(),
+                ),
+
+                // 3. 🏅 Global Leaderboard Tile List (Audio Directive)
+                Padding(
+                  padding: EdgeInsets.only(
+                    top: MediaQuery.of(context).padding.top + 76,
+                  ),
+                  child: PocketGlobalRankListView(
+                    currentUserId: widget.userId,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Subtle non-blocking loading shimmer beneath top HUD
+          if (_isLoading || _isRefreshing)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 70,
+              left: 0,
+              right: 0,
+              child: const LinearProgressIndicator(
+                minHeight: 2.5,
+                color: Color(0xFFFFD700),
+                backgroundColor: Colors.transparent,
+              ),
+            ),
+
+          // 2. Sticky Glassmorphism Top HUD (Without Back button on tab navigation!)
+          _buildTopHUD(prog),
+
+          // 3. ⚔️ & 🌐 & 🛒 Floating Actions Dock + Battery Reward & Mission Button (Symmetrical Dual Columns)
+          if (_activeTargetTab == 0)
+            Positioned(
+              left: 12,
+              right: 12,
+              bottom: 16,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  // Left Column: 💬 WhatsApp & Watch Rewards
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 💬 WhatsApp English Community Pill
+                      _buildMinimalFloatingPill(
+                        icon: '💬',
+                        label: 'WhatsApp',
+                        onTap: () async {
+                          HapticFeedback.mediumImpact();
+                          const waUrl =
+                              'https://chat.whatsapp.com/HqRgqeHEQVm6LoZ7L8dO6r';
+                          final uri = Uri.parse(waUrl);
+                          try {
+                            await launchUrl(uri,
+                                mode: LaunchMode.externalApplication);
+                          } catch (e) {
+                            debugPrint('Error launching WhatsApp: $e');
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 6),
+                      _buildMinimalFloatingPill(
+                        icon: '🦁',
+                        label: 'Kids',
+                        onTap: () {
+                          HapticFeedback.mediumImpact();
+                          PocketWorldModeSelectionDialog.show(context);
+                        },
+                      ),
+                    ],
+                  ),
+
+                  // Right Column: 🔋 Watch Reward (+50 PS) (Top) + 🎯 Today Mission Button (Under Reward)
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      PocketDailyBatteryRewardWidget(
+                        onRewardClaimed: () async {
+                          await _loadData();
+                        },
+                      ),
+                      const SizedBox(height: 6),
+                      InkWell(
+                        onTap: () {
+                          HapticFeedback.mediumImpact();
+                          _scrollToDay(targetActiveDay, animate: true);
+                          _navigateToMissionPage(targetActiveDay);
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 7),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFFC00),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.35),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                !_effectiveRulesAccepted
+                                    ? Icons.menu_book_rounded
+                                    : Icons.play_arrow_rounded,
+                                color: Colors.black,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                !_effectiveRulesAccepted
+                                    ? 'Rules 📜'
+                                    : 'Mission $targetActiveDay',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+          // 4. 🚀 Mobile Fast Scroll Scrubber Bar on right side (User Audio Directive!)
+          if (_activeTargetTab == 0)
+            _buildFastScrollScrubber(
+                screenWidth, MediaQuery.of(context).size.height),
+        ],
+      ),
+    );
+  }
+
+  /// 🚀 Vertical Fast Scroll Scrubber Bar on right side
+  /// User Audio Directive: "Scroll cheyyan vendittu side-il oru scrolling bar vekkuka. Mobile-il ullavarkkum speed-il mele scroll cheythu ariyaan vendittu."
+  Widget _buildFastScrollScrubber(double screenWidth, double screenHeight) {
+    // Audio Directive: Keep scrubber compact (~half size, centered) so it never stacks over Mission header
+    const double scrubberHeight = 220.0;
+    final double scrubberTop = (screenHeight - scrubberHeight) / 2.0;
+
+    return Positioned(
+      right: 5,
+      top: scrubberTop,
+      width: 34,
+      height: scrubberHeight,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onVerticalDragUpdate: (details) {
+          if (!_scrollController.hasClients ||
+              !_scrollController.position.hasContentDimensions) return;
+          final localY = details.localPosition.dy.clamp(0.0, scrubberHeight);
+          final newFraction = (localY / scrubberHeight).clamp(0.0, 1.0);
+          final targetOffset =
+              newFraction * _scrollController.position.maxScrollExtent;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (_scrollController.hasClients &&
+                _scrollController.position.hasContentDimensions) {
+              _scrollController.jumpTo(targetOffset);
+            }
+          });
+        },
+        onTapDown: (details) {
+          if (!_scrollController.hasClients ||
+              !_scrollController.position.hasContentDimensions) return;
+          final localY = details.localPosition.dy.clamp(0.0, scrubberHeight);
+          final newFraction = (localY / scrubberHeight).clamp(0.0, 1.0);
+          final targetOffset =
+              newFraction * _scrollController.position.maxScrollExtent;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (_scrollController.hasClients &&
+                _scrollController.position.hasContentDimensions) {
+              _scrollController.animateTo(
+                targetOffset,
+                duration: const Duration(milliseconds: 320),
+                curve: Curves.easeOutCubic,
+              );
+            }
+          });
+        },
+        child: Container(
+          width: 34,
+          height: scrubberHeight,
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F1524).withValues(alpha: 0.88),
+            borderRadius: BorderRadius.circular(17),
+            border: Border.all(
+              color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.5),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Stack(
+            alignment: Alignment.topCenter,
+            children: [
+              // Top milestone: Summit Citadel
+              const Positioned(
+                top: 6,
+                child: Text('🏰', style: TextStyle(fontSize: 10)),
+              ),
+              Positioned(
+                top: scrubberHeight * 0.33,
+                child: Container(
+                  width: 5,
+                  height: 5,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white30,
+                  ),
+                ),
+              ),
+              Positioned(
+                top: scrubberHeight * 0.66,
+                child: Container(
+                  width: 5,
+                  height: 5,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white30,
+                  ),
+                ),
+              ),
+              // Bottom milestone: Valley House 1
+              const Positioned(
+                bottom: 6,
+                child: Text('🏡', style: TextStyle(fontSize: 10)),
+              ),
+
+              // Draggable Glowing Thumb with Live Day Badge (Rebuilt smoothly on scroll)
+              AnimatedBuilder(
+                animation: _scrollController,
+                builder: (context, _) {
+                  double fraction = 1.0;
+                  if (_scrollController.hasClients &&
+                      _scrollController.position.hasContentDimensions &&
+                      _scrollController.position.maxScrollExtent > 0) {
+                    fraction = (_scrollController.offset /
+                            _scrollController.position.maxScrollExtent)
+                        .clamp(0.0, 1.0);
+                  }
+                  // Inverted map: offset 0 is Day 90 (summit), offset max is Day 1 (valley)
+                  final approximateDay =
+                      ((1.0 - fraction) * 89 + 1).round().clamp(1, 90);
+
+                  return Positioned(
+                    top: (fraction * (scrubberHeight - 34))
+                        .clamp(0.0, scrubberHeight - 34),
+                    child: Container(
+                      width: 28,
+                      height: 34,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFFD700), Color(0xFFFF9100)],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                const Color(0xFFFFD700).withValues(alpha: 0.6),
+                            blurRadius: 8,
+                            spreadRadius: 1,
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.drag_indicator_rounded,
+                              size: 10, color: Colors.black),
+                          Text(
+                            '$approximateDay',
+                            style: GoogleFonts.outfit(
+                              color: Colors.black,
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMinimalFloatingPill({
+    required String icon,
+    required String label,
+    required VoidCallback onTap,
+    Color? highlightColor,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+        decoration: BoxDecoration(
+          color: highlightColor != null
+              ? highlightColor.withValues(alpha: 0.18)
+              : const Color(0xFF131722).withValues(alpha: 0.95),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: highlightColor?.withValues(alpha: 0.6) ?? Colors.white12,
+            width: 0.8,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(icon, style: const TextStyle(fontSize: 11)),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: GoogleFonts.outfit(
+                color: highlightColor ?? Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTopHUD(UserLearningProgress prog) {
+    final canPop = Navigator.of(context).canPop();
+
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      child: Container(
+        padding: EdgeInsets.only(
+          top: MediaQuery.of(context).padding.top + 4,
+          bottom: 6,
+          left: 10,
+          right: 10,
+        ),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F1524).withValues(alpha: 0.95),
+          border: Border(
+            bottom: BorderSide(
+              color: Colors.white.withValues(alpha: 0.08),
+              width: 1,
+            ),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.35),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Row 1: Compact 90-Day Mission Badge + Stats + Actions
+            Row(
+              children: [
+                if (canPop) ...[
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_rounded,
+                        color: Colors.white, size: 16),
+                    onPressed: () => Navigator.pop(context),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                  const SizedBox(width: 6),
+                ],
+
+                // Minimal Day Badge
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                        width: 0.8),
+                  ),
+                  child: Text(
+                    _isMasterAdmin && _adminSelectedDay != null
+                        ? 'Day $_adminSelectedDay'
+                        : 'Day ${prog.currentDay}',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFD700),
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // 🪙 Pocket Score (PS) & 🏆 Trophies Capsule (Audio Directive: Show PS, Coins, and Trophies count)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.45),
+                      width: 1.0,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 1.5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFD700),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Text(
+                          'PS',
+                          style: GoogleFonts.outfit(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        '🪙 $_unifiedPocketScore',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontWeight: FontWeight.w900,
+                          fontSize: 12.5,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        width: 1,
+                        height: 12,
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '🏆 $_unifiedTrophies',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontWeight: FontWeight.w900,
+                          fontSize: 12.5,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const Spacer(),
+
+                // 🔄 Refresh Button (User Audio Directive: "ഒരു റീഫ്രഷ് ചെയ്യാനുള്ള ബട്ടൺ കൊടുക്കണം കേട്ടോ അവിടെ")
+                GestureDetector(
+                  onTap: () async {
+                    HapticFeedback.lightImpact();
+                    setState(() => _isRefreshing = true);
+                    await _loadData();
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Roadmap Refreshed! Day ${prog.currentDay} • 🪙 $_unifiedPocketScore PTS • 🏆 $_unifiedTrophies',
+                            style: GoogleFonts.outfit(
+                                fontWeight: FontWeight.bold, fontSize: 12),
+                          ),
+                          backgroundColor: const Color(0xFF10B981),
+                          duration: const Duration(milliseconds: 1200),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.white24, width: 0.8),
+                    ),
+                    child: _isRefreshing
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Color(0xFFFFD700)),
+                          )
+                        : const Icon(Icons.refresh_rounded,
+                            color: Colors.white, size: 16),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                // 🌐 Minimal Open World Globe Icon
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.mediumImpact();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => PocketOpenWorldGamePage(
+                          currentDay: prog.currentDay,
+                          streak: prog.streakDays,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.white24, width: 0.8),
+                    ),
+                    child: const Icon(Icons.public_rounded,
+                        color: Color(0xFF38BDF8), size: 16),
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // 🔊 Minimal BGM Speaker Toggle (Audio Directive)
+                ValueListenableBuilder<bool>(
+                  valueListenable:
+                      PocketGameAudioService.instance.isMutedNotifier,
+                  builder: (context, isMuted, _) {
+                    return GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        PocketGameAudioService.instance.toggleMute();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isMuted
+                                ? Colors.white24
+                                : const Color(0xFFFFFC00)
+                                    .withValues(alpha: 0.5),
+                            width: 0.8,
+                          ),
+                        ),
+                        child: Icon(
+                          isMuted
+                              ? Icons.volume_off_rounded
+                              : Icons.volume_up_rounded,
+                          color: isMuted
+                              ? Colors.white54
+                              : const Color(0xFFFFFC00),
+                          size: 15,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 6),
+
+            // 🏆 Segmented Tabs: 🗺️ Roadmap vs 🌐 Open World vs 🏅 Global Rank (Audio Directive)
+            Container(
+              height: 32,
+              decoration: BoxDecoration(
+                color: const Color(0xFF070B0E),
+                borderRadius: BorderRadius.circular(9),
+                border: Border.all(color: Colors.white12, width: 0.8),
+              ),
+              child: Row(
+                children: [
+                  // Tab 0: Roadmap
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        _targetTabPageController.animateToPage(
+                          0,
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeOutCubic,
+                        );
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        decoration: BoxDecoration(
+                          color: _activeTargetTab == 0
+                              ? const Color(0xFFFFD700)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(7),
+                        ),
+                        alignment: Alignment.center,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('🗺️', style: TextStyle(fontSize: 10.5)),
+                            const SizedBox(width: 3),
+                            Text(
+                              'Roadmap',
+                              style: GoogleFonts.outfit(
+                                fontSize: 11.0,
+                                fontWeight: FontWeight.w800,
+                                color: _activeTargetTab == 0
+                                    ? Colors.black
+                                    : Colors.white70,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Tab 1: 📚 Library (Minimal Book Reading)
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        _targetTabPageController.animateToPage(
+                          1,
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeOutCubic,
+                        );
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        decoration: BoxDecoration(
+                          color: _activeTargetTab == 1
+                              ? const Color(0xFFFFD700)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(7),
+                        ),
+                        alignment: Alignment.center,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('📚', style: TextStyle(fontSize: 10.5)),
+                            const SizedBox(width: 3),
+                            Text(
+                              'Library',
+                              style: GoogleFonts.outfit(
+                                fontSize: 11.0,
+                                fontWeight: FontWeight.w800,
+                                color: _activeTargetTab == 1
+                                    ? Colors.black
+                                    : Colors.white70,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Tab 2: Global Rank (Audio Directive: "Global Rank mathi, World Rank alla")
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        _targetTabPageController.animateToPage(
+                          2,
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeOutCubic,
+                        );
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        decoration: BoxDecoration(
+                          color: _activeTargetTab == 2
+                              ? const Color(0xFFFFD700)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(7),
+                        ),
+                        alignment: Alignment.center,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('🏅', style: TextStyle(fontSize: 10.5)),
+                            const SizedBox(width: 3),
+                            Text(
+                              'Global Rank',
+                              style: GoogleFonts.outfit(
+                                fontSize: 11.0,
+                                fontWeight: FontWeight.w800,
+                                color: _activeTargetTab == 2
+                                    ? Colors.black
+                                    : Colors.white70,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // 🎯 Minimal Horizontal Level Milestones Strip (Only Shown on Roadmap tab)
+            if (_activeTargetTab == 0) ...[
+              // ✨ Red Update App Pill when new release is live
+              if (_pendingUpdateStoreUrl != null) ...[
+                const SizedBox(height: 6),
+                GestureDetector(
+                  onTap: () async {
+                    HapticFeedback.mediumImpact();
+                    final uri = Uri.tryParse(_pendingUpdateStoreUrl!);
+                    if (uri != null) {
+                      try {
+                        await launchUrl(uri,
+                            mode: LaunchMode.externalApplication);
+                      } catch (e) {
+                        debugPrint('Error launching store update URL: $e');
+                      }
+                    }
+                  },
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFDC2626),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFFFCA5A5),
+                        width: 0.9,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('🚀', style: TextStyle(fontSize: 10)),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Please update the new app',
+                          style: GoogleFonts.inter(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.open_in_new_rounded,
+                            color: Colors.white, size: 10),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 🎯 Minimal Horizontal Level Milestones Strip (Audio Requirement: Foundation Steps -3, -2, -1, 0, 1..)
+  Widget _buildMilestonesStrip(UserLearningProgress prog) {
+    return SizedBox(
+      height: 28,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: kGermanTargetMilestones.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 6),
+        itemBuilder: (context, index) {
+          final item = kGermanTargetMilestones[index];
+          final isNegativeFoundation = item.stageNumber < 0;
+          final isRule = item.stageNumber == 0;
+
+          final bool isUnlocked;
+          final bool isCurrentTarget;
+
+          if (isNegativeFoundation) {
+            isUnlocked = _effectiveRulesAccepted || prog.currentDay >= 1;
+            isCurrentTarget = false;
+          } else if (isRule) {
+            isUnlocked = _effectiveRulesAccepted;
+            isCurrentTarget = !_effectiveRulesAccepted;
+          } else {
+            isUnlocked = prog.currentDay >= item.targetDay;
+            isCurrentTarget = _effectiveRulesAccepted &&
+                prog.currentDay <= item.targetDay &&
+                (index <= 4 ||
+                    prog.currentDay >
+                        kGermanTargetMilestones[index - 1].targetDay);
+          }
+
+          return GestureDetector(
+            onTap: () async {
+              HapticFeedback.selectionClick();
+              if (item.stageNumber == -3) {
+                _showProfileSetupModal(prog);
+              } else if (item.stageNumber == -2) {
+                _showDailyRoutineModal(prog);
+              } else if (item.stageNumber == -1) {
+                await PocketDay1DiagnosticSheet.show(context,
+                    userId: widget.userId);
+                if (mounted) setState(() {});
+              } else if (item.stageNumber == 0) {
+                PocketWorldGameRulesModal.show(
+                  context,
+                  currentDay: prog.currentDay,
+                  onPledgeAccepted: () {
+                    setState(() => _hasAcceptedRules = true);
+                    _loadData();
+                  },
+                );
+              } else if (item.stageNumber == 6 || item.stageNumber == 7) {
+                if (!_hasConqueredCitadel) {
+                  _showCitadelRequiredForCertificateDialog();
+                } else {
+                  Day90MasterCertificateDialog.show(
+                    context,
+                    userName: 'Sovereign Grandmaster',
+                    userDay: 91,
+                  );
+                }
+              } else {
+                _showTargetStagePreviewDialog(item, prog.currentDay);
+              }
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+              decoration: BoxDecoration(
+                color: isCurrentTarget
+                    ? item.themeColor.withValues(alpha: 0.20)
+                    : (isUnlocked
+                        ? const Color(0xFF10B981).withValues(alpha: 0.12)
+                        : Colors.white.withValues(alpha: 0.05)),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isCurrentTarget
+                      ? item.themeColor
+                      : (isUnlocked ? const Color(0xFF10B981) : Colors.white12),
+                  width: isCurrentTarget ? 1.2 : 0.8,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(item.houseEmoji, style: const TextStyle(fontSize: 12)),
+                  const SizedBox(width: 4),
+                  Text(
+                    (isRule || isNegativeFoundation)
+                        ? item.title
+                        : '${item.title} (PS ${PocketScoreLevelEngine.getRequiredScoreForLevel(item.targetDay)}${PocketScoreLevelEngine.getRequiredTrophiesForLevel(item.targetDay) > 0 ? " & 🏆${PocketScoreLevelEngine.getRequiredTrophiesForLevel(item.targetDay)} Trophy" : ""})',
+                    style: GoogleFonts.outfit(
+                      color: isCurrentTarget
+                          ? item.themeColor
+                          : (isUnlocked
+                              ? const Color(0xFF10B981)
+                              : Colors.white70),
+                      fontWeight: FontWeight.w800,
+                      fontSize: 10,
+                    ),
+                  ),
+                  const SizedBox(width: 3),
+                  Text(
+                    isNegativeFoundation
+                        ? (isUnlocked ? '✓' : '⚡')
+                        : isRule
+                            ? (_effectiveRulesAccepted ? '✓' : '📜')
+                            : (isUnlocked
+                                ? '✓'
+                                : (isCurrentTarget ? '🔥' : '🔒')),
+                    style: const TextStyle(fontSize: 8.5),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  /// 👤 Milestone Step -3: Profile Setup Modal
+  void _showProfileSetupModal(UserLearningProgress prog) {
+    final track = PocketSyllabusRepository.getTrack(_currentLearnerLevel);
+    final avatar = _getAvatarForDay(prog.currentDay);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF131722),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border:
+                          Border.all(color: const Color(0xFF818CF8), width: 2),
+                    ),
+                    child: ClipOval(
+                      child: VectorAvatarWidget(config: avatar, size: 48),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Step -3: Profile & Avatar Setup',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF818CF8),
+                            fontWeight: FontWeight.w900,
+                            fontSize: 16,
+                          ),
+                        ),
+                        Text(
+                          'Active Track: ${track.nameEn} • Level ${prog.currentDay}',
+                          style: const TextStyle(
+                              color: Colors.white70, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.check_circle_rounded,
+                            color: Color(0xFF10B981), size: 16),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'AI Tutor Voice & Accent Calibrated',
+                            style: GoogleFonts.outfit(
+                                color: Colors.white, fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Icon(Icons.check_circle_rounded,
+                            color: Color(0xFF10B981), size: 16),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Syllabus Track Synced (${track.nameEn})',
+                            style: GoogleFonts.outfit(
+                                color: Colors.white, fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF818CF8),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  icon: const Icon(Icons.done_rounded, color: Colors.white),
+                  label: Text('Profile Ready ✓',
+                      style: GoogleFonts.outfit(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// ⏱️ Milestone Step -2: Daily Routine Setup Modal
+  void _showDailyRoutineModal(UserLearningProgress prog) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF131722),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  const Text('⏱️', style: TextStyle(fontSize: 26)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Step -2: Daily Routine & Habit Anchor',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFF472B6),
+                            fontWeight: FontWeight.w900,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const Text(
+                          '15-Minute Daily Habit Commitment',
+                          style: TextStyle(color: Colors.white70, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.alarm_on_rounded,
+                            color: Color(0xFFF472B6), size: 18),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Daily Study Window: 15–20 Minutes',
+                            style: GoogleFonts.outfit(
+                                color: Colors.white, fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Icon(Icons.local_fire_department_rounded,
+                            color: Colors.amber, size: 18),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Streak Shield Active • Daily Habit Loop Engaged',
+                            style: GoogleFonts.outfit(
+                                color: Colors.white, fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFF472B6),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  icon: const Icon(Icons.done_rounded, color: Colors.white),
+                  label: Text('Routine Committed ✓',
+                      style: GoogleFonts.outfit(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 🎯 Milestone Target Detail & House Growth Preview Dialog
+  void _showTargetStagePreviewDialog(TargetMilestoneItem item, int currentDay) {
+    final isUnlocked = currentDay >= item.targetDay;
+    final stageAvatar =
+        VectorAvatarConfig.getEvolutionAvatarForStage(item.targetDay);
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF131722),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22),
+          side: BorderSide(color: item.themeColor, width: 1.5),
+        ),
+        title: Row(
+          children: [
+            Text(item.houseEmoji, style: const TextStyle(fontSize: 24)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${item.title.toUpperCase()} (${item.rangeText})',
+                    style: GoogleFonts.outfit(
+                      color: item.themeColor,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 14,
+                    ),
+                  ),
+                  Text(
+                    isUnlocked
+                        ? '✅ Milestone Achieved'
+                        : '🎯 Target In Progress',
+                    style: TextStyle(
+                      color:
+                          isUnlocked ? const Color(0xFF10B981) : Colors.amber,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 72,
+                height: 72,
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: item.themeColor, width: 2),
+                ),
+                child: ClipOval(
+                  child: VectorAvatarWidget(config: stageAvatar, size: 68),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    margin: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                          color:
+                              const Color(0xFFFFD700).withValues(alpha: 0.6)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Text('🪙', style: TextStyle(fontSize: 15)),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            isUnlocked
+                                ? 'Pocket Score Target: PS ${PocketScoreLevelEngine.getRequiredScoreForLevel(item.targetDay)} (Achieved ✓)'
+                                : 'Pocket Score Target: PS ${PocketScoreLevelEngine.getRequiredScoreForLevel(item.targetDay)} (${math.max(0, PocketScoreLevelEngine.getRequiredScoreForLevel(item.targetDay) - _unifiedPocketScore)} PS needed)',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFD700),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (PocketScoreLevelEngine.getRequiredTrophiesForLevel(
+                          item.targetDay) >
+                      0)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      margin: const EdgeInsets.only(bottom: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                            color:
+                                const Color(0xFF00E5FF).withValues(alpha: 0.6)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Text('🏆', style: TextStyle(fontSize: 16)),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Required Pocket Talk Trophies: 🏆 ${PocketScoreLevelEngine.getRequiredTrophiesForLevel(item.targetDay)}',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFF00E5FF),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Earned through 4-Day Pocket Talk Spoken Pacts in Mates Chat. Complete spoken pacts to cross this milestone!',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white70,
+                                    fontSize: 10.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  Text('🏡 House Stage: ${item.houseStage}',
+                      style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13)),
+                  const SizedBox(height: 4),
+                  Text('🛡️ Defense Unlock: ${item.defenseSummary}',
+                      style: GoogleFonts.inter(
+                          color: Colors.white70, fontSize: 11.5)),
+                  const SizedBox(height: 4),
+                  Text('🪙 Rewards: ${item.rewardSummary}',
+                      style: GoogleFonts.inter(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Completing this daily target upgrades your house architecture, evolves your learning avatar, and unlocks advanced fortress defense traps.',
+              style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('CLOSE', style: TextStyle(color: Colors.white60)),
+          ),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFE11D48),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            ),
+            icon: const Text('⚔️', style: TextStyle(fontSize: 14)),
+            label: Text('ATTACK TARGET CITADEL',
+                style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.bold, fontSize: 12)),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              HapticFeedback.heavyImpact();
+              final rival =
+                  await PocketFortressDefenseService.getRecommendedRivalTarget(
+                      userDay: item.targetDay);
+              if (!mounted) return;
+              PocketCitadelAttackPage.openForUser(
+                context,
+                userId: rival.id,
+                neighbor: rival,
+                attackerDay: currentDay,
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 📝 Open CEFR Syllabus Interactive Examination
+  // ignore: unused_element
+  void _openSyllabusExamination(SyllabusTrack track) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => _SyllabusExamDialog(
+        track: track,
+        currentDay: _progress?.currentDay ?? 1,
+        onExamCompleted: (score) {
+          setState(() {
+            _unifiedPocketScore += (score * 30);
+          });
+          _loadData();
+        },
+      ),
+    );
+  }
+
+  /// 🚨 Consistency / Focus Loss Dialog (Audio Requirement!)
+  void _showConsistencyLossDialog(ConsistencyCheckResult res) {
+    HapticFeedback.mediumImpact();
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF131722),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22),
+          side: const BorderSide(color: Colors.redAccent, width: 1.5),
+        ),
+        title: Row(
+          children: [
+            const Text('⚠️', style: TextStyle(fontSize: 24)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'CONSISTENCY DROPPED!',
+                style: GoogleFonts.outfit(
+                  color: Colors.redAccent,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 15,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+                border:
+                    Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Day ${res.previousDay} ➔ Day ${res.newDay}',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    res.message,
+                    style:
+                        GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              res.messageMalayalam,
+              style: GoogleFonts.inter(
+                color: const Color(0xFFFFD700),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFFFC00),
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'REGAIN FOCUS 🎯',
+              style: GoogleFonts.outfit(fontWeight: FontWeight.w900),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 📚 Minimal Syllabus Track Selector Menu directly above the Rules / Level 1 Node (User Audio Directive!)
+  /// Displays "YOUR SYLLABUS" initially as generated during onboarding.
+  /// Tapping opens the 6-track switcher without any bottomsheet.
+  Widget _buildSyllabusSelectorMenu(double screenWidth) {
+    final x = screenWidth / 2;
+    // Positioned cleanly right above the Rules node (_ruleNodeY is 240, top of sphere is 203)
+    final y = _ruleNodeY - 54.0;
+    const pillWidth = 250.0;
+
+    return Positioned(
+      left: x - (pillWidth / 2),
+      top: y,
+      width: pillWidth,
+      child: Center(
+        child: MasterTrackSelectorPill(
+          isGermanActive: true,
+          userId: widget.userId ?? _supabase.auth.currentUser?.id,
+        ),
+      ),
+    );
+  }
+
+  /// 📜 Special "Rule" Level Node (Audio Directive: Before Level 1, show Rule level)
+  Widget _buildRuleLevelNode(double screenWidth) {
+    final x = screenWidth / 2;
+    final y = _ruleNodeY;
+    const nodeSize = 74.0;
+
+    return Positioned(
+      left: x - (nodeSize / 2),
+      top: y - (nodeSize / 2),
+      width: nodeSize,
+      height: nodeSize + 24,
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          PocketWorldGameRulesModal.show(
+            context,
+            currentDay: _progress?.currentDay ?? 1,
+            onPledgeAccepted: () {
+              setState(() => _hasAcceptedRules = true);
+              _loadData();
+            },
+          );
+        },
+        child: SizedBox(
+          width: nodeSize,
+          height: nodeSize + 24,
+          child: Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.center,
+            children: [
+              // Pulsing glow if not accepted yet
+              if (!_hasAcceptedRules)
+                Positioned.fill(
+                  child: AnimatedBuilder(
+                    animation: _bobController,
+                    builder: (context, child) {
+                      final scale = 1.0 + (_bobController.value * 0.24);
+                      return Transform.scale(
+                        scale: scale,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: const Color(0xFFFFFC00).withValues(
+                                  alpha: 0.75 - (_bobController.value * 0.4)),
+                              width: 3.2,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+              // 3D Stepping Stone
+              Container(
+                width: nodeSize,
+                height: nodeSize,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: _hasAcceptedRules
+                        ? [const Color(0xFF10B981), const Color(0xFF047857)]
+                        : [const Color(0xFFFF8906), const Color(0xFFE53E3E)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  border: Border.all(
+                    color: _hasAcceptedRules
+                        ? const Color(0xFF6EE7B7)
+                        : const Color(0xFFFFFC00),
+                    width: 3.0,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (_hasAcceptedRules
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFFFF8906))
+                          .withValues(alpha: 0.5),
+                      blurRadius: 18,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('📜', style: TextStyle(fontSize: 24)),
+                      Text(
+                        _hasAcceptedRules ? 'RULES' : 'GET STARTED',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: _hasAcceptedRules ? 10 : 8.5,
+                          letterSpacing: 0.7,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Verification badge
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 2.5),
+                    decoration: BoxDecoration(
+                      color: _hasAcceptedRules
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFFFFC00),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color:
+                            _hasAcceptedRules ? Colors.white38 : Colors.black26,
+                        width: 0.8,
+                      ),
+                    ),
+                    child: Text(
+                      _hasAcceptedRules ? '✓ VERIFIED' : 'START HERE 🔥',
+                      style: GoogleFonts.outfit(
+                        color: _hasAcceptedRules ? Colors.white : Colors.black,
+                        fontSize: 8.5,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 🌿 Grassy Ground Syllabus Notice (or Red New-Build Update Alert when available)
+  Widget _buildGroundEnglishSyllabusNotice(double screenWidth) {
+    final x = screenWidth / 2;
+    final y = _ruleNodeY + 64.0;
+    const pillWidth = 280.0;
+    final bool hasUpdate = _pendingUpdateStoreUrl != null;
+
+    return Positioned(
+      left: x - (pillWidth / 2),
+      top: y,
+      width: pillWidth,
+      child: Center(
+        child: GestureDetector(
+          onTap: hasUpdate
+              ? () async {
+                  HapticFeedback.mediumImpact();
+                  final uri = Uri.tryParse(_pendingUpdateStoreUrl!);
+                  if (uri != null) {
+                    try {
+                      await launchUrl(uri,
+                          mode: LaunchMode.externalApplication);
+                    } catch (e) {
+                      debugPrint('Error launching store update URL: $e');
+                    }
+                  }
+                }
+              : null,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            decoration: BoxDecoration(
+              color: hasUpdate
+                  ? const Color(0xFFDC2626)
+                  : const Color(0xFF064E3B).withValues(alpha: 0.70),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: hasUpdate
+                    ? const Color(0xFFFCA5A5)
+                    : const Color(0xFF34D399).withValues(alpha: 0.5),
+                width: 1.2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: hasUpdate
+                      ? const Color(0xFFDC2626).withValues(alpha: 0.45)
+                      : Colors.black.withValues(alpha: 0.25),
+                  blurRadius: hasUpdate ? 10 : 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(hasUpdate ? '🚀' : '🌱',
+                    style: const TextStyle(fontSize: 12)),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    hasUpdate
+                        ? 'Please update the new app'
+                        : 'Daily update German Master',
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.outfit(
+                      color: hasUpdate ? Colors.white : const Color(0xFFA7F3D0),
+                      fontWeight: FontWeight.w800,
+                      fontSize: 11.5,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ),
+                if (hasUpdate) ...[
+                  const SizedBox(width: 5),
+                  const Icon(Icons.open_in_new_rounded,
+                      color: Colors.white, size: 12),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 📮 Postbox Feedback Box copied from Day 1 Step 20, planted at the very bottom of the Target Page
+  Widget _buildGroundFeedbackBox(double screenWidth) {
+    final x = screenWidth / 2;
+    const boxW = 220.0;
+
+    return Positioned(
+      left: x - (boxW / 2),
+      bottom: 0,
+      width: boxW,
+      height: 195,
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.mediumImpact();
+          PocketFeedbackService.showFeedbackBottomSheet(
+            context,
+            dayNumber: _progress?.currentDay ?? 1,
+            defaultType: 'roadmap_idea',
+          );
+        },
+        child: CustomPaint(
+          size: const Size(220, 195),
+          painter: _TargetPostboxFeedbackPainter(),
+        ),
+      ),
+    );
+  }
+
+  /// 🏛️ Official Community & Club Membership Box (WhatsApp & Instagram Community)
+  Widget _buildGroundCommunityClubBox(double screenWidth) {
+    final x = screenWidth / 2;
+    final y = _ruleNodeY + 148.0;
+    final cardWidth = (screenWidth * 0.90).clamp(280.0, 360.0);
+
+    return Positioned(
+      left: x - (cardWidth / 2),
+      top: y,
+      width: cardWidth,
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.4),
+              width: 1.1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.35),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header Tag
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('🏛️', style: TextStyle(fontSize: 13)),
+                  const SizedBox(width: 6),
+                  Text(
+                    'POKET MATES MEMBERSHIP',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFF38BDF8),
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 3),
+              Text(
+                'Join Community • Daily Updates',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.outfit(
+                  color: Colors.white70,
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              // Action Buttons Row (WhatsApp Community & Instagram)
+              Row(
+                children: [
+                  // 1. WhatsApp Community Button
+                  Expanded(
+                    child: InkWell(
+                      onTap: () async {
+                        HapticFeedback.mediumImpact();
+                        const waUrl =
+                            'https://chat.whatsapp.com/HqRgqeHEQVm6LoZ7L8dO6r';
+                        final uri = Uri.parse(waUrl);
+                        try {
+                          await launchUrl(uri,
+                              mode: LaunchMode.externalApplication);
+                        } catch (e) {
+                          debugPrint('Error launching WhatsApp: $e');
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 8),
+                        decoration: BoxDecoration(
+                          color:
+                              const Color(0xFF25D366).withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color:
+                                const Color(0xFF25D366).withValues(alpha: 0.6),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF25D366),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.chat_bubble_rounded,
+                                color: Colors.white,
+                                size: 11,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                'WhatsApp',
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFF6EE7B7),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+
+                  // 2. Instagram Profile Button
+                  Expanded(
+                    child: InkWell(
+                      onTap: () async {
+                        HapticFeedback.mediumImpact();
+                        const instaUrl =
+                            'https://www.instagram.com/poketmates.app?vrfl=NTc2MWhma2p1NzF2&utm_source=qr';
+                        final uri = Uri.parse(instaUrl);
+                        try {
+                          await launchUrl(uri,
+                              mode: LaunchMode.externalApplication);
+                        } catch (e) {
+                          debugPrint('Error launching Instagram: $e');
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 8),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              const Color(0xFF833AB4).withValues(alpha: 0.20),
+                              const Color(0xFFFD1D1D).withValues(alpha: 0.20),
+                              const Color(0xFFF77737).withValues(alpha: 0.20),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color:
+                                const Color(0xFFE1306C).withValues(alpha: 0.6),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFE1306C),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.camera_alt_rounded,
+                                color: Colors.white,
+                                size: 11,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                'Instagram',
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFF9A8D4),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLevelNode(int day, double screenWidth, int currentDay) {
+    if (day == 91) {
+      return _buildLevel91ApexNode(screenWidth, currentDay);
+    }
+    final x = _getNodeX(day, screenWidth);
+    final y = _getNodeY(day);
+    // User audio requirement: Before Get Started rules are accepted, Day 1 must stay LOCKED!
+    final isLockedByRules = (day == 1 && !_effectiveRulesAccepted);
+    final isWaitingForMidnight = _isDayWaitingForMidnight(day);
+    final isCompleted = _isDayCompleted(day) &&
+        _effectiveRulesAccepted &&
+        !isWaitingForMidnight;
+    final isUnlocked = _isDayUnlocked(day, currentDay) &&
+        !isLockedByRules &&
+        !isWaitingForMidnight;
+    final isCurrent = (day == currentDay) && isUnlocked && !isCompleted;
+    final isBossMilestone = day == 7 ||
+        day == 14 ||
+        day == 21 ||
+        day == 30 ||
+        day == 45 ||
+        day == 60 ||
+        day == 75 ||
+        day == 90;
+
+    final nodeSize = isBossMilestone ? 76.0 : 64.0;
+    final stage = LearningMilestoneStage.getStageForDay(day);
+
+    return Positioned(
+      left: x - (nodeSize / 2),
+      top: y - (nodeSize / 2),
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          if (!_effectiveRulesAccepted && day == 1) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: const Color(0xFF131722),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: const BorderSide(color: Color(0xFF38BDF8), width: 1.5),
+                ),
+                content: Row(
+                  children: [
+                    const Text('📜', style: TextStyle(fontSize: 18)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Read and accept all 12 Rules first to unlock Day 1!',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+            PocketWorldGameRulesModal.show(
+              context,
+              currentDay: currentDay,
+              onPledgeAccepted: () {
+                setState(() => _hasAcceptedRules = true);
+                _loadData();
+              },
+            );
+            return;
+          }
+          if (_isMasterAdmin) {
+            setState(() {
+              _adminSelectedDay = day;
+            });
+            _startActiveSubStep(day);
+            return;
+          }
+          if (isCompleted) {
+            _startActiveSubStep(day);
+            return;
+          }
+          if (isWaitingForMidnight) {
+            _showMidnightLockedToast(day);
+            return;
+          }
+          if (isUnlocked || isCurrent) {
+            _startActiveSubStep(day);
+            return;
+          }
+          _showLevelLockedToast(day);
+        },
+        child: SizedBox(
+          width: nodeSize,
+          height: nodeSize + (isWaitingForMidnight ? 24 : 20),
+          child: Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.center,
+            children: [
+              // Current Day Glowing Pulse Wave / Active Beacon (Green for Day 1!)
+              if (isCurrent)
+                Positioned.fill(
+                  child: AnimatedBuilder(
+                    animation: _bobController,
+                    builder: (context, child) {
+                      final scale = 1.0 + (_bobController.value * 0.28);
+                      final beaconColor = day == 1
+                          ? const Color(
+                              0xFF10B981) // Green active beacon for Day 1
+                          : const Color(0xFFFFFC00);
+                      return Transform.scale(
+                        scale: scale,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: beaconColor.withValues(
+                                    alpha:
+                                        0.45 - (_bobController.value * 0.25)),
+                                blurRadius: 14 + (_bobController.value * 8),
+                                spreadRadius: 3 + (_bobController.value * 4),
+                              ),
+                            ],
+                            border: Border.all(
+                              color: beaconColor.withValues(
+                                  alpha: 0.8 - (_bobController.value * 0.4)),
+                              width: day == 1 ? 4.0 : 3.5,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+              // The 3D Stepping Stone Button
+              Container(
+                width: nodeSize,
+                height: nodeSize,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: isWaitingForMidnight
+                        ? [const Color(0xFF312E81), const Color(0xFF1E1B4B)]
+                        : (isCurrent
+                            ? [const Color(0xFFFFFC00), const Color(0xFFFF8906)]
+                            : (isCompleted
+                                ? [
+                                    const Color(0xFF10B981),
+                                    const Color(0xFF047857)
+                                  ]
+                                : (isUnlocked
+                                    ? [
+                                        const Color(0xFF00E5FF),
+                                        const Color(0xFF0284C7)
+                                      ]
+                                    : (isBossMilestone
+                                        ? [
+                                            const Color(0xFF475569),
+                                            const Color(0xFF1E293B)
+                                          ]
+                                        : [
+                                            const Color(0xFF2A314A),
+                                            const Color(0xFF181C2E)
+                                          ])))),
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  border: Border.all(
+                    color: isWaitingForMidnight
+                        ? const Color(0xFFFFD700)
+                        : (isCurrent
+                            ? Colors.white
+                            : (isCompleted
+                                ? const Color(0xFF6EE7B7)
+                                : (isUnlocked
+                                    ? const Color(0xFF38BDF8)
+                                    : (isBossMilestone
+                                        ? const Color(0xFFFFD700)
+                                        : Colors.white
+                                            .withValues(alpha: 0.22))))),
+                    width: (isCurrent || isWaitingForMidnight) ? 3.0 : 2.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isWaitingForMidnight
+                          ? const Color(0xFFFFD700).withValues(alpha: 0.35)
+                          : (isCurrent
+                              ? const Color(0xFFFFFC00).withValues(alpha: 0.5)
+                              : (isCompleted
+                                  ? const Color(0xFF10B981)
+                                      .withValues(alpha: 0.4)
+                                  : (isUnlocked
+                                      ? const Color(0xFF00E5FF)
+                                          .withValues(alpha: 0.45)
+                                      : Colors.black.withValues(alpha: 0.5)))),
+                      blurRadius:
+                          (isCurrent || isUnlocked || isWaitingForMidnight)
+                              ? 16
+                              : 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: isWaitingForMidnight
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('⏳', style: TextStyle(fontSize: 15)),
+                            Text(
+                              '$day',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFD700),
+                                fontWeight: FontWeight.w900,
+                                fontSize: isBossMilestone ? 18 : 14,
+                              ),
+                            ),
+                          ],
+                        )
+                      : (isCompleted
+                          ? const Icon(Icons.check_rounded,
+                              color: Colors.white, size: 28)
+                          : (isCurrent
+                              ? Text(
+                                  '$day',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: isBossMilestone ? 24 : 20,
+                                  ),
+                                )
+                              : (isUnlocked
+                                  ? Text(
+                                      '$day',
+                                      style: GoogleFonts.outfit(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: isBossMilestone ? 24 : 20,
+                                      ),
+                                    )
+                                  : (isBossMilestone
+                                      ? Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              stage.emoji,
+                                              style: TextStyle(
+                                                  fontSize: isBossMilestone
+                                                      ? 19
+                                                      : 16),
+                                            ),
+                                            Text(
+                                              '$day',
+                                              style: GoogleFonts.outfit(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 11,
+                                              ),
+                                            ),
+                                          ],
+                                        )
+                                      : Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            const Icon(Icons.lock_rounded,
+                                                color: Colors.white54,
+                                                size: 12),
+                                            const SizedBox(width: 2),
+                                            Text(
+                                              '$day',
+                                              style: GoogleFonts.outfit(
+                                                color: Colors.white70,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ],
+                                        ))))),
+                ),
+              ),
+
+              // 🪙 Pocket Score (PS) Target Badge Under Each Level Node (Audio Directive: Significantly larger & prominent!)
+              if (!isWaitingForMidnight)
+                Positioned(
+                  top: nodeSize - 4,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: isCurrent
+                            ? const Color(0xFFFFFC00)
+                            : (isCompleted
+                                ? const Color(0xFF0F172A)
+                                : const Color(0xFF1E293B)),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isCurrent
+                              ? Colors.black38
+                              : (isCompleted
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFFFFD700)
+                                      .withValues(alpha: 0.6)),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: isCurrent
+                                ? const Color(0xFFFFFC00).withValues(alpha: 0.5)
+                                : Colors.black.withValues(alpha: 0.6),
+                            blurRadius: isCurrent ? 8 : 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Builder(
+                        builder: (context) {
+                          final reqScore =
+                              PocketScoreLevelEngine.getRequiredScoreForLevel(
+                                  day);
+                          final reqTrophies = PocketScoreLevelEngine
+                              .getRequiredTrophiesForLevel(day);
+                          final label = reqTrophies > 0
+                              ? 'PS $reqScore • 🏆$reqTrophies'
+                              : 'PS $reqScore';
+                          return Text(
+                            label,
+                            style: GoogleFonts.outfit(
+                              color: isCurrent
+                                  ? Colors.black
+                                  : (isCompleted
+                                      ? const Color(0xFF34D399)
+                                      : const Color(0xFFFFD700)),
+                              fontWeight: FontWeight.w900,
+                              fontSize: 11.0,
+                              letterSpacing: 0.3,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+
+              // ⏳ Live Midnight Countdown Pill under waiting node
+              if (isWaitingForMidnight)
+                Positioned(
+                  top: nodeSize + 3,
+                  left: -35,
+                  right: -35,
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E1B4B),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                            color: const Color(0xFFFFD700), width: 0.9),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                const Color(0xFFFFD700).withValues(alpha: 0.25),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('⏳', style: TextStyle(fontSize: 8)),
+                          const SizedBox(width: 3),
+                          Text(
+                            Learning60DayService.formatRemainingCountdown(
+                                _timeUntilMidnight),
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFD700),
+                              fontSize: 8.5,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+              // 3 Shiny Stars over completed nodes
+              if (isCompleted)
+                Positioned(
+                  top: -12,
+                  left: 0,
+                  right: 0,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(Icons.star_rounded,
+                          color: Color(0xFFFFD700), size: 14),
+                      Icon(Icons.star_rounded,
+                          color: Color(0xFFFFD700), size: 19),
+                      Icon(Icons.star_rounded,
+                          color: Color(0xFFFFD700), size: 14),
+                    ],
+                  ),
+                ),
+
+              // Boss Crown on Milestones
+              if (isBossMilestone && !isCompleted)
+                Positioned(
+                  top: -14,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD700),
+                        borderRadius: BorderRadius.circular(6),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            blurRadius: 4,
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        'CHEST',
+                        style: GoogleFonts.outfit(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 8.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 🏡 90 Progressive Architectural English Houses along the Climbing Mountain Trail (User Audio Directive!)
+  /// Renders the progressive English architectural house at each level.
+  /// The road climbs directly to the front entrance / doorstep of each house.
+  /// When completed, the house glows with warm windows and flame effects.
+  Widget _buildRoadmapHouse(int day, double screenWidth, int currentDay) {
+    if (day == 91) {
+      return _buildLevel91MiniCard(screenWidth, currentDay);
+    }
+    final nodeX = _getNodeX(day, screenWidth);
+    final nodeY = _getNodeY(day);
+    final isWaitingForMidnight = _isDayWaitingForMidnight(day);
+    final isUnlocked = _isDayUnlocked(day, currentDay) &&
+        (day > 1 || _hasAcceptedRules) &&
+        !isWaitingForMidnight;
+    final isCompleted = _isDayCompleted(day);
+    final isCurrent = (day == currentDay) && isUnlocked && !isCompleted;
+
+    // Responsive dimensions for the architectural house along the mountain path
+    final double houseWidth = (screenWidth * 0.56).clamp(200.0, 250.0);
+    const double houseHeight = 138.0;
+
+    // Center the house on nodeX, but keep safely within screen margins
+    final double houseLeft =
+        (nodeX - (houseWidth / 2.0)).clamp(8.0, screenWidth - houseWidth - 8.0);
+    // Align house with clean vertical spacing above the level stepping stone and home visit button
+    final double houseTop = nodeY - houseHeight - 88.0;
+
+    final palette =
+        HousePalette.presets[(day - 1) % HousePalette.presets.length];
+    final avatarConfig = _getAvatarForDay(day);
+
+    return Positioned(
+      left: houseLeft,
+      top: houseTop,
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          if (!_effectiveRulesAccepted && day == 1) {
+            PocketWorldGameRulesModal.show(
+              context,
+              currentDay: currentDay,
+              onPledgeAccepted: () {
+                setState(() => _hasAcceptedRules = true);
+                _loadData();
+              },
+            );
+            return;
+          }
+          if (_isMasterAdmin) {
+            setState(() {
+              _adminSelectedDay = day;
+            });
+            _startActiveSubStep(day);
+            return;
+          }
+          if (isCompleted) {
+            _startActiveSubStep(day);
+            return;
+          }
+          if (isWaitingForMidnight) {
+            _showMidnightLockedToast(day);
+            return;
+          }
+          if (isUnlocked || isCurrent) {
+            _startActiveSubStep(day);
+            return;
+          }
+          _showLevelLockedToast(day);
+        },
+        child: SizedBox(
+          width: houseWidth,
+          height: houseHeight,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              // 1. Warm Flame Aura / Glow Behind the House when Completed or Current (Audio Directive: "athinu kazhinja udane flame okke kodukkaam")
+              if (isCompleted || isCurrent)
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: isCompleted
+                              ? const Color(0xFFFF5722).withValues(alpha: 0.28)
+                              : const Color(0xFFFFFC00).withValues(alpha: 0.22),
+                          blurRadius: 24,
+                          spreadRadius: 4,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              // 2. High-performance RepaintBoundary wrapping HouseMasterPainter
+              // User Audio Directive: "disabled aavunna pole color kalanjittu nilkkande. Ella veedukalukkum color vecho, pakshe lock aakki vechaal mathi"
+              Positioned.fill(
+                child: RepaintBoundary(
+                  child: CustomPaint(
+                    size: Size(houseWidth, houseHeight),
+                    painter: HouseMasterPainter(
+                      day: day,
+                      palette: palette,
+                      isPresident: (day >= 90),
+                      lightsOn: isCompleted || isCurrent,
+                    ),
+                  ),
+                ),
+              ),
+
+              // 4. Resident Avatar Guardian Chip (Click to open collectible card)
+              Positioned(
+                top: 2,
+                right: 4,
+                child: GestureDetector(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    _openAvatarCard(day);
+                  },
+                  child: Container(
+                    width: 26,
+                    height: 26,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFF0F172A),
+                      border: Border.all(
+                        color: isCurrent
+                            ? const Color(0xFFFFFC00)
+                            : (isCompleted
+                                ? const Color(0xFF10B981)
+                                : (isUnlocked
+                                    ? Colors.white54
+                                    : Colors.white24)),
+                        width: 1.2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.4),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                    child: ClipOval(
+                      child: VectorAvatarWidget(
+                        config: avatarConfig,
+                        size: 24,
+                        showAura: false,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // 5. Flame Badge when Level is Completed (Audio Directive: "athinu kazhinja udane flame okke kodukkaam")
+              if (isCompleted)
+                Positioned(
+                  bottom: 24,
+                  right: 8,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFFF5722), Color(0xFFFF9800)],
+                      ),
+                      borderRadius: BorderRadius.circular(6),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFF5722).withValues(alpha: 0.5),
+                          blurRadius: 6,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('🔥', style: TextStyle(fontSize: 8)),
+                        const SizedBox(width: 2),
+                        Text(
+                          'MASTERED',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 7.5,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              // 6. Gate Locked Badge when not unlocked (Audio Directive: "Ella veedukalukkum color vecho, pakshe lock aakki vechaal mathi")
+              if (!isUnlocked && !isWaitingForMidnight)
+                Positioned(
+                  bottom: 24,
+                  left: 8,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.8),
+                        width: 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.4),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.lock_rounded,
+                            color: Color(0xFFFFD700), size: 9),
+                        const SizedBox(width: 3),
+                        Text(
+                          'GATE LOCKED',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFD700),
+                            fontSize: 7.5,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.4,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              // 7. Green Bouncing Down-Arrow Badge on House $day when immediate previous Day is completed
+              // User Audio Directive: "വണ്ടി അങ്ങനെ പോയിട്ട് നമ്മുടെ രണ്ടാമത്തെ വീട്ടിൽ പോയി നിൽക്കുക... നിൽക്കുന്ന സമയത്ത് അവിടെ ആ വീടിന്റെ മേലെ ടാപ്പ് ചെയ്യാൻ പച്ച കളറിൽ ടാപ്പ് ചെയ്യാനുള്ള സാധനം കാണിക്കുക, ഡൗൺ ആരോ. വീട്ടിൽ ടാപ്പ് ചെയ്തു കഴിഞ്ഞാൽ എൻ്റർ ഡേ 2 ലേക്ക് പോകും."
+              if (day > 1 && _isDayCompleted(day - 1) && !isCompleted)
+                Positioned(
+                  top: -24,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: AnimatedBuilder(
+                      animation: _bobController,
+                      builder: (context, _) {
+                        final bounceY =
+                            math.sin(_bobController.value * math.pi) * 5.0;
+                        return Transform.translate(
+                          offset: Offset(0, -bounceY),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF10B981), Color(0xFF059669)],
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              border:
+                                  Border.all(color: Colors.white, width: 1.5),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF10B981)
+                                      .withValues(alpha: 0.65),
+                                  blurRadius: 12,
+                                  spreadRadius: 2,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text('👇',
+                                    style: TextStyle(fontSize: 13)),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'TAP TO ENTER DAY $day ➔',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 🏰 Standalone Home Visit Button between the Level Stone and the House (User Audio Directive!)
+  /// "veedinu mele stack cheyyanda. Sthalam edutho. Veedu und, veedinte veedil ethunnathinu munne home visit-nte oru button koduthaalo venamenkil?
+  /// Athinte munnilaanu nammude Day 1 ezhuthiya round kaandath. Athu kazhinju home visit-nte oru saadhanam kaanum, athu kazhinju veedu kaanum, athu kazhinju gate kandittu aduthethilekku pokum."
+  Widget _buildRoadmapHomeVisit(int day, double screenWidth, int currentDay) {
+    if (day >= _totalDays) return const SizedBox.shrink();
+    final nodeX = _getNodeX(day, screenWidth);
+    final nodeY = _getNodeY(day);
+
+    final double btnWidth = 110.0;
+    final double btnLeft =
+        (nodeX - (btnWidth / 2.0)).clamp(12.0, screenWidth - btnWidth - 12.0);
+    // Placed cleanly between the level circle node (nodeY - 32) and the house (houseTop: nodeY - houseHeight - 88)
+    final double btnTop = nodeY - 70.0;
+
+    return Positioned(
+      left: btnLeft,
+      top: btnTop,
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          final uid = widget.userId ?? _supabase.auth.currentUser?.id ?? '';
+          PocketHomeVisitModal.show(
+            context,
+            day: day,
+            userCurrentDay: currentDay,
+            currentUserId: uid,
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.35),
+              width: 1.0,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF6366F1).withValues(alpha: 0.35),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('🏡', style: TextStyle(fontSize: 11)),
+              const SizedBox(width: 4),
+              Text(
+                'HOME VISIT',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.6,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 🌟 Prominent Resident Guardian Avatar along the mountain path (User Audio Directive!)
+  /// Placed with larger size (52px) after Home Visit with generous breathing room.
+  /// Tapping it opens the Holographic NFT Collectible Trading Card Dialog.
+  Widget _buildRoadmapResidentAvatar(
+      int day, double screenWidth, int currentDay) {
+    if (day > _totalDays) return const SizedBox.shrink();
+    final nodeX = _getNodeX(day, screenWidth);
+    final nodeY = _getNodeY(day);
+    final isUnlocked =
+        _isDayUnlocked(day, currentDay) && (day > 1 || _hasAcceptedRules);
+    final isCompleted = _isDayCompleted(day);
+    final isCurrent = (day == currentDay);
+
+    const double avatarSize = 52.0;
+    final double avatarLeft = (nodeX - (avatarSize / 2.0))
+        .clamp(12.0, screenWidth - avatarSize - 12.0);
+    // Placed after Home Visit with clean breathing space (User Audio Directive!)
+    final double avatarTop = nodeY - 130.0;
+
+    final config = _getAvatarForDay(day);
+
+    final borderColor = isCurrent
+        ? const Color(0xFFFFFC00)
+        : (isCompleted
+            ? const Color(0xFF10B981)
+            : (isUnlocked ? const Color(0xFF38BDF8) : Colors.white24));
+
+    return Positioned(
+      left: avatarLeft,
+      top: avatarTop,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          HapticFeedback.selectionClick();
+          _openAvatarCard(day);
+        },
+        child: SizedBox(
+          width: avatarSize,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: avatarSize,
+                height: avatarSize,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      borderColor,
+                      borderColor.withValues(alpha: 0.5),
+                    ],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: borderColor.withValues(
+                          alpha: isCurrent ? 0.45 : 0.25),
+                      blurRadius: isCurrent ? 14 : 8,
+                      spreadRadius: isCurrent ? 2 : 1,
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.all(2.4),
+                child: Container(
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0xFF0F172A),
+                  ),
+                  child: ClipOval(
+                    child: VectorAvatarWidget(
+                      config: config,
+                      size: avatarSize - 5,
+                      showAura: isCurrent || isCompleted,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 3),
+              // Floating Day / Guardian Pill Badge
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: borderColor.withValues(alpha: 0.8),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  'DAY $day',
+                  style: GoogleFonts.outfit(
+                    color: borderColor,
+                    fontSize: 8.5,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.4,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// ⚔️ Fortress Citadel Attack Gate between House $day and House ${day + 1}
+  /// User Audio Directive:
+  /// "ഈ ടാർഗറ്റ് പേജിൽ നമ്മൾ ഗേറ്റ്... ഗേറ്റ് അൺലോക്ക് ആവണം എന്നുണ്ടെങ്കിൽ അതിൽ ടാപ്പ് ചെയ്തു കഴിഞ്ഞാൽ
+  /// അറ്റാക്ക് എന്നൊരു സാധനം കാണിക്കും. എന്താ സംഭവം എന്ന് വെച്ചാൽ ഒരാളെ അറ്റാക്ക് ചെയ്യണം. ഒരാൾ മതി ഒരാളെ അറ്റാക്ക് ചെയ്യണം.
+  /// അപ്പൊ 90 റോബോട്ടിൽ ഒന്നാമത്തെ ലെവലിൽ നിൽക്കുന്ന റോബോട്ട് ഉണ്ടാവില്ലേ? ആ റോബോട്ടിനെയാണ് നമ്മൾ അറ്റാക്ക് ചെയ്യേണ്ടത്.
+  /// അറ്റാക്ക് ചെയ്തിട്ട് തിരിച്ചുവരിക. ചിലപ്പോൾ തോറ്റു എന്ന് വരും പക്ഷെ കുഴപ്പമില്ല. തോറ്റാലും കംപ്ലീറ്റ് ചെയ്താൽ മതി.
+  /// കംപ്ലീറ്റ് ചെയ്തിട്ട് തിരിച്ചുവന്നാൽ മതി. അങ്ങനെ മതി... റോബോട്ടുകളെ അറ്റാക്ക് ചെയ്യുക എന്നുള്ളതാണ്.
+  /// അറ്റാക്ക് ചെയ്യുമ്പോൾ പോക്കറ്റ് സ്കോർ കിട്ടും."
+  Future<void> _recordGateBreached(int day) async {
+    final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+    if (uid != null && uid.isNotEmpty) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('pocket_de_gate_${uid}_${day}_breached', true);
+      await prefs.setBool('pocket_de_day_${uid}_${day}_completed', true);
+      await prefs.setBool('pocket_de_day_${uid}_${day}_steps_completed', true);
+      await prefs.setInt('learning_de_last_completed_day_$uid', day);
+      final now = DateTime.now();
+      final todayStr = '${now.year}-${now.month}-${now.day}';
+      final existingStepsDate =
+          prefs.getString('learning_de_day_${uid}_${day}_steps_date');
+      if (existingStepsDate == null || existingStepsDate.isEmpty) {
+        await prefs.setString(
+            'learning_de_day_${uid}_${day}_steps_date', todayStr);
+      }
+      // 🎯 Preserve the date when learning tasks were actually completed
+      // If user finished tasks yesterday, breaching gate today must NOT trigger an extra 24-hour midnight wait!
+      final dateToRecord =
+          (existingStepsDate != null && existingStepsDate.isNotEmpty)
+              ? existingStepsDate
+              : todayStr;
+      await prefs.setString(
+          'learning_de_day_${uid}_${day}_completed_date', dateToRecord);
+      await prefs.setInt('pocket_learning_de_stage_$uid', day + 1);
+      await prefs.setInt('learning_de_day_$uid', day + 1);
+      await prefs.setBool('pocket_de_day_${uid}_${day + 1}_unlocked', true);
+
+      // Award +50 Pocket Score
+      await PocketFortressDefenseService.recordTrainingPoints(50, uid);
+    }
+    _completedDays.add(day);
+    _daysWithStepsCompleted.add(day);
+    HapticFeedback.heavyImpact();
+    await _loadData();
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Text('💥', style: TextStyle(fontSize: 20)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '⚔️ Gate $day Breached! House ${day + 1} is now Unlocked! +50 Pocket Score Awarded.',
+                  style: GoogleFonts.outfit(
+                      color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF10B981),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    }
+  }
+
+  Future<void> _showGateCitadelAttackDialog(int day) async {
+    HapticFeedback.heavyImpact();
+    final robot = PocketRobotService.getRobotByLevel(day);
+    final dynamicLevel = PocketRobotService.getDynamicLevel(robot);
+    final isBreached = _isDayCompleted(day) || _isMasterAdmin;
+
+    if (!mounted) return;
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: const BorderSide(color: Color(0xFFEF4444), width: 1.8),
+        ),
+        titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+        contentPadding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF4444).withValues(alpha: 0.18),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.shield_rounded,
+                  color: Color(0xFFEF4444), size: 24),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'GATE $day CITADEL ASSAULT ⚔️',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 16,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  Text(
+                    isBreached
+                        ? 'Gate Cleared • Re-attack for Bonus PS'
+                        : 'Defeat Citadel to Unlock House ${day + 1}',
+                    style: GoogleFonts.inter(
+                      color: isBreached
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFFFD700),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Defender Card
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border:
+                          Border.all(color: const Color(0xFFFFD700), width: 2),
+                      image: robot.avatarUrl.isNotEmpty
+                          ? DecorationImage(
+                              image: NetworkImage(robot.avatarUrl),
+                              fit: BoxFit.cover)
+                          : null,
+                    ),
+                    child: robot.avatarUrl.isEmpty
+                        ? const Center(
+                            child: Text('🤖', style: TextStyle(fontSize: 26)))
+                        : null,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                robot.name,
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFD700)
+                                    .withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                'LVL $dynamicLevel',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFFD700),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          '${robot.cefrRank} • Gate $day Fortress Guardian',
+                          style: GoogleFonts.inter(
+                              color: Colors.white60, fontSize: 11),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('⚔️', style: TextStyle(fontSize: 16)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Launch an attack against ${robot.name}\'s Citadel! Win or lose, completing the raid will break open Gate $day and grant +50 Pocket Score.',
+                      style: GoogleFonts.inter(
+                          color: Colors.white70, fontSize: 12, height: 1.4),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 18),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFEF4444),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                  elevation: 4,
+                ),
+                onPressed: () async {
+                  Navigator.pop(ctx);
+                  await PocketCitadelAttackPage.openForUser(
+                    context,
+                    userId: robot.id,
+                    targetName: robot.name,
+                    targetDay: day,
+                    attackerDay: _progress?.currentDay ?? 1,
+                  );
+                  // On return: record gate breached & complete day!
+                  await _recordGateBreached(day);
+                },
+                icon: const Icon(Icons.flash_on_rounded, size: 20),
+                label: Text(
+                  'LAUNCH ATTACK NOW ⚔️',
+                  style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.w900, fontSize: 14),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text('Cancel',
+                    style: GoogleFonts.outfit(
+                        color: Colors.white54, fontSize: 12)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRoadmapGate(int day, double screenWidth, int currentDay) {
+    if (day >= _totalDays) return const SizedBox.shrink();
+
+    final isCompleted = _isDayCompleted(day);
+    final isCurrent = (day == currentDay);
+
+    int completedTasks = 0;
+    final track = Day1Track.fromLearnerLevel(_currentLearnerLevel);
+    final daySteps = Day1Curriculum.getSteps(track, day);
+    final int requiredSteps = daySteps.isNotEmpty ? daySteps.length : 8;
+
+    if (isCurrent) {
+      for (final s in daySteps) {
+        if (_subStepFlags['step_${s.stepNumber}'] == true) completedTasks++;
+      }
+      if (completedTasks == 0) {
+        for (int s = 1; s <= 17; s++) {
+          if (_subStepFlags['step_$s'] == true) completedTasks++;
+        }
+      }
+    }
+    final bool areHouseTasksDone = _isMasterAdmin ||
+        isCompleted ||
+        _isDayStepsCompleted(day) ||
+        (isCurrent &&
+            (completedTasks >= math.min(requiredSteps, 6) ||
+                _subStepFlags['step_$requiredSteps'] == true));
+    final bool isAttackReady = !isCompleted && isCurrent && areHouseTasksDone;
+
+    // Spaced along mountain trail between house day and house day + 1 (allowing ample room for Native Ad Card before House day+1)
+    final gateY = _getNodeY(day) - (_nodeSpacingY * 0.36);
+    final gateX = _getNodeXFractional(day + 0.36, screenWidth);
+
+    final double gateWidth = (screenWidth * 0.72).clamp(240.0, 280.0);
+    const double gateHeight = 64.0;
+    final double gateLeft =
+        (gateX - (gateWidth / 2.0)).clamp(8.0, screenWidth - gateWidth - 8.0);
+    final double gateTop = gateY - (gateHeight / 2.0);
+
+    return Positioned(
+      left: gateLeft,
+      top: gateTop,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          HapticFeedback.heavyImpact();
+          if (isCompleted) {
+            // Re-attack open gate defender for review, training, and bonus PS
+            _showGateCitadelAttackDialog(day);
+            return;
+          }
+
+          // Strict Locking: Gate N requires completing all prior houses and current house tasks (Master admin bypasses!)
+          if (day > currentDay && !_isMasterAdmin) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: const Color(0xFF1E293B),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                content: Row(
+                  children: [
+                    const Text('🔒', style: TextStyle(fontSize: 18)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Gate $day is locked! Complete House $currentDay & pass previous gates first.',
+                        style: GoogleFonts.outfit(
+                            color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+            return;
+          }
+
+          if (!areHouseTasksDone && !_isMasterAdmin) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: const Color(0xFF1E293B),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                content: Row(
+                  children: [
+                    const Text('🔒', style: TextStyle(fontSize: 18)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Complete House $day missions first to challenge Gate $day Citadel Defender! ($completedTasks/$requiredSteps done)',
+                        style: GoogleFonts.outfit(
+                            color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+            return;
+          }
+
+          // Open the Citadel Attack Dialog against the Level Robot!
+          _showGateCitadelAttackDialog(day);
+        },
+        child: SizedBox(
+          width: gateWidth,
+          height: gateHeight,
+          child: Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.center,
+            children: [
+              // 1. Left & Right Flanking Stone Fortress Walls with Battlements
+              Row(
+                children: [
+                  // Left Stone Wall Segment
+                  Expanded(
+                    child: Container(
+                      height: 28,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFF1E293B),
+                            Color(0xFF334155),
+                            Color(0xFF475569),
+                          ],
+                        ),
+                        borderRadius: const BorderRadius.horizontal(
+                            left: Radius.circular(8)),
+                        border: Border.all(color: Colors.white24, width: 1.2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.35),
+                            blurRadius: 6,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: List.generate(
+                          3,
+                          (i) => Container(
+                            width: 6,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F172A),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Center Gate Gap (where the arched gateway sits)
+                  const SizedBox(width: 80),
+
+                  // Right Stone Wall Segment
+                  Expanded(
+                    child: Container(
+                      height: 28,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFF475569),
+                            Color(0xFF334155),
+                            Color(0xFF1E293B),
+                          ],
+                        ),
+                        borderRadius: const BorderRadius.horizontal(
+                            right: Radius.circular(8)),
+                        border: Border.all(color: Colors.white24, width: 1.2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.35),
+                            blurRadius: 6,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: List.generate(
+                          3,
+                          (i) => Container(
+                            width: 6,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F172A),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              // 2. Central Arched Gate Structure
+              Container(
+                width: 82,
+                height: 56,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: isCompleted
+                        ? [const Color(0xFF047857), const Color(0xFF064E3B)]
+                        : (isAttackReady
+                            ? [const Color(0xFF7F1D1D), const Color(0xFF991B1B)]
+                            : [
+                                const Color(0xFF1E293B),
+                                const Color(0xFF0F172A)
+                              ]),
+                  ),
+                  borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(26), bottom: Radius.circular(8)),
+                  border: Border.all(
+                    color: isCompleted
+                        ? const Color(0xFF10B981)
+                        : (isAttackReady
+                            ? const Color(0xFFEF4444)
+                            : Colors.white24),
+                    width: isAttackReady || isCompleted ? 2.0 : 1.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isCompleted
+                          ? const Color(0xFF10B981).withValues(alpha: 0.4)
+                          : (isAttackReady
+                              ? const Color(0xFFEF4444).withValues(alpha: 0.5)
+                              : Colors.black.withValues(alpha: 0.4)),
+                      blurRadius: isAttackReady ? 14 : 10,
+                      spreadRadius: isAttackReady ? 2 : 1,
+                    ),
+                  ],
+                ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Iron bars pattern
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: List.generate(
+                        4,
+                        (i) => Container(
+                          width: 1.5,
+                          height: 38,
+                          color: isCompleted
+                              ? const Color(0xFF34D399)
+                              : (isAttackReady
+                                  ? const Color(0xFFFCA5A5)
+                                      .withValues(alpha: 0.5)
+                                  : Colors.white12),
+                        ),
+                      ),
+                    ),
+
+                    // Central Lock or Unlock Emblem
+                    Icon(
+                      isCompleted
+                          ? Icons.lock_open_rounded
+                          : (isAttackReady
+                              ? Icons.flash_on_rounded
+                              : Icons.lock_rounded),
+                      color: isCompleted
+                          ? const Color(0xFF6EE7B7)
+                          : (isAttackReady
+                              ? const Color(0xFFFF5252)
+                              : Colors.white38),
+                      size: isAttackReady ? 26 : 24,
+                    ),
+                  ],
+                ),
+              ),
+
+              // 3. Floating Interactive Attack/Breach Badge above Gate
+              Positioned(
+                top: -8,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isCompleted
+                          ? const Color(0xFF10B981)
+                          : (isAttackReady
+                              ? const Color(0xFFEF4444)
+                              : Colors.white24),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.5),
+                        blurRadius: 5,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        isCompleted ? '✨' : (isAttackReady ? '⚔️' : '🔒'),
+                        style: const TextStyle(fontSize: 9),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        isCompleted
+                            ? 'GATE OPEN • DAY $day ✓'
+                            : (isAttackReady
+                                ? 'GATE $day • ATTACK TO BREACH ⚔️'
+                                : (day == currentDay
+                                    ? 'GATE $day LOCKED • $completedTasks/14 MISSIONS'
+                                    : 'GATE $day LOCKED')),
+                        style: GoogleFonts.outfit(
+                          color: isCompleted
+                              ? const Color(0xFF34D399)
+                              : (isAttackReady
+                                  ? const Color(0xFFF87171)
+                                  : Colors.white54),
+                          fontSize: 8.5,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 📱 Minimalist Native Ad Card placed on the roadmap trail between Gate and Next House
+  /// User Audio Directive: "ഡേ വൺ കഴിഞ്ഞ് ഒരു ഗേറ്റ് ഉണ്ട്. ഗേറ്റ് കഴിഞ്ഞു കഴിഞ്ഞാൽ ഒരു സ്പേസ് ഉണ്ട്.
+  /// ആ സ്പേസ് കുറച്ചുകൂടി വലുതാക്കുക. എന്നിട്ട് എന്ത് ചെയ്യുക അവിടെ നേറ്റീവ് ആഡ് പ്ലേസ് ചെയ്യുക.
+  /// മറ്റേ കാർഡ് നമ്മൾ കാർഡ് ഉണ്ടല്ലോ കാർഡ് ആയിട്ട് പ്ലേസ് ചെയ്യുക. എന്നിട്ട് അത് തന്നെ പോക്കറ്റ് മേറ്റ്സ് ആഡ്സ്
+  /// എന്ന് പറയുന്ന കാർഡ് നേറ്റീവ് ആഡിന്റെ കാർഡ് പ്ലേസ് ചെയ്യുക... വിഐപി എടുത്ത ആൾക്കാരാണെങ്കിൽ ആഡ് ഒരിക്കലും കാണിക്കരുത്."
+  Widget _buildRoadmapNativeAd(int day, double screenWidth) {
+    if (_isSubscribed) return const SizedBox.shrink();
+    if (day >= _totalDays) return const SizedBox.shrink();
+
+    // Symmetrically placed on the trail between Gate (0.36) and next House (1.00)
+    final double adY = _getNodeY(day) - (_nodeSpacingY * 0.68);
+    final double cardWidth = (screenWidth * 0.88).clamp(280.0, 340.0);
+    final double cardLeft = (screenWidth - cardWidth) / 2;
+
+    return Positioned(
+      left: cardLeft,
+      top: adY -
+          170.0, // Centered for full Medium Rectangle card (~340px height)
+      width: cardWidth,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: cardWidth),
+          child: PocketNativeAdCard(
+            key: ValueKey('roadmap_target_ad_$day'),
+            placement: PocketAdPlacement.target,
+            margin: EdgeInsets.zero,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 🏡 Shows rich details sheet for the English Architectural House along the mountain path
+  // ignore: unused_element
+  void _showHouseDetailsSheet(int day) {
+    HapticFeedback.mediumImpact();
+    final isCompleted = _isDayCompleted(day);
+    final isWaitingForMidnight = _isDayWaitingForMidnight(day);
+    final currentDay = _progress?.currentDay ?? 1;
+    final isUnlocked =
+        _isDayUnlocked(day, currentDay) && (day > 1 || _hasAcceptedRules);
+    final isCurrent = (day == currentDay);
+    final estateTitle = FlameEnglishHouseWidget.getEstateStageTitle(day);
+    final palette =
+        HousePalette.presets[(day - 1) % HousePalette.presets.length];
+    final config = _getAvatarForDay(day);
+    final reqScore = PocketScoreLevelEngine.getRequiredScoreForLevel(day);
+    final reqTrophies = PocketScoreLevelEngine.getRequiredTrophiesForLevel(day);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Container(
+          margin: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F172A),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: isCurrent
+                  ? const Color(0xFFFFFC00)
+                  : (isCompleted ? const Color(0xFFFF5722) : Colors.white24),
+              width: 1.8,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: (isCurrent
+                        ? const Color(0xFFFFFC00)
+                        : (isCompleted
+                            ? const Color(0xFFFF5722)
+                            : Colors.black))
+                    .withValues(alpha: 0.35),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Drag handle
+              Container(
+                width: 36,
+                height: 4,
+                margin: const EdgeInsets.only(top: 10, bottom: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+
+              // Architectural House Canvas Preview
+              Container(
+                height: 160,
+                width: double.infinity,
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      const Color(0xFF1E293B).withValues(alpha: 0.6),
+                      const Color(0xFF0B0F19),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: CustomPaint(
+                    size: const Size(double.infinity, 160),
+                    painter: HouseMasterPainter(
+                      day: day,
+                      palette: palette,
+                      isPresident: (day >= 90),
+                      lightsOn: isCompleted || isCurrent,
+                    ),
+                  ),
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                estateTitle,
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                isCompleted
+                                    ? '🔥 Mastered Estate • Hearth & Windows Glowing'
+                                    : (isCurrent
+                                        ? '📍 Current Level • Doorstep Entrance'
+                                        : (isUnlocked
+                                            ? '⚡ Unlocked Estate'
+                                            : '🔒 Locked Estate')),
+                                style: GoogleFonts.inter(
+                                  color: isCompleted
+                                      ? const Color(0xFFFF9800)
+                                      : (isCurrent
+                                          ? const Color(0xFFFFFC00)
+                                          : (isUnlocked
+                                              ? const Color(0xFF38BDF8)
+                                              : Colors.white54)),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Avatar Chip
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            _openAvatarCard(day);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                  color: const Color(0xFFFFD700), width: 1.5),
+                            ),
+                            child: ClipOval(
+                              child: VectorAvatarWidget(
+                                config: config,
+                                size: 36,
+                                showAura: true,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Level Requirement info
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.stars_rounded,
+                              color: Color(0xFFFFD700), size: 16),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Required Pocket Score: $reqScore${reqTrophies > 0 ? ' • 🏆 $reqTrophies Trophies' : ''}',
+                            style: GoogleFonts.inter(
+                              color: Colors.white70,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Action buttons
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              side: const BorderSide(color: Colors.white24),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              _openAvatarCard(day);
+                            },
+                            icon: const Icon(Icons.style_rounded,
+                                size: 16, color: Color(0xFFFFD700)),
+                            label: Text(
+                              'Guardian Card',
+                              style: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isCompleted
+                                  ? const Color(0xFF10B981)
+                                  : (isCurrent
+                                      ? const Color(0xFFFFFC00)
+                                      : const Color(0xFF38BDF8)),
+                              foregroundColor:
+                                  (isCurrent) ? Colors.black : Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              if (!_hasAcceptedRules && day == 1) {
+                                PocketWorldGameRulesModal.show(
+                                  context,
+                                  currentDay: currentDay,
+                                  onPledgeAccepted: () {
+                                    setState(() => _hasAcceptedRules = true);
+                                    _loadData();
+                                  },
+                                );
+                                return;
+                              }
+                              if (isCurrent) {
+                                _startActiveSubStep(day);
+                              } else if (isCompleted) {
+                                _startActiveSubStep(day);
+                              } else if (isWaitingForMidnight) {
+                                _showMidnightLockedToast(day);
+                              } else {
+                                _showLevelLockedToast(day);
+                              }
+                            },
+                            icon: Icon(
+                              isCompleted
+                                  ? Icons.replay_rounded
+                                  : (isCurrent
+                                      ? Icons.play_arrow_rounded
+                                      : Icons.lock_rounded),
+                              size: 18,
+                            ),
+                            label: Text(
+                              isCompleted
+                                  ? 'Replay Sub-Steps'
+                                  : (isCurrent
+                                      ? 'Start Trail Step'
+                                      : 'Gate Locked'),
+                              style: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showMidnightLockedToast(int day) {
+    HapticFeedback.selectionClick();
+    final countdownStr =
+        Learning60DayService.formatRemainingCountdown(_timeUntilMidnight);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: const Color(0xFF1E1B4B),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 4),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: const BorderSide(color: Color(0xFFFFD700), width: 1.2),
+        ),
+        content: Row(
+          children: [
+            const Text('⏳', style: TextStyle(fontSize: 18)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Day $day unlocks at 12:00 AM midnight ($countdownStr)\n⚡ Subscribe to VIP to skip wait and unlock instantly!',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 11.5,
+                ),
+              ),
+            ),
+          ],
+        ),
+        action: SnackBarAction(
+          label: 'GO VIP ⚡',
+          textColor: const Color(0xFFFFFC00),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  void _showLevelLockedToast(int day) {
+    HapticFeedback.selectionClick();
+    final reqScore = PocketScoreLevelEngine.getRequiredScoreForLevel(day);
+    String message = 'House $day is locked!';
+    bool canAttackGate = false;
+
+    if (day > 1 && !_isDayCompleted(day - 1)) {
+      message =
+          '🔒 House $day is locked! Attack Level ${day - 1} Citadel to breach Gate ${day - 1}!';
+      canAttackGate = true;
+    } else if (_unifiedPocketScore < reqScore) {
+      final missing = reqScore - _unifiedPocketScore;
+      message =
+          '🪙 Requires $reqScore Pocket Score (Need $missing more PS). Complete previous missions to earn PS!';
+    }
+
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: const Color(0xFF0F172A),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: Color(0xFFEF4444), width: 1.0),
+        ),
+        action: canAttackGate
+            ? SnackBarAction(
+                label: 'BREACH GATE ${day - 1} ⚔️',
+                textColor: const Color(0xFFFF5252),
+                onPressed: () => _showGateCitadelAttackDialog(day - 1),
+              )
+            : null,
+        content: Row(
+          children: [
+            const Icon(Icons.shield_rounded,
+                color: Color(0xFFFF5252), size: 16),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                message,
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 🎯 Day Topic Billboard right after the house before step 1 (User Audio Directive!)
+  /// "veedu kazhinja udane oru title undavoolle athinte? Title-il oru board kodukkanam.
+  /// Ithaanu innathe divasam padikkan ponennu paranjittu oru title board kodukkanam, valiya reethiyil ketto."
+  Widget _buildDayTopicBillboardNode({
+    required int day,
+    required double x,
+    required double y,
+    required double screenWidth,
+  }) {
+    const nodeSize = 52.0;
+    final isRightSide = x >= screenWidth / 2;
+    final labelWidth = 150.0;
+    final cached = PocketDayCurriculumService.getCachedDay(day);
+    final topicEn = PocketDayCurriculumService.getLocalizedText(
+        cached?['course']?['topic'],
+        lang: 'en',
+        fallback: 'Day $day Mission');
+    final topicMl = PocketDayCurriculumService.getLocalizedText(
+        cached?['course']?['topic'],
+        lang: 'ml');
+    final grammar = cached?['grammarRule'] as Map<String, dynamic>? ?? {};
+    final formula = grammar['formula']?.toString() ?? 'Daily Mastery';
+
+    return Positioned(
+      left: x - (nodeSize / 2),
+      top: y - (nodeSize / 2),
+      child: SizedBox(
+        width: nodeSize,
+        height: nodeSize,
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            // Side Label Card
+            Positioned(
+              left: isRightSide ? (-labelWidth - 10.0) : (nodeSize + 10.0),
+              top: -6.0,
+              width: labelWidth,
+              child: GestureDetector(
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  _showTopicDetailsSheet(day);
+                },
+                child: Container(
+                  width: labelWidth,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.85),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 4, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFD700),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              'TODAY\'S LESSON',
+                              style: GoogleFonts.outfit(
+                                color: Colors.black,
+                                fontSize: 7.5,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                          const Icon(Icons.info_outline_rounded,
+                              color: Color(0xFFFFD700), size: 12),
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        topicEn,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (topicMl.isNotEmpty && topicMl != topicEn) ...[
+                        Text(
+                          topicMl,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF93C5FD),
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 2),
+                      Text(
+                        formula,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.robotoMono(
+                          color: const Color(0xFFFFE066),
+                          fontSize: 8.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // Central Icon Circle
+            GestureDetector(
+              onTap: () {
+                HapticFeedback.mediumImpact();
+                _showTopicDetailsSheet(day);
+              },
+              child: Container(
+                width: nodeSize,
+                height: nodeSize,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: const RadialGradient(
+                    colors: [Color(0xFF0284C7), Color(0xFF0369A1)],
+                  ),
+                  border: Border.all(
+                    color: const Color(0xFFFFD700),
+                    width: 2.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                      blurRadius: 10,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+                child: const Center(
+                  child: Text(
+                    '🎯',
+                    style: TextStyle(fontSize: 22),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showTopicDetailsSheet(int day) {
+    final cached = PocketDayCurriculumService.getCachedDay(day);
+    final topicEn = PocketDayCurriculumService.getLocalizedText(
+        cached?['course']?['topic'],
+        lang: 'en',
+        fallback: 'Day $day Mission');
+    final topicMl = PocketDayCurriculumService.getLocalizedText(
+        cached?['course']?['topic'],
+        lang: 'ml');
+    final grammar = cached?['grammarRule'] as Map<String, dynamic>? ?? {};
+    final formula = grammar['formula']?.toString() ?? 'Daily Speaking Mastery';
+    final expEn = PocketDayCurriculumService.getLocalizedText(
+        grammar['explanation'],
+        lang: 'en');
+    final expMl = PocketDayCurriculumService.getLocalizedText(
+        grammar['explanation'],
+        lang: 'ml');
+    final goldenTipEn = PocketDayCurriculumService.getLocalizedText(
+        grammar['goldenTip'],
+        lang: 'en');
+    final goldenTipMl = PocketDayCurriculumService.getLocalizedText(
+        grammar['goldenTip'],
+        lang: 'ml');
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF0F172A),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text('🎯', style: TextStyle(fontSize: 24)),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('DAY $day CURRICULUM BOARD',
+                            style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFD700),
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold)),
+                        Text(topicEn,
+                            style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold)),
+                        if (topicMl.isNotEmpty && topicMl != topicEn)
+                          Text(topicMl,
+                              style: GoogleFonts.inter(
+                                  color: const Color(0xFF93C5FD),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.5)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('FORMULA / RULE:',
+                        style: GoogleFonts.outfit(
+                            color: const Color(0xFF38BDF8),
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    Text(formula,
+                        style: GoogleFonts.robotoMono(
+                            color: const Color(0xFFFFE066),
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold)),
+                    if (expMl.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Text(expMl,
+                          style: GoogleFonts.inter(
+                              color: Colors.white, fontSize: 12.5)),
+                    ],
+                    if (expEn.isNotEmpty && expEn != expMl) ...[
+                      const SizedBox(height: 4),
+                      Text(expEn,
+                          style: GoogleFonts.inter(
+                              color: Colors.white60, fontSize: 11)),
+                    ],
+                  ],
+                ),
+              ),
+              if (goldenTipMl.isNotEmpty || goldenTipEn.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Text('💡', style: TextStyle(fontSize: 20)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          goldenTipMl.isNotEmpty ? goldenTipMl : goldenTipEn,
+                          style: GoogleFonts.inter(
+                              color: const Color(0xFFFFE066),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF10B981),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    _startActiveSubStep(day);
+                  },
+                  icon: const Icon(Icons.play_arrow_rounded, size: 22),
+                  label: Text('ENTER DAY $day LESSON ➔',
+                      style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.bold, fontSize: 14)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 👑 Stage Character Evolution Node right before Step 1 along the mountain trail (User Audio Directive!)
+  /// "Aa 1-mthe steppinu munne cheriya oru card ittittu, aa cardil tap cheythu kazhinju kazhinja aa avatar-ukal kaanum. 'Achieve - aa avatar achieve cheythu' ennullathu."
+  Widget _buildAvatarEvolutionNode({
+    required int day,
+    required double x,
+    required double y,
+    required double screenWidth,
+  }) {
+    const nodeSize = 52.0;
+    final isRightSide = x >= screenWidth / 2;
+    final labelWidth = 142.0;
+    final avatarConfig = _getAvatarForDay(day);
+
+    return Positioned(
+      left: x - (nodeSize / 2),
+      top: y - (nodeSize / 2),
+      child: SizedBox(
+        width: nodeSize,
+        height: nodeSize,
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            // Side Label Card
+            Positioned(
+              left: isRightSide ? (-labelWidth - 10.0) : (nodeSize + 10.0),
+              top: 0.0,
+              width: labelWidth,
+              child: GestureDetector(
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  _showAvatarAchievementDialog(day);
+                },
+                child: Container(
+                  width: labelWidth,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF2E1065), Color(0xFF1E1B4B)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.8),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          const Text('👑', style: TextStyle(fontSize: 12)),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              'Day $day Hero Avatar',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFD700),
+                                fontWeight: FontWeight.w900,
+                                fontSize: 10.5,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Achieved! Tap to View 🔥',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF38BDF8),
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Pulsing Flame Aura around the Avatar Stone
+            AnimatedBuilder(
+              animation: _bobController,
+              builder: (context, _) {
+                final scale = 1.0 + (_bobController.value * 0.18);
+                return Transform.scale(
+                  scale: scale,
+                  child: Container(
+                    width: nodeSize + 8,
+                    height: nodeSize + 8,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFFFF8906).withValues(
+                            alpha: 0.7 - (_bobController.value * 0.3)),
+                        width: 2.0,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+
+            // Avatar Stone Button
+            GestureDetector(
+              onTap: () {
+                HapticFeedback.mediumImpact();
+                _showAvatarAchievementDialog(day);
+              },
+              child: Container(
+                width: nodeSize,
+                height: nodeSize,
+                padding: const EdgeInsets.all(3.0),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFFD700), Color(0xFFFF6D00)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  border: Border.all(color: Colors.white, width: 2.2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFF8906).withValues(alpha: 0.6),
+                      blurRadius: 12,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: ClipOval(
+                  child: VectorAvatarWidget(
+                    config: avatarConfig,
+                    size: nodeSize - 6,
+                    showAura: false,
+                  ),
+                ),
+              ),
+            ),
+
+            // Bottom "EVO" Badge
+            Positioned(
+              bottom: -7,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A),
+                  borderRadius: BorderRadius.circular(6),
+                  border:
+                      Border.all(color: const Color(0xFFFFD700), width: 1.0),
+                ),
+                child: Text(
+                  'EVO ⚡',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFD700),
+                    fontSize: 8.5,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 🎯 Celebratory Hero Avatar Achievement & Stage Showcase Modal (User Audio Directive!)
+  void _showAvatarAchievementDialog(int day) {
+    HapticFeedback.heavyImpact();
+    final avatarConfig = _getAvatarForDay(day);
+    final stage = LearningMilestoneStage.getStageForDay(day);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Container(
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+          decoration: BoxDecoration(
+            color: const Color(0xFF131728),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFFFFD700), width: 1.8),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFF8906).withValues(alpha: 0.4),
+                blurRadius: 24,
+                spreadRadius: 2,
+              ),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.8),
+                blurRadius: 16,
+              ),
+            ],
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Header Badge
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF8906).withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                          color: const Color(0xFFFFD700), width: 1.0),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('🔥', style: TextStyle(fontSize: 14)),
+                        const SizedBox(width: 6),
+                        Text(
+                          'DAY $day HERO AVATAR ACHIEVED',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFD700),
+                            fontWeight: FontWeight.w900,
+                            fontSize: 12,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Hero Avatar Showcase with Flaming Ring
+                  Container(
+                    width: 104,
+                    height: 104,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const RadialGradient(
+                        colors: [Color(0xFFFFFC00), Color(0xFFFF6D00)],
+                      ),
+                      border: Border.all(color: Colors.white, width: 3.5),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFF8906).withValues(alpha: 0.6),
+                          blurRadius: 20,
+                          spreadRadius: 3,
+                        ),
+                      ],
+                    ),
+                    child: ClipOval(
+                      child: VectorAvatarWidget(
+                        config: avatarConfig,
+                        size: 98,
+                        showAura: true,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Stage Title & Evolution Tier
+                  Text(
+                    stage.stageName,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${stage.fluencyTier.toUpperCase()} • STAGE ${((day - 1) ~/ 10) + 1} ARCHITECTURE',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF38BDF8),
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Feature Cards
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.white12),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            const Text('🏡', style: TextStyle(fontSize: 16)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'House Stage: ${((day - 1) ~/ 10) + 1} of 9 Progressive Estates',
+                                style: GoogleFonts.inter(
+                                    color: Colors.white70, fontSize: 11.5),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Text('🪙', style: TextStyle(fontSize: 16)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Day Reward Target: ~600 Pocket Score across 17 steps',
+                                style: GoogleFonts.inter(
+                                    color: const Color(0xFFFFD700),
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Text('⚡', style: TextStyle(fontSize: 16)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Level Mastery Exam: Step 17 unlocks House ${day + 1} Gate',
+                                style: GoogleFonts.inter(
+                                    color: const Color(0xFF10B981),
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+
+                  // Continue to Step 1 Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFFFC00),
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        elevation: 4,
+                      ),
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _startActiveSubStep(day);
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.play_arrow_rounded,
+                              color: Colors.black, size: 20),
+                          const SizedBox(width: 6),
+                          Text(
+                            'START STEP 1 • CLIMB THE TRAIL',
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 13,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// 🎯 In-Path Sub-Step Node rendered directly on the climbing road (User Audio Directive!)
+  Widget _buildSubStepNode({
+    required InPathSubStep step,
+    required double x,
+    required double y,
+    required double screenWidth,
+    required bool isActiveCurrent,
+  }) {
+    const nodeSize = 44.0;
+    final isRightSide = x >= screenWidth / 2;
+    final labelWidth = 115.0;
+
+    return Positioned(
+      left: x - (nodeSize / 2),
+      top: y - (nodeSize / 2),
+      child: SizedBox(
+        width: nodeSize,
+        height: nodeSize,
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            // Side Label Card
+            Positioned(
+              left: isRightSide ? (-labelWidth - 8.0) : (nodeSize + 8.0),
+              top: 2.0,
+              width: labelWidth,
+              child: GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  if (!step.isUnlocked) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                            '🔒 Complete step ${step.stepIndex - 1} first!'),
+                        duration: const Duration(seconds: 1),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                    return;
+                  }
+                  step.onAction();
+                },
+                child: Container(
+                  width: labelWidth,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF131728).withValues(alpha: 0.94),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: step.isCompleted
+                          ? const Color(0xFF10B981).withValues(alpha: 0.6)
+                          : (step.isUnlocked
+                              ? step.color.withValues(alpha: 0.7)
+                              : Colors.white.withValues(alpha: 0.12)),
+                      width: 1.0,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.35),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          Text(step.icon, style: const TextStyle(fontSize: 10)),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              step.title,
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 10,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 1),
+                      Text(
+                        step.subtitle,
+                        style: GoogleFonts.inter(
+                          color: step.isCompleted
+                              ? const Color(0xFF10B981)
+                              : (step.isUnlocked
+                                  ? const Color(0xFFFFD700)
+                                  : Colors.white38),
+                          fontSize: 8,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Pulsing highlight if currently active
+            if (isActiveCurrent)
+              AnimatedBuilder(
+                animation: _bobController,
+                builder: (context, child) {
+                  final scale = 1.0 + (_bobController.value * 0.22);
+                  return Transform.scale(
+                    scale: scale,
+                    child: Container(
+                      width: nodeSize + 8,
+                      height: nodeSize + 8,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: step.color.withValues(
+                              alpha: 0.6 - (_bobController.value * 0.3)),
+                          width: 2.2,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+
+            // Node Circle Button
+            GestureDetector(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                if (!step.isUnlocked) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content:
+                          Text('🔒 Complete step ${step.stepIndex - 1} first!'),
+                      duration: const Duration(seconds: 1),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                  return;
+                }
+                step.onAction();
+              },
+              child: Container(
+                width: nodeSize,
+                height: nodeSize,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: step.isCompleted
+                        ? [const Color(0xFF10B981), const Color(0xFF047857)]
+                        : (step.isUnlocked
+                            ? [
+                                step.color.withValues(alpha: 0.9),
+                                step.color.withValues(alpha: 0.6)
+                              ]
+                            : [
+                                const Color(0xFF1F2438),
+                                const Color(0xFF121624)
+                              ]),
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  border: Border.all(
+                    color: step.isCompleted
+                        ? const Color(0xFF6EE7B7)
+                        : (step.isUnlocked ? step.color : Colors.white24),
+                    width: 2.0,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (step.isCompleted
+                              ? const Color(0xFF10B981)
+                              : (step.isUnlocked ? step.color : Colors.black))
+                          .withValues(alpha: 0.4),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: step.isCompleted
+                      ? const Icon(Icons.check_rounded,
+                          color: Colors.white, size: 20)
+                      : (step.isUnlocked
+                          ? Text(
+                              step.icon,
+                              style: const TextStyle(fontSize: 18),
+                            )
+                          : const Icon(Icons.lock_rounded,
+                              color: Colors.white30, size: 16)),
+                ),
+              ),
+            ),
+
+            // Stepping Stone Number Badge
+            Positioned(
+              bottom: -7,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: step.isCompleted
+                        ? const Color(0xFF10B981)
+                        : (step.isUnlocked ? step.color : Colors.white24),
+                    width: 0.9,
+                  ),
+                ),
+                child: Text(
+                  '#${step.stepIndex}',
+                  style: GoogleFonts.outfit(
+                    color: step.isCompleted
+                        ? const Color(0xFF6EE7B7)
+                        : (step.isUnlocked ? Colors.white : Colors.white54),
+                    fontSize: 8.5,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Builds the 17 in-path sub-step milestone nodes for the active day along the climbing path (User Audio Directive!)
+  // ignore: unused_element
+  List<Widget> _buildActiveSubStepNodes(double screenWidth, int activeDay) {
+    if (activeDay >= _totalDays || !_effectiveRulesAccepted) return [];
+
+    final subSteps = _getSubStepsForDay(activeDay, _currentLearnerLevel);
+    final List<Widget> widgets = [];
+
+    // 🎯 Day Lesson & Topic Title Board (User Audio Directive: "veedu kazhinja udane oru title undavoolle athinte? Title-il oru board kodukkanam. Ithaanu innathe divasam padikkan ponennu paranjittu oru title board kodukkanam, valiya reethiyil ketto.")
+    final boardY = _getNodeY(activeDay) -
+        ((0.22 / 18.0) * (_nodeSpacingY + _expandedActiveGap));
+    final boardX = _getSubStepX(activeDay, 0, screenWidth);
+    widgets.add(
+      _buildDayTopicBillboardNode(
+        day: activeDay,
+        x: boardX,
+        y: boardY,
+        screenWidth: screenWidth,
+      ),
+    );
+
+    // 👑 Stage Character Evolution Node right before Step 1 (User Audio Directive!)
+    // "Aa 1-mthe steppinu munne cheriya oru card ittittu, aa cardil tap cheythu kazhinju kazhinja aa avatar-ukal kaanum. 'Achieve - aa avatar achieve cheythu' ennullathu."
+    final avatarNodeY = _getNodeY(activeDay) -
+        ((0.45 / 18.0) * (_nodeSpacingY + _expandedActiveGap));
+    final avatarNodeX = _getSubStepX(activeDay, 0, screenWidth);
+    widgets.add(
+      _buildAvatarEvolutionNode(
+        day: activeDay,
+        x: avatarNodeX,
+        y: avatarNodeY,
+        screenWidth: screenWidth,
+      ),
+    );
+
+    // Find the first unlocked but incomplete step
+    int currentActiveStepIndex = -1;
+    for (var s in subSteps) {
+      if (s.isUnlocked && !s.isCompleted) {
+        currentActiveStepIndex = s.stepIndex;
+        break;
+      }
+    }
+
+    final totalStepsCount = subSteps.length;
+    for (int k = 1; k <= totalStepsCount; k++) {
+      final step = subSteps[k - 1];
+      final y = _getSubStepY(activeDay, k, totalSteps: totalStepsCount);
+      final x =
+          _getSubStepX(activeDay, k, screenWidth, totalSteps: totalStepsCount);
+      final isActiveCurrent = (step.stepIndex == currentActiveStepIndex);
+
+      widgets.add(
+        _buildSubStepNode(
+          step: step,
+          x: x,
+          y: y,
+          screenWidth: screenWidth,
+          isActiveCurrent: isActiveCurrent,
+        ),
+      );
+    }
+
+    // 🚗 Animated Vehicle Moving along the trail (User Audio Directive!)
+    // "Vandi neengi step 2-lekku povanam... Defence add cheythu kazhinjaal vandi animated aayi aa puthiya veetinte munnil poi nilkkum (House 2-nte munnil)."
+    widgets.add(
+      _buildAnimatedVehicle(
+        screenWidth: screenWidth,
+        activeDay: activeDay,
+        currentActiveStepIndex: currentActiveStepIndex,
+        totalStepsCount: totalStepsCount,
+        subSteps: subSteps,
+      ),
+    );
+
+    return widgets;
+  }
+
+  /// 🚗 Animated Vehicle moving along the sub-step trail and parking at House 2 when complete
+  Widget _buildAnimatedVehicle({
+    required double screenWidth,
+    required int activeDay,
+    required int currentActiveStepIndex,
+    required int totalStepsCount,
+    required List<InPathSubStep> subSteps,
+  }) {
+    final bool allDone = currentActiveStepIndex == -1;
+    final double targetX;
+    final double targetY;
+
+    if (allDone) {
+      final bool isGateBreached = _isDayCompleted(activeDay);
+      if (!isGateBreached) {
+        // 🚗 Stopped directly at Gate $activeDay awaiting fortress breach!
+        targetX = _getNodeXFractional(activeDay + 0.36, screenWidth);
+        targetY = _getNodeY(activeDay) - (_nodeSpacingY * 0.36) + 40.0;
+      } else {
+        // 🎉 Gate breached! Vehicle moves past the Gate and Native Ad Card to the front of House ${activeDay + 1}!
+        final nextDay = (activeDay + 1).clamp(1, _totalDays);
+        targetX = _getNodeX(nextDay, screenWidth);
+        targetY = _getNodeY(nextDay) + 48.0;
+      }
+    } else {
+      targetX = _getSubStepX(activeDay, currentActiveStepIndex, screenWidth,
+          totalSteps: totalStepsCount);
+      targetY = _getSubStepY(activeDay, currentActiveStepIndex,
+              totalSteps: totalStepsCount) -
+          34.0;
+    }
+
+    return AnimatedPositioned(
+      duration: const Duration(milliseconds: 950),
+      curve: Curves.easeInOutCubic,
+      left: targetX - 26,
+      top: targetY - 12,
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.mediumImpact();
+          if (allDone) {
+            final bool isGateBreached = _isDayCompleted(activeDay);
+            if (!isGateBreached) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  backgroundColor: const Color(0xFF1E293B),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  content: Text(
+                    '⚔️ Vehicle is at Gate $activeDay! Challenge the Level Defender to breach the gate and proceed.',
+                    style: GoogleFonts.outfit(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              );
+            } else {
+              final nextDay = (activeDay + 1).clamp(1, _totalDays);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    '🚗 Gate $activeDay breached! Welcome to House $nextDay! Tap House $nextDay to continue!',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                  ),
+                  backgroundColor: const Color(0xFF10B981),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            }
+          } else {
+            subSteps[currentActiveStepIndex - 1].onAction();
+          }
+        },
+        child: AnimatedBuilder(
+          animation: _bobController,
+          builder: (context, child) {
+            final bob = math.sin(_bobController.value * math.pi) * 3.5;
+            return Transform.translate(
+              offset: Offset(0, bob),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Status badge above the car
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: allDone
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFFFD700),
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: (allDone
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFFFFD700))
+                              .withValues(alpha: 0.4),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      allDone
+                          ? 'House 2 Reached! 🏡'
+                          : 'Car at Step $currentActiveStepIndex',
+                      style: GoogleFonts.outfit(
+                        color: Colors.black,
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+
+                  // Animated Vehicle Icon & Glow
+                  Container(
+                    width: 52,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: allDone
+                            ? [const Color(0xFF10B981), const Color(0xFF059669)]
+                            : [
+                                const Color(0xFFFF9800),
+                                const Color(0xFFE65100)
+                              ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.45),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                      border: Border.all(
+                        color: Colors.white,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        const Text(
+                          '🚗',
+                          style: TextStyle(fontSize: 22),
+                        ),
+                        // Headlight glow
+                        Positioned(
+                          right: 2,
+                          top: 12,
+                          child: Container(
+                            width: 5,
+                            height: 5,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFFFEB3B),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Color(0xFFFFEB3B),
+                                  blurRadius: 6,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  /// The active character avatar standing on today's house node (or Rules node before start).
+  /// User audio requirement: Every house has its avatar, standing right at the active estate front door!
+  Widget _buildAnimatedAvatar(double screenWidth, int currentDay) {
+    final bool atRuleNode = !_effectiveRulesAccepted;
+    double x;
+    double y;
+
+    // Strict Waiting-Pacing Guard (User Audio Directive):
+    // When Day 1 is finished and waiting for midnight, the avatar MUST sit at Day 2 (the waiting house), NOT jump ahead!
+    int effectiveAvatarDay = currentDay;
+    if (!atRuleNode && !_isMasterAdmin) {
+      for (int d = 1; d <= _totalDays; d++) {
+        if (!_isDayCompleted(d)) {
+          effectiveAvatarDay = d;
+          break;
+        }
+      }
+    }
+
+    if (atRuleNode) {
+      x = (screenWidth / 2) + 54;
+      y = _ruleNodeY + 12;
+    } else {
+      final bool currentHouseDone = _isMasterAdmin ||
+          _isDayStepsCompleted(effectiveAvatarDay) ||
+          (_subStepFlags['step_14'] == true);
+      final bool gateBreached = _isDayCompleted(effectiveAvatarDay);
+      final bool sittingAtGate = currentHouseDone && !gateBreached;
+
+      if (sittingAtGate) {
+        x = _getNodeXFractional(effectiveAvatarDay + 0.36, screenWidth);
+        y = _getNodeY(effectiveAvatarDay) - (_nodeSpacingY * 0.36);
+      } else {
+        x = _getNodeX(effectiveAvatarDay, screenWidth);
+        y = _getNodeY(effectiveAvatarDay);
+      }
+    }
+
+    final bool currentHouseDone = _isMasterAdmin ||
+        _isDayStepsCompleted(effectiveAvatarDay) ||
+        (_subStepFlags['step_14'] == true);
+    final bool gateBreached = _isDayCompleted(effectiveAvatarDay);
+    final bool sittingAtGate = currentHouseDone && !gateBreached && !atRuleNode;
+
+    final avatarConfig = _getAvatarForDay(atRuleNode ? 1 : effectiveAvatarDay);
+
+    return AnimatedPositioned(
+      duration: const Duration(milliseconds: 900),
+      curve: Curves.easeInOutCubic,
+      left: x - 54,
+      top: y - 128,
+      child: AnimatedBuilder(
+        animation: _bobController,
+        builder: (context, child) {
+          final bobY = math.sin(_bobController.value * math.pi) * 11.0;
+          final shadowScale = 1.0 - (_bobController.value * 0.28);
+
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Speech bubble - Tap to view Rules, Attack Gate, or Enter Estate!
+              GestureDetector(
+                onTap: () {
+                  if (atRuleNode) {
+                    PocketWorldGameRulesModal.show(
+                      context,
+                      currentDay: effectiveAvatarDay,
+                      onPledgeAccepted: () {
+                        setState(() => _hasAcceptedRules = true);
+                        _loadData();
+                      },
+                    );
+                  } else if (sittingAtGate) {
+                    _showGateCitadelAttackDialog(effectiveAvatarDay);
+                  } else {
+                    final isWaitingForMidnight =
+                        _isDayWaitingForMidnight(effectiveAvatarDay);
+                    final isUnlocked =
+                        _isDayUnlocked(effectiveAvatarDay, effectiveAvatarDay);
+                    final isCompleted = _isDayCompleted(effectiveAvatarDay);
+                    if (_isMasterAdmin || isCompleted || isUnlocked) {
+                      _startActiveSubStep(effectiveAvatarDay);
+                    } else if (isWaitingForMidnight) {
+                      _showMidnightLockedToast(effectiveAvatarDay);
+                    } else {
+                      _showLevelLockedToast(effectiveAvatarDay);
+                    }
+                  }
+                },
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color:
+                        sittingAtGate ? const Color(0xFFEF4444) : Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: sittingAtGate
+                        ? Border.all(color: const Color(0xFFFFD700), width: 1.5)
+                        : null,
+                    boxShadow: [
+                      BoxShadow(
+                        color: sittingAtGate
+                            ? const Color(0xFFEF4444).withValues(alpha: 0.5)
+                            : Colors.black.withValues(alpha: 0.35),
+                        blurRadius: sittingAtGate ? 12 : 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(atRuleNode ? '📜' : (sittingAtGate ? '⚔️' : '🏡'),
+                          style: const TextStyle(fontSize: 11)),
+                      const SizedBox(width: 4),
+                      Text(
+                        atRuleNode
+                            ? 'Rules & Pledge • Tap to Start 📜'
+                            : (sittingAtGate
+                                ? 'Gate • Tap to Attack! ⚔️'
+                                : 'Day $currentDay • Enter Estate 🚀'),
+                        style: GoogleFonts.outfit(
+                          color: sittingAtGate ? Colors.white : Colors.black,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 5),
+
+              // Bobbing Avatar Character (Heroic 76px size with dual fiery glow as requested in audio)
+              Transform.translate(
+                offset: Offset(0, -bobY),
+                child: GestureDetector(
+                  onTap: () {
+                    if (atRuleNode) {
+                      PocketWorldGameRulesModal.show(
+                        context,
+                        currentDay: currentDay,
+                        onPledgeAccepted: () {
+                          setState(() => _hasAcceptedRules = true);
+                          _loadData();
+                        },
+                      );
+                    } else if (sittingAtGate) {
+                      _showGateCitadelAttackDialog(effectiveAvatarDay);
+                    } else {
+                      _showAvatarAchievementDialog(currentDay);
+                    }
+                  },
+                  child: Container(
+                    width: 76,
+                    height: 76,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                          color: sittingAtGate
+                              ? const Color(0xFFFF5252)
+                              : const Color(0xFFFFFC00),
+                          width: 3.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: sittingAtGate
+                              ? const Color(0xFFEF4444).withValues(alpha: 0.75)
+                              : const Color(0xFFFFFC00).withValues(alpha: 0.65),
+                          blurRadius: 18,
+                          spreadRadius: 2,
+                        ),
+                        BoxShadow(
+                          color:
+                              const Color(0xFFFF5722).withValues(alpha: 0.45),
+                          blurRadius: 26,
+                          spreadRadius: 4,
+                        ),
+                      ],
+                    ),
+                    child: ClipOval(
+                      child: VectorAvatarWidget(
+                        config: avatarConfig,
+                        size: 70,
+                        showAura: true,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // Dynamic Shadow under avatar
+              Transform.scale(
+                scale: shadowScale,
+                child: Container(
+                  width: 46,
+                  height: 9,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.45),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  List<Widget> _buildBiomeProps(double screenWidth) {
+    return [
+      // ☁️ Atmospheric Drifting Clouds across Mountain Passes (User Audio Directive: "meghangal ponathu... weather effects")
+      Positioned.fill(
+        child: IgnorePointer(
+          child: AnimatedBuilder(
+            animation: _bobController,
+            builder: (context, _) {
+              final drift1 = (_bobController.value * 65.0);
+              final drift2 = ((1.0 - _bobController.value) * 75.0);
+
+              return Stack(
+                children: [
+                  // Cloud 1: Zone 1 & 2
+                  Positioned(
+                    left: 20 + drift1,
+                    top: _getNodeY(12) - 40,
+                    child: Opacity(
+                      opacity: 0.20,
+                      child: const Text('☁️', style: TextStyle(fontSize: 48)),
+                    ),
+                  ),
+                  // Cloud 2: Zone 3
+                  Positioned(
+                    right: 25 + drift2,
+                    top: _getNodeY(35) - 30,
+                    child: Opacity(
+                      opacity: 0.22,
+                      child: const Text('☁️', style: TextStyle(fontSize: 54)),
+                    ),
+                  ),
+                  // Cloud 3: Zone 4 (Cloud Realm)
+                  Positioned(
+                    left: 15 + drift2,
+                    top: _getNodeY(64) - 50,
+                    child: Opacity(
+                      opacity: 0.28,
+                      child: const Text('☁️', style: TextStyle(fontSize: 66)),
+                    ),
+                  ),
+                  // Cloud 4: Dragon Castle
+                  Positioned(
+                    right: 40 + drift1,
+                    top: _getNodeY(84) - 40,
+                    child: Opacity(
+                      opacity: 0.24,
+                      child: const Text('☁️', style: TextStyle(fontSize: 50)),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+
+      // Level 91 Sovereign Citadel Grand Master Trophy Pinnacle (Apex Summit Top)
+      Positioned(
+        left: (screenWidth / 2) - 85,
+        top: _getNodeY(91) - 160,
+        child: Container(
+          width: 170,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFFFFD700), Color(0xFFFF8906)],
+            ),
+            borderRadius: BorderRadius.circular(22),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.5),
+                blurRadius: 24,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              const Text('🏰 👑 🐉', style: TextStyle(fontSize: 28)),
+              const SizedBox(height: 4),
+              Text(
+                'GRAND MASTER',
+                style: GoogleFonts.outfit(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 15,
+                  letterSpacing: 1.0,
+                ),
+              ),
+              Text(
+                '90-Day Transformation',
+                style: GoogleFonts.inter(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 10.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ];
+  }
+
+  Widget _buildZoneBanner({
+    required String title,
+    required String subtitle,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF13182A).withValues(alpha: 0.94),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withValues(alpha: 0.6), width: 1.3),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.2),
+            blurRadius: 12,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.outfit(
+              color: color,
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            subtitle,
+            style: GoogleFonts.inter(color: Colors.white70, fontSize: 10.5),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 🏛️ LEVEL 91: Grand Presidential Sovereign Citadel Apex Node
+  /// Audio Requirement:
+  /// "പ്രസിഡന്റിന്റെ കൊട്ടാരത്തെ അറ്റാക്ക് ചെയ്യാൻ 90 ലെവൽ കംപ്ലീറ്റ് ആയിട്ട് 91-ാമത്തെ ലെവലിലാണ് വരുക.
+  /// അപ്പൊ ടാർഗറ്റ് പേജിൽ 91-ാമത്തെ ലെവൽ എഴുതണം. അത് അറ്റാക്ക് പ്രത്യേകം ഗോൾഡൻ കളറിലോ കൊടുക്കണം.
+  /// ആ അറ്റാക്കും കൂടി കഴിഞ്ഞിട്ടായിരിക്കണം ഇതിന് സർട്ടിഫിക്കറ്റ് കൊടുക്കുകയുള്ളൂ."
+  Widget _buildLevel91ApexNode(double screenWidth, int currentDay) {
+    final x = _getNodeX(91, screenWidth);
+    final y = _getNodeY(91);
+    final isUnlocked = (currentDay >= 91) || (_completedDays.contains(90));
+    final isConquered = _hasConqueredCitadel;
+    const nodeSize = 88.0;
+
+    return Positioned(
+      left: x - (nodeSize / 2),
+      top: y - (nodeSize / 2),
+      child: GestureDetector(
+        onTap: () async {
+          HapticFeedback.heavyImpact();
+          if (!isUnlocked) {
+            _showPresidentialLevelLockDialog();
+            return;
+          }
+          await PocketCitadelAttackPage.openForUser(
+            context,
+            userId: PocketPresidentService.presidentId,
+            attackerDay: 91,
+          );
+          _loadData();
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.center,
+              children: [
+                // 1. Radiant Golden / Fiery Aura Ring
+                if (isUnlocked)
+                  AnimatedBuilder(
+                    animation: _bobController,
+                    builder: (context, _) {
+                      final pulse = _bobController.value;
+                      return Container(
+                        width: nodeSize + 16 + (pulse * 8),
+                        height: nodeSize + 16 + (pulse * 8),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFFD700)
+                                  .withValues(alpha: 0.55 + (pulse * 0.25)),
+                              blurRadius: 30,
+                              spreadRadius: 6,
+                            ),
+                            BoxShadow(
+                              color: const Color(0xFFFF8906)
+                                  .withValues(alpha: 0.40),
+                              blurRadius: 38,
+                              spreadRadius: 8,
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+
+                // 2. Main 3D Stepping Sphere (Imperial Gold)
+                Container(
+                  width: nodeSize,
+                  height: nodeSize,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: isConquered
+                          ? [
+                              const Color(0xFFFFD700),
+                              const Color(0xFF10B981),
+                              const Color(0xFF047857)
+                            ]
+                          : (isUnlocked
+                              ? [
+                                  const Color(0xFFFFFC00),
+                                  const Color(0xFFFFD700),
+                                  const Color(0xFFFF8906)
+                                ]
+                              : [
+                                  const Color(0xFF334155),
+                                  const Color(0xFF1E293B),
+                                  const Color(0xFF0F172A)
+                                ]),
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    border: Border.all(
+                      color: isConquered
+                          ? const Color(0xFF6EE7B7)
+                          : (isUnlocked
+                              ? Colors.white
+                              : const Color(0xFFFFD700).withValues(alpha: 0.5)),
+                      width: isUnlocked ? 3.5 : 2.0,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: isUnlocked
+                            ? const Color(0xFFFFD700).withValues(alpha: 0.6)
+                            : Colors.black.withValues(alpha: 0.5),
+                        blurRadius: isUnlocked ? 22 : 10,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          isConquered ? '👑' : (isUnlocked ? '⚔️' : '🔒'),
+                          style: const TextStyle(fontSize: 22),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '91: ATTACK',
+                          style: GoogleFonts.outfit(
+                            color: isUnlocked ? Colors.black : Colors.white70,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 11,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // 3. Floating Bottom Pill
+                Positioned(
+                  bottom: -10,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: isConquered
+                          ? const Color(0xFF10B981)
+                          : (isUnlocked
+                              ? const Color(0xFFDC2626)
+                              : const Color(0xFF0F172A)),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isConquered
+                            ? Colors.white
+                            : const Color(0xFFFFD700),
+                        width: 1.2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.4),
+                          blurRadius: 6,
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      isConquered
+                          ? '✓ CONQUERED'
+                          : (isUnlocked ? 'RAID PALACE ⚔️' : 'LEVEL 91 🔒'),
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 8.5,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            // Sovereign Citadel Label
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: const Color(0xFFFFD700),
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                    blurRadius: 8,
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    '🏛️ LEVEL 91: PRESIDENTIAL RAID',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFD700),
+                      fontWeight: FontWeight.w900,
+                      fontSize: 10,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  Text(
+                    'Conquer to Claim Fluency Certificate 📜',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white70,
+                      fontSize: 8.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 🏛️ Mini card beside Level 91 Apex Node
+  Widget _buildLevel91MiniCard(double screenWidth, int currentDay) {
+    final nodeX = _getNodeX(91, screenWidth);
+    final nodeY = _getNodeY(91);
+    final isRightSide = nodeX >= screenWidth / 2;
+    final double cardWidth = ((screenWidth / 2) - 42.0).clamp(100.0, 140.0);
+    final double cardLeft =
+        isRightSide ? 12.0 : (screenWidth - cardWidth - 12.0);
+    final double cardTop = nodeY - 21.0;
+    final isUnlocked = (currentDay >= 91) || (_completedDays.contains(90));
+
+    return Positioned(
+      left: cardLeft,
+      top: cardTop,
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          if (!isUnlocked) {
+            _showPresidentialLevelLockDialog();
+          } else {
+            PocketCitadelAttackPage.openForUser(
+              context,
+              userId: PocketPresidentService.presidentId,
+              attackerDay: 91,
+            );
+          }
+        },
+        child: Container(
+          width: cardWidth,
+          height: 42,
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F172A).withValues(alpha: 0.95),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: const Color(0xFFFFD700),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                blurRadius: 8,
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              const Text('🏛️', style: TextStyle(fontSize: 18)),
+              const SizedBox(width: 5),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      _hasConqueredCitadel
+                          ? 'CITADEL CONQUERED'
+                          : 'PALACE RAID',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w900,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      _hasConqueredCitadel ? '✓ C2 Master' : 'Level 91 Boss',
+                      style: GoogleFonts.inter(
+                        color: Colors.white70,
+                        fontSize: 8,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showPresidentialLevelLockDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Color(0xFFFFD700), width: 1.5),
+        ),
+        title: Row(
+          children: [
+            const Text('🏛️', style: TextStyle(fontSize: 26)),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'LEVEL 91: PRESIDENTIAL RAID',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFFFFD700),
+                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.5)),
+              ),
+              child: Row(
+                children: [
+                  const Text('🔒', style: TextStyle(fontSize: 22)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'SOVEREIGN CITADEL RESTRICTED ACCESS\nComplete all 90 Days of English Transformation first to unlock Level 91!',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFF87171),
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Once you complete Day 90, you will face The President of Pocket World in a 250-question boss battle. Conquering the citadel awards the Official Day 90 Fluency Certificate!',
+              style: GoogleFonts.outfit(
+                  color: Colors.white, fontSize: 12.5, height: 1.4),
+            ),
+          ],
+        ),
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            height: 42,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFD700),
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(
+                'UNDERSTOOD 🫡',
+                style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w900, fontSize: 13),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCitadelRequiredForCertificateDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22),
+          side: const BorderSide(color: Color(0xFFFFD700), width: 1.8),
+        ),
+        title: Row(
+          children: [
+            const Text('👑', style: TextStyle(fontSize: 28)),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'LEVEL 91 ATTACK REQUIRED',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFFFFD700),
+                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+              ),
+              child: Row(
+                children: [
+                  const Text('⚔️', style: TextStyle(fontSize: 22)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'CONQUER LEVEL 91 TO GRADUATE!\nThe Sovereign Fluency Certificate is strictly awarded after conquering The President\'s Citadel in Level 91.',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Face 250 sequential boss trial questions and breach the Presidential Palace to prove complete C2 English Fluency!',
+              style: GoogleFonts.outfit(
+                  color: Colors.white, fontSize: 12.5, height: 1.4),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('LATER', style: TextStyle(color: Colors.white60)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFFD700),
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              PocketCitadelAttackPage.openForUser(
+                context,
+                userId: PocketPresidentService.presidentId,
+                attackerDay: 91,
+              );
+            },
+            child: Text(
+              'START ATTACK ⚔️',
+              style:
+                  GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Custom painter for rendering the continuous serpentine adventure road
+class _AdventureMapRoadPainter extends CustomPainter {
+  final int totalDays;
+  final int currentDay;
+  final double screenWidth;
+  final double nodeSpacingY;
+  final double topPadding;
+  final double ruleNodeY;
+  final bool hasAcceptedRules;
+  _AdventureMapRoadPainter({
+    required this.totalDays,
+    required this.currentDay,
+    required this.screenWidth,
+    required this.nodeSpacingY,
+    required this.topPadding,
+    required this.ruleNodeY,
+    required this.hasAcceptedRules,
+  });
+
+  double _getNodeXFractional(double dayFraction) {
+    final center = screenWidth / 2;
+    if (dayFraction >= 33) {
+      // 🎯 Audio Directive: From Day 33 onwards, track goes straight through center with subtle micro-bends!
+      // This prevents big estates and castles (Day 33, 51, 52, 55, 56, 64 etc.) from clipping on screen edges.
+      final subtleWave = math.sin((dayFraction - 33) * 0.55) * 14.0;
+      return center + subtleWave;
+    }
+    // Days 1 to 32: Gentle pleasant bends, safely bounded so houses never clip
+    final maxAmp = ((screenWidth - 250) / 2).clamp(16.0, 36.0);
+    final wave = math.sin((dayFraction - 1) * 0.65);
+    return center + (wave * maxAmp);
+  }
+
+  double _getNodeX(int day) => _getNodeXFractional(day.toDouble());
+
+  double _getNodeY(int day) {
+    final int daysFromTop = totalDays - day;
+    return topPadding + (daysFromTop * nodeSpacingY);
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // 1. Draw Biome Background Gradients (Inverted: Forest at bottom, Volcano/Citadel at top)
+    _paintBiomeGradients(canvas, size);
+
+    // 2. Draw Decorative Trees / Rocks / Clouds / Crystals / Wildlife (മാൻ, കരടി, പുലി, Flames)
+    _paintWorldDecorations(canvas, size);
+
+    // 3. Draw Soft Drifting Ambient Clouds across Mountain Passes
+    _paintClouds(canvas, size);
+
+    // 4. Draw S-Curve Stepping Stone Road Climbing Upwards
+    _paintCobblestoneRoad(canvas);
+  }
+
+  void _paintClouds(Canvas canvas, Size size) {
+    final cloudPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.08)
+      ..style = PaintingStyle.fill;
+    final cloudPaintBright = Paint()
+      ..color = Colors.white.withValues(alpha: 0.14)
+      ..style = PaintingStyle.fill;
+
+    for (int day = 4; day <= totalDays; day += 6) {
+      final cy = _getNodeY(day) - 50.0;
+      final cx = (day * 137.0) % (size.width - 140.0) + 70.0;
+      canvas.drawCircle(Offset(cx, cy), 28, cloudPaint);
+      canvas.drawCircle(Offset(cx + 22, cy - 8), 34, cloudPaintBright);
+      canvas.drawCircle(Offset(cx + 44, cy), 26, cloudPaint);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+            Rect.fromLTWH(cx - 20, cy + 4, 84, 22), const Radius.circular(11)),
+        cloudPaint,
+      );
+    }
+  }
+
+  void _paintBiomeGradients(Canvas canvas, Size size) {
+    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    final paint = Paint()
+      ..shader = const LinearGradient(
+        colors: [
+          Color(
+              0xFF4A0E18), // Top 0.0 - 0.12: Zone 5: Volcanic Magma Crimson & Citadel Apex
+          Color(0xFF1B386E), // 0.35: Zone 4: Sky Blue Cloud Realm
+          Color(0xFF26144A), // 0.58: Zone 3: Cyberpunk Electric Violet
+          Color(0xFF4A2B0F), // 0.80: Zone 2: Warm Desert Golden Amber
+          Color(
+              0xFF0F3822), // Bottom 1.0: Zone 1: Lush Forest Green (Day 1 starts here)
+        ],
+        stops: [0.12, 0.35, 0.58, 0.80, 1.0],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(rect);
+
+    canvas.drawRect(rect, paint);
+  }
+
+  void _paintWorldDecorations(Canvas canvas, Size size) {
+    final textPainter = TextPainter(textDirection: TextDirection.ltr);
+
+    void drawEmoji(String emoji, double x, double y, double fontSize) {
+      textPainter.text = TextSpan(
+        text: emoji,
+        style: TextStyle(fontSize: fontSize),
+      );
+      textPainter.layout();
+      textPainter.paint(canvas, Offset(x, y));
+    }
+
+    // Rich wildlife & natural scenery along the trail (User Audio Directive: Deer, Bear, Leopard/Tiger, Flames, Plants)
+    for (int day = 1; day <= totalDays; day++) {
+      final y = _getNodeY(day);
+      final isEven = day % 2 == 0;
+      final xLeft = 14.0 + (day % 3) * 8.0;
+      final xRight = size.width - 56.0 - (day % 3) * 8.0;
+
+      // Primary decor element on left or right
+      final x = isEven ? xLeft : xRight;
+      final xOpposite = isEven ? xRight : xLeft;
+
+      // 1. Specific Wildlife as requested in Audio:
+      // മാൻ (Deer: 🦌)
+      if (day == 3 || day == 9 || day == 17 || day == 29) {
+        drawEmoji('🦌', x, y - 20, 26);
+      }
+      // കരടി (Bear: 🐻)
+      else if (day == 7 || day == 21 || day == 35 || day == 49) {
+        drawEmoji('🐻', x, y - 20, 26);
+      }
+      // പുലി / കടുവ (Leopard / Tiger: 🐆 / 🐅)
+      else if (day == 13 || day == 27 || day == 45 || day == 63) {
+        drawEmoji(day % 2 == 0 ? '🐆' : '🐅', x, y - 20, 26);
+      }
+      // Fox / Wolf / Lion / Eagle
+      else if (day == 5 || day == 15 || day == 55) {
+        drawEmoji('🦊', x, y - 18, 22);
+      } else if (day == 75 || day == 87) {
+        drawEmoji('🦁', x, y - 22, 28);
+      } else if (day == 67 || day == 81) {
+        drawEmoji('🦅', x, y - 28, 26);
+      }
+
+      // 2. Plants, Trees & Natural Flora (User Audio: "flames/plants add cheythu ground super aakkuka")
+      if (day % 2 == 1) {
+        if (day <= 25) {
+          // Lush Forest Zone
+          drawEmoji(day % 3 == 0 ? '🌲' : (day % 3 == 1 ? '🌿' : '🌸'),
+              xOpposite, y - 10, 22);
+        } else if (day <= 45) {
+          // Desert & Mountain Savannah
+          drawEmoji(day % 3 == 0 ? '🌴' : (day % 3 == 1 ? '🌵' : '🪨'),
+              xOpposite, y - 10, 22);
+        } else if (day <= 70) {
+          // Mystic Highland & Crystals
+          drawEmoji(day % 3 == 0 ? '💎' : (day % 3 == 1 ? '🔮' : '⚡'),
+              xOpposite, y - 10, 22);
+        } else {
+          // Volcanic Summit
+          drawEmoji(day % 3 == 0 ? '🌋' : (day % 3 == 1 ? '🔥' : '🪙'),
+              xOpposite, y - 10, 24);
+        }
+      }
+
+      // 3. Trailside Campfires & Lantern Torches (Audio: flames & extraordinary ground touches)
+      if (day == 4 ||
+          day == 12 ||
+          day == 24 ||
+          day == 38 ||
+          day == 52 ||
+          day == 72) {
+        drawEmoji('🔥', xOpposite, y + 25, 20);
+        drawEmoji('🪵', xOpposite + 16, y + 28, 16);
+      } else if (day % 6 == 0) {
+        drawEmoji('🏮', xLeft, y + 15, 18);
+        drawEmoji('🏮', xRight, y + 15, 18);
+      } else if (day == 8 || day == 32 || day == 58) {
+        drawEmoji('⛺', xOpposite, y - 15, 24);
+      }
+    }
+  }
+
+  void _paintCobblestoneRoad(Canvas canvas) {
+    // Drop shadow under the entire road
+    final roadShadowPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.35)
+      ..strokeWidth = 32.0
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..style = PaintingStyle.stroke;
+
+    final outerRoadPaint = Paint()
+      ..color = const Color(0xFF22283E)
+      ..strokeWidth = 28.0
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..style = PaintingStyle.stroke;
+
+    final innerRoadPaint = Paint()
+      ..color = const Color(0xFF333B5C)
+      ..strokeWidth = 20.0
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..style = PaintingStyle.stroke;
+
+    final completedGlowPaint = Paint()
+      ..color = const Color(0xFFFFD700)
+      ..strokeWidth = 5.0
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..style = PaintingStyle.stroke;
+
+    final lockedTrailPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.22)
+      ..strokeWidth = 3.0
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..style = PaintingStyle.stroke;
+
+    final fullPath = Path();
+    final completedPath = Path();
+
+    // Connect from Rule node at the bottom up to Day 1
+    final pRule = Offset(screenWidth / 2, ruleNodeY);
+    final pFirst = Offset(_getNodeX(1), _getNodeY(1));
+    fullPath.moveTo(pRule.dx, pRule.dy);
+    fullPath.quadraticBezierTo(
+        pRule.dx, (pRule.dy + pFirst.dy) / 2, pFirst.dx, pFirst.dy);
+
+    if (hasAcceptedRules) {
+      completedPath.moveTo(pRule.dx, pRule.dy);
+      completedPath.quadraticBezierTo(
+          pRule.dx, (pRule.dy + pFirst.dy) / 2, pFirst.dx, pFirst.dy);
+    }
+
+    for (int day = 1; day < totalDays; day++) {
+      final p1 = Offset(_getNodeX(day), _getNodeY(day));
+      final p2 = Offset(_getNodeX(day + 1), _getNodeY(day + 1));
+
+      if (day == 1) {
+        fullPath.moveTo(p1.dx, p1.dy);
+        if (day < currentDay && hasAcceptedRules)
+          completedPath.moveTo(p1.dx, p1.dy);
+      }
+
+      // Natural mountain switchback curve
+      final midY = (p1.dy + p2.dy) / 2;
+      final curveDir = (day >= 33)
+          ? ((day % 2 == 0) ? -7.0 : 7.0)
+          : ((day % 2 == 0) ? -18.0 : 18.0);
+      final midX = ((p1.dx + p2.dx) / 2) + curveDir;
+      fullPath.quadraticBezierTo(midX, midY, p2.dx, p2.dy);
+      if (day < currentDay && hasAcceptedRules) {
+        completedPath.quadraticBezierTo(midX, midY, p2.dx, p2.dy);
+      }
+    }
+
+    // Draw road layers
+    canvas.drawPath(fullPath, roadShadowPaint);
+    canvas.drawPath(fullPath, outerRoadPaint);
+    canvas.drawPath(fullPath, innerRoadPaint);
+
+    // Draw center trail lines
+    canvas.drawPath(fullPath, lockedTrailPaint);
+    if (hasAcceptedRules) {
+      canvas.drawPath(completedPath, completedGlowPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _AdventureMapRoadPainter oldDelegate) {
+    return oldDelegate.currentDay != currentDay ||
+        oldDelegate.screenWidth != screenWidth ||
+        oldDelegate.hasAcceptedRules != hasAcceptedRules ||
+        oldDelegate.ruleNodeY != ruleNodeY;
+  }
+}
+
+/// 📝 Interactive CEFR Syllabus Examination Dialog
+class _SyllabusExamDialog extends StatefulWidget {
+  final SyllabusTrack track;
+  final int currentDay;
+  final Function(int score)? onExamCompleted;
+
+  const _SyllabusExamDialog({
+    required this.track,
+    required this.currentDay,
+    this.onExamCompleted,
+  });
+
+  @override
+  State<_SyllabusExamDialog> createState() => _SyllabusExamDialogState();
+}
+
+class _SyllabusExamDialogState extends State<_SyllabusExamDialog> {
+  int _currentIndex = 0;
+  int _score = 0;
+  int? _selectedIndex;
+  bool _answered = false;
+  bool _finished = false;
+
+  late final List<Map<String, dynamic>> _questions;
+
+  @override
+  void initState() {
+    super.initState();
+    _questions = _getQuestionsForLevel(widget.track.level);
+  }
+
+  List<Map<String, dynamic>> _getQuestionsForLevel(LearnerLevel level) {
+    switch (level) {
+      case LearnerLevel.zero:
+        return [
+          {
+            'q': 'Which alphabet letter comes after "B"?',
+            'options': ['A', 'C', 'D', 'E'],
+            'correct': 1,
+            'exp': 'A -> B -> C is the alphabetical sequence.',
+          },
+          {
+            'q': 'How do you greet someone in the morning?',
+            'options': [
+              'Good Night',
+              'Good Morning',
+              'Good Evening',
+              'Goodbye'
+            ],
+            'correct': 1,
+            'exp': '"Good Morning" is the polite greeting for the morning.',
+          },
+          {
+            'q': 'Choose the correct word: "I ___ a student."',
+            'options': ['is', 'are', 'am', 'be'],
+            'correct': 2,
+            'exp': '"I" pairs with "am" in present simple tense.',
+          },
+          {
+            'q': 'Which of these is an animal?',
+            'options': ['Table', 'Dog', 'Pencil', 'River'],
+            'correct': 1,
+            'exp': 'A dog is a domestic animal.',
+          },
+          {
+            'q': 'What color is the clear sky on a sunny day?',
+            'options': ['Green', 'Blue', 'Red', 'Yellow'],
+            'correct': 1,
+            'exp': 'The sky appears blue during the day.',
+          },
+        ];
+      case LearnerLevel.beginner:
+        return [
+          {
+            'q': 'Complete the sentence: "Yesterday, she ___ to the market."',
+            'options': ['goes', 'went', 'gone', 'going'],
+            'correct': 1,
+            'exp': '"Went" is the past simple tense of "go".',
+          },
+          {
+            'q': 'Fill in the blank: "Where ___ you live?"',
+            'options': ['do', 'does', 'is', 'are'],
+            'correct': 0,
+            'exp': 'With subject "you", we use the auxiliary verb "do".',
+          },
+          {
+            'q':
+                'Complete the sentence: "They ___ playing football right now."',
+            'options': ['is', 'are', 'was', 'am'],
+            'correct': 1,
+            'exp': 'Present continuous with "They" takes "are".',
+          },
+          {
+            'q':
+                'Choose the correct possessive pronoun: "This book belongs to John. It is ___."',
+            'options': ['her', 'hers', 'his', 'him'],
+            'correct': 2,
+            'exp': '"His" is the possessive pronoun for John (he).',
+          },
+          {
+            'q': 'Negative form: "I don\'t have ___ money."',
+            'options': ['some', 'any', 'many', 'much of'],
+            'correct': 1,
+            'exp':
+                'In negative sentences, "any" is typically used with uncountable nouns.',
+          },
+        ];
+      case LearnerLevel.elementary:
+        return [
+          {
+            'q': 'Conditional clause: "If it rains tomorrow, we ___ at home."',
+            'options': ['stayed', 'will stay', 'would stay', 'staying'],
+            'correct': 1,
+            'exp':
+                'First conditional takes Present Simple in "if" clause and "will + verb" in main clause.',
+          },
+          {
+            'q':
+                'Preposition of time: "She has been working here ___ three years."',
+            'options': ['since', 'for', 'during', 'from'],
+            'correct': 1,
+            'exp': '"For" is used for periods/durations of time (3 years).',
+          },
+          {
+            'q':
+                'Conjunction: "The meal was tasty, ___ it was rather expensive."',
+            'options': ['because', 'although', 'so', 'therefore'],
+            'correct': 1,
+            'exp': '"Although" introduces a contrast or concession.',
+          },
+          {
+            'q':
+                'Indirect question: "Could you tell me where the station ___?"',
+            'options': ['is', 'is it', 'it is located at', 'does it be'],
+            'correct': 0,
+            'exp':
+                'In indirect questions, the word order is statement order (subject + verb).',
+          },
+          {
+            'q': 'Gerund phrase: "I look forward to ___ you soon."',
+            'options': ['meet', 'meeting', 'met', 'be meeting'],
+            'correct': 1,
+            'exp': '"Look forward to" is followed by a gerund (-ing form).',
+          },
+        ];
+      case LearnerLevel.middle:
+        return [
+          {
+            'q':
+                'Third conditional: "Had I known about the storm, I ___ earlier."',
+            'options': [
+              'left',
+              'would leave',
+              'would have left',
+              'will have left'
+            ],
+            'correct': 2,
+            'exp':
+                'Inverted third conditional requires "would have + past participle".',
+          },
+          {
+            'q':
+                'Prepositional phrase: "The flight was delayed ___ inclement weather."',
+            'options': ['due to', 'because', 'owing', 'despite of'],
+            'correct': 0,
+            'exp':
+                '"Due to" acts as an adjectival/adverbial preposition phrase followed by a noun phrase.',
+          },
+          {
+            'q':
+                'Subject-verb agreement: "Neither the manager nor the assistants ___ in the hall."',
+            'options': ['was', 'were', 'is', 'has been'],
+            'correct': 1,
+            'exp':
+                'With "neither... nor", the verb agrees with the closer subject ("assistants" -> were).',
+          },
+          {
+            'q':
+                'Collocation: "She delivered her keynote with tremendous poise and ___."',
+            'options': ['eloquence', 'reluctance', 'negligence', 'ambivalence'],
+            'correct': 0,
+            'exp':
+                '"Eloquence" signifies fluent and persuasive expressive speaking.',
+          },
+          {
+            'q':
+                'Phrasal verb: "The council must come up ___ a viable alternative."',
+            'options': ['with', 'to', 'for', 'about'],
+            'correct': 0,
+            'exp': '"Come up with" means to produce or formulate an idea/plan.',
+          },
+        ];
+      case LearnerLevel.advanced:
+        return [
+          {
+            'q':
+                'Vocabulary: "His analysis was so ___ that even sceptics accepted his conclusions."',
+            'options': ['cogent', 'spurious', 'superfluous', 'tenuous'],
+            'correct': 0,
+            'exp': '"Cogent" means clear, logical, and convincing.',
+          },
+          {
+            'q':
+                'Inversion: "Scarcely had the session begun ___ the microphone malfunctioned."',
+            'options': ['than', 'when', 'then', 'that'],
+            'correct': 1,
+            'exp':
+                '"Scarcely... when" is the standard correlative inversion pair.',
+          },
+          {
+            'q':
+                'Collocation: "The committee reached a unanimous ___ after prolonged debate."',
+            'options': ['consensus', 'contention', 'dissent', 'ambiguity'],
+            'correct': 0,
+            'exp':
+                '"Unanimous consensus" indicates complete agreement across all parties.',
+          },
+          {
+            'q':
+                'Subjunctive mood: "It is imperative that the CEO ___ present at the hearing."',
+            'options': ['is', 'be', 'was', 'would be'],
+            'correct': 1,
+            'exp': 'Formal mandative subjunctive uses the bare base form "be".',
+          },
+          {
+            'q':
+                'Idiomatic discourse: "To mitigate geopolitical risk, supply chain agility is of ___ importance."',
+            'options': ['paramount', 'nominal', 'trivial', 'ancillary'],
+            'correct': 0,
+            'exp':
+                '"Paramount" means more important than anything else; supreme.',
+          },
+        ];
+      case LearnerLevel.expert:
+        return [
+          {
+            'q':
+                'Elite Lexicon: "Her diplomatic discourse exhibited rare perspicacity and ___."',
+            'options': ['finesse', 'obloquy', 'solipsism', 'vacillation'],
+            'correct': 0,
+            'exp':
+                '"Finesse" denotes intricate and refined skill or diplomacy.',
+          },
+          {
+            'q':
+                'Nuance: "His critique was commended for its incisive and ___ reasoning."',
+            'options': ['trenchant', 'specious', 'platitudinous', 'insipid'],
+            'correct': 0,
+            'exp':
+                '"Trenchant" describes expression that is vigorous, incisive, and keenly effective.',
+          },
+          {
+            'q':
+                'Adverbial phrasing: "Notwithstanding strenuous opposition, the motion was ___ approved."',
+            'options': ['summarily', 'tentatively', 'feebly', 'gratuitously'],
+            'correct': 0,
+            'exp':
+                '"Summarily" means expeditiously and without delay or formal hesitation.',
+          },
+          {
+            'q':
+                'Philosophical rhetoric: "The lecturer warned against conflating temporal fame with ___ value."',
+            'options': [
+              'ephemeral',
+              'intrinsic',
+              'circumstantial',
+              'utilitarian'
+            ],
+            'correct': 1,
+            'exp':
+                '"Intrinsic" denotes belonging naturally; essential and timeless.',
+          },
+          {
+            'q':
+                'Stylistic mastery: "He spoke with such erudition that the audience was held in ___ silence."',
+            'options': ['rapt', 'lukewarm', 'flippant', 'perfunctory'],
+            'correct': 0,
+            'exp':
+                '"Rapt" describes intense and completely absorbed fascination.',
+          },
+        ];
+    }
+  }
+
+  void _handleOptionSelect(int index) {
+    if (_answered) return;
+    final isCorrect = index == _questions[_currentIndex]['correct'];
+    setState(() {
+      _selectedIndex = index;
+      _answered = true;
+      if (isCorrect) _score++;
+    });
+    if (isCorrect) {
+      HapticFeedback.mediumImpact();
+    } else {
+      HapticFeedback.vibrate();
+    }
+  }
+
+  void _next() {
+    if (_currentIndex < _questions.length - 1) {
+      setState(() {
+        _currentIndex++;
+        _selectedIndex = null;
+        _answered = false;
+      });
+    } else {
+      setState(() {
+        _finished = true;
+      });
+      widget.onExamCompleted?.call(_score);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final q = _questions[_currentIndex];
+    final themeColor = widget.track.primaryColor;
+
+    return Dialog(
+      backgroundColor: const Color(0xFF131722),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(22),
+        side: BorderSide(color: themeColor.withValues(alpha: 0.6), width: 1.5),
+      ),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 440),
+        padding: const EdgeInsets.all(18),
+        child: _finished
+            ? _buildCertificateView(themeColor)
+            : _buildExamContent(q, themeColor),
+      ),
+    );
+  }
+
+  Widget _buildExamContent(Map<String, dynamic> q, Color themeColor) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: themeColor.withValues(alpha: 0.18),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(widget.track.icon, color: themeColor, size: 18),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${widget.track.code} • ${widget.track.nameEn}',
+                    style: GoogleFonts.outfit(
+                      color: themeColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  Text(
+                    'CEFR Syllabus Level Assessment',
+                    style:
+                        GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.close_rounded,
+                  color: Colors.white54, size: 20),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+
+        // Progress bar
+        Row(
+          children: [
+            Text(
+              'Question ${_currentIndex + 1} of ${_questions.length}',
+              style: GoogleFonts.outfit(
+                color: Colors.white70,
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              'Score: $_score',
+              style: GoogleFonts.outfit(
+                color: const Color(0xFFFFD700),
+                fontSize: 11.5,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        LinearProgressIndicator(
+          value: (_currentIndex + 1) / _questions.length,
+          backgroundColor: Colors.white12,
+          valueColor: AlwaysStoppedAnimation<Color>(themeColor),
+          minHeight: 4,
+          borderRadius: BorderRadius.circular(3),
+        ),
+        const SizedBox(height: 16),
+
+        // Question
+        Text(
+          q['q'] as String,
+          style: GoogleFonts.outfit(
+            color: Colors.white,
+            fontSize: 14.5,
+            fontWeight: FontWeight.w700,
+            height: 1.35,
+          ),
+        ),
+        const SizedBox(height: 14),
+
+        // Options
+        ...List.generate((q['options'] as List).length, (idx) {
+          final opt = q['options'][idx] as String;
+          Color cardBorder = Colors.white12;
+          Color cardBg = Colors.white.withValues(alpha: 0.04);
+          Color textColor = Colors.white;
+
+          if (_answered) {
+            if (idx == q['correct']) {
+              cardBorder = const Color(0xFF10B981);
+              cardBg = const Color(0xFF10B981).withValues(alpha: 0.18);
+              textColor = const Color(0xFF10B981);
+            } else if (idx == _selectedIndex) {
+              cardBorder = const Color(0xFFEF4444);
+              cardBg = const Color(0xFFEF4444).withValues(alpha: 0.15);
+              textColor = const Color(0xFFEF4444);
+            }
+          }
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: InkWell(
+              onTap: () => _handleOptionSelect(idx),
+              borderRadius: BorderRadius.circular(12),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: cardBg,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: cardBorder, width: 1.2),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 22,
+                      height: 22,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _answered && idx == q['correct']
+                            ? const Color(0xFF10B981)
+                            : (_answered && idx == _selectedIndex
+                                ? const Color(0xFFEF4444)
+                                : Colors.white10),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        String.fromCharCode(65 + idx),
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        opt,
+                        style: GoogleFonts.inter(
+                          color: textColor,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    if (_answered && idx == q['correct'])
+                      const Icon(Icons.check_circle_rounded,
+                          color: Color(0xFF10B981), size: 18),
+                    if (_answered &&
+                        idx == _selectedIndex &&
+                        idx != q['correct'])
+                      const Icon(Icons.cancel_rounded,
+                          color: Color(0xFFEF4444), size: 18),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }),
+
+        if (_answered) ...[
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('💡', style: TextStyle(fontSize: 13)),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    q['exp'] as String,
+                    style: GoogleFonts.inter(
+                        color: Colors.white70, fontSize: 11.5),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: themeColor,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(vertical: 11),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: _next,
+              child: Text(
+                _currentIndex < _questions.length - 1
+                    ? 'NEXT QUESTION →'
+                    : 'VIEW CERTIFICATE 🏆',
+                style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w900, fontSize: 12.5),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildCertificateView(Color themeColor) {
+    final pct = (_score / _questions.length * 100).round();
+    final isPassed = pct >= 60;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: RadialGradient(
+              colors: [
+                themeColor.withValues(alpha: 0.25),
+                Colors.transparent,
+              ],
+            ),
+            shape: BoxShape.circle,
+          ),
+          child: const Text('🎓', style: TextStyle(fontSize: 48)),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          isPassed ? 'LEVEL ASSESSMENT PASSED!' : 'ASSESSMENT COMPLETED',
+          style: GoogleFonts.outfit(
+            color: isPassed ? const Color(0xFF10B981) : Colors.amber,
+            fontSize: 16,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Track: ${widget.track.nameEn} (${widget.track.code})',
+          style: GoogleFonts.outfit(
+              color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 14),
+
+        // Score Card
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.06),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: themeColor.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Column(
+                children: [
+                  Text('SCORE',
+                      style: GoogleFonts.outfit(
+                          color: Colors.white54, fontSize: 11)),
+                  const SizedBox(height: 2),
+                  Text('$_score / ${_questions.length}',
+                      style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold)),
+                ],
+              ),
+              Container(width: 1, height: 28, color: Colors.white12),
+              Column(
+                children: [
+                  Text('ACCURACY',
+                      style: GoogleFonts.outfit(
+                          color: Colors.white54, fontSize: 11)),
+                  const SizedBox(height: 2),
+                  Text('$pct%',
+                      style: GoogleFonts.outfit(
+                          color: themeColor,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold)),
+                ],
+              ),
+              Container(width: 1, height: 28, color: Colors.white12),
+              Column(
+                children: [
+                  Text('BONUS',
+                      style: GoogleFonts.outfit(
+                          color: Colors.white54, fontSize: 11)),
+                  const SizedBox(height: 2),
+                  Text('+${_score * 30} PS',
+                      style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
+
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFD700).withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            children: [
+              const Text('📜', style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  isPassed
+                      ? 'Congratulations! You demonstrated proficiency for ${widget.track.nameEn}. Keep building your daily streak!'
+                      : 'Good effort! Review today\'s syllabus milestones to strengthen your foundations and retake anytime.',
+                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 18),
+
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: themeColor,
+              foregroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text(
+              'CLAIM & RETURN TO MAP',
+              style:
+                  GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _TargetPostboxFeedbackPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.save();
+    canvas.translate(size.width / 2, size.height - 13);
+
+    // 1. Glowing Ground Light Halo
+    canvas.drawOval(
+      Rect.fromCenter(center: const Offset(0, 0), width: 144, height: 24),
+      Paint()
+        ..color = const Color(0xFFFFD700).withValues(alpha: 0.26)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+    );
+    canvas.drawOval(
+      Rect.fromCenter(center: const Offset(0, 0), width: 108, height: 15),
+      Paint()..color = const Color(0xFF0F172A).withValues(alpha: 0.48),
+    );
+
+    // 2. Sturdy Post Stand planted on ground
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(-11, -36, 22, 36),
+        const Radius.circular(4),
+      ),
+      Paint()..color = const Color(0xFF7F1D1D),
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(-18, -8, 36, 10),
+        const Radius.circular(5),
+      ),
+      Paint()..color = const Color(0xFF991B1B),
+    );
+
+    // 3. Large, Wide Red Letter Box Body
+    final boxRect = RRect.fromRectAndCorners(
+      const Rect.fromLTWH(-78, -148, 156, 114),
+      topLeft: const Radius.circular(36),
+      topRight: const Radius.circular(36),
+      bottomLeft: const Radius.circular(14),
+      bottomRight: const Radius.circular(14),
+    );
+    canvas.drawRRect(boxRect, Paint()..color = const Color(0xFFDC2626));
+    canvas.drawRRect(
+      RRect.fromRectAndCorners(
+        const Rect.fromLTWH(-72, -144, 144, 34),
+        topLeft: const Radius.circular(32),
+        topRight: const Radius.circular(32),
+      ),
+      Paint()..color = const Color(0xFFEF4444).withValues(alpha: 0.65),
+    );
+    canvas.drawRRect(
+      boxRect,
+      Paint()
+        ..color = const Color(0xFFFFD700).withValues(alpha: 0.85)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.4,
+    );
+
+    // 4. Mail Slot + Peeking White Envelope
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(-44, -124, 88, 10),
+        const Radius.circular(5),
+      ),
+      Paint()..color = const Color(0xFF450A0A),
+    );
+    canvas.save();
+    canvas.translate(0, -128);
+    final envRect = RRect.fromRectAndRadius(
+      const Rect.fromLTWH(-22, -13, 44, 22),
+      const Radius.circular(4),
+    );
+    canvas.drawRRect(envRect, Paint()..color = Colors.white);
+    final flap = Path()
+      ..moveTo(-22, -13)
+      ..lineTo(0, -1)
+      ..lineTo(22, -13);
+    canvas.drawPath(
+      flap,
+      Paint()
+        ..color = const Color(0xFFDC2626)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0,
+    );
+    canvas.restore();
+
+    // 5. "FEEDBACK BOX" & "Help us improve app"
+    final titlePainter = TextPainter(
+      text: TextSpan(
+        text: 'FEEDBACK BOX',
+        style: GoogleFonts.outfit(
+          color: Colors.white,
+          fontSize: 16.5,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 0.9,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    )..layout(maxWidth: 144);
+    titlePainter.paint(canvas, Offset(-titlePainter.width / 2, -98));
+
+    final subPainter = TextPainter(
+      text: TextSpan(
+        text: 'Help us improve app',
+        style: GoogleFonts.inter(
+          color: const Color(0xFFFEF08A),
+          fontSize: 10.5,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    )..layout(maxWidth: 144);
+    subPainter.paint(canvas, Offset(-subPainter.width / 2, -73));
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(-38, -54, 76, 15),
+        const Radius.circular(7.5),
+      ),
+      Paint()..color = Colors.black.withValues(alpha: 0.25),
+    );
+    final tapPainter = TextPainter(
+      text: TextSpan(
+        text: 'TAP TO SEND',
+        style: GoogleFonts.outfit(
+          color: Colors.white,
+          fontSize: 8.5,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.8,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    )..layout(maxWidth: 74);
+    tapPainter.paint(canvas, Offset(-tapPainter.width / 2, -52));
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}

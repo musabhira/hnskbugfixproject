@@ -92,6 +92,14 @@ class PocketLanguageService {
       'kn': 'ಕಲಿಯೋಣ! 🔤',
       'te': 'నేర్చుకుందాం! 🔤',
     },
+    'lets_learn_german_alpha': {
+      'en': '✅ YES, LET\'S LEARN GERMAN LETTERS!',
+      'ml': 'അതെ, ജർമൻ അക്ഷരങ്ങൾ പഠിക്കാം! 🔤',
+      'ta': 'ஆம், ஜெர்மன் எழுத்துக்களைக் கற்கலாம்! 🔤',
+      'hi': 'हाँ, आइए जर्मन अक्षर सीखें! 🔤',
+      'kn': 'ಹೌದು, ಜರ್ಮನ್ ಅಕ್ಷರಗಳನ್ನು ಕಲಿಯೋಣ! 🔤',
+      'te': 'అవును, జర్మన్ అక్షరాలు నేర్చుకుందాం! 🔤',
+    },
     'know_next_level': {
       'en': '⚡ I know ABCD (Next Level) ➔',
       'ml': 'അറിയാം (Next Level) ➔',
@@ -99,6 +107,14 @@ class PocketLanguageService {
       'hi': 'मुझे पता है (अगला लेवल) ➔',
       'kn': 'ಗೊತ್ತಿದೆ (ಮುಂದಿನ ಹಂತ) ➔',
       'te': 'తెలుసు (తదుపరి స్థాయి) ➔',
+    },
+    'know_next_level_german': {
+      'en': '⚡ I know A–Z, ÄÖÜß (Next Step) ➔',
+      'ml': 'എനിക്കറിയാം (അടുത്ത ഘട്ടം) ➔',
+      'ta': 'எனக்குத் தெரியும் (அடுத்த நிலை) ➔',
+      'hi': 'मुझे आता है (अगला स्तर) ➔',
+      'kn': 'ನನಗೆ ಗೊತ್ತಿದೆ (ಮುಂದಿನ ಹಂತ) ➔',
+      'te': 'నాకు తెలుసు (తదుపరి దశ) ➔',
     },
     'drive_to_level_2': {
       'en': 'Drive to Level 2 🚗',
@@ -310,6 +326,154 @@ class PocketLanguageService {
     return 'English';
   }
 
+  static List<Map<String, dynamic>> getTargetPlacementQuestions(
+    String langName, {
+    bool isGerman = false,
+  }) {
+    if (!isGerman) return getPlacementQuestions(langName);
+    final l = _normalizeLanguage(langName).toLowerCase();
+    switch (l) {
+      case 'malayalam':
+        return [
+          {
+            'question': '"വെള്ളം" (Water) എന്നതിന് ജർമൻ വാക്ക് ഏതാണ്?',
+            'options': ['Haus', 'Wasser', 'Buch', 'അറിയില്ല'],
+            'correct': 1,
+          },
+          {
+            'question': '"നന്ദി" എന്ന് ജർമനിൽ എങ്ങനെ പറയും?',
+            'options': ['Bitte', 'Danke', 'Tschüss', 'അറിയില്ല'],
+            'correct': 1,
+          },
+          {
+            'question': 'ശരിയായ ജർമൻ വാക്യം ഏതാണ്?',
+            'options': [
+              'Ich lernen Deutsch heute.',
+              'Ich lerne heute Deutsch.',
+              'Lerne ich Deutsch kein.',
+              'അറിയില്ല',
+            ],
+            'correct': 1,
+          },
+        ];
+      case 'hindi':
+        return [
+          {
+            'question': '"पानी" को जर्मन में क्या कहते हैं?',
+            'options': ['Haus', 'Wasser', 'Buch', 'मुझे नहीं पता'],
+            'correct': 1,
+          },
+          {
+            'question': '"धन्यवाद" के लिए जर्मन शब्द कौन सा है?',
+            'options': ['Bitte', 'Danke', 'Tschüss', 'मुझे नहीं पता'],
+            'correct': 1,
+          },
+          {
+            'question': 'कौन सा जर्मन वाक्य व्याकरण के अनुसार सही है?',
+            'options': [
+              'Ich lernen Deutsch heute.',
+              'Ich lerne heute Deutsch.',
+              'Lerne ich Deutsch kein.',
+              'मुझे नहीं पता',
+            ],
+            'correct': 1,
+          },
+        ];
+      case 'tamil':
+        return [
+          {
+            'question': '"தண்ணீர்" என்பதற்கான ஜெர்மன் சொல் எது?',
+            'options': ['Haus', 'Wasser', 'Buch', 'எனக்கு தெரியாது'],
+            'correct': 1,
+          },
+          {
+            'question': '"நன்றி" என்பதை ஜெர்மனில் எப்படி சொல்வீர்கள்?',
+            'options': ['Bitte', 'Danke', 'Tschüss', 'எனக்கு தெரியாது'],
+            'correct': 1,
+          },
+          {
+            'question': 'சரியான ஜெர்மன் வாக்கியம் எது?',
+            'options': [
+              'Ich lernen Deutsch heute.',
+              'Ich lerne heute Deutsch.',
+              'Lerne ich Deutsch kein.',
+              'எனக்கு தெரியாது',
+            ],
+            'correct': 1,
+          },
+        ];
+      case 'kannada':
+        return [
+          {
+            'question': '"ನೀರು" ಎಂಬುದಕ್ಕೆ ಜರ್ಮನ್ ಪದ ಯಾವುದು?',
+            'options': ['Haus', 'Wasser', 'Buch', 'ನನಗೆ ಗೊತ್ತಿಲ್ಲ'],
+            'correct': 1,
+          },
+          {
+            'question': '"ಧನ್ಯವಾದ" ಎಂದು ಜರ್ಮನ್ ಭಾಷೆಯಲ್ಲಿ ಹೇಗೆ ಹೇಳುತ್ತಾರೆ?',
+            'options': ['Bitte', 'Danke', 'Tschüss', 'ನನಗೆ ಗೊತ್ತಿಲ್ಲ'],
+            'correct': 1,
+          },
+          {
+            'question': 'ಯಾವ ಜರ್ಮನ್ ವಾಕ್ಯ ಸರಿ ಇದೆ?',
+            'options': [
+              'Ich lernen Deutsch heute.',
+              'Ich lerne heute Deutsch.',
+              'Lerne ich Deutsch kein.',
+              'ನನಗೆ ಗೊತ್ತಿಲ್ಲ',
+            ],
+            'correct': 1,
+          },
+        ];
+      case 'telugu':
+        return [
+          {
+            'question': '"నీరు" కు జర్మన్ పదం ఏది?',
+            'options': ['Haus', 'Wasser', 'Buch', 'నాకు తెలియదు'],
+            'correct': 1,
+          },
+          {
+            'question': '"ధన్యవాదాలు" అని జర్మన్‌లో ఎలా అంటారు?',
+            'options': ['Bitte', 'Danke', 'Tschüss', 'నాకు తెలియదు'],
+            'correct': 1,
+          },
+          {
+            'question': 'సరైన జర్మన్ వాక్యం ఏది?',
+            'options': [
+              'Ich lernen Deutsch heute.',
+              'Ich lerne heute Deutsch.',
+              'Lerne ich Deutsch kein.',
+              'నాకు తెలియదు',
+            ],
+            'correct': 1,
+          },
+        ];
+      default:
+        return [
+          {
+            'question': 'What is the German word for "Water"?',
+            'options': ['Haus', 'Wasser', 'Buch', 'I do not know'],
+            'correct': 1,
+          },
+          {
+            'question': 'How do you say "Thank you" in German?',
+            'options': ['Bitte', 'Danke', 'Tschüss', 'I do not know'],
+            'correct': 1,
+          },
+          {
+            'question': 'Which German sentence is grammatically correct?',
+            'options': [
+              'Ich lernen Deutsch heute.',
+              'Ich lerne heute Deutsch.',
+              'Lerne ich Deutsch kein.',
+              'I do not know',
+            ],
+            'correct': 1,
+          },
+        ];
+    }
+  }
+
   /// Placement Quiz questions dynamically localized so Hindi/Tamil users never see Malayalam
   static List<Map<String, dynamic>> getPlacementQuestions(String langName) {
     final l = _normalizeLanguage(langName).toLowerCase();
@@ -516,6 +680,124 @@ class PocketLanguageService {
               'I do not know',
             ],
             'correct': 1,
+          },
+        ];
+    }
+  }
+
+  static List<Map<String, String>> getTargetLevels(
+    String langName, {
+    bool isGerman = false,
+  }) {
+    if (!isGerman) return getEnglishLevels(langName);
+    final l = _normalizeLanguage(langName).toLowerCase();
+    switch (l) {
+      case 'malayalam':
+        return [
+          {
+            'title': 'Level 0: Zero Foundation (ജർമൻ A–Z & Ä, Ö, Ü, ß തുടക്കം)',
+            'subtitle': 'പൂർണ്ണമായും തുടക്കം — ജർമൻ അക്ഷരങ്ങളും ഉച്ചാരണവും കേട്ട് പഠിക്കാം',
+            'emoji': '🌱',
+          },
+          {
+            'title': 'Level 1: A1–A2 Core (ദൈനംദിന ജർമൻ സംഭാഷണം)',
+            'subtitle': 'വാക്കുകളും der/die/das നിയമങ്ങളും വാക്യ നിർമ്മാണവും പഠിക്കാം',
+            'emoji': '🗣️',
+          },
+          {
+            'title': 'Level 2: B1–B2 Fluency (കരിയറും പ്രൊഫഷണൽ ജർമനും)',
+            'subtitle': 'ജോലി, പഠനം, അഭിമുഖങ്ങൾക്കായുള്ള ജർമൻ പ്രാവീണ്യം',
+            'emoji': '🚀',
+          },
+        ];
+      case 'hindi':
+        return [
+          {
+            'title': 'Level 0: Zero Foundation (जर्मन A–Z और Ä, Ö, Ü, ß शुरुआत)',
+            'subtitle': 'बिल्कुल शुरुआत — जर्मन अक्षर, ध्वनि और उच्चारण से सीखें',
+            'emoji': '🌱',
+          },
+          {
+            'title': 'Level 1: A1–A2 Core (रोज़मर्रा की जर्मन बातचीत)',
+            'subtitle': 'शब्द, der/die/das नियम और आत्मविश्वास से जर्मन बोलना सीखें',
+            'emoji': '🗣️',
+          },
+          {
+            'title': 'Level 2: B1–B2 Fluency (करियर और उच्च प्रवाह)',
+            'subtitle': 'जर्मनी में पढ़ाई, इंटरव्यू और ऑफिस के लिए सटीक जर्मन',
+            'emoji': '🚀',
+          },
+        ];
+      case 'tamil':
+        return [
+          {
+            'title': 'Level 0: Zero Foundation (ஜெர்மன் A–Z & Ä, Ö, Ü, ß தொடக்கம்)',
+            'subtitle': 'முழுமையான அடிப்படை — ஜெர்மன் எழுத்துக்கள் & ஒலிகள்',
+            'emoji': '🌱',
+          },
+          {
+            'title': 'Level 1: A1–A2 Core (தினசரி ஜெர்மன் உரையாடல்)',
+            'subtitle': 'சொற்கள், der/die/das & வாக்கிய அமைப்புடன் பேசப் பழகுங்கள்',
+            'emoji': '🗣️',
+          },
+          {
+            'title': 'Level 2: B1–B2 Fluency (தொழில் & உயர்கல்வி ஜெர்மன்)',
+            'subtitle': 'நேர்காணல் மற்றும் பணி இடத்திற்கான சரளமான ஜெர்மன்',
+            'emoji': '🚀',
+          },
+        ];
+      case 'kannada':
+        return [
+          {
+            'title': 'Level 0: Zero Foundation (ಜರ್ಮನ್ A–Z & Ä, Ö, Ü, ß ಆರಂಭ)',
+            'subtitle': 'ಸಂಪೂರ್ಣ ಆರಂಭ — ಜರ್ಮನ್ ಅಕ್ಷರಗಳು ಮತ್ತು ಧ್ವನಿಯಿಂದ ಕಲಿಯಿರಿ',
+            'emoji': '🌱',
+          },
+          {
+            'title': 'Level 1: A1–A2 Core (ದೈನಂದಿನ ಜರ್ಮನ್ ಸಂಭಾಷಣೆ)',
+            'subtitle': 'ಪದಗಳು, der/die/das ಮತ್ತು ವಾಕ್ಯ ರಚನೆಯೊಂದಿಗೆ ಮಾತನಾಡಿ',
+            'emoji': '🗣️',
+          },
+          {
+            'title': 'Level 2: B1–B2 Fluency (ವೃತ್ತಿಪರ ಜರ್ಮನ್ ಪ್ರಾವೀಣ್ಯತೆ)',
+            'subtitle': 'ಉದ್ಯೋಗ, ಅಧ್ಯಯನ ಮತ್ತು ಸಂದರ್ಶನಕ್ಕಾಗಿ ಸ್ಪಷ್ಟ ಜರ್ಮನ್',
+            'emoji': '🚀',
+          },
+        ];
+      case 'telugu':
+        return [
+          {
+            'title': 'Level 0: Zero Foundation (జర్మన్ A–Z & Ä, Ö, Ü, ß ఆరంభం)',
+            'subtitle': 'పూర్తి ఆరంభం — జర్మన్ అక్షరాలు మరియు శబ్దాలతో నేర్చుకోండి',
+            'emoji': '🌱',
+          },
+          {
+            'title': 'Level 1: A1–A2 Core (రోజువారీ జర్మన్ సంభాషణ)',
+            'subtitle': 'పదాలు, der/die/das నియమాలు మరియు వాక్య నిర్మాణం నేర్చుకోండి',
+            'emoji': '🗣️',
+          },
+          {
+            'title': 'Level 2: B1–B2 Fluency (కెరీర్ & ప్రొఫెషనల్ జర్మన్)',
+            'subtitle': 'ఉద్యోగం మరియు ఇంటర్వ్యూల కోసం స్పష్టమైన జర్మన్',
+            'emoji': '🚀',
+          },
+        ];
+      default:
+        return [
+          {
+            'title': 'Level 0: Zero Foundation (German A–Z & Ä, Ö, Ü, ß)',
+            'subtitle': 'Absolute zero — learn German letters, umlauts, sounds & voice',
+            'emoji': '🌱',
+          },
+          {
+            'title': 'Level 1: A1–A2 Core (Everyday German Sentences)',
+            'subtitle': 'Master der/die/das articles, core vocab & speaking',
+            'emoji': '🗣️',
+          },
+          {
+            'title': 'Level 2: B1–B2 Fluency (Career & Interviews)',
+            'subtitle': 'Fluent German expressions for work, study & relocation',
+            'emoji': '🚀',
           },
         ];
     }
@@ -771,6 +1053,82 @@ class PocketLanguageService {
       }
     }
     return '';
+  }
+
+  static Map<String, String> getTargetLearnerTypeTranslations(
+    String langName, {
+    bool isGerman = false,
+  }) {
+    if (!isGerman) return getLearnerTypeTranslations(langName);
+    final l = _normalizeLanguage(langName).toLowerCase();
+    switch (l) {
+      case 'malayalam':
+        return {
+          'title': 'ആരാണ് ജർമൻ പഠിക്കുന്നത്?\nഈ അക്കൗണ്ട് ആർക്കുവേണ്ടിയാണ്?',
+          'subtitle': 'നിങ്ങളുടെ പ്രായത്തിനും ആവശ്യത്തിനും അനുയോജ്യമായ ജർമൻ ട്രാക്ക് തിരഞ്ഞെടുക്കുക:',
+          'adultTitle': 'German Mastery (9+ Years)',
+          'adultBadge': '9+ YEARS',
+          'adultDesc': '90 ദിവസത്തെ ജർമൻ A1→B2 സ്പീക്കിംഗ്, അക്ഷരങ്ങൾ & പ്രാക്ടീസ്!',
+          'kidsTitle': 'Kids (Up to 8) - Junior Explorer',
+          'kidsBadge': 'UP TO 8 KIDS',
+          'kidsDesc': '8 വയസ്സുവരെയുള്ള കുട്ടികൾക്കായി 2D ഗെയിമുകളും രസകരമായ കളികളും!',
+        };
+      case 'hindi':
+        return {
+          'title': 'कौन जर्मन सीख रहा है?\nयह खाता किसके लिए है?',
+          'subtitle': 'अपनी उम्र और लक्ष्य के अनुसार जर्मन ट्रैक चुनें:',
+          'adultTitle': 'German Mastery (9+ Years)',
+          'adultBadge': '9+ YEARS',
+          'adultDesc': '90 दिनों की जर्मन A1→B2 बोलचाल, अक्षर और वास्तविक अभ्यास!',
+          'kidsTitle': 'Kids (Up to 8) - Junior Explorer',
+          'kidsBadge': 'UP TO 8 KIDS',
+          'kidsDesc': '8 वर्ष तक के बच्चों के लिए मज़ेदार 2D गेम्स और कार्टून अभ्यास!',
+        };
+      case 'tamil':
+        return {
+          'title': 'யார் ஜெர்மன் கற்கிறார்கள்?\nஇந்த கணக்கு யாருக்காக?',
+          'subtitle': 'உங்கள் வயது மற்றும் தேவைக்கு ஏற்ப ஜெர்மன் வழியைத் தேர்ந்தெடுக்கவும்:',
+          'adultTitle': 'German Mastery (9+ Years)',
+          'adultBadge': '9+ YEARS',
+          'adultDesc': '90 நாட்கள் ஜெர்மன் A1→B2 பேச்சு, எழுத்துக்கள் மற்றும் பயிற்சிகள்!',
+          'kidsTitle': 'Kids (Up to 8) - Junior Explorer',
+          'kidsBadge': 'UP TO 8 KIDS',
+          'kidsDesc': '8 வயது வரையிலான குழந்தைகளுக்கான 2D விளையாட்டுகள்!',
+        };
+      case 'kannada':
+        return {
+          'title': 'ಯಾರು ಜರ್ಮನ್ ಕಲಿಯುತ್ತಿದ್ದಾರೆ?\nಈ ಖಾತೆ ಯಾರಿಗಾಗಿ?',
+          'subtitle': 'ನಿಮ್ಮ ವಯಸ್ಸು ಮತ್ತು ಗುರಿಗೆ ತಕ್ಕಂತೆ ಜರ್ಮನ್ ಮಾರ್ಗವನ್ನು ಆರಿಸಿ:',
+          'adultTitle': 'German Mastery (9+ Years)',
+          'adultBadge': '9+ YEARS',
+          'adultDesc': '90 ದಿನಗಳ ಜರ್ಮನ್ A1→B2 ಮಾತುಕತೆ, ಅಕ್ಷರಗಳು ಮತ್ತು ಅಭ್ಯಾಸ!',
+          'kidsTitle': 'Kids (Up to 8) - Junior Explorer',
+          'kidsBadge': 'UP TO 8 KIDS',
+          'kidsDesc': '8 ವರ್ಷದೊಳಗಿನ ಮಕ್ಕಳಿಗೆ 2D ಆಟಗಳು ಮತ್ತು ಕಲಿಕೆ!',
+        };
+      case 'telugu':
+        return {
+          'title': 'జర్మన్ ఎవరు నేర్చుకుంటున్నారు?\nఈ ఖాతా ఎవరి కోసం?',
+          'subtitle': 'మీ వయస్సు మరియు లక్ష్యానికి అనుగుణంగా జర్మన్ ట్రాక్‌ను ఎంచుకోండి:',
+          'adultTitle': 'German Mastery (9+ Years)',
+          'adultBadge': '9+ YEARS',
+          'adultDesc': '90 రోజుల జర్మన్ A1→B2 మాటలు, అక్షరాలు మరియు అభ్యాసం!',
+          'kidsTitle': 'Kids (Up to 8) - Junior Explorer',
+          'kidsBadge': 'UP TO 8 KIDS',
+          'kidsDesc': '8 సంవత్సరాల లోపు పిల్లల కోసం 2D గేమ్‌లు!',
+        };
+      default:
+        return {
+          'title': 'Who is learning German?',
+          'subtitle': 'Choose the personalized German learning track for your journey:',
+          'adultTitle': 'German Mastery (9+ Years)',
+          'adultBadge': '9+ YEARS',
+          'adultDesc': 'For learners aged 9+: 90-day German A1→B2 speaking, letters & real practice!',
+          'kidsTitle': 'Kids (Up to 8) - Junior Explorer',
+          'kidsBadge': 'UP TO 8 KIDS',
+          'kidsDesc': 'For kids up to 8: 2D cartoon games & fun animal adventures!',
+        };
+    }
   }
 
   /// 🎓 Dynamic Learner Type Choice translations (Adult vs Kids)

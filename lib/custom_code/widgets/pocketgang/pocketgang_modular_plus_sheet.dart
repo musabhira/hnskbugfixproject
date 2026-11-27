@@ -41,19 +41,7 @@ class PocketGangModularPlusSheet extends StatelessWidget {
     PocketGangToolMetadata(
         key: 'expense_tracker', name: 'Poket Spend', icon: '💰'),
     PocketGangToolMetadata(
-        key: 'habit_tracker', name: 'Goal & Habit Tracker', icon: '🎯'),
-    PocketGangToolMetadata(
-        key: 'memory_vault', name: 'Memory & Voice Vault', icon: '🎙️'),
-    PocketGangToolMetadata(
-        key: 'quick_poll', name: 'Quick Poll & Decision', icon: '🗳️'),
-    PocketGangToolMetadata(
-        key: 'split_wishlist', name: 'Split Bill & Wishlist', icon: '💸'),
-    PocketGangToolMetadata(
-        key: 'study_timer', name: 'Study Timer (Pomodoro)', icon: '⏱️'),
-    PocketGangToolMetadata(
-        key: 'exam_tracker', name: 'Study, Homework & Exams', icon: '🗓️'),
-    PocketGangToolMetadata(
-        key: 'flashcards', name: 'Quick Revision Flashcards', icon: '🃏'),
+        key: 'poket_focus', name: 'Poket Focus', icon: '🎓'),
   ];
 
   static Future<List<String>?> show(

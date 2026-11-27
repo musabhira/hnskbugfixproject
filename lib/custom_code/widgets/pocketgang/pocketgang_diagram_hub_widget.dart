@@ -252,7 +252,7 @@ class _PocketGangDiagramHubWidgetState
 
           // Template Quick Starters
           SizedBox(
-            height: 90,
+            height: 100,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: templates.length,
@@ -266,7 +266,7 @@ class _PocketGangDiagramHubWidgetState
                   },
                   child: Container(
                     width: 130,
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                     decoration: BoxDecoration(
                       color: cardBg,
                       borderRadius: BorderRadius.circular(12),
@@ -274,19 +274,27 @@ class _PocketGangDiagramHubWidgetState
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(t['icon']!, style: const TextStyle(fontSize: 20)),
-                        const Spacer(),
-                        Text(t['name']!,
-                            style: TextStyle(
-                                color: textColor,
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.bold)),
-                        Text(t['desc']!,
-                            style: TextStyle(
-                                color: subTextColor, fontSize: 9),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(t['name']!,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    color: textColor,
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.bold)),
+                            Text(t['desc']!,
+                                style: TextStyle(
+                                    color: subTextColor, fontSize: 9),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis),
+                          ],
+                        ),
                       ],
                     ),
                   ),

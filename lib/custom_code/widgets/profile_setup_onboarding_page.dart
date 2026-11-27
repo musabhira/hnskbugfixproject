@@ -14,6 +14,7 @@ import 'package:pocket_mates_app/custom_code/widgets/custom_phone_text_field.dar
 import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_learning_track_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_pure_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
@@ -452,6 +453,12 @@ class _ProfileSetupOnboardingPageState
           'pm_native_language_$userId', _selectedNativeLanguage);
       await prefs.setString(
           'pm_target_language_$userId', _selectedTargetLanguage);
+      await PocketLearningTrackService.setTrack(
+        _selectedTargetLanguage.toLowerCase() == 'german'
+            ? PocketLearningTrackService.trackGerman
+            : PocketLearningTrackService.trackEnglish,
+        userId: userId,
+      );
       await prefs.setString(
           'pm_referral_source_$userId', _selectedReferralSource);
       await prefs.setString('pm_english_level_$userId', _selectedEnglishLevel);

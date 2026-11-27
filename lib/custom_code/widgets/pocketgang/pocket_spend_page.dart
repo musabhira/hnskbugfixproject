@@ -450,7 +450,7 @@ class _PocketSpendPageState extends State<PocketSpendPage> {
         // Sync couple_spend_accepted / couple_spend_removed notifications from Supabase
         final notifs = await _supabase
             .from('notifications')
-            .select('type, sender_id, data, created_at')
+            .select('type, sender_id, source_id, message, created_at')
             .eq('user_id', uid)
             .inFilter('type', ['couple_spend_accepted', 'couple_spend_removed'])
             .order('created_at', ascending: false)
@@ -458,9 +458,10 @@ class _PocketSpendPageState extends State<PocketSpendPage> {
 
         for (final n in (notifs as List)) {
           final type = n['type']?.toString() ?? '';
-          final data = n['data'] is Map ? Map<String, dynamic>.from(n['data']) : {};
+          final peerId =
+              (n['sender_id'] ?? n['source_id'])?.toString() ?? '';
           if (type == 'couple_spend_removed') {
-            if (_partnerId == n['sender_id']?.toString()) {
+            if (_partnerId == peerId) {
               _partnerId = null;
               _partnerName = null;
               _partnerAvatar = null;
@@ -471,23 +472,62 @@ class _PocketSpendPageState extends State<PocketSpendPage> {
               await prefs.remove('pocket_spend_couple_group_$_uid');
             }
             break;
-          } else if (type == 'couple_spend_accepted') {
-            _partnerId = n['sender_id']?.toString();
-            _partnerName = data['partner_name']?.toString() ?? 'Partner';
-            _partnerAvatar = data['partner_avatar']?.toString();
-            _coupleGroupId = data['couple_group_id']?.toString();
-            if (_partnerId != null) {
-              await prefs.setString('pocket_spend_partner_id_$_uid', _partnerId!);
+          } else if (type == 'couple_spend_accepted' && peerId.isNotEmpty) {
+            _partnerId = peerId;
+            try {
+              final partnerProf = await _supabase
+                  .from('profile')
+                  .select('display_name, name, profile_image_url')
+                  .eq('user_id', peerId)
+                  .maybeSingle();
+              if (partnerProf != null) {
+                final dn =
+                    partnerProf['display_name'] ?? partnerProf['name'];
+                if (dn != null && dn.toString().trim().isNotEmpty) {
+                  _partnerName = dn.toString().trim();
+                }
+                _partnerAvatar =
+                    partnerProf['profile_image_url']?.toString();
+              }
+            } catch (_) {}
+            _partnerName ??= 'Partner';
+
+            try {
+              final myGroups = await _supabase
+                  .from('group_members')
+                  .select('group_id, groups(id, name)')
+                  .eq('user_id', uid)
+                  .eq('is_active', true);
+              for (final mg in (myGroups as List)) {
+                final g = mg['groups'];
+                final gName = (g is Map ? g['name']?.toString() : null) ?? '';
+                final gId = mg['group_id']?.toString() ?? '';
+                if (gId.isNotEmpty && gName.startsWith('💑 ')) {
+                  final peerMembership = await _supabase
+                      .from('group_members')
+                      .select('user_id')
+                      .eq('group_id', gId)
+                      .eq('user_id', peerId)
+                      .eq('is_active', true)
+                      .maybeSingle();
+                  if (peerMembership != null) {
+                    _coupleGroupId = gId;
+                    break;
+                  }
+                }
+              }
+            } catch (_) {}
+
+            await prefs.setString('pocket_spend_partner_id_$_uid', _partnerId!);
+            await prefs.setString(
+                'pocket_spend_partner_name_$_uid', _partnerName ?? 'Partner');
+            if (_partnerAvatar != null && _partnerAvatar!.isNotEmpty) {
               await prefs.setString(
-                  'pocket_spend_partner_name_$_uid', _partnerName ?? 'Partner');
-              if (_partnerAvatar != null) {
-                await prefs.setString(
-                    'pocket_spend_partner_avatar_$_uid', _partnerAvatar!);
-              }
-              if (_coupleGroupId != null) {
-                await prefs.setString(
-                    'pocket_spend_couple_group_$_uid', _coupleGroupId!);
-              }
+                  'pocket_spend_partner_avatar_$_uid', _partnerAvatar!);
+            }
+            if (_coupleGroupId != null && _coupleGroupId!.isNotEmpty) {
+              await prefs.setString(
+                  'pocket_spend_couple_group_$_uid', _coupleGroupId!);
             }
             break;
           }
@@ -876,7 +916,7 @@ class _PocketSpendPageState extends State<PocketSpendPage> {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'Unlock Unlimited Pocket Spend',
+                'Unlock Unlimited Poket Spend',
                 style: GoogleFonts.outfit(
                   color: t.textColor,
                   fontWeight: FontWeight.w900,
@@ -887,7 +927,7 @@ class _PocketSpendPageState extends State<PocketSpendPage> {
           ],
         ),
         content: Text(
-          'You have used all $kFreeEntryLimit free entries. Upgrade to Pocket VIP (₹99/mo) for unlimited expenses, budgets, and insights!',
+          'You have used all $kFreeEntryLimit free entries. Upgrade to Poket VIP (₹99/mo) for unlimited expenses, budgets, and insights!',
           style: GoogleFonts.plusJakartaSans(
             color: t.subTextColor,
             fontSize: 13.5,
@@ -918,7 +958,7 @@ class _PocketSpendPageState extends State<PocketSpendPage> {
               if (mounted) setState(() => _isVip = vip);
             },
             child: Text(
-              'Get Pocket VIP',
+              'Get Poket VIP',
               style: GoogleFonts.outfit(fontWeight: FontWeight.w800),
             ),
           ),
@@ -1022,10 +1062,15 @@ class _PocketSpendPageState extends State<PocketSpendPage> {
                       final targetId = u['user_id']?.toString() ?? '';
                       return ListTile(
                         leading: CircleAvatar(
-                          backgroundImage: img != null && img.isNotEmpty
-                              ? NetworkImage(img)
-                              : null,
-                          child: img == null || img.isEmpty
+                          backgroundImage:
+                              (img != null && img.startsWith('http'))
+                                  ? NetworkImage(img)
+                                  : null,
+                          onBackgroundImageError:
+                              (img != null && img.startsWith('http'))
+                                  ? (_, __) {}
+                                  : null,
+                          child: (img == null || !img.startsWith('http'))
                               ? Text(name.isNotEmpty ? name[0].toUpperCase() : 'P')
                               : null,
                         ),
@@ -1046,17 +1091,11 @@ class _PocketSpendPageState extends State<PocketSpendPage> {
                               await _supabase.from('notifications').insert({
                                 'user_id': targetId,
                                 'sender_id': uid,
+                                'source_id': uid,
                                 'type': 'couple_spend_invite',
-                                'title': '💑 Couple Spend Invite',
-                                'body':
-                                    '$_myName invited you to Pocket Spend Couple Mode!',
-                                'is_read': false,
-                                'data': {
-                                  'context_type': 'couple_spend_invite',
-                                  'sender_id': uid,
-                                  'sender_name': _myName,
-                                  'sender_avatar': _myAvatar,
-                                },
+                                'message':
+                                    '$_myName invited you to Poket Couple Mode!',
+                                'status': 'unread',
                               });
                               if (ctx.mounted) Navigator.pop(ctx);
                               if (mounted) {
@@ -1069,6 +1108,14 @@ class _PocketSpendPageState extends State<PocketSpendPage> {
                               }
                             } catch (e) {
                               debugPrint('Error sending couple invite: $e');
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Failed to send couple invite. Please retry.'),
+                                    backgroundColor: Colors.redAccent,
+                                  ),
+                                );
+                              }
                             }
                           },
                           child: const Text('Invite'),
@@ -1105,10 +1152,10 @@ class _PocketSpendPageState extends State<PocketSpendPage> {
         await _supabase.from('notifications').insert({
           'user_id': oldPartnerId,
           'sender_id': uid,
+          'source_id': uid,
           'type': 'couple_spend_removed',
-          'title': 'Couple Mode Updated',
-          'body': '$_myName ended the Pocket Spend Couple link.',
-          'is_read': false,
+          'message': '$_myName ended the Poket Couple link.',
+          'status': 'unread',
         });
       } catch (_) {}
     }
@@ -1135,7 +1182,7 @@ class _PocketSpendPageState extends State<PocketSpendPage> {
           .from('groups')
           .insert({
             'name': '💑 $_myName & ${_partnerName ?? 'Partner'}',
-            'description': 'Private Pocket Spend Couple Space',
+            'description': 'Private Poket Couple Space',
             'created_by': uid,
           })
           .select('id')
@@ -1773,10 +1820,20 @@ class _PocketSpendPageState extends State<PocketSpendPage> {
       (_bucketList.where((b) => b['done'] == true).length * 30);
 
   Widget _buildAvatarOrVector(String? url, int stage) {
-    if (url != null && url.isNotEmpty) {
-      return CircleAvatar(
-        radius: 20,
-        backgroundImage: NetworkImage(url),
+    if (url != null && url.startsWith('http')) {
+      return ClipOval(
+        child: Image.network(
+          url,
+          width: 40,
+          height: 40,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => VectorAvatarWidget(
+            config: VectorAvatarConfig.getEvolutionAvatarForStage(
+                stage.clamp(1, 90)),
+            size: 40,
+            showAura: false,
+          ),
+        ),
       );
     }
     return ClipOval(

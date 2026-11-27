@@ -20,6 +20,9 @@ import 'dart:convert';
 import 'dart:math';
 import '/custom_code/widgets/ai_prompt_service.dart';
 import '/custom_code/widgets/learning_60day/english_tasks_master_hub.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_learning_track_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/german_90day/german_tasks_master_hub.dart';
+import 'package:pocket_mates_app/custom_code/widgets/german_90day/german_tasks_master_hub.dart';
 import '/custom_code/widgets/pocket_library_page.dart';
 import '/custom_code/widgets/voice_accent_coach_page.dart';
 import '/custom_code/widgets/subscription_page.dart';
@@ -30,11 +33,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_studio
 import 'package:pocket_mates_app/custom_code/widgets/avatar/avatar_network_explorer_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocket_spend_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_student_tools_widgets.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_habit_tracker_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_memory_vault_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_quick_poll_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_split_wishlist_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/poket_focus_page.dart';
 
 class DoodleBackgroundPainter extends CustomPainter {
   final Color color;
@@ -338,11 +337,51 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     if (favoritedToolsJson == null || favoritedToolsJson == '[]') {
       favoritedToolsJson = prefs.getString('favorited_tools_guest');
     }
-    if (favoritedToolsJson != null) {
-      final favoritedToolsList = jsonDecode(favoritedToolsJson) as List;
+    if (favoritedToolsJson != null && favoritedToolsJson != '[]') {
+      final rawList = jsonDecode(favoritedToolsJson) as List;
+      final List<Map<String, dynamic>> favoritedToolsList = [];
+      final seenTitles = <String>{};
+      bool modified = false;
+      const legacyStudyTitles = {
+        'Study Timer',
+        'Study & Exams',
+        'Flashcards',
+        'Goal & Habit Vault',
+        'Memory Vault',
+        'Habit Tracker',
+      };
+      const removedBoringTitles = {'Quick Poll', 'Split & Wish'};
+      for (final entry in rawList) {
+        if (entry is! Map) {
+          modified = true;
+          continue;
+        }
+        var title = (entry['title'] ?? '').toString();
+        if (title == 'Pocket Spend') {
+          title = 'Poket Spend';
+          modified = true;
+        } else if (title == 'Pocket Focus') {
+          title = 'Poket Focus';
+          modified = true;
+        } else if (legacyStudyTitles.contains(title)) {
+          title = 'Poket Focus';
+          modified = true;
+        } else if (removedBoringTitles.contains(title)) {
+          modified = true;
+          continue;
+        }
+        if (title.isEmpty || seenTitles.contains(title)) {
+          modified = true;
+          continue;
+        }
+        seenTitles.add(title);
+        favoritedToolsList.add({
+          ...Map<String, dynamic>.from(entry),
+          'title': title,
+        });
+      }
       final titles =
           favoritedToolsList.map((e) => e['title'] as String).toList();
-      bool modified = false;
       if (!titles.contains('Schedule')) {
         titles.insert(0, 'Schedule');
         favoritedToolsList.insert(0, {
@@ -351,10 +390,15 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         });
         modified = true;
       }
-      if (!titles.contains('English Learning Tasks')) {
-        titles.add('English Learning Tasks');
+      final defaultTasksTool = PocketLearningTrackService.isGerman
+          ? 'German Learning Tasks'
+          : 'English Learning Tasks';
+      if (!titles.contains(defaultTasksTool) &&
+          !titles.contains('English Learning Tasks') &&
+          !titles.contains('German Learning Tasks')) {
+        titles.add(defaultTasksTool);
         favoritedToolsList.add({
-          'title': 'English Learning Tasks',
+          'title': defaultTasksTool,
           'timeAdded': DateTime.now().toIso8601String(),
         });
         modified = true;
@@ -371,21 +415,23 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     } else {
       // Default pinned tools:
       // 20+ users get Schedule, English Learning Tasks, and Poket Spend.
-      // Under-20 (Students) get Schedule & English Learning Tasks (can still favorite Poket Spend manually).
+      // Under-20 (Students) get Schedule, English Learning Tasks, and Poket Focus.
       final uid = SupaFlow.client.auth.currentUser?.id ?? '';
       final userAge = (uid.isNotEmpty ? prefs.getInt('pm_age_$uid') : null) ??
           prefs.getInt('pm_age_guest') ??
           20;
+      final defaultTasksTool = PocketLearningTrackService.isGerman
+          ? 'German Learning Tasks'
+          : 'English Learning Tasks';
       final defaultTitles = userAge >= 20
-          ? ['Schedule', 'English Learning Tasks', 'Poket Spend']
-          : ['Schedule', 'English Learning Tasks'];
+          ? ['Schedule', defaultTasksTool, 'Poket Spend']
+          : ['Schedule', defaultTasksTool, 'Poket Focus'];
       setState(() {
         _favoritedTools = defaultTitles;
       });
       final nowIso = DateTime.now().toIso8601String();
-      final defaultList = defaultTitles
-          .map((t) => {'title': t, 'timeAdded': nowIso})
-          .toList();
+      final defaultList =
+          defaultTitles.map((t) => {'title': t, 'timeAdded': nowIso}).toList();
       await prefs.setString('favorited_tools_$userId', jsonEncode(defaultList));
       await prefs.setString('favorited_tools_guest', jsonEncode(defaultList));
     }
@@ -497,8 +543,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
 
       if (dailySchedule.isEmpty && allSchedules.isNotEmpty) {
         dailySchedule = allSchedules.map((item) {
-          final sTime = DateTime(now.year, now.month, now.day, item.startTime.hour, item.startTime.minute);
-          final eTime = DateTime(now.year, now.month, now.day, item.endTime.hour, item.endTime.minute);
+          final sTime = DateTime(now.year, now.month, now.day,
+              item.startTime.hour, item.startTime.minute);
+          final eTime = DateTime(now.year, now.month, now.day,
+              item.endTime.hour, item.endTime.minute);
           return ScheduleItem(
             id: item.id,
             title: item.title,
@@ -523,8 +571,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
               .map((item) => ScheduleItem.fromJson(item))
               .toList();
           dailySchedule = localItems.map((item) {
-            final sTime = DateTime(now.year, now.month, now.day, item.startTime.hour, item.startTime.minute);
-            final eTime = DateTime(now.year, now.month, now.day, item.endTime.hour, item.endTime.minute);
+            final sTime = DateTime(now.year, now.month, now.day,
+                item.startTime.hour, item.startTime.minute);
+            final eTime = DateTime(now.year, now.month, now.day,
+                item.endTime.hour, item.endTime.minute);
             return ScheduleItem(
               id: item.id,
               title: item.title,
@@ -571,8 +621,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         dailySchedule = todaySchedule;
       } else if (rawItems.isNotEmpty) {
         dailySchedule = rawItems.map((item) {
-          final sTime = DateTime(now.year, now.month, now.day, item.startTime.hour, item.startTime.minute);
-          final eTime = DateTime(now.year, now.month, now.day, item.endTime.hour, item.endTime.minute);
+          final sTime = DateTime(now.year, now.month, now.day,
+              item.startTime.hour, item.startTime.minute);
+          final eTime = DateTime(now.year, now.month, now.day,
+              item.endTime.hour, item.endTime.minute);
           return ScheduleItem(
             id: item.id,
             title: item.title,
@@ -780,8 +832,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         _editingScheduleId = null;
       });
     } else {
-      if (!PocketAdMobService.instance.isUserVipSync() && dailySchedule.length >= 3) {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const SubscriptionPage()));
+      if (!PocketAdMobService.instance.isUserVipSync() &&
+          dailySchedule.length >= 3) {
+        Navigator.push(context,
+            MaterialPageRoute(builder: (_) => const SubscriptionPage()));
         return;
       }
       // Add new
@@ -838,7 +892,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
 
   void _addTask() {
     if (!PocketAdMobService.instance.isUserVipSync() && tasks.length >= 4) {
-      Navigator.push(context, MaterialPageRoute(builder: (_) => const SubscriptionPage()));
+      Navigator.push(
+          context, MaterialPageRoute(builder: (_) => const SubscriptionPage()));
       return;
     }
     if (taskController.text.isNotEmpty) {
@@ -869,8 +924,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   }
 
   void _addChallenge() {
-    if (!PocketAdMobService.instance.isUserVipSync() && challenges.length >= 2) {
-      Navigator.push(context, MaterialPageRoute(builder: (_) => const SubscriptionPage()));
+    if (!PocketAdMobService.instance.isUserVipSync() &&
+        challenges.length >= 2) {
+      Navigator.push(
+          context, MaterialPageRoute(builder: (_) => const SubscriptionPage()));
       return;
     }
     if (challengeController.text.isNotEmpty) {
@@ -1371,6 +1428,35 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   Widget _buildToolsList() {
     final List<Map<String, dynamic>> allTools = [
       {
+        'title': 'German Learning Tasks',
+        'subtitle':
+            '90-Day Deutsch • A–Z + Ä,Ö,Ü,ß, der/die/das & Daily Drills',
+        'icon': Icons.translate_rounded,
+        'category': 'Language',
+        'color': const Color(0xFFFFCE00),
+        'gradient': [const Color(0xFFDD0000), const Color(0xFFFFCE00)],
+        'avatar': const VectorAvatarConfig(
+          species: 'cosmic_dragon',
+          artStyle: 'cyberpunk',
+          outfitStyle: 'astronaut_suit',
+          auraStyle: 'pocket_gold',
+          accessory: 'cyber_visor',
+        ),
+        'onTap': () {
+          final userId = SupaFlow.client.auth.currentUser?.id;
+          PocketLearningTrackService.setTrack(
+            PocketLearningTrackService.trackGerman,
+            userId: userId,
+          );
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => GermanTasksMasterHubPage(userId: userId),
+            ),
+          );
+        },
+      },
+      {
         'title': 'English Learning Tasks',
         'subtitle': '60-90 Day Plan • Dragon Evolution & Daily Drills',
         'icon': Icons.task_alt_rounded,
@@ -1386,6 +1472,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         ),
         'onTap': () {
           final userId = SupaFlow.client.auth.currentUser?.id;
+          PocketLearningTrackService.setTrack(
+            PocketLearningTrackService.trackEnglish,
+            userId: userId,
+          );
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -1558,24 +1648,6 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                 builder: (context) => const ToolsPage(initialTab: 1))),
       },
       {
-        'title': 'Habit Tracker',
-        'subtitle': '21-Day Streaks',
-        'icon': Icons.emoji_events_rounded,
-        'category': 'Growth',
-        'color': const Color(0xFFF59E0B),
-        'gradient': [const Color(0xFFF59E0B), const Color(0xFFD97706)],
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'royal_cape',
-          auraStyle: 'pocket_gold',
-          hairStyle: 'afro_fade',
-          faceShape: 'round',
-        ),
-        'onTap': () => Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const ToolsPage(initialTab: 2))),
-      },
-      {
         'title': 'Diagrams',
         'subtitle': 'Visual Flowcharts',
         'icon': Icons.schema_rounded,
@@ -1622,227 +1694,24 @@ class _TaskManagerScreenState extends State<ToolsPage> {
           hairStyle: 'undercut',
           faceShape: 'sharp',
         ),
-        'onTap': () => Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const PocketSpendPage())),
+        'onTap': () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const PocketSpendPage())),
       },
       {
-        'title': 'Study Timer',
-        'subtitle': 'Pomodoro Focus & Streak',
-        'icon': Icons.timer_rounded,
-        'category': 'Study',
-        'color': const Color(0xFF38BDF8),
-        'gradient': [const Color(0xFF38BDF8), const Color(0xFF0284C7)],
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'tech_hoodie',
-          auraStyle: 'electric_aqua',
-          hairStyle: 'side_part',
-          faceShape: 'oval',
-        ),
-        'onTap': () {
-          final uid = SupaFlow.client.auth.currentUser?.id ?? 'guest';
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PocketGangStandaloneToolPage(
-                title: 'Study Timer',
-                child: PocketGangStudyTimerWidget(
-                  groupId: 'personal_tools_$uid',
-                  groupName: 'Personal Study',
-                  currentUserId: uid,
-                  memberCount: 1,
-                ),
-              ),
-            ),
-          );
-        },
-      },
-      {
-        'title': 'Study & Exams',
-        'subtitle': 'Timetable, Homework & Countdown',
+        'title': 'Poket Focus',
+        'subtitle': 'Timer, Exams, Flashcards & Habits',
         'icon': Icons.school_rounded,
-        'category': 'Study',
-        'color': const Color(0xFFF59E0B),
-        'gradient': [const Color(0xFFF59E0B), const Color(0xFFD97706)],
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'royal_cape',
-          auraStyle: 'pocket_gold',
-          hairStyle: 'curly_top',
-          faceShape: 'round',
-        ),
-        'onTap': () {
-          final uid = SupaFlow.client.auth.currentUser?.id ?? 'guest';
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PocketGangStandaloneToolPage(
-                title: 'Study & Exams',
-                child: PocketGangExamTrackerWidget(
-                  groupId: 'personal_tools_$uid',
-                  groupName: 'Personal Study',
-                  currentUserId: uid,
-                  memberCount: 1,
-                ),
-              ),
-            ),
-          );
-        },
-      },
-      {
-        'title': 'Flashcards',
-        'subtitle': 'Quick Revision Word Vault',
-        'icon': Icons.style_rounded,
-        'category': 'Study',
-        'color': const Color(0xFF8B5CF6),
-        'gradient': [const Color(0xFF8B5CF6), const Color(0xFF6D28D9)],
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'cyberpunk_jacket',
-          auraStyle: 'comic_boom',
-          hairStyle: 'undercut',
-          faceShape: 'sharp',
-        ),
-        'onTap': () {
-          final uid = SupaFlow.client.auth.currentUser?.id ?? 'guest';
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PocketGangStandaloneToolPage(
-                title: 'Flashcards',
-                child: PocketGangFlashcardsWidget(
-                  groupId: 'personal_tools_$uid',
-                  groupName: 'Personal Study',
-                  currentUserId: uid,
-                  memberCount: 1,
-                ),
-              ),
-            ),
-          );
-        },
-      },
-      {
-        'title': 'Goal & Habit Vault',
-        'subtitle': 'Daily Streaks & Targets',
-        'icon': Icons.track_changes_rounded,
-        'category': 'Productivity',
-        'color': const Color(0xFF10B981),
-        'gradient': [const Color(0xFF10B981), const Color(0xFF059669)],
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'tech_hoodie',
-          auraStyle: 'matrix_green',
-          hairStyle: 'side_part',
-          faceShape: 'oval',
-        ),
-        'onTap': () {
-          final uid = SupaFlow.client.auth.currentUser?.id ?? 'guest';
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PocketGangStandaloneToolPage(
-                title: 'Goal & Habit Vault',
-                child: PocketGangHabitTrackerWidget(
-                  groupId: 'personal_tools_$uid',
-                  groupName: 'Personal Goals',
-                  currentUserId: uid,
-                  memberCount: 1,
-                ),
-              ),
-            ),
-          );
-        },
-      },
-      {
-        'title': 'Memory Vault',
-        'subtitle': 'Pinned Notes & Voice Memories',
-        'icon': Icons.mic_rounded,
-        'category': 'Personal',
-        'color': const Color(0xFFEC4899),
-        'gradient': [const Color(0xFFEC4899), const Color(0xFFDB2777)],
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'royal_cape',
-          auraStyle: 'comic_boom',
-          hairStyle: 'curly_top',
-          faceShape: 'round',
-        ),
-        'onTap': () {
-          final uid = SupaFlow.client.auth.currentUser?.id ?? 'guest';
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PocketGangStandaloneToolPage(
-                title: 'Memory Vault',
-                child: PocketGangMemoryVaultWidget(
-                  groupId: 'personal_tools_$uid',
-                  groupName: 'Personal Vault',
-                  currentUserId: uid,
-                  memberCount: 1,
-                ),
-              ),
-            ),
-          );
-        },
-      },
-      {
-        'title': 'Quick Poll',
-        'subtitle': 'Fast Decisions & Voting',
-        'icon': Icons.how_to_vote_rounded,
-        'category': 'Collab',
-        'color': const Color(0xFF06B6D4),
-        'gradient': [const Color(0xFF06B6D4), const Color(0xFF0891B2)],
+        'category': 'Student',
+        'color': const Color(0xFF38BDF8),
+        'gradient': [const Color(0xFF0EA5E9), const Color(0xFF6366F1)],
         'avatar': const VectorAvatarConfig(
           outfitStyle: 'tech_hoodie',
           auraStyle: 'electric_aqua',
-          hairStyle: 'undercut',
-          faceShape: 'sharp',
+          hairStyle: 'side_part',
+          faceShape: 'oval',
         ),
-        'onTap': () {
-          final uid = SupaFlow.client.auth.currentUser?.id ?? 'guest';
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PocketGangStandaloneToolPage(
-                title: 'Quick Poll',
-                child: PocketGangQuickPollWidget(
-                  groupId: 'personal_tools_$uid',
-                  groupName: 'Quick Poll',
-                  currentUserId: uid,
-                  memberCount: 1,
-                ),
-              ),
-            ),
-          );
-        },
-      },
-      {
-        'title': 'Split & Wish',
-        'subtitle': 'Shared Splits & Wishlist',
-        'icon': Icons.card_giftcard_rounded,
-        'category': 'Finance',
-        'color': const Color(0xFFF43F5E),
-        'gradient': [const Color(0xFFF43F5E), const Color(0xFFE11D48)],
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'cyberpunk_jacket',
-          auraStyle: 'pocket_gold',
-          hairStyle: 'afro_fade',
-          faceShape: 'round',
-        ),
-        'onTap': () {
-          final uid = SupaFlow.client.auth.currentUser?.id ?? 'guest';
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PocketGangStandaloneToolPage(
-                title: 'Split & Wish',
-                child: PocketGangSplitWishlistWidget(
-                  groupId: 'personal_tools_$uid',
-                  groupName: 'Split & Wish',
-                  currentUserId: uid,
-                  memberCount: 1,
-                ),
-              ),
-            ),
-          );
-        },
+        'onTap': () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const PoketFocusPage())),
       },
     ];
 
@@ -2407,7 +2276,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                   ),
                   const SizedBox(width: 4),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
                       color: const Color(0xFF131722),
                       borderRadius: BorderRadius.circular(20),
@@ -2416,7 +2286,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                          color:
+                              const Color(0xFFFFFC00).withValues(alpha: 0.15),
                           blurRadius: 10,
                           offset: const Offset(0, 2),
                         ),
@@ -2425,7 +2296,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.stars_rounded, color: Color(0xFFFFFC00), size: 16),
+                        const Icon(Icons.stars_rounded,
+                            color: Color(0xFFFFFC00), size: 16),
                         const SizedBox(width: 6),
                         Text(
                           '$completedToday',
@@ -2496,7 +2368,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                           ? []
                           : [
                               BoxShadow(
-                                color: const Color(0xFFFFFC00).withValues(alpha: 0.25),
+                                color: const Color(0xFFFFFC00)
+                                    .withValues(alpha: 0.25),
                                 blurRadius: 14,
                                 offset: const Offset(0, 4),
                               )
@@ -3092,13 +2965,16 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.auto_awesome_rounded,
-                            color: _useAISchedule ? Colors.black : const Color(0xFFFFFC00),
+                            color: _useAISchedule
+                                ? Colors.black
+                                : const Color(0xFFFFFC00),
                             size: 16),
                         const SizedBox(width: 4),
                         Text(
                           'AI Generate',
                           style: GoogleFonts.outfit(
-                            color: _useAISchedule ? Colors.black : Colors.white70,
+                            color:
+                                _useAISchedule ? Colors.black : Colors.white70,
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
@@ -3252,7 +3128,9 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                   elevation: 0,
                 ),
                 child: Text(
-                  _editingScheduleId != null ? 'Update Schedule' : 'Add Schedule',
+                  _editingScheduleId != null
+                      ? 'Update Schedule'
+                      : 'Add Schedule',
                   style: GoogleFonts.outfit(
                     fontWeight: FontWeight.bold,
                     fontSize: 15,
@@ -3314,7 +3192,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                     : Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.auto_awesome_rounded, size: 18, color: Colors.black),
+                          const Icon(Icons.auto_awesome_rounded,
+                              size: 18, color: Colors.black),
                           const SizedBox(width: 8),
                           Text(
                             'Generate Schedule',
@@ -4153,7 +4032,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             offset: const Offset(0, 3),
           ),
         ],
-      ),      child: Material(
+      ),
+      child: Material(
         color: Colors.transparent,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -5134,7 +5014,10 @@ class ScheduleAIService {
 
       // Strip reasoning/think blocks and extract JSON array
       String clean = response.trim();
-      clean = clean.replaceAll(RegExp(r'<think>[\s\S]*?<\/think>', caseSensitive: false), '').trim();
+      clean = clean
+          .replaceAll(
+              RegExp(r'<think>[\s\S]*?<\/think>', caseSensitive: false), '')
+          .trim();
       final startIdx = clean.indexOf('[');
       final endIdx = clean.lastIndexOf(']');
       if (startIdx != -1 && endIdx != -1 && endIdx > startIdx) {

@@ -22,6 +22,7 @@ import 'custom_code/services/pocket_robot_service.dart';
 import 'custom_code/services/in_app_notification_service.dart';
 import 'custom_code/services/pocket_kids_service.dart';
 import 'custom_code/services/pocket_language_service.dart';
+import 'custom_code/services/pocket_learning_track_service.dart';
 import 'custom_code/services/app_store_review_service.dart';
 import 'services/iap_service.dart';
 import 'custom_code/services/pocket_admob_service.dart';
@@ -82,9 +83,10 @@ void main() {
       await FlutterFlowTheme.initialize()
           .then((_) => debugPrint('Main: FlutterFlowTheme initialized.'));
 
-      // 3. Initialize Pocket Native Language service (fast local shared preferences read)
+      // 3. Initialize Pocket Native Language & Learning Track services
       try {
         await PocketLanguageService.init();
+        await PocketLearningTrackService.init();
       } catch (e) {
         debugPrint('Main: PocketLanguageService initialization error: $e');
       }
@@ -341,6 +343,13 @@ class MyAppState extends State<MyApp> {
             brightness: Brightness.dark,
             primarySwatch: Colors.blue,
             scaffoldBackgroundColor: Colors.black,
+            textTheme: ThemeData.dark().textTheme.apply(
+              fontFamilyFallback: const [
+                'Apple Color Emoji',
+                'Segoe UI Emoji',
+                'Noto Color Emoji',
+              ],
+            ),
             snackBarTheme: const SnackBarThemeData(
               backgroundColor: Color(0xFF0F172A),
               contentTextStyle: TextStyle(
@@ -359,6 +368,13 @@ class MyAppState extends State<MyApp> {
             brightness: Brightness.dark,
             primarySwatch: Colors.blue,
             scaffoldBackgroundColor: Colors.black,
+            textTheme: ThemeData.dark().textTheme.apply(
+              fontFamilyFallback: const [
+                'Apple Color Emoji',
+                'Segoe UI Emoji',
+                'Noto Color Emoji',
+              ],
+            ),
             snackBarTheme: const SnackBarThemeData(
               backgroundColor: Color(0xFF0F172A),
               contentTextStyle: TextStyle(

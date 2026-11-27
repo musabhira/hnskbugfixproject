@@ -26,6 +26,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_60d
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_models.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_learning_track_service.dart';
 
 // Begin custom action code
 
@@ -91,6 +92,8 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
 
   // English Learning & Demographic State
   String selectedGender = 'Not specified';
+  String selectedTargetLanguage =
+      PocketLearningTrackService.isGerman ? 'German' : 'English';
   String selectedNativeLanguage = PocketLanguageService.currentLanguage;
   String selectedEnglishLevel = 'Intermediate (B1-B2)';
   String selectedLearningGoal = 'Daily Fluency & Speaking';
@@ -616,6 +619,12 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         await prefs.setString('profile_cache_$_currentUserId', jsonEncode(profilePayload));
         await prefs.remove('cached_stats_$_currentUserId');
         await PocketLanguageService.setNativeLanguage(selectedNativeLanguage, userId: _currentUserId);
+        await PocketLearningTrackService.setTrack(
+          selectedTargetLanguage == 'German'
+              ? PocketLearningTrackService.trackGerman
+              : PocketLearningTrackService.trackEnglish,
+          userId: _currentUserId,
+        );
       } catch (e) {
         debugPrint('Error updating local profile cache: $e');
       }
@@ -1184,10 +1193,12 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
 
                     // Card 2: 🎓 English Learning Journey
                     _buildCardContainer(
-                      title: 'English Learning Profile',
+                      title: 'Language Learning Profile',
                       icon: Icons.school_outlined,
                       accentColor: const Color(0xFF6366F1),
                       children: [
+                        _buildTargetLanguageSection(theme),
+                        const SizedBox(height: 14),
                         _buildNativeLanguageSection(theme),
                         const SizedBox(height: 14),
                         _buildLearningGoalSection(theme),
@@ -1896,6 +1907,74 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
     );
   }
 
+  Widget _buildTargetLanguageSection(DarkModeTheme theme) {
+    final targets = [
+      {'code': 'English', 'label': '🇬🇧 English (90-Day Mastery)'},
+      {'code': 'German', 'label': '🇩🇪 Deutsch / German (90-Day A1–B2)'},
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Learning Language (Target Track)',
+          style: TextStyle(
+              color: theme.secondaryText,
+              fontSize: 12,
+              fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+          decoration: BoxDecoration(
+            color: theme.primaryBackground,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: theme.alternate),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              isExpanded: true,
+              dropdownColor: theme.secondaryBackground,
+              value: targets.any((t) => t['code'] == selectedTargetLanguage)
+                  ? selectedTargetLanguage
+                  : 'English',
+              items: targets.map((t) {
+                return DropdownMenuItem<String>(
+                  value: t['code'],
+                  child: Text(
+                    t['label']!,
+                    style: GoogleFonts.inter(
+                      color: theme.primaryText,
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                );
+              }).toList(),
+              onChanged: (val) {
+                if (val == null) return;
+                safeSetState(() {
+                  selectedTargetLanguage = val;
+                  if (val == 'English' &&
+                      selectedNativeLanguage.toLowerCase() == 'english') {
+                    selectedNativeLanguage = 'Malayalam';
+                    PocketLanguageService.setNativeLanguage('Malayalam',
+                        userId: _currentUserId);
+                  }
+                });
+                PocketLearningTrackService.setTrack(
+                  val == 'German'
+                      ? PocketLearningTrackService.trackGerman
+                      : PocketLearningTrackService.trackEnglish,
+                  userId: _currentUserId,
+                );
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildNativeLanguageSection(DarkModeTheme theme) {
     final languages = [
       {'name': 'Hindi', 'native': 'हिन्दी'},
@@ -1906,7 +1985,8 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
       {'name': 'Arabic', 'native': 'العربية'},
       {'name': 'Bengali', 'native': 'বাংলা'},
       {'name': 'Urdu', 'native': 'اردو'},
-      {'name': 'English', 'native': 'English'},
+      if (selectedTargetLanguage == 'German')
+        {'name': 'English', 'native': 'English'},
       {'name': 'Spanish', 'native': 'Español'},
       {'name': 'French', 'native': 'Français'},
       {'name': 'Other', 'native': 'Other'},

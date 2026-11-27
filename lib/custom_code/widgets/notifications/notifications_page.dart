@@ -1,25 +1,25 @@
+import 'dart:async';
 import 'dart:convert';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:shimmer/shimmer.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
-import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
-import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_models.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_citadel_fight_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
-import 'package:pocket_mates_app/custom_code/widgets/main_profile_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
-import 'package:pocket_mates_app/custom_code/services/pocket_citadel_fight_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_fight_dialog.dart';
+import 'package:pocket_mates_app/custom_code/widgets/main_profile_widget.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:cached_network_image/cached_network_image.dart';
 
-/// Notifications & Mutual Pocket Mate Connection Requests Screen
+/// Instagram-style Minimal Notifications & Requests Screen
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
 
@@ -28,11 +28,23 @@ class NotificationsPage extends StatefulWidget {
 }
 
 class _NotificationsPageState extends State<NotificationsPage> {
-  final _supabase = SupaFlow.client;
+  SupabaseClient get _supabase => SupaFlow.client;
   bool _isLoading = true;
+  int _selectedFilter = 0; // 0: All, 1: Requests, 2: Activity
+
   List<Map<String, dynamic>> _connectionRequests = [];
   List<Map<String, dynamic>> _activityAlerts = [];
   List<CitadelFightChallenge> _pendingFights = [];
+
+  static const Set<String> _actionableRequestTypes = {
+    'mate_request',
+    'pocket_talk',
+    'poket_talk',
+    'couple_spend_invite',
+    'follow_request',
+    'friend_request',
+    'citadel_fight',
+  };
 
   @override
   void initState() {
@@ -40,149 +52,164 @@ class _NotificationsPageState extends State<NotificationsPage> {
     _loadNotifications();
   }
 
+  Future<Map<String, dynamic>?> _fetchSenderProfile(String senderId) async {
+    if (senderId.isEmpty || PocketRobotService.isRobotId(senderId)) {
+      return null;
+    }
+    try {
+      final prof = await _supabase
+          .from('profile')
+          .select(
+              'name, display_name, profile_image_url, is_vip, is_premium, verified, avatar_config, learning_stage, stage')
+          .or('user_id.eq.$senderId,id.eq.$senderId')
+          .maybeSingle();
+      if (prof != null) return Map<String, dynamic>.from(prof);
+    } catch (_) {}
+    try {
+      final u = await _supabase
+          .from('users')
+          .select('display_name, name, username, photo_url, avatar_url, is_vip')
+          .eq('id', senderId)
+          .maybeSingle();
+      if (u != null) return Map<String, dynamic>.from(u);
+    } catch (_) {}
+    return null;
+  }
+
   Future<void> _loadNotifications() async {
-    setState(() => _isLoading = true);
-    final myId = _supabase.auth.currentUser?.id;
+    if (mounted) setState(() => _isLoading = true);
+    String? myId;
+    try {
+      myId = _supabase.auth.currentUser?.id;
+    } catch (_) {
+      myId = null;
+    }
     if (myId == null) {
       if (mounted) setState(() => _isLoading = false);
       return;
     }
 
     try {
-      // 0. Ensure user has peer robot mate requests active
       await PocketRobotService.ensureIncomingRobotRequests(myId, 1);
 
-      // 1. Fetch real pending mate requests from Supabase via PocketMateService
       final dbReqs = await PocketMateService.getPendingRequests(myId);
-      List<Map<String, dynamic>> requests = [];
+      final List<Map<String, dynamic>> requests = [];
 
       for (final r in dbReqs) {
+        final sId =
+            r['sender_id']?.toString() ?? r['source_id']?.toString() ?? '';
         String sName = r['sender_name']?.toString() ?? '';
         String? sImg = r['avatar_url']?.toString() ??
             r['sender_profile_image']?.toString();
-        final sId =
-            r['sender_id']?.toString() ?? r['source_id']?.toString() ?? '';
-
         bool isVip = false;
-        if (sName.isEmpty || sName == 'Pocket Mate' || sName == 'Poket Mate') {
-          // 1. Primary lookup from profile table
-          try {
-            if (sId.isNotEmpty && !PocketRobotService.isRobotId(sId)) {
-              final prof = await _supabase
-                  .from('profile')
-                  .select(
-                      'name, display_name, profile_image_url, is_vip, is_premium, verified')
-                  .or('user_id.eq.$sId,id.eq.$sId')
-                  .maybeSingle();
-              if (prof != null) {
-                final d = prof['display_name'] ?? prof['name'];
-                if (d != null && d.toString().trim().isNotEmpty) {
-                  sName = d.toString().trim();
-                }
-                sImg ??= prof['profile_image_url'];
-                isVip = prof['is_vip'] == true ||
-                    prof['is_premium'] == true ||
-                    prof['verified'] == true;
-              }
-            }
-          } catch (_) {}
+        dynamic avatarConfig = r['avatar_config'];
+        int stage = (r['stage'] as num?)?.toInt() ?? 1;
 
-          // 2. Secondary fallback from users table
+        if (sId.isNotEmpty && !PocketRobotService.isRobotId(sId)) {
           if (sName.isEmpty ||
               sName == 'Pocket Mate' ||
-              sName == 'Poket Mate') {
-            try {
-              if (sId.isNotEmpty && !PocketRobotService.isRobotId(sId)) {
-                final u = await _supabase
-                    .from('users')
-                    .select(
-                        'display_name, name, username, photo_url, avatar_url, is_vip')
-                    .eq('id', sId)
-                    .maybeSingle();
-                if (u != null) {
-                  final d = u['display_name'] ?? u['name'] ?? u['username'];
-                  if (d != null && d.toString().trim().isNotEmpty) {
-                    sName = d.toString().trim();
-                  }
-                  sImg ??= u['photo_url'] ?? u['avatar_url'];
-                  if (u['is_vip'] == true) isVip = true;
-                }
+              sName == 'Poket Mate' ||
+              sImg == null ||
+              sImg.isEmpty) {
+            final prof = await _fetchSenderProfile(sId);
+            if (prof != null) {
+              final d =
+                  prof['display_name'] ?? prof['name'] ?? prof['username'];
+              if (d != null && d.toString().trim().isNotEmpty) {
+                sName = d.toString().trim();
               }
-            } catch (_) {}
-          }
-        } else {
-          try {
-            if (sId.isNotEmpty && !PocketRobotService.isRobotId(sId)) {
-              final prof = await _supabase
-                  .from('profile')
-                  .select('is_vip, is_premium, verified')
-                  .or('user_id.eq.$sId,id.eq.$sId')
-                  .maybeSingle();
-              if (prof != null) {
-                isVip = prof['is_vip'] == true ||
-                    prof['is_premium'] == true ||
-                    prof['verified'] == true;
-              }
+              sImg ??= (prof['profile_image_url'] ??
+                      prof['photo_url'] ??
+                      prof['avatar_url'])
+                  ?.toString();
+              isVip = prof['is_vip'] == true ||
+                  prof['is_premium'] == true ||
+                  prof['verified'] == true;
+              avatarConfig ??= prof['avatar_config'];
+              stage =
+                  ((prof['learning_stage'] ?? prof['stage']) as num?)?.toInt() ??
+                      stage;
             }
-          } catch (_) {}
+          }
         }
         if (sName.isEmpty) sName = 'Poket Mate';
 
+        final rawType = r['type']?.toString() ?? 'mate_request';
+        final createdAtStr =
+            r['created_at']?.toString() ?? DateTime.now().toIso8601String();
         requests.add({
           'id': r['id'],
           'senderId': sId,
           'senderName': sName,
-          'stage': r['stage'] ?? 1,
-          'message': r['message'] ?? 'Wants to become your Poket Mate.',
-          'time': r['created_at'] ?? DateTime.now().toIso8601String(),
+          'stage': stage,
+          'message': r['message'] ??
+              (rawType == 'couple_spend_invite'
+                  ? 'Invited you to Poket Couple Mode'
+                  : 'Sent you a request'),
+          'time': createdAtStr,
+          'createdAt': DateTime.tryParse(createdAtStr) ?? DateTime.now(),
           'isRobot': r['is_robot'] == true || PocketRobotService.isRobotId(sId),
           'isVip': isVip,
           'archetype': r['archetype'],
-          'type': r['type'] ?? 'mate_request',
-          'context_type':
-              r['data'] is Map ? r['data']['context_type'] : r['context_type'],
+          'type': rawType,
           'avatarUrl': sImg,
-          'avatarConfig': r['avatar_config'],
-          'sender_profile_image': sImg,
+          'avatarConfig': avatarConfig,
         });
       }
 
-      // Also fetch pending Pocket Spend Couple Invites from notifications
+      // Direct query fallback for couple_spend_invite in case not merged yet
       try {
         final coupleInvites = await _supabase
             .from('notifications')
-            .select('*')
+            .select('id, sender_id, source_id, type, message, status, created_at')
             .eq('user_id', myId)
             .eq('type', 'couple_spend_invite')
             .order('created_at', ascending: false)
             .limit(10);
         for (final ci in (coupleInvites as List)) {
-          final data =
-              ci['data'] is Map ? Map<String, dynamic>.from(ci['data']) : {};
-          final sId = ci['sender_id']?.toString() ?? '';
-          if (sId.isNotEmpty &&
-              !requests.any((x) =>
-                  x['senderId'] == sId && x['type'] == 'couple_spend_invite')) {
-            requests.add({
-              'id': ci['id'],
-              'senderId': sId,
-              'senderName': data['sender_name']?.toString() ?? 'Partner',
-              'stage': 1,
-              'message': ci['body']?.toString() ??
-                  'Invited you to Pocket Spend Couple Mode!',
-              'time': ci['created_at'] ?? DateTime.now().toIso8601String(),
-              'isRobot': false,
-              'isVip': false,
-              'type': 'couple_spend_invite',
-              'context_type': 'couple_spend_invite',
-              'avatarUrl': data['sender_avatar']?.toString(),
-              'sender_profile_image': data['sender_avatar']?.toString(),
-            });
+          final sId =
+              (ci['sender_id'] ?? ci['source_id'])?.toString() ?? '';
+          if (sId.isEmpty) continue;
+          if (requests.any(
+              (x) => x['senderId'] == sId && x['type'] == 'couple_spend_invite')) {
+            continue;
           }
+          String sName = 'Partner';
+          String? sImg;
+          int stage = 1;
+          final prof = await _fetchSenderProfile(sId);
+          if (prof != null) {
+            final d = prof['display_name'] ?? prof['name'] ?? prof['username'];
+            if (d != null && d.toString().trim().isNotEmpty) {
+              sName = d.toString().trim();
+            }
+            sImg = (prof['profile_image_url'] ??
+                    prof['photo_url'] ??
+                    prof['avatar_url'])
+                ?.toString();
+            stage =
+                ((prof['learning_stage'] ?? prof['stage']) as num?)?.toInt() ??
+                    1;
+          }
+          final createdAtStr =
+              ci['created_at']?.toString() ?? DateTime.now().toIso8601String();
+          requests.add({
+            'id': ci['id'],
+            'senderId': sId,
+            'senderName': sName,
+            'stage': stage,
+            'message': ci['message']?.toString() ??
+                'Invited you to Poket Couple Mode!',
+            'time': createdAtStr,
+            'createdAt': DateTime.tryParse(createdAtStr) ?? DateTime.now(),
+            'isRobot': false,
+            'isVip': false,
+            'type': 'couple_spend_invite',
+            'avatarUrl': sImg,
+          });
         }
       } catch (_) {}
 
-      // Also check local pending requests
       final prefs = await SharedPreferences.getInstance();
       final reqStr = prefs.getString('pending_pocket_requests_$myId');
       if (reqStr != null && reqStr.isNotEmpty) {
@@ -190,157 +217,171 @@ class _NotificationsPageState extends State<NotificationsPage> {
           final localReqs = List<Map<String, dynamic>>.from(jsonDecode(reqStr));
           for (final lr in localReqs) {
             if (!requests.any((x) => x['id'] == lr['id'])) {
+              lr['createdAt'] =
+                  DateTime.tryParse(lr['time']?.toString() ?? '') ??
+                      DateTime.now();
               requests.add(lr);
             }
           }
         } catch (_) {}
       }
 
-      // Fetch all activity and community notifications from database
+      // Sort requests newest first (with Couple Invites & recent items at top)
+      requests.sort((a, b) {
+        final aDt = (a['createdAt'] as DateTime?) ?? DateTime(2000);
+        final bDt = (b['createdAt'] as DateTime?) ?? DateTime(2000);
+        return bDt.compareTo(aDt);
+      });
+
+      // Fetch non-request activity alerts from Supabase
       final List<Map<String, dynamic>> alerts = [];
+      final List<String> viewedActivityNotifIds = [];
+
       try {
         final notifsRes = await _supabase
             .from('notifications')
-            .select('*')
+            .select('id, user_id, sender_id, source_id, type, message, status, created_at')
             .eq('user_id', myId)
             .order('created_at', ascending: false)
-            .limit(100);
+            .limit(80);
 
         for (final n in (notifsRes as List)) {
-          final type = n['type']?.toString().toLowerCase() ?? 'alert';
+          final rawType = n['type']?.toString() ?? 'alert';
+          final type = rawType.toLowerCase();
+          final status = n['status']?.toString().toLowerCase() ?? 'unread';
+
+          // Pending requests stay in the Requests section at top until acted on
+          if (_actionableRequestTypes.contains(type) &&
+              (status == 'pending' || status == 'unread' || status.isEmpty)) {
+            continue;
+          }
+
+          final idStr = n['id']?.toString() ?? '';
+          if (idStr.isNotEmpty) {
+            viewedActivityNotifIds.add(idStr);
+          }
+
+          final sId = (n['sender_id'] ?? n['source_id'])?.toString() ?? '';
           String icon = '🔔';
-          String defaultTitle = 'Notification';
+          String defaultTitle = 'Activity';
+          bool isPresident = false;
+
           if (type.contains('citadel') ||
               type.contains('raid') ||
               type.contains('attack') ||
               type.contains('fortress')) {
             icon = '⚔️';
-            defaultTitle = 'Citadel Raid Alert';
+            defaultTitle = 'Citadel Raid';
           } else if (type.contains('pocket_talk_accepted') ||
               type.contains('poket_talk_accepted')) {
             icon = '🤝';
             defaultTitle = 'Poket Talk Accepted';
-          } else if (type.contains('pocket_talk') ||
-              type.contains('poket_talk') ||
-              type.contains('pact') ||
-              type.contains('talk')) {
-            icon = '⚡';
-            defaultTitle = 'Poket Talk 4-Day Pact';
           } else if (type.contains('language_warning') ||
               type.contains('presidential')) {
             icon = '🏛️';
-            defaultTitle = '🏛️ Presidential Notice';
+            defaultTitle = 'The President';
+            isPresident = true;
           } else if (type.contains('trophy')) {
             icon = '🏆';
-            defaultTitle = '🏆 Poket Trophy Awarded';
+            defaultTitle = 'Trophy Earned';
           } else if (type.contains('mate_accepted')) {
             icon = '✨';
-            defaultTitle = 'Poket Mate Connected';
-          } else if (type.contains('mate_request')) {
-            icon = '🤝';
-            defaultTitle = 'Poket Mate Request';
-          } else if (type.contains('couple_spend_invite')) {
-            icon = '💑';
-            defaultTitle = 'Couple Spend Invite';
+            defaultTitle = 'New Poket Mate';
           } else if (type.contains('couple_spend_accepted')) {
-            icon = '❤️';
-            defaultTitle = 'Couple Spend Connected';
-          } else if (type.contains('vibe_reply')) {
-            icon = '💬';
-            defaultTitle = 'Vibe Reply';
+            icon = '💑';
+            defaultTitle = 'Poket Couple Connected';
+          } else if (type.contains('couple_spend_removed')) {
+            icon = '💔';
+            defaultTitle = 'Poket Couple Updated';
           } else if (type.contains('vibe_like')) {
             icon = '❤️';
-            defaultTitle = 'Vibe Liked';
-          } else if (type.contains('vibe') || type.contains('status')) {
-            icon = '✨';
-            defaultTitle = 'Vibe Activity';
-          } else if (type.contains('thought') || type.contains('thread')) {
-            icon = '💭';
-            defaultTitle = 'Thought Activity';
+            defaultTitle = 'Liked your vibe';
+          } else if (type.contains('vibe_reply')) {
+            icon = '💬';
+            defaultTitle = 'Replied to your vibe';
           } else if (type.contains('score') ||
               type.contains('streak') ||
               type.contains('level')) {
             icon = '🔥';
-            defaultTitle = 'Streak & Level';
+            defaultTitle = 'Milestone';
           }
 
-          final data = n['data'] is Map ? n['data'] as Map : null;
-          final thumbnail =
-              data?['media_url']?.toString() ?? n['media_url']?.toString();
+          String? senderImg;
+          if (sId.isNotEmpty &&
+              !isPresident &&
+              !PocketRobotService.isRobotId(sId)) {
+            final p = await _fetchSenderProfile(sId);
+            senderImg = (p?['profile_image_url'] ?? p?['photo_url'])?.toString();
+            final dn = p?['display_name'] ?? p?['name'];
+            if (dn != null && dn.toString().trim().isNotEmpty) {
+              defaultTitle = dn.toString().trim();
+            }
+          }
+
+          final createdAt = DateTime.tryParse(n['created_at']?.toString() ?? '') ??
+              DateTime.now();
 
           alerts.add({
-            'id': n['id']?.toString() ?? '',
+            'id': idStr,
             'type': type,
             'sourceId': n['source_id']?.toString() ?? '',
-            'senderId': n['sender_id']?.toString() ?? '',
-            'status': n['status']?.toString() ?? '',
+            'senderId': sId,
             'icon': icon,
-            'title': n['title'] ?? defaultTitle,
-            'body': n['message'] ??
-                n['body'] ??
-                n['content'] ??
-                'New notification received.',
-            'time': n['created_at'] != null
-                ? timeago.format(
-                    DateTime.tryParse(n['created_at'].toString()) ??
-                        DateTime.now())
-                : 'Recently',
-            'thumbnail': thumbnail,
-          });
-        }
-
-        // Include robot classmate thought likes
-        final robotLikedThreads =
-            prefs.getStringList('robot_liked_threads_$myId') ?? [];
-        if (robotLikedThreads.isNotEmpty) {
-          alerts.insert(0, {
-            'id': 'robot_thought_like',
-            'icon': '❤️',
-            'title': 'Thought Liked 🤖',
-            'body':
-                'Atlas and your robot classmates liked your shared thoughts!',
-            'time': 'Recently',
-            'thumbnail': null,
+            'title': defaultTitle,
+            'body': n['message']?.toString() ?? 'New activity',
+            'time': timeago.format(createdAt, locale: 'en_short'),
+            'createdAt': createdAt,
+            'avatarUrl': senderImg,
+            'isPresident': isPresident,
           });
         }
       } catch (e) {
         debugPrint('Error fetching DB notifications: $e');
       }
 
-      // Fetch official Presidential Announcements / decrees
+      // Include unseen Presidential Announcements as compact minimal tiles
+      final seenAnnouncements =
+          (prefs.getStringList('seen_announcement_ids_$myId') ?? []).toSet();
+      final List<String> newlySeenAnnouncementIds = [];
       try {
         final annRes = await _supabase
             .from('announcements')
-            .select('*')
+            .select('id, title, content, message, created_at')
             .order('created_at', ascending: false)
-            .limit(25);
+            .limit(10);
 
         for (final a in (annRes as List)) {
+          final aId = a['id']?.toString() ?? '';
+          if (aId.isEmpty || seenAnnouncements.contains(aId)) continue;
+          newlySeenAnnouncementIds.add(aId);
+          final createdAt =
+              DateTime.tryParse(a['created_at']?.toString() ?? '') ??
+                  DateTime.now();
           alerts.add({
-            'id': a['id']?.toString() ?? '',
+            'id': 'ann_$aId',
+            'type': 'presidential_announcement',
             'icon': '🏛️',
-            'title': a['title'] ?? '🏛️ Presidential Decree',
-            'body': a['content'] ??
-                a['message'] ??
+            'title': a['title']?.toString() ?? 'The President',
+            'body': a['content']?.toString() ??
+                a['message']?.toString() ??
                 'Official update from The President.',
-            'time': a['created_at'] != null
-                ? timeago.format(
-                    DateTime.tryParse(a['created_at'].toString()) ??
-                        DateTime.now())
-                : 'Recently',
+            'time': timeago.format(createdAt, locale: 'en_short'),
+            'createdAt': createdAt,
+            'isPresident': true,
           });
         }
       } catch (_) {}
 
-      // Clear and mark notifications as read in Supabase and SharedPreferences
-      try {
-        await _supabase
-            .from('notifications')
-            .update({'is_read': true}).eq('user_id', myId);
-      } catch (_) {}
-      await prefs.setInt('unread_notifs_count_$myId', 0);
+      // Sort all activity alerts newest-first (latest always at top)
+      alerts.sort((a, b) {
+        final aDt = (a['createdAt'] as DateTime?) ?? DateTime(2000);
+        final bDt = (b['createdAt'] as DateTime?) ?? DateTime(2000);
+        return bDt.compareTo(aDt);
+      });
 
       final fights = await PocketCitadelFightService.getPendingChallenges(myId);
+
+      await prefs.setInt('unread_notifs_count_$myId', 0);
 
       if (mounted) {
         setState(() {
@@ -350,152 +391,166 @@ class _NotificationsPageState extends State<NotificationsPage> {
           _isLoading = false;
         });
       }
+
+      // Auto-delete viewed informational notifications from server & persist seen announcements
+      // after displaying them in this session so subsequent opens stay clean.
+      unawaited(() async {
+        if (viewedActivityNotifIds.isNotEmpty) {
+          try {
+            await _supabase
+                .from('notifications')
+                .delete()
+                .inFilter('id', viewedActivityNotifIds);
+          } catch (_) {
+            try {
+              await _supabase
+                  .from('notifications')
+                  .update({'status': 'read'})
+                  .inFilter('id', viewedActivityNotifIds);
+            } catch (_) {}
+          }
+        }
+        if (newlySeenAnnouncementIds.isNotEmpty) {
+          final merged = {...seenAnnouncements, ...newlySeenAnnouncementIds};
+          await prefs.setStringList(
+              'seen_announcement_ids_$myId', merged.toList());
+        }
+      }());
     } catch (e) {
       debugPrint('Error loading notifications: $e');
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  int _selectedFilter = 0; // 0: All, 1: Requests, 2: Activity, 3: President
-
-  /// 🚀 Interactive detail routing for every notification event
-  /// (User Audio Directive: "നോട്ടിഫിക്കേഷൻ പേജിൽ ആപ്പിൽ എന്ത് നടന്നാലും attack, Pocket Talk എല്ലാം നോട്ടിഫിക്കേഷൻ പേജിൽ വരണം.
-  /// ടാപ്പ് ചെയ്തു കഴിഞ്ഞാൽ ഡീറ്റെയിൽ പേജിലേക്ക് പോകണം.")
   void _handleAlertTap(Map<String, dynamic> alert) {
-    HapticFeedback.mediumImpact();
+    HapticFeedback.selectionClick();
     final type = alert['type']?.toString().toLowerCase() ?? '';
     final senderId = alert['senderId']?.toString() ?? '';
     final sourceId = alert['sourceId']?.toString() ?? '';
     final targetUid = senderId.isNotEmpty ? senderId : sourceId;
+
+    if (alert['isPresident'] == true ||
+        type.contains('presidential') ||
+        type.contains('language_warning') ||
+        type.contains('announcement')) {
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: const Color(0xFF121212),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (ctx) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 14),
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    const Text('🏛️', style: TextStyle(fontSize: 20)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        alert['title']?.toString() ?? 'The President',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      alert['time']?.toString() ?? '',
+                      style: GoogleFonts.inter(
+                          color: Colors.white54, fontSize: 11),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  alert['body']?.toString() ?? '',
+                  style: GoogleFonts.inter(
+                    color: Colors.white70,
+                    fontSize: 13.5,
+                    height: 1.45,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFFD700),
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const WhatsAppGroupChat(
+                            groupId: 'pocket_president',
+                            groupName: 'The President',
+                          ),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      'Open President Chat',
+                      style: GoogleFonts.outfit(fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      return;
+    }
 
     if (type.contains('citadel') ||
         type.contains('raid') ||
         type.contains('attack') ||
         type.contains('fortress')) {
       if (targetUid.isNotEmpty) {
-        showModalBottomSheet(
-          context: context,
-          backgroundColor: const Color(0xFF131520),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          builder: (sheetContext) => SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 36,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.white24,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Citadel Raid Alert ⚔️',
-                    style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    alert['body'] ?? 'Your fortress was attacked!',
-                    textAlign: TextAlign.center,
-                    style:
-                        GoogleFonts.inter(color: Colors.white70, fontSize: 13),
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFEF4444),
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size(double.infinity, 44),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                    ),
-                    icon: const Text('⚔️', style: TextStyle(fontSize: 16)),
-                    label: Text(
-                      'Launch Revenge Attack',
-                      style: GoogleFonts.outfit(
-                          fontWeight: FontWeight.bold, fontSize: 14),
-                    ),
-                    onPressed: () {
-                      Navigator.pop(sheetContext);
-                      PocketCitadelAttackPage.openForUser(
-                        context,
-                        userId: targetUid,
-                        targetName: alert['title'] ?? 'Fortress',
-                        attackerDay: 1,
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFFFFFC00)),
-                      foregroundColor: const Color(0xFFFFFC00),
-                      minimumSize: const Size(double.infinity, 44),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                    ),
-                    icon:
-                        const Icon(Icons.chat_bubble_outline_rounded, size: 16),
-                    label: Text(
-                      'Open Personal Chat',
-                      style: GoogleFonts.outfit(
-                          fontWeight: FontWeight.bold, fontSize: 14),
-                    ),
-                    onPressed: () {
-                      Navigator.pop(sheetContext);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => WhatsAppGroupChat(
-                            groupId: 'p:$targetUid',
-                            groupName: alert['title'] ?? 'Opponent',
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
+        PocketCitadelAttackPage.openForUser(
+          context,
+          userId: targetUid,
+          targetName: alert['title']?.toString() ?? 'Fortress',
+          attackerDay: 1,
         );
       }
-    } else if (type.contains('pocket_talk') ||
-        type.contains('pact') ||
-        type.contains('talk')) {
+    } else if (type.contains('couple_spend_accepted') ||
+        type.contains('pocket_talk') ||
+        type.contains('poket_talk') ||
+        type.contains('pact')) {
       if (targetUid.isNotEmpty) {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (_) => WhatsAppGroupChat(
               groupId: 'p:$targetUid',
-              groupName: alert['title'] ?? 'Pocket Talk',
+              groupName: alert['title']?.toString() ?? 'Chat',
             ),
           ),
         );
       }
-    } else if (type.contains('presidential') ||
-        type.contains('language_warning') ||
-        type.contains('decree') ||
-        type.contains('announcement')) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const WhatsAppGroupChat(
-            groupId: 'pocket_president',
-            groupName: 'The President',
-          ),
-        ),
-      );
     } else if (type.contains('trophy') ||
         type.contains('score') ||
         type.contains('streak') ||
@@ -509,26 +564,16 @@ class _NotificationsPageState extends State<NotificationsPage> {
           ),
         );
       }
-    } else if (type.contains('mate') || type.contains('friend')) {
-      if (targetUid.isNotEmpty) {
-        PocketCitadelAttackPage.openForUser(
-          context,
-          userId: targetUid,
-          targetName: alert['title'] ?? 'Pocket Mate',
-          attackerDay: 1,
-        );
-      } else {
-        setState(() => _selectedFilter = 1);
-      }
-    } else {
-      if (targetUid.isNotEmpty) {
-        PocketCitadelAttackPage.openForUser(
-          context,
-          userId: targetUid,
-          targetName: alert['title'] ?? 'Opponent',
-          attackerDay: 1,
-        );
-      }
+    } else if (targetUid.isNotEmpty) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => WhatsAppGroupChat(
+            groupId: 'p:$targetUid',
+            groupName: alert['title']?.toString() ?? 'Poket Mate',
+          ),
+        ),
+      );
     }
   }
 
@@ -540,84 +585,108 @@ class _NotificationsPageState extends State<NotificationsPage> {
     final senderId = req['senderId']?.toString() ?? '';
     final notifId = req['id']?.toString() ?? '';
 
-    if (req['type'] == 'couple_spend_invite' ||
-        req['context_type'] == 'couple_spend_invite') {
+    if (req['type'] == 'couple_spend_invite') {
       final prefs = await SharedPreferences.getInstance();
       final senderName = req['senderName']?.toString() ?? 'Partner';
       final senderAvatar = req['avatarUrl']?.toString();
       await prefs.setString('pocket_spend_partner_id_$myId', senderId);
       await prefs.setString('pocket_spend_partner_name_$myId', senderName);
       if (senderAvatar != null && senderAvatar.isNotEmpty) {
-        await prefs.setString('pocket_spend_partner_avatar_$myId', senderAvatar);
+        await prefs.setString(
+            'pocket_spend_partner_avatar_$myId', senderAvatar);
       }
 
       String myName = 'Partner';
-      String? myAvatar;
       String? coupleGroupId;
       try {
         final prof = await _supabase
             .from('profile')
-            .select('name, profile_image_url')
+            .select('display_name, name')
             .eq('user_id', myId)
             .maybeSingle();
         if (prof != null) {
-          myName = prof['name']?.toString() ?? 'Partner';
-          myAvatar = prof['profile_image_url']?.toString();
+          final cand = prof['display_name'] ?? prof['name'];
+          if (cand != null && cand.toString().trim().isNotEmpty) {
+            myName = cand.toString().trim();
+          }
         }
         try {
           final groupRes = await _supabase
               .from('groups')
               .insert({
                 'name': '💑 $myName & $senderName',
-                'description': 'Private Pocket Spend Couple Space',
+                'description': 'Private Poket Couple Space',
                 'created_by': myId,
               })
               .select('id')
               .single();
           coupleGroupId = groupRes['id'].toString();
           await _supabase.from('group_members').insert([
-            {'group_id': coupleGroupId, 'user_id': myId, 'role': 'admin', 'is_active': true},
-            {'group_id': coupleGroupId, 'user_id': senderId, 'role': 'admin', 'is_active': true},
+            {
+              'group_id': coupleGroupId,
+              'user_id': myId,
+              'role': 'admin',
+              'is_active': true,
+            },
+            {
+              'group_id': coupleGroupId,
+              'user_id': senderId,
+              'role': 'admin',
+              'is_active': true,
+            },
           ]);
-          await prefs.setString('pocket_spend_couple_group_$myId', coupleGroupId);
-        } catch (_) {}
+          await prefs.setString(
+              'pocket_spend_couple_group_$myId', coupleGroupId);
+        } catch (e) {
+          debugPrint('Error creating Poket Couple group: $e');
+        }
+
         await _supabase.from('notifications').insert({
           'user_id': senderId,
           'sender_id': myId,
+          'source_id': myId,
           'type': 'couple_spend_accepted',
-          'title': '💑 Couple Spend Connected!',
-          'body': '$myName accepted your Pocket Spend Couple Mode invite!',
-          'is_read': false,
-          'data': {
-            'partner_name': myName,
-            'partner_avatar': myAvatar,
-            if (coupleGroupId != null) 'couple_group_id': coupleGroupId,
-          },
+          'message': '$myName accepted your Poket Couple Mode invite!',
+          'status': 'unread',
         });
         if (notifId.isNotEmpty) {
           await _supabase.from('notifications').delete().eq('id', notifId);
         }
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('Error accepting Poket Couple invite: $e');
+      }
 
       _connectionRequests.removeWhere((r) => r['id'] == req['id']);
       await prefs.setString(
           'pending_pocket_requests_$myId', jsonEncode(_connectionRequests));
-      if (mounted) setState(() {});
+      if (mounted) {
+        setState(() {});
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '💑 Connected with $senderName in Poket Couple!',
+              style: GoogleFonts.outfit(
+                  fontWeight: FontWeight.w700, color: Colors.white),
+            ),
+            backgroundColor: const Color(0xFFE11D48),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
       return;
     }
 
-    // Use PocketMateService to accept across Supabase and local cache
     await PocketMateService.acceptMateRequest(
       notificationId: notifId,
       myId: myId,
       senderId: senderId,
     );
 
-    // If this is a 4-Day Pocket Talk Spoken Pact request, also accept the pact!
     final isPocketTalkReq = req['type'] == 'pocket_talk' ||
-        req['context_type'] == 'pocket_talk' ||
+        req['type'] == 'poket_talk' ||
         req['message']?.toString().contains('Spoken English Pact') == true ||
-        req['message']?.toString().contains('Pocket Talk') == true;
+        req['message']?.toString().contains('Pocket Talk') == true ||
+        req['message']?.toString().contains('Poket Talk') == true;
     if (isPocketTalkReq) {
       await PocketTrophyService.acceptPact(
         myId: myId,
@@ -625,29 +694,19 @@ class _NotificationsPageState extends State<NotificationsPage> {
       );
     }
 
-    // Remove from pending
     _connectionRequests.removeWhere((r) => r['id'] == req['id']);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
         'pending_pocket_requests_$myId', jsonEncode(_connectionRequests));
 
-    setState(() {});
-
     if (mounted) {
+      setState(() {});
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981)),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  '✨ Connected with ${req['senderName']}! Added to your Poket Mates chat list.',
-                  style: GoogleFonts.outfit(
-                      fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-              ),
-            ],
+          content: Text(
+            '✨ Connected with ${req['senderName']}!',
+            style: GoogleFonts.outfit(
+                fontWeight: FontWeight.bold, color: Colors.white),
           ),
           backgroundColor: const Color(0xFF1E293B),
           behavior: SnackBarBehavior.floating,
@@ -664,97 +723,387 @@ class _NotificationsPageState extends State<NotificationsPage> {
     final notifId = req['id']?.toString() ?? '';
     final senderId = req['senderId']?.toString() ?? '';
 
-    await PocketMateService.declineMateRequest(
-      notificationId: notifId,
-      myId: myId,
-      senderId: senderId,
-    );
+    if (req['type'] == 'couple_spend_invite') {
+      if (notifId.isNotEmpty) {
+        try {
+          await _supabase.from('notifications').delete().eq('id', notifId);
+        } catch (_) {}
+      }
+    } else {
+      await PocketMateService.declineMateRequest(
+        notificationId: notifId,
+        myId: myId,
+        senderId: senderId,
+      );
+    }
 
     final prefs = await SharedPreferences.getInstance();
     _connectionRequests.removeWhere((r) => r['id'] == req['id']);
     await prefs.setString(
         'pending_pocket_requests_$myId', jsonEncode(_connectionRequests));
 
-    setState(() {});
+    if (mounted) setState(() {});
   }
 
   Future<void> _clearAllNotifications() async {
-    final myId = Supabase.instance.client.auth.currentUser?.id;
+    final myId = _supabase.auth.currentUser?.id;
     setState(() {
       _activityAlerts.clear();
     });
     if (myId != null) {
       try {
-        await Supabase.instance.client
-            .from('notifications')
-            .delete()
-            .eq('user_id', myId);
+        await _supabase.from('notifications').delete().eq('user_id', myId);
       } catch (e) {
         debugPrint('Error clearing notifications: $e');
       }
     }
   }
 
+  Widget _buildSafeAvatar({
+    String? url,
+    int stage = 1,
+    VectorAvatarConfig? config,
+    String fallbackEmoji = '🔔',
+    double size = 42,
+  }) {
+    if (url != null && url.startsWith('http')) {
+      return ClipOval(
+        child: CachedNetworkImage(
+          imageUrl: url,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          placeholder: (_, __) => Container(
+            width: size,
+            height: size,
+            color: Colors.white10,
+          ),
+          errorWidget: (_, __, ___) => VectorAvatarWidget(
+            config:
+                config ?? VectorAvatarConfig.getEvolutionAvatarForStage(stage),
+            size: size,
+          ),
+        ),
+      );
+    }
+    if (config != null) {
+      return ClipOval(
+        child: VectorAvatarWidget(config: config, size: size),
+      );
+    }
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.08),
+        shape: BoxShape.circle,
+      ),
+      alignment: Alignment.center,
+      child: Text(fallbackEmoji, style: TextStyle(fontSize: size * 0.45)),
+    );
+  }
+
+  Widget _buildMinimalRequestTile(Map<String, dynamic> req) {
+    final stageNum = ((req['stage'] as num?)?.toInt() ?? 1).clamp(1, 90);
+    final isCouple = req['type'] == 'couple_spend_invite';
+    final isPocketTalk = req['type'] == 'pocket_talk' ||
+        req['type'] == 'poket_talk' ||
+        req['message']?.toString().contains('Talk') == true;
+    final rawAvatarUrl = req['avatarUrl']?.toString();
+
+    VectorAvatarConfig? avatarConfig;
+    if (req['avatarConfig'] is Map) {
+      try {
+        avatarConfig = VectorAvatarConfig.fromMap(
+            Map<String, dynamic>.from(req['avatarConfig']));
+      } catch (_) {}
+    } else if (req['isRobot'] == true ||
+        rawAvatarUrl == null ||
+        !rawAvatarUrl.startsWith('http')) {
+      avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(stageNum);
+    }
+
+    final timeDt = (req['createdAt'] as DateTime?) ?? DateTime.now();
+    final shortTime = timeago.format(timeDt, locale: 'en_short');
+
+    final badgeColor = isCouple
+        ? const Color(0xFFE11D48)
+        : (isPocketTalk ? const Color(0xFFFFD700) : const Color(0xFF0095F6));
+
+    final subtitleText = isCouple
+        ? 'Invited you to Poket Couple'
+        : (isPocketTalk
+            ? 'Sent a Poket Talk pact'
+            : (req['message']?.toString() ?? 'Wants to connect'));
+
+    return InkWell(
+      onTap: () {
+        final sId = req['senderId']?.toString() ?? '';
+        if (sId.isNotEmpty) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => MainProfileWidget(userId: sId),
+            ),
+          );
+        }
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Row(
+          children: [
+            _buildSafeAvatar(
+              url: rawAvatarUrl,
+              stage: stageNum,
+              config: avatarConfig,
+              size: 44,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: RichText(
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                text: TextSpan(
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 13.5,
+                    height: 1.35,
+                  ),
+                  children: [
+                    TextSpan(
+                      text: '${req['senderName'] ?? 'Poket Mate'} ',
+                      style: GoogleFonts.outfit(fontWeight: FontWeight.w700),
+                    ),
+                    TextSpan(
+                      text: '$subtitleText  ',
+                      style: const TextStyle(color: Colors.white70),
+                    ),
+                    TextSpan(
+                      text: shortTime,
+                      style:
+                          const TextStyle(color: Colors.white38, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            GestureDetector(
+              onTap: () => _acceptRequest(req),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                decoration: BoxDecoration(
+                  color: badgeColor,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Accept',
+                  style: GoogleFonts.outfit(
+                    color: isPocketTalk ? Colors.black : Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 12.5,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            IconButton(
+              icon: const Icon(Icons.close_rounded,
+                  color: Colors.white38, size: 18),
+              constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+              padding: EdgeInsets.zero,
+              onPressed: () => _declineRequest(req),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMinimalFightTile(CitadelFightChallenge fight) {
+    return InkWell(
+      onTap: () async {
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => PocketCitadelFightArenaDialog(
+            challenge: fight,
+            opponentDay: 30,
+            questionCount: fight.questionCount,
+            isOpponentRun: true,
+          ),
+        );
+        _loadNotifications();
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Row(
+          children: [
+            _buildSafeAvatar(
+              url: fight.challengerAvatar,
+              fallbackEmoji:
+                  fight.challengerAvatar.isNotEmpty &&
+                          !fight.challengerAvatar.startsWith('http')
+                      ? fight.challengerAvatar
+                      : '🥊',
+              size: 44,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: RichText(
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                text: TextSpan(
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 13.5,
+                    height: 1.35,
+                  ),
+                  children: [
+                    TextSpan(
+                      text: '${fight.challengerName} ',
+                      style: GoogleFonts.outfit(fontWeight: FontWeight.w700),
+                    ),
+                    TextSpan(
+                      text:
+                          'challenged you in ${fight.gameTitle} (${fight.challengerSeconds}s)',
+                      style: const TextStyle(color: Colors.white70),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF59E0B),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'Duel',
+                style: GoogleFonts.outfit(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 12.5,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMinimalActivityTile(Map<String, dynamic> alert) {
+    final isPresident = alert['isPresident'] == true;
+    final thumbnail = alert['thumbnail']?.toString();
+    return InkWell(
+      onTap: () => _handleAlertTap(alert),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Row(
+          children: [
+            _buildSafeAvatar(
+              url: alert['avatarUrl']?.toString(),
+              fallbackEmoji: alert['icon']?.toString() ?? '🔔',
+              size: 42,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: RichText(
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                text: TextSpan(
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 13.5,
+                    height: 1.35,
+                  ),
+                  children: [
+                    TextSpan(
+                      text: '${alert['title'] ?? 'Update'} ',
+                      style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.w700,
+                        color: isPresident
+                            ? const Color(0xFFFFD700)
+                            : Colors.white,
+                      ),
+                    ),
+                    TextSpan(
+                      text: '${alert['body'] ?? ''}  ',
+                      style: const TextStyle(color: Colors.white70),
+                    ),
+                    TextSpan(
+                      text: alert['time']?.toString() ?? '',
+                      style:
+                          const TextStyle(color: Colors.white38, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (thumbnail != null && thumbnail.startsWith('http')) ...[
+              const SizedBox(width: 10),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: CachedNetworkImage(
+                  imageUrl: thumbnail,
+                  width: 40,
+                  height: 40,
+                  fit: BoxFit.cover,
+                  errorWidget: (_, __, ___) => const SizedBox.shrink(),
+                ),
+              ),
+            ] else ...[
+              const SizedBox(width: 8),
+              const Icon(Icons.chevron_right_rounded,
+                  color: Colors.white24, size: 18),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final presidentAlerts = _activityAlerts
-        .where((a) =>
-            a['title'].toString().contains('President') ||
-            a['body'].toString().contains('President') ||
-            a['icon'] == '🏛️')
-        .toList();
-    final regularAlerts = _activityAlerts
-        .where((a) =>
-            !a['title'].toString().contains('President') &&
-            !a['body'].toString().contains('President') &&
-            a['icon'] != '🏛️')
-        .toList();
-    final attackAlerts = _activityAlerts.where((a) {
-      final t = a['type']?.toString().toLowerCase() ?? '';
-      final title = a['title']?.toString().toLowerCase() ?? '';
-      return t.contains('citadel') ||
-          t.contains('raid') ||
-          t.contains('attack') ||
-          title.contains('citadel') ||
-          title.contains('attack');
-    }).toList();
-    final totalRequestsCount = _connectionRequests.length +
-        _pendingFights.length +
-        attackAlerts.length;
+    final showRequests = _selectedFilter == 0 || _selectedFilter == 1;
+    final showActivity = _selectedFilter == 0 || _selectedFilter == 2;
+    final hasAnyRequests =
+        _connectionRequests.isNotEmpty || _pendingFights.isNotEmpty;
+    final hasAnyVisible = (showRequests && hasAnyRequests) ||
+        (showActivity && _activityAlerts.isNotEmpty);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF090A10),
+      backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F111A),
+        backgroundColor: Colors.black,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded,
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
               color: Colors.white, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Row(
-          children: [
-            const Icon(Icons.notifications_active_rounded,
-                color: Color(0xFFFFFC00), size: 20),
-            const SizedBox(width: 8),
-            Text(
-              'Notifications & Requests',
-              style: GoogleFonts.outfit(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16),
-            ),
-          ],
+        title: Text(
+          'Notifications',
+          style: GoogleFonts.outfit(
+            color: Colors.white,
+            fontWeight: FontWeight.w800,
+            fontSize: 21,
+            letterSpacing: -0.3,
+          ),
         ),
         actions: [
           if (_activityAlerts.isNotEmpty)
             TextButton(
               onPressed: _clearAllNotifications,
               child: Text(
-                'Clear All',
+                'Clear',
                 style: GoogleFonts.outfit(
-                  color: const Color(0xFFFFFC00),
-                  fontSize: 12,
+                  color: Colors.white70,
+                  fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -763,17 +1112,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
       ),
       body: _isLoading
           ? Shimmer.fromColors(
-              baseColor: const Color(0xFF1A222C),
-              highlightColor: const Color(0xFF2B3544),
+              baseColor: const Color(0xFF171717),
+              highlightColor: const Color(0xFF262626),
               child: ListView.builder(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 itemCount: 8,
                 itemBuilder: (_, __) => Padding(
                   padding: const EdgeInsets.only(bottom: 16),
                   child: Row(
                     children: [
                       const CircleAvatar(
-                          radius: 24, backgroundColor: Colors.white),
+                          radius: 21, backgroundColor: Colors.white),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
@@ -781,15 +1130,15 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           children: [
                             Container(
                               width: double.infinity,
-                              height: 14,
+                              height: 12,
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(6),
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 6),
                             Container(
-                              width: 160,
+                              width: 140,
                               height: 10,
                               decoration: BoxDecoration(
                                 color: Colors.white,
@@ -804,1196 +1153,117 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 ),
               ),
             )
-          : Column(
-              children: [
-                // Filter Tabs Bar
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  color: const Color(0xFF0B0D15),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
+          : RefreshIndicator(
+              onRefresh: _loadNotifications,
+              color: const Color(0xFFFFFC00),
+              backgroundColor: const Color(0xFF161616),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
                     child: Row(
                       children: [
-                        _buildFilterChip(0,
-                            'All (${_connectionRequests.length + _activityAlerts.length})'),
+                        _buildFilterChip(0, 'All'),
                         const SizedBox(width: 8),
                         _buildFilterChip(
-                            1, '🤝 Requests ($totalRequestsCount)'),
+                          1,
+                          hasAnyRequests
+                              ? 'Requests (${_connectionRequests.length + _pendingFights.length})'
+                              : 'Requests',
+                        ),
                         const SizedBox(width: 8),
-                        _buildFilterChip(
-                            2, '✨ Activity (${regularAlerts.length})'),
-                        const SizedBox(width: 8),
-                        _buildFilterChip(
-                            3, '🏛️ President (${presidentAlerts.length})'),
+                        _buildFilterChip(2, 'Activity'),
                       ],
                     ),
                   ),
-                ),
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 14),
-                    children: [
-                      // Presidential announcements prominent banner if available
-                      if ((_selectedFilter == 0 || _selectedFilter == 3) &&
-                          presidentAlerts.isNotEmpty) ...[
-                        ...presidentAlerts.map((pa) => Container(
-                              margin: const EdgeInsets.only(bottom: 14),
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [
-                                    Color(0xFF2A2000),
-                                    Color(0xFF131520)
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                    color: const Color(0xFFFFD700)
-                                        .withValues(alpha: 0.5),
-                                    width: 1.2),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFFFFD700)
-                                        .withValues(alpha: 0.1),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      const Text('🏛️ ',
-                                          style: TextStyle(fontSize: 20)),
-                                      Expanded(
-                                        child: Text(
-                                          pa['title'] ?? 'Presidential Message',
-                                          style: GoogleFonts.outfit(
-                                            color: const Color(0xFFFFD700),
-                                            fontWeight: FontWeight.w900,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 6, vertical: 2),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFFFD700),
-                                          borderRadius:
-                                              BorderRadius.circular(6),
-                                        ),
-                                        child: Text(
-                                          'OFFICIAL',
-                                          style: GoogleFonts.outfit(
-                                            color: Colors.black,
-                                            fontSize: 9,
-                                            fontWeight: FontWeight.w900,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    pa['body'] ?? '',
-                                    style: GoogleFonts.inter(
-                                        color: Colors.white,
-                                        fontSize: 13,
-                                        height: 1.35),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        pa['time'] ?? 'Just now',
-                                        style: GoogleFonts.inter(
-                                            color: Colors.white54,
-                                            fontSize: 11),
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          HapticFeedback.lightImpact();
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                  'Viewing Presidential Broadcast ✨',
-                                                  style: GoogleFonts.outfit(
-                                                      color: Colors.white)),
-                                              backgroundColor:
-                                                  const Color(0xFF1E293B),
-                                            ),
-                                          );
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor:
-                                              const Color(0xFFFFD700),
-                                          foregroundColor: Colors.black,
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 14, vertical: 6),
-                                          minimumSize: Size.zero,
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8)),
-                                        ),
-                                        child: Text(
-                                          'VIEW DECREE ➔',
-                                          style: GoogleFonts.outfit(
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            )),
-                      ],
-
-                      // 🥊 Citadel Fight Speed Duel Challenges Banner
-                      if (_pendingFights.isNotEmpty &&
-                          (_selectedFilter == 0 ||
-                              _selectedFilter == 1 ||
-                              _selectedFilter == 2)) ...[
-                        Row(
-                          children: [
-                            Text(
-                              '🥊 CITADEL FIGHT DUELS (SPEED CHALLENGES)',
-                              style: GoogleFonts.outfit(
-                                color: const Color(0xFFF59E0B),
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF59E0B),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                '${_pendingFights.length}',
-                                style: GoogleFonts.outfit(
-                                    color: Colors.black,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        ..._pendingFights.map((f) => Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.all(14),
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [
-                                    Color(0xFF1E1B4B),
-                                    Color(0xFF0F172A)
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                    color: const Color(0xFFFFD700), width: 1.4),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFFFFD700)
-                                        .withValues(alpha: 0.15),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Text(f.challengerAvatar,
-                                          style: const TextStyle(fontSize: 26)),
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              '${f.challengerName} challenged you to a Fight!',
-                                              style: GoogleFonts.outfit(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                            Text(
-                                              'Speed to beat: ${f.challengerSeconds}s • ${f.challengerScore} PTS (${f.gameTitle})',
-                                              style: GoogleFonts.inter(
-                                                color: const Color(0xFFFFD700),
-                                                fontWeight: FontWeight.w700,
-                                                fontSize: 11.5,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      TextButton(
-                                        onPressed: () async {
-                                          final myId =
-                                              _supabase.auth.currentUser?.id ??
-                                                  '';
-                                          await PocketCitadelFightService
-                                              .declineFightChallenge(
-                                                  f.id, myId);
-                                          _loadNotifications();
-                                        },
-                                        child: Text(
-                                          'Dismiss',
-                                          style: GoogleFonts.outfit(
-                                              color: Colors.white38,
-                                              fontSize: 12),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      OutlinedButton.icon(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) => WhatsAppGroupChat(
-                                                groupId: 'p:${f.challengerId}',
-                                                groupName: f.challengerName,
-                                                groupImage: f.challengerAvatar,
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                        style: OutlinedButton.styleFrom(
-                                          side: const BorderSide(
-                                              color: Color(0xFFF59E0B)),
-                                          foregroundColor:
-                                              const Color(0xFFF59E0B),
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 10, vertical: 8),
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(10)),
-                                        ),
-                                        icon: const Icon(
-                                            Icons.chat_bubble_outline_rounded,
-                                            size: 14),
-                                        label: Text(
-                                          'Chat',
-                                          style: GoogleFonts.outfit(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 12),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      ElevatedButton.icon(
-                                        onPressed: () async {
-                                          await showDialog(
-                                            context: context,
-                                            barrierDismissible: false,
-                                            builder: (_) =>
-                                                PocketCitadelFightArenaDialog(
-                                              challenge: f,
-                                              opponentDay: 30,
-                                              questionCount: f.questionCount,
-                                              isOpponentRun: true,
-                                            ),
-                                          );
-                                          _loadNotifications();
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor:
-                                              const Color(0xFFF59E0B),
-                                          foregroundColor:
-                                              const Color(0xFF0F172A),
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 16, vertical: 8),
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(10)),
-                                        ),
-                                        icon: const Text('🥊',
-                                            style: TextStyle(fontSize: 14)),
-                                        label: Text(
-                                          'FIGHT BACK ⚔️',
-                                          style: GoogleFonts.outfit(
-                                              fontWeight: FontWeight.w900,
-                                              fontSize: 12),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            )),
-                        const SizedBox(height: 12),
-                      ],
-
-                      // Pocket Mate Requests Header
-                      if (_selectedFilter == 0 || _selectedFilter == 1) ...[
-                        Row(
-                          children: [
-                            Text(
-                              '🤝 POKET MATE REQUESTS',
-                              style: GoogleFonts.outfit(
-                                  color: Colors.white60,
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFFFC00),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                '${_connectionRequests.length}',
-                                style: GoogleFonts.outfit(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 10),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        if (_connectionRequests.isEmpty)
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF131520),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(color: Colors.white10),
-                            ),
-                            child: Center(
-                              child: Text(
-                                'No pending Poket Mate requests.\nMatch anonymously or via Stage Match to connect!',
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.inter(
-                                    color: Colors.white38, fontSize: 12),
-                              ),
-                            ),
-                          )
-                        else
-                          ..._connectionRequests.map((req) {
-                            final stageNum =
-                                (req['stage'] as num?)?.toInt() ?? 1;
-                            final stage =
-                                LearningMilestoneStage.getStageForDay(stageNum);
-                            final isRobot = req['isRobot'] == true ||
-                                PocketRobotService.isRobotId(
-                                    req['senderId']?.toString() ?? '');
-                            VectorAvatarConfig? avatarConfig;
-                            if (req['avatarConfig'] is Map) {
-                              avatarConfig = VectorAvatarConfig.fromMap(
-                                  Map<String, dynamic>.from(
-                                      req['avatarConfig']));
-                            } else {
-                              avatarConfig =
-                                  VectorAvatarConfig.getEvolutionAvatarForStage(
-                                      stageNum);
-                            }
-
-                            final isPocketTalk = req['type'] == 'pocket_talk' ||
-                                req['type'] == 'poket_talk' ||
-                                req['context_type'] == 'pocket_talk' ||
-                                req['context_type'] == 'poket_talk' ||
-                                req['message']
-                                        ?.toString()
-                                        .contains('Spoken English Pact') ==
-                                    true ||
-                                req['message']
-                                        ?.toString()
-                                        .contains('Pocket Talk') ==
-                                    true ||
-                                req['message']
-                                        ?.toString()
-                                        .contains('Poket Talk') ==
-                                    true;
-
-                            final rawAvatarUrl =
-                                req['avatarUrl'] ?? req['sender_profile_image'];
-                            final hasRealAvatar = rawAvatarUrl != null &&
-                                rawAvatarUrl.toString().trim().isNotEmpty;
-
-                            return Dismissible(
-                              key: Key(
-                                  'conn_req_${req['id']}_${req['senderId']}'),
-                              direction: DismissDirection.endToStart,
-                              background: Container(
-                                margin: const EdgeInsets.only(bottom: 12),
-                                padding: const EdgeInsets.only(right: 20),
-                                decoration: BoxDecoration(
-                                  color: Colors.red.withValues(alpha: 0.8),
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                alignment: Alignment.centerRight,
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    Icon(Icons.delete_outline_rounded,
-                                        color: Colors.white, size: 24),
-                                    SizedBox(width: 8),
-                                    Text('Clear',
-                                        style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold)),
-                                  ],
-                                ),
-                              ),
-                              onDismissed: (_) {
-                                _declineRequest(req);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                        'Request cleared from ${req['senderName']}'),
-                                    duration: const Duration(seconds: 2),
-                                    backgroundColor: const Color(0xFF1E293B),
-                                  ),
-                                );
-                              },
-                              child: GestureDetector(
-                                onLongPress: () {
-                                  HapticFeedback.heavyImpact();
-                                  showModalBottomSheet(
-                                    context: context,
-                                    backgroundColor: const Color(0xFF131520),
-                                    shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(20)),
-                                    ),
-                                    builder: (ctx) => SafeArea(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(16.0),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Text(
-                                              'Request from ${req['senderName']}',
-                                              style: GoogleFonts.outfit(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 16),
-                                            ),
-                                            const SizedBox(height: 16),
-                                            ListTile(
-                                              leading: const Icon(
-                                                  Icons.delete_outline,
-                                                  color: Colors.redAccent),
-                                              title: const Text(
-                                                  'Clear this request',
-                                                  style: TextStyle(
-                                                      color: Colors.redAccent)),
-                                              onTap: () {
-                                                Navigator.pop(ctx);
-                                                _declineRequest(req);
-                                              },
-                                            ),
-                                            ListTile(
-                                              leading: const Icon(Icons.close,
-                                                  color: Colors.white54),
-                                              title: const Text('Cancel',
-                                                  style: TextStyle(
-                                                      color: Colors.white70)),
-                                              onTap: () => Navigator.pop(ctx),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                                onTap: () {
-                                  final sId = req['senderId']?.toString() ?? '';
-                                  if (sId.isNotEmpty) {
-                                    PocketCitadelAttackPage.openForUser(
-                                      context,
-                                      userId: sId,
-                                      targetName:
-                                          req['senderName']?.toString() ??
-                                              'Poket Mate',
-                                      attackerDay: 1,
-                                    );
-                                  }
-                                },
-                                child: Container(
-                                  margin: const EdgeInsets.only(bottom: 12),
-                                  padding: const EdgeInsets.all(14),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF131520),
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                      color: isPocketTalk
-                                          ? const Color(0xFFFFD700)
-                                          : isRobot
-                                              ? const Color(0xFF06B6D4)
-                                                  .withValues(alpha: 0.3)
-                                              : const Color(0xFFFFFC00)
-                                                  .withValues(alpha: 0.3),
-                                      width: isPocketTalk ? 1.5 : 1.2,
-                                    ),
-                                  ),
+                  Expanded(
+                    child: !hasAnyVisible
+                        ? ListView(
+                            children: [
+                              SizedBox(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.55,
+                                child: Center(
                                   child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      // Header type badge
-                                      Row(
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 7, vertical: 2),
-                                            decoration: BoxDecoration(
-                                              color: isPocketTalk
-                                                  ? const Color(0xFFFFD700)
-                                                      .withValues(alpha: 0.15)
-                                                  : const Color(0xFFFFFC00)
-                                                      .withValues(alpha: 0.15),
-                                              borderRadius:
-                                                  BorderRadius.circular(6),
-                                              border: Border.all(
-                                                color: isPocketTalk
-                                                    ? const Color(0xFFFFD700)
-                                                        .withValues(alpha: 0.4)
-                                                    : const Color(0xFFFFFC00)
-                                                        .withValues(alpha: 0.4),
-                                              ),
-                                            ),
-                                            child: Text(
-                                              isPocketTalk
-                                                  ? '⚡ POKET TALK REQUEST'
-                                                  : '🤝 POKET MATE REQUEST',
-                                              style: GoogleFonts.outfit(
-                                                color: isPocketTalk
-                                                    ? const Color(0xFFFFD700)
-                                                    : const Color(0xFFFFFC00),
-                                                fontWeight: FontWeight.w900,
-                                                fontSize: 9.5,
-                                                letterSpacing: 0.5,
-                                              ),
-                                            ),
-                                          ),
-                                          const Spacer(),
-                                          const Icon(
-                                              Icons.arrow_forward_ios_rounded,
-                                              color: Colors.white24,
-                                              size: 12),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Row(
-                                        children: [
-                                          ClipOval(
-                                            child: hasRealAvatar && !isRobot
-                                                ? CachedNetworkImage(
-                                                    imageUrl:
-                                                        rawAvatarUrl.toString(),
-                                                    width: 46,
-                                                    height: 46,
-                                                    fit: BoxFit.cover,
-                                                    placeholder: (_, __) =>
-                                                        Container(
-                                                      width: 46,
-                                                      height: 46,
-                                                      color: Colors.white10,
-                                                      child: const Center(
-                                                          child: CircularProgressIndicator(
-                                                              strokeWidth: 1.5,
-                                                              color: Color(
-                                                                  0xFFFFFC00))),
-                                                    ),
-                                                    errorWidget: (_, __, ___) =>
-                                                        VectorAvatarWidget(
-                                                      config: avatarConfig,
-                                                      size: 46,
-                                                    ),
-                                                  )
-                                                : VectorAvatarWidget(
-                                                    config: avatarConfig,
-                                                    size: 46,
-                                                  ),
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  children: [
-                                                    Expanded(
-                                                      child: Text(
-                                                        req['senderName'] ??
-                                                            'Poket Mate Learner',
-                                                        style:
-                                                            GoogleFonts.outfit(
-                                                          color: Colors.white,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 14.5,
-                                                        ),
-                                                        maxLines: 1,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                      ),
-                                                    ),
-                                                    if (isRobot)
-                                                      Container(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                                horizontal: 5,
-                                                                vertical: 1.5),
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color: const Color(
-                                                                  0xFF06B6D4)
-                                                              .withValues(
-                                                                  alpha: 0.2),
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(4),
-                                                          border: Border.all(
-                                                              color: const Color(
-                                                                      0xFF06B6D4)
-                                                                  .withValues(
-                                                                      alpha:
-                                                                          0.4)),
-                                                        ),
-                                                        child: Text(
-                                                          'ROBOT PEER',
-                                                          style: GoogleFonts
-                                                              .outfit(
-                                                            color: const Color(
-                                                                0xFF06B6D4),
-                                                            fontWeight:
-                                                                FontWeight.w900,
-                                                            fontSize: 8.5,
-                                                          ),
-                                                        ),
-                                                      )
-                                                    else if (req['isVip'] ==
-                                                        true)
-                                                      const Icon(Icons.verified,
-                                                          color:
-                                                              Color(0xFFFFD700),
-                                                          size: 14),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 2),
-                                                Row(
-                                                  children: [
-                                                    Container(
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                          horizontal: 6,
-                                                          vertical: 2),
-                                                      decoration: BoxDecoration(
-                                                        color: stage.buttonColor
-                                                            .withValues(
-                                                                alpha: 0.15),
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(6),
-                                                        border: Border.all(
-                                                            color: stage
-                                                                .buttonColor
-                                                                .withValues(
-                                                                    alpha:
-                                                                        0.5)),
-                                                      ),
-                                                      child: Text(
-                                                        '${stage.emoji} STAGE $stageNum/90 • ${stage.fluencyTier}',
-                                                        style:
-                                                            GoogleFonts.outfit(
-                                                          color:
-                                                              stage.buttonColor,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 9.5,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    if (req['archetype'] !=
-                                                        null) ...[
-                                                      const SizedBox(width: 6),
-                                                      Container(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                                horizontal: 5,
-                                                                vertical: 2),
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color: Colors.purple
-                                                              .withValues(
-                                                                  alpha: 0.2),
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(6),
-                                                          border: Border.all(
-                                                              color: Colors
-                                                                  .purple
-                                                                  .withValues(
-                                                                      alpha:
-                                                                          0.5)),
-                                                        ),
-                                                        child: Text(
-                                                          '${req['archetype']}'
-                                                              .toUpperCase(),
-                                                          style: GoogleFonts
-                                                              .outfit(
-                                                            color: Colors
-                                                                .purpleAccent,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            fontSize: 9.0,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Text(
-                                        req['message'] ??
-                                            'Wants to add you as a Poket Mate!',
-                                        style: GoogleFonts.inter(
-                                            color: Colors.white70,
-                                            fontSize: 12),
+                                      const Icon(
+                                        Icons.notifications_none_rounded,
+                                        size: 48,
+                                        color: Colors.white24,
                                       ),
                                       const SizedBox(height: 12),
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: OutlinedButton(
-                                              onPressed: () =>
-                                                  _declineRequest(req),
-                                              style: OutlinedButton.styleFrom(
-                                                side: const BorderSide(
-                                                    color: Colors.white24),
-                                                shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            10)),
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        vertical: 8),
-                                              ),
-                                              child: Text(
-                                                'Decline',
-                                                style: GoogleFonts.outfit(
-                                                    color: Colors.white70,
-                                                    fontSize: 12),
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                            child: ElevatedButton.icon(
-                                              onPressed: () =>
-                                                  _acceptRequest(req),
-                                              icon: const Icon(
-                                                  Icons.check_rounded,
-                                                  color: Colors.black,
-                                                  size: 16),
-                                              label: Text(
-                                                isPocketTalk
-                                                    ? 'Accept 4-Day Pact ⚡'
-                                                    : 'Accept Mate',
-                                                style: GoogleFonts.outfit(
-                                                    color: Colors.black,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 12),
-                                              ),
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor:
-                                                    const Color(0xFFFFFC00),
-                                                shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            10)),
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        vertical: 8),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
+                                      Text(
+                                        'No notifications yet',
+                                        style: GoogleFonts.outfit(
+                                          color: Colors.white70,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Requests and new updates appear here.',
+                                        style: GoogleFonts.inter(
+                                          color: Colors.white38,
+                                          fontSize: 12.5,
+                                        ),
                                       ),
                                     ],
                                   ),
                                 ),
                               ),
-                            );
-                          }),
-                        const SizedBox(height: 18),
-                      ],
-
-                      // ⚔️ Citadel Attacks & Raids (Requests Tab)
-                      if (_selectedFilter == 1 && attackAlerts.isNotEmpty) ...[
-                        Row(
-                          children: [
-                            Text(
-                              '⚔️ CITADEL ATTACKS & RAIDS',
-                              style: GoogleFonts.outfit(
-                                color: const Color(0xFFEF4444),
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFEF4444),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                '${attackAlerts.length}',
-                                style: GoogleFonts.outfit(
-                                    color: Colors.white,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        ...attackAlerts.map((alert) => Container(
-                              margin: const EdgeInsets.only(bottom: 10),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1E1B2E),
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(
-                                    color: const Color(0xFFEF4444)
-                                        .withValues(alpha: 0.4)),
-                              ),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(14),
-                                  onTap: () => _handleAlertTap(alert),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(14),
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Container(
-                                          width: 40,
-                                          height: 40,
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFEF4444)
-                                                .withValues(alpha: 0.15),
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
-                                                color: const Color(0xFFEF4444),
-                                                width: 1.2),
-                                          ),
-                                          child: const Center(
-                                            child: Text('⚔️',
-                                                style: TextStyle(fontSize: 18)),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                alert['title'] ??
-                                                    'Citadel Attack',
-                                                style: GoogleFonts.outfit(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                alert['body'] ?? '',
-                                                style: GoogleFonts.inter(
-                                                  color: Colors.white70,
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            )),
-                        const SizedBox(height: 18),
-                      ],
-
-                      // Activity & Learning Alerts Header
-                      if (_selectedFilter == 0 || _selectedFilter == 2) ...[
-                        Row(
-                          children: [
-                            Text(
-                              '📢 LEARNING & ACTIVITY ALERTS',
-                              style: GoogleFonts.outfit(
-                                  color: Colors.white60,
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF38BDF8),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                '${regularAlerts.length}',
-                                style: GoogleFonts.outfit(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 10),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        if (regularAlerts.isEmpty)
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF131520),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(color: Colors.white10),
-                            ),
-                            child: Center(
-                              child: Text(
-                                'No recent activity alerts.',
-                                style: GoogleFonts.inter(
-                                    color: Colors.white38, fontSize: 12),
-                              ),
-                            ),
+                            ],
                           )
-                        else
-                          ...regularAlerts.map((alert) {
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 10),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF111420),
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(color: Colors.white10),
-                              ),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(14),
-                                  onTap: () => _handleAlertTap(alert),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(14),
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        // Avatar or Styled Badge Icon
-                                        Stack(
-                                          clipBehavior: Clip.none,
-                                          children: [
-                                            if (alert['avatarConfig']
-                                                is VectorAvatarConfig)
-                                              ClipOval(
-                                                child: VectorAvatarWidget(
-                                                  config: alert['avatarConfig']
-                                                      as VectorAvatarConfig,
-                                                  size: 40,
-                                                ),
-                                              )
-                                            else if (alert['avatarUrl'] !=
-                                                    null &&
-                                                alert['avatarUrl']
-                                                    .toString()
-                                                    .isNotEmpty)
-                                              ClipOval(
-                                                child: CachedNetworkImage(
-                                                  imageUrl: alert['avatarUrl']
-                                                      .toString(),
-                                                  width: 40,
-                                                  height: 40,
-                                                  fit: BoxFit.cover,
-                                                  placeholder: (_, __) =>
-                                                      Container(
-                                                    width: 40,
-                                                    height: 40,
-                                                    color: Colors.white10,
-                                                    alignment: Alignment.center,
-                                                    child: Text(
-                                                        alert['icon'] ?? '🔔',
-                                                        style: const TextStyle(
-                                                            fontSize: 18)),
-                                                  ),
-                                                  errorWidget: (_, __, ___) =>
-                                                      Container(
-                                                    width: 40,
-                                                    height: 40,
-                                                    color: Colors.white10,
-                                                    alignment: Alignment.center,
-                                                    child: Text(
-                                                        alert['icon'] ?? '🔔',
-                                                        style: const TextStyle(
-                                                            fontSize: 18)),
-                                                  ),
-                                                ),
-                                              )
-                                            else
-                                              Container(
-                                                width: 40,
-                                                height: 40,
-                                                decoration: BoxDecoration(
-                                                  gradient:
-                                                      const LinearGradient(
-                                                    colors: [
-                                                      Color(0xFF1E293B),
-                                                      Color(0xFF0F172A)
-                                                    ],
-                                                  ),
-                                                  shape: BoxShape.circle,
-                                                  border: Border.all(
-                                                      color: Colors.white12),
-                                                ),
-                                                alignment: Alignment.center,
-                                                child: Text(
-                                                    alert['icon'] ?? '🔔',
-                                                    style: const TextStyle(
-                                                        fontSize: 20)),
-                                              ),
-                                            Positioned(
-                                              right: -2,
-                                              bottom: -2,
-                                              child: Container(
-                                                padding:
-                                                    const EdgeInsets.all(2),
-                                                decoration: const BoxDecoration(
-                                                  color: Color(0xFF111420),
-                                                  shape: BoxShape.circle,
-                                                ),
-                                                child: Text(
-                                                    alert['badge'] ??
-                                                        alert['icon'] ??
-                                                        '✨',
-                                                    style: const TextStyle(
-                                                        fontSize: 11)),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Expanded(
-                                                    child: Text(
-                                                      alert['title'] ?? '',
-                                                      style: GoogleFonts.outfit(
-                                                        color: Colors.white,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 13,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    alert['time'] ?? '',
-                                                    style: GoogleFonts.inter(
-                                                        color: Colors.white38,
-                                                        fontSize: 10),
-                                                  ),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 3),
-                                              Text(
-                                                alert['body'] ?? '',
-                                                style: GoogleFonts.inter(
-                                                    color: Colors.white70,
-                                                    fontSize: 11.5,
-                                                    height: 1.3),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        if (alert['thumbnail'] != null &&
-                                            alert['thumbnail']
-                                                .toString()
-                                                .isNotEmpty) ...[
-                                          const SizedBox(width: 8),
-                                          ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                            child: CachedNetworkImage(
-                                              imageUrl: alert['thumbnail'],
-                                              width: 44,
-                                              height: 44,
-                                              fit: BoxFit.cover,
-                                              errorWidget: (_, __, ___) =>
-                                                  const SizedBox.shrink(),
-                                            ),
-                                          ),
-                                        ],
-                                        const SizedBox(width: 6),
-                                        const Icon(
-                                          Icons.chevron_right_rounded,
-                                          color: Colors.white24,
-                                          size: 18,
-                                        ),
-                                      ],
+                        : ListView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            children: [
+                              if (showRequests && hasAnyRequests) ...[
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(16, 4, 16, 4),
+                                  child: Text(
+                                    'Requests',
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w800,
                                     ),
                                   ),
                                 ),
-                              ),
-                            );
-                          }),
-                      ],
-                    ],
+                                ..._connectionRequests
+                                    .map(_buildMinimalRequestTile),
+                                ..._pendingFights.map(_buildMinimalFightTile),
+                                if (showActivity &&
+                                    _activityAlerts.isNotEmpty)
+                                  Divider(
+                                    height: 18,
+                                    thickness: 0.6,
+                                    color: Colors.white.withValues(alpha: 0.08),
+                                  ),
+                              ],
+                              if (showActivity && _activityAlerts.isNotEmpty) ...[
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(16, 4, 16, 4),
+                                  child: Text(
+                                    'New',
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                                ..._activityAlerts
+                                    .map(_buildMinimalActivityTile),
+                              ],
+                              const SizedBox(height: 24),
+                            ],
+                          ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
     );
   }
@@ -2002,26 +1272,24 @@ class _NotificationsPageState extends State<NotificationsPage> {
     final isSelected = _selectedFilter == index;
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticFeedback.selectionClick();
         setState(() => _selectedFilter = index);
       },
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFFFFC00) : const Color(0xFF1A1D2C),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? const Color(0xFFFFFC00) : Colors.white12,
-            width: 1,
-          ),
+          color: isSelected
+              ? Colors.white
+              : Colors.white.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(18),
         ),
         child: Text(
           label,
           style: GoogleFonts.outfit(
             color: isSelected ? Colors.black : Colors.white70,
-            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            fontSize: 12.5,
           ),
         ),
       ),
