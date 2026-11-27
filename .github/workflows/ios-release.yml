@@ -8,9 +8,9 @@ on:
   workflow_dispatch:
     inputs:
       runner:
-        description: 'macOS runner label (macos-15, macos-14, macos-latest)'
+        description: 'macOS runner label (macos-latest, macos-15, macos-14)'
         required: false
-        default: 'macos-15'
+        default: 'macos-latest'
 
 concurrency:
   group: ios-native-release
@@ -19,7 +19,7 @@ concurrency:
 jobs:
   build:
     name: Build and Release iOS
-    runs-on: ${{ inputs.runner || 'macos-15' }}
+    runs-on: ${{ inputs.runner || 'macos-latest' }}
 
     steps:
       - name: Checkout Repository
