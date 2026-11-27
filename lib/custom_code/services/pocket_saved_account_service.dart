@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_world_mode_selection_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 import 'package:pocket_mates_app/auth_page/auth_page_widget.dart';
@@ -744,6 +745,95 @@ class _SavedAccountBottomSheetContentState
                   const SizedBox(height: 16),
                 ],
 
+                // Section: Kid Account (Between Current Account & Saved Accounts)
+                Padding(
+                  padding: const EdgeInsets.only(left: 4, bottom: 8),
+                  child: Text(
+                    'KID ACCOUNT',
+                    style: GoogleFonts.outfit(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.8,
+                      color: const Color(0xFFFFD700),
+                    ),
+                  ),
+                ),
+                InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () {
+                    final rootCtx = Navigator.of(context, rootNavigator: true).context;
+                    Navigator.pop(context);
+                    PocketWorldModeSelectionDialog.show(rootCtx);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF262C38)
+                          : const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                        width: 1.0,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFFC00).withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.child_care_rounded,
+                            color: Color(0xFFFFD700),
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                (PocketKidsService.kidName.isNotEmpty &&
+                                        PocketKidsService.kidName !=
+                                            'Little Explorer' &&
+                                        PocketKidsService.kidName !=
+                                            'Student Explorer')
+                                    ? PocketKidsService.kidName
+                                    : 'Kid Account',
+                                style: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14.5,
+                                  color: isDark ? Colors.white : Colors.black87,
+                                ),
+                              ),
+                              Text(
+                                'Tap to switch to Kids World',
+                                style: GoogleFonts.outfit(
+                                  fontSize: 12,
+                                  color:
+                                      isDark ? Colors.white60 : Colors.black54,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 14,
+                          color: Color(0xFFFFD700),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
                 // Section: Other Saved Accounts
                 if (otherAccounts.isNotEmpty) ...[
                   Padding(
@@ -941,6 +1031,53 @@ class _SavedAccountBottomSheetContentState
                     color: Colors.grey,
                   ),
                   onTap: _handleAddAccount,
+                ),
+                const Divider(height: 16, thickness: 0.6),
+                // Bottom Kid Account Entry with Logo
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFFC00).withValues(alpha: 0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.child_care_rounded,
+                      color: Color(0xFFFFD700),
+                      size: 22,
+                    ),
+                  ),
+                  title: Text(
+                    (PocketKidsService.kidName.isNotEmpty &&
+                            PocketKidsService.kidName != 'Little Explorer' &&
+                            PocketKidsService.kidName != 'Student Explorer')
+                        ? PocketKidsService.kidName
+                        : 'Kid Account',
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14.5,
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Switch to Kids Learning World',
+                    style: GoogleFonts.outfit(
+                      fontSize: 12,
+                      color: isDark ? Colors.white60 : Colors.black54,
+                    ),
+                  ),
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 14,
+                    color: Color(0xFFFFD700),
+                  ),
+                  onTap: () {
+                    final rootCtx =
+                        Navigator.of(context, rootNavigator: true).context;
+                    Navigator.pop(context);
+                    PocketWorldModeSelectionDialog.show(rootCtx);
+                  },
                 ),
               ],
             ],

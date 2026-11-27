@@ -660,76 +660,6 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
 
             const SizedBox(height: 18),
 
-            // Multi-Language Selector
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    const Text('🌐 ', style: TextStyle(fontSize: 16)),
-                    Text(
-                      'Languages allowed in this Gang',
-                      style: GoogleFonts.outfit(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                GestureDetector(
-                  onTap: () async {
-                    HapticFeedback.selectionClick();
-                    final selected = await PocketGangLanguagePickerSheet.show(
-                      context,
-                      initialCodes: _selectedLanguageCodes,
-                    );
-                    if (selected != null && selected.isNotEmpty) {
-                      setState(() => _selectedLanguageCodes = selected);
-                    }
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFD700).withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFFFFD700), width: 0.8),
-                    ),
-                    child: Text(
-                      'Edit Languages (${_selectedLanguageCodes.length})',
-                      style: const TextStyle(color: Color(0xFFFFD700), fontSize: 11, fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: _selectedLanguageCodes.map((code) {
-                final lang = PocketGangLanguage.supportedLanguages.firstWhere(
-                  (l) => l.code == code,
-                  orElse: () => PocketGangLanguage(code: code, name: code.toUpperCase(), nativeName: code, flag: '🌐'),
-                );
-                return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1E293B),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.white12),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(lang.flag, style: const TextStyle(fontSize: 14)),
-                      const SizedBox(width: 6),
-                      Text(
-                        lang.name,
-                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
-            ),
-
             const SizedBox(height: 18),
             Divider(color: Colors.white.withValues(alpha: 0.08)),
             const SizedBox(height: 12),
@@ -1038,11 +968,6 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                   const SizedBox(height: 3),
                   Text(
                     '• Purpose: ${PocketGangPurpose.getForType(_selectedGangType).firstWhere((p) => p.key == _selectedPurposeKey, orElse: () => PocketGangPurpose.allPurposes.first).label}',
-                    style: const TextStyle(color: Colors.white70, fontSize: 12),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    '• Languages: ${_selectedLanguageCodes.map((c) => c.toUpperCase()).join(', ')}',
                     style: const TextStyle(color: Colors.white70, fontSize: 12),
                   ),
                   const SizedBox(height: 3),

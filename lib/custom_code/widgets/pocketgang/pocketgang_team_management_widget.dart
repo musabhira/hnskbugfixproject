@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/pocketgang_task_service.dart';
+import 'pocket_spend_page.dart';
 
 /// 👥 Responsive PocketGang Team Management Screen
 /// Includes Title, Description, Estimated Hours, Multi-Assignees, Multi-Approvers,
@@ -16,6 +17,7 @@ class PocketGangTeamManagementWidget extends StatefulWidget {
   final bool isAdmin;
   final List<PocketGangTask> tasks;
   final VoidCallback onTasksChanged;
+  final PocketSpendCoupleTheme? coupleTheme;
 
   const PocketGangTeamManagementWidget({
     super.key,
@@ -26,6 +28,7 @@ class PocketGangTeamManagementWidget extends StatefulWidget {
     required this.isAdmin,
     required this.tasks,
     required this.onTasksChanged,
+    this.coupleTheme,
   });
 
   @override
@@ -700,14 +703,23 @@ class _PocketGangTeamManagementWidgetState
       return true;
     }).toList();
 
+    final theme = widget.coupleTheme;
+    final bgColor = theme != null ? theme.bgGradient.first : const Color(0xFF0F172A);
+    final headerBg = theme != null ? theme.cardColor : const Color(0xFF161924);
+    final inputBg = theme != null ? theme.surfaceAltColor : const Color(0xFF1E293B);
+    final textColor = theme != null ? theme.textColor : Colors.white;
+    final subTextColor = theme != null ? theme.subTextColor : Colors.white54;
+    final accentColor = theme != null ? theme.accent : const Color(0xFFFFD700);
+    final onAccentColor = theme != null ? theme.onAccentTextColor : Colors.black;
+
     return Container(
-      color: const Color(0xFF0F172A),
+      color: bgColor,
       child: Column(
         children: [
           // Search & Filter Header
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            color: const Color(0xFF161924),
+            color: headerBg,
             child: Column(
               children: [
                 Row(
@@ -716,18 +728,18 @@ class _PocketGangTeamManagementWidgetState
                       child: Container(
                         height: 38,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1E293B),
+                          color: inputBg,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: TextField(
                           onChanged: (v) => setState(() => _searchQuery = v),
-                          style: const TextStyle(color: Colors.white, fontSize: 13),
-                          decoration: const InputDecoration(
+                          style: TextStyle(color: textColor, fontSize: 13),
+                          decoration: InputDecoration(
                             hintText: 'Search tasks by title or details...',
-                            hintStyle: TextStyle(color: Colors.white38, fontSize: 12),
-                            prefixIcon: Icon(Icons.search, color: Colors.white38, size: 18),
+                            hintStyle: TextStyle(color: subTextColor, fontSize: 12),
+                            prefixIcon: Icon(Icons.search, color: subTextColor, size: 18),
                             border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(vertical: 9),
+                            contentPadding: const EdgeInsets.symmetric(vertical: 9),
                           ),
                         ),
                       ),
@@ -737,11 +749,11 @@ class _PocketGangTeamManagementWidgetState
                       onPressed: _showCreateTaskDialog,
                       icon: Container(
                         padding: const EdgeInsets.all(6),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFFFD700),
+                        decoration: BoxDecoration(
+                          color: accentColor,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.add, color: Colors.black, size: 18),
+                        child: Icon(Icons.add, color: onAccentColor, size: 18),
                       ),
                     ),
                   ],
@@ -817,10 +829,10 @@ class _PocketGangTeamManagementWidgetState
                         const Text('📋', style: TextStyle(fontSize: 32)),
                         const SizedBox(height: 8),
                         Text('No tasks found.',
-                            style: GoogleFonts.outfit(color: Colors.white70, fontSize: 14)),
+                            style: GoogleFonts.outfit(color: textColor, fontSize: 14)),
                         const SizedBox(height: 4),
-                        const Text('Tap + above to create a task.',
-                            style: TextStyle(color: Colors.white38, fontSize: 12)),
+                        Text('Tap + above to create a task.',
+                            style: TextStyle(color: subTextColor, fontSize: 12)),
                       ],
                     ),
                   )
@@ -840,13 +852,19 @@ class _PocketGangTeamManagementWidgetState
 
   Widget _buildFilterChip(String key, String label) {
     final isSelected = _selectedStatusFilter == key;
+    final theme = widget.coupleTheme;
+    final activeBg = theme != null ? theme.accent : const Color(0xFFFFD700);
+    final inactiveBg = theme != null ? theme.surfaceAltColor : const Color(0xFF1E293B);
+    final activeFg = theme != null ? theme.onAccentTextColor : Colors.black;
+    final inactiveFg = theme != null ? theme.textColor : Colors.white70;
+
     return ChoiceChip(
       label: Text(label),
       selected: isSelected,
-      selectedColor: const Color(0xFFFFD700),
-      backgroundColor: const Color(0xFF1E293B),
+      selectedColor: activeBg,
+      backgroundColor: inactiveBg,
       labelStyle: TextStyle(
-        color: isSelected ? Colors.black : Colors.white70,
+        color: isSelected ? activeFg : inactiveFg,
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
         fontSize: 11.5,
       ),
@@ -857,16 +875,22 @@ class _PocketGangTeamManagementWidgetState
   }
 
   Widget _buildTaskCard(PocketGangTask task) {
+    final theme = widget.coupleTheme;
+    final cardBg = theme != null ? theme.cardColor : const Color(0xFF1E293B);
+    final titleColor = theme != null ? theme.textColor : Colors.white;
+    final subColor = theme != null ? theme.subTextColor : Colors.white60;
+    final accentColor = theme != null ? theme.accent : const Color(0xFFFFD700);
+
     return GestureDetector(
       onTap: () => _showTaskDetails(task),
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E293B),
+          color: cardBg,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: _getStatusColor(task.status).withValues(alpha: 0.3),
+            color: _getStatusColor(task.status).withValues(alpha: 0.35),
             width: 1.2,
           ),
         ),
@@ -882,7 +906,7 @@ class _PocketGangTeamManagementWidgetState
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.outfit(
-                      color: Colors.white,
+                      color: titleColor,
                       fontSize: 14.5,
                       fontWeight: FontWeight.bold,
                     ),
@@ -912,27 +936,27 @@ class _PocketGangTeamManagementWidgetState
                 task.description,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: Colors.white60, fontSize: 12),
+                style: TextStyle(color: subColor, fontSize: 12),
               ),
             ],
             const SizedBox(height: 10),
             Row(
               children: [
-                const Icon(Icons.timer_outlined, color: Color(0xFFFFD700), size: 13),
+                Icon(Icons.timer_outlined, color: accentColor, size: 13),
                 const SizedBox(width: 4),
                 Text(
                   '${task.estimatedHours.toStringAsFixed(1)} hrs',
-                  style: const TextStyle(color: Color(0xFFFFD700), fontSize: 11, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: accentColor, fontSize: 11, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(width: 14),
-                const Icon(Icons.people_outline, color: Colors.white54, size: 13),
+                Icon(Icons.people_outline, color: subColor, size: 13),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
                     task.assignedMemberNames.isEmpty ? 'All Members' : task.assignedMemberNames.join(', '),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white54, fontSize: 11),
+                    style: TextStyle(color: subColor, fontSize: 11),
                   ),
                 ),
               ],

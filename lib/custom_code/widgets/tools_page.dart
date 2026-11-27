@@ -23,11 +23,18 @@ import '/custom_code/widgets/learning_60day/english_tasks_master_hub.dart';
 import '/custom_code/widgets/pocket_library_page.dart';
 import '/custom_code/widgets/voice_accent_coach_page.dart';
 import '/custom_code/widgets/subscription_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 import '/custom_code/widgets/daily_media_tools_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_studio_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/avatar_network_explorer_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocket_spend_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_student_tools_widgets.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_habit_tracker_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_memory_vault_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_quick_poll_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_split_wishlist_widget.dart';
 
 class DoodleBackgroundPainter extends CustomPainter {
   final Color color;
@@ -362,20 +369,23 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         _favoritedTools = titles;
       });
     } else {
-      // Default pinned tools: Schedule + English Learning Tasks
+      // Default pinned tools:
+      // 20+ users get Schedule, English Learning Tasks, and Poket Spend.
+      // Under-20 (Students) get Schedule & English Learning Tasks (can still favorite Poket Spend manually).
+      final uid = SupaFlow.client.auth.currentUser?.id ?? '';
+      final userAge = (uid.isNotEmpty ? prefs.getInt('pm_age_$uid') : null) ??
+          prefs.getInt('pm_age_guest') ??
+          20;
+      final defaultTitles = userAge >= 20
+          ? ['Schedule', 'English Learning Tasks', 'Poket Spend']
+          : ['Schedule', 'English Learning Tasks'];
       setState(() {
-        _favoritedTools = ['Schedule', 'English Learning Tasks'];
+        _favoritedTools = defaultTitles;
       });
-      final defaultList = [
-        {
-          'title': 'Schedule',
-          'timeAdded': DateTime.now().toIso8601String(),
-        },
-        {
-          'title': 'English Learning Tasks',
-          'timeAdded': DateTime.now().toIso8601String(),
-        }
-      ];
+      final nowIso = DateTime.now().toIso8601String();
+      final defaultList = defaultTitles
+          .map((t) => {'title': t, 'timeAdded': nowIso})
+          .toList();
       await prefs.setString('favorited_tools_$userId', jsonEncode(defaultList));
       await prefs.setString('favorited_tools_guest', jsonEncode(defaultList));
     }
@@ -770,6 +780,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         _editingScheduleId = null;
       });
     } else {
+      if (!PocketAdMobService.instance.isUserVipSync() && dailySchedule.length >= 3) {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const SubscriptionPage()));
+        return;
+      }
       // Add new
       final newItem = ScheduleItem(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -823,6 +837,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   }
 
   void _addTask() {
+    if (!PocketAdMobService.instance.isUserVipSync() && tasks.length >= 4) {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const SubscriptionPage()));
+      return;
+    }
     if (taskController.text.isNotEmpty) {
       HapticFeedback.mediumImpact();
       final newTask = Task(
@@ -851,6 +869,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   }
 
   void _addChallenge() {
+    if (!PocketAdMobService.instance.isUserVipSync() && challenges.length >= 2) {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const SubscriptionPage()));
+      return;
+    }
     if (challengeController.text.isNotEmpty) {
       int totalDays;
       switch (selectedChallengeType) {
@@ -1430,43 +1452,6 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       },
       // [TEMPORARILY HIDDEN: Drawing Tool]
       {
-        'title': 'Daily Media Suite',
-        'subtitle': 'Compress & Audio Extract',
-        'icon': Icons.video_file_rounded,
-        'category': 'Utilities',
-        'color': const Color(0xFF10B981),
-        'gradient': [const Color(0xFF064E3B), const Color(0xFF10B981)],
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'executive_blazer',
-          auraStyle: 'matrix_green',
-          hairStyle: 'side_part',
-          hairColor: '#10B981',
-        ),
-        'onTap': () => Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const DailyMediaToolsPage())),
-      },
-      {
-        'title': 'Poster Maker',
-        'subtitle': 'Canva-Grade Studio',
-        'icon': Icons.photo_library_rounded,
-        'category': 'Design',
-        'color': const Color(0xFFFF5722),
-        'gradient': [const Color(0xFFFF5722), const Color(0xFFFF9800)],
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'tech_hoodie',
-          auraStyle: 'comic_boom',
-          hairStyle: 'side_part',
-          faceShape: 'oval',
-          skinColor: '#FFDFC4',
-        ),
-        'onTap': () => Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const TemplateGalleryPage())),
-      },
-      {
         'title': 'Chess Match',
         'subtitle': 'Tactical Grandmaster',
         'icon': Icons.casino_rounded,
@@ -1484,23 +1469,6 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             context,
             MaterialPageRoute(
                 builder: (context) => const ChessMatchmakingPage())),
-      },
-      {
-        'title': 'Poki Games',
-        'subtitle': 'Online Play with Mates',
-        'icon': Icons.videogame_asset_rounded,
-        'category': 'Arcade',
-        'color': const Color(0xFF00E5FF),
-        'gradient': [const Color(0xFF00E5FF), const Color(0xFF00FF66)],
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'cyberpunk_jacket',
-          auraStyle: 'pixel_arcade',
-          hairStyle: 'anime_spiky',
-          faceShape: 'sharp',
-          hairColor: '#00FF66',
-        ),
-        'onTap': () => Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const PokiGamesPage())),
       },
       {
         'title': 'Crazy Games',
@@ -1640,6 +1608,241 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             context,
             MaterialPageRoute(
                 builder: (context) => const TeamsDedicatedPage())),
+      },
+      {
+        'title': 'Poket Spend',
+        'subtitle': 'Expense & Budget Tracker',
+        'icon': Icons.account_balance_wallet_rounded,
+        'category': 'Finance',
+        'color': const Color(0xFF10B981),
+        'gradient': [const Color(0xFF10B981), const Color(0xFF059669)],
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'tech_hoodie',
+          auraStyle: 'electric_aqua',
+          hairStyle: 'undercut',
+          faceShape: 'sharp',
+        ),
+        'onTap': () => Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const PocketSpendPage())),
+      },
+      {
+        'title': 'Study Timer',
+        'subtitle': 'Pomodoro Focus & Streak',
+        'icon': Icons.timer_rounded,
+        'category': 'Study',
+        'color': const Color(0xFF38BDF8),
+        'gradient': [const Color(0xFF38BDF8), const Color(0xFF0284C7)],
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'tech_hoodie',
+          auraStyle: 'electric_aqua',
+          hairStyle: 'side_part',
+          faceShape: 'oval',
+        ),
+        'onTap': () {
+          final uid = SupaFlow.client.auth.currentUser?.id ?? 'guest';
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PocketGangStandaloneToolPage(
+                title: 'Study Timer',
+                child: PocketGangStudyTimerWidget(
+                  groupId: 'personal_tools_$uid',
+                  groupName: 'Personal Study',
+                  currentUserId: uid,
+                  memberCount: 1,
+                ),
+              ),
+            ),
+          );
+        },
+      },
+      {
+        'title': 'Study & Exams',
+        'subtitle': 'Timetable, Homework & Countdown',
+        'icon': Icons.school_rounded,
+        'category': 'Study',
+        'color': const Color(0xFFF59E0B),
+        'gradient': [const Color(0xFFF59E0B), const Color(0xFFD97706)],
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'royal_cape',
+          auraStyle: 'pocket_gold',
+          hairStyle: 'curly_top',
+          faceShape: 'round',
+        ),
+        'onTap': () {
+          final uid = SupaFlow.client.auth.currentUser?.id ?? 'guest';
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PocketGangStandaloneToolPage(
+                title: 'Study & Exams',
+                child: PocketGangExamTrackerWidget(
+                  groupId: 'personal_tools_$uid',
+                  groupName: 'Personal Study',
+                  currentUserId: uid,
+                  memberCount: 1,
+                ),
+              ),
+            ),
+          );
+        },
+      },
+      {
+        'title': 'Flashcards',
+        'subtitle': 'Quick Revision Word Vault',
+        'icon': Icons.style_rounded,
+        'category': 'Study',
+        'color': const Color(0xFF8B5CF6),
+        'gradient': [const Color(0xFF8B5CF6), const Color(0xFF6D28D9)],
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'cyberpunk_jacket',
+          auraStyle: 'comic_boom',
+          hairStyle: 'undercut',
+          faceShape: 'sharp',
+        ),
+        'onTap': () {
+          final uid = SupaFlow.client.auth.currentUser?.id ?? 'guest';
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PocketGangStandaloneToolPage(
+                title: 'Flashcards',
+                child: PocketGangFlashcardsWidget(
+                  groupId: 'personal_tools_$uid',
+                  groupName: 'Personal Study',
+                  currentUserId: uid,
+                  memberCount: 1,
+                ),
+              ),
+            ),
+          );
+        },
+      },
+      {
+        'title': 'Goal & Habit Vault',
+        'subtitle': 'Daily Streaks & Targets',
+        'icon': Icons.track_changes_rounded,
+        'category': 'Productivity',
+        'color': const Color(0xFF10B981),
+        'gradient': [const Color(0xFF10B981), const Color(0xFF059669)],
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'tech_hoodie',
+          auraStyle: 'matrix_green',
+          hairStyle: 'side_part',
+          faceShape: 'oval',
+        ),
+        'onTap': () {
+          final uid = SupaFlow.client.auth.currentUser?.id ?? 'guest';
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PocketGangStandaloneToolPage(
+                title: 'Goal & Habit Vault',
+                child: PocketGangHabitTrackerWidget(
+                  groupId: 'personal_tools_$uid',
+                  groupName: 'Personal Goals',
+                  currentUserId: uid,
+                  memberCount: 1,
+                ),
+              ),
+            ),
+          );
+        },
+      },
+      {
+        'title': 'Memory Vault',
+        'subtitle': 'Pinned Notes & Voice Memories',
+        'icon': Icons.mic_rounded,
+        'category': 'Personal',
+        'color': const Color(0xFFEC4899),
+        'gradient': [const Color(0xFFEC4899), const Color(0xFFDB2777)],
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'royal_cape',
+          auraStyle: 'comic_boom',
+          hairStyle: 'curly_top',
+          faceShape: 'round',
+        ),
+        'onTap': () {
+          final uid = SupaFlow.client.auth.currentUser?.id ?? 'guest';
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PocketGangStandaloneToolPage(
+                title: 'Memory Vault',
+                child: PocketGangMemoryVaultWidget(
+                  groupId: 'personal_tools_$uid',
+                  groupName: 'Personal Vault',
+                  currentUserId: uid,
+                  memberCount: 1,
+                ),
+              ),
+            ),
+          );
+        },
+      },
+      {
+        'title': 'Quick Poll',
+        'subtitle': 'Fast Decisions & Voting',
+        'icon': Icons.how_to_vote_rounded,
+        'category': 'Collab',
+        'color': const Color(0xFF06B6D4),
+        'gradient': [const Color(0xFF06B6D4), const Color(0xFF0891B2)],
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'tech_hoodie',
+          auraStyle: 'electric_aqua',
+          hairStyle: 'undercut',
+          faceShape: 'sharp',
+        ),
+        'onTap': () {
+          final uid = SupaFlow.client.auth.currentUser?.id ?? 'guest';
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PocketGangStandaloneToolPage(
+                title: 'Quick Poll',
+                child: PocketGangQuickPollWidget(
+                  groupId: 'personal_tools_$uid',
+                  groupName: 'Quick Poll',
+                  currentUserId: uid,
+                  memberCount: 1,
+                ),
+              ),
+            ),
+          );
+        },
+      },
+      {
+        'title': 'Split & Wish',
+        'subtitle': 'Shared Splits & Wishlist',
+        'icon': Icons.card_giftcard_rounded,
+        'category': 'Finance',
+        'color': const Color(0xFFF43F5E),
+        'gradient': [const Color(0xFFF43F5E), const Color(0xFFE11D48)],
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'cyberpunk_jacket',
+          auraStyle: 'pocket_gold',
+          hairStyle: 'afro_fade',
+          faceShape: 'round',
+        ),
+        'onTap': () {
+          final uid = SupaFlow.client.auth.currentUser?.id ?? 'guest';
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PocketGangStandaloneToolPage(
+                title: 'Split & Wish',
+                child: PocketGangSplitWishlistWidget(
+                  groupId: 'personal_tools_$uid',
+                  groupName: 'Split & Wish',
+                  currentUserId: uid,
+                  memberCount: 1,
+                ),
+              ),
+            ),
+          );
+        },
       },
     ];
 

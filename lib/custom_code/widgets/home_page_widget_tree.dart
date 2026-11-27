@@ -57,6 +57,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_pure_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_world_mode_selection_dialog.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocket_spend_page.dart';
 import 'package:pocket_mates_app/custom_code/services/app_store_review_service.dart';
 import 'chat/pocket_homes_reels_feed_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_ranking_trail_widget.dart';
@@ -64,6 +65,12 @@ import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_grou
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_app_update_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ads/admob_dual_engine_inspector_sheet.dart';
+import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_student_tools_widgets.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_habit_tracker_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_memory_vault_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_quick_poll_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_split_wishlist_widget.dart';
 
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
 typedef ChatConversation = groups_provider.ChatConversation;
@@ -335,9 +342,69 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       _checkEulaAndRedirect();
       _loadVibesFilterInitial();
       _checkOnboarding();
+      _promptSyncContactsOnce();
       AppStoreReviewService.fetchRemoteReviewConfig();
       PocketConnectivityGuardService.ensureConnected(context, isBlocking: false);
     });
+  }
+
+  Future<void> _promptSyncContactsOnce() async {
+    final uid = supabase.auth.currentUser?.id;
+    if (uid == null) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (prefs.getBool('pocket_contacts_sync_prompted_$uid') == true) return;
+      await prefs.setBool('pocket_contacts_sync_prompted_$uid', true);
+      await Future.delayed(const Duration(seconds: 2));
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: const Color(0xFF141824),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              const Icon(Icons.contacts_rounded, color: Color(0xFFFFD700)),
+              const SizedBox(width: 8),
+              Text(
+                'Find Friends',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'Sync your phone contacts to quickly connect with friends already on Pocket Mates.',
+            style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Later', style: TextStyle(color: Colors.white54)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFD700),
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () {
+                Navigator.pop(ctx);
+                setState(() => _chatCategoryFilterIndex = 7);
+              },
+              child: Text(
+                'Sync Contacts',
+                style: GoogleFonts.outfit(fontWeight: FontWeight.w800),
+              ),
+            ),
+          ],
+        ),
+      );
+    } catch (_) {}
   }
 
   Future<void> _checkOnboarding() async {
@@ -1164,6 +1231,94 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         break;
       case 'Teams':
         page = const TeamsDedicatedPage();
+        break;
+      case 'Poket Spend':
+      case 'Pocket Spend':
+        page = const PocketSpendPage();
+        break;
+      case 'Study Timer':
+        final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? 'guest';
+        page = PocketGangStandaloneToolPage(
+          title: 'Study Timer',
+          child: PocketGangStudyTimerWidget(
+            groupId: 'personal_tools_$uid',
+            groupName: 'Personal Study',
+            currentUserId: uid,
+            memberCount: 1,
+          ),
+        );
+        break;
+      case 'Study & Exams':
+        final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? 'guest';
+        page = PocketGangStandaloneToolPage(
+          title: 'Study & Exams',
+          child: PocketGangExamTrackerWidget(
+            groupId: 'personal_tools_$uid',
+            groupName: 'Personal Study',
+            currentUserId: uid,
+            memberCount: 1,
+          ),
+        );
+        break;
+      case 'Flashcards':
+        final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? 'guest';
+        page = PocketGangStandaloneToolPage(
+          title: 'Flashcards',
+          child: PocketGangFlashcardsWidget(
+            groupId: 'personal_tools_$uid',
+            groupName: 'Personal Study',
+            currentUserId: uid,
+            memberCount: 1,
+          ),
+        );
+        break;
+      case 'Goal & Habit Vault':
+        final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? 'guest';
+        page = PocketGangStandaloneToolPage(
+          title: 'Goal & Habit Vault',
+          child: PocketGangHabitTrackerWidget(
+            groupId: 'personal_tools_$uid',
+            groupName: 'Personal Goals',
+            currentUserId: uid,
+            memberCount: 1,
+          ),
+        );
+        break;
+      case 'Memory Vault':
+        final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? 'guest';
+        page = PocketGangStandaloneToolPage(
+          title: 'Memory Vault',
+          child: PocketGangMemoryVaultWidget(
+            groupId: 'personal_tools_$uid',
+            groupName: 'Personal Vault',
+            currentUserId: uid,
+            memberCount: 1,
+          ),
+        );
+        break;
+      case 'Quick Poll':
+        final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? 'guest';
+        page = PocketGangStandaloneToolPage(
+          title: 'Quick Poll',
+          child: PocketGangQuickPollWidget(
+            groupId: 'personal_tools_$uid',
+            groupName: 'Quick Poll',
+            currentUserId: uid,
+            memberCount: 1,
+          ),
+        );
+        break;
+      case 'Split & Wish':
+        final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? 'guest';
+        page = PocketGangStandaloneToolPage(
+          title: 'Split & Wish',
+          child: PocketGangSplitWishlistWidget(
+            groupId: 'personal_tools_$uid',
+            groupName: 'Split & Wish',
+            currentUserId: uid,
+            memberCount: 1,
+          ),
+        );
         break;
       case 'AI Tools':
         initialTab = 5;
@@ -2260,61 +2415,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         padding: const EdgeInsets.fromLTRB(14, 2, 14, 8),
         child: Row(
           children: [
-            // Button 1: Random Chat
-            Expanded(
-              child: GestureDetector(
-                onTap: () async {
-                  HapticFeedback.selectionClick();
-                  final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
-                    context: context,
-                    customMessage:
-                        "Please login to start Anonymous English Chat",
-                  );
-                  if (isAuth && mounted) {
-                    Navigator.push(
-                      context,
-                      material.MaterialPageRoute(
-                        builder: (context) => const AnonymousEnglishChatPage(),
-                      ),
-                    );
-                  }
-                },
-                child: Container(
-                  height: 42,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [
-                        Color(0xFFFFB300),
-                        Color(0xFFFFFC00),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(13),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFFFB300).withValues(alpha: 0.28),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Text(
-                      'Random',
-                      style: GoogleFonts.outfit(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-
-            // Button 2: Pocket Talk (Opens 3D Swipable Cards)
+            // Button 1: Poket Talk (Opens 3D Swipable Cards)
             Expanded(
               child: GestureDetector(
                 onTap: () async {
@@ -2348,6 +2449,53 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   child: Center(
                     child: Text(
                       'Poket Talk',
+                      style: GoogleFonts.outfit(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+
+            // Button 2: Premium (Opens SubscriptionPage, minimal label)
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  Navigator.push(
+                    context,
+                    material.MaterialPageRoute(
+                      builder: (context) => const SubscriptionPage(),
+                    ),
+                  );
+                },
+                child: Container(
+                  height: 42,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [
+                        Color(0xFFFFB300),
+                        Color(0xFFFFFC00),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(13),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFFB300).withValues(alpha: 0.28),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Premium',
                       style: GoogleFonts.outfit(
                         color: Colors.black,
                         fontWeight: FontWeight.bold,
@@ -4045,7 +4193,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   context,
                   userId: targetId,
                   targetName: peerName,
-                );
+                  isRevenge: true,
+                ).then((_) {
+                  _loadPendingRequests();
+                  ref.read(conversationsProvider.notifier).refreshNow();
+                });
               }
             },
             child: Row(
@@ -7686,7 +7838,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                                     padding: const EdgeInsets.only(right: 6),
                                     child: _buildHeaderIconButton(
                                       context,
-                                      icon: material.Icons.public_rounded,
+                                      icon: material.Icons.child_care_rounded,
                                       iconColor: const Color(0xFFFFD700),
                                       onTap: () =>
                                           PocketWorldModeSelectionDialog.show(

@@ -528,7 +528,13 @@ class _ProfileSetupOnboardingPageState
           if (!isVip && !seenVipModal) {
             await prefs.setBool('post_signup_vip_modal_seen', true);
             if (mounted) {
-              await _showPostSignupVipOffer(context);
+              final chosePremium = await _showPostSignupVipOffer(context);
+              if (chosePremium && mounted) {
+                await Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (_) => const SubscriptionPage()),
+                );
+              }
             }
           }
         }
@@ -554,8 +560,8 @@ class _ProfileSetupOnboardingPageState
     }
   }
 
-  Future<void> _showPostSignupVipOffer(BuildContext ctx) async {
-    await showDialog<void>(
+  Future<bool> _showPostSignupVipOffer(BuildContext ctx) async {
+    final result = await showDialog<bool>(
       context: ctx,
       barrierDismissible: true,
       builder: (dialogCtx) => Dialog(
@@ -646,11 +652,7 @@ class _ProfileSetupOnboardingPageState
                 height: 48,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.of(dialogCtx).pop();
-                    Navigator.of(ctx).push(
-                      MaterialPageRoute(
-                          builder: (_) => const SubscriptionPage()),
-                    );
+                    Navigator.of(dialogCtx).pop(true);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFFD700),
@@ -661,7 +663,7 @@ class _ProfileSetupOnboardingPageState
                     elevation: 3,
                   ),
                   child: Text(
-                    'GET SUPER POKETMATES ⚡',
+                    'GO PREMIUM • ₹99 ⚡',
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -669,13 +671,13 @@ class _ProfileSetupOnboardingPageState
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               TextButton(
-                onPressed: () => Navigator.of(dialogCtx).pop(),
+                onPressed: () => Navigator.of(dialogCtx).pop(false),
                 child: Text(
-                  'Continue Free',
+                  'Continue Free (With Ads)',
                   style: GoogleFonts.inter(
-                    color: const Color(0xFFA1A1AA),
+                    color: Colors.white70,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
@@ -686,6 +688,7 @@ class _ProfileSetupOnboardingPageState
         ),
       ),
     );
+    return result ?? false;
   }
 
   Widget _buildVipFeatureRow(String emoji, String text) {
@@ -1213,36 +1216,6 @@ class _ProfileSetupOnboardingPageState
                 );
               },
             ),
-          ),
-          const SizedBox(height: 24),
-
-          // Public vs Private Profile Selector
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Profile Privacy',
-              style: GoogleFonts.outfit(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          _buildPrivacyOptionTile(
-            isPrivateOption: false,
-            icon: Icons.public_rounded,
-            title: 'Public Profile 🌍',
-            subtitle:
-                'Your photo is visible to learners in Search & Pocket Talk so mates connect faster.',
-          ),
-          const SizedBox(height: 10),
-          _buildPrivacyOptionTile(
-            isPrivateOption: true,
-            icon: Icons.lock_rounded,
-            title: 'Private Profile 🔒',
-            subtitle:
-                'Shows your Avatar outside; only confirmed Mates can tap to peek at your photo.',
           ),
         ],
       ),

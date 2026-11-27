@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/pocketgang_task_service.dart';
+import 'pocket_spend_page.dart';
 
 /// 💡 PocketGang Ideas & Voting Board Widget
 class PocketGangIdeasBoardWidget extends StatefulWidget {
@@ -12,6 +13,7 @@ class PocketGangIdeasBoardWidget extends StatefulWidget {
   final String groupName;
   final String currentUserId;
   final VoidCallback? onTaskCreated;
+  final PocketSpendCoupleTheme? coupleTheme;
 
   const PocketGangIdeasBoardWidget({
     super.key,
@@ -19,6 +21,7 @@ class PocketGangIdeasBoardWidget extends StatefulWidget {
     required this.groupName,
     required this.currentUserId,
     this.onTaskCreated,
+    this.coupleTheme,
   });
 
   @override
@@ -170,22 +173,32 @@ class _PocketGangIdeasBoardWidgetState extends State<PocketGangIdeasBoardWidget>
 
   @override
   Widget build(BuildContext context) {
+    final theme = widget.coupleTheme;
+    final bgColor = theme != null ? theme.bgGradient.first : const Color(0xFF0F111A);
+    final headerBg = theme != null ? theme.cardColor : const Color(0xFF161924);
+    final inputBg = theme != null ? theme.surfaceAltColor : const Color(0xFF1E2232);
+    final textColor = theme != null ? theme.textColor : Colors.white;
+    final subTextColor = theme != null ? theme.subTextColor : Colors.white54;
+    final accentColor = theme != null ? theme.accent : const Color(0xFFFFD600);
+    final onAccentColor = theme != null ? theme.onAccentTextColor : Colors.black;
+    final borderColor = theme != null ? theme.borderColor : Colors.white.withValues(alpha: 0.08);
+
     return Container(
-      color: const Color(0xFF0F111A),
+      color: bgColor,
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFF161924),
-              border: Border(bottom: BorderSide(color: Colors.white.withValues(alpha: 0.08))),
+              color: headerBg,
+              border: Border(bottom: BorderSide(color: borderColor)),
             ),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFD600).withValues(alpha: 0.15),
+                    color: accentColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Text('💡', style: TextStyle(fontSize: 18)),
@@ -197,11 +210,11 @@ class _PocketGangIdeasBoardWidgetState extends State<PocketGangIdeasBoardWidget>
                     children: [
                       Text(
                         'Gang Ideas & Brainstorming',
-                        style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                        style: GoogleFonts.outfit(color: textColor, fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       Text(
                         'Propose ideas, upvote favourites, and turn them into tasks',
-                        style: GoogleFonts.outfit(color: Colors.white54, fontSize: 12),
+                        style: GoogleFonts.outfit(color: subTextColor, fontSize: 12),
                       ),
                     ],
                   ),
@@ -216,17 +229,17 @@ class _PocketGangIdeasBoardWidgetState extends State<PocketGangIdeasBoardWidget>
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1E2232),
+                      color: inputBg,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                      border: Border.all(color: borderColor),
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 14),
                     child: TextField(
                       controller: _ideaController,
-                      style: GoogleFonts.outfit(color: Colors.white, fontSize: 14),
+                      style: GoogleFonts.outfit(color: textColor, fontSize: 14),
                       decoration: InputDecoration(
                         hintText: 'Share an idea for the gang...',
-                        hintStyle: GoogleFonts.outfit(color: Colors.white38, fontSize: 13),
+                        hintStyle: GoogleFonts.outfit(color: subTextColor, fontSize: 13),
                         border: InputBorder.none,
                       ),
                       onSubmitted: (_) => _addIdea(),
@@ -240,10 +253,10 @@ class _PocketGangIdeasBoardWidgetState extends State<PocketGangIdeasBoardWidget>
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFD600),
+                      color: accentColor,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.add, color: Colors.black, size: 20),
+                    child: Icon(Icons.add, color: onAccentColor, size: 20),
                   ),
                 ),
               ],
@@ -251,7 +264,7 @@ class _PocketGangIdeasBoardWidgetState extends State<PocketGangIdeasBoardWidget>
           ),
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: Color(0xFFFFD600)))
+                ? Center(child: CircularProgressIndicator(color: accentColor))
                 : _ideas.isEmpty
                     ? Center(
                         child: Column(
@@ -261,12 +274,12 @@ class _PocketGangIdeasBoardWidgetState extends State<PocketGangIdeasBoardWidget>
                             const SizedBox(height: 8),
                             Text(
                               'No ideas posted yet!',
-                              style: GoogleFonts.outfit(color: Colors.white70, fontSize: 15, fontWeight: FontWeight.w600),
+                              style: GoogleFonts.outfit(color: textColor, fontSize: 15, fontWeight: FontWeight.w600),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               'Suggest a topic or initiative above.',
-                              style: GoogleFonts.outfit(color: Colors.white38, fontSize: 12),
+                              style: GoogleFonts.outfit(color: subTextColor, fontSize: 12),
                             ),
                           ],
                         ),

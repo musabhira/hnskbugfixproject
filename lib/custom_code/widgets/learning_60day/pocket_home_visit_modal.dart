@@ -146,18 +146,26 @@ class _PocketHomeVisitModalState extends State<PocketHomeVisitModal>
     // 2. Query real learners who are at this EXACT level from Supabase
     try {
       final supa = Supabase.instance.client;
+      final filterExpr = widget.day == 1
+          ? 'learning_day.is.null,learning_day.eq.1,day.eq.1,level.eq.1'
+          : 'learning_day.eq.${widget.day},day.eq.${widget.day},level.eq.${widget.day}';
       final res = await supa
           .from('profile')
-          .select('user_id, display_name, name, photo_url, profile_image_url, learning_day, learning_points, pocket_score')
-          .eq('learning_day', widget.day)
-          .limit(25);
+          .select(
+              'user_id, display_name, name, photo_url, profile_image_url, learning_day, day, level, learning_points, pocket_score')
+          .or(filterExpr)
+          .limit(60);
 
       for (final row in res) {
         final uId = row['user_id']?.toString() ?? '';
-        if (uId.isEmpty) continue;
-        final dName = row['display_name']?.toString() ?? row['name']?.toString() ?? 'Adventurer';
+        if (uId.isEmpty || owners.any((o) => o.id == uId)) continue;
+        final dName =
+            row['display_name']?.toString() ?? row['name']?.toString() ?? 'Adventurer';
         final pUrl = (row['photo_url'] ?? row['profile_image_url'])?.toString();
-        final lDay = (row['learning_day'] as num?)?.toInt() ?? widget.day;
+        final lDay = (row['learning_day'] as num?)?.toInt() ??
+            (row['day'] as num?)?.toInt() ??
+            (row['level'] as num?)?.toInt() ??
+            widget.day;
         final lPts = (row['learning_points'] ?? row['pocket_score'] as num?)?.toInt() ?? (widget.day * 150);
         owners.add(
           HomeOwnerEntry(
@@ -355,35 +363,6 @@ class _PocketHomeVisitModalState extends State<PocketHomeVisitModal>
                       ],
                     ),
                   ),
-                  ),
-                ),
-              ),
-
-              // 2. Pinch guidance pill
-              Positioned(
-                top: 105,
-                left: 16,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A).withValues(alpha: 0.75),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white12),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.pinch_rounded, size: 14, color: Color(0xFF38BDF8)),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Pinch to Zoom • Drag to Explore',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white70,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
                   ),
                 ),
               ),
@@ -721,9 +700,11 @@ class _PocketHomeVisitModalState extends State<PocketHomeVisitModal>
                                               ],
                                             ),
                                           ),
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 12, vertical: 8),
+                                          child: GestureDetector(
+                                            onTap: () => _attackOwner(owner),
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 12, vertical: 8),
                                             decoration: BoxDecoration(
                                               color: const Color(0xFF1E293B),
                                               borderRadius: BorderRadius.circular(14),
@@ -814,31 +795,42 @@ class _PocketHomeVisitModalState extends State<PocketHomeVisitModal>
                                                 ),
 
                                                 // ⚔️ Attack Button (Citadel Raid)
-                                                ElevatedButton.icon(
+                                                const SizedBox(width: 8),
+                                                ElevatedButton(
                                                   onPressed: () => _attackOwner(owner),
                                                   style: ElevatedButton.styleFrom(
                                                     backgroundColor: const Color(0xFFDC2626),
                                                     foregroundColor: Colors.white,
-                                                    elevation: 2,
+                                                    elevation: 1,
                                                     padding: const EdgeInsets.symmetric(
-                                                        horizontal: 10, vertical: 7),
-                                                    minimumSize: Size.zero,
+                                                        horizontal: 12, vertical: 6),
+                                                    minimumSize: const Size(0, 32),
+                                                    tapTargetSize:
+                                                        MaterialTapTargetSize.shrinkWrap,
                                                     shape: RoundedRectangleBorder(
                                                       borderRadius: BorderRadius.circular(10),
                                                     ),
                                                   ),
-                                                  icon: const Icon(Icons.flash_on_rounded, size: 12, color: Color(0xFFFFD700)),
-                                                  label: Text(
-                                                    'Attack',
-                                                    style: GoogleFonts.outfit(
-                                                      fontWeight: FontWeight.w900,
-                                                      fontSize: 11.5,
-                                                      letterSpacing: 0.2,
-                                                    ),
+                                                  child: Row(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      const Icon(Icons.flash_on_rounded,
+                                                          size: 13,
+                                                          color: Color(0xFFFFD700)),
+                                                      const SizedBox(width: 4),
+                                                      Text(
+                                                        'Attack',
+                                                        style: GoogleFonts.outfit(
+                                                          fontWeight: FontWeight.w800,
+                                                          fontSize: 11.5,
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
                                                 ),
                                               ],
                                             ),
+                                          ),
                                           ),
                                         );
                                       },

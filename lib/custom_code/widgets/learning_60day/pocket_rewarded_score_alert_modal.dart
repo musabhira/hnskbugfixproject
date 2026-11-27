@@ -60,6 +60,12 @@ class PocketRewardedScoreAlertModal extends StatefulWidget {
     final lastModalTs = prefs.getInt('last_rewarded_modal_ts') ?? 0;
     final nowTs = DateTime.now().millisecondsSinceEpoch;
 
+    // First-time / post-onboarding grace: do not interrupt brand new users immediately
+    if (lastModalTs == 0) {
+      await prefs.setInt('last_rewarded_modal_ts', nowTs);
+      return;
+    }
+
     // Throttle: Minimum 18 minutes (1080000 ms) between automatic periodic popups
     if (nowTs - lastModalTs < 18 * 60 * 1000) return;
 

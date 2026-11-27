@@ -24,6 +24,8 @@ class PocketPrivacyAvatarFlipWidget extends StatefulWidget {
   final bool enableAutoShowcaseFlip;
   final bool enableTapPeekFlip;
   final VoidCallback? onTapOverride;
+  final Duration? customFlipInterval;
+  final bool startWithPhoto;
 
   const PocketPrivacyAvatarFlipWidget({
     super.key,
@@ -37,6 +39,8 @@ class PocketPrivacyAvatarFlipWidget extends StatefulWidget {
     this.enableAutoShowcaseFlip = false,
     this.enableTapPeekFlip = false,
     this.onTapOverride,
+    this.customFlipInterval,
+    this.startWithPhoto = false,
   });
 
   /// Checks both top-level `is_private` and `avatar_config.is_private`
@@ -56,17 +60,58 @@ class PocketPrivacyAvatarFlipWidget extends StatefulWidget {
 class _PocketPrivacyAvatarFlipWidgetState
     extends State<PocketPrivacyAvatarFlipWidget>
     with SingleTickerProviderStateMixin {
+  static final ValueNotifier<bool> _globalShowPhotoNotifier =
+      ValueNotifier<bool>(false);
+  static Timer? _globalCycleTimer;
+  static int _activeListenerCount = 0;
+
+  static void _ensureGlobalCycleStarted() {
+    if (_globalCycleTimer != null) return;
+    void scheduleNext(bool currentlyShowingPhoto) {
+      _globalCycleTimer = Timer(
+        const Duration(seconds: 10),
+        () {
+          if (_activeListenerCount <= 0) {
+            _globalCycleTimer = null;
+            return;
+          }
+          final next = !currentlyShowingPhoto;
+          _globalShowPhotoNotifier.value = next;
+          scheduleNext(next);
+        },
+      );
+    }
+
+    scheduleNext(_globalShowPhotoNotifier.value);
+  }
+
   late AnimationController _flipController;
   Timer? _initialShowcaseTimer;
   Timer? _revertTimer;
+  Timer? _customFlipTimer;
   bool _showingPhoto = false;
+  bool _listeningGlobal = false;
 
   bool get _hasPhoto =>
       widget.profileImageUrl != null &&
       widget.profileImageUrl!.trim().isNotEmpty;
 
-  bool get _canRevealPhoto =>
-      _hasPhoto && (!widget.isPrivate || widget.isMate || widget.isSelf);
+  bool get _canRevealPhoto => _hasPhoto;
+
+  void _onGlobalToggle() {
+    if (!mounted || !_hasPhoto || widget.enableAutoShowcaseFlip) return;
+    if (_globalShowPhotoNotifier.value) {
+      if (!_showingPhoto) {
+        setState(() => _showingPhoto = true);
+        _flipController.forward();
+      }
+    } else {
+      if (_showingPhoto) {
+        setState(() => _showingPhoto = false);
+        _flipController.reverse();
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -76,19 +121,33 @@ class _PocketPrivacyAvatarFlipWidgetState
       duration: const Duration(milliseconds: 520),
     );
 
-    if (widget.enableAutoShowcaseFlip) {
-      // Main Profile Visit: show Avatar first for 3s, then flip to real Photo for 30s, then flip back!
+    if (widget.customFlipInterval != null && _hasPhoto) {
+      _showingPhoto = widget.startWithPhoto;
+      _flipController.value = _showingPhoto ? 1.0 : 0.0;
+      _customFlipTimer = Timer.periodic(widget.customFlipInterval!, (_) {
+        if (!mounted || !_hasPhoto) return;
+        if (_showingPhoto) {
+          _flipToAvatar();
+        } else {
+          _flipToPhoto();
+        }
+      });
+    } else if (widget.enableAutoShowcaseFlip) {
+      // Main Profile Visit: show Avatar first for 5s, then flip to real Photo for 10s, then cycle!
       _showingPhoto = false;
       if (_canRevealPhoto) {
-        _initialShowcaseTimer = Timer(const Duration(seconds: 3), () {
+        _initialShowcaseTimer = Timer(const Duration(seconds: 5), () {
           if (!mounted) return;
-          _flipToPhoto(revertAfter: const Duration(seconds: 30));
+          _flipToPhoto(revertAfter: const Duration(seconds: 10));
         });
       }
-    } else if (!widget.isPrivate && _hasPhoto && !widget.enableTapPeekFlip) {
-      // Public account outside cards/lists shows real photo directly
-      _showingPhoto = true;
-      _flipController.value = 1.0;
+    } else if (_hasPhoto) {
+      _listeningGlobal = true;
+      _activeListenerCount++;
+      _globalShowPhotoNotifier.addListener(_onGlobalToggle);
+      _ensureGlobalCycleStarted();
+      _showingPhoto = _globalShowPhotoNotifier.value;
+      _flipController.value = _showingPhoto ? 1.0 : 0.0;
     } else {
       _showingPhoto = false;
       _flipController.value = 0.0;
@@ -98,13 +157,42 @@ class _PocketPrivacyAvatarFlipWidgetState
   @override
   void didUpdateWidget(covariant PocketPrivacyAvatarFlipWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.customFlipInterval != null) {
+      if (oldWidget.profileImageUrl != widget.profileImageUrl) {
+        _customFlipTimer?.cancel();
+        if (_hasPhoto) {
+          _showingPhoto = widget.startWithPhoto;
+          _flipController.value = _showingPhoto ? 1.0 : 0.0;
+          _customFlipTimer = Timer.periodic(widget.customFlipInterval!, (_) {
+            if (!mounted || !_hasPhoto) return;
+            if (_showingPhoto) {
+              _flipToAvatar();
+            } else {
+              _flipToPhoto();
+            }
+          });
+        } else {
+          setState(() => _showingPhoto = false);
+          _flipController.value = 0.0;
+        }
+      }
+      return;
+    }
     if (!widget.enableAutoShowcaseFlip &&
-        !widget.enableTapPeekFlip &&
-        oldWidget.isPrivate != widget.isPrivate) {
-      final shouldShowDirect = !widget.isPrivate && _hasPhoto;
-      if (shouldShowDirect != _showingPhoto) {
-        setState(() => _showingPhoto = shouldShowDirect);
-        _flipController.value = shouldShowDirect ? 1.0 : 0.0;
+        oldWidget.profileImageUrl != widget.profileImageUrl) {
+      if (_hasPhoto && !_listeningGlobal) {
+        _listeningGlobal = true;
+        _activeListenerCount++;
+        _globalShowPhotoNotifier.addListener(_onGlobalToggle);
+        _ensureGlobalCycleStarted();
+        _showingPhoto = _globalShowPhotoNotifier.value;
+        _flipController.value = _showingPhoto ? 1.0 : 0.0;
+      } else if (!_hasPhoto && _listeningGlobal) {
+        _listeningGlobal = false;
+        _activeListenerCount = math.max(0, _activeListenerCount - 1);
+        _globalShowPhotoNotifier.removeListener(_onGlobalToggle);
+        setState(() => _showingPhoto = false);
+        _flipController.value = 0.0;
       }
     }
   }
@@ -117,15 +205,25 @@ class _PocketPrivacyAvatarFlipWidgetState
     if (revertAfter != null) {
       _revertTimer = Timer(revertAfter, () {
         if (!mounted) return;
-        _flipToAvatar();
+        _flipToAvatar(
+          resumeAfter: widget.enableAutoShowcaseFlip
+              ? const Duration(seconds: 10)
+              : null,
+        );
       });
     }
   }
 
-  void _flipToAvatar() {
+  void _flipToAvatar({Duration? resumeAfter}) {
     _revertTimer?.cancel();
     setState(() => _showingPhoto = false);
     _flipController.reverse();
+    if (resumeAfter != null) {
+      _revertTimer = Timer(resumeAfter, () {
+        if (!mounted) return;
+        _flipToPhoto(revertAfter: const Duration(seconds: 10));
+      });
+    }
   }
 
   void _handleTap() {
@@ -158,8 +256,17 @@ class _PocketPrivacyAvatarFlipWidgetState
 
   @override
   void dispose() {
+    if (_listeningGlobal) {
+      _activeListenerCount = math.max(0, _activeListenerCount - 1);
+      _globalShowPhotoNotifier.removeListener(_onGlobalToggle);
+      if (_activeListenerCount <= 0) {
+        _globalCycleTimer?.cancel();
+        _globalCycleTimer = null;
+      }
+    }
     _initialShowcaseTimer?.cancel();
     _revertTimer?.cancel();
+    _customFlipTimer?.cancel();
     _flipController.dispose();
     super.dispose();
   }

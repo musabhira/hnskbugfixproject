@@ -10,11 +10,11 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
   PoketPlanet? selectedPlanet;
   final ValueChanged<PoketPlanet> onPlanetSelected;
   final double tiltAngle; // 3D bend / side perspective
-  final bool
-      followSelectedPlanet; // Center camera on selected planet
+  bool followSelectedPlanet; // Center camera on selected planet or moon
 
-  void focusOnPlanet(PoketPlanet planet) {
+  void focusOnPlanet(PoketPlanet? planet) {
     selectedPlanet = planet;
+    followSelectedPlanet = planet != null;
   }
 
   FlameSolarSystemGame({
@@ -25,7 +25,8 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
     this.followSelectedPlanet = false,
   });
 
-  double _orbitElapsedSeconds = 0.0;
+  double _orbitElapsedSeconds =
+      (DateTime.now().millisecondsSinceEpoch / 1000.0) % 100000.0;
   final math.Random _random = math.Random(101);
   late List<_StarParticle> _stars;
 
@@ -54,6 +55,42 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
     _orbitElapsedSeconds += dt;
   }
 
+  double _planetAngle(PoketPlanet planet) {
+    return (_orbitElapsedSeconds * 0.35 * planet.orbitSpeed + planet.id * 1.15) %
+        (2 * math.pi);
+  }
+
+  Offset _computeFocusedOffset(double yCompress) {
+    if (!followSelectedPlanet || selectedPlanet == null) return Offset.zero;
+    final sel = selectedPlanet!;
+    // Check if selectedPlanet is a top-level planet
+    for (final p in planets) {
+      if (p.id == sel.id) {
+        final angle = _planetAngle(p);
+        return Offset(
+          p.orbitDistance * math.cos(angle),
+          p.orbitDistance * math.sin(angle) * yCompress,
+        );
+      }
+      // Check if selectedPlanet is one of p's satellites (Moons)
+      for (final sat in p.satellites) {
+        if (sat.toPlanet().id == sel.id) {
+          final pAngle = _planetAngle(p);
+          final px = p.orbitDistance * math.cos(pAngle);
+          final py = p.orbitDistance * math.sin(pAngle) * yCompress;
+          final satAngle = _orbitElapsedSeconds *
+              (0.8 + sat.orbitSpeed.abs() * 0.4) *
+              (sat.orbitSpeed < 0 ? -1 : 1);
+          return Offset(
+            px + sat.orbitDistance * math.cos(satAngle),
+            py + sat.orbitDistance * math.sin(satAngle) * yCompress,
+          );
+        }
+      }
+    }
+    return Offset.zero;
+  }
+
   @override
   void render(Canvas canvas) {
     super.render(canvas);
@@ -73,16 +110,10 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
     }
     canvas.restore();
 
-    // 2. Camera centering on selected planet (e.g. Jupiter)
-    double targetX = 0.0;
-    double targetY = 0.0;
-    if (followSelectedPlanet && selectedPlanet != null) {
-      final selAngle =
-          (_orbitElapsedSeconds * 0.35 * selectedPlanet!.orbitSpeed) %
-              (2 * math.pi);
-      targetX = selectedPlanet!.orbitDistance * math.cos(selAngle);
-      targetY = selectedPlanet!.orbitDistance * math.sin(selAngle) * yCompress;
-    }
+    // 2. Camera centering on selected planet or moon
+    final targetOffset = _computeFocusedOffset(yCompress);
+    final double targetX = targetOffset.dx;
+    final double targetY = targetOffset.dy;
 
     canvas.save();
     canvas.translate(center.x - targetX, center.y - targetY);
@@ -113,8 +144,7 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
     // 5. Draw Orbiting Planets with Scientific Moons (Sorted by Y for true 3D depth)
     final List<_RenderablePlanet> renderList = [];
     for (final planet in planets) {
-      final angle =
-          (_orbitElapsedSeconds * 0.35 * planet.orbitSpeed) % (2 * math.pi);
+      final angle = _planetAngle(planet);
       final double px = planet.orbitDistance * math.cos(angle);
       final double py = planet.orbitDistance * math.sin(angle) * yCompress;
 
@@ -318,21 +348,12 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
   @override
   void onTapDown(TapDownEvent event) {
     final double yCompress = math.cos(tiltAngle).clamp(0.35, 1.0);
-    double targetX = 0.0;
-    double targetY = 0.0;
-    if (followSelectedPlanet && selectedPlanet != null) {
-      final selAngle =
-          (_orbitElapsedSeconds * 0.35 * selectedPlanet!.orbitSpeed) %
-              (2 * math.pi);
-      targetX = selectedPlanet!.orbitDistance * math.cos(selAngle);
-      targetY = selectedPlanet!.orbitDistance * math.sin(selAngle) * yCompress;
-    }
+    final targetOffset = _computeFocusedOffset(yCompress);
     final localTap =
-        event.localPosition - size / 2 + Vector2(targetX, targetY);
+        event.localPosition - size / 2 + Vector2(targetOffset.dx, targetOffset.dy);
 
     for (final planet in planets) {
-      final angle =
-          (_orbitElapsedSeconds * 0.35 * planet.orbitSpeed) % (2 * math.pi);
+      final angle = _planetAngle(planet);
       final px = planet.orbitDistance * math.cos(angle);
       final py = planet.orbitDistance * math.sin(angle) * yCompress;
       final planetPos = Offset(px, py);

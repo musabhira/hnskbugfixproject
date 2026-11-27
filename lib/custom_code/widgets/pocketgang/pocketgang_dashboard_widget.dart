@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/pocketgang_task_service.dart';
+import 'pocket_spend_page.dart';
 
 /// 📊 PocketGang Genuine Dashboard with Circular Donut Contribution Chart
 class PocketGangDashboardWidget extends StatelessWidget {
@@ -9,6 +10,7 @@ class PocketGangDashboardWidget extends StatelessWidget {
   final String groupName;
   final List<PocketGangTask> tasks;
   final List<RealMemberContribution> contributions;
+  final PocketSpendCoupleTheme? coupleTheme;
 
   const PocketGangDashboardWidget({
     super.key,
@@ -16,6 +18,7 @@ class PocketGangDashboardWidget extends StatelessWidget {
     required this.groupName,
     required this.tasks,
     required this.contributions,
+    this.coupleTheme,
   });
 
   @override
@@ -23,21 +26,31 @@ class PocketGangDashboardWidget extends StatelessWidget {
     final totalTasks = tasks.length;
     final completedTasks = tasks.where((t) => t.status == 'completed').length;
     final reviewTasks = tasks.where((t) => t.status == 'review').length;
-    final inProgressTasks = tasks.where((t) => t.status == 'in_progress').length;
+    final inProgressTasks =
+        tasks.where((t) => t.status == 'in_progress').length;
     final todoTasks = tasks.where((t) => t.status == 'todo').length;
 
     // Completed approved tasks count
     final approvedTasks = tasks
-        .where((t) => t.status == 'completed' && t.approvedBy != null && t.approvedBy!.isNotEmpty)
+        .where((t) =>
+            t.status == 'completed' &&
+            t.approvedBy != null &&
+            t.approvedBy!.isNotEmpty)
         .length;
 
     final progressPct = totalTasks > 0 ? (completedTasks / totalTasks) : 0.0;
 
     // Filter contributions with actual approved units
-    final activeContributions = contributions.where((c) => c.approvedUnits > 0).toList();
+    final activeContributions =
+        contributions.where((c) => c.approvedUnits > 0).toList();
+
+    final theme = coupleTheme;
+    final bgColor =
+        theme != null ? theme.bgGradient.first : const Color(0xFF0F172A);
+    final headerTextColor = theme != null ? theme.subTextColor : Colors.white70;
 
     return Container(
-      color: const Color(0xFF0F172A),
+      color: bgColor,
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -47,7 +60,7 @@ class PocketGangDashboardWidget extends StatelessWidget {
             children: [
               Text('TEAM CONTRIBUTION DASHBOARD',
                   style: GoogleFonts.outfit(
-                      color: Colors.white70,
+                      color: headerTextColor,
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.8)),
@@ -114,11 +127,14 @@ class PocketGangDashboardWidget extends StatelessWidget {
             children: [
               _buildKpiCard('To Do', '$todoTasks', const Color(0xFF38BDF8)),
               const SizedBox(width: 8),
-              _buildKpiCard('In Progress', '$inProgressTasks', const Color(0xFFF59E0B)),
+              _buildKpiCard(
+                  'In Progress', '$inProgressTasks', const Color(0xFFF59E0B)),
               const SizedBox(width: 8),
-              _buildKpiCard('Pending Appr.', '$reviewTasks', const Color(0xFFA855F7)),
+              _buildKpiCard(
+                  'Pending Appr.', '$reviewTasks', const Color(0xFFA855F7)),
               const SizedBox(width: 8),
-              _buildKpiCard('Approved', '$approvedTasks', const Color(0xFF10B981)),
+              _buildKpiCard(
+                  'Approved', '$approvedTasks', const Color(0xFF10B981)),
             ],
           ),
           const SizedBox(height: 24),
@@ -134,7 +150,10 @@ class PocketGangDashboardWidget extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.8)),
               Text('$approvedTasks Approved Tasks',
-                  style: GoogleFonts.inter(color: const Color(0xFF10B981), fontSize: 11, fontWeight: FontWeight.w600)),
+                  style: GoogleFonts.inter(
+                      color: const Color(0xFF10B981),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600)),
             ],
           ),
           const SizedBox(height: 12),
@@ -159,7 +178,8 @@ class PocketGangDashboardWidget extends StatelessWidget {
                   const SizedBox(height: 4),
                   const Text(
                     'Contribution percentages calculate automatically as approved completed tasks are finished (1 unit split equally across assignees).',
-                    style: TextStyle(color: Colors.white54, fontSize: 12, height: 1.4),
+                    style: TextStyle(
+                        color: Colors.white54, fontSize: 12, height: 1.4),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -185,7 +205,8 @@ class PocketGangDashboardWidget extends StatelessWidget {
                       children: [
                         CustomPaint(
                           size: const Size(160, 160),
-                          painter: _DonutChartPainter(contributions: activeContributions),
+                          painter: _DonutChartPainter(
+                              contributions: activeContributions),
                         ),
                         Column(
                           mainAxisSize: MainAxisSize.min,
@@ -196,7 +217,8 @@ class PocketGangDashboardWidget extends StatelessWidget {
                                     fontSize: 24,
                                     fontWeight: FontWeight.w900)),
                             const Text('Approved',
-                                style: TextStyle(color: Colors.white54, fontSize: 10)),
+                                style: TextStyle(
+                                    color: Colors.white54, fontSize: 10)),
                           ],
                         ),
                       ],
@@ -209,7 +231,8 @@ class PocketGangDashboardWidget extends StatelessWidget {
                     final color = _getMemberColor(c.name);
                     return Container(
                       margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
                       decoration: BoxDecoration(
                         color: const Color(0xFF0F172A),
                         borderRadius: BorderRadius.circular(10),
@@ -238,7 +261,8 @@ class PocketGangDashboardWidget extends StatelessWidget {
                           ),
                           Text(
                             '${c.approvedUnits.toStringAsFixed(1)} units',
-                            style: const TextStyle(color: Colors.white54, fontSize: 11),
+                            style: const TextStyle(
+                                color: Colors.white54, fontSize: 11),
                           ),
                           const SizedBox(width: 10),
                           Text(

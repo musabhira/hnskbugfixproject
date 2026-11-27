@@ -857,9 +857,7 @@ class _PocketDayOpenWorldAdventurePageState
                           }
                         },
                         child: Text(
-                          _isGateExamPassed
-                              ? 'ENTER HOUSE ${widget.day + 1} ➔'
-                              : 'ENTER GATE ➔',
+                          'ENTER GATE ➔',
                           style: GoogleFonts.outfit(
                               fontWeight: FontWeight.w900, fontSize: 13),
                         ),
@@ -2996,9 +2994,7 @@ class _PocketDayOpenWorldAdventurePageState
                                 style: const TextStyle(fontSize: 14)),
                             const SizedBox(width: 5),
                             Text(
-                              readyForGate
-                                  ? 'ENTER GATE ➔'
-                                  : 'ENTER HOUSE $targetDay ➔',
+                              'ENTER GATE ➔',
                               style: GoogleFonts.outfit(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w900,

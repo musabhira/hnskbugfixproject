@@ -14,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'package:pocket_mates_app/custom_code/services/pocket_talk_engine.dart';
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 
 /// ⚡ Model representing a learner candidate card in the Pocket Talk deck
 class PocketTalkCandidate {
@@ -1277,6 +1278,8 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
                           size: 136,
                           isPrivate: candidate.isPrivate,
                           showAura: true,
+                          customFlipInterval: const Duration(seconds: 2),
+                          startWithPhoto: true,
                         ),
                       ),
                     ),
@@ -1462,7 +1465,7 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
                         ),
                         const SizedBox(height: 8),
 
-                        // Inline Action Deck: [ 🤝 MATE ] and [ ⚡ POCKET TALK ]
+                        // Inline Action Deck: [ 🤝 MATE ], [ ⚔️ ATTACK ], and [ ⚡ POKET TALK ]
                         Row(
                           children: [
                             // 1. Mate Request Button (User Audio: "Mate-um kodukka")
@@ -1480,18 +1483,18 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
                                     color: candidate.isMateRequestSent
                                         ? const Color(0xFF10B981)
                                         : const Color(0xFF38BDF8),
-                                    size: 16,
+                                    size: 15,
                                   ),
                                   label: FittedBox(
                                     fit: BoxFit.scaleDown,
                                     child: Text(
-                                      candidate.isMateRequestSent ? 'MATE SENT ✓' : 'MATE 🤝',
+                                      candidate.isMateRequestSent ? 'SENT ✓' : 'MATE 🤝',
                                       style: GoogleFonts.outfit(
                                         color: candidate.isMateRequestSent
                                             ? const Color(0xFF10B981)
                                             : Colors.white,
                                         fontWeight: FontWeight.w800,
-                                        fontSize: 12.5,
+                                        fontSize: 11.5,
                                       ),
                                     ),
                                   ),
@@ -1506,14 +1509,56 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),
                                     ),
-                                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                                    padding: const EdgeInsets.symmetric(horizontal: 5),
                                   ),
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 6),
 
-                            // 2. Pocket Talk Pact Challenge Button (User Audio: "ipparathu Pocket Talk-um kodukka")
+                            // 2. Attack / Profile Visit Button
+                            Expanded(
+                              child: SizedBox(
+                                height: 40,
+                                child: OutlinedButton.icon(
+                                  onPressed: () {
+                                    HapticFeedback.mediumImpact();
+                                    PocketCitadelAttackPage.openForUser(
+                                      context,
+                                      userId: candidate.userId,
+                                      targetName: candidate.name,
+                                      targetDay: candidate.dayLevel,
+                                    );
+                                  },
+                                  icon: const Text('⚔️', style: TextStyle(fontSize: 13)),
+                                  label: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      'ATTACK',
+                                      style: GoogleFonts.outfit(
+                                        color: const Color(0xFFF87171),
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 11.5,
+                                      ),
+                                    ),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    side: BorderSide(
+                                      color: const Color(0xFFEF4444).withValues(alpha: 0.75),
+                                      width: 1.3,
+                                    ),
+                                    backgroundColor: const Color(0xFF1F1218),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+
+                            // 3. Pocket Talk Pact Challenge Button (User Audio: "ipparathu Pocket Talk-um kodukka")
                             Expanded(
                               child: SizedBox(
                                 height: 40,
@@ -1522,10 +1567,10 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
                                       ? null
                                       : () => _sendPocketTalkRequest(candidate),
                                   icon: candidate.isRequestSent
-                                      ? const Icon(Icons.check_circle_rounded, color: Colors.black, size: 16)
+                                      ? const Icon(Icons.check_circle_rounded, color: Colors.black, size: 15)
                                       : (_rateLimitStatus?.isAllowed == false)
-                                          ? const Text('⏳', style: TextStyle(fontSize: 15))
-                                          : const Text('⚡', style: TextStyle(fontSize: 15)),
+                                          ? const Text('⏳', style: TextStyle(fontSize: 13))
+                                          : const Text('⚡', style: TextStyle(fontSize: 13)),
                                   label: FittedBox(
                                     fit: BoxFit.scaleDown,
                                     child: Text(
@@ -1537,8 +1582,8 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
                                       style: GoogleFonts.outfit(
                                         color: Colors.black,
                                         fontWeight: FontWeight.w900,
-                                        fontSize: 12.5,
-                                        letterSpacing: 0.3,
+                                        fontSize: 11.5,
+                                        letterSpacing: 0.2,
                                       ),
                                     ),
                                   ),
@@ -1553,7 +1598,7 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),
                                     ),
-                                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                                    padding: const EdgeInsets.symmetric(horizontal: 5),
                                   ),
                                 ),
                               ),

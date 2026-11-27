@@ -71,7 +71,8 @@ class PocketActionChatService {
             'last_message_time': nowIso,
             'updated_at': nowIso,
             'last_sender_id': lastSenderId,
-          }).or('and(user1_id.eq.$u1,user2_id.eq.$u2),and(user1_id.eq.$u2,user2_id.eq.$u1)');
+          }).or(
+              'and(user1_id.eq.$u1,user2_id.eq.$u2),and(user1_id.eq.$u2,user2_id.eq.$u1)');
         }
       }
     } catch (e) {
@@ -95,6 +96,7 @@ class PocketActionChatService {
     String damage = '60%',
     int lootedCoins = 15,
     int? attackerDay,
+    bool isRevenge = false,
   }) async {
     if (attackerId.isEmpty || defenderId.isEmpty || attackerId == defenderId) {
       return;
@@ -134,14 +136,17 @@ class PocketActionChatService {
         } catch (_) {}
       }
 
-      final String messageText =
-          '⚔️ $aName successfully attacked $dName\'s house!';
-      final String displaySummary =
-          '⚔️ $aName successfully attacked $dName\'s house!';
+      final String messageText = isRevenge
+          ? '⚔️ $aName revenged your attack on $dName\'s Citadel!'
+          : '⚔️ $aName successfully attacked $dName\'s house!';
+      final String displaySummary = isRevenge
+          ? '⚔️ $aName revenged your attack!'
+          : '⚔️ $aName successfully attacked $dName\'s house!';
 
       final Map<String, dynamic> metadata = {
         'is_citadel_attack': true,
-        'action': 'attack',
+        'is_revenge': isRevenge,
+        'action': isRevenge ? 'revenge' : 'attack',
         'attacker_id': attackerId,
         'defender_id': defenderId,
         'attacker_name': aName,
@@ -186,9 +191,10 @@ class PocketActionChatService {
             'user_id': defenderId,
             'sender_id': attackerId,
             'source_id': attackerId,
-            'type': 'citadel_attack',
-            'message':
-                '⚔️ $aName raided your Citadel defenses with $weapon (-$lootedCoins coins)!',
+            'type': isRevenge ? 'citadel_revenge' : 'citadel_attack',
+            'message': isRevenge
+                ? '⚔️ $aName revenged your Citadel attack with $weapon (-$lootedCoins coins)!'
+                : '⚔️ $aName raided your Citadel defenses with $weapon (-$lootedCoins coins)!',
             'status': 'pending',
             'created_at': DateTime.now().toUtc().toIso8601String(),
           });
@@ -210,7 +216,8 @@ class PocketActionChatService {
             'created_at': DateTime.now().toUtc().toIso8601String(),
           });
         } catch (e) {
-          debugPrint('Error inserting into citadel_raids in sendAttackActionMessage: $e');
+          debugPrint(
+              'Error inserting into citadel_raids in sendAttackActionMessage: $e');
         }
       }
 
@@ -258,7 +265,9 @@ class PocketActionChatService {
     required String messageText,
     String? attackEventId,
   }) async {
-    if (attackerId.isEmpty || defenderId.isEmpty || messageText.trim().isEmpty) {
+    if (attackerId.isEmpty ||
+        defenderId.isEmpty ||
+        messageText.trim().isEmpty) {
       return false;
     }
 
@@ -436,7 +445,8 @@ class PocketActionChatService {
     String? senderAvatar,
     String? message,
   }) async {
-    if (senderId.isEmpty || receiverId.isEmpty || senderId == receiverId) return;
+    if (senderId.isEmpty || receiverId.isEmpty || senderId == receiverId)
+      return;
 
     try {
       String sName = senderName ?? 'Pocket Mate';
@@ -517,7 +527,6 @@ class PocketActionChatService {
     }
   }
 
-
   /// Restore or sync missing Mate Request chat message between two users
   /// Ensures historical notifications have a corresponding chat bubble in messages
   static Future<void> syncHistoricalMateRequestMessage({
@@ -551,7 +560,7 @@ class PocketActionChatService {
       if (notif != null) {
         final senderId = notif['sender_id']?.toString() ?? myId;
         final receiverId = notif['user_id']?.toString() ?? otherUserId;
-        
+
         // Supabase RLS enforces auth.uid() == sender_id.
         // If myId is not the sender, only the sender can insert their historical message into Supabase.
         if (senderId != myId) {
@@ -559,7 +568,8 @@ class PocketActionChatService {
         }
 
         final notifStatus = notif['status']?.toString() ?? 'pending';
-        final createdAt = notif['created_at']?.toString() ?? DateTime.now().toUtc().toIso8601String();
+        final createdAt = notif['created_at']?.toString() ??
+            DateTime.now().toUtc().toIso8601String();
 
         String sName = 'Pocket Mate';
         try {
@@ -573,7 +583,8 @@ class PocketActionChatService {
           }
         } catch (_) {}
 
-        final msgText = notif['message']?.toString() ?? '$sName sent you a Mates Request';
+        final msgText =
+            notif['message']?.toString() ?? '$sName sent you a Mates Request';
         final metadata = {
           'type': 'mate_request',
           'is_mate_request': true,
@@ -722,7 +733,8 @@ class PocketActionChatService {
     String? senderAvatar,
     String? pactId,
   }) async {
-    if (senderId.isEmpty || receiverId.isEmpty || senderId == receiverId) return;
+    if (senderId.isEmpty || receiverId.isEmpty || senderId == receiverId)
+      return;
 
     try {
       String sName = senderName ?? 'Pocket Mate';
@@ -877,7 +889,8 @@ class PocketActionChatService {
   }
 
   /// Get recent incoming attacks for userId
-  static Future<List<Map<String, dynamic>>> getPendingAttacks(String userId) async {
+  static Future<List<Map<String, dynamic>>> getPendingAttacks(
+      String userId) async {
     if (userId.isEmpty) return [];
     final List<Map<String, dynamic>> results = [];
     final Set<String> seenAttackers = {};
@@ -895,7 +908,8 @@ class PocketActionChatService {
 
         for (final item in (res as List)) {
           final map = Map<String, dynamic>.from(item);
-          final data = map['data'] is Map ? Map<String, dynamic>.from(map['data']) : {};
+          final data =
+              map['data'] is Map ? Map<String, dynamic>.from(map['data']) : {};
           final senderId = map['sender_id']?.toString() ?? '';
           if (senderId.isNotEmpty && !seenAttackers.contains(senderId)) {
             seenAttackers.add(senderId);
@@ -909,7 +923,8 @@ class PocketActionChatService {
               'weapon': data['weapon'] ?? '⚡ Laser Strike',
               'damage': data['damage'] ?? '60%',
               'coins_looted': data['coins_looted'] ?? 15,
-              'created_at': map['created_at'] ?? DateTime.now().toIso8601String(),
+              'created_at':
+                  map['created_at'] ?? DateTime.now().toIso8601String(),
               'is_sent': false,
             });
           }
@@ -937,7 +952,8 @@ class PocketActionChatService {
   }
 
   /// Get recent sent attacks launched by userId
-  static Future<List<Map<String, dynamic>>> getSentAttacks(String userId) async {
+  static Future<List<Map<String, dynamic>>> getSentAttacks(
+      String userId) async {
     if (userId.isEmpty) return [];
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -949,4 +965,3 @@ class PocketActionChatService {
     return [];
   }
 }
-

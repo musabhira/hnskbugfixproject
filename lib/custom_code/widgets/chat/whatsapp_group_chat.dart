@@ -44,11 +44,16 @@ import 'package:pocket_mates_app/custom_code/services/pocket_language_guard_serv
 import 'package:pocket_mates_app/custom_code/services/pocket_gang_group_language_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_language_picker.dart';
 import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_models.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_habit_tracker_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_memory_vault_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_quick_poll_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_split_wishlist_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_student_tools_widgets.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:google_fonts/google_fonts.dart' hide Config;
 import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, ValueListenable;
 import 'package:image/image.dart' as img;
 import 'dart:io';
 
@@ -91,6 +96,7 @@ import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_modul
 import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_todo_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_ideas_board_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_calendar_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocket_spend_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocketgang_tools_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocketgang_task_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/snap/snap_view_dialog.dart';
@@ -186,7 +192,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   bool _showMentionSuggestions = false;
   String? _mentionQuery;
 
-  // 🏆 Segmented Chat / Ranking Trail View State
+  // ðŸ† Segmented Chat / Ranking Trail View State
   int _activeChatTabIndex = 0; // 0 = Chat, 1 = Ranking Trail
   late final PageController _chatTabPageController;
 
@@ -242,7 +248,14 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         id.contains('hub');
   }
 
-  /// 🏝️ Detects if the current conversation is an Island Neighbors Group
+  /// ðŸ’‘ Detects if the current conversation is the Private Pocket Couple Group
+  bool get _isPocketCoupleGroup {
+    return _currentGroupId == 'pocket_couple_default' ||
+        _currentGroupName == 'Pocket Couple' ||
+        _currentGroupName.startsWith('ðŸ’‘ ');
+  }
+
+  /// ðŸï¸ Detects if the current conversation is an Island Neighbors Group
   bool get _isIslandNeighborsGroup {
     return PocketIslandGroupService.isIslandGroup(
         _currentGroupId, _currentGroupName);
@@ -289,7 +302,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     }
   }
 
-  // 🤖 English Hub Autonomous Robot Simulation Timers & Rate Limiters
+  // ðŸ¤– English Hub Autonomous Robot Simulation Timers & Rate Limiters
   Timer? _hubRobotIdleConversationTimer;
   Timer? _hubRobotReplyCooldownTimer;
   Timer? _hubCloudCleanupTimer;
@@ -303,19 +316,19 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   bool _isOutgoingPendingRequest = false;
   Map<String, dynamic>? _incomingPendingRequest;
 
-  // 🏆 PocketTalk 4-Day Spoken Pact State
+  // ðŸ† PocketTalk 4-Day Spoken Pact State
   PocketTalkPact? _activePocketTalkPact;
   // ignore: unused_field
   int _userTrophyCount = 0;
   Timer? _pactActiveTimer;
   DateTime? _lastPactMinuteLogTime;
 
-  // 🛠️ PocketGang Modular Tools & Dynamic Tabs State
+  // ðŸ› ï¸ PocketGang Modular Tools & Dynamic Tabs State
   List<String> _gangInstalledTools = ['team_mgmt'];
   List<PocketGangTask> _gangTasks = [];
   RealtimeChannel? _gangToolsSubscription;
 
-  // 🌐 PocketGang Allowed Languages State (Group-Wide)
+  // ðŸŒ PocketGang Allowed Languages State (Group-Wide)
   List<String> _gangAllowedLanguages = ['en', 'ml'];
   RealtimeChannel? _gangLanguagesSubscription;
   List<PinnedGroupMessage> _gangPinnedMessages = [];
@@ -375,16 +388,16 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
   void _showEnglishTopicStartersModal() {
     final topics = [
-      '🌟 What is the most exciting goal you are working towards this year?',
-      '🎬 If you could only rewatch one movie for the rest of your life, which one and why?',
-      '🌍 What is the most interesting place you have ever visited or dream of exploring?',
-      '💡 What is a valuable lesson you learned recently that changed your thinking?',
-      '☕ Are you a morning person or a night owl? What does your ideal productive day look like?',
-      '🚀 If you were given \$1,000,000 to start any business tomorrow, what would you build?',
-      '📚 What is an English idiom or phrase you recently discovered and found fascinating?',
-      '🎧 What music, podcast, or creator inspires you the most when studying or working?',
-      '🍲 What is your absolute favorite comfort food, and what memories does it bring back?',
-      '🏆 What is an accomplishment you are proud of, whether big or small?',
+      'ðŸŒŸ What is the most exciting goal you are working towards this year?',
+      'ðŸŽ¬ If you could only rewatch one movie for the rest of your life, which one and why?',
+      'ðŸŒ What is the most interesting place you have ever visited or dream of exploring?',
+      'ðŸ’¡ What is a valuable lesson you learned recently that changed your thinking?',
+      'â˜• Are you a morning person or a night owl? What does your ideal productive day look like?',
+      'ðŸš€ If you were given \$1,000,000 to start any business tomorrow, what would you build?',
+      'ðŸ“š What is an English idiom or phrase you recently discovered and found fascinating?',
+      'ðŸŽ§ What music, podcast, or creator inspires you the most when studying or working?',
+      'ðŸ² What is your absolute favorite comfort food, and what memories does it bring back?',
+      'ðŸ† What is an accomplishment you are proud of, whether big or small?',
     ];
 
     showModalBottomSheet(
@@ -411,7 +424,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             const SizedBox(height: 12),
             Row(
               children: [
-                const Text('💡', style: TextStyle(fontSize: 20)),
+                const Text('ðŸ’¡', style: TextStyle(fontSize: 20)),
                 const SizedBox(width: 8),
                 Text(
                   'ENGLISH TOPIC STARTERS',
@@ -514,7 +527,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('🏰', style: TextStyle(fontSize: 11)),
+                const Text('ðŸ°', style: TextStyle(fontSize: 11)),
                 const SizedBox(width: 4),
                 Text(
                   'POCKET GANG',
@@ -531,7 +544,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              '🎮 Play, chat & conquer quests together!',
+              'ðŸŽ® Play, chat & conquer quests together!',
               style: GoogleFonts.outfit(
                 color: const Color(0xFF1E293B),
                 fontSize: 11.5,
@@ -562,7 +575,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('⚔️', style: TextStyle(fontSize: 10)),
+                  const Text('âš”ï¸', style: TextStyle(fontSize: 10)),
                   const SizedBox(width: 2),
                   Text(
                     'Citadel',
@@ -609,7 +622,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('🇬🇧', style: TextStyle(fontSize: 10.5)),
+                const Text('ðŸ‡¬ðŸ‡§', style: TextStyle(fontSize: 10.5)),
                 const SizedBox(width: 4),
                 Text(
                   widget.groupName.contains('Lvl')
@@ -753,7 +766,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     _chatTabPageController = PageController(initialPage: 0);
     InAppNotificationService.currentActiveChatId = _currentGroupId;
     // Audio Directive: Chat conversations should be silent (no game BGM)
-    PocketGameAudioService.instance.pause();
+    PocketGameAudioService.instance.stop();
     _currentUserId = _supabase.auth.currentUser?.id ?? ''; // Original line
     // Seed avatar cache from widget argument if provided
     if (widget.avatarConfig != null && _currentGroupId.startsWith('p:')) {
@@ -813,7 +826,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         .read(chatMessagesProvider(widget.groupId).notifier)
         .cleanupOldMessages());
 
-    // 🤖 Initialize English Hub Autonomous Robot Participation & 15m cloud purge
+    // ðŸ¤– Initialize English Hub Autonomous Robot Participation & 15m cloud purge
     if (_isEnglishHubGroup) {
       _initEnglishHubRobotParticipation();
       _hubCloudCleanupTimer = Timer.periodic(const Duration(minutes: 2), (_) {
@@ -825,7 +838,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       });
     }
 
-    // 🛠️ Initialize PocketGang Group-Wide Tools & Tasks
+    // ðŸ› ï¸ Initialize PocketGang Group-Wide Tools & Tasks
     if (_isEligibleForPocketGangWorkspace) {
       _initPocketGangToolsAndTasks();
     }
@@ -926,7 +939,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     _hubRobotIdleConversationTimer?.cancel();
     if (!_isEnglishHubRobotsEnabled && _activeChatTabIndex != 1) return;
     final isRobotTab = _activeChatTabIndex == 1;
-    // ⏱️ Start within 1-2 seconds on first open!
+    // â±ï¸ Start within 1-2 seconds on first open!
     // On Robot tab, robots continuously converse back and forth every 10-18 seconds!
     // On other tabs, steady background cadence every 35-50 seconds.
     final delaySeconds = initial
@@ -945,7 +958,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     });
   }
 
-  /// 🤖 Trigger quick robot dialogue if the user specifically navigated to the Robot tab
+  /// ðŸ¤– Trigger quick robot dialogue if the user specifically navigated to the Robot tab
   void _triggerImmediateRobotDialogueIfQuiet() {
     _hubRobotIdleConversationTimer?.cancel();
     _hubRobotIdleConversationTimer =
@@ -958,7 +971,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     });
   }
 
-  /// 🤖 Posts a natural gentle robot conversation (single topic turn) with real typing indicators
+  /// ðŸ¤– Posts a natural gentle robot conversation (single topic turn) with real typing indicators
   Future<void> _postAutonomousRobotComboDialogueIfIdle() async {
     try {
       if (!mounted || !_isEnglishHubGroup) return;
@@ -1069,7 +1082,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     }
   }
 
-  /// 🤝 When a human learner speaks in English Hub, allow a relevant robot to respond
+  /// ðŸ¤ When a human learner speaks in English Hub, allow a relevant robot to respond
   /// politely after a natural delay (with live typing indicator), directly answering their input!
   void _triggerPoliteRobotReplyToHuman({
     required String humanText,
@@ -1192,7 +1205,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
   bool _isPresidentReplying = false;
 
-  /// 🏛️ Trigger autonomous dignified reply from The President of Pocket World
+  /// ðŸ›ï¸ Trigger autonomous dignified reply from The President of Pocket World
   void _triggerPresidentialReplyToHuman({
     required String humanText,
     required String senderName,
@@ -1211,14 +1224,16 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         PocketRobotService.setTyping(PocketPresidentService.presidentId, true);
         await Future.delayed(const Duration(milliseconds: 1400));
         if (!mounted) {
-          PocketRobotService.setTyping(PocketPresidentService.presidentId, false);
+          PocketRobotService.setTyping(
+              PocketPresidentService.presidentId, false);
           _isPresidentReplying = false;
           return;
         }
         PocketRobotService.setTyping(PocketPresidentService.presidentId, false);
 
         // Formulate dignified presidential reply
-        final replyText = await PocketPresidentService.generatePresidentRobotReply(
+        final replyText =
+            await PocketPresidentService.generatePresidentRobotReply(
           userMessage: humanText,
           userName: senderName,
           currentUserId: _currentUserId,
@@ -1472,7 +1487,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   }
 
   Future<void> _fetchMembers() async {
-    if (_isPersonalChat) return;
+    if (_isPersonalChat || _currentGroupId == 'pocket_couple_default') return;
     try {
       final supabase = ref.read(supabaseClientProvider);
       final response = await supabase.from('group_members').select('''
@@ -1489,42 +1504,97 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         };
       }).toList();
 
-      // 🏝️ If this is an Island Neighbors group, ensure all 25 plot residents (citizens, pioneers, and robot neighbors)
-      // are populated so neighbors can see each other and chat together!
+      // Ensure members whose profile!profile_id join was null still get their real name & avatar from profile table
+      final missingIds = members
+          .where((m) {
+            final p = m['profile'];
+            final uid = m['user_id']?.toString() ?? '';
+            return uid.isNotEmpty &&
+                !uid.startsWith('pioneer_') &&
+                !uid.startsWith('robot_') &&
+                (p == null ||
+                    p['name'] == null ||
+                    p['name'].toString().trim().isEmpty);
+          })
+          .map((m) => m['user_id'].toString())
+          .toSet()
+          .toList();
+
+      if (missingIds.isNotEmpty) {
+        try {
+          final fetched = await supabase
+              .from('profile')
+              .select(
+                  'id, user_id, name, profile_image_url, pocket_score, learning_day, learning_stage, stage, level, bio, avatar_config, equipped_talisman, talisman_id')
+              .inFilter('user_id', missingIds);
+          final Map<String, Map<String, dynamic>> byUserId = {};
+          for (final row in (fetched as List)) {
+            final r = Map<String, dynamic>.from(row);
+            final u = r['user_id']?.toString();
+            if (u != null && u.isNotEmpty) byUserId[u] = r;
+          }
+          for (final m in members) {
+            final uid = m['user_id']?.toString() ?? '';
+            if (byUserId.containsKey(uid)) {
+              m['profile'] = byUserId[uid];
+            }
+          }
+        } catch (e) {
+          debugPrint('Error hydrating missing member profiles: $e');
+        }
+      }
+
+      // ðŸï¸ If this is an Island Neighbors group, show ONLY the 25 plot residents of THIS island!
       if (_isIslandNeighborsGroup) {
         final colony = _islandColonyInfo;
         if (colony != null) {
           try {
             final occupiedPlots = await PoketCosmosAllocationService.instance
                 .getOccupiedPlotsForColony(colony, wave: 1);
-            for (final plot in occupiedPlots) {
+            final Map<String, Map<String, dynamic>> existingByUid = {
+              for (final m in members)
+                if ((m['user_id']?.toString() ?? '').isNotEmpty)
+                  m['user_id'].toString(): m,
+            };
+            final List<Map<String, dynamic>> islandOnly = [];
+            for (final plot in occupiedPlots.take(25)) {
               if (plot.userId.isEmpty) continue;
-              final alreadyInList =
-                  members.any((m) => m['user_id'] == plot.userId);
-              if (!alreadyInList) {
-                members.add({
-                  'group_id': _currentGroupId,
-                  'user_id': plot.userId,
-                  'role': plot.isPresident ? 'admin' : 'member',
-                  'is_active': true,
-                  'joined_at': DateTime.now().toIso8601String(),
-                  'profile': {
-                    'name': plot.userName,
-                    'profile_image_url': plot.userAvatar.isNotEmpty &&
-                            !plot.userAvatar.startsWith('assets')
-                        ? plot.userAvatar
-                        : null,
-                    'pocket_score': plot.pocketScore,
-                    'learning_stage': plot.day.clamp(1, 90),
-                    'stage': plot.day.clamp(1, 90),
-                    'level': plot.day.clamp(1, 90),
-                    'plot_number': plot.plotNumber,
-                    'is_pioneer': plot.userId.startsWith('pioneer_') ||
-                        plot.userName.contains('Pioneer'),
-                  },
-                });
-              }
+              final existing = existingByUid[plot.userId];
+              final existingProfile = existing?['profile'] is Map
+                  ? Map<String, dynamic>.from(existing!['profile'] as Map)
+                  : <String, dynamic>{};
+              final plotAvatar = plot.userAvatar.isNotEmpty &&
+                      !plot.userAvatar.startsWith('assets')
+                  ? plot.userAvatar
+                  : null;
+              islandOnly.add({
+                'group_id': _currentGroupId,
+                'user_id': plot.userId,
+                'role': existing?['role'] ?? (plot.isPresident ? 'admin' : 'member'),
+                'is_active': true,
+                'joined_at': existing?['joined_at'] ?? DateTime.now().toIso8601String(),
+                'profile': {
+                  ...existingProfile,
+                  'name': (existingProfile['name']?.toString().trim().isNotEmpty == true)
+                      ? existingProfile['name']
+                      : plot.userName,
+                  'profile_image_url':
+                      (existingProfile['profile_image_url']?.toString().trim().isNotEmpty == true)
+                          ? existingProfile['profile_image_url']
+                          : plotAvatar,
+                  'pocket_score': existingProfile['pocket_score'] ?? plot.pocketScore,
+                  'learning_stage': existingProfile['learning_stage'] ?? plot.day.clamp(1, 90),
+                  'stage': existingProfile['stage'] ?? plot.day.clamp(1, 90),
+                  'level': existingProfile['level'] ?? plot.day.clamp(1, 90),
+                  'plot_number': plot.plotNumber,
+                  'is_pioneer': plot.userId.startsWith('pioneer_') ||
+                      plot.userName.contains('Pioneer'),
+                },
+              });
             }
+            members
+              ..clear()
+              ..addAll(islandOnly);
           } catch (e) {
             debugPrint('Error populating island neighbors in chat: $e');
           }
@@ -1662,7 +1732,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     final uid = _supabase.auth.currentUser?.id ?? '';
     if (uid.isEmpty || otherUserId.isEmpty) return;
 
-    // 🤖 Robots & Presidents do NOT have PocketTalk Pacts / Streaks
+    // ðŸ¤– Robots & Presidents do NOT have PocketTalk Pacts / Streaks
     if (PocketRobotService.isRobotId(otherUserId) ||
         PocketPresidentService.isPresidentId(otherUserId) ||
         otherUserId.startsWith('robot_') ||
@@ -1802,11 +1872,11 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             SnackBar(
               content: Row(
                 children: [
-                  const Text('🎉', style: TextStyle(fontSize: 18)),
+                  const Text('ðŸŽ‰', style: TextStyle(fontSize: 18)),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Day ${res.pact!.streakDays} Goal Achieved! (15 mins done today) 🏆 Keep it up tomorrow!',
+                      'Day ${res.pact!.streakDays} Goal Achieved! (15 mins done today) ðŸ† Keep it up tomorrow!',
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 12.5),
                     ),
@@ -1837,7 +1907,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         ),
         title: Column(
           children: [
-            const Text('🏆', style: TextStyle(fontSize: 48)),
+            const Text('ðŸ†', style: TextStyle(fontSize: 48)),
             const SizedBox(height: 8),
             Text(
               'PACT COMPLETED!',
@@ -1875,7 +1945,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                       color: Color(0xFFFFD700), size: 24),
                   const SizedBox(width: 8),
                   Text(
-                    '+1 Spoken Trophy Earned! 🏆',
+                    '+1 Spoken Trophy Earned! ðŸ†',
                     style: GoogleFonts.outfit(
                       color: const Color(0xFFFFD700),
                       fontWeight: FontWeight.bold,
@@ -1926,14 +1996,14 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                         });
                         await _sendMessage(
                           text:
-                              '🤝 We graduated to Permanent Pocket Mates! 🏆✨',
+                              'ðŸ¤ We graduated to Permanent Pocket Mates! ðŸ†âœ¨',
                           messageType: 'text',
                         );
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text(
-                                  '🤝 Connected as permanent Pocket Mates! Profiles unlocked.'),
+                                  'ðŸ¤ Connected as permanent Pocket Mates! Profiles unlocked.'),
                               backgroundColor: Color(0xFF10B981),
                             ),
                           );
@@ -1942,7 +2012,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                       _checkMateStatus();
                     },
                     child: Text(
-                      'Become Permanent Pocket Mates 🤝',
+                      'Become Permanent Pocket Mates ðŸ¤',
                       style: GoogleFonts.outfit(
                           fontWeight: FontWeight.bold, fontSize: 13),
                     ),
@@ -1979,7 +2049,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                       }
                     },
                     child: Text(
-                      'Find Next Speaking Partner ⚡',
+                      'Find Next Speaking Partner âš¡',
                       style: GoogleFonts.outfit(
                           fontWeight: FontWeight.w600, fontSize: 12),
                     ),
@@ -2019,7 +2089,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         SnackBar(
           content: Row(
             children: [
-              const Text('🎉', style: TextStyle(fontSize: 18)),
+              const Text('ðŸŽ‰', style: TextStyle(fontSize: 18)),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -2106,7 +2176,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                     ),
                   ],
                 ),
-                child: const Text('🔥', style: TextStyle(fontSize: 34)),
+                child: const Text('ðŸ”¥', style: TextStyle(fontSize: 34)),
               ),
               const SizedBox(height: 14),
               Text(
@@ -2161,7 +2231,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            'Citadel Streak Freeze Insurance Active 🛡️',
+                            'Citadel Streak Freeze Insurance Active ðŸ›¡ï¸',
                             style: GoogleFonts.outfit(
                               color: Colors.white70,
                               fontSize: 13,
@@ -2186,7 +2256,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                   child: Text(
-                    'Keep Practicing English 💬',
+                    'Keep Practicing English ðŸ’¬',
                     style: GoogleFonts.outfit(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
@@ -2201,7 +2271,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     );
   }
 
-  /// 🌟 Friendship & Connection Emotional Dashboard (User Audio Directive: Right-swipe or tap opens connection dashboard)
+  /// ðŸŒŸ Friendship & Connection Emotional Dashboard (User Audio Directive: Right-swipe or tap opens connection dashboard)
   void _showFriendshipDashboardSheet(BuildContext context) {
     HapticFeedback.mediumImpact();
     final messages = ref.read(chatMessagesProvider(widget.groupId)).value ?? [];
@@ -2242,25 +2312,31 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     final Color tierColor;
     final IconData tierIcon;
     if (score >= 85) {
-      tierTitle = 'Soul Mates ⚡';
+      tierTitle = 'Soul Mates âš¡';
       tierColor = const Color(0xFFFFD600);
       tierIcon = Icons.bolt_rounded;
     } else if (score >= 60) {
-      tierTitle = 'Close Mates 🔥';
+      tierTitle = 'Close Mates ðŸ”¥';
       tierColor = const Color(0xFFFF8A00);
       tierIcon = Icons.local_fire_department_rounded;
     } else if (score >= 35) {
-      tierTitle = 'Growing Bond 🌱';
+      tierTitle = 'Growing Bond ðŸŒ±';
       tierColor = const Color(0xFF10B981);
       tierIcon = Icons.eco_rounded;
     } else {
-      tierTitle = 'Sparking Friendship ✨';
+      tierTitle = 'Sparking Friendship âœ¨';
       tierColor = const Color(0xFF38BDF8);
       tierIcon = Icons.auto_awesome_rounded;
     }
 
     final myRatio = totalMsgs > 0 ? ((myMsgs / totalMsgs) * 100).round() : 50;
     final mateRatio = 100 - myRatio;
+
+    final dashTheme = _isPocketCoupleGroup
+        ? PocketSpendPage.getCoupleTheme(
+            PocketSpendPage.coupleThemeNotifier.value)
+        : PocketSpendPage.getGroupTheme(
+            PocketSpendPage.getGroupThemeNotifier(_currentGroupId).value);
 
     showModalBottomSheet(
       context: context,
@@ -2270,7 +2346,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         return Container(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
           decoration: BoxDecoration(
-            color: const Color(0xFF0F172A),
+            color: dashTheme.cardColor,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
             border: Border.all(
                 color: tierColor.withValues(alpha: 0.35), width: 1.2),
@@ -2289,7 +2365,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                 width: 42,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.white24,
+                  color: dashTheme.subTextColor.withValues(alpha: 0.35),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -2302,7 +2378,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                   Text(
                     'Friendship & Connection Dashboard',
                     style: GoogleFonts.outfit(
-                      color: Colors.white,
+                      color: dashTheme.textColor,
                       fontSize: 17,
                       fontWeight: FontWeight.bold,
                     ),
@@ -2551,7 +2627,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     );
   }
 
-  /// 🌟 Right-to-Left Swipe Friendship & Compatibility Dashboard Drawer
+  /// ðŸŒŸ Right-to-Left Swipe Friendship & Compatibility Dashboard Drawer
   /// (User Audio Directive: Swiping right-to-left reveals full friendship, compatibility,
   /// love score, spoken streak & mate analytics dashboard. Dragging halfway snaps back to chat.)
   Widget _buildFriendshipDashboardDrawer(BuildContext context) {
@@ -2593,22 +2669,22 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     final IconData tierIcon;
     final String tierSubtitle;
     if (score >= 85) {
-      tierTitle = 'Soul Mates ⚡';
+      tierTitle = 'Soul Mates âš¡';
       tierColor = const Color(0xFFFFD600);
       tierIcon = Icons.bolt_rounded;
       tierSubtitle = 'Deep mutual connection & regular English practice';
     } else if (score >= 60) {
-      tierTitle = 'Close Companions 🔥';
+      tierTitle = 'Close Companions ðŸ”¥';
       tierColor = const Color(0xFFFF8A00);
       tierIcon = Icons.local_fire_department_rounded;
       tierSubtitle = 'High compatibility & active spoken conversation';
     } else if (score >= 40) {
-      tierTitle = 'Growing Bond 🌱';
+      tierTitle = 'Growing Bond ðŸŒ±';
       tierColor = const Color(0xFF10B981);
       tierIcon = Icons.eco_rounded;
       tierSubtitle = 'Consistent progress & daily conversation exchange';
     } else {
-      tierTitle = 'Sparking Friendship ✨';
+      tierTitle = 'Sparking Friendship âœ¨';
       tierColor = const Color(0xFF38BDF8);
       tierIcon = Icons.auto_awesome_rounded;
       tierSubtitle =
@@ -2619,9 +2695,15 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     final mateRatio = 100 - myRatio;
     final mateStage = _userPocketStageCache[otherUserId] ?? 1;
 
+    final dashTheme = _isPocketCoupleGroup
+        ? PocketSpendPage.getCoupleTheme(
+            PocketSpendPage.coupleThemeNotifier.value)
+        : PocketSpendPage.getGroupTheme(
+            PocketSpendPage.getGroupThemeNotifier(_currentGroupId).value);
+
     return Drawer(
       width: MediaQuery.of(context).size.width * 0.88,
-      backgroundColor: const Color(0xFF090D16),
+      backgroundColor: dashTheme.bgGradient.first,
       child: SafeArea(
         child: Column(
           children: [
@@ -2887,7 +2969,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                             children: [
                               Row(
                                 children: [
-                                  const Text('🔥',
+                                  const Text('ðŸ”¥',
                                       style: TextStyle(fontSize: 18)),
                                   const Spacer(),
                                   Text(
@@ -3192,7 +3274,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '🎯 Matched Practice Topics',
+                          'ðŸŽ¯ Matched Practice Topics',
                           style: GoogleFonts.outfit(
                             color: Colors.white,
                             fontSize: 13,
@@ -3269,56 +3351,56 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
   static const List<Map<String, String>> _icebreakerTopics = [
     {
-      'cat': '🧠 Deep & Fun',
-      'emoji': '✨',
+      'cat': 'ðŸ§  Deep & Fun',
+      'emoji': 'âœ¨',
       'en':
           'If you could travel anywhere in the world tomorrow, which destination would you pick and why?',
       'hint': 'Talk about places you have always dreamed of visiting.'
     },
     {
-      'cat': '🎬 Entertainment',
-      'emoji': '🍿',
+      'cat': 'ðŸŽ¬ Entertainment',
+      'emoji': 'ðŸ¿',
       'en':
           'What is the most memorable movie or show you have watched recently? What made it so good?',
       'hint': 'Describe the story or your favorite character.'
     },
     {
-      'cat': '🚀 Ambition',
-      'emoji': '🎯',
+      'cat': 'ðŸš€ Ambition',
+      'emoji': 'ðŸŽ¯',
       'en':
           'What is one major skill or habit you are determined to master this year?',
       'hint': 'Share your learning or career goal.'
     },
     {
-      'cat': '🍕 Food & Taste',
-      'emoji': '🍳',
+      'cat': 'ðŸ• Food & Taste',
+      'emoji': 'ðŸ³',
       'en':
           'If you could only eat one cuisine or favorite comfort food forever, what would it be?',
       'hint': 'Describe the taste and why it is special to you.'
     },
     {
-      'cat': '⚡ Fast Debate',
-      'emoji': '🔥',
+      'cat': 'âš¡ Fast Debate',
+      'emoji': 'ðŸ”¥',
       'en':
           'Do you prefer early mornings with quiet peace or late nights with high focus?',
       'hint': 'Explain when you feel most productive and creative.'
     },
     {
-      'cat': '💡 Inspiration',
-      'emoji': '🌟',
+      'cat': 'ðŸ’¡ Inspiration',
+      'emoji': 'ðŸŒŸ',
       'en':
           'What is the most useful piece of advice someone has ever given you?',
       'hint': 'Explain how that advice helped you in life.'
     },
     {
-      'cat': '🎧 Hobbies',
-      'emoji': '🎵',
+      'cat': 'ðŸŽ§ Hobbies',
+      'emoji': 'ðŸŽµ',
       'en': 'What song or playlist always lifts your mood no matter what?',
       'hint': 'Tell why music plays an important role in your day.'
     },
     {
-      'cat': '🏰 Superpowers',
-      'emoji': '🦸',
+      'cat': 'ðŸ° Superpowers',
+      'emoji': 'ðŸ¦¸',
       'en':
           'If you could have any superpower for 24 hours, how would you spend that day?',
       'hint': 'Think about flying, teleportation, or invisibility!'
@@ -3389,7 +3471,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                         ),
                       ),
                       IconButton(
-                        tooltip: 'Shuffle Topic 🎲',
+                        tooltip: 'Shuffle Topic ðŸŽ²',
                         icon: const Icon(Icons.shuffle_rounded,
                             color: Color(0xFFFFFC00)),
                         onPressed: () {
@@ -3467,7 +3549,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                             });
                           },
                           icon: const Icon(Icons.casino_outlined, size: 18),
-                          label: const Text('🎲 Shuffle'),
+                          label: const Text('ðŸŽ² Shuffle'),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.white,
                             side: const BorderSide(color: Colors.white24),
@@ -3493,7 +3575,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                             _focusNode.requestFocus();
                           },
                           icon: const Icon(Icons.send_rounded, size: 18),
-                          label: const Text('Insert into Chat 💬'),
+                          label: const Text('Insert into Chat ðŸ’¬'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFFFFC00),
                             foregroundColor: Colors.black,
@@ -3517,7 +3599,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   void _showInstantEnglishStarters() {
     HapticFeedback.lightImpact();
     const starters = [
-      "Hey! How is your day going so far? 😊",
+      "Hey! How is your day going so far? ðŸ˜Š",
       "What exciting projects or tasks are you working on today?",
       "I was just thinking about our English practice goal!",
       "Any good movie, podcast, or series recommendations?",
@@ -3544,7 +3626,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             children: [
               Row(
                 children: [
-                  const Text('✨', style: TextStyle(fontSize: 20)),
+                  const Text('âœ¨', style: TextStyle(fontSize: 20)),
                   const SizedBox(width: 8),
                   Text(
                     'Instant English Starters',
@@ -3651,7 +3733,7 @@ Draft: "$draft"''';
             SnackBar(
               content: Row(
                 children: const [
-                  Text('✨ ', style: TextStyle(fontSize: 16)),
+                  Text('âœ¨ ', style: TextStyle(fontSize: 16)),
                   Expanded(
                     child: Text(
                       'Polished to Fluent English!',
@@ -3750,56 +3832,6 @@ Draft: "$draft"''';
       return null;
     }
 
-    // 🌐 PocketGang Allowed Languages Validation
-    // If this is a PocketGang group, enforce that messages use only permitted languages!
-    if (_isEligibleForPocketGangWorkspace &&
-        text != null &&
-        text.trim().isNotEmpty) {
-      final gangCheck = PocketLanguageGuardService.checkGangMessage(
-        text: text,
-        allowedLanguageCodes: _gangAllowedLanguages,
-      );
-      if (!gangCheck.isValid) {
-        final unsupported = gangCheck.detectedWord ?? 'unsupported language';
-        final allowedNames = _gangAllowedLanguages.map((c) {
-          final l = PocketGangLanguage.supportedLanguages.firstWhere(
-            (lang) => lang.code == c,
-            orElse: () => PocketGangLanguage(
-                code: c, name: c.toUpperCase(), nativeName: c, flag: '🌐'),
-          );
-          return l.name;
-        }).join(', ');
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: const Color(0xFF1E293B),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: const BorderSide(color: Color(0xFFF59E0B), width: 1.2),
-            ),
-            content: Row(
-              children: [
-                const Text('🌐 ', style: TextStyle(fontSize: 16)),
-                Expanded(
-                  child: Text(
-                    'This Gang only allows: $allowedNames. (Detected $unsupported). Please communicate in the allowed languages.',
-                    style: GoogleFonts.outfit(
-                      color: const Color(0xFFFDE68A),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            duration: const Duration(seconds: 4),
-          ),
-        );
-        return null; // Prevent sending clearly unsupported messages
-      }
-    }
-
     // Filter out truly empty messages
     bool isEmpty = (text == null || text.trim().isEmpty) &&
         fileUrl == null &&
@@ -3825,7 +3857,7 @@ Draft: "$draft"''';
     });
     _scrollToBottom();
 
-    // 🏷️ English Hub: Strict channel isolation (Tab 0: Human, Tab 1: Robot)
+    // ðŸ·ï¸ English Hub: Strict channel isolation (Tab 0: Human, Tab 1: Robot)
     if (_isEnglishHubGroup) {
       metadata = Map<String, dynamic>.from(metadata ?? {});
       final channel = _activeChatTabIndex == 1 ? 'robot' : 'human';
@@ -3861,7 +3893,7 @@ Draft: "$draft"''';
           final mins = (voiceSecs / 60).ceil().clamp(1, 5);
           _logPactMinute(mins);
         } else {
-          // 💬 Interactive text chatting also increments spoken/chat engagement (throttled by _logPactMinute)
+          // ðŸ’¬ Interactive text chatting also increments spoken/chat engagement (throttled by _logPactMinute)
           _logPactMinute(1);
         }
       }
@@ -3872,7 +3904,7 @@ Draft: "$draft"''';
         int pointsToAdd = messageType == 'voice' ? 5 : 1;
         await prefs.setInt('english_hub_points', currentPoints + pointsToAdd);
 
-        // 📝 Track daily message count for 15-message verification
+        // ðŸ“ Track daily message count for 15-message verification
         final now = DateTime.now();
         final key =
             'english_hub_msgs_${_currentUserId}_${now.year}_${now.month}_${now.day}';
@@ -3882,8 +3914,10 @@ Draft: "$draft"''';
         // Award unified Pocket Score for English group conversation
         await PocketFortressDefenseService.awardPoints(pointsToAdd);
 
-        // 🤖 When human learner posts in English Hub ROBOT TAB (Tab 1), invite 1 level-bracket robot to reply politely
-        if (_activeChatTabIndex == 1 && text != null && text.trim().isNotEmpty) {
+        // ðŸ¤– When human learner posts in English Hub ROBOT TAB (Tab 1), invite 1 level-bracket robot to reply politely
+        if (_activeChatTabIndex == 1 &&
+            text != null &&
+            text.trim().isNotEmpty) {
           final myMember = _groupMembers.firstWhere(
             (m) => m['user_id'] == _currentUserId,
             orElse: () => {},
@@ -3901,7 +3935,7 @@ Draft: "$draft"''';
         PocketFortressDefenseService.recordActivityPoints('group_chat');
       }
 
-      // 🗣️ ASYNC REGIONAL LANGUAGE DETECTION & PRESIDENTIAL WARNING
+      // ðŸ—£ï¸ ASYNC REGIONAL LANGUAGE DETECTION & PRESIDENTIAL WARNING
       // Note: Normal PocketGang groups allow multi-language communication as selected upon creation.
       // Language enforcement strictly applies to English Hub, Pocket Talk pacts, and Direct 1-on-1 English learning chats.
       if (text != null &&
@@ -3929,7 +3963,7 @@ Draft: "$draft"''';
                   ),
                   content: Row(
                     children: [
-                      const Text('🏛️', style: TextStyle(fontSize: 18)),
+                      const Text('ðŸ›ï¸', style: TextStyle(fontSize: 18)),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -3968,12 +4002,16 @@ Draft: "$draft"''';
             PocketMateService.addMateLocally(_currentUserId, otherUserId);
           }
 
-          // 🏛️ If communicating with The President, log inquiry and trigger autonomous dignified reply!
+          // ðŸ›ï¸ If communicating with The President, log inquiry and trigger autonomous dignified reply!
           if (PocketPresidentService.isPresidentId(otherUserId)) {
-            final myName = ContactsNameService().getDisplayName(userId: _currentUserId, fallbackName: 'Learner');
+            final myName = ContactsNameService().getDisplayName(
+                userId: _currentUserId, fallbackName: 'Learner');
             PocketPresidentService.sendUserMessageToPresident(
               userId: _currentUserId,
-              messageText: text ?? (messageType == 'image' ? '[Educational Photo/Card]' : '[Message]'),
+              messageText: text ??
+                  (messageType == 'image'
+                      ? '[Educational Photo/Card]'
+                      : '[Message]'),
               messageType: messageType,
               fileUrl: fileUrl,
             );
@@ -4329,7 +4367,7 @@ Draft: "$draft"''';
     );
   }
 
-  // --- 🏆 POCKET TALK: 4-DAY SPOKEN PACT & TROPHY HEADER RIBBON ---
+  // --- ðŸ† POCKET TALK: 4-DAY SPOKEN PACT & TROPHY HEADER RIBBON ---
   Widget _buildPocketTalkPactHeaderRibbon() {
     final pact = _activePocketTalkPact;
     if (pact == null || (pact.isCompleted && _isMate)) {
@@ -4348,7 +4386,7 @@ Draft: "$draft"''';
       return const SizedBox.shrink();
     }
 
-    // ⚡ If pending request, show accept / waiting invite ribbon
+    // âš¡ If pending request, show accept / waiting invite ribbon
     if (!pact.isAccepted) {
       final isSender = _currentUserId == pact.initiatorId;
       if (isSender) {
@@ -4371,7 +4409,7 @@ Draft: "$draft"''';
           ),
           child: Row(
             children: [
-              const Text('⚡', style: TextStyle(fontSize: 16)),
+              const Text('âš¡', style: TextStyle(fontSize: 16)),
               const SizedBox(width: 8),
               Expanded(
                 child: Column(
@@ -4387,7 +4425,7 @@ Draft: "$draft"''';
                       ),
                     ),
                     Text(
-                      'Chat daily for 4 days • English only • +1 Silver Trophy 🥈',
+                      'Chat daily for 4 days â€¢ English only â€¢ +1 Silver Trophy ðŸ¥ˆ',
                       style: GoogleFonts.inter(
                         color: Colors.white60,
                         fontSize: 9.5,
@@ -4448,7 +4486,7 @@ Draft: "$draft"''';
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text(
-                            '🤝 PoketTalk 4-Day Pact Accepted! Day 1 starts now.'),
+                            'ðŸ¤ PoketTalk 4-Day Pact Accepted! Day 1 starts now.'),
                         backgroundColor: Color(0xFF10B981),
                       ),
                     );
@@ -4463,7 +4501,7 @@ Draft: "$draft"''';
                       borderRadius: BorderRadius.circular(8)),
                 ),
                 child: Text(
-                  'Accept 🤝',
+                  'Accept ðŸ¤',
                   style: GoogleFonts.outfit(
                     fontWeight: FontWeight.bold,
                     fontSize: 11.5,
@@ -4521,8 +4559,8 @@ Draft: "$draft"''';
             children: [
               Text(
                 isCompleted
-                    ? '🥈 POKETTALK MASTERED'
-                    : '⚡ POKETTALK 4-DAY PACT',
+                    ? 'ðŸ¥ˆ POKETTALK MASTERED'
+                    : 'âš¡ POKETTALK 4-DAY PACT',
                 style: GoogleFonts.outfit(
                   color: isCompleted
                       ? const Color(0xFFE2E8F0)
@@ -4542,7 +4580,7 @@ Draft: "$draft"''';
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  isMates ? 'MATES 🤝' : 'SILVER TROPHY 🥈',
+                  isMates ? 'MATES ðŸ¤' : 'SILVER TROPHY ðŸ¥ˆ',
                   style: GoogleFonts.inter(
                     color: isMates
                         ? const Color(0xFF4ADE80)
@@ -4599,7 +4637,7 @@ Draft: "$draft"''';
                           width: 0.8),
                     ),
                     child: Text(
-                      'SWAP 🔄',
+                      'SWAP ðŸ”„',
                       style: GoogleFonts.outfit(
                         color: const Color(0xFFA5B4FC),
                         fontSize: 8.5,
@@ -4613,7 +4651,7 @@ Draft: "$draft"''';
           ),
           const SizedBox(height: 5),
 
-          // 📊 Interactive Step-by-Step Row: Day 1-4, Raid, Fight
+          // ðŸ“Š Interactive Step-by-Step Row: Day 1-4, Raid, Fight
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -4699,10 +4737,10 @@ Draft: "$draft"''';
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text('⚔️', style: TextStyle(fontSize: 9.5)),
+                        const Text('âš”ï¸', style: TextStyle(fontSize: 9.5)),
                         const SizedBox(width: 3),
                         Text(
-                          hasAttacked ? 'Raid Done ✓' : '1 Raid Needed ➔',
+                          hasAttacked ? 'Raid Done âœ“' : '1 Raid Needed âž”',
                           style: GoogleFonts.outfit(
                             color: hasAttacked
                                 ? const Color(0xFF4ADE80)
@@ -4751,10 +4789,10 @@ Draft: "$draft"''';
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text('🥊', style: TextStyle(fontSize: 9.5)),
+                        const Text('ðŸ¥Š', style: TextStyle(fontSize: 9.5)),
                         const SizedBox(width: 3),
                         Text(
-                          hasFought ? 'Fight Done ✓' : '1 Fight Needed ➔',
+                          hasFought ? 'Fight Done âœ“' : '1 Fight Needed âž”',
                           style: GoogleFonts.outfit(
                             color: hasFought
                                 ? const Color(0xFF4ADE80)
@@ -4775,10 +4813,10 @@ Draft: "$draft"''';
           // Bottom Dashboard Summary text + Live Friendship Score
           Text(
             isCompleted
-                ? '🥈 4-Day Spoken Pact Mastered! Silver Trophy awarded to your profile.'
+                ? 'ðŸ¥ˆ 4-Day Spoken Pact Mastered! Silver Trophy awarded to your profile.'
                 : currentStreak >= 4
-                    ? '🥈 4 Days Chat Done! Silver Trophy unlocked • Keep chatting to boost Friendship Score!'
-                    : '💬 Day $currentStreak/4 English Chat • Talk 4 days to earn 🥈 Silver Trophy!',
+                    ? 'ðŸ¥ˆ 4 Days Chat Done! Silver Trophy unlocked â€¢ Keep chatting to boost Friendship Score!'
+                    : 'ðŸ’¬ Day $currentStreak/4 English Chat â€¢ Talk 4 days to earn ðŸ¥ˆ Silver Trophy!',
             style: GoogleFonts.inter(
               color: isCompleted
                   ? const Color(0xFFE2E8F0)
@@ -4797,7 +4835,7 @@ Draft: "$draft"''';
               return Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
-                  '🤝 Friendship Score: $fScore pts • $tierLabel',
+                  'ðŸ¤ Friendship Score: $fScore pts â€¢ $tierLabel',
                   style: GoogleFonts.outfit(
                     color: const Color(0xFF38BDF8),
                     fontSize: 9.5,
@@ -4822,7 +4860,7 @@ Draft: "$draft"''';
               ),
               child: Row(
                 children: [
-                  const Text('🎉', style: TextStyle(fontSize: 14)),
+                  const Text('ðŸŽ‰', style: TextStyle(fontSize: 14)),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -4849,14 +4887,14 @@ Draft: "$draft"''';
                         });
                         await _sendMessage(
                           text:
-                              '🤝 We graduated to Permanent Pocket Mates! 🏆✨',
+                              'ðŸ¤ We graduated to Permanent Pocket Mates! ðŸ†âœ¨',
                           messageType: 'text',
                         );
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text(
-                                  '🤝 Connected as permanent Pocket Mates! Profiles unlocked.'),
+                                  'ðŸ¤ Connected as permanent Pocket Mates! Profiles unlocked.'),
                               backgroundColor: Color(0xFF10B981),
                             ),
                           );
@@ -4872,7 +4910,7 @@ Draft: "$draft"''';
                           borderRadius: BorderRadius.circular(8)),
                     ),
                     child: Text(
-                      'Become Mates 🤝',
+                      'Become Mates ðŸ¤',
                       style: GoogleFonts.outfit(
                         fontWeight: FontWeight.bold,
                         fontSize: 11,
@@ -4900,7 +4938,7 @@ Draft: "$draft"''';
                       foregroundColor: Colors.white60,
                     ),
                     child: Text(
-                      'Next Partner ⚡',
+                      'Next Partner âš¡',
                       style: GoogleFonts.outfit(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -4942,14 +4980,14 @@ Draft: "$draft"''';
             const SizedBox(height: 16),
             Row(
               children: [
-                const Text('🏆', style: TextStyle(fontSize: 24)),
+                const Text('ðŸ†', style: TextStyle(fontSize: 24)),
                 const SizedBox(width: 8),
                 Text(
                   PocketLanguageService.localize(
                     en: 'PocketTalk 4-Day Spoken Pact',
-                    ml: 'പോക്കറ്റ്ടോക്ക് 4-ഡേ സ്പോക്കൺ പാക്ട്',
-                    ta: 'பாக்கெட்டாக் 4-நாள் பேசும் உடன்படிக்கை',
-                    hi: 'पॉकेटटॉक 4-दिवसीय स्पोकन पैक्ट',
+                    ml: 'à´ªàµ‹à´•àµà´•à´±àµà´±àµà´Ÿàµ‹à´•àµà´•àµ 4-à´¡àµ‡ à´¸àµà´ªàµ‹à´•àµà´•àµº à´ªà´¾à´•àµà´Ÿàµ',
+                    ta: 'à®ªà®¾à®•à¯à®•à¯†à®Ÿà¯à®Ÿà®¾à®•à¯ 4-à®¨à®¾à®³à¯ à®ªà¯‡à®šà¯à®®à¯ à®‰à®Ÿà®©à¯à®ªà®Ÿà®¿à®•à¯à®•à¯ˆ',
+                    hi: 'à¤ªà¥‰à¤•à¥‡à¤Ÿà¤Ÿà¥‰à¤• 4-à¤¦à¤¿à¤µà¤¸à¥€à¤¯ à¤¸à¥à¤ªà¥‹à¤•à¤¨ à¤ªà¥ˆà¤•à¥à¤Ÿ',
                   ),
                   style: GoogleFonts.outfit(
                     color: Colors.white,
@@ -4963,9 +5001,9 @@ Draft: "$draft"''';
             Text(
               PocketLanguageService.localize(
                 en: 'A serious mutual agreement to build real conversational fluency in English.',
-                ml: 'ഇംഗ്ലീഷ് സംസാരിക്കാനുള്ള കഴിവ് വളർത്തിയെടുക്കാനുള്ള പരസ്പര പ്രതിജ്ഞ.',
-                ta: 'ஆங்கிலத்தில் பேசும் திறனை வளர்ப்பதற்கான பரஸ்பர உடன்படிக்கை.',
-                hi: 'अंग्रेजी में वास्तविक बातचीत का प्रवाह बनाने के लिए एक गंभीर आपसी समझौता।',
+                ml: 'à´‡à´‚à´—àµà´²àµ€à´·àµ à´¸à´‚à´¸à´¾à´°à´¿à´•àµà´•à´¾à´¨àµà´³àµà´³ à´•à´´à´¿à´µàµ à´µà´³àµ¼à´¤àµà´¤à´¿à´¯àµ†à´Ÿàµà´•àµà´•à´¾à´¨àµà´³àµà´³ à´ªà´°à´¸àµà´ªà´° à´ªàµà´°à´¤à´¿à´œàµà´ž.',
+                ta: 'à®†à®™à¯à®•à®¿à®²à®¤à¯à®¤à®¿à®²à¯ à®ªà¯‡à®šà¯à®®à¯ à®¤à®¿à®±à®©à¯ˆ à®µà®³à®°à¯à®ªà¯à®ªà®¤à®±à¯à®•à®¾à®© à®ªà®°à®¸à¯à®ªà®° à®‰à®Ÿà®©à¯à®ªà®Ÿà®¿à®•à¯à®•à¯ˆ.',
+                hi: 'à¤…à¤‚à¤—à¥à¤°à¥‡à¤œà¥€ à¤®à¥‡à¤‚ à¤µà¤¾à¤¸à¥à¤¤à¤µà¤¿à¤• à¤¬à¤¾à¤¤à¤šà¥€à¤¤ à¤•à¤¾ à¤ªà¥à¤°à¤µà¤¾à¤¹ à¤¬à¤¨à¤¾à¤¨à¥‡ à¤•à¥‡ à¤²à¤¿à¤ à¤à¤• à¤—à¤‚à¤­à¥€à¤° à¤†à¤ªà¤¸à¥€ à¤¸à¤®à¤à¥Œà¤¤à¤¾à¥¤',
               ),
               style: GoogleFonts.inter(color: Colors.white60, fontSize: 12.5),
             ),
@@ -4974,15 +5012,15 @@ Draft: "$draft"''';
               icon: Icons.timer_outlined,
               title: PocketLanguageService.localize(
                 en: '15 Minutes Daily (1 Hour Total)',
-                ml: 'പ്രതിദിനം 15 മിനിറ്റ് (ആകെ 1 മണിക്കൂർ)',
-                ta: 'தினசரி 15 நிமிடங்கள் (மொத்தம் 1 மணிநேரம்)',
-                hi: 'प्रतिदिन 15 मिनट (कुल 1 घंटा)',
+                ml: 'à´ªàµà´°à´¤à´¿à´¦à´¿à´¨à´‚ 15 à´®à´¿à´¨à´¿à´±àµà´±àµ (à´†à´•àµ† 1 à´®à´£à´¿à´•àµà´•àµ‚àµ¼)',
+                ta: 'à®¤à®¿à®©à®šà®°à®¿ 15 à®¨à®¿à®®à®¿à®Ÿà®™à¯à®•à®³à¯ (à®®à¯Šà®¤à¯à®¤à®®à¯ 1 à®®à®£à®¿à®¨à¯‡à®°à®®à¯)',
+                hi: 'à¤ªà¥à¤°à¤¤à¤¿à¤¦à¤¿à¤¨ 15 à¤®à¤¿à¤¨à¤Ÿ (à¤•à¥à¤² 1 à¤˜à¤‚à¤Ÿà¤¾)',
               ),
               desc: PocketLanguageService.localize(
                 en: 'Speak or chat for at least 15 minutes each day for 4 consecutive days (15m x 4 = 60 mins total).',
-                ml: 'തുടർച്ചയായി 4 ദിവസങ്ങളിൽ പ്രതിദിനം കുറഞ്ഞത് 15 മിനിറ്റ് ഇംഗ്ലീഷിൽ സംസാരിക്കുക അല്ലെങ്കിൽ ചാറ്റ് ചെയ്യുക (ആകെ 60 മിനിറ്റ്).',
-                ta: 'தொடர்ந்து 4 நாட்களுக்கு தினமும் குறைந்தது 15 நிமிடங்கள் பேசவும் அல்லது அரட்டையடிக்கவும் (மொத்தம் 60 நிமிடங்கள்).',
-                hi: 'लगातार 4 दिनों तक प्रतिदिन कम से कम 15 मिनट बोलें या चैट करें (कुल 60 मिनट)।',
+                ml: 'à´¤àµà´Ÿàµ¼à´šàµà´šà´¯à´¾à´¯à´¿ 4 à´¦à´¿à´µà´¸à´™àµà´™à´³à´¿àµ½ à´ªàµà´°à´¤à´¿à´¦à´¿à´¨à´‚ à´•àµà´±à´žàµà´žà´¤àµ 15 à´®à´¿à´¨à´¿à´±àµà´±àµ à´‡à´‚à´—àµà´²àµ€à´·à´¿àµ½ à´¸à´‚à´¸à´¾à´°à´¿à´•àµà´•àµà´• à´…à´²àµà´²àµ†à´™àµà´•à´¿àµ½ à´šà´¾à´±àµà´±àµ à´šàµ†à´¯àµà´¯àµà´• (à´†à´•àµ† 60 à´®à´¿à´¨à´¿à´±àµà´±àµ).',
+                ta: 'à®¤à¯Šà®Ÿà®°à¯à®¨à¯à®¤à¯ 4 à®¨à®¾à®Ÿà¯à®•à®³à¯à®•à¯à®•à¯ à®¤à®¿à®©à®®à¯à®®à¯ à®•à¯à®±à¯ˆà®¨à¯à®¤à®¤à¯ 15 à®¨à®¿à®®à®¿à®Ÿà®™à¯à®•à®³à¯ à®ªà¯‡à®šà®µà¯à®®à¯ à®…à®²à¯à®²à®¤à¯ à®…à®°à®Ÿà¯à®Ÿà¯ˆà®¯à®Ÿà®¿à®•à¯à®•à®µà¯à®®à¯ (à®®à¯Šà®¤à¯à®¤à®®à¯ 60 à®¨à®¿à®®à®¿à®Ÿà®™à¯à®•à®³à¯).',
+                hi: 'à¤²à¤—à¤¾à¤¤à¤¾à¤° 4 à¤¦à¤¿à¤¨à¥‹à¤‚ à¤¤à¤• à¤ªà¥à¤°à¤¤à¤¿à¤¦à¤¿à¤¨ à¤•à¤® à¤¸à¥‡ à¤•à¤® 15 à¤®à¤¿à¤¨à¤Ÿ à¤¬à¥‹à¤²à¥‡à¤‚ à¤¯à¤¾ à¤šà¥ˆà¤Ÿ à¤•à¤°à¥‡à¤‚ (à¤•à¥à¤² 60 à¤®à¤¿à¤¨à¤Ÿ)à¥¤',
               ),
               color: const Color(0xFF38BDF8),
             ),
@@ -4991,15 +5029,15 @@ Draft: "$draft"''';
               icon: Icons.trending_down_rounded,
               title: PocketLanguageService.localize(
                 en: 'Loss Aversion: Trophy Penalty',
-                ml: 'ട്രോഫി പെനാൽറ്റി (കമ്മിയാവും)',
-                ta: 'கோப்பை அபராதம் (குறைக்கப்படும்)',
-                hi: 'ट्रॉफी पेनल्टी (नुकसान)',
+                ml: 'à´Ÿàµà´°àµ‹à´«à´¿ à´ªàµ†à´¨à´¾àµ½à´±àµà´±à´¿ (à´•à´®àµà´®à´¿à´¯à´¾à´µàµà´‚)',
+                ta: 'à®•à¯‹à®ªà¯à®ªà¯ˆ à®…à®ªà®°à®¾à®¤à®®à¯ (à®•à¯à®±à¯ˆà®•à¯à®•à®ªà¯à®ªà®Ÿà¯à®®à¯)',
+                hi: 'à¤Ÿà¥à¤°à¥‰à¤«à¥€ à¤ªà¥‡à¤¨à¤²à¥à¤Ÿà¥€ (à¤¨à¥à¤•à¤¸à¤¾à¤¨)',
               ),
               desc: PocketLanguageService.localize(
                 en: 'If either person misses a day or stops chatting before completing 15 mins, the pact breaks and 1 Trophy is deducted from your profile!',
-                ml: 'ആരെങ്കിലും ഒരു ദിവസം നഷ്ടപ്പെടുത്തുകയോ 15 മിനിറ്റ് തികയ്ക്കാതിരിക്കുകയോ ചെയ്താൽ പാക്ട് റദ്ദാകുകയും പ്രൊഫൈലിൽ നിന്ന് 1 ട്രോഫി കമ്മിയാവുകയും ചെയ്യും!',
-                ta: 'யாராவது ஒரு நாளை தவறவிட்டால் அல்லது 15 நிமிடங்களை முடிப்பதற்குள் அரட்டையை நிறுத்தினால், ஒப்பந்தம் முறிந்து 1 கோப்பை கழிக்கப்படும்!',
-                hi: 'यदि कोई भी व्यक्ति एक दिन छोड़ देता है या 15 मिनट पूरा करने से पहले चैट बंद कर देता है, तो पैक्ट टूट जाता है और 1 ट्रॉफी काट ली जाती है!',
+                ml: 'à´†à´°àµ†à´™àµà´•à´¿à´²àµà´‚ à´’à´°àµ à´¦à´¿à´µà´¸à´‚ à´¨à´·àµà´Ÿà´ªàµà´ªàµ†à´Ÿàµà´¤àµà´¤àµà´•à´¯àµ‹ 15 à´®à´¿à´¨à´¿à´±àµà´±àµ à´¤à´¿à´•à´¯àµà´•àµà´•à´¾à´¤à´¿à´°à´¿à´•àµà´•àµà´•à´¯àµ‹ à´šàµ†à´¯àµà´¤à´¾àµ½ à´ªà´¾à´•àµà´Ÿàµ à´±à´¦àµà´¦à´¾à´•àµà´•à´¯àµà´‚ à´ªàµà´°àµŠà´«àµˆà´²à´¿àµ½ à´¨à´¿à´¨àµà´¨àµ 1 à´Ÿàµà´°àµ‹à´«à´¿ à´•à´®àµà´®à´¿à´¯à´¾à´µàµà´•à´¯àµà´‚ à´šàµ†à´¯àµà´¯àµà´‚!',
+                ta: 'à®¯à®¾à®°à®¾à®µà®¤à¯ à®’à®°à¯ à®¨à®¾à®³à¯ˆ à®¤à®µà®±à®µà®¿à®Ÿà¯à®Ÿà®¾à®²à¯ à®…à®²à¯à®²à®¤à¯ 15 à®¨à®¿à®®à®¿à®Ÿà®™à¯à®•à®³à¯ˆ à®®à¯à®Ÿà®¿à®ªà¯à®ªà®¤à®±à¯à®•à¯à®³à¯ à®…à®°à®Ÿà¯à®Ÿà¯ˆà®¯à¯ˆ à®¨à®¿à®±à¯à®¤à¯à®¤à®¿à®©à®¾à®²à¯, à®’à®ªà¯à®ªà®¨à¯à®¤à®®à¯ à®®à¯à®±à®¿à®¨à¯à®¤à¯ 1 à®•à¯‹à®ªà¯à®ªà¯ˆ à®•à®´à®¿à®•à¯à®•à®ªà¯à®ªà®Ÿà¯à®®à¯!',
+                hi: 'à¤¯à¤¦à¤¿ à¤•à¥‹à¤ˆ à¤­à¥€ à¤µà¥à¤¯à¤•à¥à¤¤à¤¿ à¤à¤• à¤¦à¤¿à¤¨ à¤›à¥‹à¤¡à¤¼ à¤¦à¥‡à¤¤à¤¾ à¤¹à¥ˆ à¤¯à¤¾ 15 à¤®à¤¿à¤¨à¤Ÿ à¤ªà¥‚à¤°à¤¾ à¤•à¤°à¤¨à¥‡ à¤¸à¥‡ à¤ªà¤¹à¤²à¥‡ à¤šà¥ˆà¤Ÿ à¤¬à¤‚à¤¦ à¤•à¤° à¤¦à¥‡à¤¤à¤¾ à¤¹à¥ˆ, à¤¤à¥‹ à¤ªà¥ˆà¤•à¥à¤Ÿ à¤Ÿà¥‚à¤Ÿ à¤œà¤¾à¤¤à¤¾ à¤¹à¥ˆ à¤”à¤° 1 à¤Ÿà¥à¤°à¥‰à¤«à¥€ à¤•à¤¾à¤Ÿ à¤²à¥€ à¤œà¤¾à¤¤à¥€ à¤¹à¥ˆ!',
               ),
               color: Colors.redAccent,
             ),
@@ -5008,15 +5046,15 @@ Draft: "$draft"''';
               icon: Icons.g_translate_rounded,
               title: PocketLanguageService.localize(
                 en: 'Strict English Only',
-                ml: 'ഇംഗ്ലീഷ് മാത്രം സംസാരിക്കുക',
-                ta: 'கண்டிப்பான ஆங்கிலம் மட்டுமே',
-                hi: 'केवल सख्त अंग्रेजी',
+                ml: 'à´‡à´‚à´—àµà´²àµ€à´·àµ à´®à´¾à´¤àµà´°à´‚ à´¸à´‚à´¸à´¾à´°à´¿à´•àµà´•àµà´•',
+                ta: 'à®•à®£à¯à®Ÿà®¿à®ªà¯à®ªà®¾à®© à®†à®™à¯à®•à®¿à®²à®®à¯ à®®à®Ÿà¯à®Ÿà¯à®®à¯‡',
+                hi: 'à¤•à¥‡à¤µà¤² à¤¸à¤–à¥à¤¤ à¤…à¤‚à¤—à¥à¤°à¥‡à¤œà¥€',
               ),
               desc: PocketLanguageService.localize(
                 en: 'All messages must be in English. Speaking other languages can be reported via AI check, resetting streak and deducting 50 Pocket Score.',
-                ml: 'എല്ലാ സന്ദേശങ്ങളും ഇംഗ്ലീഷിൽ മാത്രമായിരിക്കണം. മറ്റ് ഭാഷകൾ ഉപയോഗിച്ചാൽ AI ചെക്ക് വഴി 50 പോക്കറ്റ് സ്കോർ കുറയുന്നതാണ്.',
-                ta: 'அனைத்து செய்திகளும் ஆங்கிலத்தில் மட்டுமே இருக்க வேண்டும். பிற மொழிகளைப் பயன்படுத்தினால் 50 பாக்கெட் மதிப்பெண் கழிக்கப்படலாம்.',
-                hi: 'सभी संदेश अंग्रेजी में होने चाहिए। अन्य भाषाओं में बोलने पर AI चेक द्वारा 50 पॉकेट स्कोर काटा जा सकता है।',
+                ml: 'à´Žà´²àµà´²à´¾ à´¸à´¨àµà´¦àµ‡à´¶à´™àµà´™à´³àµà´‚ à´‡à´‚à´—àµà´²àµ€à´·à´¿àµ½ à´®à´¾à´¤àµà´°à´®à´¾à´¯à´¿à´°à´¿à´•àµà´•à´£à´‚. à´®à´±àµà´±àµ à´­à´¾à´·à´•àµ¾ à´‰à´ªà´¯àµ‹à´—à´¿à´šàµà´šà´¾àµ½ AI à´šàµ†à´•àµà´•àµ à´µà´´à´¿ 50 à´ªàµ‹à´•àµà´•à´±àµà´±àµ à´¸àµà´•àµ‹àµ¼ à´•àµà´±à´¯àµà´¨àµà´¨à´¤à´¾à´£àµ.',
+                ta: 'à®…à®©à¯ˆà®¤à¯à®¤à¯ à®šà¯†à®¯à¯à®¤à®¿à®•à®³à¯à®®à¯ à®†à®™à¯à®•à®¿à®²à®¤à¯à®¤à®¿à®²à¯ à®®à®Ÿà¯à®Ÿà¯à®®à¯‡ à®‡à®°à¯à®•à¯à®• à®µà¯‡à®£à¯à®Ÿà¯à®®à¯. à®ªà®¿à®± à®®à¯Šà®´à®¿à®•à®³à¯ˆà®ªà¯ à®ªà®¯à®©à¯à®ªà®Ÿà¯à®¤à¯à®¤à®¿à®©à®¾à®²à¯ 50 à®ªà®¾à®•à¯à®•à¯†à®Ÿà¯ à®®à®¤à®¿à®ªà¯à®ªà¯†à®£à¯ à®•à®´à®¿à®•à¯à®•à®ªà¯à®ªà®Ÿà®²à®¾à®®à¯.',
+                hi: 'à¤¸à¤­à¥€ à¤¸à¤‚à¤¦à¥‡à¤¶ à¤…à¤‚à¤—à¥à¤°à¥‡à¤œà¥€ à¤®à¥‡à¤‚ à¤¹à¥‹à¤¨à¥‡ à¤šà¤¾à¤¹à¤¿à¤à¥¤ à¤…à¤¨à¥à¤¯ à¤­à¤¾à¤·à¤¾à¤“à¤‚ à¤®à¥‡à¤‚ à¤¬à¥‹à¤²à¤¨à¥‡ à¤ªà¤° AI à¤šà¥‡à¤• à¤¦à¥à¤µà¤¾à¤°à¤¾ 50 à¤ªà¥‰à¤•à¥‡à¤Ÿ à¤¸à¥à¤•à¥‹à¤° à¤•à¤¾à¤Ÿà¤¾ à¤œà¤¾ à¤¸à¤•à¤¤à¤¾ à¤¹à¥ˆà¥¤',
               ),
               color: Colors.amberAccent,
             ),
@@ -5025,15 +5063,15 @@ Draft: "$draft"''';
               icon: Icons.emoji_events_rounded,
               title: PocketLanguageService.localize(
                 en: '150-Trophy Master Graduation',
-                ml: '150-ട്രോഫി മാസ്റ്റർ ഗ്രാജ്വേഷൻ',
-                ta: '150-கோப்பை மாஸ்டர் பட்டமளிப்பு',
-                hi: '150-ट्रॉफी मास्टर ग्रेजुएशन',
+                ml: '150-à´Ÿàµà´°àµ‹à´«à´¿ à´®à´¾à´¸àµà´±àµà´±àµ¼ à´—àµà´°à´¾à´œàµà´µàµ‡à´·àµ»',
+                ta: '150-à®•à¯‹à®ªà¯à®ªà¯ˆ à®®à®¾à®¸à¯à®Ÿà®°à¯ à®ªà®Ÿà¯à®Ÿà®®à®³à®¿à®ªà¯à®ªà¯',
+                hi: '150-à¤Ÿà¥à¤°à¥‰à¤«à¥€ à¤®à¤¾à¤¸à¥à¤Ÿà¤° à¤—à¥à¤°à¥‡à¤œà¥à¤à¤¶à¤¨',
               ),
               desc: PocketLanguageService.localize(
-                en: 'Completing all 4 days awards 1 Spoken Trophy 🏆 and unlocks mutual full profiles. Reach 150 Trophies to graduate at Level 90!',
-                ml: '4 ദിവസവും വിജയകരമായി പൂർത്തിയാക്കിയാൽ 1 സിൽവർ ട്രോഫിയും 🏆 ഫുൾ പ്രൊഫൈൽ അൺലോക്കും ലഭിക്കും. ലെവൽ 90-ൽ ഗ്രാജ്വേറ്റ് ചെയ്യാൻ 150 ട്രോഫികൾ നേടുക!',
-                ta: '4 நாட்களையும் முடித்தால் 1 பேசும் கோப்பை 🏆 மற்றும் முழு சுயவிவரம் திறக்கப்படும். நிலை 90 இல் தேர்ச்சி பெற 150 கோப்பைகளை அடையுங்கள்!',
-                hi: 'सभी 4 दिन पूरे करने पर 1 स्पोकन ट्रॉफी 🏆 मिलती है और पूर्ण प्रोफाइल अनलॉक होती है। लेवल 90 पर स्नातक होने के लिए 150 ट्रॉफियां हासिल करें!',
+                en: 'Completing all 4 days awards 1 Spoken Trophy ðŸ† and unlocks mutual full profiles. Reach 150 Trophies to graduate at Level 90!',
+                ml: '4 à´¦à´¿à´µà´¸à´µàµà´‚ à´µà´¿à´œà´¯à´•à´°à´®à´¾à´¯à´¿ à´ªàµ‚àµ¼à´¤àµà´¤à´¿à´¯à´¾à´•àµà´•à´¿à´¯à´¾àµ½ 1 à´¸à´¿àµ½à´µàµ¼ à´Ÿàµà´°àµ‹à´«à´¿à´¯àµà´‚ ðŸ† à´«àµàµ¾ à´ªàµà´°àµŠà´«àµˆàµ½ à´…àµºà´²àµ‹à´•àµà´•àµà´‚ à´²à´­à´¿à´•àµà´•àµà´‚. à´²àµ†à´µàµ½ 90-àµ½ à´—àµà´°à´¾à´œàµà´µàµ‡à´±àµà´±àµ à´šàµ†à´¯àµà´¯à´¾àµ» 150 à´Ÿàµà´°àµ‹à´«à´¿à´•àµ¾ à´¨àµ‡à´Ÿàµà´•!',
+                ta: '4 à®¨à®¾à®Ÿà¯à®•à®³à¯ˆà®¯à¯à®®à¯ à®®à¯à®Ÿà®¿à®¤à¯à®¤à®¾à®²à¯ 1 à®ªà¯‡à®šà¯à®®à¯ à®•à¯‹à®ªà¯à®ªà¯ˆ ðŸ† à®®à®±à¯à®±à¯à®®à¯ à®®à¯à®´à¯ à®šà¯à®¯à®µà®¿à®µà®°à®®à¯ à®¤à®¿à®±à®•à¯à®•à®ªà¯à®ªà®Ÿà¯à®®à¯. à®¨à®¿à®²à¯ˆ 90 à®‡à®²à¯ à®¤à¯‡à®°à¯à®šà¯à®šà®¿ à®ªà¯†à®± 150 à®•à¯‹à®ªà¯à®ªà¯ˆà®•à®³à¯ˆ à®…à®Ÿà¯ˆà®¯à¯à®™à¯à®•à®³à¯!',
+                hi: 'à¤¸à¤­à¥€ 4 à¤¦à¤¿à¤¨ à¤ªà¥‚à¤°à¥‡ à¤•à¤°à¤¨à¥‡ à¤ªà¤° 1 à¤¸à¥à¤ªà¥‹à¤•à¤¨ à¤Ÿà¥à¤°à¥‰à¤«à¥€ ðŸ† à¤®à¤¿à¤²à¤¤à¥€ à¤¹à¥ˆ à¤”à¤° à¤ªà¥‚à¤°à¥à¤£ à¤ªà¥à¤°à¥‹à¤«à¤¾à¤‡à¤² à¤…à¤¨à¤²à¥‰à¤• à¤¹à¥‹à¤¤à¥€ à¤¹à¥ˆà¥¤ à¤²à¥‡à¤µà¤² 90 à¤ªà¤° à¤¸à¥à¤¨à¤¾à¤¤à¤• à¤¹à¥‹à¤¨à¥‡ à¤•à¥‡ à¤²à¤¿à¤ 150 à¤Ÿà¥à¤°à¥‰à¤«à¤¿à¤¯à¤¾à¤‚ à¤¹à¤¾à¤¸à¤¿à¤² à¤•à¤°à¥‡à¤‚!',
               ),
               color: const Color(0xFFFFD700),
             ),
@@ -5042,15 +5080,15 @@ Draft: "$draft"''';
               icon: Icons.swap_horiz_rounded,
               title: PocketLanguageService.localize(
                 en: 'Day 1 Safe Swap Grace Period',
-                ml: 'ഡേ 1 സേഫ് സ്വാപ്പ് ഗ്രേസ് പിരീഡ്',
-                ta: 'நாள் 1 பாதுகாப்பான மாற்ற சலுகைக் காலம்',
-                hi: 'डे 1 सुरक्षित स्वैप छूट अवधि',
+                ml: 'à´¡àµ‡ 1 à´¸àµ‡à´«àµ à´¸àµà´µà´¾à´ªàµà´ªàµ à´—àµà´°àµ‡à´¸àµ à´ªà´¿à´°àµ€à´¡àµ',
+                ta: 'à®¨à®¾à®³à¯ 1 à®ªà®¾à®¤à¯à®•à®¾à®ªà¯à®ªà®¾à®© à®®à®¾à®±à¯à®± à®šà®²à¯à®•à¯ˆà®•à¯ à®•à®¾à®²à®®à¯',
+                hi: 'à¤¡à¥‡ 1 à¤¸à¥à¤°à¤•à¥à¤·à¤¿à¤¤ à¤¸à¥à¤µà¥ˆà¤ª à¤›à¥‚à¤Ÿ à¤…à¤µà¤§à¤¿',
               ),
               desc: PocketLanguageService.localize(
                 en: 'Not feeling the vibe or partner inactive on Day 1? Swap partners with zero Trophy penalty! Automatic match refills ensure you never get stuck.',
-                ml: 'ഡേ 1-ൽ പങ്കാളി സജീവമല്ലെങ്കിലോ മാറ്റം വേണമെങ്കിലോ ട്രോഫി നഷ്ടമില്ലാതെ പാർട്ണറെ മാറ്റാം!',
-                ta: 'நாள் 1 இல் பார்ட்னர் செயல்படவில்லையா? எந்தக் கோப்பை அபராதமும் இல்லாமல் பார்ட்னரை மாற்றிக் கொள்ளுங்கள்!',
-                hi: 'डे 1 पर पार्टनर सक्रिय नहीं है? बिना किसी ट्रॉफी पेनल्टी के पार्टनर बदलें!',
+                ml: 'à´¡àµ‡ 1-àµ½ à´ªà´™àµà´•à´¾à´³à´¿ à´¸à´œàµ€à´µà´®à´²àµà´²àµ†à´™àµà´•à´¿à´²àµ‹ à´®à´¾à´±àµà´±à´‚ à´µàµ‡à´£à´®àµ†à´™àµà´•à´¿à´²àµ‹ à´Ÿàµà´°àµ‹à´«à´¿ à´¨à´·àµà´Ÿà´®à´¿à´²àµà´²à´¾à´¤àµ† à´ªà´¾àµ¼à´Ÿàµà´£à´±àµ† à´®à´¾à´±àµà´±à´¾à´‚!',
+                ta: 'à®¨à®¾à®³à¯ 1 à®‡à®²à¯ à®ªà®¾à®°à¯à®Ÿà¯à®©à®°à¯ à®šà¯†à®¯à®²à¯à®ªà®Ÿà®µà®¿à®²à¯à®²à¯ˆà®¯à®¾? à®Žà®¨à¯à®¤à®•à¯ à®•à¯‹à®ªà¯à®ªà¯ˆ à®…à®ªà®°à®¾à®¤à®®à¯à®®à¯ à®‡à®²à¯à®²à®¾à®®à®²à¯ à®ªà®¾à®°à¯à®Ÿà¯à®©à®°à¯ˆ à®®à®¾à®±à¯à®±à®¿à®•à¯ à®•à¯Šà®³à¯à®³à¯à®™à¯à®•à®³à¯!',
+                hi: 'à¤¡à¥‡ 1 à¤ªà¤° à¤ªà¤¾à¤°à¥à¤Ÿà¤¨à¤° à¤¸à¤•à¥à¤°à¤¿à¤¯ à¤¨à¤¹à¥€à¤‚ à¤¹à¥ˆ? à¤¬à¤¿à¤¨à¤¾ à¤•à¤¿à¤¸à¥€ à¤Ÿà¥à¤°à¥‰à¤«à¥€ à¤ªà¥‡à¤¨à¤²à¥à¤Ÿà¥€ à¤•à¥‡ à¤ªà¤¾à¤°à¥à¤Ÿà¤¨à¤° à¤¬à¤¦à¤²à¥‡à¤‚!',
               ),
               color: const Color(0xFF818CF8),
             ),
@@ -5183,7 +5221,7 @@ Draft: "$draft"''';
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text(
-                        '🚨 Non-English confirmed! 50 Pocket Score deducted from offender and streak reset to Day 1.'),
+                        'ðŸš¨ Non-English confirmed! 50 Pocket Score deducted from offender and streak reset to Day 1.'),
                     backgroundColor: Colors.red,
                   ),
                 );
@@ -5213,7 +5251,7 @@ Draft: "$draft"''';
       'Speaking level mismatch',
       'Incompatible conversation style',
       'Looking for a different topic focus',
-      '🚨 Inappropriate behavior (Report & Swap)',
+      'ðŸš¨ Inappropriate behavior (Report & Swap)',
     ];
 
     showModalBottomSheet(
@@ -5270,7 +5308,7 @@ Draft: "$draft"''';
                             ),
                           ),
                           Text(
-                            'Exchange partner today without losing any Trophies 🛡️',
+                            'Exchange partner today without losing any Trophies ðŸ›¡ï¸',
                             style: GoogleFonts.inter(
                               color: const Color(0xFF4ADE80),
                               fontSize: 11,
@@ -5293,7 +5331,7 @@ Draft: "$draft"''';
                 const SizedBox(height: 10),
                 ...reasons.map((r) {
                   final isSelected = selectedReason == r;
-                  final isReport = r.startsWith('🚨');
+                  final isReport = r.startsWith('ðŸš¨');
                   return InkWell(
                     onTap: () {
                       setModalState(() {
@@ -5372,7 +5410,7 @@ Draft: "$draft"''';
                       flex: 2,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: selectedReason.startsWith('🚨')
+                          backgroundColor: selectedReason.startsWith('ðŸš¨')
                               ? Colors.redAccent
                               : const Color(0xFF6366F1),
                           foregroundColor: Colors.white,
@@ -5385,7 +5423,7 @@ Draft: "$draft"''';
                           Navigator.pop(ctx);
                           HapticFeedback.mediumImpact();
 
-                          if (selectedReason.startsWith('🚨')) {
+                          if (selectedReason.startsWith('ðŸš¨')) {
                             ReportHelper.showReportDialog(
                               context: context,
                               contentType: 'user',
@@ -5416,7 +5454,7 @@ Draft: "$draft"''';
                             messenger.showSnackBar(
                               const SnackBar(
                                 content: Text(
-                                    '🔄 Partner swapped safely (0 Trophy penalty). Matching new speaking companion! ⚡'),
+                                    'ðŸ”„ Partner swapped safely (0 Trophy penalty). Matching new speaking companion! âš¡'),
                                 backgroundColor: Color(0xFF10B981),
                                 behavior: SnackBarBehavior.floating,
                               ),
@@ -5425,9 +5463,9 @@ Draft: "$draft"''';
                           }
                         },
                         child: Text(
-                          selectedReason.startsWith('🚨')
-                              ? 'Report & Swap 🔄'
-                              : 'Confirm Swap (0 Penalty) 🔄',
+                          selectedReason.startsWith('ðŸš¨')
+                              ? 'Report & Swap ðŸ”„'
+                              : 'Confirm Swap (0 Penalty) ðŸ”„',
                           style: GoogleFonts.outfit(
                             fontWeight: FontWeight.bold,
                             fontSize: 12.5,
@@ -5447,50 +5485,627 @@ Draft: "$draft"''';
 
   @override
   Widget build(BuildContext context) {
-    const backgroundColor = Color(0xFF070B0D);
-    const appBarColor = Color(0xFF121B22);
-    const accentColor = Color(0xFFFFD600);
+    final ValueListenable<int> themeListenable = _isPocketCoupleGroup
+        ? PocketSpendPage.coupleThemeNotifier
+        : PocketSpendPage.getGroupThemeNotifier(
+            _currentGroupId,
+            defaultIndex: 0,
+          );
+    return ValueListenableBuilder<int>(
+      valueListenable: themeListenable,
+      builder: (context, activeThemeIdx, _) {
+        final PocketSpendCoupleTheme? coupleTheme = _isPocketCoupleGroup
+            ? PocketSpendPage.getCoupleTheme(activeThemeIdx)
+            : (!_isPersonalChat
+                ? PocketSpendPage.getGroupTheme(activeThemeIdx)
+                : null);
+        final backgroundColor = coupleTheme != null
+            ? coupleTheme.bgGradient.first
+            : const Color(0xFF070B0D);
+        final appBarColor = coupleTheme != null
+            ? coupleTheme.cardColor
+            : const Color(0xFF121B22);
+        final accentColor =
+            coupleTheme != null ? coupleTheme.accent : const Color(0xFFFFD600);
+        final appBarTextColor =
+            coupleTheme != null ? coupleTheme.textColor : Colors.white;
+        final appBarSubTextColor =
+            coupleTheme != null ? coupleTheme.subTextColor : Colors.white60;
 
-    final chatMessagesAsync = ref.watch(chatMessagesProvider(_currentGroupId));
+        final chatMessagesAsync = _currentGroupId == 'pocket_couple_default'
+            ? const AsyncValue<List<ChatMessage>>.data([])
+            : ref.watch(chatMessagesProvider(_currentGroupId));
 
-    return Theme(
-      data: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: backgroundColor,
-        canvasColor: backgroundColor,
-        primaryColor: accentColor,
-      ),
-      child: Scaffold(
-        key: _scaffoldKey,
-        endDrawerEnableOpenDragGesture: false,
-        endDrawer:
-            _isPersonalChat ? _buildFriendshipDashboardDrawer(context) : null,
-        backgroundColor: backgroundColor,
-        appBar: AppBar(
-          primary: widget.showBackButton,
-          backgroundColor: appBarColor,
-          elevation: 0,
-          toolbarHeight: 56,
-          leadingWidth: widget.showBackButton ? 48 : 12,
-          titleSpacing: 0,
-          leading: widget.showBackButton
-              ? IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                      color: Colors.white, size: 20),
-                  padding: const EdgeInsets.only(left: 6),
-                  constraints:
-                      const BoxConstraints(minWidth: 44, minHeight: 44),
-                  splashRadius: 22,
-                  onPressed: () => Navigator.pop(context),
-                  tooltip: 'Back',
-                )
-              : null,
-          title: Row(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  if (_isPersonalChat) {
-                    final targetId = _personalPeerId;
-                    if (targetId.isNotEmpty) {
+        return Theme(
+          data: (coupleTheme != null && !coupleTheme.isDark
+                  ? ThemeData.light()
+                  : ThemeData.dark())
+              .copyWith(
+            scaffoldBackgroundColor: backgroundColor,
+            canvasColor: appBarColor,
+            primaryColor: accentColor,
+          ),
+          child: Scaffold(
+            key: _scaffoldKey,
+            endDrawerEnableOpenDragGesture: false,
+            endDrawer: _isPersonalChat
+                ? _buildFriendshipDashboardDrawer(context)
+                : null,
+            backgroundColor: backgroundColor,
+            appBar: AppBar(
+              primary: widget.showBackButton,
+              backgroundColor: appBarColor,
+              foregroundColor: appBarTextColor,
+              iconTheme: IconThemeData(color: appBarTextColor),
+              elevation: 0,
+              toolbarHeight: 56,
+              leadingWidth: widget.showBackButton ? 48 : 12,
+              titleSpacing: 0,
+              leading: widget.showBackButton
+                  ? IconButton(
+                      icon: Icon(Icons.arrow_back_ios_new_rounded,
+                          color: appBarTextColor, size: 20),
+                      padding: const EdgeInsets.only(left: 6),
+                      constraints:
+                          const BoxConstraints(minWidth: 44, minHeight: 44),
+                      splashRadius: 22,
+                      onPressed: () => Navigator.pop(context),
+                      tooltip: 'Back',
+                    )
+                  : null,
+              title: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      if (_isPersonalChat) {
+                        final targetId = _personalPeerId;
+                        if (targetId.isNotEmpty) {
+                          final displayName =
+                              ContactsNameService().getDisplayName(
+                            userId: targetId,
+                            fallbackName: _currentGroupName.isNotEmpty
+                                ? _currentGroupName
+                                : widget.groupName,
+                          );
+                          final userStage = _userPocketStageCache[targetId] ??
+                              (widget.avatarConfig?['stage'] as num?)
+                                  ?.toInt() ??
+                              (widget.avatarConfig?['learning_day'] as num?)
+                                  ?.toInt() ??
+                              (widget.avatarConfig?['level'] as num?)
+                                  ?.toInt() ??
+                              1;
+                          PocketCitadelAttackPage.openForUser(
+                            context,
+                            userId: targetId,
+                            targetName:
+                                displayName.isNotEmpty ? displayName : null,
+                            targetDay: userStage > 0 ? userStage : null,
+                            preloadedProfile: {
+                              'id': targetId,
+                              'user_id': targetId,
+                              'name': displayName,
+                              'learning_day': userStage,
+                              'level': userStage,
+                              'avatar_config': widget.avatarConfig,
+                            },
+                          );
+                        }
+                        return;
+                      }
+                      if (widget.groupImage != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ImageViewer(
+                              imageUrl: widget.groupImage!,
+                              title: widget.groupName,
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    child: Hero(
+                      tag: 'group_avatar_${widget.groupId}',
+                      child: _isPersonalChat
+                          ? (PocketPresidentService.isPresidentId(
+                                  _personalPeerId)
+                              ? const PresidentAvatarWidget(size: 34)
+                              : Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    Container(
+                                      width: 34,
+                                      height: 34,
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: PocketPrivacyAvatarFlipWidget(
+                                        avatarConfig: _getPersonalAvatarConfig(
+                                          _personalPeerId,
+                                        ),
+                                        profileImageUrl:
+                                            _userPhotoUrlCache[_personalPeerId],
+                                        size: 34,
+                                        isPrivate: _userIsPrivateCache[
+                                                _personalPeerId] ??
+                                            false,
+                                        isMate: true,
+                                        enableTapPeekFlip: true,
+                                      ),
+                                    ),
+                                    Positioned(
+                                      right: 0,
+                                      bottom: 0,
+                                      child: Container(
+                                        width: 9,
+                                        height: 9,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF22C55E),
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: const Color(0xFF121B22),
+                                            width: 1.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ))
+                          : (_isEnglishHubGroup
+                              ? Container(
+                                  width: 34,
+                                  height: 34,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: const Color(0xFFFFD600),
+                                      width: 1.2,
+                                    ),
+                                  ),
+                                  child: ClipOval(
+                                    child: VectorAvatarWidget(
+                                      config: EnglishHubLevelGroupService
+                                          .getEnglishHubAvatarConfig(
+                                              _currentGroupName),
+                                      size: 34,
+                                      showAura: true,
+                                    ),
+                                  ),
+                                )
+                              : (_isPocketCoupleGroup
+                                  ? Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Container(
+                                          width: 34,
+                                          height: 34,
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFEF4444)
+                                                .withValues(alpha: 0.2),
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: const Color(0xFFFF4D8D),
+                                              width: 1.3,
+                                            ),
+                                          ),
+                                          child: const Icon(
+                                            Icons.favorite_rounded,
+                                            color: Color(0xFFFF4D8D),
+                                            size: 19,
+                                          ),
+                                        ),
+                                        if (_groupMembers.length >= 2) ...[
+                                          const SizedBox(width: 4),
+                                          const CircleAvatar(
+                                            radius: 14,
+                                            backgroundColor: Color(0xFF450A2A),
+                                            child: Icon(
+                                              Icons.person_rounded,
+                                              color: Color(0xFFFFB3C6),
+                                              size: 16,
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    )
+                                  : (_isIslandNeighborsGroup
+                                      ? Container(
+                                          width: 34,
+                                          height: 34,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: PocketIslandGroupService
+                                                  .getPlanetThemeColor(
+                                                      _currentGroupName),
+                                              width: 1.2,
+                                            ),
+                                          ),
+                                          child: ClipOval(
+                                            child: VectorAvatarWidget(
+                                              config: PocketIslandGroupService
+                                                  .getIslandGroupAvatarConfig(
+                                                      _currentGroupName),
+                                              size: 34,
+                                              showAura: true,
+                                            ),
+                                          ),
+                                        )
+                                      : (widget.groupImage != null &&
+                                              !widget.groupImage!
+                                                  .startsWith('assets')
+                                          ? CircleAvatar(
+                                              radius: 17,
+                                              backgroundColor: Colors.grey[800],
+                                              backgroundImage: NetworkImage(
+                                                  widget.groupImage!),
+                                            )
+                                          : Container(
+                                              width: 34,
+                                              height: 34,
+                                              decoration: const BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                gradient: LinearGradient(
+                                                  colors: [
+                                                    Color(0xFF4F46E5),
+                                                    Color(0xFF7C3AED)
+                                                  ],
+                                                ),
+                                              ),
+                                              child: const Center(
+                                                child: Icon(
+                                                    Icons.groups_rounded,
+                                                    color: Colors.white,
+                                                    size: 18),
+                                              ),
+                                            ))))),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () {
+                        if (_isPersonalChat && !_isPocketCoupleGroup) {
+                          final targetId = _personalPeerId;
+                          if (targetId.isNotEmpty) {
+                            final displayName =
+                                ContactsNameService().getDisplayName(
+                              userId: targetId,
+                              fallbackName: _currentGroupName.isNotEmpty
+                                  ? _currentGroupName
+                                  : widget.groupName,
+                            );
+                            final userStage = _userPocketStageCache[targetId] ??
+                                (widget.avatarConfig?['stage'] as num?)
+                                    ?.toInt() ??
+                                (widget.avatarConfig?['learning_day'] as num?)
+                                    ?.toInt() ??
+                                (widget.avatarConfig?['level'] as num?)
+                                    ?.toInt() ??
+                                1;
+                            PocketCitadelAttackPage.openForUser(
+                              context,
+                              userId: targetId,
+                              targetName:
+                                  displayName.isNotEmpty ? displayName : null,
+                              targetDay: userStage > 0 ? userStage : null,
+                              preloadedProfile: {
+                                'id': targetId,
+                                'user_id': targetId,
+                                'name': displayName,
+                                'learning_day': userStage,
+                                'level': userStage,
+                                'avatar_config': widget.avatarConfig,
+                              },
+                            );
+                          }
+                        } else {
+                          _showGroupInfo();
+                        }
+                      },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Builder(
+                            builder: (context) {
+                              final targetId = _personalPeerId;
+                              final isPresident =
+                                  PocketPresidentService.isPresidentId(
+                                      targetId);
+                              final isKidKing =
+                                  targetId == 'mentor_animal_king_lion' ||
+                                      targetId == 'kid_bot_100';
+                              final rank =
+                                  PocketRankingService.getCachedGlobalRank(
+                                      targetId);
+                              final isTopRank =
+                                  rank != null && rank > 0 && rank <= 10;
+                              final isVip = isPresident ||
+                                  isKidKing ||
+                                  isTopRank ||
+                                  _currentGroupName
+                                      .toLowerCase()
+                                      .contains('vip');
+
+                              return Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      isPresident
+                                          ? 'President'
+                                          : (isKidKing
+                                              ? 'King'
+                                              : (_isPersonalChat
+                                                  ? ContactsNameService()
+                                                      .getDisplayName(
+                                                      userId: targetId,
+                                                      fallbackName:
+                                                          _currentGroupName,
+                                                    )
+                                                  : _currentGroupName)),
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                        color: appBarTextColor,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  if (isVip)
+                                    Container(
+                                      margin: const EdgeInsets.only(left: 5),
+                                      child: const Icon(
+                                        Icons.verified_rounded,
+                                        color: Color(0xFFFFD700),
+                                        size: 14.5,
+                                      ),
+                                    )
+                                  else if (_isPersonalChat)
+                                    Container(
+                                      margin: const EdgeInsets.only(left: 6),
+                                      width: 7,
+                                      height: 7,
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFF22C55E),
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                ],
+                              );
+                            },
+                          ),
+                          ValueListenableBuilder<Map<String, bool>>(
+                            valueListenable:
+                                PocketRobotService.typingStatusNotifier,
+                            builder: (context, typingMap, _) {
+                              final targetId = _personalPeerId;
+                              String? activeTypingId;
+                              if (_isPersonalChat) {
+                                if (typingMap[targetId] == true) {
+                                  activeTypingId = targetId;
+                                }
+                              } else {
+                                if (typingMap[widget.groupId] == true) {
+                                  activeTypingId = widget.groupId;
+                                } else {
+                                  for (final entry in typingMap.entries) {
+                                    if (entry.value == true &&
+                                        PocketRobotService.isRobotId(
+                                            entry.key)) {
+                                      activeTypingId = entry.key;
+                                      break;
+                                    }
+                                  }
+                                }
+                              }
+
+                              if (activeTypingId != null) {
+                                final isRobot = PocketRobotService.isRobotId(
+                                    activeTypingId);
+                                final robot = isRobot
+                                    ? PocketRobotService.getRobotById(
+                                        activeTypingId)
+                                    : null;
+                                final namePrefix = robot != null
+                                    ? 'ðŸ¤– ${robot.name}'
+                                    : (isRobot
+                                        ? (PocketRobotService.getRobotById(
+                                                    activeTypingId)
+                                                ?.name ??
+                                            widget.groupName)
+                                        : widget.groupName);
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 1.5),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        '$namePrefix is typing...',
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          color: Color(0xFF25D366),
+                                          fontWeight: FontWeight.bold,
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+
+                              final isPresident =
+                                  PocketPresidentService.isPresidentId(
+                                      targetId);
+                              final isKidKing =
+                                  targetId == 'mentor_animal_king_lion' ||
+                                      targetId == 'kid_bot_100';
+                              if (isKidKing) {
+                                return const Padding(
+                                  padding: EdgeInsets.only(top: 1.5),
+                                  child: Text(
+                                    'Supreme Animal King â€¢ Kids Mentor',
+                                    style: TextStyle(
+                                      fontSize: 10.5,
+                                      color: Color(0xFFFFD700),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                );
+                              }
+                              if (isPresident) {
+                                return const Padding(
+                                  padding: EdgeInsets.only(top: 1.5),
+                                  child: Text(
+                                    'Official Presidential Desk',
+                                    style: TextStyle(
+                                      fontSize: 10.5,
+                                      color: Color(0xFFFFD700),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                );
+                              }
+                              final isRobot =
+                                  PocketRobotService.isRobotId(targetId);
+                              if (isRobot) {
+                                final robot =
+                                    PocketRobotService.getRobotById(targetId);
+                                final dynLvl = robot != null
+                                    ? PocketRobotService.getDynamicLevel(robot)
+                                    : 1;
+                                final trophies = robot != null
+                                    ? PocketRobotService.getTrophiesForRobot(
+                                        robot)
+                                    : 0;
+                                final trophyBadge =
+                                    trophies > 0 ? ' â€¢ ðŸ†x$trophies' : '';
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 1.5),
+                                  child: Text(
+                                    'Pocket Robot â€¢ Lvl $dynLvl$trophyBadge',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: Color(0xFF38BDF8),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                );
+                              }
+                              if (_isPersonalChat) {
+                                final stage =
+                                    _userPocketStageCache[targetId] ?? 1;
+                                final rank =
+                                    PocketRankingService.getCachedGlobalRank(
+                                        targetId);
+                                if (rank == null && targetId.isNotEmpty) {
+                                  _fetchUserRankAsync(targetId);
+                                }
+                                final isStudent =
+                                    PocketKidsService.isKidAccount;
+                                final rankPrefix =
+                                    isStudent ? 'Student Rank' : 'Global Rank';
+                                final rankText = rank != null && rank > 0
+                                    ? '$rankPrefix #$rank'
+                                    : '$rankPrefix #--';
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 1.5),
+                                  child: Text(
+                                    'Lvl $stage â€¢ $rankText',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: Color(0xFF38BDF8),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                );
+                              }
+                              if (_isIslandNeighborsGroup) {
+                                final neighborCount = _groupMembers.length;
+                                final islandName =
+                                    _islandColonyInfo?.planetName ??
+                                        _currentGroupName;
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 1.5),
+                                  child: Text(
+                                    neighborCount > 0
+                                        ? '$islandName â€¢ $neighborCount/25 Neighbors'
+                                        : '$islandName â€¢ Island Neighbors',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: appBarSubTextColor,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                );
+                              }
+                              final hubRobots = _isEnglishHubGroup
+                                  ? PocketRobotService.getRobotsForLevelBracket(
+                                      _hubMinLevel, _hubMaxLevel)
+                                  : <PocketRobot>[];
+                              final totalCount =
+                                  _groupMembers.length + hubRobots.length;
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 1.5),
+                                child: Text(
+                                  totalCount > 0
+                                      ? (_isEnglishHubGroup &&
+                                              hubRobots.isNotEmpty
+                                          ? '$totalCount members (${_groupMembers.length} Learners â€¢ ${hubRobots.length} AI Mates)'
+                                          : '$totalCount members')
+                                      : 'Group',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: appBarSubTextColor,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                if (_isPocketCoupleGroup)
+                  IconButton(
+                    icon: Icon(Icons.account_balance_wallet_rounded,
+                        color: accentColor, size: 22),
+                    tooltip: 'Open Pocket Spend ðŸ’°',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const PocketSpendPage()),
+                      );
+                    },
+                  ),
+                if (_isKidMode)
+                  IconButton(
+                    icon: const Icon(Icons.shield_rounded,
+                        color: Color(0xFFFFD700), size: 22),
+                    tooltip: 'Citadel Challenge ðŸ°',
+                    onPressed: () {
+                      final targetId = _personalPeerId;
                       final displayName = ContactsNameService().getDisplayName(
                         userId: targetId,
                         fallbackName: _currentGroupName.isNotEmpty
@@ -5517,1007 +6132,627 @@ Draft: "$draft"''';
                           'avatar_config': widget.avatarConfig,
                         },
                       );
+                    },
+                  ),
+                if (!_isKidMode &&
+                    !PocketPresidentService.isPresidentId(_personalPeerId)) ...[
+                  if (_isPersonalChat) ...[
+                    IconButton(
+                      icon: const Text('ðŸ”¥', style: TextStyle(fontSize: 18)),
+                      tooltip: 'Fluency Streak ðŸ”¥',
+                      onPressed: () => _showMateFluencyStreakSheet(context),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.favorite_outline_rounded,
+                          color: Color(0xFFF43F5E), size: 20),
+                      tooltip: 'Friendship Dashboard â¤ï¸',
+                      onPressed: () => _showFriendshipDashboardSheet(context),
+                    ),
+                  ],
+                ],
+                if (_isEnglishHubGroup) ...[
+                  // ðŸŽ² MINIMAL IN-PLACE SHUFFLE BUTTON (User Audio Directive: No page route change, in-place reload with smooth feedback)
+                  IconButton(
+                    icon: const Icon(Icons.casino_rounded,
+                        color: Color(0xFFFFD600), size: 22),
+                    tooltip: 'Shuffle English Hub Room ðŸŽ²',
+                    onPressed: _isShuffling
+                        ? null
+                        : () async {
+                            HapticFeedback.mediumImpact();
+                            final isStudent = PocketKidsService.isStudentWorld;
+                            safeSetState(() {
+                              _isShuffling = true;
+                            });
+
+                            try {
+                              final newGroup = await EnglishHubLevelGroupService
+                                  .shuffleAndAssignEnglishHubGroup(
+                                userId: _currentUserId,
+                                isStudentMode: isStudent,
+                                forceNewRoom: true,
+                                currentGroupId: _currentGroupId,
+                              );
+
+                              // In-place identity switch without route replacement!
+                              safeSetState(() {
+                                _currentGroupId = newGroup.groupId;
+                                _currentGroupName = newGroup.groupName;
+                              });
+
+                              InAppNotificationService.currentActiveChatId =
+                                  _currentGroupId;
+                              // Invalidate & refresh chat messages provider for this group
+                              ref.invalidate(
+                                  chatMessagesProvider(_currentGroupId));
+                              _fetchMembers();
+
+                              // Smooth visual transition delay
+                              await Future.delayed(
+                                  const Duration(milliseconds: 300));
+                            } catch (e) {
+                              debugPrint(
+                                  'Error shuffling English Hub in-place: $e');
+                            } finally {
+                              if (mounted) {
+                                safeSetState(() {
+                                  _isShuffling = false;
+                                });
+                              }
+                            }
+                          },
+                  ),
+                ],
+                if (_isIslandNeighborsGroup)
+                  IconButton(
+                    icon: const Icon(Icons.public_rounded,
+                        color: Color(0xFF38BDF8), size: 22),
+                    tooltip: 'Island Map ðŸ—ºï¸',
+                    onPressed: _openIslandMapDirectly,
+                  ),
+                PopupMenuButton<String>(
+                  icon: Icon(Icons.more_vert, color: appBarTextColor),
+                  color: appBarColor,
+                  onSelected: (value) async {
+                    if (value == 'switch_world') {
+                      PocketWorldModeSelectionDialog.show(context);
                     }
-                    return;
-                  }
-                  if (widget.groupImage != null) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ImageViewer(
-                          imageUrl: widget.groupImage!,
-                          title: widget.groupName,
+                    if (value == 'refresh') _handleRefresh();
+                    if (value == 'info') _showGroupInfo();
+                    if (value == 'topics') {
+                      _showDailyIcebreakerModal();
+                    }
+                    if (value == 'ai_tutor') {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: const Color(0xFF0B0D13),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(20)),
                         ),
-                      ),
-                    );
-                  }
-                },
-                child: Hero(
-                  tag: 'group_avatar_${widget.groupId}',
-                  child: _isPersonalChat
-                      ? (PocketPresidentService.isPresidentId(_personalPeerId)
-                          ? const PresidentAvatarWidget(size: 34)
-                          : Stack(
-                              clipBehavior: Clip.none,
+                        builder: (context) {
+                          return const AIEnglishTutorSheet();
+                        },
+                      );
+                    }
+                    if (value == 'toggle_robots') {
+                      final newState = !_isEnglishHubRobotsEnabled;
+                      safeSetState(() {
+                        _isEnglishHubRobotsEnabled = newState;
+                      });
+                      try {
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setBool(
+                            'pocket_english_hub_robots_enabled', newState);
+                      } catch (_) {}
+
+                      if (!newState) {
+                        _hubRobotIdleConversationTimer?.cancel();
+                        _hubRobotReplyCooldownTimer?.cancel();
+                        PocketRobotService.clearAllTyping();
+                      } else {
+                        _scheduleEnglishHubIdleRobotCheck(initial: true);
+                      }
+
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Row(
                               children: [
-                                Container(
-                                  width: 34,
-                                  height: 34,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: PocketPrivacyAvatarFlipWidget(
-                                    avatarConfig: _getPersonalAvatarConfig(
-                                      _personalPeerId,
-                                    ),
-                                    profileImageUrl:
-                                        _userPhotoUrlCache[_personalPeerId],
-                                    size: 34,
-                                    isPrivate:
-                                        _userIsPrivateCache[_personalPeerId] ??
-                                            false,
-                                    isMate: true,
-                                    enableTapPeekFlip: true,
-                                  ),
-                                ),
-                                Positioned(
-                                  right: 0,
-                                  bottom: 0,
-                                  child: Container(
-                                    width: 9,
-                                    height: 9,
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF22C55E),
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: const Color(0xFF121B22),
-                                        width: 1.5,
-                                      ),
-                                    ),
+                                Text(newState ? 'ðŸ¤–' : 'â¸ï¸',
+                                    style: const TextStyle(fontSize: 16)),
+                                const SizedBox(width: 8),
+                                Text(
+                                  newState
+                                      ? 'Robots: ON (Active in group)'
+                                      : 'Robots: OFF (Silenced in group)',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ],
-                            ))
-                      : (_isEnglishHubGroup
-                          ? Container(
-                              width: 34,
-                              height: 34,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: const Color(0xFFFFD600),
-                                  width: 1.2,
-                                ),
-                              ),
-                              child: ClipOval(
-                                child: VectorAvatarWidget(
-                                  config: EnglishHubLevelGroupService
-                                      .getEnglishHubAvatarConfig(
-                                          _currentGroupName),
-                                  size: 34,
-                                  showAura: true,
-                                ),
-                              ),
-                            )
-                          : (_isIslandNeighborsGroup
-                              ? Container(
-                                  width: 34,
-                                  height: 34,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: PocketIslandGroupService
-                                          .getPlanetThemeColor(
-                                              _currentGroupName),
-                                      width: 1.2,
-                                    ),
-                                  ),
-                                  child: ClipOval(
-                                    child: VectorAvatarWidget(
-                                      config: PocketIslandGroupService
-                                          .getIslandGroupAvatarConfig(
-                                              _currentGroupName),
-                                      size: 34,
-                                      showAura: true,
-                                    ),
-                                  ),
-                                )
-                              : (widget.groupImage != null &&
-                                      !widget.groupImage!.startsWith('assets')
-                                  ? CircleAvatar(
-                                      radius: 17,
-                                      backgroundColor: Colors.grey[800],
-                                      backgroundImage:
-                                          NetworkImage(widget.groupImage!),
-                                    )
-                                  : Container(
-                                      width: 34,
-                                      height: 34,
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        gradient: LinearGradient(
-                                          colors: [
-                                            Color(0xFF4F46E5),
-                                            Color(0xFF7C3AED)
-                                          ],
-                                        ),
-                                      ),
-                                      child: const Center(
-                                        child: Icon(Icons.groups_rounded,
-                                            color: Colors.white, size: 18),
-                                      ),
-                                    )))),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: InkWell(
-                  onTap: () {
-                    if (_isPersonalChat) {
-                      final targetId = _personalPeerId;
-                      if (targetId.isNotEmpty) {
-                        final displayName =
-                            ContactsNameService().getDisplayName(
-                          userId: targetId,
-                          fallbackName: _currentGroupName.isNotEmpty
-                              ? _currentGroupName
-                              : widget.groupName,
-                        );
-                        final userStage = _userPocketStageCache[targetId] ??
-                            (widget.avatarConfig?['stage'] as num?)?.toInt() ??
-                            (widget.avatarConfig?['learning_day'] as num?)
-                                ?.toInt() ??
-                            (widget.avatarConfig?['level'] as num?)?.toInt() ??
-                            1;
-                        PocketCitadelAttackPage.openForUser(
-                          context,
-                          userId: targetId,
-                          targetName:
-                              displayName.isNotEmpty ? displayName : null,
-                          targetDay: userStage > 0 ? userStage : null,
-                          preloadedProfile: {
-                            'id': targetId,
-                            'user_id': targetId,
-                            'name': displayName,
-                            'learning_day': userStage,
-                            'level': userStage,
-                            'avatar_config': widget.avatarConfig,
-                          },
+                            ),
+                            backgroundColor: newState
+                                ? const Color(0xFF059669)
+                                : const Color(0xFF475569),
+                            duration: const Duration(seconds: 2),
+                            behavior: SnackBarBehavior.floating,
+                          ),
                         );
                       }
-                    } else {
-                      _showGroupInfo();
+                    }
+                    if (value == 'hub_page') {
+                      if (mounted) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const EnglishLearningHubPage(),
+                          ),
+                        );
+                      }
+                    }
+                    if (value == 'leave') _showLeaveGroupDialog();
+                    if (value == 'report') {
+                      if (mounted) {
+                        ReportHelper.showReportDialog(
+                          context: context,
+                          contentType: 'user',
+                          contentId: _currentGroupId.startsWith('p:')
+                              ? _currentGroupId.substring(2)
+                              : _currentGroupId,
+                          contentTitle: _currentGroupName,
+                        );
+                      }
+                    }
+                    if (value == 'block') {
+                      final otherUserId = _personalPeerId;
+                      if (otherUserId.isNotEmpty) {
+                        _showBlockUserDialog(otherUserId, _currentGroupName);
+                      }
+                    }
+                    if (value == 'clear') {
+                      _clearChat();
                     }
                   },
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Builder(
-                        builder: (context) {
-                          final targetId = _personalPeerId;
-                          final isPresident =
-                              PocketPresidentService.isPresidentId(targetId);
-                          final isKidKing =
-                              targetId == 'mentor_animal_king_lion' ||
-                                  targetId == 'kid_bot_100';
-                          final rank = PocketRankingService.getCachedGlobalRank(
-                              targetId);
-                          final isTopRank =
-                              rank != null && rank > 0 && rank <= 10;
-                          final isVip = isPresident ||
-                              isKidKing ||
-                              isTopRank ||
-                              _currentGroupName.toLowerCase().contains('vip');
-
-                          return Row(
-                            mainAxisSize: MainAxisSize.min,
+                  itemBuilder: (context) {
+                    final isPersonalChat = _isPersonalChat;
+                    return [
+                      if (!isPersonalChat)
+                        PopupMenuItem(
+                          value: 'info',
+                          child: Row(
                             children: [
-                              Flexible(
-                                child: Text(
-                                  isPresident
-                                      ? 'President'
-                                      : (isKidKing
-                                          ? 'King'
-                                          : (_isPersonalChat
-                                              ? ContactsNameService()
-                                                  .getDisplayName(
-                                                  userId: targetId,
-                                                  fallbackName:
-                                                      _currentGroupName,
-                                                )
-                                              : _currentGroupName)),
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              if (isVip)
-                                Container(
-                                  margin: const EdgeInsets.only(left: 5),
-                                  child: const Icon(
-                                    Icons.verified_rounded,
-                                    color: Color(0xFFFFD700),
-                                    size: 14.5,
-                                  ),
-                                )
-                              else if (_isPersonalChat)
-                                Container(
-                                  margin: const EdgeInsets.only(left: 6),
-                                  width: 7,
-                                  height: 7,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFF22C55E),
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
+                              Icon(Icons.info_outline_rounded,
+                                  color: appBarSubTextColor, size: 18),
+                              const SizedBox(width: 10),
+                              Text('Group Info',
+                                  style: TextStyle(color: appBarTextColor)),
                             ],
-                          );
-                        },
+                          ),
+                        ),
+                      if (_isEnglishHubGroup) ...[
+                        const PopupMenuItem(
+                          value: 'topics',
+                          child: Row(
+                            children: [
+                              Icon(Icons.lightbulb_outline_rounded,
+                                  color: Color(0xFFFFD600), size: 18),
+                              SizedBox(width: 10),
+                              Text('Daily Topic Starters',
+                                  style: TextStyle(color: Colors.white)),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'ai_tutor',
+                          child: Row(
+                            children: [
+                              Icon(Icons.psychology_alt_rounded,
+                                  color: Color(0xFF38BDF8), size: 18),
+                              SizedBox(width: 10),
+                              Text('AI English Tutor',
+                                  style: TextStyle(color: Colors.white)),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 'toggle_robots',
+                          child: Row(
+                            children: [
+                              Icon(
+                                _isEnglishHubRobotsEnabled
+                                    ? Icons.smart_toy_rounded
+                                    : Icons.smart_toy_outlined,
+                                color: _isEnglishHubRobotsEnabled
+                                    ? const Color(0xFF34D399)
+                                    : Colors.white60,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                _isEnglishHubRobotsEnabled
+                                    ? 'AI Mates: ON'
+                                    : 'AI Mates: OFF',
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'hub_page',
+                          child: Row(
+                            children: [
+                              Icon(Icons.hub_outlined,
+                                  color: Colors.lightBlueAccent, size: 18),
+                              SizedBox(width: 10),
+                              Text('English Hub Activities',
+                                  style: TextStyle(color: Colors.white)),
+                            ],
+                          ),
+                        ),
+                      ],
+                      PopupMenuItem(
+                        value: 'refresh',
+                        child: Row(
+                          children: [
+                            Icon(Icons.refresh_rounded,
+                                color: appBarSubTextColor, size: 18),
+                            const SizedBox(width: 10),
+                            Text('Refresh Chat',
+                                style: TextStyle(color: appBarTextColor)),
+                          ],
+                        ),
                       ),
-                      ValueListenableBuilder<Map<String, bool>>(
-                        valueListenable:
-                            PocketRobotService.typingStatusNotifier,
-                        builder: (context, typingMap, _) {
-                          final targetId = _personalPeerId;
-                          String? activeTypingId;
-                          if (_isPersonalChat) {
-                            if (typingMap[targetId] == true) {
-                              activeTypingId = targetId;
-                            }
-                          } else {
-                            if (typingMap[widget.groupId] == true) {
-                              activeTypingId = widget.groupId;
-                            } else {
-                              for (final entry in typingMap.entries) {
-                                if (entry.value == true &&
-                                    PocketRobotService.isRobotId(entry.key)) {
-                                  activeTypingId = entry.key;
-                                  break;
-                                }
-                              }
-                            }
-                          }
-
-                          if (activeTypingId != null) {
-                            final isRobot =
-                                PocketRobotService.isRobotId(activeTypingId);
-                            final robot = isRobot
-                                ? PocketRobotService.getRobotById(
-                                    activeTypingId)
-                                : null;
-                            final namePrefix = robot != null
-                                ? '🤖 ${robot.name}'
-                                : (isRobot
-                                    ? (PocketRobotService.getRobotById(
-                                                activeTypingId)
-                                            ?.name ??
-                                        widget.groupName)
-                                    : widget.groupName);
-                            return Padding(
-                              padding: const EdgeInsets.only(top: 1.5),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    '$namePrefix is typing...',
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      color: Color(0xFF25D366),
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            );
-                          }
-
-                          final isPresident =
-                              PocketPresidentService.isPresidentId(targetId);
-                          final isKidKing =
-                              targetId == 'mentor_animal_king_lion' ||
-                                  targetId == 'kid_bot_100';
-                          if (isKidKing) {
-                            return const Padding(
-                              padding: EdgeInsets.only(top: 1.5),
-                              child: Text(
-                                'Supreme Animal King • Kids Mentor',
-                                style: TextStyle(
-                                  fontSize: 10.5,
-                                  color: Color(0xFFFFD700),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            );
-                          }
-                          if (isPresident) {
-                            return const Padding(
-                              padding: EdgeInsets.only(top: 1.5),
-                              child: Text(
-                                'Official Presidential Desk',
-                                style: TextStyle(
-                                  fontSize: 10.5,
-                                  color: Color(0xFFFFD700),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            );
-                          }
-                          final isRobot =
-                              PocketRobotService.isRobotId(targetId);
-                          if (isRobot) {
-                            final robot =
-                                PocketRobotService.getRobotById(targetId);
-                            final dynLvl = robot != null
-                                ? PocketRobotService.getDynamicLevel(robot)
-                                : 1;
-                            final trophies = robot != null
-                                ? PocketRobotService.getTrophiesForRobot(robot)
-                                : 0;
-                            final trophyBadge =
-                                trophies > 0 ? ' • 🏆x$trophies' : '';
-                            return Padding(
-                              padding: const EdgeInsets.only(top: 1.5),
-                              child: Text(
-                                'Pocket Robot • Lvl $dynLvl$trophyBadge',
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  color: Color(0xFF38BDF8),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            );
-                          }
-                          if (_isPersonalChat) {
-                            final stage = _userPocketStageCache[targetId] ?? 1;
-                            final rank =
-                                PocketRankingService.getCachedGlobalRank(
-                                    targetId);
-                            if (rank == null && targetId.isNotEmpty) {
-                              _fetchUserRankAsync(targetId);
-                            }
-                            final isStudent = PocketKidsService.isKidAccount;
-                            final rankPrefix =
-                                isStudent ? 'Student Rank' : 'Global Rank';
-                            final rankText = rank != null && rank > 0
-                                ? '$rankPrefix #$rank'
-                                : '$rankPrefix #--';
-                            return Padding(
-                              padding: const EdgeInsets.only(top: 1.5),
-                              child: Text(
-                                'Lvl $stage • $rankText',
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  color: Color(0xFF38BDF8),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            );
-                          }
-                          if (_isIslandNeighborsGroup) {
-                            final neighborCount = _groupMembers.length;
-                            return Padding(
-                              padding: const EdgeInsets.only(top: 1.5),
-                              child: Text(
-                                neighborCount > 0
-                                    ? '$neighborCount Neighbors • 25 Island Parcels'
-                                    : 'Island Neighbors Group',
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  color: Color(0xFF38BDF8),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            );
-                          }
-                          final hubRobots = _isEnglishHubGroup
-                              ? PocketRobotService.getRobotsForLevelBracket(
-                                  _hubMinLevel, _hubMaxLevel)
-                              : <PocketRobot>[];
-                          final totalCount =
-                              _groupMembers.length + hubRobots.length;
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 1.5),
-                            child: Text(
-                              totalCount > 0
-                                  ? (_isEnglishHubGroup && hubRobots.isNotEmpty
-                                      ? '$totalCount members (${_groupMembers.length} Learners • ${hubRobots.length} AI Mates)'
-                                      : '$totalCount members')
-                                  : 'Group',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: Colors.white60,
-                                fontWeight: FontWeight.w400,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            if (_isKidMode)
-              IconButton(
-                icon: const Icon(Icons.shield_rounded,
-                    color: Color(0xFFFFD700), size: 22),
-                tooltip: 'Citadel Challenge 🏰',
-                onPressed: () {
-                  final targetId = _personalPeerId;
-                  final displayName = ContactsNameService().getDisplayName(
-                    userId: targetId,
-                    fallbackName: _currentGroupName.isNotEmpty
-                        ? _currentGroupName
-                        : widget.groupName,
-                  );
-                  final userStage = _userPocketStageCache[targetId] ??
-                      (widget.avatarConfig?['stage'] as num?)?.toInt() ??
-                      (widget.avatarConfig?['learning_day'] as num?)?.toInt() ??
-                      (widget.avatarConfig?['level'] as num?)?.toInt() ??
-                      1;
-                  PocketCitadelAttackPage.openForUser(
-                    context,
-                    userId: targetId,
-                    targetName: displayName.isNotEmpty ? displayName : null,
-                    targetDay: userStage > 0 ? userStage : null,
-                    preloadedProfile: {
-                      'id': targetId,
-                      'user_id': targetId,
-                      'name': displayName,
-                      'learning_day': userStage,
-                      'level': userStage,
-                      'avatar_config': widget.avatarConfig,
-                    },
-                  );
-                },
-              ),
-            if (!_isKidMode &&
-                !PocketPresidentService.isPresidentId(_personalPeerId)) ...[
-              if (_isPersonalChat) ...[
-                IconButton(
-                  icon: const Text('🔥', style: TextStyle(fontSize: 18)),
-                  tooltip: 'Fluency Streak 🔥',
-                  onPressed: () => _showMateFluencyStreakSheet(context),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.favorite_outline_rounded,
-                      color: Color(0xFFF43F5E), size: 20),
-                  tooltip: 'Friendship Dashboard ❤️',
-                  onPressed: () => _showFriendshipDashboardSheet(context),
+                      if (AppStoreReviewService.isWorldSwitchVisible)
+                        const PopupMenuItem(
+                          value: 'switch_world',
+                          child: Row(
+                            children: [
+                              Text('ðŸŒ', style: TextStyle(fontSize: 16)),
+                              SizedBox(width: 10),
+                              Text('Switch World Mode',
+                                  style: TextStyle(color: Color(0xFFFFD700))),
+                            ],
+                          ),
+                        ),
+                      if (!isPersonalChat && !_isEnglishHubGroup)
+                        const PopupMenuItem(
+                          value: 'leave',
+                          child: Row(
+                            children: [
+                              Icon(Icons.exit_to_app_rounded,
+                                  color: Colors.red, size: 18),
+                              SizedBox(width: 10),
+                              Text('Leave Group',
+                                  style: TextStyle(color: Colors.red)),
+                            ],
+                          ),
+                        ),
+                      if (!isPersonalChat)
+                        const PopupMenuItem(
+                          value: 'report',
+                          child: Row(
+                            children: [
+                              Icon(Icons.flag_outlined,
+                                  color: Colors.orange, size: 18),
+                              SizedBox(width: 10),
+                              Text('Report Group',
+                                  style: TextStyle(color: Colors.orange)),
+                            ],
+                          ),
+                        ),
+                      if (isPersonalChat) ...[
+                        const PopupMenuItem(
+                          value: 'clear',
+                          child: Row(
+                            children: [
+                              Icon(Icons.delete_outline_rounded,
+                                  color: Colors.red, size: 18),
+                              SizedBox(width: 10),
+                              Text('Clear Chat',
+                                  style: TextStyle(color: Colors.red)),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'report',
+                          child: Row(
+                            children: [
+                              Icon(Icons.flag_outlined,
+                                  color: Colors.orange, size: 18),
+                              SizedBox(width: 10),
+                              Text('Report User',
+                                  style: TextStyle(color: Colors.orange)),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'block',
+                          child: Row(
+                            children: [
+                              Icon(Icons.block_rounded,
+                                  color: Colors.red, size: 18),
+                              SizedBox(width: 10),
+                              Text('Block User',
+                                  style: TextStyle(color: Colors.red)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ];
+                  },
                 ),
               ],
-            ],
-            if (_isEnglishHubGroup) ...[
-              // 🎲 MINIMAL IN-PLACE SHUFFLE BUTTON (User Audio Directive: No page route change, in-place reload with smooth feedback)
-              IconButton(
-                icon: const Icon(Icons.casino_rounded,
-                    color: Color(0xFFFFD600), size: 22),
-                tooltip: 'Shuffle English Hub Room 🎲',
-                onPressed: _isShuffling
-                    ? null
-                    : () async {
-                        HapticFeedback.mediumImpact();
-                        final isStudent = PocketKidsService.isStudentWorld;
-                        safeSetState(() {
-                          _isShuffling = true;
-                        });
-
-                        try {
-                          final newGroup = await EnglishHubLevelGroupService
-                              .shuffleAndAssignEnglishHubGroup(
-                            userId: _currentUserId,
-                            isStudentMode: isStudent,
-                            forceNewRoom: true,
-                            currentGroupId: _currentGroupId,
-                          );
-
-                          // In-place identity switch without route replacement!
-                          safeSetState(() {
-                            _currentGroupId = newGroup.groupId;
-                            _currentGroupName = newGroup.groupName;
-                          });
-
-                          InAppNotificationService.currentActiveChatId =
-                              _currentGroupId;
-                          // Invalidate & refresh chat messages provider for this group
-                          ref.invalidate(chatMessagesProvider(_currentGroupId));
-                          _fetchMembers();
-
-                          // Smooth visual transition delay
-                          await Future.delayed(
-                              const Duration(milliseconds: 300));
-                        } catch (e) {
-                          debugPrint(
-                              'Error shuffling English Hub in-place: $e');
-                        } finally {
-                          if (mounted) {
-                            safeSetState(() {
-                              _isShuffling = false;
-                            });
-                          }
-                        }
-                      },
-              ),
-            ],
-            if (_isIslandNeighborsGroup)
-              IconButton(
-                icon: const Icon(Icons.public_rounded,
-                    color: Color(0xFF38BDF8), size: 22),
-                tooltip: 'Island Map 🗺️',
-                onPressed: _openIslandMapDirectly,
-              ),
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert, color: Colors.white),
-              color: appBarColor,
-              onSelected: (value) async {
-                if (value == 'switch_world') {
-                  PocketWorldModeSelectionDialog.show(context);
-                }
-                if (value == 'refresh') _handleRefresh();
-                if (value == 'info') _showGroupInfo();
-                if (value == 'topics') {
-                  _showDailyIcebreakerModal();
-                }
-                if (value == 'ai_tutor') {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: const Color(0xFF0B0D13),
-                    shape: const RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(20)),
-                    ),
-                    builder: (context) {
-                      return const AIEnglishTutorSheet();
-                    },
-                  );
-                }
-                if (value == 'toggle_robots') {
-                  final newState = !_isEnglishHubRobotsEnabled;
-                  safeSetState(() {
-                    _isEnglishHubRobotsEnabled = newState;
-                  });
-                  try {
-                    final prefs = await SharedPreferences.getInstance();
-                    await prefs.setBool(
-                        'pocket_english_hub_robots_enabled', newState);
-                  } catch (_) {}
-
-                  if (!newState) {
-                    _hubRobotIdleConversationTimer?.cancel();
-                    _hubRobotReplyCooldownTimer?.cancel();
-                    PocketRobotService.clearAllTyping();
-                  } else {
-                    _scheduleEnglishHubIdleRobotCheck(initial: true);
-                  }
-
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Row(
-                          children: [
-                            Text(newState ? '🤖' : '⏸️',
-                                style: const TextStyle(fontSize: 16)),
-                            const SizedBox(width: 8),
-                            Text(
-                              newState
-                                  ? 'Robots: ON (Active in group)'
-                                  : 'Robots: OFF (Silenced in group)',
-                              style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                        backgroundColor: newState
-                            ? const Color(0xFF059669)
-                            : const Color(0xFF475569),
-                        duration: const Duration(seconds: 2),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  }
-                }
-                if (value == 'hub_page') {
-                  if (mounted) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const EnglishLearningHubPage(),
-                      ),
-                    );
-                  }
-                }
-                if (value == 'leave') _showLeaveGroupDialog();
-                if (value == 'report') {
-                  if (mounted) {
-                    ReportHelper.showReportDialog(
-                      context: context,
-                      contentType: 'user',
-                      contentId: _currentGroupId.startsWith('p:')
-                          ? _currentGroupId.substring(2)
-                          : _currentGroupId,
-                      contentTitle: _currentGroupName,
-                    );
-                  }
-                }
-                if (value == 'block') {
-                  final otherUserId = _personalPeerId;
-                  if (otherUserId.isNotEmpty) {
-                    _showBlockUserDialog(otherUserId, _currentGroupName);
-                  }
-                }
-                if (value == 'clear') {
-                  _clearChat();
-                }
-              },
-              itemBuilder: (context) {
-                final isPersonalChat = _isPersonalChat;
-                return [
-                  if (!isPersonalChat)
-                    const PopupMenuItem(
-                      value: 'info',
-                      child: Row(
-                        children: [
-                          Icon(Icons.info_outline_rounded,
-                              color: Colors.white70, size: 18),
-                          SizedBox(width: 10),
-                          Text('Group Info',
-                              style: TextStyle(color: Colors.white)),
-                        ],
-                      ),
-                    ),
-                  if (_isEnglishHubGroup) ...[
-                    const PopupMenuItem(
-                      value: 'topics',
-                      child: Row(
-                        children: [
-                          Icon(Icons.lightbulb_outline_rounded,
-                              color: Color(0xFFFFD600), size: 18),
-                          SizedBox(width: 10),
-                          Text('Daily Topic Starters',
-                              style: TextStyle(color: Colors.white)),
-                        ],
-                      ),
-                    ),
-                    const PopupMenuItem(
-                      value: 'ai_tutor',
-                      child: Row(
-                        children: [
-                          Icon(Icons.psychology_alt_rounded,
-                              color: Color(0xFF38BDF8), size: 18),
-                          SizedBox(width: 10),
-                          Text('AI English Tutor',
-                              style: TextStyle(color: Colors.white)),
-                        ],
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: 'toggle_robots',
-                      child: Row(
-                        children: [
-                          Icon(
-                            _isEnglishHubRobotsEnabled
-                                ? Icons.smart_toy_rounded
-                                : Icons.smart_toy_outlined,
-                            color: _isEnglishHubRobotsEnabled
-                                ? const Color(0xFF34D399)
-                                : Colors.white60,
-                            size: 18,
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            _isEnglishHubRobotsEnabled
-                                ? 'AI Mates: ON'
-                                : 'AI Mates: OFF',
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const PopupMenuItem(
-                      value: 'hub_page',
-                      child: Row(
-                        children: [
-                          Icon(Icons.hub_outlined,
-                              color: Colors.lightBlueAccent, size: 18),
-                          SizedBox(width: 10),
-                          Text('English Hub Activities',
-                              style: TextStyle(color: Colors.white)),
-                        ],
-                      ),
-                    ),
-                  ],
-                  const PopupMenuItem(
-                    value: 'refresh',
-                    child: Row(
-                      children: [
-                        Icon(Icons.refresh_rounded,
-                            color: Colors.white70, size: 18),
-                        SizedBox(width: 10),
-                        Text('Refresh Chat',
-                            style: TextStyle(color: Colors.white)),
-                      ],
-                    ),
-                  ),
-                  if (AppStoreReviewService.isWorldSwitchVisible)
-                    const PopupMenuItem(
-                      value: 'switch_world',
-                      child: Row(
-                        children: [
-                          Text('🌐', style: TextStyle(fontSize: 16)),
-                          SizedBox(width: 10),
-                          Text('Switch World Mode',
-                              style: TextStyle(color: Color(0xFFFFD700))),
-                        ],
-                      ),
-                    ),
-                  if (!isPersonalChat && !_isEnglishHubGroup)
-                    const PopupMenuItem(
-                      value: 'leave',
-                      child: Row(
-                        children: [
-                          Icon(Icons.exit_to_app_rounded,
-                              color: Colors.red, size: 18),
-                          SizedBox(width: 10),
-                          Text('Leave Group',
-                              style: TextStyle(color: Colors.red)),
-                        ],
-                      ),
-                    ),
-                  if (!isPersonalChat)
-                    const PopupMenuItem(
-                      value: 'report',
-                      child: Row(
-                        children: [
-                          Icon(Icons.flag_outlined,
-                              color: Colors.orange, size: 18),
-                          SizedBox(width: 10),
-                          Text('Report Group',
-                              style: TextStyle(color: Colors.orange)),
-                        ],
-                      ),
-                    ),
-                  if (isPersonalChat) ...[
-                    const PopupMenuItem(
-                      value: 'clear',
-                      child: Row(
-                        children: [
-                          Icon(Icons.delete_outline_rounded,
-                              color: Colors.red, size: 18),
-                          SizedBox(width: 10),
-                          Text('Clear Chat',
-                              style: TextStyle(color: Colors.red)),
-                        ],
-                      ),
-                    ),
-                    const PopupMenuItem(
-                      value: 'report',
-                      child: Row(
-                        children: [
-                          Icon(Icons.flag_outlined,
-                              color: Colors.orange, size: 18),
-                          SizedBox(width: 10),
-                          Text('Report User',
-                              style: TextStyle(color: Colors.orange)),
-                        ],
-                      ),
-                    ),
-                    const PopupMenuItem(
-                      value: 'block',
-                      child: Row(
-                        children: [
-                          Icon(Icons.block_rounded,
-                              color: Colors.red, size: 18),
-                          SizedBox(width: 10),
-                          Text('Block User',
-                              style: TextStyle(color: Colors.red)),
-                        ],
-                      ),
-                    ),
-                  ],
-                ];
-              },
             ),
-          ],
-        ),
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: PocketKidsService.isKidAccount
-                ? const LinearGradient(
-                    colors: [
-                      Color(0xFF0284C7),
-                      Color(0xFF0369A1),
-                      Color(0xFF0F172A)
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  )
-                : const LinearGradient(
-                    colors: [Color(0xFF0B1015), Color(0xFF070B0E)],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-          ),
-          child: Stack(
-            children: [
-              // Refined wallpaper: Kids Nature Scenery or Adult Doodle Wallpaper
-              Positioned.fill(
-                child: PocketKidsService.isKidAccount
-                    ? const PocketKidsNatureSceneryBackground(
-                        showSun: false,
-                        showTrees: true,
-                        hillHeightFraction: 0.28,
-                        glassOverlayOpacity: 0.20,
+            body: Container(
+              decoration: BoxDecoration(
+                gradient: coupleTheme != null
+                    ? LinearGradient(
+                        colors: coupleTheme.bgGradient,
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
                       )
-                    : CustomPaint(
-                        painter: PocketDoodleBackgroundPainter(
-                          color: Colors.white,
-                          isDark: true,
-                          opacityMultiplier: 0.22,
-                        ),
-                      ),
-              ),
-              Column(
-                children: [
-                  // 📌 Minimal Responsive Segmented Tab Bar (Chat | Tools... | Ranking | +)
-                  _buildChatHeaderTabs(),
-
-                  // 📱 Dynamic View Controller (Page 0: Chat, 1..N: Tools, N+1: Ranking)
-                  Expanded(
-                    child: PageView(
-                      controller: _chatTabPageController,
-                      onPageChanged: (index) {
-                        if (mounted && _activeChatTabIndex != index) {
-                          safeSetState(() => _activeChatTabIndex = index);
-                          if (index == 1 && _isEnglishHubGroup) {
-                            _triggerImmediateRobotDialogueIfQuiet();
-                          }
-                        }
-                      },
-                      children: [
-                        if (_isEnglishHubGroup) ...[
-                          // Page 0: Human Chat (Humans Only)
-                          _buildMainChatConversationView(chatMessagesAsync,
-                              englishHubFilter: 'human'),
-                          // Page 1: Robot Chat (Autonomous AI Robots dialogue combo + User)
-                          _buildMainChatConversationView(chatMessagesAsync,
-                              englishHubFilter: 'robot'),
-                          // Page 2: Ranking Trail
-                          ChatRankingTrailWidget(
-                            groupId: widget.groupId,
-                            groupName: widget.groupName,
-                            currentUserId: _currentUserId,
-                            initialMembers: _groupMembers,
+                    : PocketKidsService.isKidAccount
+                        ? const LinearGradient(
+                            colors: [
+                              Color(0xFF0284C7),
+                              Color(0xFF0369A1),
+                              Color(0xFF0F172A)
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          )
+                        : const LinearGradient(
+                            colors: [Color(0xFF0B1015), Color(0xFF070B0E)],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
                           ),
-                        ] else ...[
-                          // Page 0: Always Chat
-                          _buildMainChatConversationView(chatMessagesAsync),
+              ),
+              child: Stack(
+                children: [
+                  // Refined wallpaper: Kids Nature Scenery or Adult Doodle Wallpaper
+                  Positioned.fill(
+                    child: PocketKidsService.isKidAccount
+                        ? const PocketKidsNatureSceneryBackground(
+                            showSun: false,
+                            showTrees: true,
+                            hillHeightFraction: 0.28,
+                            glassOverlayOpacity: 0.20,
+                          )
+                        : CustomPaint(
+                            painter: PocketDoodleBackgroundPainter(
+                              color: coupleTheme != null
+                                  ? coupleTheme.accent
+                                  : Colors.white,
+                              isDark: coupleTheme != null
+                                  ? coupleTheme.isDark
+                                  : true,
+                              opacityMultiplier:
+                                  (coupleTheme != null && !coupleTheme.isDark)
+                                      ? 0.12
+                                      : 0.22,
+                            ),
+                          ),
+                  ),
+                  Column(
+                    children: [
+                      // ðŸ“Œ Minimal Responsive Segmented Tab Bar (Chat | Tools... | Ranking | +)
+                      _buildChatHeaderTabs(coupleTheme: coupleTheme),
 
-                          // If Eligible for PocketGang Workspace, dynamically mount installed tools
-                          if (_isEligibleForPocketGangWorkspace) ...[
-                            for (final toolKey in _gangInstalledTools) ...[
-                              if (toolKey == 'team_mgmt')
-                                PocketGangTeamManagementWidget(
-                                  groupId: widget.groupId,
-                                  groupName: widget.groupName,
-                                  currentUserId: _currentUserId,
-                                  groupMembers: _groupMembers,
-                                  isAdmin: _userRole == 'admin',
-                                  tasks: _gangTasks,
-                                  onTasksChanged: () async {
-                                    final tasks = await PocketGangTaskService
-                                        .instance
-                                        .getTasks(widget.groupId);
-                                    if (mounted) {
-                                      safeSetState(() => _gangTasks = tasks);
-                                    }
-                                  },
-                                )
-                              else if (toolKey == 'dashboard')
-                                PocketGangDashboardWidget(
-                                  groupId: widget.groupId,
-                                  groupName: widget.groupName,
-                                  tasks: _gangTasks,
-                                  contributions: PocketGangTaskService.instance
-                                      .calculateContributions(
-                                    groupMembers: _groupMembers,
-                                    tasks: _gangTasks,
-                                  ),
-                                )
-                              else if (toolKey == 'diagram_studio' ||
-                                  toolKey == 'whiteboard')
-                                PocketGangDiagramHubWidget(
-                                  groupId: widget.groupId,
-                                  groupName: widget.groupName,
-                                  currentUserId: _currentUserId,
-                                )
-                              else if (toolKey == 'todo')
-                                PocketGangTodoWidget(
-                                  groupId: widget.groupId,
-                                  groupName: widget.groupName,
-                                  currentUserId: _currentUserId,
-                                  groupMembers: _groupMembers,
-                                  isAdmin: _userRole == 'admin',
-                                  tasks: _gangTasks,
-                                  onTasksChanged: () async {
-                                    final tasks = await PocketGangTaskService
-                                        .instance
-                                        .getTasks(widget.groupId);
-                                    if (mounted) {
-                                      safeSetState(() => _gangTasks = tasks);
-                                    }
-                                  },
-                                )
-                              else if (toolKey == 'ideas_board')
-                                PocketGangIdeasBoardWidget(
-                                  groupId: widget.groupId,
-                                  groupName: widget.groupName,
-                                  currentUserId: _currentUserId,
-                                  onTaskCreated: () async {
-                                    final tasks = await PocketGangTaskService
-                                        .instance
-                                        .getTasks(widget.groupId);
-                                    if (mounted) {
-                                      safeSetState(() => _gangTasks = tasks);
-                                    }
-                                  },
-                                )
-                              else if (toolKey == 'calendar')
-                                PocketGangCalendarWidget(
-                                  groupId: widget.groupId,
-                                  groupName: widget.groupName,
-                                  currentUserId: _currentUserId,
-                                )
+                      // ðŸ“± Dynamic View Controller (Page 0: Chat, 1..N: Tools, N+1: Ranking)
+                      Expanded(
+                        child: PageView(
+                          controller: _chatTabPageController,
+                          onPageChanged: (index) {
+                            if (mounted && _activeChatTabIndex != index) {
+                              safeSetState(() => _activeChatTabIndex = index);
+                              if (index == 1 && _isEnglishHubGroup) {
+                                _triggerImmediateRobotDialogueIfQuiet();
+                              }
+                            }
+                          },
+                          children: [
+                            if (_isEnglishHubGroup) ...[
+                              // Page 0: Human Chat (Humans Only)
+                              _buildMainChatConversationView(chatMessagesAsync,
+                                  englishHubFilter: 'human'),
+                              // Page 1: Robot Chat (Autonomous AI Robots dialogue combo + User)
+                              _buildMainChatConversationView(chatMessagesAsync,
+                                  englishHubFilter: 'robot'),
+                              // Page 2: Ranking Trail
+                              ChatRankingTrailWidget(
+                                groupId: widget.groupId,
+                                groupName: widget.groupName,
+                                currentUserId: _currentUserId,
+                                initialMembers: _groupMembers,
+                              ),
+                            ] else ...[
+                              // Page 0: Always Chat
+                              _buildMainChatConversationView(
+                                chatMessagesAsync,
+                                coupleTheme: coupleTheme,
+                              ),
+
+                              // If Eligible for PocketGang Workspace, dynamically mount installed tools
+                              if (_isEligibleForPocketGangWorkspace) ...[
+                                for (final toolKey in _gangInstalledTools) ...[
+                                  if (toolKey == 'team_mgmt')
+                                    PocketGangTeamManagementWidget(
+                                      groupId: widget.groupId,
+                                      groupName: widget.groupName,
+                                      currentUserId: _currentUserId,
+                                      groupMembers: _groupMembers,
+                                      isAdmin: _userRole == 'admin',
+                                      tasks: _gangTasks,
+                                      coupleTheme: coupleTheme,
+                                      onTasksChanged: () async {
+                                        final tasks =
+                                            await PocketGangTaskService.instance
+                                                .getTasks(widget.groupId);
+                                        if (mounted) {
+                                          safeSetState(
+                                              () => _gangTasks = tasks);
+                                        }
+                                      },
+                                    )
+                                  else if (toolKey == 'dashboard')
+                                    PocketGangDashboardWidget(
+                                      groupId: widget.groupId,
+                                      groupName: widget.groupName,
+                                      tasks: _gangTasks,
+                                      coupleTheme: coupleTheme,
+                                      contributions: PocketGangTaskService
+                                          .instance
+                                          .calculateContributions(
+                                        groupMembers: _groupMembers,
+                                        tasks: _gangTasks,
+                                      ),
+                                    )
+                                  else if (toolKey == 'diagram_studio' ||
+                                      toolKey == 'whiteboard')
+                                    PocketGangDiagramHubWidget(
+                                      groupId: widget.groupId,
+                                      groupName: widget.groupName,
+                                      currentUserId: _currentUserId,
+                                      coupleTheme: coupleTheme,
+                                    )
+                                  else if (toolKey == 'todo')
+                                    PocketGangTodoWidget(
+                                      groupId: widget.groupId,
+                                      groupName: widget.groupName,
+                                      currentUserId: _currentUserId,
+                                      groupMembers: _groupMembers,
+                                      isAdmin: _userRole == 'admin',
+                                      tasks: _gangTasks,
+                                      coupleTheme: coupleTheme,
+                                      onTasksChanged: () async {
+                                        final tasks =
+                                            await PocketGangTaskService.instance
+                                                .getTasks(widget.groupId);
+                                        if (mounted) {
+                                          safeSetState(
+                                              () => _gangTasks = tasks);
+                                        }
+                                      },
+                                    )
+                                  else if (toolKey == 'ideas_board')
+                                    PocketGangIdeasBoardWidget(
+                                      groupId: widget.groupId,
+                                      groupName: widget.groupName,
+                                      currentUserId: _currentUserId,
+                                      coupleTheme: coupleTheme,
+                                      onTaskCreated: () async {
+                                        final tasks =
+                                            await PocketGangTaskService.instance
+                                                .getTasks(widget.groupId);
+                                        if (mounted) {
+                                          safeSetState(
+                                              () => _gangTasks = tasks);
+                                        }
+                                      },
+                                    )
+                                  else if (toolKey == 'calendar')
+                                    PocketGangCalendarWidget(
+                                      groupId: widget.groupId,
+                                      groupName: widget.groupName,
+                                      currentUserId: _currentUserId,
+                                      coupleTheme: coupleTheme,
+                                    )
+                                  else if (toolKey == 'expense_tracker')
+                                    PocketSpendPage(
+                                      groupId: widget.groupId,
+                                      groupName: widget.groupName,
+                                      embeddedInGroup: true,
+                                    )
+                                  else if (toolKey == 'habit_tracker')
+                                    PocketGangHabitTrackerWidget(
+                                      groupId: widget.groupId,
+                                      groupName: widget.groupName,
+                                      currentUserId: _currentUserId,
+                                      memberCount: _groupMembers.length,
+                                      coupleTheme: coupleTheme,
+                                    )
+                                  else if (toolKey == 'memory_vault')
+                                    PocketGangMemoryVaultWidget(
+                                      groupId: widget.groupId,
+                                      groupName: widget.groupName,
+                                      currentUserId: _currentUserId,
+                                      memberCount: _groupMembers.length,
+                                      coupleTheme: coupleTheme,
+                                    )
+                                  else if (toolKey == 'quick_poll')
+                                    PocketGangQuickPollWidget(
+                                      groupId: widget.groupId,
+                                      groupName: widget.groupName,
+                                      currentUserId: _currentUserId,
+                                      memberCount: _groupMembers.length,
+                                      coupleTheme: coupleTheme,
+                                    )
+                                  else if (toolKey == 'split_wishlist')
+                                    PocketGangSplitWishlistWidget(
+                                      groupId: widget.groupId,
+                                      groupName: widget.groupName,
+                                      currentUserId: _currentUserId,
+                                      memberCount: _groupMembers.length,
+                                      coupleTheme: coupleTheme,
+                                    )
+                                  else if (toolKey == 'study_timer')
+                                    PocketGangStudyTimerWidget(
+                                      groupId: widget.groupId,
+                                      groupName: widget.groupName,
+                                      currentUserId: _currentUserId,
+                                      memberCount: _groupMembers.length,
+                                      coupleTheme: coupleTheme,
+                                    )
+                                  else if (toolKey == 'exam_tracker')
+                                    PocketGangExamTrackerWidget(
+                                      groupId: widget.groupId,
+                                      groupName: widget.groupName,
+                                      currentUserId: _currentUserId,
+                                      memberCount: _groupMembers.length,
+                                      coupleTheme: coupleTheme,
+                                    )
+                                  else if (toolKey == 'flashcards')
+                                    PocketGangFlashcardsWidget(
+                                      groupId: widget.groupId,
+                                      groupName: widget.groupName,
+                                      currentUserId: _currentUserId,
+                                      memberCount: _groupMembers.length,
+                                      coupleTheme: coupleTheme,
+                                    )
+                                ],
+                              ],
+
+                              // Final Tab: Ranking Trail
+                              ChatRankingTrailWidget(
+                                groupId: widget.groupId,
+                                groupName: widget.groupName,
+                                currentUserId: _currentUserId,
+                                initialMembers: _groupMembers,
+                                coupleTheme: coupleTheme,
+                              ),
                             ],
                           ],
-
-                          // Final Tab: Ranking Trail
-                          ChatRankingTrailWidget(
-                            groupId: widget.groupId,
-                            groupName: widget.groupName,
-                            currentUserId: _currentUserId,
-                            initialMembers: _groupMembers,
-                          ),
-                        ],
-                      ],
-                    ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildChatHeaderTabs() {
+  Widget _buildChatHeaderTabs({PocketSpendCoupleTheme? coupleTheme}) {
     final isKid = PocketKidsService.isKidAccount;
 
-    // 🇬🇧 Dedicated English Hub Segmented 3-Tab Bar (Chat | Robot | Ranking)
+    // ðŸ‡¬ðŸ‡§ Dedicated English Hub Segmented 3-Tab Bar (Chat | Robot | Ranking)
     if (_isEnglishHubGroup) {
       return Container(
         width: double.infinity,
@@ -6613,8 +6848,6 @@ Draft: "$draft"''';
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text('🤖', style: TextStyle(fontSize: 13)),
-                        const SizedBox(width: 5),
                         Text(
                           'Robot',
                           style: GoogleFonts.outfit(
@@ -6654,11 +6887,6 @@ Draft: "$draft"''';
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          _activeChatTabIndex == 2 ? '👑' : '🏆',
-                          style: const TextStyle(fontSize: 13),
-                        ),
-                        const SizedBox(width: 5),
                         Text(
                           'Ranking',
                           style: GoogleFonts.outfit(
@@ -6783,8 +7011,8 @@ Draft: "$draft"''';
                       children: [
                         Text(
                           isKid
-                              ? '🏅'
-                              : (_activeChatTabIndex == 1 ? '👑' : '🏆'),
+                              ? 'ðŸ…'
+                              : (_activeChatTabIndex == 1 ? 'ðŸ‘‘' : 'ðŸ†'),
                           style: const TextStyle(fontSize: 13),
                         ),
                         const SizedBox(width: 5),
@@ -6809,7 +7037,7 @@ Draft: "$draft"''';
       );
     }
 
-    // 🌟 NORMAL POCKETGANG GROUP: Horizontally scrollable minimal strip
+    // ðŸŒŸ NORMAL POCKETGANG GROUP: Horizontally scrollable minimal strip
     // Tab Order: Chat (0) | Tool 1 (1) ... Tool N (N) | Ranking (N+1) | + (Button)
     final rankingTabIndex = _gangInstalledTools.length + 1;
 
@@ -6817,10 +7045,14 @@ Draft: "$draft"''';
       width: double.infinity,
       height: 44,
       decoration: BoxDecoration(
-        color: const Color(0xFF121B22),
+        color: coupleTheme != null
+            ? coupleTheme.cardColor
+            : const Color(0xFF121B22),
         border: Border(
           bottom: BorderSide(
-            color: Colors.white.withValues(alpha: 0.08),
+            color: coupleTheme != null
+                ? coupleTheme.borderColor
+                : Colors.white.withValues(alpha: 0.08),
             width: 1.0,
           ),
         ),
@@ -6837,8 +7069,8 @@ Draft: "$draft"''';
                   // Tab 0: Chat
                   _buildModularGangTab(
                     index: 0,
-                    iconWidget: const Icon(Icons.chat_bubble_rounded, size: 13),
                     title: 'Chat',
+                    coupleTheme: coupleTheme,
                   ),
                   const SizedBox(width: 6),
 
@@ -6847,6 +7079,7 @@ Draft: "$draft"''';
                     _buildDynamicGangToolTab(
                       toolKey: _gangInstalledTools[i],
                       tabIndex: i + 1,
+                      coupleTheme: coupleTheme,
                     ),
                     const SizedBox(width: 6),
                   ],
@@ -6854,11 +7087,8 @@ Draft: "$draft"''';
                   // Last Tab: Ranking
                   _buildModularGangTab(
                     index: rankingTabIndex,
-                    iconWidget: Text(
-                      _activeChatTabIndex == rankingTabIndex ? '👑' : '🏆',
-                      style: const TextStyle(fontSize: 13),
-                    ),
                     title: 'Ranking',
+                    coupleTheme: coupleTheme,
                   ),
                 ],
               ),
@@ -6882,7 +7112,7 @@ Draft: "$draft"''';
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      '✨ Gang workspace updated (${updatedTools.length} tools active)',
+                      'âœ¨ Gang workspace updated (${updatedTools.length} tools active)',
                       style: GoogleFonts.outfit(
                           color: Colors.black, fontWeight: FontWeight.bold),
                     ),
@@ -6897,10 +7127,24 @@ Draft: "$draft"''';
               padding: const EdgeInsets.all(7),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFFFFD600).withValues(alpha: 0.15),
-                border: Border.all(color: const Color(0xFFFFD600), width: 1.2),
+                color: (coupleTheme != null
+                        ? coupleTheme.accent
+                        : const Color(0xFFFFD600))
+                    .withValues(alpha: 0.15),
+                border: Border.all(
+                  color: coupleTheme != null
+                      ? coupleTheme.accent
+                      : const Color(0xFFFFD600),
+                  width: 1.2,
+                ),
               ),
-              child: const Icon(Icons.add, color: Color(0xFFFFD600), size: 14),
+              child: Icon(
+                Icons.add,
+                color: coupleTheme != null
+                    ? coupleTheme.accent
+                    : const Color(0xFFFFD600),
+                size: 14,
+              ),
             ),
           ),
         ],
@@ -6908,47 +7152,71 @@ Draft: "$draft"''';
     );
   }
 
-  Widget _buildDynamicGangToolTab(
-      {required String toolKey, required int tabIndex}) {
+  Widget _buildDynamicGangToolTab({
+    required String toolKey,
+    required int tabIndex,
+    PocketSpendCoupleTheme? coupleTheme,
+  }) {
     String title = 'Tool';
-    Widget iconWidget = const Text('🛠️', style: TextStyle(fontSize: 12));
-
     if (toolKey == 'team_mgmt') {
       title = 'Team';
-      iconWidget = const Text('👥', style: TextStyle(fontSize: 12));
     } else if (toolKey == 'dashboard') {
       title = 'Dashboard';
-      iconWidget = const Text('📊', style: TextStyle(fontSize: 12));
     } else if (toolKey == 'diagram_studio') {
       title = 'Diagram Studio';
-      iconWidget = const Text('📐', style: TextStyle(fontSize: 12));
     } else if (toolKey == 'whiteboard') {
       title = 'Whiteboard';
-      iconWidget = const Text('🎨', style: TextStyle(fontSize: 12));
     } else if (toolKey == 'todo') {
       title = 'To-do List';
-      iconWidget = const Text('✅', style: TextStyle(fontSize: 12));
     } else if (toolKey == 'ideas_board') {
       title = 'Ideas Board';
-      iconWidget = const Text('💡', style: TextStyle(fontSize: 12));
     } else if (toolKey == 'calendar') {
       title = 'Calendar';
-      iconWidget = const Text('📅', style: TextStyle(fontSize: 12));
+    } else if (toolKey == 'expense_tracker') {
+      title = 'Poket Spend';
+    } else if (toolKey == 'habit_tracker') {
+      title = 'Habits';
+    } else if (toolKey == 'memory_vault') {
+      title = 'Vault';
+    } else if (toolKey == 'quick_poll') {
+      title = 'Polls';
+    } else if (toolKey == 'split_wishlist') {
+      title = 'Split & Wish';
+    } else if (toolKey == 'study_timer') {
+      title = 'Study Timer';
+    } else if (toolKey == 'exam_tracker') {
+      title = 'Study & Exams';
+    } else if (toolKey == 'flashcards') {
+      title = 'Flashcards';
     }
 
     return _buildModularGangTab(
       index: tabIndex,
-      iconWidget: iconWidget,
       title: title,
+      coupleTheme: coupleTheme,
     );
   }
 
   Widget _buildModularGangTab({
     required int index,
-    required Widget iconWidget,
+    Widget? iconWidget,
     required String title,
+    PocketSpendCoupleTheme? coupleTheme,
   }) {
     final isSelected = _activeChatTabIndex == index;
+    final activeBg =
+        coupleTheme != null ? coupleTheme.accent : const Color(0xFFFFD600);
+    final inactiveBg = coupleTheme != null
+        ? coupleTheme.surfaceAltColor
+        : const Color(0xFF070B0E);
+    final activeFg =
+        coupleTheme != null ? coupleTheme.onAccentTextColor : Colors.black;
+    final inactiveFg = coupleTheme != null
+        ? coupleTheme.textColor.withValues(alpha: 0.85)
+        : Colors.white70;
+    final inactiveBorder =
+        coupleTheme != null ? coupleTheme.borderColor : Colors.white12;
+
     return GestureDetector(
       onTap: () {
         HapticFeedback.selectionClick();
@@ -6962,10 +7230,10 @@ Draft: "$draft"''';
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFFFD600) : const Color(0xFF070B0E),
+          color: isSelected ? activeBg : inactiveBg,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? const Color(0xFFFFD600) : Colors.white12,
+            color: isSelected ? activeBg : inactiveBorder,
             width: 0.8,
           ),
         ),
@@ -6973,20 +7241,22 @@ Draft: "$draft"''';
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            IconTheme(
-              data: IconThemeData(
-                color: isSelected ? Colors.black : Colors.white70,
-                size: 13,
+            if (iconWidget != null) ...[
+              IconTheme(
+                data: IconThemeData(
+                  color: isSelected ? activeFg : inactiveFg,
+                  size: 13,
+                ),
+                child: iconWidget,
               ),
-              child: iconWidget,
-            ),
-            const SizedBox(width: 5),
+              const SizedBox(width: 5),
+            ],
             Text(
               title,
               style: GoogleFonts.outfit(
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
-                color: isSelected ? Colors.black : Colors.white70,
+                color: isSelected ? activeFg : inactiveFg,
               ),
             ),
           ],
@@ -6998,6 +7268,7 @@ Draft: "$draft"''';
   Widget _buildMainChatConversationView(
     AsyncValue<List<ChatMessage>> chatMessagesAsync, {
     String? englishHubFilter,
+    PocketSpendCoupleTheme? coupleTheme,
   }) {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
@@ -7048,6 +7319,13 @@ Draft: "$draft"''';
                     }
 
                     final rawFiltered = messages.where((m) {
+                      if (_isPocketCoupleGroup) {
+                        final isBot =
+                            PocketRobotService.isRobotId(m.senderId) ||
+                                m.metadata?['is_robot'] == true ||
+                                m.senderProfile?['is_robot'] == true;
+                        if (isBot) return false;
+                      }
                       final hasContent = m.isOptimistic ||
                           (m.messageText != null &&
                               m.messageText!.isNotEmpty) ||
@@ -7061,7 +7339,8 @@ Draft: "$draft"''';
                             PocketRobotService.isRobotId(m.senderId) ||
                                 m.metadata?['is_robot'] == true ||
                                 m.senderProfile?['is_robot'] == true;
-                        final hubChannel = m.metadata?['hub_channel']?.toString();
+                        final hubChannel =
+                            m.metadata?['hub_channel']?.toString();
 
                         if (englishHubFilter == 'human') {
                           // Tab 0: Humans only. Robots NEVER appear.
@@ -7103,7 +7382,7 @@ Draft: "$draft"''';
                               ? targetUserId
                               : _currentUserId,
                           messageText:
-                              '⚡ Pocket Talk Challenge: Invited you to a 4-Day Spoken English Pact! Tap to accept and start Day 1.',
+                              'âš¡ Pocket Talk Challenge: Invited you to a 4-Day Spoken English Pact! Tap to accept and start Day 1.',
                           messageType: 'pocket_talk_request',
                           createdAt: _activePocketTalkPact!.startedAt,
                           metadata: {
@@ -7144,7 +7423,7 @@ Draft: "$draft"''';
                           senderId: senderId,
                           receiverId: receiverId,
                           messageText:
-                              '🤝 Pocket Mate Request: Sent you a Mate connection request!',
+                              'ðŸ¤ Pocket Mate Request: Sent you a Mate connection request!',
                           messageType: 'mate_request',
                           createdAt: DateTime.now(),
                           metadata: {
@@ -7160,6 +7439,84 @@ Draft: "$draft"''';
                     }
 
                     if (filteredMessages.isEmpty) {
+                      if (widget.groupId == 'pocket_couple_default' ||
+                          widget.groupName == 'Pocket Couple') {
+                        return Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  width: 74,
+                                  height: 74,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFEF4444)
+                                        .withValues(alpha: 0.16),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: const Color(0xFFEF4444)
+                                          .withValues(alpha: 0.5),
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: const Icon(
+                                    Icons.favorite_rounded,
+                                    color: Color(0xFFEF4444),
+                                    size: 38,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Pocket Couple',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                const Text(
+                                  'Add your partner to start a private couple chat, shared expenses & whispers.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      color: Colors.white60, fontSize: 13),
+                                ),
+                                const SizedBox(height: 18),
+                                ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFEF4444),
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20, vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) =>
+                                              const PocketSpendPage()),
+                                    );
+                                  },
+                                  icon: const Icon(
+                                      Icons.person_add_alt_1_rounded,
+                                      size: 18),
+                                  label: Text(
+                                    'Add Couple',
+                                    style: GoogleFonts.outfit(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
                       return Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -7169,7 +7526,7 @@ Draft: "$draft"''';
                             const SizedBox(height: 16),
                             Text(
                               englishHubFilter == 'human'
-                                  ? 'No human learner messages yet.\nSay hello to your fellow learners! 🇬🇧'
+                                  ? 'No human learner messages yet.\nSay hello to your fellow learners! ðŸ‡¬ðŸ‡§'
                                   : (englishHubFilter == 'robot'
                                       ? 'AI Mates are tuning in...\nSay hello to start practicing English!'
                                       : 'No messages yet'),
@@ -7257,7 +7614,7 @@ Draft: "$draft"''';
                                     message.createdAt, nextMessage.createdAt);
                               }
 
-                              // 📢 Minimal Banner Ad under receiver messages every 6 messages
+                              // ðŸ“¢ Minimal Banner Ad under receiver messages every 6 messages
                               final showNativeAd = msgIndex > 0 &&
                                   (msgIndex + 1) % 6 == 0 &&
                                   !isMe;
@@ -7268,7 +7625,8 @@ Draft: "$draft"''';
                                   children: [
                                     if (showDate)
                                       _buildDateSeparator(message.createdAt),
-                                    _buildMessageTile(message, isMe),
+                                    _buildMessageTile(message, isMe,
+                                        coupleTheme: coupleTheme),
                                     if (showNativeAd)
                                       const PocketChatBubbleAdWidget(),
                                   ],
@@ -7301,7 +7659,7 @@ Draft: "$draft"''';
                   return const SizedBox.shrink();
                 },
               ),
-              _buildInputArea(),
+              _buildInputArea(coupleTheme: coupleTheme),
               if (_showEmojiPicker) _buildEmojiPicker(),
             ],
           ),
@@ -7405,7 +7763,7 @@ Draft: "$draft"''';
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        '• by ${topPin.pinnedByName}',
+                        'â€¢ by ${topPin.pinnedByName}',
                         style: const TextStyle(
                             color: Colors.white38, fontSize: 9.5),
                       ),
@@ -7542,7 +7900,7 @@ Draft: "$draft"''';
     return '${date.day}/${date.month}/${date.year}';
   }
 
-  /// 🏅 Minimal Level & Rank Badge above message bubbles (Audio Directive)
+  /// ðŸ… Minimal Level & Rank Badge above message bubbles (Audio Directive)
   Widget _buildSenderLevelAndRankBadge(ChatMessage message) {
     final senderId = message.senderId;
     final isPresident = PocketPresidentService.isPresidentId(senderId);
@@ -7606,7 +7964,7 @@ Draft: "$draft"''';
       );
     }
 
-    // 🤖 AI Robot Check: ONLY true robots or explicitly flagged robot messages!
+    // ðŸ¤– AI Robot Check: ONLY true robots or explicitly flagged robot messages!
     final isUuid = _uuidRegex.hasMatch(senderId);
     final robot = isUuid ? null : PocketRobotService.getRobotById(senderId);
     final isRobotFlagged = message.metadata?['is_robot'] == true ||
@@ -7660,7 +8018,7 @@ Draft: "$draft"''';
       );
     }
 
-    // 👤 Real Human user: ALWAYS Global Rank, NEVER Robot Rank!
+    // ðŸ‘¤ Real Human user: ALWAYS Global Rank, NEVER Robot Rank!
     int level = 1;
     int? rank;
 
@@ -7846,20 +8204,56 @@ Draft: "$draft"''';
     );
   }
 
-  Widget _buildMessageTile(ChatMessage message, bool isMe) {
+  Widget _buildMessageTile(ChatMessage message, bool isMe,
+      {PocketSpendCoupleTheme? coupleTheme}) {
+    final bubbleBg = coupleTheme != null
+        ? (isMe
+            ? (coupleTheme.isDark
+                ? (Color.lerp(
+                        coupleTheme.cardColor, coupleTheme.accent, 0.28) ??
+                    coupleTheme.cardColor)
+                : coupleTheme.accent)
+            : coupleTheme.cardColor)
+        : (isMe ? const Color(0xFF2B3038) : const Color(0xFF22262C));
+    final bubbleTextColor = coupleTheme != null
+        ? (isMe
+            ? (coupleTheme.isDark
+                ? coupleTheme.textColor
+                : coupleTheme.onAccentTextColor)
+            : coupleTheme.textColor)
+        : Colors.white;
+    final bubbleSubTextColor = coupleTheme != null
+        ? (isMe
+            ? (coupleTheme.isDark
+                ? coupleTheme.subTextColor
+                : coupleTheme.onAccentTextColor.withValues(alpha: 0.8))
+            : coupleTheme.subTextColor)
+        : Colors.white.withValues(alpha: 0.55);
+    final bubbleBorderColor = coupleTheme != null
+        ? coupleTheme.borderColor
+        : Colors.white.withValues(alpha: 0.08);
+    final senderAccentColor =
+        coupleTheme != null ? coupleTheme.accent : const Color(0xFFFFFC00);
+
     if (message.messageType == 'system') {
       return Center(
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 32),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           decoration: BoxDecoration(
-            color: const Color(0xFF1F2C34).withValues(alpha: 0.8),
+            color: coupleTheme != null
+                ? coupleTheme.cardColor.withValues(alpha: 0.92)
+                : const Color(0xFF1F2C34).withValues(alpha: 0.8),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
             message.messageText ?? '',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white60, fontSize: 12),
+            style: TextStyle(
+                color: coupleTheme != null
+                    ? coupleTheme.subTextColor
+                    : Colors.white60,
+                fontSize: 12),
           ),
         ),
       );
@@ -7882,8 +8276,8 @@ Draft: "$draft"''';
                   child: Icon(
                     Icons.auto_awesome,
                     color: _aiAnalyses.containsKey(message.id)
-                        ? const Color(0xFFFFFC00)
-                        : const Color(0xFFFFFC00).withValues(alpha: 0.65),
+                        ? senderAccentColor
+                        : senderAccentColor.withValues(alpha: 0.65),
                     size: 15,
                   ),
                 ),
@@ -7968,8 +8362,8 @@ Draft: "$draft"''';
                         children: [
                           Text(
                             message.senderName ?? 'User',
-                            style: const TextStyle(
-                              color: Color(0xFFFFFC00),
+                            style: TextStyle(
+                              color: senderAccentColor,
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
                             ),
@@ -7977,6 +8371,36 @@ Draft: "$draft"''';
                             overflow: TextOverflow.ellipsis,
                           ),
                           _buildSenderLevelAndRankBadge(message),
+                          if (_isIslandNeighborsGroup) ...[
+                            Builder(builder: (context) {
+                              final memberMatch = _groupMembers.cast<Map<String, dynamic>?>().firstWhere(
+                                    (m) => m?['user_id'] == message.senderId,
+                                    orElse: () => null,
+                                  );
+                              final plotNum = memberMatch?['profile']?['plot_number'];
+                              if (plotNum == null) return const SizedBox.shrink();
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 5, vertical: 1.5),
+                                decoration: BoxDecoration(
+                                  color: senderAccentColor.withValues(alpha: 0.14),
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(
+                                    color: senderAccentColor.withValues(alpha: 0.45),
+                                    width: 0.5,
+                                  ),
+                                ),
+                                child: Text(
+                                  'Plot #$plotNum',
+                                  style: TextStyle(
+                                    color: senderAccentColor,
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              );
+                            }),
+                          ],
                           if (_isAdmin(message.senderId)) ...[
                             Container(
                               padding: const EdgeInsets.symmetric(
@@ -8041,12 +8465,10 @@ Draft: "$draft"''';
                       decoration: BoxDecoration(
                         color: _highlightedMessageId == message.id
                             ? const Color(0xFFFFD700).withValues(alpha: 0.35)
-                            : (isMe
-                                ? const Color(0xFF2B3038)
-                                : const Color(0xFF22262C)),
+                            : bubbleBg,
                         borderRadius: BorderRadius.circular(18),
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.08),
+                          color: bubbleBorderColor,
                           width: 0.8,
                         ),
                       ),
@@ -8168,7 +8590,7 @@ Draft: "$draft"''';
                                         _buildLinkedMessageText(
                                           message.messageText!,
                                           baseStyle: GoogleFonts.inter(
-                                            color: Colors.white,
+                                            color: bubbleTextColor,
                                             fontSize: 14.5,
                                             fontWeight: FontWeight.w400,
                                             height: 1.35,
@@ -8264,9 +8686,7 @@ Draft: "$draft"''';
                                             child: Text(
                                               'edited',
                                               style: TextStyle(
-                                                color: (isMe
-                                                    ? Colors.black54
-                                                    : Colors.white54),
+                                                color: bubbleSubTextColor,
                                                 fontSize: 9,
                                                 fontStyle: FontStyle.italic,
                                               ),
@@ -8295,8 +8715,7 @@ Draft: "$draft"''';
                                     child: Icon(
                                       Icons.copy,
                                       size: 11,
-                                      color:
-                                          Colors.white.withValues(alpha: 0.5),
+                                      color: bubbleSubTextColor,
                                     ),
                                   ),
                                   const SizedBox(width: 4),
@@ -8304,8 +8723,10 @@ Draft: "$draft"''';
                                 Text(
                                   _formatTime(message.createdAt),
                                   style: GoogleFonts.inter(
-                                    color: const Color(0xFF4ADE80)
-                                        .withValues(alpha: 0.85),
+                                    color: coupleTheme != null
+                                        ? bubbleSubTextColor
+                                        : const Color(0xFF4ADE80)
+                                            .withValues(alpha: 0.85),
                                     fontSize: 10,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -8319,10 +8740,13 @@ Draft: "$draft"''';
                                     size: 13,
                                     color: (message.isOptimistic ||
                                             message.isPending)
-                                        ? Colors.white38
+                                        ? bubbleSubTextColor
                                         : (message.isRead
-                                            ? const Color(0xFF4ADE80)
-                                            : Colors.white60),
+                                            ? (coupleTheme != null &&
+                                                    !coupleTheme.isDark
+                                                ? bubbleTextColor
+                                                : const Color(0xFF4ADE80))
+                                            : bubbleSubTextColor),
                                   ),
                                 ]
                               ],
@@ -8333,7 +8757,7 @@ Draft: "$draft"''';
                     ),
                   ),
                 ),
-                // ⚠️ Inline Language Warning (Below Message Bubble)
+                // âš ï¸ Inline Language Warning (Below Message Bubble)
                 if (message.metadata?['language_warning'] != null &&
                     message.metadata!['language_warning']
                             ['has_language_warning'] ==
@@ -8359,7 +8783,7 @@ Draft: "$draft"''';
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Text('⚠️ ', style: TextStyle(fontSize: 11)),
+                              const Text('âš ï¸ ', style: TextStyle(fontSize: 11)),
                               Flexible(
                                 child: Text(
                                   message.metadata!['language_warning']
@@ -8422,7 +8846,7 @@ Draft: "$draft"''';
     );
   }
 
-  /// 🔗 Helper to render message text with clickable, light blue URLs
+  /// ðŸ”— Helper to render message text with clickable, light blue URLs
   Widget _buildLinkedMessageText(String text, {required TextStyle baseStyle}) {
     final urlRegex = RegExp(
       r'((?:https?:\/\/|www\.)[^\s]+)',
@@ -9155,7 +9579,7 @@ Draft: "$draft"''';
                         child: Text(
                           isBurned
                               ? 'Opened'
-                              : (isMe ? 'Delivered Snap' : 'Snap 🔥'),
+                              : (isMe ? 'Delivered Snap' : 'Snap ðŸ”¥'),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.outfit(
@@ -9193,9 +9617,9 @@ Draft: "$draft"''';
                   ),
                   Text(
                     isBurned
-                        ? 'Opened • Storage purged'
+                        ? 'Opened â€¢ Storage purged'
                         : (isMe
-                            ? 'Tap to view • Self-destructs'
+                            ? 'Tap to view â€¢ Self-destructs'
                             : 'Tap to view (Burns on seen)'),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -9282,7 +9706,7 @@ Draft: "$draft"''';
                           ),
                         ),
                         child: const Center(
-                          child: Text('⚡', style: TextStyle(fontSize: 18)),
+                          child: Text('âš¡', style: TextStyle(fontSize: 18)),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -9329,7 +9753,7 @@ Draft: "$draft"''';
                           ),
                         ),
                         child: Text(
-                          accepted ? 'Day $streakDays/4 🤝' : 'Pending',
+                          accepted ? 'Day $streakDays/4 ðŸ¤' : 'Pending',
                           style: GoogleFonts.outfit(
                             color: accepted
                                 ? const Color(0xFF10B981)
@@ -9368,7 +9792,7 @@ Draft: "$draft"''';
                         children: [
                           Row(
                             children: [
-                              const Text('📜', style: TextStyle(fontSize: 12)),
+                              const Text('ðŸ“œ', style: TextStyle(fontSize: 12)),
                               const SizedBox(width: 6),
                               Expanded(
                                 child: Text(
@@ -9399,7 +9823,7 @@ Draft: "$draft"''';
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('1️⃣ ',
+                                const Text('1ï¸âƒ£ ',
                                     style: TextStyle(fontSize: 11)),
                                 Expanded(
                                   child: Text(
@@ -9419,7 +9843,7 @@ Draft: "$draft"''';
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('2️⃣ ',
+                                const Text('2ï¸âƒ£ ',
                                     style: TextStyle(fontSize: 11)),
                                 Expanded(
                                   child: Text(
@@ -9453,7 +9877,7 @@ Draft: "$draft"''';
                           );
                           await _sendMessage(
                             text:
-                                '🤝 Accepted Pocket Talk! 4-day spoken pact is ON! 🏆',
+                                'ðŸ¤ Accepted Pocket Talk! 4-day spoken pact is ON! ðŸ†',
                             messageType: 'text',
                           );
                           safeSetState(() {});
@@ -9477,7 +9901,7 @@ Draft: "$draft"''';
                           ),
                           child: Center(
                             child: Text(
-                              'Accept 4-Day Pact 🤝',
+                              'Accept 4-Day Pact ðŸ¤',
                               style: GoogleFonts.outfit(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -9492,7 +9916,7 @@ Draft: "$draft"''';
                         padding: const EdgeInsets.symmetric(vertical: 4),
                         child: Center(
                           child: Text(
-                            'Waiting for mate to accept ⏳',
+                            'Waiting for mate to accept â³',
                             style: GoogleFonts.inter(
                               color: Colors.white54,
                               fontSize: 11,
@@ -9517,7 +9941,7 @@ Draft: "$draft"''';
                       ),
                       child: Row(
                         children: [
-                          const Text('🛡️', style: TextStyle(fontSize: 13)),
+                          const Text('ðŸ›¡ï¸', style: TextStyle(fontSize: 13)),
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
@@ -9609,7 +10033,7 @@ Draft: "$draft"''';
                           ),
                         ),
                         child: const Center(
-                          child: Text('🤝', style: TextStyle(fontSize: 18)),
+                          child: Text('ðŸ¤', style: TextStyle(fontSize: 18)),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -9627,7 +10051,7 @@ Draft: "$draft"''';
                             ),
                             Text(
                               isMate
-                                  ? 'Connected Mates ✨'
+                                  ? 'Connected Mates âœ¨'
                                   : 'Mutual Connection',
                               style: GoogleFonts.inter(
                                 color: isMate
@@ -9645,10 +10069,10 @@ Draft: "$draft"''';
                   const SizedBox(height: 10),
                   Text(
                     isMate
-                        ? '✨ You and ${isMe ? 'opponent' : message.senderName} are now official Mates! Chat is active in All Chats.'
+                        ? 'âœ¨ You and ${isMe ? 'opponent' : message.senderName} are now official Mates! Chat is active in All Chats.'
                         : (isMe
-                            ? 'You sent a Mates Request 🤝 • You can chat anytime!'
-                            : '${message.senderName} sent you a Mates Request 🤝'),
+                            ? 'You sent a Mates Request ðŸ¤ â€¢ You can chat anytime!'
+                            : '${message.senderName} sent you a Mates Request ðŸ¤'),
                     style: GoogleFonts.inter(
                       color: isMate ? const Color(0xFFD1FAE5) : Colors.white70,
                       fontSize: 12.5,
@@ -9677,7 +10101,7 @@ Draft: "$draft"''';
                                   .refreshNow();
                               setBubbleState(() {});
                               _showSnackBar(
-                                  '✨ Connected as Mates! Moved to All Chats.');
+                                  'âœ¨ Connected as Mates! Moved to All Chats.');
                             },
                             child: Container(
                               height: 36,
@@ -9694,7 +10118,7 @@ Draft: "$draft"''';
                               ),
                               child: Center(
                                 child: Text(
-                                  'Accept Mate 🤝',
+                                  'Accept Mate ðŸ¤',
                                   style: GoogleFonts.outfit(
                                     color: Colors.black,
                                     fontWeight: FontWeight.w900,
@@ -9759,7 +10183,7 @@ Draft: "$draft"''';
         seconds.toDouble();
     final score = (metadata['challenger_score'] as num?)?.toInt() ?? 0;
     final correct = (metadata['challenger_correct'] as num?)?.toInt() ?? 0;
-    final chalAvatar = metadata['challenger_avatar']?.toString() ?? '⚔️';
+    final chalAvatar = metadata['challenger_avatar']?.toString() ?? 'âš”ï¸';
     final timeStr = timeSec > 0 ? timeSec.toStringAsFixed(1) : '$seconds';
     final correctStr = correct > 0 ? '$correct/$qCount correct' : '$score pts';
 
@@ -9805,7 +10229,7 @@ Draft: "$draft"''';
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isMe ? 'Fight Initiated 🥊' : 'Fight Challenge 🥊',
+                      isMe ? 'Fight Initiated ðŸ¥Š' : 'Fight Challenge ðŸ¥Š',
                       style: GoogleFonts.outfit(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
@@ -9813,7 +10237,7 @@ Draft: "$draft"''';
                       ),
                     ),
                     Text(
-                      'Citadel Speed Duel • $qCount Qs',
+                      'Citadel Speed Duel â€¢ $qCount Qs',
                       style: GoogleFonts.inter(
                         color: const Color(0xFFFCA5A5),
                         fontSize: 11,
@@ -9829,11 +10253,11 @@ Draft: "$draft"''';
           Text(
             isMe
                 ? (seconds == 0 && score == 0
-                    ? 'You initiated a Citadel Fight! Waiting for opponent to duel! ⏳'
-                    : 'You finished the duel in ${timeStr}s • $correctStr. Waiting for opponent to fight back! ⏳')
+                    ? 'You initiated a Citadel Fight! Waiting for opponent to duel! â³'
+                    : 'You finished the duel in ${timeStr}s â€¢ $correctStr. Waiting for opponent to fight back! â³')
                 : (seconds == 0 && score == 0
-                    ? '${(message.senderName != null && message.senderName!.isNotEmpty) ? message.senderName : "Opponent"} started a Fight challenge with you! Can you win the duel? ⚔️'
-                    : '${(message.senderName != null && message.senderName!.isNotEmpty) ? message.senderName : "Opponent"} initiated a Fight and finished in ${timeStr}s • $correctStr. Can you beat their time & score? ⚔️'),
+                    ? '${(message.senderName != null && message.senderName!.isNotEmpty) ? message.senderName : "Opponent"} started a Fight challenge with you! Can you win the duel? âš”ï¸'
+                    : '${(message.senderName != null && message.senderName!.isNotEmpty) ? message.senderName : "Opponent"} initiated a Fight and finished in ${timeStr}s â€¢ $correctStr. Can you beat their time & score? âš”ï¸'),
             style: GoogleFonts.inter(
               color: Colors.white70,
               fontSize: 12.5,
@@ -9852,7 +10276,7 @@ Draft: "$draft"''';
                   challengerAvatar: chalAvatar,
                   opponentId: _currentUserId,
                   opponentName: 'You',
-                  opponentAvatar: '🥊',
+                  opponentAvatar: 'ðŸ¥Š',
                   gameFormat: 'citadel_speed_duel',
                   gameTitle: 'Citadel Speed Duel',
                   scheduledTime: 'Instant',
@@ -9891,7 +10315,7 @@ Draft: "$draft"''';
                 ),
                 child: Center(
                   child: Text(
-                    'FIGHT BACK NOW ⚔️',
+                    'FIGHT BACK NOW âš”ï¸',
                     style: GoogleFonts.outfit(
                       color: Colors.white,
                       fontWeight: FontWeight.w900,
@@ -9914,7 +10338,7 @@ Draft: "$draft"''';
             ? widget.groupId.substring(2)
             : message.senderId;
     final damage = metadata['damage'] ?? '100%';
-    final weapon = metadata['weapon'] ?? '⚡ Laser Strike';
+    final weapon = metadata['weapon'] ?? 'âš¡ Laser Strike';
     final lootedCoins = metadata['coins_looted'] ?? 15;
 
     return Container(
@@ -9950,7 +10374,7 @@ Draft: "$draft"''';
                   color: Color(0xFF1E293B),
                 ),
                 child: const Center(
-                  child: Text('🏰', style: TextStyle(fontSize: 18)),
+                  child: Text('ðŸ°', style: TextStyle(fontSize: 18)),
                 ),
               ),
               const SizedBox(width: 10),
@@ -9960,8 +10384,8 @@ Draft: "$draft"''';
                   children: [
                     Text(
                       isMe
-                          ? 'Attack Successful ⚔️'
-                          : 'House Intrusion Alert 💥',
+                          ? 'Attack Successful âš”ï¸'
+                          : 'House Intrusion Alert ðŸ’¥',
                       style: GoogleFonts.outfit(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
@@ -10021,7 +10445,7 @@ Draft: "$draft"''';
                 ),
                 child: Center(
                   child: Text(
-                    'REVENGE ATTACK ⚔️',
+                    'REVENGE ATTACK âš”ï¸',
                     style: GoogleFonts.outfit(
                       color: Colors.white,
                       fontWeight: FontWeight.w900,
@@ -10047,11 +10471,11 @@ Draft: "$draft"''';
     if (existingPact != null) {
       if (existingPact.isAccepted && !existingPact.isForfeited) {
         _showSnackBar(
-            'Active 4-Day Pocket Talk already in progress! Day ${existingPact.streakDays}/4 🔥');
+            'Active 4-Day Pocket Talk already in progress! Day ${existingPact.streakDays}/4 ðŸ”¥');
         return;
       } else if (!existingPact.isAccepted && !existingPact.isForfeited) {
         _showSnackBar(
-            'Pocket Talk invite already sent! Waiting for acceptance ⏳');
+            'Pocket Talk invite already sent! Waiting for acceptance â³');
         return;
       }
     }
@@ -10064,7 +10488,7 @@ Draft: "$draft"''';
     );
 
     await _sendMessage(
-      text: '🔥 Pocket Talk 4-Day Spoken Pact Request',
+      text: 'ðŸ”¥ Pocket Talk 4-Day Spoken Pact Request',
       messageType: 'pocket_talk_request',
       metadata: {
         'is_pocket_talk': true,
@@ -10283,7 +10707,7 @@ Draft: "$draft"''';
                     .withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Text(isDiagram ? '📐' : '📋',
+              child: Text(isDiagram ? 'ðŸ“' : 'ðŸ“‹',
                   style: const TextStyle(fontSize: 22)),
             ),
             const SizedBox(width: 12),
@@ -10581,7 +11005,7 @@ Draft: "$draft"''';
       _replyMessage = {
         'id': message.id,
         'message_text': message.messageText ??
-            (message.messageType == 'voice' ? '🎤 Voice note' : '📷 Media'),
+            (message.messageType == 'voice' ? 'ðŸŽ¤ Voice note' : 'ðŸ“· Media'),
         'sender_id': message.senderId,
         'sender_name': senderDisplayName,
         'metadata': message.metadata,
@@ -10635,7 +11059,7 @@ Draft: "$draft"''';
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: ['🔥', '⚡', '🏆', '💯', '❤️', '👏', '🎯'].map((emoji) {
+              children: ['ðŸ”¥', 'âš¡', 'ðŸ†', 'ðŸ’¯', 'â¤ï¸', 'ðŸ‘', 'ðŸŽ¯'].map((emoji) {
                 return InkWell(
                   borderRadius: BorderRadius.circular(16),
                   onTap: () {
@@ -10704,7 +11128,7 @@ Draft: "$draft"''';
                           .getPinnedMessages(_currentGroupId);
                       if (mounted)
                         safeSetState(() => _gangPinnedMessages = updated);
-                      _showSnackBar('📌 Message unpinned');
+                      _showSnackBar('ðŸ“Œ Message unpinned');
                     } else {
                       final currentSenderName = message.senderName ??
                           (message.senderProfile?['name'] ?? 'Member');
@@ -10725,8 +11149,8 @@ Draft: "$draft"''';
                         messageId: message.id,
                         messageText: message.messageText ??
                             (message.messageType == 'voice'
-                                ? '🎤 Voice message'
-                                : '📷 Media'),
+                                ? 'ðŸŽ¤ Voice message'
+                                : 'ðŸ“· Media'),
                         senderId: message.senderId,
                         senderName: currentSenderName,
                         messageType: message.messageType,
@@ -10737,7 +11161,7 @@ Draft: "$draft"''';
                           .getPinnedMessages(_currentGroupId);
                       if (mounted)
                         safeSetState(() => _gangPinnedMessages = updated);
-                      _showSnackBar('📌 Message pinned to group!');
+                      _showSnackBar('ðŸ“Œ Message pinned to group!');
                     }
                   },
                 );
@@ -10938,7 +11362,7 @@ Draft: "$draft"''';
     );
   }
 
-  Widget _buildInputArea() {
+  Widget _buildInputArea({PocketSpendCoupleTheme? coupleTheme}) {
     if (widget.isAdminView) {
       return Container(
         width: double.infinity,
@@ -10971,26 +11395,44 @@ Draft: "$draft"''';
 
     // Instagram-style messaging: Users can send messages freely even if Mates Request is pending
 
+    final inputOuterBg =
+        coupleTheme != null ? coupleTheme.cardColor : const Color(0xFF070B0D);
+    final inputPillBg = coupleTheme != null
+        ? coupleTheme.surfaceAltColor
+        : const Color(0xFF121B22);
+    final inputTextColor =
+        coupleTheme != null ? coupleTheme.textColor : Colors.white;
+    final inputHintColor = coupleTheme != null
+        ? coupleTheme.subTextColor.withValues(alpha: 0.7)
+        : Colors.white38;
+    final inputIconColor =
+        coupleTheme != null ? coupleTheme.subTextColor : Colors.white70;
+    final inputBorderColor = coupleTheme != null
+        ? coupleTheme.borderColor
+        : Colors.white.withValues(alpha: 0.08);
+
     return SafeArea(
       top: false,
       bottom: true,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
-          color: const Color(0xFF070B0D),
+          color: inputOuterBg,
           border: Border(
               top: BorderSide(
-                  color: Colors.white.withValues(alpha: 0.05), width: 1)),
+                  color: coupleTheme != null
+                      ? coupleTheme.borderColor
+                      : Colors.white.withValues(alpha: 0.05),
+                  width: 1)),
         ),
         child: Row(
           children: [
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFF121B22),
+                  color: inputPillBg,
                   borderRadius: BorderRadius.circular(22),
-                  border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.08), width: 0.5),
+                  border: Border.all(color: inputBorderColor, width: 0.5),
                 ),
                 child: Row(
                   children: [
@@ -11002,7 +11444,7 @@ Draft: "$draft"''';
                           _showEmojiPicker
                               ? Icons.keyboard
                               : Icons.emoji_emotions_outlined,
-                          color: Colors.white70),
+                          color: inputIconColor),
                       onPressed: () {
                         safeSetState(
                             () => _showEmojiPicker = !_showEmojiPicker);
@@ -11013,8 +11455,7 @@ Draft: "$draft"''';
                       child: TextField(
                         controller: _messageController,
                         focusNode: _focusNode,
-                        style: const TextStyle(
-                            color: Colors.white, fontSize: 14.5),
+                        style: TextStyle(color: inputTextColor, fontSize: 14.5),
                         textInputAction: TextInputAction.send,
                         onSubmitted: (_) {
                           if (_isEditing) {
@@ -11027,10 +11468,10 @@ Draft: "$draft"''';
                         decoration: InputDecoration(
                           hintText: (_isEnglishHubGroup ||
                                   widget.groupId.startsWith('p:'))
-                              ? 'Type in English only... 🇬🇧'
+                              ? 'Type in English only... ðŸ‡¬ðŸ‡§'
                               : 'Type a message...',
-                          hintStyle: const TextStyle(
-                              color: Colors.white38, fontSize: 14),
+                          hintStyle:
+                              TextStyle(color: inputHintColor, fontSize: 14),
                           border: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 8),
@@ -11053,8 +11494,8 @@ Draft: "$draft"''';
                                       minWidth: 32, minHeight: 36),
                                   padding: EdgeInsets.zero,
                                   tooltip: 'Attach file',
-                                  icon: const Icon(Icons.attach_file,
-                                      color: Colors.white70),
+                                  icon: Icon(Icons.attach_file,
+                                      color: inputIconColor),
                                   onPressed: () => _showAttachmentBottomSheet(),
                                 ),
                               if (widget.groupId.startsWith('p:') &&
@@ -11067,7 +11508,7 @@ Draft: "$draft"''';
                                   constraints: const BoxConstraints(
                                       minWidth: 34, minHeight: 36),
                                   padding: EdgeInsets.zero,
-                                  tooltip: 'Pocket Talk ⚡',
+                                  tooltip: 'Pocket Talk âš¡',
                                   icon: const Icon(Icons.bolt_rounded,
                                       color: Color(0xFF00E5FF)),
                                   onPressed: _sendPocketTalkInvite,
@@ -11084,7 +11525,7 @@ Draft: "$draft"''';
                                 constraints: const BoxConstraints(
                                     minWidth: 32, minHeight: 36),
                                 padding: EdgeInsets.zero,
-                                tooltip: 'Polish My English ✨',
+                                tooltip: 'Polish My English âœ¨',
                                 icon: _isCorrectingText
                                     ? const SizedBox(
                                         width: 14,
@@ -11282,7 +11723,7 @@ Draft: "$draft"''';
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _buildAttachOption(Icons.local_fire_department_rounded,
-                      const Color(0xFFFF8A00), 'Snap 🔥', () {
+                      const Color(0xFFFF8A00), 'Snap ðŸ”¥', () {
                     Navigator.pop(ctx);
                     _pickAndSendSnap();
                   }),
@@ -11307,7 +11748,7 @@ Draft: "$draft"''';
                       !PocketPresidentService.isPresidentId(
                           widget.groupId.substring(2)))
                     _buildAttachOption(Icons.bolt_rounded,
-                        const Color(0xFF00E5FF), 'Pocket Talk ⚡', () {
+                        const Color(0xFF00E5FF), 'Pocket Talk âš¡', () {
                       Navigator.pop(ctx);
                       _sendPocketTalkInvite();
                     }),
@@ -11475,7 +11916,7 @@ Draft: "$draft"''';
       String? caption, String path, String type) async {
     // 1. Immediate optimistic send
     final messageId = await _sendMessage(
-      text: caption ?? (type == 'document' ? 'Document 📁' : 'Audio 🎵'),
+      text: caption ?? (type == 'document' ? 'Document ðŸ“' : 'Audio ðŸŽµ'),
       messageType: type,
       metadata: {'local_path': path}, // Store local path for preview
     );
@@ -11571,7 +12012,7 @@ Draft: "$draft"''';
 
     // 1. Immediate optimistic send
     final messageId = await _sendMessage(
-      text: caption ?? 'Video 📹',
+      text: caption ?? 'Video ðŸ“¹',
       messageType: 'video',
       metadata: {'local_path': path},
     );
@@ -11759,7 +12200,7 @@ Draft: "$draft"''';
 
       // 1. Immediate optimistic send
       final messageId = await _sendMessage(
-        text: '🔥 12h Disappearing Snap',
+        text: 'ðŸ”¥ 12h Disappearing Snap',
         messageType: type,
         metadata: {
           'local_path': path,
@@ -11777,7 +12218,7 @@ Draft: "$draft"''';
       safeSetState(() {
         _showEmojiPicker = false;
       });
-      _showSnackBar('Snap sent! 🔥 (12h Disappearing)');
+      _showSnackBar('Snap sent! ðŸ”¥ (12h Disappearing)');
     } catch (e) {
       debugPrint('Error capturing snap: $e');
       _showErrorSnackBar('Error capturing snap: $e');
@@ -12183,18 +12624,20 @@ Draft: "$draft"''';
     return SizedBox(
       width: size,
       height: size,
-      child: VectorAvatarWidget(
-        config: config,
+      child: PocketPrivacyAvatarFlipWidget(
+        profileImageUrl: profileImgUrl,
+        avatarConfig: config,
         size: size,
+        isPrivate: false,
+        isMate: true,
         showAura: false,
-        useFlame: false,
       ),
     );
   }
 
   // ... (Keep existing helper methods like _showGroupInfo, _pickAndSendImage)
   void _showGroupInfo() {
-    if (widget.groupId.startsWith('p:')) {
+    if (widget.groupId.startsWith('p:') && !_isPocketCoupleGroup) {
       final rawTarget = widget.groupId.substring(2);
       String targetId = rawTarget;
 
@@ -12265,39 +12708,47 @@ Draft: "$draft"''';
       }
       return;
     }
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF1F2C34),
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.8,
-        maxChildSize: 0.95,
-        minChildSize: 0.5,
-        expand: false,
-        builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: Color(0xFF0B141B), // Darker background for premium feel
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: Column(
-            children: [
-              // Pull Bar
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(top: 10, bottom: 20),
-                decoration: BoxDecoration(
-                  color: Colors.grey[600],
-                  borderRadius: BorderRadius.circular(2),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ValueListenableBuilder<int>(
+          valueListenable: _isPocketCoupleGroup
+              ? PocketSpendPage.coupleThemeNotifier
+              : PocketSpendPage.getGroupThemeNotifier(
+                  _currentGroupId,
+                  defaultIndex: 0,
+                ),
+          builder: (context, activeThemeIdx, _) {
+            final infoTheme = _isPocketCoupleGroup
+                ? PocketSpendPage.getCoupleTheme(activeThemeIdx)
+                : PocketSpendPage.getGroupTheme(activeThemeIdx);
+            return Scaffold(
+              backgroundColor: infoTheme.bgGradient.first,
+              appBar: AppBar(
+                backgroundColor: infoTheme.cardColor,
+                foregroundColor: infoTheme.textColor,
+                iconTheme: IconThemeData(color: infoTheme.textColor),
+                elevation: 0,
+                title: Text(
+                  'Group Info',
+                  style: GoogleFonts.outfit(
+                    color: infoTheme.textColor,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 18,
+                  ),
                 ),
               ),
-              Expanded(
+              body: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: infoTheme.bgGradient,
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
                 child: ListView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   children: [
                     // Group Header
                     Center(
@@ -12347,9 +12798,12 @@ Draft: "$draft"''';
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            widget.groupName,
-                            style: const TextStyle(
-                                color: Colors.white,
+                            _isIslandNeighborsGroup
+                                ? (_islandColonyInfo?.planetName ??
+                                    widget.groupName)
+                                : widget.groupName,
+                            style: TextStyle(
+                                color: infoTheme.textColor,
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold),
                           ),
@@ -12357,16 +12811,19 @@ Draft: "$draft"''';
                           Builder(builder: (context) {
                             if (_isIslandNeighborsGroup) {
                               final neighborCount = _groupMembers.length;
+                              final islandName =
+                                  _islandColonyInfo?.planetName ??
+                                      _currentGroupName;
                               return Padding(
                                 padding: const EdgeInsets.only(top: 1.5),
                                 child: Text(
                                   neighborCount > 0
-                                      ? '$neighborCount Neighbors • 25 Island Parcels'
-                                      : 'Island Neighbors Group',
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    color: Color(0xFF38BDF8),
-                                    fontWeight: FontWeight.w500,
+                                      ? '$islandName • $neighborCount/25 Neighbors'
+                                      : '$islandName • Island Neighbors',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: infoTheme.accent,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -12381,7 +12838,7 @@ Draft: "$draft"''';
                                 _groupMembers.length + hubRobots.length;
                             return Text(
                               'Group · $totalCount members${hubRobots.isNotEmpty ? ' (${_groupMembers.length} Learners · ${hubRobots.length} AI Mates)' : ''}',
-                              style: const TextStyle(color: Colors.white60),
+                              style: TextStyle(color: infoTheme.subTextColor),
                             );
                           }),
                         ],
@@ -12395,21 +12852,18 @@ Draft: "$draft"''';
                         margin: const EdgeInsets.only(bottom: 16),
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
+                          color: infoTheme.cardColor,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                              color: const Color(0xFF38BDF8)
-                                  .withValues(alpha: 0.5),
+                              color: infoTheme.accent.withValues(alpha: 0.4),
                               width: 1.2),
-                          boxShadow: const [
+                          boxShadow: [
                             BoxShadow(
-                                color: Colors.black38,
+                                color: infoTheme.isDark
+                                    ? Colors.black38
+                                    : infoTheme.accent.withValues(alpha: 0.08),
                                 blurRadius: 10,
-                                offset: Offset(0, 3)),
+                                offset: const Offset(0, 3)),
                           ],
                         ),
                         child: Column(
@@ -12428,7 +12882,7 @@ Draft: "$draft"''';
                                       Text(
                                         'Celestial Island Map',
                                         style: GoogleFonts.outfit(
-                                          color: Colors.white,
+                                          color: infoTheme.textColor,
                                           fontSize: 15,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -12436,7 +12890,7 @@ Draft: "$draft"''';
                                       Text(
                                         'View your 25-resident island, neighbors & territory',
                                         style: GoogleFonts.plusJakartaSans(
-                                          color: const Color(0xFF94A3B8),
+                                          color: infoTheme.subTextColor,
                                           fontSize: 11.5,
                                         ),
                                       ),
@@ -12454,8 +12908,8 @@ Draft: "$draft"''';
                                   _openIslandMapDirectly();
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF0284C7),
-                                  foregroundColor: Colors.white,
+                                  backgroundColor: infoTheme.accent,
+                                  foregroundColor: infoTheme.onAccentTextColor,
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 10),
                                   shape: RoundedRectangleBorder(
@@ -12477,128 +12931,6 @@ Draft: "$draft"''';
                         ),
                       ),
                     ],
-                    if (_isEligibleForPocketGangWorkspace) ...[
-                      Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF161F2C),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.08)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    const Text('🌐 ',
-                                        style: TextStyle(fontSize: 16)),
-                                    Text(
-                                      'Languages Allowed in this Gang',
-                                      style: GoogleFonts.outfit(
-                                        color: Colors.white,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                if (_userRole == 'admin')
-                                  GestureDetector(
-                                    onTap: () async {
-                                      HapticFeedback.selectionClick();
-                                      final selected =
-                                          await PocketGangLanguagePickerSheet
-                                              .show(
-                                        context,
-                                        initialCodes: _gangAllowedLanguages,
-                                      );
-                                      if (selected != null &&
-                                          selected.isNotEmpty) {
-                                        await PocketGangGroupLanguageService
-                                            .instance
-                                            .updateAllowedLanguages(
-                                          groupId: _currentGroupId,
-                                          languageCodes: selected,
-                                          userId: _currentUserId,
-                                        );
-                                        safeSetState(() {
-                                          _gangAllowedLanguages = selected;
-                                        });
-                                      }
-                                    },
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFFFD700)
-                                            .withValues(alpha: 0.15),
-                                        borderRadius: BorderRadius.circular(6),
-                                        border: Border.all(
-                                            color: const Color(0xFFFFD700),
-                                            width: 0.8),
-                                      ),
-                                      child: const Text(
-                                        'Edit',
-                                        style: TextStyle(
-                                          color: Color(0xFFFFD700),
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Wrap(
-                              spacing: 6,
-                              runSpacing: 6,
-                              children: _gangAllowedLanguages.map((code) {
-                                final lang = PocketGangLanguage
-                                    .supportedLanguages
-                                    .firstWhere(
-                                  (l) => l.code == code,
-                                  orElse: () => PocketGangLanguage(
-                                      code: code,
-                                      name: code.toUpperCase(),
-                                      nativeName: code,
-                                      flag: '🌐'),
-                                );
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 5),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF0F172A),
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: Colors.white12),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(lang.flag,
-                                          style: const TextStyle(fontSize: 13)),
-                                      const SizedBox(width: 5),
-                                      Text(
-                                        lang.name,
-                                        style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                    ],
 
                     // Participants Section
                     Builder(builder: (context) {
@@ -12614,18 +12946,18 @@ Draft: "$draft"''';
                             children: [
                               Text(
                                 _isIslandNeighborsGroup
-                                    ? 'Island Neighbors (${_groupMembers.length})'
+                                    ? 'Island Neighbors (${_groupMembers.length}/25)'
                                     : (hubRobots.isNotEmpty
                                         ? 'Learners (${_groupMembers.length})'
                                         : '${_groupMembers.length} members'),
-                                style: const TextStyle(
-                                    color: Colors.grey,
+                                style: TextStyle(
+                                    color: infoTheme.subTextColor,
                                     fontWeight: FontWeight.bold),
                               ),
                               if (_userRole == 'admin')
                                 IconButton(
-                                  icon: const Icon(Icons.search,
-                                      color: Colors.grey),
+                                  icon: Icon(Icons.search,
+                                      color: infoTheme.subTextColor),
                                   onPressed: () => _showMemberSearchDialog(),
                                 ),
                             ],
@@ -12634,13 +12966,13 @@ Draft: "$draft"''';
                           if (_userRole == 'admin')
                             ListTile(
                               contentPadding: EdgeInsets.zero,
-                              leading: const CircleAvatar(
-                                backgroundColor: Colors.yellow,
-                                child:
-                                    Icon(Icons.person_add, color: Colors.black),
+                              leading: CircleAvatar(
+                                backgroundColor: infoTheme.accent,
+                                child: Icon(Icons.person_add,
+                                    color: infoTheme.onAccentTextColor),
                               ),
-                              title: const Text('Add members',
-                                  style: TextStyle(color: Colors.white)),
+                              title: Text('Add members',
+                                  style: TextStyle(color: infoTheme.textColor)),
                               onTap: () {
                                 Navigator.pop(context);
                                 _showAddMemberDialog();
@@ -12678,7 +13010,7 @@ Draft: "$draft"''';
                                           ? 'You'
                                           : (profile?['name'] ?? 'Unknown'),
                                       style:
-                                          const TextStyle(color: Colors.white),
+                                          TextStyle(color: infoTheme.textColor),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -12689,17 +13021,17 @@ Draft: "$draft"''';
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 5, vertical: 1.5),
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFF0284C7)
-                                            .withValues(alpha: 0.2),
+                                        color: infoTheme.accent
+                                            .withValues(alpha: 0.15),
                                         borderRadius: BorderRadius.circular(4),
                                         border: Border.all(
-                                            color: const Color(0xFF38BDF8),
+                                            color: infoTheme.accent,
                                             width: 0.8),
                                       ),
                                       child: Text(
                                         'Plot #${profile?['plot_number']}',
-                                        style: const TextStyle(
-                                          color: Color(0xFF38BDF8),
+                                        style: TextStyle(
+                                          color: infoTheme.accent,
                                           fontSize: 9.5,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -12709,7 +13041,7 @@ Draft: "$draft"''';
                               ),
                               subtitle: Text(
                                 'Level $stage · ${profile?['bio'] ?? 'Active in Pocket World'}',
-                                style: const TextStyle(color: Colors.grey),
+                                style: TextStyle(color: infoTheme.subTextColor),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -12723,29 +13055,28 @@ Draft: "$draft"''';
                                           horizontal: 6, vertical: 2),
                                       decoration: BoxDecoration(
                                         border:
-                                            Border.all(color: Colors.yellow),
+                                            Border.all(color: infoTheme.accent),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
-                                      child: const Text('Group Admin',
+                                      child: Text('Group Admin',
                                           style: TextStyle(
-                                              color: Colors.yellow,
+                                              color: infoTheme.accent,
                                               fontSize: 10)),
                                     ),
                                   Container(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 8, vertical: 3),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFFFD700)
+                                      color: infoTheme.accent
                                           .withValues(alpha: 0.15),
                                       border: Border.all(
-                                          color: const Color(0xFFFFD700),
-                                          width: 1),
+                                          color: infoTheme.accent, width: 1),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Text(
                                       'Lvl $stage',
-                                      style: const TextStyle(
-                                        color: Color(0xFFFFD700),
+                                      style: TextStyle(
+                                        color: infoTheme.accent,
                                         fontSize: 11,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -12922,12 +13253,118 @@ Draft: "$draft"''';
                         ),
                       ],
                     ],
+                    const SizedBox(height: 24),
+                    // 🎨 Group Color Theme Picker
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: infoTheme.cardColor,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: infoTheme.borderColor),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.palette_outlined,
+                                  color: infoTheme.accent, size: 18),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Group Color Theme',
+                                style: GoogleFonts.outfit(
+                                  color: infoTheme.textColor,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Changes chat, bubbles, Team & Diagram Studio colors',
+                            style: TextStyle(
+                              color: infoTheme.subTextColor,
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Builder(
+                            builder: (context) {
+                              final themesList = _isPocketCoupleGroup
+                                  ? PocketSpendPage.allCoupleThemes
+                                  : PocketSpendPage.groupThemes;
+                              return Wrap(
+                                spacing: 10,
+                                runSpacing: 10,
+                                children:
+                                    List.generate(themesList.length, (idx) {
+                                  final t = themesList[idx];
+                                  final isSelected =
+                                      activeThemeIdx % themesList.length == idx;
+                                  return GestureDetector(
+                                    onTap: () async {
+                                      HapticFeedback.selectionClick();
+                                      if (_isPocketCoupleGroup) {
+                                        await PocketSpendPage.setCoupleTheme(
+                                            idx);
+                                      } else {
+                                        await PocketSpendPage.setGroupTheme(
+                                            _currentGroupId, idx);
+                                      }
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: t.cardColor,
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: isSelected
+                                              ? t.accent
+                                              : t.borderColor,
+                                          width: isSelected ? 2 : 1,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Container(
+                                            width: 14,
+                                            height: 14,
+                                            decoration: BoxDecoration(
+                                              color: t.accent,
+                                              shape: BoxShape.circle,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            t.name,
+                                            style: GoogleFonts.outfit(
+                                              color: t.textColor,
+                                              fontSize: 12,
+                                              fontWeight: isSelected
+                                                  ? FontWeight.w700
+                                                  : FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
                     const SizedBox(height: 48),
                   ],
                 ),
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );

@@ -35,7 +35,8 @@ class PoketCosmosNavigatorPage extends StatefulWidget {
 
   /// Static accessor to all scientific cosmos planets
   static List<PoketPlanet> buildCosmosPlanets({int activeWaves = 1}) =>
-      _PoketCosmosNavigatorPageState._buildCosmosPlanets(activeWaves: activeWaves);
+      _PoketCosmosNavigatorPageState._buildCosmosPlanets(
+          activeWaves: activeWaves);
 
   @override
   State<PoketCosmosNavigatorPage> createState() =>
@@ -58,6 +59,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
 
   PoketPlanet? _selectedPlanet;
   PoketCountryMap? _selectedIsland;
+  PoketPlanet? _focusedOrbitPlanet;
+  FlameSolarSystemGame? _orbitGame;
   int _currentIslandIndex = 0;
   late PageController _islandPageController;
 
@@ -67,7 +70,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
 
   CitizenPlot? _myHomePlot;
   double _currentAerialZoom = 1.0;
-  int _activeWaves = 2; // Default to 2 active waves (750 plots across the 15 celestial worlds)
+  int _activeWaves =
+      2; // Default to 2 active waves (750 plots across the 15 celestial worlds)
   late AnimationController _ambientOceanAnimController;
 
   @override
@@ -82,21 +86,52 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
     _islandPageController = PageController(viewportFraction: 0.84);
     _planets = _buildCosmosPlanets(activeWaves: 2);
     _refreshCosmosWaves();
-    if (widget.initialPlanetCode != null && widget.initialPlanetCode!.isNotEmpty) {
+    if (widget.initialPlanetCode != null &&
+        widget.initialPlanetCode!.isNotEmpty) {
       final code = widget.initialPlanetCode!.toUpperCase();
       PoketPlanet? matched;
       for (final p in _planets) {
         // Direct major/dwarf/exoplanet matches
-        if (code == 'MER' && p.id == 1) { matched = p; break; }
-        if (code == 'VEN' && p.id == 2) { matched = p; break; }
-        if (code == 'EP' && p.id == 3) { matched = p; break; }
-        if (code == 'MAR' && p.id == 4) { matched = p; break; }
-        if (code == 'JUP' && p.id == 5) { matched = p; break; }
-        if (code == 'SAT' && p.id == 6) { matched = p; break; }
-        if (code == 'URA' && p.id == 7) { matched = p; break; }
-        if (code == 'NEP' && p.id == 8) { matched = p; break; }
-        if ((code == 'PLT' || code == 'PLU') && p.id == 9) { matched = p; break; }
-        if (code == 'KEP' && p.id == 452) { matched = p; break; }
+        if (code == 'MER' && p.id == 1) {
+          matched = p;
+          break;
+        }
+        if (code == 'VEN' && p.id == 2) {
+          matched = p;
+          break;
+        }
+        if (code == 'EP' && p.id == 3) {
+          matched = p;
+          break;
+        }
+        if (code == 'MAR' && p.id == 4) {
+          matched = p;
+          break;
+        }
+        if (code == 'JUP' && p.id == 5) {
+          matched = p;
+          break;
+        }
+        if (code == 'SAT' && p.id == 6) {
+          matched = p;
+          break;
+        }
+        if (code == 'URA' && p.id == 7) {
+          matched = p;
+          break;
+        }
+        if (code == 'NEP' && p.id == 8) {
+          matched = p;
+          break;
+        }
+        if ((code == 'PLT' || code == 'PLU') && p.id == 9) {
+          matched = p;
+          break;
+        }
+        if (code == 'KEP' && p.id == 452) {
+          matched = p;
+          break;
+        }
 
         // Satellite / Natural moon matches (MUST map to sat.toPlanet() to load the moon's own island!)
         for (final sat in p.satellites) {
@@ -135,7 +170,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
   Future<void> _loadUserHomePlot() async {
     try {
       final myId = SupaFlow.client.auth.currentUser?.id ?? '';
-      final p = await PoketCosmosAllocationService.instance.getUserPlot(userId: myId);
+      final p =
+          await PoketCosmosAllocationService.instance.getUserPlot(userId: myId);
       if (mounted) {
         setState(() => _myHomePlot = p);
       }
@@ -164,7 +200,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
   }
 
   Future<void> _refreshCosmosWaves() async {
-    final waves = await PoketCosmosAllocationService.instance.getActiveWaveIndex();
+    final waves =
+        await PoketCosmosAllocationService.instance.getActiveWaveIndex();
     if (mounted) {
       setState(() {
         _activeWaves = waves;
@@ -208,7 +245,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
       }
 
       final colony = island.planetCode != null
-          ? PoketCosmosAllocationService.instance.getColonyByCode(island.planetCode!)
+          ? PoketCosmosAllocationService.instance
+              .getColonyByCode(island.planetCode!)
           : PoketCosmosAllocationService.instance
               .getColonyByPlanetName(_selectedPlanet?.name ?? island.name);
       final targetWave = (island.id % 100 > 0) ? (island.id % 100) : 1;
@@ -678,7 +716,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
   }
 
   /// 🏝️ Earth Prime Sovereign & Citizen Colony Islands
-  static List<PoketCountryMap> _buildEarth30EnglishIslands({int activeWaves = 1}) {
+  static List<PoketCountryMap> _buildEarth30EnglishIslands(
+      {int activeWaves = 1}) {
     final list = <PoketCountryMap>[
       // 👑 Island #0: Presidential Citadel (President Mus'ab's Exclusive Sovereign Sanctuary - ONLY ON EARTH PRIME)
       const PoketCountryMap(
@@ -865,6 +904,96 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
           ),
         ),
 
+        // Mini Bottom Pill when a Planet or Moon is focused: [ Planet Name | 🏝️ Island Visit | ✕ ]
+        if (_hubMode == 0 && _focusedOrbitPlanet != null)
+          Positioned(
+            left: 16,
+            bottom: 30,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF14181B).withValues(alpha: 0.94),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color:
+                      _focusedOrbitPlanet!.primaryColor.withValues(alpha: 0.65),
+                  width: 1.2,
+                ),
+                boxShadow: const [
+                  BoxShadow(color: Colors.black54, blurRadius: 12),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: _focusedOrbitPlanet!.primaryColor,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    _focusedOrbitPlanet!.name,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 13,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  GestureDetector(
+                    onTap: () {
+                      final target = _focusedOrbitPlanet!;
+                      _navigateToPlanetArchipelago(target);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFFD700), Color(0xFFF59E0B)],
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('🏝️', style: TextStyle(fontSize: 11)),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Island Visit',
+                            style: GoogleFonts.outfit(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 11.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _focusedOrbitPlanet = null;
+                        _orbitGame?.focusOnPlanet(null);
+                      });
+                    },
+                    child: const Padding(
+                      padding: EdgeInsets.all(4),
+                      child: Icon(Icons.close_rounded,
+                          color: Colors.white60, size: 16),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
         // Right-Side Compact Floating Controls Pill (Zoom +, Zoom -, 3D Tilt Bend)
         if (_hubMode == 0)
           Positioned(
@@ -921,6 +1050,19 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
   }
 
   Widget _buildFlameOrbitContent() {
+    _orbitGame ??= FlameSolarSystemGame(
+      planets: _planets,
+      selectedPlanet: _focusedOrbitPlanet ?? _selectedPlanet,
+      tiltAngle: _tiltAngle,
+      followSelectedPlanet: _focusedOrbitPlanet != null,
+      onPlanetSelected: (planet) {
+        HapticFeedback.selectionClick();
+        setState(() {
+          _focusedOrbitPlanet = planet;
+          _orbitGame?.focusOnPlanet(planet);
+        });
+      },
+    );
     return InteractiveViewer(
       transformationController: _orbitInteractiveController,
       minScale:
@@ -931,14 +1073,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         width: 1300,
         height: 1300,
         child: GameWidget(
-          game: FlameSolarSystemGame(
-            planets: _planets,
-            selectedPlanet: _selectedPlanet,
-            tiltAngle: _tiltAngle,
-            onPlanetSelected: (planet) {
-              _navigateToPlanetArchipelago(planet);
-            },
-          ),
+          game: _orbitGame!,
         ),
       ),
     );
@@ -1221,7 +1356,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
               child: Row(
                 children: [
                   _buildIosBackButton(onTap: () {
-                    if (widget.initialPlanetCode != null && Navigator.canPop(context)) {
+                    if (widget.initialPlanetCode != null &&
+                        Navigator.canPop(context)) {
                       Navigator.pop(context);
                     } else {
                       setState(() => _activeScreen = 0);
@@ -1501,8 +1637,10 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                       // 💬 Island Neighbors Group Chat Button (Only visible on user's own island per privacy requirement)
                       Builder(
                         builder: (context) {
-                          final myId = SupaFlow.client.auth.currentUser?.id ?? '';
-                          final bool isOwn = _currentIslandPlots.any((p) => p.userId == myId);
+                          final myId =
+                              SupaFlow.client.auth.currentUser?.id ?? '';
+                          final bool isOwn =
+                              _currentIslandPlots.any((p) => p.userId == myId);
                           if (!isOwn) return const SizedBox.shrink();
 
                           return Padding(
@@ -1516,17 +1654,20 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                                     color: Color(0xFF38BDF8),
                                     width: 1.2,
                                   ),
-                                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
                                 onPressed: () {
                                   HapticFeedback.lightImpact();
-                                  final colony = PoketCosmosAllocationService.instance
+                                  final colony = PoketCosmosAllocationService
+                                      .instance
                                       .getColonyByPlanetName(
                                           _selectedPlanet?.name ?? island.name);
-                                  PocketIslandGroupService.instance.openIslandGroupChat(
+                                  PocketIslandGroupService.instance
+                                      .openIslandGroupChat(
                                     context,
                                     planetCode: colony.code,
                                     planetName: colony.planetName,
@@ -1534,7 +1675,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                                     islandName: island.name,
                                   );
                                 },
-                                icon: const Text('💬', style: TextStyle(fontSize: 13)),
+                                icon: const Text('💬',
+                                    style: TextStyle(fontSize: 13)),
                                 label: const Text(
                                   'Neighbors',
                                   style: TextStyle(
@@ -1555,11 +1697,15 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                             final myId =
                                 SupaFlow.client.auth.currentUser?.id ?? '';
                             final colony = PoketCosmosAllocationService.instance
-                                .getColonyByPlanetName(_selectedPlanet?.name ?? island.name);
+                                .getColonyByPlanetName(
+                                    _selectedPlanet?.name ?? island.name);
                             // Mock Attack is strictly for the user's OWN planet/island!
                             // Per user directive: "മോക്ക് അറ്റാക്ക് എന്റെ പ്ലാനറ്റിൽ മാത്രമാണ് മോക്ക് അറ്റാക്ക് കാണിക്കുള്ളൂ. അല്ലാന്നുണ്ടെങ്കിൽ മെയിൻ അറ്റാക്ക് ആണ് കാണിക്കേണ്ടത്. അറ്റാക്ക് എന്ന് പറഞ്ഞ് കാണിക്കണം."
-                            final bool isOwn = _currentIslandPlots.any((p) => p.userId == myId) ||
-                                (_myHomePlot != null && _myHomePlot!.planetName.toLowerCase() == colony.planetName.toLowerCase());
+                            final bool isOwn = _currentIslandPlots
+                                    .any((p) => p.userId == myId) ||
+                                (_myHomePlot != null &&
+                                    _myHomePlot!.planetName.toLowerCase() ==
+                                        colony.planetName.toLowerCase());
                             return SizedBox(
                               height: 38,
                               child: ElevatedButton.icon(
@@ -1966,24 +2112,30 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                   IconButton(
                     icon: Builder(
                       builder: (context) {
-                        final myId =
-                            SupaFlow.client.auth.currentUser?.id ?? '';
+                        final myId = SupaFlow.client.auth.currentUser?.id ?? '';
                         final colony = PoketCosmosAllocationService.instance
-                            .getColonyByPlanetName(_selectedPlanet?.name ?? island.name);
-                        final bool isOwn = _currentIslandPlots.any((p) => p.userId == myId) ||
-                            (_myHomePlot != null && _myHomePlot!.planetName.toLowerCase() == colony.planetName.toLowerCase());
+                            .getColonyByPlanetName(
+                                _selectedPlanet?.name ?? island.name);
+                        final bool isOwn =
+                            _currentIslandPlots.any((p) => p.userId == myId) ||
+                                (_myHomePlot != null &&
+                                    _myHomePlot!.planetName.toLowerCase() ==
+                                        colony.planetName.toLowerCase());
                         return Text(isOwn ? '🛡️' : '⚔️',
                             style: const TextStyle(fontSize: 16));
                       },
                     ),
                     tooltip: 'Launch Battle',
                     onPressed: () {
-                      final myId =
-                          SupaFlow.client.auth.currentUser?.id ?? '';
+                      final myId = SupaFlow.client.auth.currentUser?.id ?? '';
                       final colony = PoketCosmosAllocationService.instance
-                          .getColonyByPlanetName(_selectedPlanet?.name ?? island.name);
-                      final bool isOwn = _currentIslandPlots.any((p) => p.userId == myId) ||
-                          (_myHomePlot != null && _myHomePlot!.planetName.toLowerCase() == colony.planetName.toLowerCase());
+                          .getColonyByPlanetName(
+                              _selectedPlanet?.name ?? island.name);
+                      final bool isOwn =
+                          _currentIslandPlots.any((p) => p.userId == myId) ||
+                              (_myHomePlot != null &&
+                                  _myHomePlot!.planetName.toLowerCase() ==
+                                      colony.planetName.toLowerCase());
                       HapticFeedback.mediumImpact();
                       PocketIslandAttackPage.launch(
                         context,
@@ -2215,17 +2367,32 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                           itemBuilder: (context, idx) {
                             final p = filtered[idx];
                             final isCurrent = p.id == _selectedPlanet?.id;
-                            final colonyIdx = PoketCosmosAllocationService.colonies.indexWhere((c) {
+                            final colonyIdx = PoketCosmosAllocationService
+                                .colonies
+                                .indexWhere((c) {
                               if (c.planetId == p.id) return true;
-                              if (p.countryMaps.isNotEmpty && p.countryMaps.first.planetCode != null) {
-                                if (c.code.toUpperCase() == p.countryMaps.first.planetCode!.toUpperCase()) return true;
+                              if (p.countryMaps.isNotEmpty &&
+                                  p.countryMaps.first.planetCode != null) {
+                                if (c.code.toUpperCase() ==
+                                    p.countryMaps.first.planetCode!
+                                        .toUpperCase()) return true;
                               }
-                              final pClean = p.name.toLowerCase().replaceAll(RegExp(r'[^\w\s-]'), '').trim();
-                              final cClean = c.planetName.toLowerCase().replaceAll(RegExp(r'[^\w\s-]'), '').trim();
-                              return pClean.contains(cClean.split(' ').first) || cClean.contains(pClean.split(' ').first);
+                              final pClean = p.name
+                                  .toLowerCase()
+                                  .replaceAll(RegExp(r'[^\w\s-]'), '')
+                                  .trim();
+                              final cClean = c.planetName
+                                  .toLowerCase()
+                                  .replaceAll(RegExp(r'[^\w\s-]'), '')
+                                  .trim();
+                              return pClean.contains(cClean.split(' ').first) ||
+                                  cClean.contains(pClean.split(' ').first);
                             });
-                            final safeColonyIdx = colonyIdx >= 0 ? colonyIdx : 0;
-                            final startPlot = ((_activeWaves - 1) * 375) + (safeColonyIdx * 25) + 1;
+                            final safeColonyIdx =
+                                colonyIdx >= 0 ? colonyIdx : 0;
+                            final startPlot = ((_activeWaves - 1) * 375) +
+                                (safeColonyIdx * 25) +
+                                1;
                             final endPlot = startPlot + 24;
 
                             return InkWell(
@@ -2257,10 +2424,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
                                         gradient: LinearGradient(
-                                          colors: [
-                                            p.glowColor,
-                                            p.primaryColor
-                                          ],
+                                          colors: [p.glowColor, p.primaryColor],
                                           begin: Alignment.topLeft,
                                           end: Alignment.bottomRight,
                                         ),
@@ -2271,8 +2435,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                                               .split(' ')
                                               .last
                                               .replaceAll(')', ''),
-                                          style:
-                                              const TextStyle(fontSize: 22),
+                                          style: const TextStyle(fontSize: 22),
                                         ),
                                       ),
                                     ),
@@ -2330,10 +2493,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                                         ],
                                       ),
                                     ),
-                                    const Icon(
-                                        Icons.arrow_forward_ios_rounded,
-                                        color: Color(0xFF38BDF8),
-                                        size: 14),
+                                    const Icon(Icons.arrow_forward_ios_rounded,
+                                        color: Color(0xFF38BDF8), size: 14),
                                   ],
                                 ),
                               ),

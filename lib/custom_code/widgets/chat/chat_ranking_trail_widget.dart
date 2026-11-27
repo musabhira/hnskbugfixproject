@@ -13,6 +13,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocket_spend_page.dart';
 
 /// 🏆 Member data model for the Chat Ranking Trail
 class ChatTrailMember {
@@ -48,6 +49,7 @@ class ChatRankingTrailWidget extends StatefulWidget {
   final String groupName;
   final String currentUserId;
   final List<Map<String, dynamic>>? initialMembers;
+  final PocketSpendCoupleTheme? coupleTheme;
 
   const ChatRankingTrailWidget({
     super.key,
@@ -55,6 +57,7 @@ class ChatRankingTrailWidget extends StatefulWidget {
     required this.groupName,
     required this.currentUserId,
     this.initialMembers,
+    this.coupleTheme,
   });
 
   @override
@@ -104,6 +107,8 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
     try {
       if (_isPersonalChat) {
         await _loadPersonalChatMembers();
+      } else if (widget.groupId == 'pocket_couple_default') {
+        await _loadSingleCoupleUser();
       } else {
         await _loadGroupMembers();
       }
@@ -115,6 +120,47 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
           _errorMessage = 'Could not load ranking.';
         });
       }
+    }
+  }
+
+  Future<void> _loadSingleCoupleUser() async {
+    final supabase = SupaFlow.client;
+    final List<ChatTrailMember> members = [];
+    try {
+      final myProfileRes = await supabase
+          .from('profile')
+          .select(
+              'id, name, profile_image_url, pocket_score, learning_points, xp, day, level, learning_day, avatar_config')
+          .eq('user_id', widget.currentUserId)
+          .maybeSingle();
+      final myName = myProfileRes?['name']?.toString() ?? 'You';
+      final myScore = (myProfileRes?['pocket_score'] as num?)?.toInt() ??
+          (myProfileRes?['learning_points'] as num?)?.toInt() ??
+          (myProfileRes?['xp'] as num?)?.toInt() ??
+          25;
+      final myDay = (myProfileRes?['day'] as num?)?.toInt() ??
+          (myProfileRes?['learning_day'] as num?)?.toInt() ??
+          (myProfileRes?['level'] as num?)?.toInt() ??
+          1;
+      final myLevel = PocketScoreLevelEngine.calculateEffectiveLevel(
+        day: myDay,
+        pocketScore: myScore,
+      );
+      members.add(ChatTrailMember(
+        userId: widget.currentUserId,
+        name: myName,
+        profileImageUrl: myProfileRes?['profile_image_url']?.toString(),
+        pocketScore: myScore,
+        level: myLevel.clamp(1, 90),
+        avatarConfig:
+            VectorAvatarConfig.getEvolutionAvatarForStage(myLevel.clamp(1, 90)),
+      ));
+    } catch (_) {}
+    if (mounted) {
+      setState(() {
+        _rankedMembers = members;
+        _isLoading = false;
+      });
     }
   }
 
@@ -397,10 +443,17 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
 
   @override
   Widget build(BuildContext context) {
+    final theme = widget.coupleTheme;
+    final accentColor = theme != null ? theme.accent : const Color(0xFFFFD700);
+    final textColor = theme != null ? theme.textColor : Colors.white;
+    final subTextColor = theme != null ? theme.subTextColor : Colors.white60;
+    final cardBg = theme != null ? theme.cardColor : const Color(0xFF101720);
+
     if (_isLoading) {
       return Shimmer.fromColors(
-        baseColor: const Color(0xFF1A222C),
-        highlightColor: const Color(0xFF2B3544),
+        baseColor: theme != null ? theme.cardColor : const Color(0xFF1A222C),
+        highlightColor:
+            theme != null ? theme.surfaceAltColor : const Color(0xFF2B3544),
         child: ListView.builder(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
           itemCount: 7,
@@ -493,7 +546,7 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
               Text(
                 'No Mates Found Yet',
                 style: GoogleFonts.outfit(
-                  color: Colors.white,
+                  color: textColor,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -502,7 +555,7 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
               Text(
                 'Start chatting and completing English missions to climb the ranking!',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(color: Colors.white60, fontSize: 13),
+                style: GoogleFonts.inter(color: subTextColor, fontSize: 13),
               ),
             ],
           ),
@@ -513,8 +566,8 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
     final screenWidth = MediaQuery.of(context).size.width;
 
     return RefreshIndicator(
-      color: const Color(0xFFFFD700),
-      backgroundColor: const Color(0xFF101720),
+      color: accentColor,
+      backgroundColor: cardBg,
       onRefresh: _loadRankingData,
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(
@@ -554,26 +607,29 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
   /// 🌟 Top Banner showing leader stats & rules
   Widget _buildTrailTopBanner() {
     final leader = _rankedMembers.isNotEmpty ? _rankedMembers.first : null;
+    final theme = widget.coupleTheme;
+    final gradColors = theme != null
+        ? [theme.cardColor, theme.surfaceAltColor]
+        : [const Color(0xFF1E293B), const Color(0xFF0F172A)];
+    final accentColor = theme != null ? theme.accent : const Color(0xFFFFD700);
+
     return Container(
       margin: const EdgeInsets.fromLTRB(14, 12, 14, 6),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            const Color(0xFF1E293B),
-            const Color(0xFF0F172A),
-          ],
+          colors: gradColors,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+          color: accentColor.withValues(alpha: 0.35),
           width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFFD700).withValues(alpha: 0.12),
+            color: accentColor.withValues(alpha: 0.12),
             blurRadius: 14,
             offset: const Offset(0, 4),
           ),

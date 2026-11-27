@@ -367,6 +367,7 @@ class CitadelRaidLogEntry {
   final bool breached;
   final int coinsLooted;
   final bool ironDomeBlocked;
+  final bool isRevenged;
 
   const CitadelRaidLogEntry({
     required this.id,
@@ -379,6 +380,7 @@ class CitadelRaidLogEntry {
     required this.breached,
     required this.coinsLooted,
     this.ironDomeBlocked = false,
+    this.isRevenged = false,
   });
 
   Map<String, dynamic> toJson() => {
@@ -392,6 +394,7 @@ class CitadelRaidLogEntry {
         'breached': breached,
         'coinsLooted': coinsLooted,
         'ironDomeBlocked': ironDomeBlocked,
+        'isRevenged': isRevenged,
       };
 
   factory CitadelRaidLogEntry.fromJson(Map<String, dynamic> json) =>
@@ -416,6 +419,7 @@ class CitadelRaidLogEntry {
             (json['coinsLooted'] ?? json['coins_looted'] as num?)?.toInt() ?? 0,
         ironDomeBlocked:
             json['ironDomeBlocked'] ?? json['iron_dome_blocked'] ?? false,
+        isRevenged: json['isRevenged'] == true || json['is_revenged'] == true,
       );
 }
 
@@ -2035,9 +2039,80 @@ class PocketFortressDefenseService {
     }
   }
 
+  /// 📜 Mark a Police Crime Desk raid as Revenged (updates local + Supabase)
+  static Future<void> markRaidRevenged(String raidId, String attackerId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final revengedIds =
+        (prefs.getStringList('revenged_raid_ids') ?? []).toSet();
+    if (raidId.isNotEmpty) revengedIds.add(raidId);
+    if (attackerId.isNotEmpty) revengedIds.add('atk_$attackerId');
+    await prefs.setStringList('revenged_raid_ids', revengedIds.toList());
+
+    final raw = prefs.getString(_raidLogKey);
+    if (raw != null) {
+      try {
+        final list = (jsonDecode(raw) as List).map((e) {
+          final m = Map<String, dynamic>.from(e as Map);
+          if (m['id']?.toString() == raidId ||
+              (attackerId.isNotEmpty &&
+                  (m['attackerId']?.toString() == attackerId ||
+                      m['attacker_id']?.toString() == attackerId))) {
+            m['isRevenged'] = true;
+          }
+          return m;
+        }).toList();
+        await prefs.setString(_raidLogKey, jsonEncode(list));
+      } catch (_) {}
+    }
+  }
+
+  /// 🗑️ Delete a raid entry from Police Crime Desk after revenge is shown
+  static Future<void> deleteRaidLog(String raidId, String attackerId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final deletedIds = (prefs.getStringList('deleted_raid_ids') ?? []).toSet();
+    if (raidId.isNotEmpty) deletedIds.add(raidId);
+    if (attackerId.isNotEmpty) deletedIds.add('atk_$attackerId');
+    await prefs.setStringList('deleted_raid_ids', deletedIds.toList());
+
+    final raw = prefs.getString(_raidLogKey);
+    if (raw != null) {
+      try {
+        final list = (jsonDecode(raw) as List).where((e) {
+          final m = Map<String, dynamic>.from(e as Map);
+          final idMatch = raidId.isNotEmpty && m['id']?.toString() == raidId;
+          final atkMatch = attackerId.isNotEmpty &&
+              (m['attackerId']?.toString() == attackerId ||
+                  m['attacker_id']?.toString() == attackerId);
+          return !idMatch && !atkMatch;
+        }).toList();
+        await prefs.setString(_raidLogKey, jsonEncode(list));
+      } catch (_) {}
+    }
+
+    try {
+      final myId = SupaFlow.client.auth.currentUser?.id;
+      if (myId != null && raidId.isNotEmpty && !raidId.startsWith('msg_atk_')) {
+        await SupaFlow.client
+            .from('citadel_raids')
+            .delete()
+            .eq('id', raidId)
+            .eq('defender_id', myId);
+      } else if (myId != null && attackerId.isNotEmpty) {
+        await SupaFlow.client
+            .from('citadel_raids')
+            .delete()
+            .eq('attacker_id', attackerId)
+            .eq('defender_id', myId);
+      }
+    } catch (_) {}
+  }
+
   /// 📜 Retrieve Recent Citadel Raid Logs (Supabase + Local Cache)
   static Future<List<CitadelRaidLogEntry>> getRecentRaids() async {
     final prefs = await SharedPreferences.getInstance();
+    final revengedIds =
+        (prefs.getStringList('revenged_raid_ids') ?? []).toSet();
+    final deletedIds = (prefs.getStringList('deleted_raid_ids') ?? []).toSet();
 
     // 1. Try Supabase
     try {
@@ -2108,10 +2183,34 @@ class PocketFortressDefenseService {
         }
 
         if (entries.isNotEmpty) {
-          entries.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-          await prefs.setString(
-              _raidLogKey, jsonEncode(entries.map((e) => e.toJson()).toList()));
-          return entries;
+          final filteredEntries = entries
+              .where((e) =>
+                  !deletedIds.contains(e.id) &&
+                  !deletedIds.contains('atk_${e.attackerId}'))
+              .map((e) {
+                final rev = e.isRevenged ||
+                    revengedIds.contains(e.id) ||
+                    revengedIds.contains('atk_${e.attackerId}');
+                if (!rev || e.isRevenged) return e;
+                return CitadelRaidLogEntry(
+                  id: e.id,
+                  attackerId: e.attackerId,
+                  defenderId: e.defenderId,
+                  attackerName: e.attackerName,
+                  attackerAvatar: e.attackerAvatar,
+                  attackerWeapon: e.attackerWeapon,
+                  timestamp: e.timestamp,
+                  breached: e.breached,
+                  coinsLooted: e.coinsLooted,
+                  ironDomeBlocked: e.ironDomeBlocked,
+                  isRevenged: true,
+                );
+              })
+              .toList();
+          filteredEntries.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+          await prefs.setString(_raidLogKey,
+              jsonEncode(filteredEntries.map((e) => e.toJson()).toList()));
+          return filteredEntries;
         }
       }
     } catch (_) {}
@@ -2122,6 +2221,9 @@ class PocketFortressDefenseService {
       try {
         final list = (jsonDecode(raw) as List)
             .map((e) => CitadelRaidLogEntry.fromJson(e))
+            .where((e) =>
+                !deletedIds.contains(e.id) &&
+                !deletedIds.contains('atk_${e.attackerId}'))
             .toList();
         if (list.isNotEmpty) return list;
       } catch (_) {}

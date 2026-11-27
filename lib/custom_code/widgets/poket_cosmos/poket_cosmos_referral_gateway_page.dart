@@ -240,45 +240,9 @@ class _PoketCosmosReferralGatewayPageState
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Cosmic Floating Badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF065F46).withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: const Color(0xFF34D399).withValues(alpha: 0.6),
-                          width: 1.0,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.25),
-                            blurRadius: 16,
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('🪐', style: TextStyle(fontSize: 14)),
-                          const SizedBox(width: 6),
-                          Text(
-                            'POCKET COSMOS • CITIZEN LEDGER',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFF86EFAC),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 1.4,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-
                     // Title
                     Text(
-                      'DO YOU HAVE AN ISLAND\nREFERRAL CODE?',
+                      'POCKET MATES\nREFERRAL CODE?',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.outfit(
                         color: Colors.white,
@@ -288,18 +252,7 @@ class _PoketCosmosReferralGatewayPageState
                         height: 1.18,
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Got an invite code from a friend? Enter it below to be born on their exact island as neighbors, or let the Cosmos assign your destiny.',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.plusJakartaSans(
-                        color: const Color(0xFF94A3B8),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        height: 1.45,
-                      ),
-                    ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 24),
 
                     // Interactive Verification Card
                     Container(
@@ -334,9 +287,9 @@ class _PoketCosmosReferralGatewayPageState
                               },
                             ),
                             const SizedBox(height: 12),
-                            // Button B: "NO, ASSIGN MY DESTINY ➔"
+                            // Button B: "NO"
                             _buildChoiceButton(
-                              label: 'NO, ASSIGN MY DESTINY ➔',
+                              label: 'NO',
                               isPrimary: false,
                               onTap: () => _proceedToCeremony(forceReallocate: true),
                             ),

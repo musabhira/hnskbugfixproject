@@ -1,22 +1,21 @@
 /// 👤 90-Day Unique Legend Profile Curriculum (Zero Duplication)
-/// Day 1: Mus'ab Hira (Founder of PoketMates, Chairman of Handskill Art Community of India, Software Developer born in Palakkad, Kerala).
+/// Day 1: Swami Vivekananda (Inspiring youth icon, philosopher & spiritual leader).
 /// Days 2-90: Celebrated scientists, leaders, innovators, artists, and pioneers.
 
 final List<Map<String, dynamic>> k90UniqueProfiles = [
-  // ── Day 1: Founder Mus'ab Hira (Audio Directive Branding) ──
+  // ── Day 1: Swami Vivekananda ──
   {
-    'name': "Mus'ab Hira",
-    'emoji': '💻',
+    'name': 'Swami Vivekananda',
+    'emoji': '🕉️',
     'clues': {
-      'Born': 'Palakkad, Kerala',
-      'Profession': 'Software Developer & Engineer',
-      'Founder': 'PoketMates App',
-      'Position': 'Chairman, Handskill Art Community of India',
+      'Born': '12 January 1863, Kolkata',
+      'Known as': 'Youth Icon of India',
+      'Famous Speech': 'Chicago, 1893',
+      'Quote': 'Arise, awake, and stop not till the goal is reached',
     },
     'sentences': [
-      ["Mus'ab Hira", 'was', 'born', 'in', 'Palakkad', '.'],
-      ['He', 'is', 'the', 'Founder', 'of', 'PoketMates', '.'],
-      ['He', 'is', 'a', 'talented', 'Software', 'Engineer', '.'],
+      ['Swami Vivekananda', 'was', 'born', 'in', 'Kolkata', '.'],
+      ['He', 'inspired', 'millions', 'of', 'young', 'people', '.'],
     ],
     'distractors': ['pilot', 'cricketer', 'moon'],
   },

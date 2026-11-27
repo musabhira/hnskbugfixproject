@@ -49,6 +49,9 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/games/flame/pocket_kid
 import 'package:pocket_mates_app/custom_code/widgets/kids/games/flame/pocket_kids_flame_game_8_pronunciation_echo.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/games/flame/pocket_kids_flame_game_9_story_sequence.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/games/flame/pocket_kids_flame_game_10_everyday_conversation.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 
 /// 👶 Pure Kids World Platform (Ages 4–8)
 ///
@@ -116,6 +119,17 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
   bool _isSpeakingEcho = false;
   String _echoStatusText = 'Tap the Magic Mic and say "Hello"! 🎙️✨';
 
+  // 👑 Kids VIP & AdMob Monetization State
+  bool _isVip = false;
+  final Set<String> _unlockedSessionGames = {};
+  static const Set<String> _freeStarterGames = {
+    'balloon_pop',
+    'word_builder',
+    'match_it',
+    'picture_quiz',
+    'tracing',
+  };
+
   final List<String> _mascotEchoOptions = [
     '🐯 Sparky Tiger',
     '🐼 Pandy Panda',
@@ -143,6 +157,7 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
     )..repeat(reverse: true);
 
     _initTts();
+    _loadVipStatus();
     PocketKidsService.loadAttackCount();
     PocketGameAudioService.instance.playAmbientBgm();
 
@@ -150,6 +165,29 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToActiveDay(animate: false);
     });
+  }
+
+  Future<void> _loadVipStatus() async {
+    try {
+      final vip = await PocketAdMobService.instance.isUserVip();
+      if (mounted) {
+        setState(() => _isVip = vip);
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _openKidsVipWithParentalGate() async {
+    final hasPattern = await PocketParentalPatternLock.hasPattern();
+    if (!mounted) return;
+    if (hasPattern) {
+      final verified = await PocketParentalPatternLock.showVerifyDialog(context);
+      if (!verified || !mounted) return;
+    }
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+    );
+    await _loadVipStatus();
   }
 
   Future<void> _initTts() async {
@@ -249,6 +287,10 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
                     ],
                   ),
                 ),
+                if (!_isVip)
+                  const PocketBannerAdWidget(
+                    margin: EdgeInsets.zero,
+                  ),
                 _buildBottomKidNav(),
               ],
             ),
@@ -751,8 +793,15 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
                 ],
               ),
             )
-          else
-            ...buddies.map((buddy) => _buildBuddyHouseCard(buddy)),
+          else ...[
+            ...buddies.take(4).map((buddy) => _buildBuddyHouseCard(buddy)),
+            if (!_isVip)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: PocketNativeAdWidget(category: 'Kids English Learning'),
+              ),
+            ...buddies.skip(4).map((buddy) => _buildBuddyHouseCard(buddy)),
+          ],
           ],
 
           const SizedBox(height: 24),
@@ -2500,9 +2549,17 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
             // Determine Atmosphere Theme for this specific node
             final atmosphere = _getNodeAtmosphere(day);
 
-            return Container(
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              child: Align(
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (!_isVip && day > 1 && day % 6 == 0)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    child: PocketNativeAdWidget(category: 'Kids English'),
+                  ),
+                Container(
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  child: Align(
                 alignment: Alignment(alignX, 0),
                 child: GestureDetector(
                   onTap: () {
@@ -2745,6 +2802,8 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
                   ),
                 ),
               ),
+                ),
+              ],
             );
           },
         ),
@@ -4477,7 +4536,15 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: filteredGames.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              separatorBuilder: (_, idx) {
+                if (!_isVip && (idx + 1) % 4 == 0) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 10),
+                    child: PocketNativeAdWidget(category: 'Kids Arcade'),
+                  );
+                }
+                return const SizedBox(height: 12);
+              },
               itemBuilder: (context, idx) {
                 final g = filteredGames[idx];
                 final col = g['color'] as Color;
@@ -4691,10 +4758,101 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
     );
   }
 
+  void _showKidsGameUnlockDialog({
+    required String title,
+    required String gameType,
+    required VoidCallback onUnlocked,
+  }) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Row(
+          children: [
+            const Text('🎮', style: TextStyle(fontSize: 24)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Unlock $title',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFF0F3E34),
+                  fontWeight: FontWeight.w900,
+                  fontSize: 17,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Watch a short video ad to play this game free right now, or unlock all Kids Games & remove all ads with Pocket VIP!',
+          style: GoogleFonts.inter(
+            color: const Color(0xFF475569),
+            fontSize: 13.5,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _openKidsVipWithParentalGate();
+            },
+            child: Text(
+              '👑 Kids VIP (Ad-Free)',
+              style: GoogleFonts.outfit(
+                color: const Color(0xFF8B5CF6),
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await PocketAdMobService.instance.showRewardedAd(
+                context: context,
+                onUserEarnedReward: (_) {
+                  if (mounted) {
+                    setState(() {
+                      _unlockedSessionGames.add(gameType);
+                    });
+                    onUnlocked();
+                  }
+                },
+              );
+            },
+            icon: const Icon(Icons.play_circle_fill_rounded, size: 18),
+            label: Text(
+              'Watch Ad & Play',
+              style: GoogleFonts.outfit(fontWeight: FontWeight.w800),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _launchArcadeGame(Map<String, dynamic> g) {
     HapticFeedback.heavyImpact();
     PocketGameAudioService.instance.playCoinSound();
-    final type = g['type'] ?? g['action'];
+    final type = (g['type'] ?? g['action'] ?? '').toString();
+
+    final isFreeGame = _freeStarterGames.contains(type);
+    if (!_isVip && !isFreeGame && !_unlockedSessionGames.contains(type)) {
+      _showKidsGameUnlockDialog(
+        title: (g['title'] ?? 'Kids Game').toString(),
+        gameType: type,
+        onUnlocked: () => _launchArcadeGame(g),
+      );
+      return;
+    }
 
     if (type == 'balloon_pop') {
       PocketKidsBalloonPopGame.show(context).then((_) {

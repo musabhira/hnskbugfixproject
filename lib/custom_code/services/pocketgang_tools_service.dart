@@ -12,8 +12,35 @@ class PocketGangToolsService {
   static const String _toolsTableName = 'group_tools';
   static const String _activitiesTableName = 'group_activities';
 
-  /// Standard Default Tools for PocketGang Friends & Team
-  static const List<String> defaultTools = ['team_mgmt'];
+  /// Standard Default Tools for 20+ (Adult) PocketGang Groups
+  static const List<String> defaultTools = [
+    'team_mgmt',
+    'diagram_studio',
+    'calendar',
+  ];
+
+  /// Student-focused Default Tools for Under-20 Users
+  static const List<String> studentDefaultTools = [
+    'study_timer',
+    'exam_tracker',
+    'flashcards',
+  ];
+
+  /// Reads the current user's age from SharedPreferences (defaults to 20 if unset).
+  static Future<int> getCurrentUserAge() async {
+    final prefs = await SharedPreferences.getInstance();
+    final uid = Supabase.instance.client.auth.currentUser?.id ?? '';
+    if (uid.isNotEmpty) {
+      final age = prefs.getInt('pm_age_$uid');
+      if (age != null) return age;
+    }
+    return prefs.getInt('pm_age_guest') ?? 20;
+  }
+
+  /// Returns true when the current user is under 20 years old (Student).
+  static Future<bool> isUnder20User() async {
+    return (await getCurrentUserAge()) < 20;
+  }
 
   /// Check whether a group is eligible for PocketGang Workspace & Tools.
   /// STRICT: English Hub groups and 1-on-1 personal chats are strictly EXCLUDED!
@@ -107,7 +134,9 @@ class PocketGangToolsService {
       } catch (_) {}
     }
 
-    return List<String>.from(defaultTools);
+    return (await isUnder20User())
+        ? List<String>.from(studentDefaultTools)
+        : List<String>.from(defaultTools);
   }
 
   /// Install or update tools for the entire Gang (Group-Level)

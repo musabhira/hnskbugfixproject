@@ -730,9 +730,19 @@ class _ConversationTileState extends State<ConversationTile> {
       );
     }
 
-    // 5. Group Chats with Group Blue/Cyan Aura Spread
+    // 5. Group Chats with Group Blue/Cyan Aura Spread (Special Icons for Pocket Couple ❤️ & Island Neighbors 🏝️)
     if (widget.conversation.isGroup) {
-      const groupColor = Color(0xFF38BDF8);
+      final lowerName = widget.conversation.name.toLowerCase();
+      final isPocketCouple = lowerName == 'pocket couple' ||
+          widget.conversation.id == 'pocket_couple_default';
+      final isIslandNeighbors = lowerName.contains('island neighbors');
+
+      final groupColor = isPocketCouple
+          ? const Color(0xFFEF4444)
+          : (isIslandNeighbors
+              ? const Color(0xFF10B981)
+              : const Color(0xFF38BDF8));
+
       return LivingSpreadingAura(
         color: groupColor,
         size: 50,
@@ -741,12 +751,20 @@ class _ConversationTileState extends State<ConversationTile> {
           height: 48,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+            color: isPocketCouple
+                ? const Color(0xFF3B0A18)
+                : (isIslandNeighbors
+                    ? const Color(0xFF064E3B)
+                    : (isDark
+                        ? const Color(0xFF1E293B)
+                        : const Color(0xFFE2E8F0))),
             border: Border.all(
-              color: groupColor.withValues(alpha: 0.65),
+              color: groupColor.withValues(alpha: 0.7),
               width: 1.5,
             ),
-            image: widget.conversation.imageUrl != null
+            image: (!isPocketCouple &&
+                    !isIslandNeighbors &&
+                    widget.conversation.imageUrl != null)
                 ? DecorationImage(
                     image: CachedNetworkImageProvider(
                       widget.conversation.imageUrl!,
@@ -757,13 +775,23 @@ class _ConversationTileState extends State<ConversationTile> {
                   )
                 : null,
           ),
-          child: widget.conversation.imageUrl == null
-              ? const Center(
-                  child: Icon(
-                    material.Icons.group_rounded,
-                    color: groupColor,
-                    size: 24,
-                  ),
+          child: (isPocketCouple ||
+                  isIslandNeighbors ||
+                  widget.conversation.imageUrl == null)
+              ? Center(
+                  child: isPocketCouple
+                      ? const Icon(
+                          material.Icons.favorite_rounded,
+                          color: Color(0xFFEF4444),
+                          size: 24,
+                        )
+                      : (isIslandNeighbors
+                          ? const Text('🏝️', style: TextStyle(fontSize: 22))
+                          : Icon(
+                              material.Icons.group_rounded,
+                              color: groupColor,
+                              size: 24,
+                            )),
                 )
               : null,
         ),
@@ -1064,6 +1092,10 @@ class _ConversationTileState extends State<ConversationTile> {
                                   Builder(
                                     builder: (context) {
                                       final isRobot =
+                                          !widget.conversation.isGroup &&
+                                          !widget.conversation.isTool &&
+                                          widget.conversation.id !=
+                                              'pocket_couple_default' &&
                                           PocketRobotService.isRobotId(
                                               widget.conversation.id);
                                       if (isRobot) {

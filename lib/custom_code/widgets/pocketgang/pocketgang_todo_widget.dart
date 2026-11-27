@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/pocketgang_task_service.dart';
+import 'pocket_spend_page.dart';
 
 /// ✅ PocketGang To-Do List Widget: Team task checklist & quick addition
 class PocketGangTodoWidget extends StatefulWidget {
@@ -12,6 +13,7 @@ class PocketGangTodoWidget extends StatefulWidget {
   final bool isAdmin;
   final List<PocketGangTask> tasks;
   final VoidCallback onTasksChanged;
+  final PocketSpendCoupleTheme? coupleTheme;
 
   const PocketGangTodoWidget({
     super.key,
@@ -22,6 +24,7 @@ class PocketGangTodoWidget extends StatefulWidget {
     required this.isAdmin,
     required this.tasks,
     required this.onTasksChanged,
+    this.coupleTheme,
   });
 
   @override
@@ -87,23 +90,33 @@ class _PocketGangTodoWidgetState extends State<PocketGangTodoWidget> {
     final pendingTasks = widget.tasks.where((t) => t.status != 'completed').toList();
     final completedTasks = widget.tasks.where((t) => t.status == 'completed').toList();
 
+    final theme = widget.coupleTheme;
+    final bgColor = theme != null ? theme.bgGradient.first : const Color(0xFF0F111A);
+    final headerBg = theme != null ? theme.cardColor : const Color(0xFF161924);
+    final inputBg = theme != null ? theme.surfaceAltColor : const Color(0xFF1E2232);
+    final textColor = theme != null ? theme.textColor : Colors.white;
+    final subTextColor = theme != null ? theme.subTextColor : Colors.white54;
+    final accentColor = theme != null ? theme.accent : const Color(0xFF38BDF8);
+    final onAccentColor = theme != null ? theme.onAccentTextColor : Colors.white;
+    final borderColor = theme != null ? theme.borderColor : Colors.white.withValues(alpha: 0.08);
+
     return Container(
-      color: const Color(0xFF0F111A),
+      color: bgColor,
       child: Column(
         children: [
           // Header summary
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFF161924),
-              border: Border(bottom: BorderSide(color: Colors.white.withValues(alpha: 0.08))),
+              color: headerBg,
+              border: Border(bottom: BorderSide(color: borderColor)),
             ),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                    color: accentColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Text('✅', style: TextStyle(fontSize: 18)),
@@ -116,7 +129,7 @@ class _PocketGangTodoWidgetState extends State<PocketGangTodoWidget> {
                       Text(
                         'Team To-Do Checklist',
                         style: GoogleFonts.outfit(
-                          color: Colors.white,
+                          color: textColor,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -124,7 +137,7 @@ class _PocketGangTodoWidgetState extends State<PocketGangTodoWidget> {
                       Text(
                         '${pendingTasks.length} pending • ${completedTasks.length} completed',
                         style: GoogleFonts.outfit(
-                          color: Colors.white54,
+                          color: subTextColor,
                           fontSize: 12,
                         ),
                       ),
@@ -143,17 +156,17 @@ class _PocketGangTodoWidgetState extends State<PocketGangTodoWidget> {
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1E2232),
+                      color: inputBg,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                      border: Border.all(color: borderColor),
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 14),
                     child: TextField(
                       controller: _taskInputController,
-                      style: GoogleFonts.outfit(color: Colors.white, fontSize: 14),
+                      style: GoogleFonts.outfit(color: textColor, fontSize: 14),
                       decoration: InputDecoration(
                         hintText: 'Add a new group to-do...',
-                        hintStyle: GoogleFonts.outfit(color: Colors.white38, fontSize: 13),
+                        hintStyle: GoogleFonts.outfit(color: subTextColor, fontSize: 13),
                         border: InputBorder.none,
                       ),
                       onSubmitted: (_) => _quickAddTask(),
@@ -167,12 +180,12 @@ class _PocketGangTodoWidgetState extends State<PocketGangTodoWidget> {
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF38BDF8),
+                      color: accentColor,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: _isAdding
-                        ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                        : const Icon(Icons.add, color: Colors.white, size: 20),
+                        ? SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: onAccentColor))
+                        : Icon(Icons.add, color: onAccentColor, size: 20),
                   ),
                 ),
               ],
@@ -190,12 +203,12 @@ class _PocketGangTodoWidgetState extends State<PocketGangTodoWidget> {
                         const SizedBox(height: 8),
                         Text(
                           'No to-do tasks yet!',
-                          style: GoogleFonts.outfit(color: Colors.white70, fontSize: 15, fontWeight: FontWeight.w600),
+                          style: GoogleFonts.outfit(color: textColor, fontSize: 15, fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           'Add items above for your gang to complete together.',
-                          style: GoogleFonts.outfit(color: Colors.white38, fontSize: 12),
+                          style: GoogleFonts.outfit(color: subTextColor, fontSize: 12),
                         ),
                       ],
                     ),

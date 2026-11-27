@@ -37,7 +37,7 @@ class _SubscriptionPageState extends State<SubscriptionPage>
     {'icon': '💬', 'title': 'Unlimited Pocket Talk Pacts', 'desc': 'No 4-talk limit or 5-hour cooldown — connect with mates unlimited'},
     {'icon': '🎙️', 'title': 'Unlimited AI Voice & Pronunciation', 'desc': 'Practice speaking & get instant AI fluency feedback all day'},
     {'icon': '🌍', 'title': 'Unlimited Global Random Calls', 'desc': 'Priority WebRTC voice & video matchmaking with English learners'},
-    {'icon': '🛡️', 'title': 'Presidential Escort Guard', 'desc': '10 bonus defense questions & stronger Citadel protection'},
+    {'icon': '🛡️', 'title': 'VIP Escort Protection', 'desc': '2 Police Escorts + 10 extra defense questions guarding your house from attackers'},
     {'icon': '⚔️', 'title': 'Unlimited Citadel Raids & Fights', 'desc': 'Challenge any learner or robot without energy restrictions'},
     {'icon': '📖', 'title': 'All 90 Houses & 17 Daily Steps', 'desc': 'Full access to Theory, Vocab, Phonics, Slang, Code English & Exams'},
     {'icon': '💼', 'title': 'IELTS & Job Interview Simulators', 'desc': 'Real-world interview & fluency practice scenarios unlocked'},

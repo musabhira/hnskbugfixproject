@@ -81,6 +81,7 @@ import 'pocket_day1_review_card_page.dart';
 import 'games/verb_timeline_flame_game.dart';
 import 'pocket_house_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_world_mode_selection_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_app_update_service.dart';
 import 'pocket_english_library_view.dart';
 
@@ -501,7 +502,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   bool _isDayUnlocked(int day, int currentDay) {
     if (_isMasterAdmin)
       return true; // 🔐 Master admin bypass: All 90 days unlocked!
-    if (day == 1) return _hasAcceptedRules;
+    if (day == 1) return true;
     // Sequential prerequisite check: previous level MUST be completed!
     if (!_isDayCompleted(day - 1)) return false;
     // VIP Subscribers bypass score requirement and midnight lock, but still play sequentially!
@@ -3323,10 +3324,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                           // 🎯 Unified Syllabus Track Pill (Single Unified Syllabus)
                           _buildSyllabusSelectorMenu(screenWidth),
 
-                          // 📜 Special "Rule" Level Node (Audio Directive: Before Level 1, show Rule level)
-                          _buildRuleLevelNode(screenWidth),
-
-                          // 🌿 Grassy Ground Syllabus Notice (Under Rules on green ground)
+                          // 🌿 Grassy Ground Syllabus Notice (Above Day 1 on green ground)
                           _buildGroundEnglishSyllabusNotice(screenWidth),
 
                           // 💡 Grassy Ground Startup Feedback & Step Suggestion Box (Audio Directive)
@@ -3390,28 +3388,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  // Left Column: 🌐 Open World (Top) + 🛒 Store (Under Open World)
+                  // Left Column: 💬 WhatsApp & Watch Rewards
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildMinimalFloatingPill(
-                        icon: '🌐',
-                        label: 'Open World',
-                        onTap: () {
-                          HapticFeedback.mediumImpact();
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => PocketOpenWorldGamePage(
-                                currentDay: prog.currentDay,
-                                streak: prog.streakDays,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 6),
                       // 💬 WhatsApp English Community Pill
                       _buildMinimalFloatingPill(
                         icon: '💬',
@@ -3431,16 +3412,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       ),
                       const SizedBox(height: 6),
                       _buildMinimalFloatingPill(
-                        icon: '🛒',
-                        label: 'Store',
+                        icon: '🦁',
+                        label: 'Kids',
                         onTap: () {
                           HapticFeedback.mediumImpact();
-                          PocketCitadelStoreSheet.show(
-                            context,
-                            onPurchased: () {
-                              _loadData();
-                            },
-                          );
+                          PocketWorldModeSelectionDialog.show(context);
                         },
                       ),
                     ],
@@ -3460,17 +3436,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       InkWell(
                         onTap: () {
                           HapticFeedback.mediumImpact();
-                          if (!_effectiveRulesAccepted) {
-                            PocketWorldGameRulesModal.show(
-                              context,
-                              currentDay: targetActiveDay,
-                              onPledgeAccepted: () {
-                                setState(() => _hasAcceptedRules = true);
-                                _loadData();
-                              },
-                            );
-                            return;
-                          }
                           _scrollToDay(targetActiveDay, animate: true);
                           _navigateToMissionPage(targetActiveDay);
                         },
@@ -3915,6 +3880,32 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             color: Colors.white, size: 16),
                   ),
                 ),
+                const SizedBox(width: 6),
+                // 🌐 Minimal Open World Globe Icon
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.mediumImpact();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => PocketOpenWorldGamePage(
+                          currentDay: prog.currentDay,
+                          streak: prog.streakDays,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.white24, width: 0.8),
+                    ),
+                    child: const Icon(Icons.public_rounded,
+                        color: Color(0xFF38BDF8), size: 16),
+                  ),
+                ),
                 const SizedBox(width: 8),
 
                 // 🔊 Minimal BGM Speaker Toggle (Audio Directive)
@@ -4097,11 +4088,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
             // 🎯 Minimal Horizontal Level Milestones Strip (Only Shown on Roadmap tab)
             if (_activeTargetTab == 0) ...[
-              const SizedBox(height: 6),
-              _buildMilestonesStrip(prog),
-              const SizedBox(height: 5),
-              // ✨ Daily Updated English Content (or Red Update App Pill when new release is live)
-              if (_pendingUpdateStoreUrl != null)
+              // ✨ Red Update App Pill when new release is live
+              if (_pendingUpdateStoreUrl != null) ...[
+                const SizedBox(height: 6),
                 GestureDetector(
                   onTap: () async {
                     HapticFeedback.mediumImpact();
@@ -4146,31 +4135,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       ],
                     ),
                   ),
-                )
-              else
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 5,
-                      height: 5,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF10B981),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      'Daily Updated English Content',
-                      style: GoogleFonts.inter(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white60,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                  ],
                 ),
+              ],
             ],
           ],
         ),
@@ -4882,34 +4848,27 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       width: pillWidth,
       child: Center(
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
           decoration: BoxDecoration(
-            color: const Color(0xFF0F1424).withValues(alpha: 0.95),
-            borderRadius: BorderRadius.circular(16),
+            color: Colors.black.withValues(alpha: 0.45),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: const Color(0xFFFFD700).withValues(alpha: 0.8),
-              width: 1.2,
+              color: Colors.white.withValues(alpha: 0.16),
+              width: 0.9,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFFFD700).withValues(alpha: 0.22),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('🎯', style: TextStyle(fontSize: 12)),
-              const SizedBox(width: 6),
+              const Text('🎯', style: TextStyle(fontSize: 11)),
+              const SizedBox(width: 5),
               Text(
                 'ENGLISH MASTERY TRACK',
                 style: GoogleFonts.outfit(
-                  color: const Color(0xFFFFD700),
-                  fontWeight: FontWeight.w800,
-                  fontSize: 10.5,
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontWeight: FontWeight.w700,
+                  fontSize: 10,
                   letterSpacing: 0.5,
                 ),
               ),
@@ -5144,18 +5103,16 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     );
   }
 
-  /// 📮 Flame-powered Red Feedback Letter Box at the bottom of the green ground
+  /// 📮 Postbox Feedback Box copied from Day 1 Step 20, planted at the very bottom of the Target Page
   Widget _buildGroundFeedbackBox(double screenWidth) {
     final x = screenWidth / 2;
-    final y = _ruleNodeY + 236.0;
     const boxW = 220.0;
-    const boxH = 195.0;
 
     return Positioned(
       left: x - (boxW / 2),
-      top: y,
+      bottom: 0,
       width: boxW,
-      height: boxH,
+      height: 195,
       child: GestureDetector(
         onTap: () {
           HapticFeedback.mediumImpact();
@@ -5165,8 +5122,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             defaultType: 'roadmap_idea',
           );
         },
-        child: GameWidget(
-          game: PocketFlameFeedbackLetterBoxGame(),
+        child: CustomPaint(
+          size: const Size(220, 195),
+          painter: _TargetPostboxFeedbackPainter(),
         ),
       ),
     );
@@ -8875,62 +8833,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         ),
       ),
 
-      // Zone 1: Forest & Valley (Day 1 Header at the bottom)
-      Positioned(
-        left: 20,
-        top: _getNodeY(1) + 40,
-        child: _buildZoneBanner(
-          title: '🌲 ZONE 1: EMERALD FOREST & VALLEY',
-          subtitle: 'MTI Reduction, Phonetics & Habit Foundations (Days 1–20)',
-          color: const Color(0xFF10B981),
-        ),
-      ),
-
-      // Zone 2: Desert Dunes (Day 21 Header)
-      Positioned(
-        left: 20,
-        top: _getNodeY(21) + 55,
-        child: _buildZoneBanner(
-          title: '🏜️ ZONE 2: DESERT DUNES & OASIS',
-          subtitle:
-              'Day 21 Habit Anchor, Spoken Confidence & Idioms (Days 21–40)',
-          color: const Color(0xFFFFB700),
-        ),
-      ),
-
-      // Zone 3: Cyberpunk City (Day 41 Header)
-      Positioned(
-        left: 20,
-        top: _getNodeY(41) + 55,
-        child: _buildZoneBanner(
-          title: '⚡ ZONE 3: CYBER NEON HIGHWAY',
-          subtitle: 'Fast Peer Debates & Professional Expressions (Days 41–60)',
-          color: const Color(0xFF8B5CF6),
-        ),
-      ),
-
-      // Zone 4: Cloud Kingdom (Day 61 Header)
-      Positioned(
-        left: 20,
-        top: _getNodeY(61) + 55,
-        child: _buildZoneBanner(
-          title: '☁️ ZONE 4: MYSTIC CLOUD KINGDOM',
-          subtitle: 'Impromptu Thinking & Global Dialect Mastery (Days 61–80)',
-          color: const Color(0xFF00E5FF),
-        ),
-      ),
-
-      // Zone 5: Dragon Castle (Day 81 Header)
-      Positioned(
-        left: 20,
-        top: _getNodeY(81) + 55,
-        child: _buildZoneBanner(
-          title: '🌋 ZONE 5: DRAGON\'S LAIR & GRANDMASTER THRONE',
-          subtitle: 'Day 90 Supreme Cosmic Dragon Graduation 👑 (Days 81–90)',
-          color: const Color(0xFFFF0055),
-        ),
-      ),
-
       // Level 91 Sovereign Citadel Grand Master Trophy Pinnacle (Apex Summit Top)
       Positioned(
         left: (screenWidth / 2) - 85,
@@ -10483,4 +10385,150 @@ class _SyllabusExamDialogState extends State<_SyllabusExamDialog> {
       ],
     );
   }
+}
+
+class _TargetPostboxFeedbackPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.save();
+    canvas.translate(size.width / 2, size.height - 13);
+
+    // 1. Glowing Ground Light Halo
+    canvas.drawOval(
+      Rect.fromCenter(center: const Offset(0, 0), width: 144, height: 24),
+      Paint()
+        ..color = const Color(0xFFFFD700).withValues(alpha: 0.26)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+    );
+    canvas.drawOval(
+      Rect.fromCenter(center: const Offset(0, 0), width: 108, height: 15),
+      Paint()..color = const Color(0xFF0F172A).withValues(alpha: 0.48),
+    );
+
+    // 2. Sturdy Post Stand planted on ground
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(-11, -36, 22, 36),
+        const Radius.circular(4),
+      ),
+      Paint()..color = const Color(0xFF7F1D1D),
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(-18, -8, 36, 10),
+        const Radius.circular(5),
+      ),
+      Paint()..color = const Color(0xFF991B1B),
+    );
+
+    // 3. Large, Wide Red Letter Box Body
+    final boxRect = RRect.fromRectAndCorners(
+      const Rect.fromLTWH(-78, -148, 156, 114),
+      topLeft: const Radius.circular(36),
+      topRight: const Radius.circular(36),
+      bottomLeft: const Radius.circular(14),
+      bottomRight: const Radius.circular(14),
+    );
+    canvas.drawRRect(boxRect, Paint()..color = const Color(0xFFDC2626));
+    canvas.drawRRect(
+      RRect.fromRectAndCorners(
+        const Rect.fromLTWH(-72, -144, 144, 34),
+        topLeft: const Radius.circular(32),
+        topRight: const Radius.circular(32),
+      ),
+      Paint()..color = const Color(0xFFEF4444).withValues(alpha: 0.65),
+    );
+    canvas.drawRRect(
+      boxRect,
+      Paint()
+        ..color = const Color(0xFFFFD700).withValues(alpha: 0.85)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.4,
+    );
+
+    // 4. Mail Slot + Peeking White Envelope
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(-44, -124, 88, 10),
+        const Radius.circular(5),
+      ),
+      Paint()..color = const Color(0xFF450A0A),
+    );
+    canvas.save();
+    canvas.translate(0, -128);
+    final envRect = RRect.fromRectAndRadius(
+      const Rect.fromLTWH(-22, -13, 44, 22),
+      const Radius.circular(4),
+    );
+    canvas.drawRRect(envRect, Paint()..color = Colors.white);
+    final flap = Path()
+      ..moveTo(-22, -13)
+      ..lineTo(0, -1)
+      ..lineTo(22, -13);
+    canvas.drawPath(
+      flap,
+      Paint()
+        ..color = const Color(0xFFDC2626)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0,
+    );
+    canvas.restore();
+
+    // 5. "FEEDBACK BOX" & "Help us improve app"
+    final titlePainter = TextPainter(
+      text: TextSpan(
+        text: 'FEEDBACK BOX',
+        style: GoogleFonts.outfit(
+          color: Colors.white,
+          fontSize: 16.5,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 0.9,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    )..layout(maxWidth: 144);
+    titlePainter.paint(canvas, Offset(-titlePainter.width / 2, -98));
+
+    final subPainter = TextPainter(
+      text: TextSpan(
+        text: 'Help us improve app',
+        style: GoogleFonts.inter(
+          color: const Color(0xFFFEF08A),
+          fontSize: 10.5,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    )..layout(maxWidth: 144);
+    subPainter.paint(canvas, Offset(-subPainter.width / 2, -73));
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(-38, -54, 76, 15),
+        const Radius.circular(7.5),
+      ),
+      Paint()..color = Colors.black.withValues(alpha: 0.25),
+    );
+    final tapPainter = TextPainter(
+      text: TextSpan(
+        text: 'TAP TO SEND',
+        style: GoogleFonts.outfit(
+          color: Colors.white,
+          fontSize: 8.5,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.8,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    )..layout(maxWidth: 74);
+    tapPainter.paint(canvas, Offset(-tapPainter.width / 2, -52));
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

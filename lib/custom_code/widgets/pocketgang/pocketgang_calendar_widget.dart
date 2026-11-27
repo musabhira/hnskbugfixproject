@@ -4,18 +4,21 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'pocket_spend_page.dart';
 
 /// 📅 PocketGang Group Calendar & Events Widget
 class PocketGangCalendarWidget extends StatefulWidget {
   final String groupId;
   final String groupName;
   final String currentUserId;
+  final PocketSpendCoupleTheme? coupleTheme;
 
   const PocketGangCalendarWidget({
     super.key,
     required this.groupId,
     required this.groupName,
     required this.currentUserId,
+    this.coupleTheme,
   });
 
   @override
@@ -123,22 +126,32 @@ class _PocketGangCalendarWidgetState extends State<PocketGangCalendarWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = widget.coupleTheme;
+    final bgColor = theme != null ? theme.bgGradient.first : const Color(0xFF0F111A);
+    final headerBg = theme != null ? theme.cardColor : const Color(0xFF161924);
+    final inputBg = theme != null ? theme.surfaceAltColor : const Color(0xFF1E2232);
+    final textColor = theme != null ? theme.textColor : Colors.white;
+    final subTextColor = theme != null ? theme.subTextColor : Colors.white54;
+    final accentColor = theme != null ? theme.accent : const Color(0xFFE879F9);
+    final onAccentColor = theme != null ? theme.onAccentTextColor : Colors.white;
+    final borderColor = theme != null ? theme.borderColor : Colors.white.withValues(alpha: 0.08);
+
     return Container(
-      color: const Color(0xFF0F111A),
+      color: bgColor,
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFF161924),
-              border: Border(bottom: BorderSide(color: Colors.white.withValues(alpha: 0.08))),
+              color: headerBg,
+              border: Border(bottom: BorderSide(color: borderColor)),
             ),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE879F9).withValues(alpha: 0.15),
+                    color: accentColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Text('📅', style: TextStyle(fontSize: 18)),
@@ -150,11 +163,11 @@ class _PocketGangCalendarWidgetState extends State<PocketGangCalendarWidget> {
                     children: [
                       Text(
                         'Group Calendar & Events',
-                        style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                        style: GoogleFonts.outfit(color: textColor, fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       Text(
                         'Schedule squad meetups, milestone deadlines & practice calls',
-                        style: GoogleFonts.outfit(color: Colors.white54, fontSize: 12),
+                        style: GoogleFonts.outfit(color: subTextColor, fontSize: 12),
                       ),
                     ],
                   ),
@@ -171,17 +184,17 @@ class _PocketGangCalendarWidgetState extends State<PocketGangCalendarWidget> {
                     Expanded(
                       child: Container(
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1E2232),
+                          color: inputBg,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                          border: Border.all(color: borderColor),
                         ),
                         padding: const EdgeInsets.symmetric(horizontal: 14),
                         child: TextField(
                           controller: _eventController,
-                          style: GoogleFonts.outfit(color: Colors.white, fontSize: 14),
+                          style: GoogleFonts.outfit(color: textColor, fontSize: 14),
                           decoration: InputDecoration(
                             hintText: 'Add an event or milestone...',
-                            hintStyle: GoogleFonts.outfit(color: Colors.white38, fontSize: 13),
+                            hintStyle: GoogleFonts.outfit(color: subTextColor, fontSize: 13),
                             border: InputBorder.none,
                           ),
                           onSubmitted: (_) => _addEvent(),
@@ -205,11 +218,11 @@ class _PocketGangCalendarWidgetState extends State<PocketGangCalendarWidget> {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1E2232),
+                          color: inputBg,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                          border: Border.all(color: borderColor),
                         ),
-                        child: const Icon(Icons.calendar_month, color: Color(0xFFE879F9), size: 20),
+                        child: Icon(Icons.calendar_month, color: accentColor, size: 20),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -219,10 +232,10 @@ class _PocketGangCalendarWidgetState extends State<PocketGangCalendarWidget> {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFE879F9),
+                          color: accentColor,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.add, color: Colors.white, size: 20),
+                        child: Icon(Icons.add, color: onAccentColor, size: 20),
                       ),
                     ),
                   ],
@@ -232,7 +245,7 @@ class _PocketGangCalendarWidgetState extends State<PocketGangCalendarWidget> {
           ),
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: Color(0xFFE879F9)))
+                ? Center(child: CircularProgressIndicator(color: accentColor))
                 : _events.isEmpty
                     ? Center(
                         child: Column(
@@ -242,7 +255,7 @@ class _PocketGangCalendarWidgetState extends State<PocketGangCalendarWidget> {
                             const SizedBox(height: 8),
                             Text(
                               'No scheduled events yet',
-                              style: GoogleFonts.outfit(color: Colors.white70, fontSize: 15, fontWeight: FontWeight.w600),
+                              style: GoogleFonts.outfit(color: textColor, fontSize: 15, fontWeight: FontWeight.w600),
                             ),
                             const SizedBox(height: 4),
                             Text(

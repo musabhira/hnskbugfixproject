@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/pocketgang_tools_service.dart';
+import '../../services/pocket_admob_service.dart';
+import '../subscription_page.dart';
 
 class PocketGangToolMetadata {
   final String key;
@@ -27,13 +29,31 @@ class PocketGangModularPlusSheet extends StatelessWidget {
   });
 
   static const List<PocketGangToolMetadata> availableTools = [
-    PocketGangToolMetadata(key: 'team_mgmt', name: 'Team Management', icon: '👥'),
+    PocketGangToolMetadata(
+        key: 'team_mgmt', name: 'Team Management', icon: '👥'),
     PocketGangToolMetadata(key: 'dashboard', name: 'Dashboard', icon: '📊'),
-    PocketGangToolMetadata(key: 'diagram_studio', name: 'Diagram Studio', icon: '📐'),
+    PocketGangToolMetadata(
+        key: 'diagram_studio', name: 'Diagram Studio', icon: '📐'),
     PocketGangToolMetadata(key: 'calendar', name: 'Calendar', icon: '📅'),
     PocketGangToolMetadata(key: 'todo', name: 'To-do List', icon: '✅'),
     PocketGangToolMetadata(key: 'whiteboard', name: 'Whiteboard', icon: '🎨'),
     PocketGangToolMetadata(key: 'ideas_board', name: 'Ideas Board', icon: '💡'),
+    PocketGangToolMetadata(
+        key: 'expense_tracker', name: 'Poket Spend', icon: '💰'),
+    PocketGangToolMetadata(
+        key: 'habit_tracker', name: 'Goal & Habit Tracker', icon: '🎯'),
+    PocketGangToolMetadata(
+        key: 'memory_vault', name: 'Memory & Voice Vault', icon: '🎙️'),
+    PocketGangToolMetadata(
+        key: 'quick_poll', name: 'Quick Poll & Decision', icon: '🗳️'),
+    PocketGangToolMetadata(
+        key: 'split_wishlist', name: 'Split Bill & Wishlist', icon: '💸'),
+    PocketGangToolMetadata(
+        key: 'study_timer', name: 'Study Timer (Pomodoro)', icon: '⏱️'),
+    PocketGangToolMetadata(
+        key: 'exam_tracker', name: 'Study, Homework & Exams', icon: '🗓️'),
+    PocketGangToolMetadata(
+        key: 'flashcards', name: 'Quick Revision Flashcards', icon: '🃏'),
   ];
 
   static Future<List<String>?> show(
@@ -45,6 +65,7 @@ class PocketGangModularPlusSheet extends StatelessWidget {
     List<String>? result;
     await showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: const Color(0xFF161924),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -104,55 +125,86 @@ class PocketGangModularPlusSheet extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
+          Flexible(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ...availableTools.map((tool) {
+                    final isInstalled = installedToolKeys.contains(tool.key);
 
-          ...availableTools.map((tool) {
-            final isInstalled = installedToolKeys.contains(tool.key);
-
-            return ListTile(
-              dense: true,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              leading: Text(tool.icon, style: const TextStyle(fontSize: 20)),
-              title: Text(
-                tool.name,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w600,
-                ),
+                    return ListTile(
+                      dense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
+                      leading:
+                          Text(tool.icon, style: const TextStyle(fontSize: 20)),
+                      title: Text(
+                        tool.name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      trailing: isInstalled
+                          ? Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: Colors.white10,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text('Installed',
+                                  style: TextStyle(
+                                      color: Colors.white54, fontSize: 11)),
+                            )
+                          : ElevatedButton(
+                              onPressed: () async {
+                                HapticFeedback.selectionClick();
+                                if (tool.key != 'team_mgmt') {
+                                  final isVip = await PocketAdMobService
+                                      .instance
+                                      .isUserVip();
+                                  if (!isVip && context.mounted) {
+                                    Navigator.pop(context);
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) =>
+                                              const SubscriptionPage()),
+                                    );
+                                    return;
+                                  }
+                                }
+                                if (context.mounted) {
+                                  Navigator.pop(context);
+                                  onToolToggled(tool.key);
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFFFD700),
+                                foregroundColor: Colors.black,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 4),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8)),
+                              ),
+                              child: const Text('Add',
+                                  style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold)),
+                            ),
+                    );
+                  }),
+                ],
               ),
-              trailing: isInstalled
-                  ? Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: Colors.white10,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: const Text('Installed',
-                          style: TextStyle(color: Colors.white54, fontSize: 11)),
-                    )
-                  : ElevatedButton(
-                      onPressed: () {
-                        HapticFeedback.selectionClick();
-                        Navigator.pop(context);
-                        onToolToggled(tool.key);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFFD700),
-                        foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                      ),
-                      child: const Text('Add',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                    ),
-            );
-          }),
+            ),
+          ),
         ],
       ),
     );
   }
 }
-

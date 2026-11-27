@@ -9,7 +9,7 @@ import 'whatsapp_group_chat.dart';
 import 'package:shimmer/shimmer.dart';
 
 import 'english_hub_level_group_service.dart';
-import 'audio_space/pocket_audio_spaces_lobby_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/english_match/anonymous_english_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:flutter/services.dart';
 
@@ -251,51 +251,47 @@ class _EnglishLearningGroupChatWidgetState
                     ),
                   ),
 
-                  // Tab 1 (Right): 🎙️ Table
+                  // Tab 1 (Right): 🎲 Random
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
                         HapticFeedback.selectionClick();
-                        _hubPageController.animateToPage(
-                          1,
-                          duration: const Duration(milliseconds: 250),
-                          curve: Curves.easeOutCubic,
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const AnonymousEnglishChatPage(),
+                          ),
                         );
                       },
                       child: Container(
                         decoration: BoxDecoration(
-                          color: _selectedHubTab == 1
-                              ? const Color(0xFFFFFC00)
-                              : Colors.transparent,
+                          color: Colors.transparent,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Center(
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Text('🎙️', style: TextStyle(fontSize: 14)),
+                              const Text('🎲', style: TextStyle(fontSize: 14)),
                               const SizedBox(width: 4),
                               Text(
-                                'Table',
+                                'Random',
                                 style: GoogleFonts.outfit(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
-                                  color: _selectedHubTab == 1
-                                      ? Colors.black
-                                      : Colors.white70,
+                                  color: Colors.white70,
                                 ),
                               ),
-                              if (_selectedHubTab != 1) ...[
-                                const SizedBox(width: 4),
-                                Container(
-                                  width: 5,
-                                  height: 5,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFF10B981),
-                                    shape: BoxShape.circle,
-                                  ),
+                              const SizedBox(width: 4),
+                              Container(
+                                width: 5,
+                                height: 5,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFF10B981),
+                                  shape: BoxShape.circle,
                                 ),
-                              ],
+                              ),
                             ],
                           ),
                         ),
@@ -333,6 +329,7 @@ class _EnglishLearningGroupChatWidgetState
             Expanded(
               child: PageView(
                 controller: _hubPageController,
+                physics: const NeverScrollableScrollPhysics(),
                 onPageChanged: (idx) {
                   HapticFeedback.selectionClick();
                   PocketGameAudioService.instance.pause();
@@ -357,12 +354,6 @@ class _EnglishLearningGroupChatWidgetState
                               ),
                             )
                           : _buildErrorState(context)),
-
-                  // 1 (Right): ChitChat Table (4-seat Voice & Text Table)
-                  const PocketAudioSpacesLobbyPage(
-                    showHeader: false,
-                    enableSafeArea: false,
-                  ),
                 ],
               ),
             ),

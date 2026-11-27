@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
+import 'pocket_english_library_extra_books.dart';
 
 class _BookPageContent {
   final String heading;
@@ -542,6 +544,23 @@ List<_LibraryBook> _buildLibraryBooks(String userName) => [
           ),
         ],
       ),
+      for (final extra in kExtraEnglishLibraryBooks)
+        _LibraryBook(
+          id: extra.id,
+          title: extra.title,
+          subtitle: extra.subtitle,
+          category: extra.category,
+          accentColor: extra.accentColor,
+          pages: [
+            for (final p in extra.pages)
+              _BookPageContent(
+                heading: p.heading,
+                body: p.body,
+                keyPhrase: p.keyPhrase,
+                mlHint: p.mlHint,
+              ),
+          ],
+        ),
     ];
 
 /// 📚 Minimal Editorial English Library & Book-Style Page-Flip Reader
@@ -554,15 +573,106 @@ class PocketEnglishLibraryView extends StatefulWidget {
 }
 
 class _PocketEnglishLibraryViewState extends State<PocketEnglishLibraryView> {
+  static const int _freeBookLimit = 3;
   String _selectedCategory = 'All';
+  bool _isVip = false;
   static const List<String> _categories = [
     'All',
+    'Communication',
+    'Speaking Keys',
+    'Lifestyle',
+    'History',
     'Interview',
     'Career',
     'Beginner',
     'Daily Life',
     'Stories',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _checkVip();
+  }
+
+  Future<void> _checkVip() async {
+    final vip = await PocketAdMobService.instance.isUserVip();
+    if (mounted) setState(() => _isVip = vip);
+  }
+
+  void _showPremiumLibraryPrompt(_LibraryBook book) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF141B26),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Icon(Icons.lock_rounded, color: Color(0xFFFFD700), size: 36),
+              const SizedBox(height: 10),
+              Text(
+                'Unlock "${book.title}"',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.playfairDisplay(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'First $_freeBookLimit books are free! Upgrade to Premium for just ₹99 to unlock all 35+ Communication, Speaking Keys, Lifestyle & History books.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13),
+              ),
+              const SizedBox(height: 18),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFD700),
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  onPressed: () async {
+                    Navigator.pop(ctx);
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const SubscriptionPage()),
+                    );
+                    _checkVip();
+                  },
+                  child: Text(
+                    'Unlock Full Library • ₹99',
+                    style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.w800, fontSize: 14),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -574,10 +684,13 @@ class _PocketEnglishLibraryViewState extends State<PocketEnglishLibraryView> {
 
     return Container(
       color: const Color(0xFF0A1118),
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 10, 16, 28),
-        physics: const BouncingScrollPhysics(),
+      child: Column(
         children: [
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
+              physics: const BouncingScrollPhysics(),
+              children: [
           // Minimal Daily Update & Reading Quote Banner
           Container(
             margin: const EdgeInsets.only(bottom: 12),
@@ -662,17 +775,23 @@ class _PocketEnglishLibraryViewState extends State<PocketEnglishLibraryView> {
 
           const SizedBox(height: 12),
 
-          // Ultra-Minimal Book Cards (Just Title + Short Text) + Banner every 4 books
+          // Ultra-Minimal Book Cards (First 3 Free, Rest ₹99 Premium) + Banner every 4 books
           for (int i = 0; i < books.length; i++) ...[
             Builder(
               builder: (context) {
                 final book = books[i];
+                final globalIdx = allBooks.indexWhere((b) => b.id == book.id);
+                final isLocked = !_isVip && globalIdx >= _freeBookLimit;
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(14),
                     onTap: () {
                       HapticFeedback.lightImpact();
+                      if (isLocked) {
+                        _showPremiumLibraryPrompt(book);
+                        return;
+                      }
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -687,28 +806,65 @@ class _PocketEnglishLibraryViewState extends State<PocketEnglishLibraryView> {
                         color: const Color(0xFF141B26),
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
-                          color: book.accentColor.withValues(alpha: 0.28),
+                          color: isLocked
+                              ? Colors.white12
+                              : book.accentColor.withValues(alpha: 0.28),
                         ),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
                         children: [
-                          Text(
-                            book.title,
-                            style: GoogleFonts.playfairDisplay(
-                              color: const Color(0xFFFDF8EE),
-                              fontSize: 15.5,
-                              fontWeight: FontWeight.w700,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  book.title,
+                                  style: GoogleFonts.playfairDisplay(
+                                    color: isLocked
+                                        ? Colors.white70
+                                        : const Color(0xFFFDF8EE),
+                                    fontSize: 15.5,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  book.subtitle,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white60,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            book.subtitle,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.outfit(
-                              color: Colors.white60,
-                              fontSize: 12,
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: isLocked
+                                  ? const Color(0xFFFFD700).withValues(alpha: 0.14)
+                                  : const Color(0xFF10B981).withValues(alpha: 0.14),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: isLocked
+                                    ? const Color(0xFFFFD700).withValues(alpha: 0.45)
+                                    : const Color(0xFF10B981).withValues(alpha: 0.45),
+                                width: 0.8,
+                              ),
+                            ),
+                            child: Text(
+                              isLocked ? '🔒 ₹99' : 'FREE',
+                              style: GoogleFonts.outfit(
+                                color: isLocked
+                                    ? const Color(0xFFFFD700)
+                                    : const Color(0xFF34D399),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                              ),
                             ),
                           ),
                         ],
@@ -723,6 +879,15 @@ class _PocketEnglishLibraryViewState extends State<PocketEnglishLibraryView> {
                 margin: EdgeInsets.only(bottom: 10),
               ),
           ],
+              ],
+            ),
+          ),
+          const SafeArea(
+            top: false,
+            child: PocketBannerAdWidget(
+              margin: EdgeInsets.symmetric(vertical: 4),
+            ),
+          ),
         ],
       ),
     );

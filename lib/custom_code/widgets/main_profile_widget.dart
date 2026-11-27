@@ -50,6 +50,7 @@ import 'package:pocket_mates_app/custom_code/widgets/cards/pocket_defense_card_d
 import 'package:pocket_mates_app/custom_code/services/pocket_citadel_fight_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_fight_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_top_rank_theme.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_world_mode_selection_dialog.dart';
 
 class MainProfileWidget extends StatefulWidget {
   final String? userId;
@@ -2621,52 +2622,112 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     );
   }
 
-  // ➕ Center Floating Action Button (Audio Directive 3)
+  // ➕ Center Split Floating Action Button: [ + Add | 🦁 Kids ]
   Widget _buildProfileCenterAddButton() {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFFB300), Color(0xFFFFFC00)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        color: const Color(0xFF141824),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: const Color(0xFFFFD700).withValues(alpha: 0.45),
+          width: 1.1,
         ),
-        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFFB300).withValues(alpha: 0.4),
+            color: Colors.black.withValues(alpha: 0.35),
             blurRadius: 14,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(24),
-          onTap: () {
-            HapticFeedback.mediumImpact();
-            _showAddActionSheet();
-          },
-          child: const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.add_rounded, color: Colors.black, size: 22),
-                SizedBox(width: 6),
-                Text(
-                  'Add',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 14.5,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.3,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(13),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Left Half: + Add
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  _showAddActionSheet();
+                },
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFFFFB300), Color(0xFFFFFC00)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.add_rounded, color: Colors.black, size: 20),
+                      SizedBox(width: 5),
+                      Text(
+                        'Add',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
+            // Vertical Divider
+            Container(
+              width: 1.2,
+              height: 24,
+              color: Colors.black.withValues(alpha: 0.18),
+            ),
+            // Right Half: Kids (Same Master Yellow)
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  PocketWorldModeSelectionDialog.show(context);
+                },
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFFFFB300), Color(0xFFFFFC00)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.child_care_rounded,
+                          color: Colors.black, size: 19),
+                      SizedBox(width: 5),
+                      Text(
+                        'Kids',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -2757,6 +2818,25 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           profileId: _profileData?['id']?.toString() ?? userId,
                           onStatusUploaded: () => _loadInitialData(),
                         ),
+                      ),
+                    );
+                  },
+                  isDark: isDark,
+                ),
+                const SizedBox(height: 10),
+                _buildAddSheetOption(
+                  icon: Icons.groups_rounded,
+                  iconColor: const Color(0xFF10B981),
+                  title: 'Create Pocket Gang',
+                  subtitle: 'Start a group chat & practice together',
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    showDialog(
+                      context: context,
+                      builder: (dialogCtx) => CreateGroupDialog(
+                        onGroupCreated: () {
+                          _loadInitialData();
+                        },
                       ),
                     );
                   },
@@ -3838,10 +3918,22 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                   userId: targetId,
                                   targetName: targetName,
                                   attackerDay: _getEffectiveDay(),
-                                ).then((_) {
+                                  isRevenge: true,
+                                ).then((_) async {
+                                  await PocketFortressDefenseService
+                                      .markRaidRevenged(entry.id, targetId);
                                   _loadPocketScore();
                                   _loadFortressDefenseData();
                                   _loadGlobalRank();
+                                  Future.delayed(
+                                      const Duration(milliseconds: 2500),
+                                      () async {
+                                    await PocketFortressDefenseService
+                                        .deleteRaidLog(entry.id, targetId);
+                                    if (mounted) {
+                                      _loadFortressDefenseData();
+                                    }
+                                  });
                                 });
                               }
                             },
@@ -3849,18 +3941,28 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 8),
                               decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [
-                                    Color(0xFFDC2626),
-                                    Color(0xFFB91C1C)
-                                  ],
+                                gradient: LinearGradient(
+                                  colors: entry.isRevenged
+                                      ? const [
+                                          Color(0xFF10B981),
+                                          Color(0xFF059669)
+                                        ]
+                                      : const [
+                                          Color(0xFFDC2626),
+                                          Color(0xFFB91C1C)
+                                        ],
                                 ),
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
-                                    color: const Color(0xFFFCA5A5), width: 1.2),
+                                    color: entry.isRevenged
+                                        ? const Color(0xFF6EE7B7)
+                                        : const Color(0xFFFCA5A5),
+                                    width: 1.2),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFFDC2626)
+                                    color: (entry.isRevenged
+                                            ? const Color(0xFF10B981)
+                                            : const Color(0xFFDC2626))
                                         .withValues(alpha: 0.45),
                                     blurRadius: 6,
                                     offset: const Offset(0, 2),
@@ -3870,11 +3972,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Text('⚔️',
-                                      style: TextStyle(fontSize: 12)),
+                                  Text(entry.isRevenged ? '✓' : '⚔️',
+                                      style: const TextStyle(fontSize: 12)),
                                   const SizedBox(width: 4),
                                   Text(
-                                    'REVENGE',
+                                    entry.isRevenged ? 'REVENGED' : 'REVENGE',
                                     style: GoogleFonts.outfit(
                                       color: Colors.white,
                                       fontSize: 10.5,

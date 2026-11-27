@@ -5,18 +5,21 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'pocket_diagram_studio_editor_page.dart';
+import 'pocket_spend_page.dart';
 
 /// 📐 PocketGang Diagram Hub Tab: Shows Gang-Specific Diagrams & Creation
 class PocketGangDiagramHubWidget extends StatefulWidget {
   final String groupId;
   final String groupName;
   final String currentUserId;
+  final PocketSpendCoupleTheme? coupleTheme;
 
   const PocketGangDiagramHubWidget({
     super.key,
     required this.groupId,
     required this.groupName,
     required this.currentUserId,
+    this.coupleTheme,
   });
 
   @override
@@ -208,8 +211,17 @@ class _PocketGangDiagramHubWidgetState
       {'key': 'er', 'name': 'ER Database', 'icon': '🗄️', 'desc': 'Schemas & relations'},
     ];
 
+    final theme = widget.coupleTheme;
+    final bgColor = theme != null ? theme.bgGradient.first : const Color(0xFF0F172A);
+    final cardBg = theme != null ? theme.cardColor : const Color(0xFF1E293B);
+    final textColor = theme != null ? theme.textColor : Colors.white;
+    final subTextColor = theme != null ? theme.subTextColor : Colors.white54;
+    final labelColor = theme != null ? theme.subTextColor : Colors.white70;
+    final accentColor = theme != null ? theme.accent : const Color(0xFF38BDF8);
+    final borderColor = theme != null ? theme.borderColor : Colors.white12;
+
     return Container(
-      color: const Color(0xFF0F172A),
+      color: bgColor,
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -218,19 +230,19 @@ class _PocketGangDiagramHubWidgetState
             children: [
               Text('DIAGRAM STUDIO',
                   style: GoogleFonts.outfit(
-                      color: Colors.white70,
+                      color: labelColor,
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.8)),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                  color: accentColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Text('GANG COLLABORATION',
+                child: Text('GANG COLLABORATION',
                     style: TextStyle(
-                        color: Color(0xFF38BDF8),
+                        color: accentColor,
                         fontSize: 9.5,
                         fontWeight: FontWeight.bold)),
               ),
@@ -256,9 +268,9 @@ class _PocketGangDiagramHubWidgetState
                     width: 130,
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1E293B),
+                      color: cardBg,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white12),
+                      border: Border.all(color: borderColor),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -266,13 +278,13 @@ class _PocketGangDiagramHubWidgetState
                         Text(t['icon']!, style: const TextStyle(fontSize: 20)),
                         const Spacer(),
                         Text(t['name']!,
-                            style: const TextStyle(
-                                color: Colors.white,
+                            style: TextStyle(
+                                color: textColor,
                                 fontSize: 11.5,
                                 fontWeight: FontWeight.bold)),
                         Text(t['desc']!,
-                            style: const TextStyle(
-                                color: Colors.white38, fontSize: 9),
+                            style: TextStyle(
+                                color: subTextColor, fontSize: 9),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis),
                       ],
@@ -286,26 +298,26 @@ class _PocketGangDiagramHubWidgetState
           const SizedBox(height: 24),
           Text('SAVED GANG DIAGRAMS',
               style: GoogleFonts.outfit(
-                  color: Colors.white70,
+                  color: labelColor,
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 0.8)),
           const SizedBox(height: 12),
 
           if (_isLoading)
-            const Center(
+            Center(
               child: Padding(
-                padding: EdgeInsets.all(30),
-                child: CircularProgressIndicator(color: Color(0xFFFFD700)),
+                padding: const EdgeInsets.all(30),
+                child: CircularProgressIndicator(color: accentColor),
               ),
             )
           else if (_diagrams.isEmpty)
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: const Color(0xFF1E293B),
+                color: cardBg,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.white10),
+                border: Border.all(color: borderColor),
               ),
               child: Column(
                 children: [
@@ -313,13 +325,13 @@ class _PocketGangDiagramHubWidgetState
                   const SizedBox(height: 8),
                   Text('No Gang Diagrams yet',
                       style: GoogleFonts.outfit(
-                          color: Colors.white,
+                          color: textColor,
                           fontSize: 14,
                           fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
-                  const Text(
+                  Text(
                     'Tap any template above to create and architect a visual canvas for your team.',
-                    style: TextStyle(color: Colors.white54, fontSize: 11),
+                    style: TextStyle(color: subTextColor, fontSize: 11),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -330,22 +342,22 @@ class _PocketGangDiagramHubWidgetState
               return Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1E293B),
+                  color: cardBg,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white10),
+                  border: Border.all(color: borderColor),
                 ),
                 child: ListTile(
                   leading: const Text('📊', style: TextStyle(fontSize: 22)),
                   title: Text(
                     d['title']?.toString() ?? 'Diagram',
-                    style: const TextStyle(
-                        color: Colors.white,
+                    style: TextStyle(
+                        color: textColor,
                         fontSize: 13,
                         fontWeight: FontWeight.bold),
                   ),
                   subtitle: Text(
                     'Template: ${(d['template'] ?? 'flowchart').toString().toUpperCase()}',
-                    style: const TextStyle(color: Colors.white38, fontSize: 10.5),
+                    style: TextStyle(color: subTextColor, fontSize: 10.5),
                   ),
                   trailing: const Icon(Icons.arrow_forward_ios_rounded,
                       color: Colors.white30, size: 14),

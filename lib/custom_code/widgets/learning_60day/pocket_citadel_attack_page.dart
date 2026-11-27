@@ -64,6 +64,7 @@ class PocketCitadelAttackPage extends StatefulWidget {
   final int attackerStreak;
   final bool isDefenseMode;
   final bool isKidMode;
+  final bool isRevenge;
 
   const PocketCitadelAttackPage({
     super.key,
@@ -72,6 +73,7 @@ class PocketCitadelAttackPage extends StatefulWidget {
     this.attackerStreak = 0,
     this.isDefenseMode = false,
     this.isKidMode = false,
+    this.isRevenge = false,
   });
 
   /// 🏰 Open Citadel / House Page for any user or robot from anywhere in the app
@@ -86,6 +88,7 @@ class PocketCitadelAttackPage extends StatefulWidget {
     String? paletteId,
     bool isDefenseMode = false,
     bool isKidMode = false,
+    bool isRevenge = false,
     String? preferredPlanetCode,
     String? preferredPlanetName,
     int? preferredPlotNumber,
@@ -189,8 +192,10 @@ class PocketCitadelAttackPage extends StatefulWidget {
       final parts = userId.split('_');
       final pCode = parts.length >= 2 ? parts[1] : 'MER';
       final pGlobalPlot = parts.length >= 3 ? (int.tryParse(parts[2]) ?? 1) : 1;
-      final pColony = PoketCosmosAllocationService.instance.getColonyByCode(pCode);
-      final pParsed = PoketCosmosAllocationService.parseGlobalPlotNumber(pGlobalPlot);
+      final pColony =
+          PoketCosmosAllocationService.instance.getColonyByCode(pCode);
+      final pParsed =
+          PoketCosmosAllocationService.parseGlobalPlotNumber(pGlobalPlot);
       final pLocalPlot = pParsed['localPlotNumber'] as int;
       final pWave = pParsed['wave'] as int;
       final waveStr = pWave.toString().padLeft(2, '0');
@@ -224,6 +229,7 @@ class PocketCitadelAttackPage extends StatefulWidget {
             attackerDay: attackerDay,
             isDefenseMode: isDefenseMode,
             isKidMode: isKidMode,
+            isRevenge: isRevenge,
           ),
         ),
       );
@@ -241,13 +247,15 @@ class PocketCitadelAttackPage extends StatefulWidget {
           targetDay ?? PocketRobotService.getDynamicLevel(robot);
       final palList = HousePalette.presets;
       final autoPal = palList[(dynamicLevel - 1) % palList.length].id;
-      final targetPlanetCode = (preferredPlanetCode != null && preferredPlanetCode.isNotEmpty)
+      final targetPlanetCode = (preferredPlanetCode != null &&
+              preferredPlanetCode.isNotEmpty)
           ? preferredPlanetCode
           : (neighbor?.planetCode != null && neighbor!.planetCode!.isNotEmpty)
               ? neighbor.planetCode!
               : robot.planetCode;
       final colony = (targetPlanetCode.isNotEmpty)
-          ? PoketCosmosAllocationService.instance.getColonyByCode(targetPlanetCode)
+          ? PoketCosmosAllocationService.instance
+              .getColonyByCode(targetPlanetCode)
           : null;
       final targetPlanetName = preferredPlanetName ??
           neighbor?.planetName ??
@@ -355,7 +363,8 @@ class PocketCitadelAttackPage extends StatefulWidget {
     }
 
     // Tertiary fallback: check 'pocket_homes' table for stage / level / points
-    if (data == null || (data['learning_day'] == null && data['level'] == null)) {
+    if (data == null ||
+        (data['learning_day'] == null && data['level'] == null)) {
       try {
         final homeRes = await SupaFlow.client
             .from('pocket_homes')
@@ -365,7 +374,8 @@ class PocketCitadelAttackPage extends StatefulWidget {
         if (homeRes != null) {
           data = {
             ...?data,
-            'learning_day': data?['learning_day'] ?? homeRes['level'] ?? homeRes['day'],
+            'learning_day':
+                data?['learning_day'] ?? homeRes['level'] ?? homeRes['day'],
             'level': data?['level'] ?? homeRes['level'],
             'pocket_score': data?['pocket_score'] ?? homeRes['points'],
           };
@@ -424,17 +434,19 @@ class PocketCitadelAttackPage extends StatefulWidget {
     int? userPlotNum;
     String? userPin;
 
-    final explicitPlanetCode = (preferredPlanetCode != null && preferredPlanetCode.isNotEmpty)
-        ? preferredPlanetCode
-        : (neighbor?.planetCode != null && neighbor!.planetCode!.isNotEmpty)
-            ? neighbor.planetCode
-            : null;
+    final explicitPlanetCode =
+        (preferredPlanetCode != null && preferredPlanetCode.isNotEmpty)
+            ? preferredPlanetCode
+            : (neighbor?.planetCode != null && neighbor!.planetCode!.isNotEmpty)
+                ? neighbor.planetCode
+                : null;
 
     if (explicitPlanetCode != null) {
       final colony = PoketCosmosAllocationService.instance
           .getColonyByCode(explicitPlanetCode);
       userPlanetCode = colony.code;
-      userPlanetName = preferredPlanetName ?? neighbor?.planetName ?? colony.planetName;
+      userPlanetName =
+          preferredPlanetName ?? neighbor?.planetName ?? colony.planetName;
       userIslandName = neighbor?.islandName ?? colony.islandName;
       userStreetName = neighbor?.streetName ?? colony.streetName;
       userPlotNum = preferredPlotNumber ??
@@ -449,7 +461,8 @@ class PocketCitadelAttackPage extends StatefulWidget {
       final waveNum = int.tryParse(pinMatch.group(1) ?? '1') ?? 1;
       final code = pinMatch.group(2) ?? 'EP';
       final localPlot = int.tryParse(pinMatch.group(4) ?? '1') ?? 1;
-      final colony = PoketCosmosAllocationService.instance.getColonyByCode(code);
+      final colony =
+          PoketCosmosAllocationService.instance.getColonyByCode(code);
       userPlanetCode = colony.code;
       userPlanetName = colony.planetName;
       userIslandName = (waveNum == 1)
@@ -458,13 +471,14 @@ class PocketCitadelAttackPage extends StatefulWidget {
               colony.code, waveNum, waveNum);
       userStreetName = colony.streetName;
       // Guarantee TRUE global plot number
-      userPlotNum = (localPlot <= PoketCosmosAllocationService.maxPlotsPerIsland)
-          ? PoketCosmosAllocationService.calculateGlobalPlotNumber(
-              wave: waveNum,
-              planetCode: colony.code,
-              localPlotNumber: localPlot,
-            )
-          : localPlot;
+      userPlotNum =
+          (localPlot <= PoketCosmosAllocationService.maxPlotsPerIsland)
+              ? PoketCosmosAllocationService.calculateGlobalPlotNumber(
+                  wave: waveNum,
+                  planetCode: colony.code,
+                  localPlotNumber: localPlot,
+                )
+              : localPlot;
       userPin = pinMatch.group(0);
     } else {
       // 🌌 Deterministic & Database-backed Cosmos Born Address Synchronization
@@ -506,7 +520,11 @@ class PocketCitadelAttackPage extends StatefulWidget {
           p['name'] ??
           p['display_name'] ??
           (effectiveTargetName.isNotEmpty ? effectiveTargetName : null) ??
-          (isMe ? (effectiveTargetName.isNotEmpty ? effectiveTargetName : 'Defender') : (contactName.isNotEmpty ? contactName : 'Pocket Learner')),
+          (isMe
+              ? (effectiveTargetName.isNotEmpty
+                  ? effectiveTargetName
+                  : 'Defender')
+              : (contactName.isNotEmpty ? contactName : 'Pocket Learner')),
       day: effectiveDay,
       streak: (p['streak'] as num?)?.toInt() ?? effectiveDay,
       rank: p['rank']?.toString() ?? 'Citizen',
@@ -957,12 +975,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         widget.neighbor.id == 'pocket_president';
     final int defPlot = isPres
         ? 1
-        : ((widget.neighbor.plotNumber != null && widget.neighbor.plotNumber! > 0)
+        : ((widget.neighbor.plotNumber != null &&
+                widget.neighbor.plotNumber! > 0)
             ? widget.neighbor.plotNumber!
             : widget.neighbor.effectivePlotNumber);
     final String defPlanet = isPres
         ? 'EP'
-        : ((widget.neighbor.planetCode != null && widget.neighbor.planetCode!.isNotEmpty)
+        : ((widget.neighbor.planetCode != null &&
+                widget.neighbor.planetCode!.isNotEmpty)
             ? widget.neighbor.planetCode!
             : widget.neighbor.effectivePlanetCode);
     final int defWave = isPres ? 1 : widget.neighbor.effectiveWave;
@@ -1098,7 +1118,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         final prefs = await SharedPreferences.getInstance();
         final myId = SupaFlow.client.auth.currentUser?.id ?? widget.neighbor.id;
         final localDay = (myId.isNotEmpty
-                ? prefs.getInt('learning_day_$myId') ?? prefs.getInt('day_$myId')
+                ? prefs.getInt('learning_day_$myId') ??
+                    prefs.getInt('day_$myId')
                 : null) ??
             prefs.getInt('learning_day') ??
             prefs.getInt('current_learning_day') ??
@@ -1277,7 +1298,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             .select('pocket_score, xp')
             .or('user_id.eq.${widget.neighbor.id},id.eq.${widget.neighbor.id}')
             .maybeSingle();
-        if (pRes != null && pRes['pocket_score'] != null && (pRes['pocket_score'] as num).toInt() > 0) {
+        if (pRes != null &&
+            pRes['pocket_score'] != null &&
+            (pRes['pocket_score'] as num).toInt() > 0) {
           defenderScore = (pRes['pocket_score'] as num).toInt();
         } else {
           final res = await SupaFlow.client
@@ -1437,7 +1460,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
       // Automatically send system attack chat message between attacker and defender
       if (myId.isNotEmpty && widget.neighbor.id.isNotEmpty) {
-        unawaited(PocketActionChatService.sendAttackActionMessage(
+        await PocketActionChatService.sendAttackActionMessage(
           attackerId: myId,
           defenderId: widget.neighbor.id,
           weapon: perk.combatWeaponName,
@@ -1448,7 +1471,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
           attackerAvatar: myAvatar,
           defenderName: widget.neighbor.name,
           defenderAvatar: null,
-        ));
+          isRevenge: widget.isRevenge,
+        );
       }
     }
 
@@ -2624,93 +2648,82 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              // 1. Flashing Red and Blue Police Emergency Beacon Halos on Ground
-              Positioned(
-                left: 35,
-                top: 30,
-                child: Container(
-                  width: 90,
-                  height: 45,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: (isRedFlash
-                            ? const Color(0xFFEF4444)
-                            : const Color(0xFF3B82F6))
-                        .withValues(alpha: 0.30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: (isRedFlash
-                                ? const Color(0xFFEF4444)
-                                : const Color(0xFF3B82F6))
-                            .withValues(alpha: 0.45),
-                        blurRadius: 28,
-                        spreadRadius: 8,
-                      ),
-                    ],
+              // 1. Flashing Red and Blue Police Emergency Beacon Halos on Ground (Only during active post-attack Police Protection)
+              if (_isTargetProtected) ...[
+                Positioned(
+                  left: 35,
+                  top: 30,
+                  child: Container(
+                    width: 90,
+                    height: 45,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: (isRedFlash
+                              ? const Color(0xFFEF4444)
+                              : const Color(0xFF3B82F6))
+                          .withValues(alpha: 0.30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: (isRedFlash
+                                  ? const Color(0xFFEF4444)
+                                  : const Color(0xFF3B82F6))
+                              .withValues(alpha: 0.45),
+                          blurRadius: 28,
+                          spreadRadius: 8,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              Positioned(
-                right: 35,
-                top: 30,
-                child: Container(
-                  width: 90,
-                  height: 45,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: (isRedFlash
-                            ? const Color(0xFF3B82F6)
-                            : const Color(0xFFEF4444))
-                        .withValues(alpha: 0.30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: (isRedFlash
-                                ? const Color(0xFF3B82F6)
-                                : const Color(0xFFEF4444))
-                            .withValues(alpha: 0.45),
-                        blurRadius: 28,
-                        spreadRadius: 8,
-                      ),
-                    ],
+                Positioned(
+                  right: 35,
+                  top: 30,
+                  child: Container(
+                    width: 90,
+                    height: 45,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: (isRedFlash
+                              ? const Color(0xFF3B82F6)
+                              : const Color(0xFFEF4444))
+                          .withValues(alpha: 0.30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: (isRedFlash
+                                  ? const Color(0xFF3B82F6)
+                                  : const Color(0xFFEF4444))
+                              .withValues(alpha: 0.45),
+                          blurRadius: 28,
+                          spreadRadius: 8,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
+              ],
 
-              // 2. Police Officers Standing Guard with Escort Signboard for VIP
+              // 2. Two Police Officers Standing Guard (Left & Right of River/Entrance)
               Positioned(
                 left: 36,
-                top: _isDefenderVip ? 2 : 12,
+                top: _isDefenderVip ? 6 : 12,
                 child: _buildPoliceOfficerSprite(
                     isLeft: true, hasEscortBoard: _isDefenderVip),
               ),
               Positioned(
                 right: 36,
-                top: _isDefenderVip ? 2 : 12,
+                top: _isDefenderVip ? 6 : 12,
                 child: _buildPoliceOfficerSprite(
                     isLeft: false, hasEscortBoard: _isDefenderVip),
               ),
 
-              // 3. Presidential Military Escort Soldiers (VIP Houses Only)
-              if (_isDefenderVip) ...[
+              // 3. Hazard Barricade & Police Protection Notice (Only during active post-attack Police Protection)
+              if (_isTargetProtected)
                 Positioned(
-                  left: 114,
-                  top: 24,
-                  child: _buildMilitarySoldierSprite(hasShield: true),
-                ),
-                Positioned(
-                  right: 114,
-                  top: 24,
-                  child: _buildMilitarySoldierSprite(hasShield: false),
-                ),
-              ],
-
-              // 4. Yellow & Black Hazard Barricade with Official Presidential Protection Notice Board
-              Positioned(
-                left: 80,
-                right: 80,
-                bottom: 6,
-                child: GestureDetector(
-                  onTap: _showPresidentialProtectionInfoDialog,
+                  left: 80,
+                  right: 80,
+                  bottom: 6,
+                  child: GestureDetector(
+                    onTap: _showPresidentialProtectionInfoDialog,
                   child: Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -5467,7 +5480,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFFFD700).withValues(alpha: 0.20),
+                          color:
+                              const Color(0xFFFFD700).withValues(alpha: 0.20),
                           blurRadius: 8,
                         ),
                       ],
@@ -5478,10 +5492,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         Flexible(
                           child: Text(
                             (widget.neighbor.name.isNotEmpty &&
-                                    widget.neighbor.name != 'Citadel Defender' &&
+                                    widget.neighbor.name !=
+                                        'Citadel Defender' &&
                                     widget.neighbor.name != 'Pocket Learner')
                                 ? widget.neighbor.name
-                                : (SupaFlow.client.auth.currentUser?.email?.split('@').first ?? 'My Profile'),
+                                : (SupaFlow.client.auth.currentUser?.email
+                                        ?.split('@')
+                                        .first ??
+                                    'My Profile'),
                             style: GoogleFonts.outfit(
                               color: Colors.white,
                               fontSize: 12.5,
@@ -5806,69 +5824,69 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         _showBlockDefenderDialog();
                       }
                     },
-                  itemBuilder: (ctx) => [
-                    const PopupMenuItem(
-                      value: 'citadel_stats',
-                      child: Row(
-                        children: [
-                          Icon(Icons.shield_outlined,
-                              color: Color(0xFFFDE047), size: 18),
-                          SizedBox(width: 8),
-                          Text('Citadel Info & Stats 🏰',
-                              style: TextStyle(color: Colors.white)),
-                        ],
+                    itemBuilder: (ctx) => [
+                      const PopupMenuItem(
+                        value: 'citadel_stats',
+                        child: Row(
+                          children: [
+                            Icon(Icons.shield_outlined,
+                                color: Color(0xFFFDE047), size: 18),
+                            SizedBox(width: 8),
+                            Text('Citadel Info & Stats 🏰',
+                                style: TextStyle(color: Colors.white)),
+                          ],
+                        ),
                       ),
-                    ),
-                    const PopupMenuItem(
-                      value: 'view_plot',
-                      child: Row(
-                        children: [
-                          Icon(Icons.map_rounded,
-                              color: Color(0xFF38BDF8), size: 18),
-                          SizedBox(width: 8),
-                          Text('View Island Plot 🏝️',
-                              style: TextStyle(color: Colors.white)),
-                        ],
+                      const PopupMenuItem(
+                        value: 'view_plot',
+                        child: Row(
+                          children: [
+                            Icon(Icons.map_rounded,
+                                color: Color(0xFF38BDF8), size: 18),
+                            SizedBox(width: 8),
+                            Text('View Island Plot 🏝️',
+                                style: TextStyle(color: Colors.white)),
+                          ],
+                        ),
                       ),
-                    ),
-                    const PopupMenuItem(
-                      value: 'share_vibes',
-                      child: Row(
-                        children: [
-                          Icon(Icons.auto_awesome_rounded,
-                              color: Color(0xFFEC4899), size: 18),
-                          SizedBox(width: 8),
-                          Text('Share to Vibes',
-                              style: TextStyle(color: Colors.white)),
-                        ],
+                      const PopupMenuItem(
+                        value: 'share_vibes',
+                        child: Row(
+                          children: [
+                            Icon(Icons.auto_awesome_rounded,
+                                color: Color(0xFFEC4899), size: 18),
+                            SizedBox(width: 8),
+                            Text('Share to Vibes',
+                                style: TextStyle(color: Colors.white)),
+                          ],
+                        ),
                       ),
-                    ),
-                    const PopupMenuItem(
-                      value: 'report_citadel',
-                      child: Row(
-                        children: [
-                          Icon(Icons.flag_rounded,
-                              color: Colors.orangeAccent, size: 18),
-                          SizedBox(width: 8),
-                          Text('Report Citadel / User',
-                              style: TextStyle(color: Colors.white)),
-                        ],
+                      const PopupMenuItem(
+                        value: 'report_citadel',
+                        child: Row(
+                          children: [
+                            Icon(Icons.flag_rounded,
+                                color: Colors.orangeAccent, size: 18),
+                            SizedBox(width: 8),
+                            Text('Report Citadel / User',
+                                style: TextStyle(color: Colors.white)),
+                          ],
+                        ),
                       ),
-                    ),
-                    const PopupMenuItem(
-                      value: 'block_defender',
-                      child: Row(
-                        children: [
-                          Icon(Icons.block_rounded,
-                              color: Colors.redAccent, size: 18),
-                          SizedBox(width: 8),
-                          Text('Block Defender',
-                              style: TextStyle(color: Colors.redAccent)),
-                        ],
+                      const PopupMenuItem(
+                        value: 'block_defender',
+                        child: Row(
+                          children: [
+                            Icon(Icons.block_rounded,
+                                color: Colors.redAccent, size: 18),
+                            SizedBox(width: 8),
+                            Text('Block Defender',
+                                style: TextStyle(color: Colors.redAccent)),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
               ],
             ),
           ],
@@ -6276,7 +6294,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             children: [
               // Level & PS Minimal Row (User Directive: No "My Fortress" or "VS", strictly Level & PS & Global Rank)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -6328,7 +6347,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     _showPresidentialProtectionInfoDialog();
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7.5),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 7.5),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [Color(0xFF0369A1), Color(0xFF0C4A6E)],
@@ -6342,7 +6362,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF0284C7).withValues(alpha: 0.35),
+                          color:
+                              const Color(0xFF0284C7).withValues(alpha: 0.35),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -6363,340 +6384,393 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           ),
                         ),
                         const SizedBox(width: 5),
-                        const Icon(Icons.lock_rounded, size: 12, color: Color(0xFF38BDF8)),
+                        const Icon(Icons.lock_rounded,
+                            size: 12, color: Color(0xFF38BDF8)),
                       ],
                     ),
                   ),
                 )
               else if (widget.neighbor.isMe || widget.isDefenseMode) ...[
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  GestureDetector(
-                    onTap: _onTapBottomAttack,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 7.5),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                        borderRadius: BorderRadius.circular(11),
-                        border: Border.all(
-                          color: const Color(0xFF60A5FA),
-                          width: 1.4,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color:
-                                const Color(0xFF2563EB).withValues(alpha: 0.5),
-                            blurRadius: 10,
-                            offset: const Offset(0, 2),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    GestureDetector(
+                      onTap: _onTapBottomAttack,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 7.5),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
                           ),
-                        ],
-                      ),
-                      child: Text(
-                        'MOCK ATTACK',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  GestureDetector(
-                    onTap: () {
-                      HapticFeedback.heavyImpact();
-                      PocketCitadelStoreSheet.show(
-                        context,
-                        onPurchased: _loadBattleState,
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 13, vertical: 7.5),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFD97706), Color(0xFFB45309)],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                        borderRadius: BorderRadius.circular(11),
-                        border: Border.all(
-                          color: const Color(0xFFFDE047),
-                          width: 1.2,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color:
-                                const Color(0xFFD97706).withValues(alpha: 0.5),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
+                          borderRadius: BorderRadius.circular(11),
+                          border: Border.all(
+                            color: const Color(0xFF60A5FA),
+                            width: 1.4,
                           ),
-                        ],
-                      ),
-                      child: Text(
-                        'STORE',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.6,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  // 📸 Minimal Citadel Story Card / Share Button
-                  GestureDetector(
-                    onTap: () => _openCitadelStoryShare(effectiveDay, psValue),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 11, vertical: 7.5),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                        borderRadius: BorderRadius.circular(11),
-                        border: Border.all(
-                          color: const Color(0xFFC4B5FD),
-                          width: 1.2,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color:
-                                const Color(0xFF8B5CF6).withValues(alpha: 0.5),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.photo_camera_rounded,
-                        size: 16,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ] else if (widget.neighbor.isPresident)
-              GestureDetector(
-                onTap: _onTapBottomAttack,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: _attackerDay <= 90
-                          ? [const Color(0xFF334155), const Color(0xFF1E293B)]
-                          : [
-                              const Color(0xFFDC2626),
-                              const Color(0xFFB45309),
-                              const Color(0xFFFFD700)
-                            ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(11),
-                    border: Border.all(
-                      color: const Color(0xFFFFD700),
-                      width: 1.4,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: (_attackerDay <= 19
-                                ? Colors.black
-                                : const Color(0xFFFFD700))
-                            .withValues(alpha: 0.5),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(_attackerDay <= 19 ? '🔒' : '👑',
-                          style: const TextStyle(fontSize: 13)),
-                      const SizedBox(width: 6),
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _attackerDay <= 90
-                                ? 'LOCKED • PASS LVL 90'
-                                : 'CHALLENGE PRESIDENT ⚔️',
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: _attackerDay <= 19 ? 11.5 : 13,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0.6,
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF2563EB)
+                                  .withValues(alpha: 0.5),
+                              blurRadius: 10,
+                              offset: const Offset(0, 2),
                             ),
+                          ],
+                        ),
+                        child: Text(
+                          'MOCK ATTACK',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.8,
                           ),
-                          if (_attackerDay <= 19)
-                            Text(
-                              'Day $_attackerDay / 19 Progress (Pass Lvl 19)',
-                              style: GoogleFonts.inter(
-                                color: const Color(0xFFFFD700),
-                                fontSize: 8.5,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                        ],
+                        ),
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 6),
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.heavyImpact();
+                        PocketCitadelStoreSheet.show(
+                          context,
+                          onPurchased: _loadBattleState,
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 13, vertical: 7.5),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFD97706), Color(0xFFB45309)],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                          borderRadius: BorderRadius.circular(11),
+                          border: Border.all(
+                            color: const Color(0xFFFDE047),
+                            width: 1.2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFD97706)
+                                  .withValues(alpha: 0.5),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          'STORE',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.6,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    // 📸 Minimal Citadel Story Card / Share Button
+                    GestureDetector(
+                      onTap: () =>
+                          _openCitadelStoryShare(effectiveDay, psValue),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 11, vertical: 7.5),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                          borderRadius: BorderRadius.circular(11),
+                          border: Border.all(
+                            color: const Color(0xFFC4B5FD),
+                            width: 1.2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF8B5CF6)
+                                  .withValues(alpha: 0.5),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.photo_camera_rounded,
+                          size: 16,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              )
-            else if (_isDefenderVip)
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (!_isEscortDefeated)
-                    GestureDetector(
-                      onTap: _onTapBottomAttack,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 7),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [
-                              Color(0xFF7C3AED),
-                              Color(0xFFB45309),
-                              Color(0xFFD97706)
+              ] else if (widget.neighbor.isPresident)
+                GestureDetector(
+                  onTap: _onTapBottomAttack,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: _attackerDay <= 90
+                            ? [const Color(0xFF334155), const Color(0xFF1E293B)]
+                            : [
+                                const Color(0xFFDC2626),
+                                const Color(0xFFB45309),
+                                const Color(0xFFFFD700)
+                              ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(11),
+                      border: Border.all(
+                        color: const Color(0xFFFFD700),
+                        width: 1.4,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: (_attackerDay <= 19
+                                  ? Colors.black
+                                  : const Color(0xFFFFD700))
+                              .withValues(alpha: 0.5),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(_attackerDay <= 19 ? '🔒' : '👑',
+                            style: const TextStyle(fontSize: 13)),
+                        const SizedBox(width: 6),
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _attackerDay <= 90
+                                  ? 'LOCKED • PASS LVL 90'
+                                  : 'CHALLENGE PRESIDENT ⚔️',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: _attackerDay <= 19 ? 11.5 : 13,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.6,
+                              ),
+                            ),
+                            if (_attackerDay <= 19)
+                              Text(
+                                'Day $_attackerDay / 19 Progress (Pass Lvl 19)',
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFFFFD700),
+                                  fontSize: 8.5,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else if (_isDefenderVip)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (!_isEscortDefeated)
+                      GestureDetector(
+                        onTap: _onTapBottomAttack,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 7),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [
+                                Color(0xFF7C3AED),
+                                Color(0xFFB45309),
+                                Color(0xFFD97706)
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(11),
+                            border: Border.all(
+                              color: const Color(0xFFFFD700),
+                              width: 1.4,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFFFD700)
+                                    .withValues(alpha: 0.5),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
+                              ),
                             ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
                           ),
-                          borderRadius: BorderRadius.circular(11),
-                          border: Border.all(
-                            color: const Color(0xFFFFD700),
-                            width: 1.4,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFFFD700)
-                                  .withValues(alpha: 0.5),
-                              blurRadius: 10,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text('🏛️', style: TextStyle(fontSize: 14)),
-                            const SizedBox(width: 6),
-                            Flexible(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    PocketLanguageService.localize(
-                                      en: 'PRESIDENTIAL ESCORT',
-                                      ml: 'പ്രസിഡൻഷ്യൽ എസ്കോർട്ട്',
-                                      ta: 'பாதுகாப்புப் படை தாக்குதல்',
-                                      hi: 'प्रेसिडेंशियल एस्कॉर्ट',
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('🏛️', style: TextStyle(fontSize: 14)),
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'ESCORT ATTACK',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.outfit(
+                                        color: Colors.white,
+                                        fontSize: 12.0,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 0.5,
+                                      ),
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: GoogleFonts.outfit(
-                                      color: Colors.white,
-                                      fontSize: 12.0,
-                                      fontWeight: FontWeight.w900,
-                                      letterSpacing: 0.5,
+                                    Text(
+                                      '10 Escort Tasks • Defeat to Unlock Attack',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.inter(
+                                        color: const Color(0xFFFFD700),
+                                        fontSize: 8.5,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
-                                  ),
-                                  Text(
-                                    PocketLanguageService.localize(
-                                      en: '10 Escort Tasks • Defeat to Unlock Attack',
-                                      ml: '10 എസ്കോർട്ട് ടാസ്കുകൾ • അറ്റാക്ക് അൺലോക്ക് ചെയ്യുക',
-                                      ta: '10 பாதுகாப்பு பணிகள் • திறக்க வெல்லுங்கள்',
-                                      hi: '10 एस्कॉर्ट कार्य • हमला अनलॉक करें',
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: GoogleFonts.inter(
-                                      color: const Color(0xFFFFD700),
-                                      fontSize: 8.5,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
+                            ],
+                          ),
+                        ),
+                      )
+                    else if (_raidStep == 2)
+                      GestureDetector(
+                        onTap: () {
+                          HapticFeedback.heavyImpact();
+                          _openHouseSiege2dBattle();
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 7),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF10B981), Color(0xFF059669)],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
                             ),
-                          ],
+                            borderRadius: BorderRadius.circular(11),
+                            border: Border.all(
+                              color: const Color(0xFFFFD700),
+                              width: 1.4,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFFFD700)
+                                    .withValues(alpha: 0.5),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('⚡', style: TextStyle(fontSize: 14)),
+                              const SizedBox(width: 6),
+                              Text(
+                                'STRIKE & CLAIM LOOT (+15 ${widget.isKidMode ? 'SS' : 'PS'})',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 0.6,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    else
+                      GestureDetector(
+                        onTap: _onTapBottomAttack,
+                        child: Container(
+                          height: 40,
+                          padding: const EdgeInsets.symmetric(horizontal: 18),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: rankTheme != null
+                                  ? rankTheme.gradientColors
+                                  : const [
+                                      Color(0xFFEF4444),
+                                      Color(0xFFB91C1C)
+                                    ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                            borderRadius: BorderRadius.circular(11),
+                            border: Border.all(
+                              color: rankTheme != null
+                                  ? rankTheme.borderColor
+                                  : const Color(0xFFFFD700),
+                              width: 1.4,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: (rankTheme != null
+                                        ? rankTheme.primaryColor
+                                        : const Color(0xFFEF4444))
+                                    .withValues(alpha: 0.5),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          alignment: Alignment.center,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text('⚔️', style: TextStyle(fontSize: 14)),
+                              const SizedBox(width: 6),
+                              Text(
+                                (_isDefenderVip && !_isEscortDefeated)
+                                    ? 'ESCORT ATTACK'
+                                    : 'ATTACK',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 13.0,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    )
-                  else if (_raidStep == 2)
+                    const SizedBox(width: 8),
+                    // 🥊 Fight Duel Button (Audio Directive!)
                     GestureDetector(
-                      onTap: () {
-                        HapticFeedback.heavyImpact();
-                        _openHouseSiege2dBattle();
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 7),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF10B981), Color(0xFF059669)],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          ),
-                          borderRadius: BorderRadius.circular(11),
-                          border: Border.all(
-                            color: const Color(0xFFFFD700),
-                            width: 1.4,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFFFD700)
-                                  .withValues(alpha: 0.5),
-                              blurRadius: 10,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text('⚡', style: TextStyle(fontSize: 14)),
-                            const SizedBox(width: 6),
-                            Text(
-                              'STRIKE & CLAIM LOOT (+15 ${widget.isKidMode ? 'SS' : 'PS'})',
-                              style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0.6,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  else
-                    GestureDetector(
-                      onTap: _onTapBottomAttack,
+                      onTap: _onTapFightButton,
                       child: Container(
                         height: 40,
                         padding: const EdgeInsets.symmetric(horizontal: 18),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: rankTheme != null
-                                ? rankTheme.gradientColors
-                                : const [Color(0xFFEF4444), Color(0xFFB91C1C)],
+                                ? [
+                                    rankTheme.accentColor,
+                                    rankTheme.primaryColor
+                                  ]
+                                : const [Color(0xFFF59E0B), Color(0xFFD97706)],
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                           ),
@@ -6710,202 +6784,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           boxShadow: [
                             BoxShadow(
                               color: (rankTheme != null
-                                      ? rankTheme.primaryColor
-                                      : const Color(0xFFEF4444))
-                                  .withValues(alpha: 0.5),
-                              blurRadius: 10,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        alignment: Alignment.center,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text('⚔️', style: TextStyle(fontSize: 14)),
-                            const SizedBox(width: 6),
-                            Text(
-                              'ATTACK',
-                              style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontSize: 13.0,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0.8,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  const SizedBox(width: 8),
-                  // 🥊 Fight Duel Button (Audio Directive!)
-                  GestureDetector(
-                    onTap: _onTapFightButton,
-                    child: Container(
-                      height: 40,
-                      padding: const EdgeInsets.symmetric(horizontal: 18),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: rankTheme != null
-                              ? [rankTheme.accentColor, rankTheme.primaryColor]
-                              : const [Color(0xFFF59E0B), Color(0xFFD97706)],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                        borderRadius: BorderRadius.circular(11),
-                        border: Border.all(
-                          color: rankTheme != null
-                              ? rankTheme.borderColor
-                              : const Color(0xFFFFD700),
-                          width: 1.4,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: (rankTheme != null
-                                    ? rankTheme.accentColor
-                                    : const Color(0xFFF59E0B))
-                                .withValues(alpha: 0.45),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      alignment: Alignment.center,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text('🥊', style: TextStyle(fontSize: 14)),
-                          const SizedBox(width: 6),
-                          Text(
-                            'FIGHT',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFF0F172A),
-                              fontSize: 13.0,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0.8,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  // 📸 Minimal Citadel Story Card / Share Button (Raider mode)
-                  GestureDetector(
-                    onTap: () => _openCitadelStoryShare(effectiveDay, psValue),
-                    child: Container(
-                      height: 40,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                        borderRadius: BorderRadius.circular(11),
-                        border: Border.all(
-                          color: const Color(0xFFC4B5FD),
-                          width: 1.4,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color:
-                                const Color(0xFF8B5CF6).withValues(alpha: 0.4),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      alignment: Alignment.center,
-                      child: const Icon(
-                        Icons.photo_camera_rounded,
-                        size: 17,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              )
-            else
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (_raidStep == 2)
-                    GestureDetector(
-                      onTap: () {
-                        HapticFeedback.heavyImpact();
-                        _executeCitadelAttack();
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 7),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF10B981), Color(0xFF059669)],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          ),
-                          borderRadius: BorderRadius.circular(11),
-                          border: Border.all(
-                            color: const Color(0xFFFFD700),
-                            width: 1.4,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFFFD700)
-                                  .withValues(alpha: 0.5),
-                              blurRadius: 10,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text('⚡', style: TextStyle(fontSize: 14)),
-                            const SizedBox(width: 6),
-                            Text(
-                              'STRIKE & CLAIM LOOT (+15 ${widget.isKidMode ? 'SS' : 'PS'})',
-                              style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0.6,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  else
-                    GestureDetector(
-                      onTap: _onTapBottomAttack,
-                      child: Container(
-                        height: 40,
-                        padding: const EdgeInsets.symmetric(horizontal: 18),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: rankTheme != null
-                                ? rankTheme.gradientColors
-                                : const [Color(0xFFEF4444), Color(0xFFB91C1C)],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          ),
-                          borderRadius: BorderRadius.circular(11),
-                          border: Border.all(
-                            color: rankTheme != null
-                                ? rankTheme.borderColor
-                                : const Color(0xFFFFD700),
-                            width: 1.4,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: (rankTheme != null
-                                      ? rankTheme.primaryColor
-                                      : const Color(0xFFEF4444))
-                                  .withValues(alpha: 0.5),
+                                      ? rankTheme.accentColor
+                                      : const Color(0xFFF59E0B))
+                                  .withValues(alpha: 0.45),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -6916,12 +6797,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text('⚔️', style: TextStyle(fontSize: 14)),
+                            const Text('🥊', style: TextStyle(fontSize: 14)),
                             const SizedBox(width: 6),
                             Text(
-                              'ATTACK',
+                              'FIGHT',
                               style: GoogleFonts.outfit(
-                                color: Colors.white,
+                                color: const Color(0xFF0F172A),
                                 fontSize: 13.0,
                                 fontWeight: FontWeight.w900,
                                 letterSpacing: 0.8,
@@ -6931,102 +6812,252 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         ),
                       ),
                     ),
-                  const SizedBox(width: 8),
-                  // 🥊 Fight Duel Button (Audio Directive!)
-                  GestureDetector(
-                    onTap: _onTapFightButton,
-                    child: Container(
-                      height: 40,
-                      padding: const EdgeInsets.symmetric(horizontal: 18),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: rankTheme != null
-                              ? [rankTheme.accentColor, rankTheme.primaryColor]
-                              : const [Color(0xFFF59E0B), Color(0xFFD97706)],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                        borderRadius: BorderRadius.circular(11),
-                        border: Border.all(
-                          color: rankTheme != null
-                              ? rankTheme.borderColor
-                              : const Color(0xFFFFD700),
-                          width: 1.4,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: (rankTheme != null
-                                    ? rankTheme.accentColor
-                                    : const Color(0xFFF59E0B))
-                                .withValues(alpha: 0.45),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
+                    const SizedBox(width: 8),
+                    // 📸 Minimal Citadel Story Card / Share Button (Raider mode)
+                    GestureDetector(
+                      onTap: () =>
+                          _openCitadelStoryShare(effectiveDay, psValue),
+                      child: Container(
+                        height: 40,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
                           ),
-                        ],
-                      ),
-                      alignment: Alignment.center,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text('🥊', style: TextStyle(fontSize: 14)),
-                          const SizedBox(width: 6),
-                          Text(
-                            'FIGHT',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFF0F172A),
-                              fontSize: 13.0,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0.8,
+                          borderRadius: BorderRadius.circular(11),
+                          border: Border.all(
+                            color: const Color(0xFFC4B5FD),
+                            width: 1.4,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF8B5CF6)
+                                  .withValues(alpha: 0.4),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          Icons.photo_camera_rounded,
+                          size: 17,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  // 📸 Minimal Citadel Story Card / Share Button (Raider mode)
-                  GestureDetector(
-                    onTap: () => _openCitadelStoryShare(effectiveDay, psValue),
-                    child: Container(
-                      height: 40,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                        borderRadius: BorderRadius.circular(11),
-                        border: Border.all(
-                          color: const Color(0xFFC4B5FD),
-                          width: 1.4,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color:
-                                const Color(0xFF8B5CF6).withValues(alpha: 0.4),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
+                  ],
+                )
+              else
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_raidStep == 2)
+                      GestureDetector(
+                        onTap: () {
+                          HapticFeedback.heavyImpact();
+                          _executeCitadelAttack();
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 7),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF10B981), Color(0xFF059669)],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                            borderRadius: BorderRadius.circular(11),
+                            border: Border.all(
+                              color: const Color(0xFFFFD700),
+                              width: 1.4,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFFFD700)
+                                    .withValues(alpha: 0.5),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
-                        ],
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('⚡', style: TextStyle(fontSize: 14)),
+                              const SizedBox(width: 6),
+                              Text(
+                                'STRIKE & CLAIM LOOT (+15 ${widget.isKidMode ? 'SS' : 'PS'})',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 0.6,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    else
+                      GestureDetector(
+                        onTap: _onTapBottomAttack,
+                        child: Container(
+                          height: 40,
+                          padding: const EdgeInsets.symmetric(horizontal: 18),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: rankTheme != null
+                                  ? rankTheme.gradientColors
+                                  : const [
+                                      Color(0xFFEF4444),
+                                      Color(0xFFB91C1C)
+                                    ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                            borderRadius: BorderRadius.circular(11),
+                            border: Border.all(
+                              color: rankTheme != null
+                                  ? rankTheme.borderColor
+                                  : const Color(0xFFFFD700),
+                              width: 1.4,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: (rankTheme != null
+                                        ? rankTheme.primaryColor
+                                        : const Color(0xFFEF4444))
+                                    .withValues(alpha: 0.5),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          alignment: Alignment.center,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text('⚔️', style: TextStyle(fontSize: 14)),
+                              const SizedBox(width: 6),
+                              Text(
+                                (_isDefenderVip && !_isEscortDefeated)
+                                    ? 'ESCORT ATTACK'
+                                    : 'ATTACK',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 13.0,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                      alignment: Alignment.center,
-                      child: const Icon(
-                        Icons.photo_camera_rounded,
-                        size: 17,
-                        color: Colors.white,
+                    const SizedBox(width: 8),
+                    // 🥊 Fight Duel Button (Audio Directive!)
+                    GestureDetector(
+                      onTap: _onTapFightButton,
+                      child: Container(
+                        height: 40,
+                        padding: const EdgeInsets.symmetric(horizontal: 18),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: rankTheme != null
+                                ? [
+                                    rankTheme.accentColor,
+                                    rankTheme.primaryColor
+                                  ]
+                                : const [Color(0xFFF59E0B), Color(0xFFD97706)],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                          borderRadius: BorderRadius.circular(11),
+                          border: Border.all(
+                            color: rankTheme != null
+                                ? rankTheme.borderColor
+                                : const Color(0xFFFFD700),
+                            width: 1.4,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: (rankTheme != null
+                                      ? rankTheme.accentColor
+                                      : const Color(0xFFF59E0B))
+                                  .withValues(alpha: 0.45),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        alignment: Alignment.center,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('🥊', style: TextStyle(fontSize: 14)),
+                            const SizedBox(width: 6),
+                            Text(
+                              'FIGHT',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFF0F172A),
+                                fontSize: 13.0,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-          ],
+                    const SizedBox(width: 8),
+                    // 📸 Minimal Citadel Story Card / Share Button (Raider mode)
+                    GestureDetector(
+                      onTap: () =>
+                          _openCitadelStoryShare(effectiveDay, psValue),
+                      child: Container(
+                        height: 40,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                          borderRadius: BorderRadius.circular(11),
+                          border: Border.all(
+                            color: const Color(0xFFC4B5FD),
+                            width: 1.4,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF8B5CF6)
+                                  .withValues(alpha: 0.4),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          Icons.photo_camera_rounded,
+                          size: 17,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   /// 🛡️ Check if Kids Hero Drawer should be shown instead of Adult MainProfileWidget
   bool get _shouldShowKidProfile {
@@ -7197,7 +7228,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                     child: Text(
                                       widget.neighbor.isPresident
                                           ? 'The President\'s Sovereign Citadel'
-                                          : ((widget.neighbor.isMe || widget.isDefenseMode)
+                                          : ((widget.neighbor.isMe ||
+                                                  widget.isDefenseMode)
                                               ? 'My Profile'
                                               : '${widget.neighbor.name}\'s Profile'),
                                       style: GoogleFonts.outfit(
@@ -7287,12 +7319,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                 prog > 0.5
                                     ? (widget.neighbor.isPresident
                                         ? 'Sovereign Head of Pocket World'
-                                        : ((widget.neighbor.isMe || widget.isDefenseMode)
+                                        : ((widget.neighbor.isMe ||
+                                                widget.isDefenseMode)
                                             ? 'My Profile & Learning Journey 🌟'
                                             : (_shouldShowKidProfile
                                                 ? 'Kid Hero Profile 🎒'
                                                 : 'Citadel Defender Profile')))
-                                    : ((widget.neighbor.isMe || widget.isDefenseMode)
+                                    : ((widget.neighbor.isMe ||
+                                            widget.isDefenseMode)
                                         ? 'Tap or swipe up to view full profile & stats ➔'
                                         : 'Swipe up or tap to explore profile'),
                                 style: GoogleFonts.outfit(
@@ -7302,7 +7336,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                           : (_shouldShowKidProfile
                                               ? const Color(0xFF38BDF8)
                                               : const Color(0xFFA78BFA)))
-                                      : ((widget.neighbor.isMe || widget.isDefenseMode)
+                                      : ((widget.neighbor.isMe ||
+                                              widget.isDefenseMode)
                                           ? const Color(0xFFFFD700)
                                           : Colors.white60),
                                   fontSize: 11,
