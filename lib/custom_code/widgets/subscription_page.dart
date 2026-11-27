@@ -76,6 +76,10 @@ class _SubscriptionPageState extends State<SubscriptionPage>
         {'text': '🎙️ Unlimited AI Pronunciation & IELTS Simulators', 'included': true},
         {'text': '🛡️ Presidential Escort Guard & 24/7 Streak Protector', 'included': true},
         {'text': '🚀 Smooth Bug-Free Experience + All Future Pro Updates', 'included': true},
+        {'text': '🎯 Unlimited Poket Focus Tasks & Schedule Slots (7 Free)', 'included': true},
+        {'text': '💑 Unlimited Poket Couple & Gang Tools (To-Do, Whiteboard, Ideas & Diagrams)', 'included': true},
+        {'text': '💰 Poket Spend Couple Cloud Sync & Unlimited Trackers', 'included': true},
+        {'text': '🇩🇪 Full 90-Day English & German Master Tracks (No Midnight Wait)', 'included': true},
       ],
     },
     {
@@ -100,6 +104,10 @@ class _SubscriptionPageState extends State<SubscriptionPage>
         {'text': '🎙️ Unlimited AI Voice Practice & Speaking Simulators', 'included': true},
         {'text': '💬 Unlimited Pocket Talk & Community Speaking', 'included': true},
         {'text': '🛡️ Exclusive 24/7 Streak Protector & Cloud Backup', 'included': true},
+        {'text': '🎯 Unlimited Poket Focus Tasks & Schedule Slots (7 Free)', 'included': true},
+        {'text': '💑 Unlimited Poket Couple & Gang Tools (To-Do, Whiteboard, Ideas & Diagrams)', 'included': true},
+        {'text': '💰 Poket Spend Couple Cloud Sync & Unlimited Trackers', 'included': true},
+        {'text': '🇩🇪 Full 90-Day English & German Master Tracks Included', 'included': true},
       ],
     },
     {
@@ -123,6 +131,10 @@ class _SubscriptionPageState extends State<SubscriptionPage>
         {'text': '🎯 IELTS & Job Interview Speaking Simulators', 'included': true},
         {'text': '🚀 Full Access to All Future VIP Expansions', 'included': true},
         {'text': '🛡️ 24/7 Priority Support & Streak Protector', 'included': true},
+        {'text': '🎯 Unlimited Poket Focus Tasks & Schedule Slots (7 Free)', 'included': true},
+        {'text': '💑 Unlimited Poket Couple & Gang Tools (To-Do, Whiteboard, Ideas & Diagrams)', 'included': true},
+        {'text': '💰 Poket Spend Couple Cloud Sync & Unlimited Trackers', 'included': true},
+        {'text': '🇩🇪 Full 90-Day English & German Master Tracks Included', 'included': true},
       ],
     },
   ];

@@ -343,13 +343,6 @@ class MyAppState extends State<MyApp> {
             brightness: Brightness.dark,
             primarySwatch: Colors.blue,
             scaffoldBackgroundColor: Colors.black,
-            textTheme: ThemeData.dark().textTheme.apply(
-              fontFamilyFallback: const [
-                'Apple Color Emoji',
-                'Segoe UI Emoji',
-                'Noto Color Emoji',
-              ],
-            ),
             snackBarTheme: const SnackBarThemeData(
               backgroundColor: Color(0xFF0F172A),
               contentTextStyle: TextStyle(
@@ -368,13 +361,6 @@ class MyAppState extends State<MyApp> {
             brightness: Brightness.dark,
             primarySwatch: Colors.blue,
             scaffoldBackgroundColor: Colors.black,
-            textTheme: ThemeData.dark().textTheme.apply(
-              fontFamilyFallback: const [
-                'Apple Color Emoji',
-                'Segoe UI Emoji',
-                'Noto Color Emoji',
-              ],
-            ),
             snackBarTheme: const SnackBarThemeData(
               backgroundColor: Color(0xFF0F172A),
               contentTextStyle: TextStyle(

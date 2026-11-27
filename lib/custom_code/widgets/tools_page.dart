@@ -1428,33 +1428,36 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   Widget _buildToolsList() {
     final List<Map<String, dynamic>> allTools = [
       {
-        'title': 'German Learning Tasks',
-        'subtitle':
-            '90-Day Deutsch • A–Z + Ä,Ö,Ü,ß, der/die/das & Daily Drills',
-        'icon': Icons.translate_rounded,
-        'category': 'Language',
-        'color': const Color(0xFFFFCE00),
-        'gradient': [const Color(0xFFDD0000), const Color(0xFFFFCE00)],
+        'title': 'Poket Spend',
+        'subtitle': 'Expense & Budget Tracker',
+        'icon': Icons.account_balance_wallet_rounded,
+        'category': 'Finance',
+        'color': const Color(0xFF10B981),
+        'gradient': [const Color(0xFF10B981), const Color(0xFF059669)],
         'avatar': const VectorAvatarConfig(
-          species: 'cosmic_dragon',
-          artStyle: 'cyberpunk',
-          outfitStyle: 'astronaut_suit',
-          auraStyle: 'pocket_gold',
-          accessory: 'cyber_visor',
+          outfitStyle: 'tech_hoodie',
+          auraStyle: 'electric_aqua',
+          hairStyle: 'undercut',
+          faceShape: 'sharp',
         ),
-        'onTap': () {
-          final userId = SupaFlow.client.auth.currentUser?.id;
-          PocketLearningTrackService.setTrack(
-            PocketLearningTrackService.trackGerman,
-            userId: userId,
-          );
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => GermanTasksMasterHubPage(userId: userId),
-            ),
-          );
-        },
+        'onTap': () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const PocketSpendPage())),
+      },
+      {
+        'title': 'Poket Focus',
+        'subtitle': 'Timer, Tasks, Schedule & Habits',
+        'icon': Icons.school_rounded,
+        'category': 'Student',
+        'color': const Color(0xFF38BDF8),
+        'gradient': [const Color(0xFF0EA5E9), const Color(0xFF6366F1)],
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'tech_hoodie',
+          auraStyle: 'electric_aqua',
+          hairStyle: 'side_part',
+          faceShape: 'oval',
+        ),
+        'onTap': () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const PoketFocusPage())),
       },
       {
         'title': 'English Learning Tasks',
@@ -1480,6 +1483,35 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             context,
             MaterialPageRoute(
               builder: (context) => EnglishTasksMasterHubPage(userId: userId),
+            ),
+          );
+        },
+      },
+      {
+        'title': 'German Learning Tasks',
+        'subtitle':
+            '90-Day Deutsch • A–Z + Ä,Ö,Ü,ß, der/die/das & Daily Drills',
+        'icon': Icons.translate_rounded,
+        'category': 'Language',
+        'color': const Color(0xFFFFCE00),
+        'gradient': [const Color(0xFFDD0000), const Color(0xFFFFCE00)],
+        'avatar': const VectorAvatarConfig(
+          species: 'cosmic_dragon',
+          artStyle: 'cyberpunk',
+          outfitStyle: 'astronaut_suit',
+          auraStyle: 'pocket_gold',
+          accessory: 'cyber_visor',
+        ),
+        'onTap': () {
+          final userId = SupaFlow.client.auth.currentUser?.id;
+          PocketLearningTrackService.setTrack(
+            PocketLearningTrackService.trackGerman,
+            userId: userId,
+          );
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => GermanTasksMasterHubPage(userId: userId),
             ),
           );
         },
@@ -1680,38 +1712,6 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             context,
             MaterialPageRoute(
                 builder: (context) => const TeamsDedicatedPage())),
-      },
-      {
-        'title': 'Poket Spend',
-        'subtitle': 'Expense & Budget Tracker',
-        'icon': Icons.account_balance_wallet_rounded,
-        'category': 'Finance',
-        'color': const Color(0xFF10B981),
-        'gradient': [const Color(0xFF10B981), const Color(0xFF059669)],
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'tech_hoodie',
-          auraStyle: 'electric_aqua',
-          hairStyle: 'undercut',
-          faceShape: 'sharp',
-        ),
-        'onTap': () => Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const PocketSpendPage())),
-      },
-      {
-        'title': 'Poket Focus',
-        'subtitle': 'Timer, Exams, Flashcards & Habits',
-        'icon': Icons.school_rounded,
-        'category': 'Student',
-        'color': const Color(0xFF38BDF8),
-        'gradient': [const Color(0xFF0EA5E9), const Color(0xFF6366F1)],
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'tech_hoodie',
-          auraStyle: 'electric_aqua',
-          hairStyle: 'side_part',
-          faceShape: 'oval',
-        ),
-        'onTap': () => Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const PoketFocusPage())),
       },
     ];
 
@@ -5663,21 +5663,6 @@ class _DiagramListScreenState extends State<DiagramListScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      ElevatedButton.icon(
-                        onPressed: _createNewAIProject,
-                        icon: const Icon(Icons.auto_awesome),
-                        label: const Text('AI Plan'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFFF6B9D),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ],
@@ -5811,16 +5796,6 @@ class _DiagramListScreenState extends State<DiagramListScreen> {
                   onTap: () {
                     Navigator.pop(context);
                     _createNewDiagram();
-                  },
-                ),
-                ListTile(
-                  leading:
-                      const Icon(Icons.auto_awesome, color: Color(0xFFFF6B9D)),
-                  title: const Text('Generate with AI',
-                      style: TextStyle(color: Colors.white)),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _createNewAIProject();
                   },
                 ),
                 const SizedBox(height: 24),

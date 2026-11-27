@@ -33,6 +33,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart'
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/president/presidential_palace_castle_painter.dart';
@@ -7894,10 +7895,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
               ),
-              onPressed: () {
+              onPressed: () async {
                 Navigator.pop(ctx);
-                // 🎯 User Directive: Interstitial ad is already shown once upon finishing the raid mini-game.
-                // Do not show a second repeated ad on "CLAIM REWARDS & RETURN".
+                await PocketAdMobService.instance.showInterstitialAd(
+                  context: context,
+                  placement: PocketAdPlacement.attack,
+                );
                 if (context.mounted) {
                   Navigator.pop(context, true);
                 }

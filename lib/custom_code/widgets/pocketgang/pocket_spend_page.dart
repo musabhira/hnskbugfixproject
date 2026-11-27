@@ -532,6 +532,68 @@ class _PocketSpendPageState extends State<PocketSpendPage> {
             break;
           }
         }
+
+        // Cross-device fallback: resolve active 💑 Poket Couple group & partner directly from Supabase group_members
+        if (_partnerId == null || _coupleGroupId == null || _coupleGroupId!.isEmpty) {
+          final myGroups = await _supabase
+              .from('group_members')
+              .select('group_id, groups(id, name)')
+              .eq('user_id', uid)
+              .eq('is_active', true);
+          for (final mg in (myGroups as List)) {
+            final g = mg['groups'];
+            final gName = (g is Map ? g['name']?.toString() : null) ?? '';
+            final gId = mg['group_id']?.toString() ?? '';
+            if (gId.isNotEmpty &&
+                (gName.startsWith('💑') ||
+                    gName.toLowerCase().contains('poket couple') ||
+                    gName.toLowerCase().contains('pocket couple'))) {
+              final otherMembers = await _supabase
+                  .from('group_members')
+                  .select('user_id')
+                  .eq('group_id', gId)
+                  .neq('user_id', uid)
+                  .eq('is_active', true)
+                  .limit(1);
+              if ((otherMembers as List).isNotEmpty) {
+                final peerId = otherMembers.first['user_id']?.toString() ?? '';
+                if (peerId.isNotEmpty) {
+                  _partnerId = peerId;
+                  _coupleGroupId = gId;
+                  try {
+                    final partnerProf = await _supabase
+                        .from('profile')
+                        .select('display_name, name, profile_image_url, learning_stage, stage')
+                        .eq('user_id', peerId)
+                        .maybeSingle();
+                    if (partnerProf != null) {
+                      final dn = partnerProf['display_name'] ?? partnerProf['name'];
+                      if (dn != null && dn.toString().trim().isNotEmpty) {
+                        _partnerName = dn.toString().trim();
+                      }
+                      _partnerAvatar = partnerProf['profile_image_url']?.toString();
+                      _partnerStage =
+                          ((partnerProf['learning_stage'] ?? partnerProf['stage']) as num?)
+                                  ?.toInt() ??
+                              1;
+                    }
+                  } catch (_) {}
+                  _partnerName ??= 'Partner';
+                  await prefs.setString('pocket_spend_partner_id_$_uid', _partnerId!);
+                  await prefs.setString(
+                      'pocket_spend_partner_name_$_uid', _partnerName!);
+                  if (_partnerAvatar != null && _partnerAvatar!.isNotEmpty) {
+                    await prefs.setString(
+                        'pocket_spend_partner_avatar_$_uid', _partnerAvatar!);
+                  }
+                  await prefs.setString(
+                      'pocket_spend_couple_group_$_uid', _coupleGroupId!);
+                  break;
+                }
+              }
+            }
+          }
+        }
       } catch (_) {}
     }
 

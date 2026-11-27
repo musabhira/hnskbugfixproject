@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'pocket_diagram_studio_editor_page.dart';
 import 'pocket_spend_page.dart';
+import 'pocketgang_tool_storage.dart';
 
 /// 📐 PocketGang Diagram Hub Tab: Shows Gang-Specific Diagrams & Creation
 class PocketGangDiagramHubWidget extends StatefulWidget {
@@ -114,7 +115,13 @@ class _PocketGangDiagramHubWidgetState
     } catch (_) {}
   }
 
-  void _createNewDiagram(String templateKey, String templateName) {
+  Future<void> _createNewDiagram(String templateKey, String templateName) async {
+    final allowed = await PocketGangToolStorage.checkFreeLimitOrPromptVip(
+      context: context,
+      currentCount: _diagrams.length,
+      itemLabel: 'Diagrams & Whiteboards',
+    );
+    if (!allowed || !mounted) return;
     final titleController = TextEditingController(text: '$templateName - ${widget.groupName}');
 
     showModalBottomSheet(

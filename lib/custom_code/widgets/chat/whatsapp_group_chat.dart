@@ -6093,13 +6093,14 @@ Draft: "$draft"''';
               ),
               actions: [
                 if (_isPocketCoupleGroup) ...[
-                  IconButton(
-                    icon: Icon(Icons.person_add_alt_1_rounded,
-                        color: accentColor, size: 22),
-                    tooltip: 'Add People 💑',
-                    onPressed: () =>
-                        _showCoupleAddPeopleSheet(coupleTheme: coupleTheme),
-                  ),
+                  if (_groupMembers.length < 2)
+                    IconButton(
+                      icon: Icon(Icons.person_add_alt_1_rounded,
+                          color: accentColor, size: 22),
+                      tooltip: 'Add People 💑',
+                      onPressed: () =>
+                          _showCoupleAddPeopleSheet(coupleTheme: coupleTheme),
+                    ),
                   IconButton(
                     icon: Icon(Icons.account_balance_wallet_rounded,
                         color: accentColor, size: 22),
@@ -12135,9 +12136,6 @@ Draft: "$draft"''';
       // 2. Perform upload in background
       _performBackgroundUpload(messageId, path, type, '');
 
-      safeSetState(() {
-        _showEmojiPicker = false;
-      });
     } catch (e) {
       debugPrint('Error picking/uploading image: $e');
       _showErrorSnackBar('Error: $e');
@@ -12952,7 +12950,9 @@ Draft: "$draft"''';
                             ],
                           ),
                           const SizedBox(height: 8),
-                          if (_userRole == 'admin')
+                          if (_userRole == 'admin' &&
+                              !(_isPocketCoupleGroup &&
+                                  _groupMembers.length >= 2))
                             ListTile(
                               contentPadding: EdgeInsets.zero,
                               leading: CircleAvatar(

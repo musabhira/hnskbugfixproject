@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/pocketgang_task_service.dart';
 import 'pocket_spend_page.dart';
+import 'pocketgang_tool_storage.dart';
 
 /// 💡 PocketGang Ideas & Voting Board Widget
 class PocketGangIdeasBoardWidget extends StatefulWidget {
@@ -109,6 +110,13 @@ class _PocketGangIdeasBoardWidgetState extends State<PocketGangIdeasBoardWidget>
   Future<void> _addIdea() async {
     final text = _ideaController.text.trim();
     if (text.isEmpty) return;
+
+    final allowed = await PocketGangToolStorage.checkFreeLimitOrPromptVip(
+      context: context,
+      currentCount: _ideas.length,
+      itemLabel: 'Ideas',
+    );
+    if (!allowed) return;
 
     HapticFeedback.mediumImpact();
     final newIdea = {

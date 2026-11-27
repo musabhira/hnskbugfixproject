@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/pocketgang_task_service.dart';
 import 'pocket_spend_page.dart';
+import 'pocketgang_tool_storage.dart';
 
 /// ✅ PocketGang To-Do List Widget: Team task checklist & quick addition
 class PocketGangTodoWidget extends StatefulWidget {
@@ -44,6 +45,13 @@ class _PocketGangTodoWidgetState extends State<PocketGangTodoWidget> {
   Future<void> _quickAddTask() async {
     final title = _taskInputController.text.trim();
     if (title.isEmpty) return;
+
+    final allowed = await PocketGangToolStorage.checkFreeLimitOrPromptVip(
+      context: context,
+      currentCount: widget.tasks.length,
+      itemLabel: 'To-Do Tasks',
+    );
+    if (!allowed) return;
 
     HapticFeedback.mediumImpact();
     setState(() => _isAdding = true);

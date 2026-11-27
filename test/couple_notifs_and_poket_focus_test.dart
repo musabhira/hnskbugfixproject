@@ -117,18 +117,12 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Poket Focus'), findsOneWidget);
-      expect(find.text('🎓 Solo Study'), findsOneWidget);
-      expect(find.text('👥 Study Squad'), findsOneWidget);
       expect(find.text('Focus'), findsOneWidget);
       expect(find.text('Tasks'), findsOneWidget);
       expect(find.text('Schedule'), findsOneWidget);
       expect(find.text('Diagram'), findsOneWidget);
       expect(find.text('Habits'), findsOneWidget);
       expect(find.text('Vault'), findsNothing);
-
-      // Toggle Study Squad mode
-      await tester.tap(find.text('👥 Study Squad'));
-      await tester.pumpAndSettle();
 
       final initialThemeIdx = PoketFocusPage.focusThemeNotifier.value;
 

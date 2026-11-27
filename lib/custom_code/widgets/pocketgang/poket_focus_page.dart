@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_learning_track_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'pocket_spend_page.dart';
@@ -176,8 +178,11 @@ class _PoketFocusPageState extends State<PoketFocusPage> {
     },
   ];
 
+  static const int _freeItemLimit = 7;
+
   late int _tabIndex;
   bool _isSquadMode = false;
+  bool _isVip = false;
   int _themeIdx = 0;
   int _dailyTargetMins = 120;
   bool _isLoading = true;
@@ -251,12 +256,17 @@ class _PoketFocusPageState extends State<PoketFocusPage> {
     final prefs = await SharedPreferences.getInstance();
     final savedTheme = prefs.getInt('poket_focus_theme_idx') ?? 0;
     final savedTarget = prefs.getInt('poket_focus_daily_target_$_uid') ?? 120;
+    bool vip = false;
+    try {
+      vip = await PocketAdMobService.instance.isUserVip();
+    } catch (_) {}
     PoketFocusPage.focusThemeNotifier.value = savedTheme;
 
     if (mounted) {
       setState(() {
         _themeIdx = savedTheme;
         _dailyTargetMins = savedTarget;
+        _isVip = vip;
       });
     }
     await _loadScopedData();
@@ -515,35 +525,11 @@ class _PoketFocusPageState extends State<PoketFocusPage> {
                   ),
                 ),
                 actions: [
-                  GestureDetector(
-                    onTap: _showTargetMinutesDialog,
-                    child: Container(
-                      margin:
-                          const EdgeInsets.only(right: 4, top: 10, bottom: 10),
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      decoration: BoxDecoration(
-                        color: t.cardColor.withValues(alpha: 0.9),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                            color: t.textColor.withValues(alpha: 0.14)),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        '${_dailyTargetMins}m Goal',
-                        style: GoogleFonts.outfit(
-                          color: t.accent,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: _cycleTheme,
-                    child: Container(
-                      margin:
-                          const EdgeInsets.only(right: 10, top: 10, bottom: 10),
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                  IconButton(
+                    tooltip: 'Change Theme',
+                    onPressed: _cycleTheme,
+                    icon: Container(
+                      padding: const EdgeInsets.all(7),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
@@ -551,26 +537,12 @@ class _PoketFocusPageState extends State<PoketFocusPage> {
                             t.secondaryAccent.withValues(alpha: 0.14),
                           ],
                         ),
-                        borderRadius: BorderRadius.circular(14),
+                        shape: BoxShape.circle,
                         border:
                             Border.all(color: t.accent.withValues(alpha: 0.5)),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.palette_rounded,
-                              color: t.accent, size: 17),
-                          const SizedBox(width: 5),
-                          Text(
-                            t.name,
-                            style: GoogleFonts.outfit(
-                              color: t.textColor,
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ],
-                      ),
+                      child: Icon(Icons.palette_rounded,
+                          color: t.accent, size: 18),
                     ),
                   ),
                 ],
@@ -579,42 +551,6 @@ class _PoketFocusPageState extends State<PoketFocusPage> {
             ? Center(child: CircularProgressIndicator(color: t.accent))
             : Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: t.cardColor.withValues(alpha: 0.85),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                            color: t.textColor.withValues(alpha: 0.08)),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: _buildModeChip(
-                              label: '🎓 Solo Study',
-                              selected: !_isSquadMode,
-                              onTap: () async {
-                                setState(() => _isSquadMode = false);
-                                await _loadScopedData();
-                              },
-                            ),
-                          ),
-                          Expanded(
-                            child: _buildModeChip(
-                              label: '👥 Study Squad',
-                              selected: _isSquadMode,
-                              onTap: () async {
-                                setState(() => _isSquadMode = true);
-                                await _loadScopedData();
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
                   Expanded(
                     child: IndexedStack(
                       index: _tabIndex,
@@ -1656,7 +1592,66 @@ class _PoketFocusPageState extends State<PoketFocusPage> {
     );
   }
 
+  void _showPremiumLimitDialog(String itemLabel) {
+    final t = _theme;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: t.cardColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(Icons.workspace_premium_rounded, color: t.accent),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Unlock Unlimited $itemLabel',
+                style: GoogleFonts.outfit(
+                    color: t.textColor,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 17),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Free plan includes up to $_freeItemLimit $itemLabel. Upgrade to Poket VIP (₹99) to create unlimited $itemLabel!',
+          style: TextStyle(color: t.subTextColor, fontSize: 13.5, height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Later', style: TextStyle(color: t.subTextColor)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: t.accent,
+              foregroundColor: t.onAccentTextColor,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+              );
+              final vip = await PocketAdMobService.instance.isUserVip();
+              if (mounted) setState(() => _isVip = vip);
+            },
+            child: const Text('Upgrade ₹99',
+                style: TextStyle(fontWeight: FontWeight.w800)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _openAddExamDialog() async {
+    if (!_isVip && _exams.length >= _freeItemLimit) {
+      _showPremiumLimitDialog('Tasks');
+      return;
+    }
     final t = _theme;
     final titleCtrl = TextEditingController();
     String subject = _subjects.first;
@@ -1763,6 +1758,10 @@ class _PoketFocusPageState extends State<PoketFocusPage> {
   }
 
   Future<void> _openAddTimetableDialog() async {
+    if (!_isVip && _timetable.length >= _freeItemLimit) {
+      _showPremiumLimitDialog('Schedule Slots');
+      return;
+    }
     final t = _theme;
     final topicCtrl = TextEditingController();
     final timeCtrl = TextEditingController(text: '09:00 AM');

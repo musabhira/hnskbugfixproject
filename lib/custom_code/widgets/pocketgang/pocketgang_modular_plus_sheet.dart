@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/pocketgang_tools_service.dart';
-import '../../services/pocket_admob_service.dart';
-import '../subscription_page.dart';
 
 class PocketGangToolMetadata {
   final String key;
@@ -148,23 +146,8 @@ class PocketGangModularPlusSheet extends StatelessWidget {
                                       color: Colors.white54, fontSize: 11)),
                             )
                           : ElevatedButton(
-                              onPressed: () async {
+                              onPressed: () {
                                 HapticFeedback.selectionClick();
-                                if (tool.key != 'team_mgmt') {
-                                  final isVip = await PocketAdMobService
-                                      .instance
-                                      .isUserVip();
-                                  if (!isVip && context.mounted) {
-                                    Navigator.pop(context);
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (_) =>
-                                              const SubscriptionPage()),
-                                    );
-                                    return;
-                                  }
-                                }
                                 if (context.mounted) {
                                   Navigator.pop(context);
                                   onToolToggled(tool.key);
