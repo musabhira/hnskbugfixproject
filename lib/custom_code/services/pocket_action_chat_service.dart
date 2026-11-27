@@ -11,6 +11,7 @@ import 'pocket_mate_service.dart';
 /// Fights, Attacks, and PocketTalk Requests.
 class PocketActionChatService {
   static final _supabase = SupaFlow.client;
+  static final ValueNotifier<int> attackSyncNotifier = ValueNotifier<int>(0);
 
   static const String _kPrefsRecentAttacks = 'pm_recent_attacks_';
   static const String _kPrefsSentAttacks = 'pm_sent_attacks_';
@@ -250,6 +251,7 @@ class PocketActionChatService {
         defenderAvatar: dAvatar,
         metadata: metadata,
       );
+      attackSyncNotifier.value++;
     } catch (e) {
       debugPrint('sendAttackActionMessage error: $e');
     }

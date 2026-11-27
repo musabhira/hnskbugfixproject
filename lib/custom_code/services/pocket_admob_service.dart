@@ -428,7 +428,7 @@ class PocketAdMobService {
   DateTime? _rewardedLoadStartedAt;
   final List<Completer<RewardedAd?>> _rewardedCompleters = [];
   DateTime? _lastInterstitialShownTime;
-  static const Duration minInterstitialInterval = Duration(minutes: 3);
+  static const Duration minInterstitialInterval = Duration(seconds: 30);
 
   // 🛡️ Legal Google AdMob Policy Compliance & Rate Limiting for Rewarded Ads
   // 🎯 Rewarded Video Quotas (Google AdMob Policy Compliance & Account Safety)

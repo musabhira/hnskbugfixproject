@@ -9568,10 +9568,17 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
                     ),
-                    onPressed: () {
+                    onPressed: () async {
                       HapticFeedback.selectionClick();
                       setState(() => _isQuestionSheetOpen = false);
-                      Navigator.pop(context, _attackerDay <= 20 ? true : false);
+                      await PocketAdMobService.instance.showInterstitialAd(
+                        context: context,
+                        placement: PocketAdPlacement.attack,
+                      );
+                      if (context.mounted) {
+                        Navigator.pop(
+                            context, _attackerDay <= 20 ? true : false);
+                      }
                     },
                     child: Text(
                       _attackerDay <= 20

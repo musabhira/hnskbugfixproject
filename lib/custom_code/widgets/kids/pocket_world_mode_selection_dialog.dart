@@ -150,8 +150,13 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
                 isLocked: false,
                 onTap: () async {
                   HapticFeedback.heavyImpact();
-                  if (isKids) {
+                  final rootContext =
+                      Navigator.of(context, rootNavigator: true).context;
+                  await PocketKidsService.initialize();
+                  if (!context.mounted) return;
+                  if (PocketKidsService.isKidsWorld) {
                     Navigator.pop(context);
+                    PocketPureKidsHomePage.launch(rootContext);
                     return;
                   }
 
@@ -173,13 +178,14 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
                     }
                   }
 
-                  if (!context.mounted) return;
-                  Navigator.pop(context);
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                  }
 
                   if (PocketKidsService.kidName.isEmpty ||
                       PocketKidsService.kidName == 'Little Explorer') {
-                    if (context.mounted) {
-                      PocketKidsProfileSetupDialog.show(context);
+                    if (rootContext.mounted) {
+                      PocketKidsProfileSetupDialog.show(rootContext);
                     }
                   } else {
                     await PocketKidsService.activateKidAccount(
@@ -190,8 +196,8 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
                           : '🦁',
                       isParentSwitched: true,
                     );
-                    if (context.mounted) {
-                      PocketPureKidsHomePage.launch(context);
+                    if (rootContext.mounted) {
+                      PocketPureKidsHomePage.launch(rootContext);
                     }
                   }
                 },

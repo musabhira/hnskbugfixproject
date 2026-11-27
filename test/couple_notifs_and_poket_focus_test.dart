@@ -13,7 +13,9 @@ void main() {
   GoogleFonts.config.allowRuntimeFetching = false;
 
   group('Code hygiene, brand spelling, and assets verification', () {
-    test('Key chat, course, notification, and tool files contain zero UTF-8 mojibake', () {
+    test(
+        'Key chat, course, notification, and tool files contain zero UTF-8 mojibake',
+        () {
       final filesToCheck = [
         'lib/custom_code/widgets/chat/whatsapp_group_chat.dart',
         'lib/custom_code/widgets/courses_widget.dart',
@@ -44,7 +46,8 @@ void main() {
       }
     });
 
-    test('No broken assets/images/placeholder.png or Pocc typos remain in lib/', () {
+    test('No broken assets/images/placeholder.png or Pocc typos remain in lib/',
+        () {
       final dartFiles = Directory('lib')
           .listSync(recursive: true)
           .whereType<File>()
@@ -67,16 +70,26 @@ void main() {
   });
 
   group('Poket Focus and Tools Consolidation configuration tests', () {
-    test('Under-20 student default tools center on poket_focus and exclude clutter', () {
-      expect(PocketGangToolsService.studentDefaultTools, contains('poket_focus'));
-      expect(PocketGangToolsService.studentDefaultTools, isNot(contains('study_timer')));
-      expect(PocketGangToolsService.studentDefaultTools, isNot(contains('exam_tracker')));
-      expect(PocketGangToolsService.studentDefaultTools, isNot(contains('flashcards')));
+    test(
+        'Under-20 student default tools center on poket_focus and exclude clutter',
+        () {
+      expect(
+          PocketGangToolsService.studentDefaultTools, contains('poket_focus'));
+      expect(PocketGangToolsService.studentDefaultTools,
+          isNot(contains('study_timer')));
+      expect(PocketGangToolsService.studentDefaultTools,
+          isNot(contains('exam_tracker')));
+      expect(PocketGangToolsService.studentDefaultTools,
+          isNot(contains('flashcards')));
     });
 
-    test('Modular plus sheet lists Poket Focus & Poket Spend and drops boring tools', () {
-      final keys = PocketGangModularPlusSheet.availableTools.map((t) => t.key).toSet();
-      final names = PocketGangModularPlusSheet.availableTools.map((t) => t.name).toSet();
+    test(
+        'Modular plus sheet lists Poket Focus & Poket Spend and drops boring tools',
+        () {
+      final keys =
+          PocketGangModularPlusSheet.availableTools.map((t) => t.key).toSet();
+      final names =
+          PocketGangModularPlusSheet.availableTools.map((t) => t.name).toSet();
 
       expect(keys, containsAll(['poket_focus', 'expense_tracker']));
       expect(names, containsAll(['Poket Focus', 'Poket Spend']));
@@ -85,7 +98,8 @@ void main() {
       expect(keys, isNot(contains('habit_tracker')));
     });
 
-    test('Age helper distinguishes students (<20) and 20+ adults accurately', () async {
+    test('Age helper distinguishes students (<20) and 20+ adults accurately',
+        () async {
       SharedPreferences.setMockInitialValues({'pm_age_guest': 16});
       expect(await PocketGangToolsService.getCurrentUserAge(), 16);
       expect(await PocketGangToolsService.isUnder20User(), isTrue);
@@ -135,14 +149,21 @@ void main() {
       expect(PoketFocusPage.focusThemeNotifier.value, expectedNextIdx);
 
       // Navigate through Tasks, Schedule, Diagram, Habits, and Focus tabs
-      for (final tabLabel in ['Tasks', 'Schedule', 'Diagram', 'Habits', 'Focus']) {
+      for (final tabLabel in [
+        'Tasks',
+        'Schedule',
+        'Diagram',
+        'Habits',
+        'Focus'
+      ]) {
         await tester.tap(find.text(tabLabel));
         await tester.pumpAndSettle();
       }
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('NotificationsPage renders Instagram-style Notifications header and filters',
+    testWidgets(
+        'NotificationsPage renders Instagram-style Notifications header and filters',
         (WidgetTester tester) async {
       SharedPreferences.setMockInitialValues({});
       tester.view.physicalSize = const Size(1080, 2200);

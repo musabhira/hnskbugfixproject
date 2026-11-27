@@ -926,13 +926,24 @@ class _GermanTasksMasterHubPageState extends State<GermanTasksMasterHubPage>
             ),
           ),
           bottomNavigationBar: (!PocketKidsService.isKidsWorld &&
-                  !PocketKidsService.isKidAccount)
+                  !PocketKidsService.isKidAccount &&
+                  !_isSubscribed)
               ? Container(
                   color: const Color(0xFF131722),
-                  child: const SafeArea(
+                  child: SafeArea(
                     top: false,
-                    child: PocketBannerAdWidget(
-                      margin: EdgeInsets.symmetric(vertical: 4),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        PocketBannerAdWidget(
+                          key: ValueKey('german_homes_bottom_banner_1'),
+                          margin: EdgeInsets.symmetric(vertical: 2),
+                        ),
+                        PocketBannerAdWidget(
+                          key: ValueKey('german_homes_bottom_banner_2'),
+                          margin: EdgeInsets.symmetric(vertical: 2),
+                        ),
+                      ],
                     ),
                   ),
                 )

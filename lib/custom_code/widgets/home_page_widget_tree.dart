@@ -328,6 +328,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       VibesSeenService.init(uid);
     }
     VibesSeenService.seenEpochNotifier.addListener(_onVibesSeenSync);
+    PocketActionChatService.attackSyncNotifier.addListener(_onAttackSync);
     _loadCachedData();
     _loadAllUserData();
     _loadPendingRequests();
@@ -343,7 +344,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       _checkOnboarding();
       _promptSyncContactsOnce();
       AppStoreReviewService.fetchRemoteReviewConfig();
-      PocketConnectivityGuardService.ensureConnected(context, isBlocking: false);
+      PocketConnectivityGuardService.ensureConnected(context,
+          isBlocking: false);
     });
   }
 
@@ -366,7 +368,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         context: context,
         builder: (ctx) => AlertDialog(
           backgroundColor: const Color(0xFF141824),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Row(
             children: [
               const Icon(Icons.contacts_rounded, color: Color(0xFFFFD700)),
@@ -387,7 +390,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Later', style: TextStyle(color: Colors.white54)),
+              child:
+                  const Text('Later', style: TextStyle(color: Colors.white54)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -708,11 +712,18 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     PocketKidsService.isKidAccountNotifier
         .removeListener(_onKidAccountModeChanged);
     VibesSeenService.seenEpochNotifier.removeListener(_onVibesSeenSync);
+    PocketActionChatService.attackSyncNotifier.removeListener(_onAttackSync);
     _pageController.dispose();
     _searchController.dispose();
     _vibesFilterNotifier.dispose();
     if (_searchDebounce?.isActive ?? false) _searchDebounce!.cancel();
     super.dispose();
+  }
+
+  void _onAttackSync() {
+    if (!mounted) return;
+    ref.read(conversationsProvider.notifier).refreshNow();
+    _loadPendingRequests();
   }
 
   void _onKidAccountModeChanged() {
@@ -1428,7 +1439,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             Container(
                               width: 1.2,
                               height: 24,
-                              color: material.Colors.black.withValues(alpha: 0.22),
+                              color:
+                                  material.Colors.black.withValues(alpha: 0.22),
                             ),
                             material.InkWell(
                               borderRadius: const BorderRadius.horizontal(
@@ -1436,7 +1448,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                               ),
                               onTap: () {
                                 HapticFeedback.mediumImpact();
-                                PocketWorldRankingTrailWidget.showMatesRankingModal(
+                                PocketWorldRankingTrailWidget
+                                    .showMatesRankingModal(
                                   context,
                                   userId: _currentUserId,
                                 );
@@ -1881,7 +1894,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         final gid = groupRes['id'].toString();
         await supabase.from('group_members').insert([
           {'group_id': gid, 'user_id': uid, 'role': 'admin', 'is_active': true},
-          {'group_id': gid, 'user_id': senderId, 'role': 'admin', 'is_active': true},
+          {
+            'group_id': gid,
+            'user_id': senderId,
+            'role': 'admin',
+            'is_active': true
+          },
         ]);
         await prefs.setString('pocket_spend_couple_group_$uid', gid);
         await supabase.from('notifications').insert({
@@ -2343,7 +2361,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 // Poket Talk category removed as requested
 
     final validPendingRequests = _pendingRequests.where((r) {
-      final sId = r['sender_id']?.toString() ?? r['source_id']?.toString() ?? '';
+      final sId =
+          r['sender_id']?.toString() ?? r['source_id']?.toString() ?? '';
       return sId.isNotEmpty && !_localMateIds.contains(sId);
     }).length;
 
@@ -3057,7 +3076,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   Widget _buildRequestsSubTabToggle(bool isDark) {
     final validPendingRequests = _pendingRequests.where((r) {
-      final sId = r['sender_id']?.toString() ?? r['source_id']?.toString() ?? '';
+      final sId =
+          r['sender_id']?.toString() ?? r['source_id']?.toString() ?? '';
       return sId.isNotEmpty && !_localMateIds.contains(sId);
     }).length;
 
@@ -3513,7 +3533,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     // Mate requests (show under All or Mates tab)
     if (_requestsSubTab == 0 || _requestsSubTab == 1) {
       for (final req in _pendingRequests) {
-        final sId = req['sender_id']?.toString() ?? req['source_id']?.toString() ?? '';
+        final sId =
+            req['sender_id']?.toString() ?? req['source_id']?.toString() ?? '';
         // If already a mate, they belong to 'All' category, not Requests page
         if (sId.isNotEmpty && _localMateIds.contains(sId)) {
           continue;
@@ -3996,10 +4017,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         CircleAvatar(
           radius: 23,
           backgroundColor: const Color(0xFFFFB300).withValues(alpha: 0.2),
-          backgroundImage:
-              (peerAvatar != null && peerAvatar.startsWith('http'))
-                  ? NetworkImage(peerAvatar)
-                  : null,
+          backgroundImage: (peerAvatar != null && peerAvatar.startsWith('http'))
+              ? NetworkImage(peerAvatar)
+              : null,
           onBackgroundImageError:
               (peerAvatar != null && peerAvatar.startsWith('http'))
                   ? (_, __) {}
@@ -4114,9 +4134,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           backgroundImage: fight.challengerAvatar.startsWith('http')
               ? NetworkImage(fight.challengerAvatar)
               : null,
-          onBackgroundImageError: fight.challengerAvatar.startsWith('http')
-              ? (_, __) {}
-              : null,
+          onBackgroundImageError:
+              fight.challengerAvatar.startsWith('http') ? (_, __) {} : null,
           child: !fight.challengerAvatar.startsWith('http')
               ? Text(
                   fight.challengerAvatar.isNotEmpty
@@ -4225,10 +4244,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         CircleAvatar(
           radius: 23,
           backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.2),
-          backgroundImage:
-              (peerAvatar != null && peerAvatar.startsWith('http'))
-                  ? NetworkImage(peerAvatar)
-                  : null,
+          backgroundImage: (peerAvatar != null && peerAvatar.startsWith('http'))
+              ? NetworkImage(peerAvatar)
+              : null,
           onBackgroundImageError:
               (peerAvatar != null && peerAvatar.startsWith('http'))
                   ? (_, __) {}
@@ -5670,11 +5688,13 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                           return false;
                         }
 
-                        // Must be either verified Mates OR an active accepted PoketTalk pact
+                        // Must be either verified Mates, an active accepted PoketTalk pact, or a recent Citadel Attack
                         final isMate = _localMateIds.contains(c.id);
                         final isActivePact =
                             _pocketTalkActivePeerIds.contains(c.id);
-                        return isMate || isActivePact;
+                        final isAttackChat =
+                            (c.lastMessage?.contains('⚔️') ?? false);
+                        return isMate || isActivePact || isAttackChat;
                       }).toList();
                     } else if (_chatCategoryFilterIndex == 1) {
                       activeFiltered = activeFiltered
