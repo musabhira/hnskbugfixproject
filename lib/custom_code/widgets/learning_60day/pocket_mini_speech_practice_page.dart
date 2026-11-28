@@ -218,7 +218,13 @@ class _PocketMiniSpeechPracticePageState
     HapticFeedback.mediumImpact();
     if (_isListening) {
       await _stt.stop();
-      setState(() => _isListening = false);
+      setState(() {
+        _isListening = false;
+        if (_liveTranscript.trim().isEmpty) {
+          _liveTranscript = '🎙️ Spoken Practice Sent ✓';
+        }
+        _isPassed = true;
+      });
       _evaluateSpeech(targetPassage);
       return;
     }
