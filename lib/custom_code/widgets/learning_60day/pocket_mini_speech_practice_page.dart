@@ -562,19 +562,6 @@ class _PocketMiniSpeechPracticePageState
                       const AlwaysStoppedAnimation<Color>(Color(0xFFE11D48)),
                 ),
 
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Speech Title & Topic Pill
-                        Row(
-                          children: [
-                            Text(topic.emoji,
-                                style: const TextStyle(fontSize: 22)),
-                            const SizedBox(width: 8),
-                            Text(
                 // Pinned Front Prompt Card right below AppBar (always visible)
                 Container(
                   width: double.infinity,
