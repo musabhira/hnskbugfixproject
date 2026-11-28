@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_feedback_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
@@ -570,6 +571,10 @@ class _PocketDayOpenWorldAdventurePageState
             'last_learning_date': now.toIso8601String(),
           }).eq('user_id', uid);
         } catch (_) {}
+
+        if (widget.day == 1) {
+          unawaited(PocketPresidentService.sendDay1FeedbackPrompt(uid));
+        }
       }
     }
 

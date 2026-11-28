@@ -508,7 +508,51 @@ class PocketPresidentService {
       debugPrint('Error syncing President inquiry to Supabase: $e');
     }
 
+    // 4. Instant President auto-acknowledgment in local chat (24-hour reply promise)
+    try {
+      final ackNow = DateTime.now().add(const Duration(milliseconds: 400));
+      final ackMsg = {
+        'id': 'pres_ack_${ackNow.millisecondsSinceEpoch}',
+        'sender_id': presidentId,
+        'receiver_id': userId,
+        'sender_name': 'The President',
+        'is_president': true,
+        'golden_tick': true,
+        'message_text':
+            '🏛️ Received it! Thank you for messaging The President. Waiting for reply — we will get back to you within 24 hours! ⏳',
+        'message_type': 'text',
+        'created_at': ackNow.toIso8601String(),
+        'is_read': false,
+        'metadata': {'is_auto_ack': true},
+      };
+      final latestHistory = await getPresidentChatHistory(userId);
+      final withAck = [ackMsg, ...latestHistory];
+      await prefs.setString(key, jsonEncode(withAck));
+      unawaited(
+          LocalSyncServer().saveMessages(userId, 'p:$presidentId', withAck));
+      unawaited(
+          LocalSyncServer().saveMessages(userId, presidentId, withAck));
+    } catch (_) {}
+
     return message;
+  }
+
+  /// Sends a one-time "Feedback Please" chat & notification from The President when Day 1 (20 steps) completes
+  static Future<void> sendDay1FeedbackPrompt(String userId) async {
+    if (userId.isEmpty) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final sentKey = 'pres_day1_feedback_sent_$userId';
+      if (prefs.getBool(sentKey) == true) return;
+      await prefs.setBool(sentKey, true);
+
+      await sendPresidentReplyToUser(
+        targetUserId: userId,
+        replyText:
+            '🏛️ Congratulations on completing Day 1 (20 Steps)! 🎉\nFeedback please — how was your first day? Reply here anytime with your thoughts or suggestions!',
+        adminName: 'The President',
+      );
+    } catch (_) {}
   }
 
   /// Admin sends a manual response to a user as The President
@@ -621,6 +665,19 @@ class PocketPresidentService {
             ? 'Sent you an educational card 📜'
             : replyText,
       );
+    } catch (_) {}
+
+    try {
+      final supabase = SupaFlow.client;
+      await supabase.from('notifications').insert({
+        'user_id': targetUserId,
+        'sender_id': presidentId,
+        'source_id': presidentId,
+        'type': 'presidential_reply',
+        'message':
+            '🏛️ President Reply: ${replyText.length > 160 ? '${replyText.substring(0, 157)}...' : replyText}',
+        'status': 'unread',
+      });
     } catch (_) {}
 
     try {
@@ -1464,6 +1521,19 @@ class PocketPresidentService {
     }
 
     // 3. Dispatch Push Notification via Supabase Edge Function to all citizens!
+    try {
+      final supabase = SupaFlow.client;
+      await supabase.from('notifications').insert({
+        'user_id': targetUserId,
+        'sender_id': presidentId,
+        'source_id': presidentId,
+        'type': 'presidential_reply',
+        'message':
+            '🏛️ President Reply: ${replyText.length > 160 ? '${replyText.substring(0, 157)}...' : replyText}',
+        'status': 'unread',
+      });
+    } catch (_) {}
+
     try {
       final supabase = SupaFlow.client;
       await supabase.functions.invoke('send-push-notification', body: {
