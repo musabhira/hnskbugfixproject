@@ -692,38 +692,55 @@ class Conversations extends _$Conversations {
         );
       }).toList();
 
-      // Update isPinned for groups (convert private Couple Spend group or show default Poket Couple group)
+      // Update isPinned for groups and strictly keep at most ONE Poket Couple group
       final coupleGroupId = prefs.getString('pocket_spend_couple_group_$userId');
       final couplePartnerName =
           prefs.getString('pocket_spend_partner_name_$userId');
-      final List<ChatConversation> updatedGroups = groups.map((c) {
-        final isCoupleSpace = c.name.startsWith('💑 ') || c.id == coupleGroupId;
-        return ChatConversation(
-          id: c.id,
-          name: isCoupleSpace ? 'Poket Couple' : c.name,
-          imageUrl: c.imageUrl,
-          lastMessage: isCoupleSpace && couplePartnerName != null
-              ? '💑 Private chat with $couplePartnerName'
-              : c.lastMessage,
-          lastMessageTime: c.lastMessageTime,
-          unreadCount: c.unreadCount,
-          isGroup: c.isGroup,
-          lastSenderId: c.lastSenderId,
-          isOnline: c.isOnline,
-          lastSeen: c.lastSeen,
-          isNotification: c.isNotification,
-          notificationType: c.notificationType,
-          sourceId: c.sourceId,
-          hasStatus: c.hasStatus,
-          hasUnwatchedStatus: c.hasUnwatchedStatus,
-          statusData: c.statusData,
-          isTool: c.isTool,
-          toolTitle: c.toolTitle,
-          isPinned: pinnedIds.contains(c.id),
-        );
-      }).toList();
+      bool addedCoupleGroup = false;
+      final List<ChatConversation> updatedGroups = [];
+      // Prefer the active coupleGroupId if multiple 💑 groups exist
+      final sortedGroups = [...groups]..sort((a, b) {
+          if (a.id == coupleGroupId && b.id != coupleGroupId) return -1;
+          if (b.id == coupleGroupId && a.id != coupleGroupId) return 1;
+          return 0;
+        });
 
-      if (!updatedGroups.any((g) => g.name == 'Poket Couple')) {
+      for (final c in sortedGroups) {
+        final isCoupleSpace = c.name.startsWith('💑 ') ||
+            c.name == 'Poket Couple' ||
+            c.id == coupleGroupId;
+        if (isCoupleSpace) {
+          if (addedCoupleGroup) continue;
+          addedCoupleGroup = true;
+        }
+        updatedGroups.add(
+          ChatConversation(
+            id: c.id,
+            name: isCoupleSpace ? 'Poket Couple' : c.name,
+            imageUrl: c.imageUrl,
+            lastMessage: isCoupleSpace && couplePartnerName != null
+                ? '💑 Private chat with $couplePartnerName'
+                : (isCoupleSpace ? '❤️ Tap to add your Couple Partner' : c.lastMessage),
+            lastMessageTime: c.lastMessageTime,
+            unreadCount: c.unreadCount,
+            isGroup: c.isGroup,
+            lastSenderId: c.lastSenderId,
+            isOnline: c.isOnline,
+            lastSeen: c.lastSeen,
+            isNotification: c.isNotification,
+            notificationType: c.notificationType,
+            sourceId: c.sourceId,
+            hasStatus: c.hasStatus,
+            hasUnwatchedStatus: c.hasUnwatchedStatus,
+            statusData: c.statusData,
+            isTool: c.isTool,
+            toolTitle: c.toolTitle,
+            isPinned: pinnedIds.contains(c.id),
+          ),
+        );
+      }
+
+      if (!addedCoupleGroup) {
         updatedGroups.add(
           ChatConversation(
             id: coupleGroupId ?? 'pocket_couple_default',

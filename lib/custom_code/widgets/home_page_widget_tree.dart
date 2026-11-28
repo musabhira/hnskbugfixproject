@@ -2234,21 +2234,24 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 ),
               ),
               onTap: () async {
+                final wasPinned = conversation.isPinned;
                 Navigator.pop(context);
                 final uid =
                     _currentUserId ?? supabase.auth.currentUser?.id ?? '';
                 final isNowPinned =
                     await PocketMateService.togglePinConversation(
                         uid, conversation.id);
-                ref
-                    .read(conversationsProvider.notifier)
-                    .togglePin(conversation.id);
                 _handleRefresh();
                 if (mounted) {
+                  final hitLimit = !wasPinned && !isNowPinned;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        isNowPinned ? '📌 Pinned to top' : 'Chat unpinned',
+                        hitLimit
+                            ? 'You can pin up to 5 chats. Unpin one first.'
+                            : (isNowPinned
+                                ? '📌 Pinned to top (max 5)'
+                                : 'Chat unpinned'),
                         style: GoogleFonts.outfit(color: Colors.white),
                       ),
                       backgroundColor: const Color(0xFF1E293B),

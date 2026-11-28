@@ -1195,6 +1195,7 @@ class _PocketSpendPageState extends State<PocketSpendPage> {
 
   Future<void> _removePartner() async {
     final oldPartnerId = _partnerId;
+    final oldGroupId = _coupleGroupId;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('pocket_spend_partner_id_$_uid');
     await prefs.remove('pocket_spend_partner_name_$_uid');
@@ -1209,6 +1210,14 @@ class _PocketSpendPageState extends State<PocketSpendPage> {
     });
 
     final uid = _supabase.auth.currentUser?.id;
+    if (uid != null && oldGroupId != null && oldGroupId.isNotEmpty) {
+      try {
+        await _supabase
+            .from('group_members')
+            .update({'is_active': false})
+            .eq('group_id', oldGroupId);
+      } catch (_) {}
+    }
     if (uid != null && oldPartnerId != null && oldPartnerId.isNotEmpty) {
       try {
         await _supabase.from('notifications').insert({

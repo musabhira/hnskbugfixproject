@@ -1486,7 +1486,38 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   }
 
   Future<void> _fetchMembers() async {
-    if (_isPersonalChat || _currentGroupId == 'pocket_couple_default') return;
+    if (_isPersonalChat) return;
+    if (_currentGroupId == 'pocket_couple_default') {
+      final uid = _currentUserId ?? '';
+      Map<String, dynamic> myProf = {'name': 'You'};
+      if (uid.isNotEmpty) {
+        try {
+          final supabase = ref.read(supabaseClientProvider);
+          final p = await supabase
+              .from('profile')
+              .select('name, profile_image_url, pocket_score, learning_points, xp, learning_day, learning_stage, stage, level, avatar_config')
+              .eq('user_id', uid)
+              .maybeSingle();
+          if (p != null) {
+            myProf = Map<String, dynamic>.from(p);
+          }
+        } catch (_) {}
+      }
+      if (mounted) {
+        setState(() {
+          _groupMembers = [
+            {
+              'user_id': uid,
+              'role': 'admin',
+              'is_active': true,
+              'profile': myProf,
+            }
+          ];
+          _userRole = 'admin';
+        });
+      }
+      return;
+    }
     try {
       final supabase = ref.read(supabaseClientProvider);
       final response = await supabase.from('group_members').select('''

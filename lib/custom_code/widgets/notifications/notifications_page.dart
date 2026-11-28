@@ -589,6 +589,107 @@ class _NotificationsPageState extends State<NotificationsPage> {
       final prefs = await SharedPreferences.getInstance();
       final senderName = req['senderName']?.toString() ?? 'Partner';
       final senderAvatar = req['avatarUrl']?.toString();
+
+      // Check if user is already in an active Poket Couple with someone else
+      final existingCoupleGroups = <String>[];
+      String? existingPartnerId;
+      try {
+        final myGroups = await _supabase
+            .from('group_members')
+            .select('group_id, groups(id, name)')
+            .eq('user_id', myId)
+            .eq('is_active', true);
+        for (final mg in (myGroups as List)) {
+          final g = mg['groups'];
+          final gName = (g is Map ? g['name']?.toString() : null) ?? '';
+          final gId = mg['group_id']?.toString() ?? '';
+          if (gId.isNotEmpty &&
+              (gName.startsWith('💑') ||
+                  gName.toLowerCase().contains('poket couple') ||
+                  gName.toLowerCase().contains('pocket couple'))) {
+            existingCoupleGroups.add(gId);
+            final others = await _supabase
+                .from('group_members')
+                .select('user_id')
+                .eq('group_id', gId)
+                .neq('user_id', myId)
+                .eq('is_active', true)
+                .limit(1);
+            if ((others as List).isNotEmpty) {
+              existingPartnerId ??= others.first['user_id']?.toString();
+            }
+          }
+        }
+      } catch (_) {}
+
+      if (existingPartnerId != null &&
+          existingPartnerId.isNotEmpty &&
+          existingPartnerId != senderId) {
+        if (!mounted) return;
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: const Color(0xFF141824),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: const BorderSide(color: Color(0xFFE11D48), width: 1.5),
+            ),
+            title: Text(
+              'Already in a Poket Couple 💑',
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+                fontSize: 17,
+              ),
+            ),
+            content: Text(
+              'Joining $senderName will leave your current Poket Couple relation and move you to this new couple group. Continue?',
+              style: GoogleFonts.inter(
+                  color: Colors.white70, fontSize: 13, height: 1.4),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancel',
+                    style: TextStyle(color: Colors.white54)),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFE11D48),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Leave Old & Join',
+                    style: TextStyle(fontWeight: FontWeight.w800)),
+              ),
+            ],
+          ),
+        );
+        if (confirmed != true) return;
+      }
+
+      // Deactivate any previous Poket Couple groups for this user so only ONE Poket Couple exists
+      if (existingCoupleGroups.isNotEmpty) {
+        try {
+          await _supabase
+              .from('group_members')
+              .update({'is_active': false})
+              .inFilter('group_id', existingCoupleGroups);
+          if (existingPartnerId != null && existingPartnerId.isNotEmpty) {
+            await _supabase.from('notifications').insert({
+              'user_id': existingPartnerId,
+              'sender_id': myId,
+              'source_id': myId,
+              'type': 'couple_spend_removed',
+              'message': 'Your partner moved to a new Poket Couple.',
+              'status': 'unread',
+            });
+          }
+        } catch (_) {}
+      }
+
       await prefs.setString('pocket_spend_partner_id_$myId', senderId);
       await prefs.setString('pocket_spend_partner_name_$myId', senderName);
       if (senderAvatar != null && senderAvatar.isNotEmpty) {
