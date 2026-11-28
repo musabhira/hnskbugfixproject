@@ -14,7 +14,6 @@ import 'curriculum_data/pocket_90day_speech_practice_data.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
-import 'spoken/pocket_spoken_avatar_simulator_page.dart';
 
 /// 📢 Model for Mini Speech Exercise
 class MiniSpeechTopic {
@@ -63,19 +62,15 @@ class PocketMiniSpeechPracticePage extends StatefulWidget {
     String? userId,
     Function(int)? onStepFinished,
   }) {
-    return PocketSpokenAvatarSimulatorPage.launch(
+    return Navigator.push(
       context,
-      day: day,
-      onCompleted: () async {
-        final uid = userId ?? SupaFlow.client.auth.currentUser?.id;
-        final prefs = await SharedPreferences.getInstance();
-        if (uid != null) {
-          await prefs.setBool('pocket_day_${uid}_${day}_step_11_done', true);
-        }
-        await prefs.setBool('pocket_day_guest_${day}_step_11_done', true);
-        await PocketFortressDefenseService.recordTrainingPoints(40, uid);
-        onStepFinished?.call(11);
-      },
+      MaterialPageRoute(
+        builder: (_) => PocketMiniSpeechPracticePage(
+          day: day,
+          userId: userId,
+          onStepFinished: onStepFinished,
+        ),
+      ),
     );
   }
 
