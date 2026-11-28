@@ -19793,6 +19793,90 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
     );
   }
 
+  Future<void> _showFeedbackReplyDialog(AppFeedbackItem fb) async {
+    final ctrl = TextEditingController();
+    final sent = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF141824),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Color(0xFFFFD700), width: 1.2),
+        ),
+        title: Text(
+          'Reply to ${fb.userName ?? 'User'}',
+          style: GoogleFonts.outfit(
+            color: Colors.white,
+            fontWeight: FontWeight.w800,
+            fontSize: 16,
+          ),
+        ),
+        content: TextField(
+          controller: ctrl,
+          maxLines: 4,
+          style: const TextStyle(color: Colors.white, fontSize: 13),
+          decoration: InputDecoration(
+            hintText: 'Write your reply (sent to their Notifications page)...',
+            hintStyle: const TextStyle(color: Colors.white38, fontSize: 12),
+            filled: true,
+            fillColor: Colors.black26,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFFD700),
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Send Reply',
+                style: TextStyle(fontWeight: FontWeight.w800)),
+          ),
+        ],
+      ),
+    );
+    if (sent == true && ctrl.text.trim().isNotEmpty && fb.userId != null) {
+      try {
+        final adminId = SupaFlow.client.auth.currentUser?.id;
+        await SupaFlow.client.from('notifications').insert({
+          'user_id': fb.userId,
+          if (adminId != null) 'sender_id': adminId,
+          if (adminId != null) 'source_id': adminId,
+          'type': 'feedback_reply',
+          'message': '💬 Feedback Reply: ${ctrl.text.trim()}',
+          'status': 'unread',
+        });
+        await PocketFeedbackService.instance
+            .updateFeedbackStatus(fb.id, 'reviewed');
+        _loadAdminFeedbacks();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Reply sent to user\'s Notifications! 💬'),
+              backgroundColor: Color(0xFF10B981),
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to send reply: $e')),
+          );
+        }
+      }
+    }
+  }
+
   Widget _buildFeedbackCard(AppFeedbackItem fb) {
     final Color badgeColor;
     final String badgeLabel;
@@ -20016,6 +20100,19 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
               const Spacer(),
 
               // Quick Actions
+              if (fb.userId != null && fb.userId!.isNotEmpty)
+                TextButton.icon(
+                  onPressed: () => _showFeedbackReplyDialog(fb),
+                  icon: const Icon(Icons.reply_rounded, size: 14),
+                  label: const Text('Reply'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: const Color(0xFFFFD700),
+                    visualDensity: VisualDensity.compact,
+                    textStyle: GoogleFonts.outfit(
+                        fontSize: 11, fontWeight: FontWeight.bold),
+                  ),
+                ),
+
               if (fb.status == 'new')
                 TextButton.icon(
                   onPressed: () async {

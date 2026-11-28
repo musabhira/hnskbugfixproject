@@ -392,23 +392,16 @@ class _NotificationsPageState extends State<NotificationsPage> {
         });
       }
 
-      // Auto-delete viewed informational notifications from server & persist seen announcements
-      // after displaying them in this session so subsequent opens stay clean.
+      // Keep viewed informational notifications in Supabase (mark as read, do NOT auto-delete)
+      // and cache them locally until the user explicitly clears them.
       unawaited(() async {
         if (viewedActivityNotifIds.isNotEmpty) {
           try {
             await _supabase
                 .from('notifications')
-                .delete()
+                .update({'status': 'read'})
                 .inFilter('id', viewedActivityNotifIds);
-          } catch (_) {
-            try {
-              await _supabase
-                  .from('notifications')
-                  .update({'status': 'read'})
-                  .inFilter('id', viewedActivityNotifIds);
-            } catch (_) {}
-          }
+          } catch (_) {}
         }
         if (newlySeenAnnouncementIds.isNotEmpty) {
           final merged = {...seenAnnouncements, ...newlySeenAnnouncementIds};
