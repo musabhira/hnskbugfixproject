@@ -3483,6 +3483,50 @@ class _GermanDayOpenWorldAdventurePageState
   }
 
   _StepInfo _getStepDetails(int s) {
+    if (widget.day == 2) {
+      switch (s) {
+        case 1:
+          return const _StepInfo('German Numbers 1–10 (Eins–Zehn)', '🔢', Color(0xFFFFCE00));
+        case 2:
+          return const _StepInfo('German Numbers 11–20 (Elf–Zwanzig)', '🔢', Color(0xFF00E5FF));
+        case 3:
+          return const _StepInfo('Number Balloon Pop (1–20)', '🎈', Color(0xFF38BDF8));
+        case 4:
+          return const _StepInfo('Number Spelling & Typing', '⌨️', Color(0xFF10B981));
+        case 5:
+          return const _StepInfo('Pronouns (ich, du, wir)', '🗣️', Color(0xFFF59E0B));
+        case 6:
+          return const _StepInfo('Write Numbers 1–10 (Trace)', '✍️', Color(0xFF06B6D4), isNew: true);
+        case 7:
+          return const _StepInfo('Everyday Objects Drive', '🚗', Color(0xFF38BDF8));
+        case 8:
+          return const _StepInfo('Article Gender Lab (der/die/das)', '⚖️', Color(0xFFFFCE00));
+        case 9:
+          return const _StepInfo('Deutsch Lesesaal: Tag 2', '📖', Color(0xFF10B981));
+        case 10:
+          return const _StepInfo('Verb sein (ich bin, du bist)', '⏳', Color(0xFFFF9100));
+        case 11:
+          return const _StepInfo('Verb haben (ich habe, du hast)', '💬', Color(0xFF38BDF8));
+        case 12:
+          return const _StepInfo('2–3 Word Sentence Builder', '🧩', Color(0xFFFFD700));
+        case 13:
+          return const _StepInfo('Pattern Phrase (Mein Name ist...)', '🧱', Color(0xFFEC4899));
+        case 14:
+          return const _StepInfo('Simple Negation (nicht / kein)', '🔄', Color(0xFF60A5FA));
+        case 15:
+          return const _StepInfo('Quick Chat Reply (Deutsch)', '💬', Color(0xFF00E676));
+        case 16:
+          return const _StepInfo('Polite Phrases (Bitte, Danke)', '🙏', Color(0xFF06B6D4));
+        case 17:
+          return const _StepInfo('Simple Questions (Wie heißt du?)', '❓', Color(0xFFA855F7));
+        case 18:
+          return const _StepInfo('Spoken German Avatar Chat', '🎙️', Color(0xFFE11D48));
+        case 19:
+          return const _StepInfo('Burg-Quest: Deutsch Tag 2', '⚔️', Color(0xFFEF4444));
+        case 20:
+          return const _StepInfo('Day 2 Final Mastery & Gate Prep', '🏆', Color(0xFFD95D39));
+      }
+    }
     switch (s) {
       case 1:
         return _StepInfo(
@@ -3716,9 +3760,200 @@ class _GermanDayOpenWorldAdventurePageState
     }
   }
 
+  Future<void> _launchDay2StepActivity(int s, String? uid) async {
+    const int day = 2;
+    switch (s) {
+      case 1:
+        await GermanDayConceptChatPage.show(
+          context,
+          day: day,
+          stepIndex: 1,
+          mode: GermanConceptChatMode.conceptRoom,
+          userId: uid,
+          onStepFinished: (_) => _onStepCompleted(1),
+        );
+        return;
+      case 2:
+        await GermanDayConceptChatPage.show(
+          context,
+          day: day,
+          stepIndex: 2,
+          mode: GermanConceptChatMode.day1Vocab20,
+          userId: uid,
+          onStepFinished: (_) => _onStepCompleted(2),
+        );
+        return;
+      case 3:
+        await GermanAlphabetBalloonSkyGamePage.show(
+          context,
+          userId: uid,
+          onCompleted: () => _onStepCompleted(3),
+        );
+        return;
+      case 4:
+        await GermanEssentialSpellingPage.show(
+          context,
+          day: day,
+          userId: uid,
+          onStepFinished: (_) => _onStepCompleted(4),
+        );
+        return;
+      case 5:
+        await GermanDayConceptChatPage.show(
+          context,
+          day: day,
+          stepIndex: 5,
+          mode: GermanConceptChatMode.conceptRoom,
+          userId: uid,
+          onStepFinished: (_) => _onStepCompleted(5),
+        );
+        return;
+      case 6:
+        await GermanAlphabetWritingGamePage.show(
+          context,
+          day: day,
+          stepIndex: 6,
+          range: 'NUMBERS',
+          userId: uid,
+          onStepFinished: (_) => _onStepCompleted(6),
+        );
+        return;
+      case 7:
+        await GermanVocabOpenWorldDrivePage.show(
+          context,
+          day: day,
+          stepIndex: 7,
+          userId: uid,
+          onCompleted: () => _onStepCompleted(7),
+        );
+        return;
+      case 8:
+        await GermanArticleGenderGamePage.show(
+          context,
+          day: day,
+          stepIndex: 8,
+          userId: uid,
+          onStepFinished: (_) => _onStepCompleted(8),
+        );
+        return;
+      case 9:
+        await GermanReadingRoomPage.show(
+          context,
+          day: day,
+          stepIndex: 9,
+          userId: uid,
+          onStepFinished: (_) => _onStepCompleted(9),
+        );
+        return;
+      case 10:
+        await GermanVerbTimelineGamePage.show(
+          context,
+          day: day,
+          userId: uid,
+          onStepFinished: (_) => _onStepCompleted(10),
+        );
+        return;
+      case 11:
+        await GermanDayConceptChatPage.show(
+          context,
+          day: day,
+          stepIndex: 11,
+          mode: GermanConceptChatMode.conceptRoom,
+          userId: uid,
+          onStepFinished: (_) => _onStepCompleted(11),
+        );
+        return;
+      case 12:
+        await GermanSentenceBuilderGamePage.show(
+          context,
+          day: day,
+          userId: uid,
+          onStepFinished: (_) => _onStepCompleted(12),
+        );
+        return;
+      case 13:
+        await GermanPatternPhraseBuilderPage.show(
+          context,
+          day: day,
+          stepIndex: 13,
+          onStepFinished: (_) => _onStepCompleted(13),
+        );
+        return;
+      case 14:
+        await GermanNegativeSentenceBuilderPage.show(
+          context,
+          day: day,
+          userId: uid,
+          onStepFinished: (_) => _onStepCompleted(14),
+        );
+        return;
+      case 15:
+        await GermanChatReplyBuilderPage.show(
+          context,
+          day: day,
+          userId: uid,
+          onStepFinished: (_) => _onStepCompleted(15),
+        );
+        return;
+      case 16:
+        await GermanUsefulPhrasesGamePage.show(
+          context,
+          day: day,
+          userId: uid,
+          onStepFinished: (_) => _onStepCompleted(16),
+        );
+        return;
+      case 17:
+        await GermanDayConceptChatPage.show(
+          context,
+          day: day,
+          stepIndex: 17,
+          mode: GermanConceptChatMode.spokenDialogue,
+          userId: uid,
+          onStepFinished: (_) => _onStepCompleted(17),
+        );
+        return;
+      case 18:
+        final res = await GermanSpokenAvatarSimulatorPage.launch(
+          context,
+          day: day,
+          onCompleted: () => _onStepCompleted(18),
+        );
+        if (res == true) {
+          await _onStepCompleted(18);
+        }
+        return;
+      case 19:
+        await GermanArticleGenderGamePage.show(
+          context,
+          day: day,
+          stepIndex: 19,
+          userId: uid,
+          onStepFinished: (_) => _onStepCompleted(19),
+        );
+        return;
+      case 20:
+      default:
+        await GermanPatternPhraseBuilderPage.show(
+          context,
+          day: day,
+          stepIndex: 20,
+          onStepFinished: (_) => _onStepCompleted(20),
+        );
+        return;
+    }
+  }
+
   Future<void> _launchStepActivity(int s) async {
     final day = widget.day;
     final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+
+    if (day == 2) {
+      await _launchDay2StepActivity(s, uid);
+      await _syncStepCompletionIfDone(s);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
 
     if (s == 1 && day == 1) {
       await GermanDay1AlphabetChatPage.show(

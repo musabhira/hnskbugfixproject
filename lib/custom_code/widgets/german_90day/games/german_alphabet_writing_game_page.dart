@@ -90,6 +90,20 @@ class _GermanAlphabetWritingGamePageState
   }
 
   List<_GermanTraceLetter> _buildLetters(String range) {
+    if (range == 'NUMBERS') {
+      return const [
+        _GermanTraceLetter(letter: '1', sound: 'eins (ഐൻസ്)', example: 'Eins', meaning: 'One'),
+        _GermanTraceLetter(letter: '2', sound: 'zwei (ത്സ്വൈ)', example: 'Zwei', meaning: 'Two'),
+        _GermanTraceLetter(letter: '3', sound: 'drei (ദ്രൈ)', example: 'Drei', meaning: 'Three'),
+        _GermanTraceLetter(letter: '4', sound: 'vier (ഫിയർ)', example: 'Vier', meaning: 'Four'),
+        _GermanTraceLetter(letter: '5', sound: 'fünf (ഫ്യൂൺഫ്)', example: 'Fünf', meaning: 'Five'),
+        _GermanTraceLetter(letter: '6', sound: 'sechs (സെക്സ്)', example: 'Sechs', meaning: 'Six'),
+        _GermanTraceLetter(letter: '7', sound: 'sieben (സീബൻ)', example: 'Sieben', meaning: 'Seven'),
+        _GermanTraceLetter(letter: '8', sound: 'acht (അഖ്ത്)', example: 'Acht', meaning: 'Eight'),
+        _GermanTraceLetter(letter: '9', sound: 'neun (നോയ്ൻ)', example: 'Neun', meaning: 'Nine'),
+        _GermanTraceLetter(letter: '10', sound: 'zehn (ത്‌സേൻ)', example: 'Zehn', meaning: 'Ten'),
+      ];
+    }
     if (range == 'N-Z') {
       return const [
         _GermanTraceLetter(letter: 'N', sound: 'en (എൻ)', example: 'Nacht', meaning: 'Night'),
