@@ -1523,19 +1523,6 @@ class PocketPresidentService {
     // 3. Dispatch Push Notification via Supabase Edge Function to all citizens!
     try {
       final supabase = SupaFlow.client;
-      await supabase.from('notifications').insert({
-        'user_id': targetUserId,
-        'sender_id': presidentId,
-        'source_id': presidentId,
-        'type': 'presidential_reply',
-        'message':
-            '🏛️ President Reply: ${replyText.length > 160 ? '${replyText.substring(0, 157)}...' : replyText}',
-        'status': 'unread',
-      });
-    } catch (_) {}
-
-    try {
-      final supabase = SupaFlow.client;
       await supabase.functions.invoke('send-push-notification', body: {
         'action': 'broadcast',
         'title': title,
