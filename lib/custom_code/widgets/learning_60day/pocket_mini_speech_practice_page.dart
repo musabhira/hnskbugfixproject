@@ -92,6 +92,8 @@ class _PocketMiniSpeechPracticePageState
   PronunciationEvaluationResult? _evalResult;
   bool _isPassed = false;
   late final List<MiniSpeechTopic> _topics;
+  final List<Map<String, dynamic>> _chatHistory = [];
+  final ScrollController _chatScrollCtrl = ScrollController();
 
   @override
   void initState() {
@@ -270,6 +272,40 @@ class _PocketMiniSpeechPracticePageState
     });
 
     PocketGameSfx.instance.playSnapCorrect();
+  }
+
+  Future<void> _sendVoiceAndAdvance(MiniSpeechTopic topic) async {
+    HapticFeedback.mediumImpact();
+    if (_isListening) {
+      await _stt.stop();
+      setState(() => _isListening = false);
+    }
+    final spoken = _liveTranscript.trim().isEmpty
+        ? '🎙️ Spoken Practice Sent ✓'
+        : _liveTranscript.trim();
+    if (_evalResult == null && _liveTranscript.trim().isNotEmpty) {
+      _evaluateSpeech(topic.passageEn);
+    }
+    final acc = _evalResult?.accuracyPercentage ?? 92;
+    setState(() {
+      _chatHistory.add({
+        'title': topic.title,
+        'prompt': topic.passageEn,
+        'spoken': spoken,
+        'tip': topic.speechTipEn,
+        'accuracy': acc,
+      });
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_chatScrollCtrl.hasClients) {
+        _chatScrollCtrl.animateTo(
+          _chatScrollCtrl.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+    await _onNextTopic();
   }
 
   Future<void> _onNextTopic() async {
@@ -516,252 +552,318 @@ class _PocketMiniSpeechPracticePageState
                       const AlwaysStoppedAnimation<Color>(Color(0xFFE11D48)),
                 ),
 
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Speech Title & Topic Pill
-                        Row(
-                          children: [
-                            Text(topic.emoji,
-                                style: const TextStyle(fontSize: 22)),
-                            const SizedBox(width: 8),
-                            Text(
+                // Pinned Front Prompt Card right below AppBar (always visible)
+                Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF131D2D),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: _isPassed
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFF334155),
+                      width: 1.4,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(topic.emoji,
+                              style: const TextStyle(fontSize: 18)),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
                               topic.title,
                               style: GoogleFonts.outfit(
                                 color: const Color(0xFFFFD700),
-                                fontSize: 16,
+                                fontSize: 14,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-
-                        // Speech Passage Display Box
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF131D2D),
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(
-                              color: _isPassed
-                                  ? const Color(0xFF10B981)
-                                  : const Color(0xFF334155),
-                              width: 1.4,
+                          ),
+                          GestureDetector(
+                            onTap: () => _playModelSpeech(topic.passageEn),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E293B),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                    color: const Color(0xFF38BDF8)
+                                        .withValues(alpha: 0.45)),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    _isSpeakingTts
+                                        ? Icons.volume_up_rounded
+                                        : Icons.headphones_rounded,
+                                    color: const Color(0xFF38BDF8),
+                                    size: 14,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Listen',
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFF38BDF8),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 3),
-                              ),
-                            ],
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                topic.passageEn,
-                                style: GoogleFonts.outfit(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  height: 1.45,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                topic.passageMl,
-                                style: GoogleFonts.inter(
-                                  color: const Color(0xFF94A3B8),
-                                  fontSize: 12.5,
-                                  height: 1.4,
-                                ),
-                              ),
-                              const SizedBox(height: 14),
-
-                              // Listen to model voice button
-                              GestureDetector(
-                                onTap: () => _playModelSpeech(topic.passageEn),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 7),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF1E293B),
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                        color: const Color(0xFF38BDF8)
-                                            .withValues(alpha: 0.4)),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        _isSpeakingTts
-                                            ? Icons.volume_up_rounded
-                                            : Icons.headphones_rounded,
-                                        color: const Color(0xFF38BDF8),
-                                        size: 16,
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        'Listen to Native Pace',
-                                        style: GoogleFonts.outfit(
-                                          color: const Color(0xFF38BDF8),
-                                          fontSize: 11.5,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        topic.passageEn,
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 15.5,
+                          height: 1.4,
+                          fontWeight: FontWeight.w600,
                         ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        topic.passageMl,
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF94A3B8),
+                          fontSize: 11.5,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
 
-                        const SizedBox(height: 14),
-
-                        // Helpful Speech Delivery Tip
-                        Container(
-                          width: double.infinity,
+                // Scrollable Chat History + Native Ad at bottom of scroll
+                Expanded(
+                  child: ListView(
+                    controller: _chatScrollCtrl,
+                    padding: const EdgeInsets.fromLTRB(12, 6, 12, 12),
+                    children: [
+                      // Brief tip bubble for current prompt
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Container(
+                          constraints: const BoxConstraints(maxWidth: 310),
+                          margin: const EdgeInsets.only(bottom: 10),
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
                             color: const Color(0xFF1E1B4B),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(4),
+                              topRight: Radius.circular(14),
+                              bottomLeft: Radius.circular(14),
+                              bottomRight: Radius.circular(14),
+                            ),
                             border: Border.all(
                                 color: const Color(0xFFA855F7)
-                                    .withValues(alpha: 0.3)),
+                                    .withValues(alpha: 0.35)),
                           ),
                           child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Text('💡', style: TextStyle(fontSize: 16)),
-                              const SizedBox(width: 8),
-                              Expanded(
+                              const Text('💡', style: TextStyle(fontSize: 14)),
+                              const SizedBox(width: 6),
+                              Flexible(
                                 child: Text(
                                   topic.speechTipEn,
                                   style: GoogleFonts.inter(
                                     color: const Color(0xFFE9D5FF),
-                                    fontSize: 11,
+                                    fontSize: 11.5,
                                   ),
                                 ),
                               ),
                             ],
                           ),
                         ),
+                      ),
 
-                        const SizedBox(height: 14),
-
-                        // Big Glowing Microphone Button
-                        Center(
-                          child: Column(
-                            children: [
-                              GestureDetector(
-                                onTap: () => _toggleListening(topic.passageEn),
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 250),
-                                  width: 76,
-                                  height: 76,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: _isListening
-                                        ? const Color(0xFFEF4444)
-                                        : (_isPassed
-                                            ? const Color(0xFF10B981)
-                                            : const Color(0xFFE11D48)),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: (_isListening
-                                                ? const Color(0xFFEF4444)
-                                                : const Color(0xFFE11D48))
-                                            .withValues(alpha: 0.5),
-                                        blurRadius: _isListening ? 24 : 12,
-                                        spreadRadius: _isListening ? 6 : 1,
-                                      ),
-                                    ],
-                                  ),
-                                  child: Icon(
-                                    _isListening
-                                        ? Icons.mic_rounded
-                                        : (_isPassed
-                                            ? Icons.check_circle_rounded
-                                            : Icons.mic_none_rounded),
-                                    color: Colors.white,
-                                    size: 36,
+                      // Previous completed chat turns (Voice Sent + Brief Reply)
+                      for (final turn in _chatHistory) ...[
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Container(
+                            constraints: const BoxConstraints(maxWidth: 290),
+                            margin: const EdgeInsets.only(bottom: 6),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 9),
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+                              ),
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(14),
+                                topRight: Radius.circular(4),
+                                bottomLeft: Radius.circular(14),
+                                bottomRight: Radius.circular(14),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.mic_rounded,
+                                    size: 14, color: Colors.white70),
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    turn['spoken']?.toString() ?? '',
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white,
+                                      fontSize: 12.5,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                _isListening
-                                    ? 'Listening... Speak the speech aloud!'
-                                    : (_isPassed
-                                        ? 'Great delivery! Ready for next ➔'
-                                        : 'Tap mic and read the speech aloud'),
-                                style: GoogleFonts.outfit(
-                                  color: _isListening
-                                      ? const Color(0xFFFCA5A5)
-                                      : (_isPassed
-                                          ? const Color(0xFF34D399)
-                                          : Colors.white70),
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12.5,
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-
-                        // Continue / Next Button right below Mic (easy to see & tap!)
-                        if (_isPassed) ...[
-                          const SizedBox(height: 14),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 48,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFFFD700),
-                                foregroundColor: Colors.black,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                elevation: 4,
-                              ),
-                              onPressed: _onNextTopic,
-                              child: Text(
-                                _currentTopicIndex + 1 < _topics.length
-                                    ? 'NEXT MINI SPEECH ➔'
-                                    : 'COMPLETE & PROCEED ➔',
-                                style: GoogleFonts.outfit(
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 14,
-                                ),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 10),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF064E3B)
+                                  .withValues(alpha: 0.6),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                  color: const Color(0xFF10B981)
+                                      .withValues(alpha: 0.45)),
+                            ),
+                            child: Text(
+                              '✅ Nice delivery (${turn['accuracy']}%) • Next prompt ready above!',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFF6EE7B7),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
-                        ],
-
-                        const SizedBox(height: 14),
-
-                        // Live Speech Transcript & Evaluation Breakdown Card
-                        if (_liveTranscript.isNotEmpty) ...[
-                          _buildEvaluationCard(),
-                        ],
-
-                        const SizedBox(height: 14),
-
-                        // Native Ad at the bottom when scrolling
-                        const PocketTrueNativeAdWidget(
-                          placement: PocketAdPlacement.learningStep,
-                          margin: EdgeInsets.symmetric(vertical: 4),
                         ),
                       ],
+
+                      // Live Speech Transcript & Evaluation Breakdown Card
+                      if (_liveTranscript.isNotEmpty) ...[
+                        _buildEvaluationCard(),
+                        const SizedBox(height: 10),
+                      ],
+
+                      // Native Ad placed below chat scroll (never blocks front prompt)
+                      const PocketTrueNativeAdWidget(
+                        placement: PocketAdPlacement.learningStep,
+                        margin: EdgeInsets.symmetric(vertical: 6),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Bottom WhatsApp-style Voice Record & Send Bar
+                Container(
+                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A),
+                    border: Border(
+                      top: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.08)),
                     ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E293B),
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(
+                              color: _isListening
+                                  ? const Color(0xFFEF4444)
+                                  : Colors.white12,
+                            ),
+                          ),
+                          child: Text(
+                            _isListening
+                                ? (_liveTranscript.isEmpty
+                                    ? '🎙️ Listening... Speak now'
+                                    : _liveTranscript)
+                                : (_isPassed
+                                    ? 'Ready! Tap Send ➔'
+                                    : 'Tap Mic, speak & Send'),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                              color: _isListening
+                                  ? const Color(0xFFFCA5A5)
+                                  : Colors.white70,
+                              fontSize: 12.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Material(
+                        color: _isListening
+                            ? const Color(0xFFEF4444)
+                            : const Color(0xFFE11D48),
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          onTap: () => _toggleListening(topic.passageEn),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Icon(
+                              _isListening
+                                  ? Icons.stop_rounded
+                                  : Icons.mic_rounded,
+                              color: Colors.white,
+                              size: 22,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Material(
+                        color: (_isPassed ||
+                                _liveTranscript.isNotEmpty ||
+                                _isListening)
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFF334155),
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          onTap: () => _sendVoiceAndAdvance(topic),
+                          child: const Padding(
+                            padding: EdgeInsets.all(12),
+                            child: Icon(
+                              Icons.send_rounded,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
