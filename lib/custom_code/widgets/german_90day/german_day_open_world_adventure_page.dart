@@ -68,6 +68,8 @@ import 'games/german_useful_phrases_game_page.dart';
 import 'games/german_verb_timeline_game.dart';
 import 'games/german_vocab_open_world_drive_page.dart';
 import 'games/german_chat_reply_builder_page.dart';
+import 'games/german_alphabet_writing_game_page.dart';
+import 'games/german_alphabet_balloon_sky_game_page.dart';
 import 'games/german_negative_sentence_builder_page.dart';
 import 'games/german_mini_speech_practice_page.dart';
 import 'games/german_spoken_avatar_simulator_page.dart';
@@ -3499,15 +3501,17 @@ class _GermanDayOpenWorldAdventurePageState
         );
       case 2:
         return _StepInfo(
-          GermanLocalizationHelper.pick(
-            en: 'German Sentence Builder',
-            ml: 'ജർമൻ വാക്യ നിർമ്മാണം',
-            ta: 'ஜெர்மன் வாக்கிய உருவாக்கம்',
-            hi: 'जर्मन वाक्य निर्माण',
-            kn: 'ಜರ್ಮನ್ ವಾಕ್ಯ ರಚನೆ',
-            te: 'జర్మన్ వాక్య నిర్మాణం',
-          ),
-          '🧩',
+          widget.day == 1
+              ? 'German Alphabet Balloon Pop'
+              : GermanLocalizationHelper.pick(
+                  en: 'German Sentence Builder',
+                  ml: 'ജർമൻ വാക്യ നിർമ്മാണം',
+                  ta: 'ஜெர்மன் வாக்கிய உருவாக்கம்',
+                  hi: 'जर्मन वाक्य निर्माण',
+                  kn: 'ಜರ್ಮನ್ ವಾಕ್ಯ ರಚನೆ',
+                  te: 'జర్మన్ వాక్య నిర్మాణం',
+                ),
+          widget.day == 1 ? '🎈' : '🧩',
           const Color(0xFF00E5FF),
         );
       case 3:
@@ -3562,23 +3566,44 @@ class _GermanDayOpenWorldAdventurePageState
         );
       case 6:
         return _StepInfo(
-          GermanLocalizationHelper.pick(
-            en: 'Alltags-Redewendungen',
-            ml: 'ജർമൻ നിത്യോപയോഗ പ്രയോഗങ്ങൾ',
-            ta: 'அன்றாட ஜெர்மன் சொற்றொடர்கள்',
-            hi: 'रोज़मर्रा के जर्मन मुहावरे',
-            kn: 'ದೈನಂದಿನ ಜರ್ಮನ್ ನುಡಿಗಟ್ಟುಗಳು',
-            te: 'రోజువారీ జర్మన్ పదబంధాలు',
-          ),
-          '💬',
+          widget.day == 1
+              ? 'Write German A–M (Trace)'
+              : GermanLocalizationHelper.pick(
+                  en: 'Alltags-Redewendungen',
+                  ml: 'ജർമൻ നിത്യോപയോഗ പ്രയോഗങ്ങൾ',
+                  ta: 'அன்றாட ஜெர்மன் சொற்றொடர்கள்',
+                  hi: 'रोज़मर्रा के जर्मन मुहावरे',
+                  kn: 'ದೈನಂದಿನ ಜರ್ಮನ್ ನುಡಿಗಟ್ಟುಗಳು',
+                  te: 'రోజువారీ జర్మన్ పదబంధాలు',
+                ),
+          widget.day == 1 ? '✍️' : '💬',
           const Color(0xFF06B6D4),
           isNew: true,
         );
       case 7:
+        return _StepInfo(
+          widget.day == 1 ? 'Write German N–Z (Trace)' : 'der / die / das Labor',
+          widget.day == 1 ? '✍️' : '⚖️',
+          const Color(0xFF38BDF8),
+        );
       case 10:
         return const _StepInfo(
             'der / die / das Labor', '⚖️', Color(0xFF38BDF8));
       case 8:
+        return _StepInfo(
+          widget.day == 1
+              ? 'Write Ä, Ö, Ü, ß (Trace)'
+              : GermanLocalizationHelper.pick(
+                  en: 'Deutsch Lesesaal',
+                  ml: 'ജർമൻ വായനശാല',
+                  ta: 'ஜெர்மன் வாசிப்பு',
+                  hi: 'जर्मन पठन',
+                  kn: 'ಜರ್ಮನ್ ಓದು',
+                  te: 'జర్మన్ రీడింగ్',
+                ),
+          widget.day == 1 ? '✍️' : '📖',
+          const Color(0xFFFFCE00),
+        );
       case 11:
         return _StepInfo(
           GermanLocalizationHelper.pick(
@@ -3594,14 +3619,16 @@ class _GermanDayOpenWorldAdventurePageState
         );
       case 9:
         return _StepInfo(
-          GermanLocalizationHelper.pick(
-            en: 'Satzmuster-Baukasten',
-            ml: 'ജർമൻ വാക്യ ഘടന',
-            ta: 'ஜெர்மன் வாக்கிய வடிவம்',
-            hi: 'जर्मन वाक्य पैटर्न',
-            kn: 'ಜರ್ಮನ್ ವಾಕ್ಯ ಮಾದರಿ',
-            te: 'జర్మన్ వాక్య నమూనా',
-          ),
+          widget.day == 1
+              ? '2-Word Pairing (Mein Buch)'
+              : GermanLocalizationHelper.pick(
+                  en: 'Satzmuster-Baukasten',
+                  ml: 'ജർമൻ വാക്യ ഘടന',
+                  ta: 'ஜெர்மன் வாக்கிய வடிவம்',
+                  hi: 'जर्मन वाक्य पैटर्न',
+                  kn: 'ಜರ್ಮನ್ ವಾಕ್ಯ ಮಾದರಿ',
+                  te: 'జర్మన్ వాక్య నమూనా',
+                ),
           '🧩',
           const Color(0xFF10B981),
         );
@@ -3638,10 +3665,21 @@ class _GermanDayOpenWorldAdventurePageState
         return const _StepInfo(
             'Chat-Antworten (Deutsch)', '💬', Color(0xFF00E676));
       case 17:
-        return const _StepInfo(
-            'nicht / kein Verneinung', '🔄', Color(0xFFA855F7));
+        return _StepInfo(
+          widget.day == 1
+              ? 'Spoken German (Guten Morgen!)'
+              : 'nicht / kein Verneinung',
+          widget.day == 1 ? '🗣️' : '🔄',
+          const Color(0xFFA855F7),
+        );
       case 18:
-        return const _StepInfo('Kurze Rede (Deutsch)', '📢', Color(0xFFE11D48));
+        return _StepInfo(
+          widget.day == 1
+              ? 'Spoken German Chat (Hallo!)'
+              : 'Kurze Rede (Deutsch)',
+          '🎙️',
+          const Color(0xFFE11D48),
+        );
       case 19:
         return _StepInfo('Burg-Quest: Deutsch Tag ${widget.day}', '⚔️',
             const Color(0xFFEF4444));
@@ -3762,12 +3800,20 @@ class _GermanDayOpenWorldAdventurePageState
       return;
     }
     if (s == 2) {
-      await GermanSentenceBuilderGamePage.show(
-        context,
-        day: day,
-        userId: uid,
-        onStepFinished: (_) => _onStepCompleted(2),
-      );
+      if (day == 1) {
+        await GermanAlphabetBalloonSkyGamePage.show(
+          context,
+          userId: uid,
+          onCompleted: () => _onStepCompleted(2),
+        );
+      } else {
+        await GermanSentenceBuilderGamePage.show(
+          context,
+          day: day,
+          userId: uid,
+          onStepFinished: (_) => _onStepCompleted(2),
+        );
+      }
       await _syncStepCompletionIfDone(2);
       await _loadState(preserveCarPosition: true);
       return;
@@ -3798,7 +3844,7 @@ class _GermanDayOpenWorldAdventurePageState
       await _loadState(preserveCarPosition: true);
       return;
     }
-    if (s == 5 || s == 8 || s == 11) {
+    if (s == 5 || s == 11 || (s == 8 && day != 1)) {
       await GermanReadingRoomPage.show(
         context,
         day: day,
@@ -3811,13 +3857,37 @@ class _GermanDayOpenWorldAdventurePageState
       return;
     }
     if (s == 6) {
-      await GermanUsefulPhrasesGamePage.show(
+      if (day == 1) {
+        await GermanAlphabetWritingGamePage.show(
+          context,
+          day: day,
+          stepIndex: 6,
+          range: 'A-M',
+          userId: uid,
+          onStepFinished: (_) => _onStepCompleted(6),
+        );
+      } else {
+        await GermanUsefulPhrasesGamePage.show(
+          context,
+          day: day,
+          userId: uid,
+          onStepFinished: (_) => _onStepCompleted(6),
+        );
+      }
+      await _syncStepCompletionIfDone(6);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+    if ((s == 7 || s == 8) && day == 1) {
+      await GermanAlphabetWritingGamePage.show(
         context,
         day: day,
+        stepIndex: s,
+        range: s == 7 ? 'N-Z' : 'UMLAUT',
         userId: uid,
-        onStepFinished: (_) => _onStepCompleted(6),
+        onStepFinished: (_) => _onStepCompleted(s),
       );
-      await _syncStepCompletionIfDone(6);
+      await _syncStepCompletionIfDone(s);
       await _loadState(preserveCarPosition: true);
       return;
     }
@@ -3913,29 +3983,50 @@ class _GermanDayOpenWorldAdventurePageState
       return;
     }
     if (s == 17) {
-      await GermanNegativeSentenceBuilderPage.show(
-        context,
-        day: day,
-        userId: uid,
-        onStepFinished: (_) => _onStepCompleted(17),
-      );
+      if (day == 1) {
+        await GermanUsefulPhrasesGamePage.show(
+          context,
+          day: day,
+          userId: uid,
+          onStepFinished: (_) => _onStepCompleted(17),
+        );
+      } else {
+        await GermanNegativeSentenceBuilderPage.show(
+          context,
+          day: day,
+          userId: uid,
+          onStepFinished: (_) => _onStepCompleted(17),
+        );
+      }
       await _syncStepCompletionIfDone(17);
       await _loadState(preserveCarPosition: true);
       return;
     }
     if (s == 18) {
-      await GermanMiniSpeechPracticePage.show(
-        context,
-        day: day,
-        userId: uid,
-        onStepFinished: (_) => _onStepCompleted(18),
-      );
+      if (day == 1) {
+        final res = await GermanSpokenAvatarSimulatorPage.launch(
+          context,
+          day: day,
+          onCompleted: () => _onStepCompleted(18),
+        );
+        if (res == true) {
+          await _onStepCompleted(18);
+        }
+      } else {
+        await GermanMiniSpeechPracticePage.show(
+          context,
+          day: day,
+          userId: uid,
+          onStepFinished: (_) => _onStepCompleted(18),
+        );
+      }
       await _syncStepCompletionIfDone(18);
       await _loadState(preserveCarPosition: true);
       return;
     }
     if (s == 19) {
-      await PocketHouseAttackPage.show(
+      // Direct German House Challenge (no English fallback on German track)
+      await GermanArticleGenderGamePage.show(
         context,
         day: day,
         stepIndex: 19,
