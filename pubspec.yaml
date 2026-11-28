@@ -129,6 +129,8 @@ dependencies:
   google_mobile_ads: ^9.2.0
   app_tracking_transparency: ^2.0.7
   easy_audience_network: ^0.0.7
+  google_sign_in: ^7.2.0
+  crypto: ^3.0.8
   # ed_screen_recorder: ^0.0.6
 
 dependency_overrides:

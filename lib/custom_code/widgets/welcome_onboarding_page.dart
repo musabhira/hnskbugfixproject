@@ -1,11 +1,15 @@
+import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_pure_kids_home_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -128,6 +132,17 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   // Feature Flags: Social Logins
   static const bool kEnableAppleSignIn = false;
   static const bool kEnableGoogleSignIn = false;
+
+  // Set your Google OAuth Client IDs (from Google Cloud Console -> Credentials)
+  static const String kGoogleWebClientId = String.fromEnvironment(
+    'GOOGLE_WEB_CLIENT_ID',
+    defaultValue: '',
+  );
+  static const String kGoogleIosClientId = String.fromEnvironment(
+    'GOOGLE_IOS_CLIENT_ID',
+    defaultValue: '',
+  );
+  static bool _googleSignInInitialized = false;
 
   // TTS & Interactive Avatar State
   FlutterTts? _flutterTts;
@@ -1231,11 +1246,43 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       await _saveOnboardingChoicesLocally();
       if (!mounted) return;
       GoRouter.of(context).prepareAuthEvent();
-      await SupaFlow.client.auth.signInWithOAuth(
-        OAuthProvider.google,
-        redirectTo:
-            kIsWeb ? null : 'pocketmatesapp://pocketmatesapp.com/auth-callback',
-      );
+
+      if (!kIsWeb &&
+          kGoogleWebClientId.isNotEmpty &&
+          (defaultTargetPlatform == TargetPlatform.android ||
+              defaultTargetPlatform == TargetPlatform.iOS)) {
+        // Native In-App Bottom Sheet Google Sign-In (no external Chrome browser!)
+        if (!_googleSignInInitialized) {
+          await GoogleSignIn.instance.initialize(
+            clientId: defaultTargetPlatform == TargetPlatform.iOS &&
+                    kGoogleIosClientId.isNotEmpty
+                ? kGoogleIosClientId
+                : null,
+            serverClientId: kGoogleWebClientId,
+          );
+          _googleSignInInitialized = true;
+        }
+        final googleUser = await GoogleSignIn.instance.authenticate();
+        final idToken = googleUser.authentication.idToken;
+        if (idToken == null || idToken.isEmpty) {
+          throw const AuthException('Google Sign-In did not return an ID token.');
+        }
+        final res = await SupaFlow.client.auth.signInWithIdToken(
+          provider: OAuthProvider.google,
+          idToken: idToken,
+        );
+        final uid = res.user?.id;
+        if (uid != null && mounted) {
+          await _finishSocialAuthNavigation(uid);
+        }
+      } else {
+        await SupaFlow.client.auth.signInWithOAuth(
+          OAuthProvider.google,
+          redirectTo: kIsWeb
+              ? null
+              : 'pocketmatesapp://pocketmatesapp.com/auth-callback',
+        );
+      }
     } on AuthException catch (e) {
       if (mounted) setState(() => _errorMessage = e.message);
     } catch (e) {
@@ -1243,6 +1290,80 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _handleAppleSignIn() async {
+    if (_isSignUpMode && !_agreedToTerms) {
+      setState(() {
+        _errorMessage =
+            'Please accept the Terms of Service & Privacy Policy to continue.';
+      });
+      return;
+    }
+    setState(() {
+      _isLoading = true;
+      _loadingMessage = 'Connecting with Apple...';
+      _errorMessage = null;
+    });
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('pending_signup_flow', _isSignUpMode);
+      setState(() => _isQuestionSheetMinimized = true);
+      await _houseRiseController.forward();
+      await _saveOnboardingChoicesLocally();
+      if (!mounted) return;
+      GoRouter.of(context).prepareAuthEvent();
+
+      final rawNonce = SupaFlow.client.auth.generateRawNonce();
+      final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        nonce: hashedNonce,
+      );
+      final idToken = credential.identityToken;
+      if (idToken == null || idToken.isEmpty) {
+        throw const AuthException('Apple Sign-In did not return an ID token.');
+      }
+      final res = await SupaFlow.client.auth.signInWithIdToken(
+        provider: OAuthProvider.apple,
+        idToken: idToken,
+        nonce: rawNonce,
+      );
+      final uid = res.user?.id;
+      if (uid != null && mounted) {
+        await _finishSocialAuthNavigation(uid);
+      }
+    } on AuthException catch (e) {
+      if (mounted) setState(() => _errorMessage = e.message);
+    } catch (e) {
+      if (mounted) setState(() => _errorMessage = 'Apple Sign-In note: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _finishSocialAuthNavigation(String uid) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('profile_setup_completed_$uid', true);
+    await prefs.setBool('profile_setup_prompted_$uid', true);
+    await PocketSavedAccountService.saveCurrentLoggedInUser();
+    await PocketKidsService.loadKidProgressFromParentCloud();
+    final isKid = await PocketKidsService.syncAndVerifyUserAccountType(uid);
+    await _bgmPlayer?.stop();
+    await PocketGameAudioService.instance.stop();
+    if (!mounted) return;
+    if (isKid) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const PocketPureKidsHomePage()),
+        (route) => false,
+      );
+      return;
+    }
+    context.goNamedAuth(HomePageWidget.routeName, context.mounted);
   }
 
   Future<void> _handleEmailAuth() async {
@@ -4884,6 +5005,18 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
             const SizedBox(height: 10),
           ],
 
+          if (kEnableAppleSignIn) ...[
+            _buildSocialButton(
+              label: 'Save with Apple',
+              iconWidget: const FaIcon(FontAwesomeIcons.apple,
+                  color: Colors.white, size: 19),
+              backgroundColor: const Color(0xFF18181B),
+              textColor: Colors.white,
+              onPressed: _handleAppleSignIn,
+            ),
+            const SizedBox(height: 10),
+          ],
+
           _buildDuolingoOutlineButton(
             label: 'Save with Email',
             onPressed: () {
@@ -5158,7 +5291,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                                 ),
                                 backgroundColor: const Color(0xFF18181B),
                                 textColor: Colors.white,
-                                onPressed: () {},
+                                onPressed: _handleAppleSignIn,
                               ),
                             ],
 
