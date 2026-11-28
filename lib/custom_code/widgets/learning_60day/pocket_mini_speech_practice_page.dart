@@ -112,15 +112,29 @@ class _PocketMiniSpeechPracticePageState
     String userName = 'Friend';
     try {
       final user = SupaFlow.client.auth.currentUser;
-      final metaName =
-          user?.userMetadata?['display_name'] ?? user?.userMetadata?['full_name'];
-      if (metaName != null && metaName.toString().trim().isNotEmpty) {
-        userName = metaName.toString().trim();
-      } else {
-        final prefs = await SharedPreferences.getInstance();
-        final savedName = prefs.getString('user_display_name');
-        if (savedName != null && savedName.trim().isNotEmpty) {
-          userName = savedName.trim();
+      final uid = widget.userId ?? user?.id;
+      if (uid != null && uid.isNotEmpty) {
+        final prof = await SupaFlow.client
+            .from('profile')
+            .select('display_name, name')
+            .eq('user_id', uid)
+            .maybeSingle();
+        final pName = (prof?['display_name'] ?? prof?['name'])?.toString().trim();
+        if (pName != null && pName.isNotEmpty) {
+          userName = pName;
+        }
+      }
+      if (userName == 'Friend') {
+        final metaName =
+            user?.userMetadata?['display_name'] ?? user?.userMetadata?['full_name'];
+        if (metaName != null && metaName.toString().trim().isNotEmpty) {
+          userName = metaName.toString().trim();
+        } else {
+          final prefs = await SharedPreferences.getInstance();
+          final savedName = prefs.getString('user_display_name');
+          if (savedName != null && savedName.trim().isNotEmpty) {
+            userName = savedName.trim();
+          }
         }
       }
     } catch (_) {}
@@ -707,8 +721,8 @@ class _PocketMiniSpeechPracticePageState
                         ),
                       ),
 
-                      // Previous completed chat turns (Voice Sent + Brief Reply)
-                      for (final turn in _chatHistory) ...[
+                      // Previous completed chat turns (newest at top right below AppBar prompt!)
+                      for (final turn in _chatHistory.reversed) ...[
                         Align(
                           alignment: Alignment.centerRight,
                           child: Container(
@@ -754,14 +768,14 @@ class _PocketMiniSpeechPracticePageState
                                 horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
                               color: const Color(0xFF064E3B)
-                                  .withValues(alpha: 0.6),
+                                  .withValues(alpha: 0.55),
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
                                   color: const Color(0xFF10B981)
-                                      .withValues(alpha: 0.45)),
+                                      .withValues(alpha: 0.4)),
                             ),
                             child: Text(
-                              '✅ Nice delivery (${turn['accuracy']}%) • Next prompt ready above!',
+                              '✅ Sent (${turn['accuracy']}%) • ${turn['tip']}',
                               style: GoogleFonts.outfit(
                                 color: const Color(0xFF6EE7B7),
                                 fontSize: 11,
@@ -770,12 +784,6 @@ class _PocketMiniSpeechPracticePageState
                             ),
                           ),
                         ),
-                      ],
-
-                      // Live Speech Transcript & Evaluation Breakdown Card
-                      if (_liveTranscript.isNotEmpty) ...[
-                        _buildEvaluationCard(),
-                        const SizedBox(height: 10),
                       ],
 
                       // Native Ad placed below chat scroll (never blocks front prompt)
@@ -787,88 +795,62 @@ class _PocketMiniSpeechPracticePageState
                   ),
                 ),
 
-                // Bottom WhatsApp-style Voice Record & Send Bar
-                Container(
-                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A),
-                    border: Border(
-                      top: BorderSide(
-                          color: Colors.white.withValues(alpha: 0.08)),
-                    ),
-                  ),
-                  child: Row(
+                // Bottom-Center Floating Mic -> Send Button
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1E293B),
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(
-                              color: _isListening
-                                  ? const Color(0xFFEF4444)
-                                  : Colors.white12,
-                            ),
-                          ),
+                      if (_isListening && _liveTranscript.trim().isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
                           child: Text(
-                            _isListening
-                                ? (_liveTranscript.isEmpty
-                                    ? '🎙️ Listening... Speak now'
-                                    : _liveTranscript)
-                                : (_isPassed
-                                    ? 'Ready! Tap Send ➔'
-                                    : 'Tap Mic, speak & Send'),
+                            _liveTranscript,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
                             style: GoogleFonts.inter(
-                              color: _isListening
-                                  ? const Color(0xFFFCA5A5)
-                                  : Colors.white70,
-                              fontSize: 12.5,
+                              color: const Color(0xFFFCA5A5),
+                              fontSize: 12,
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Material(
-                        color: _isListening
-                            ? const Color(0xFFEF4444)
-                            : const Color(0xFFE11D48),
-                        shape: const CircleBorder(),
-                        child: InkWell(
-                          customBorder: const CircleBorder(),
-                          onTap: () => _toggleListening(topic.passageEn),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Icon(
-                              _isListening
-                                  ? Icons.stop_rounded
-                                  : Icons.mic_rounded,
-                              color: Colors.white,
-                              size: 22,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Material(
-                        color: (_isPassed ||
-                                _liveTranscript.isNotEmpty ||
-                                _isListening)
-                            ? const Color(0xFF10B981)
-                            : const Color(0xFF334155),
-                        shape: const CircleBorder(),
-                        child: InkWell(
-                          customBorder: const CircleBorder(),
-                          onTap: () => _sendVoiceAndAdvance(topic),
-                          child: const Padding(
-                            padding: EdgeInsets.all(12),
-                            child: Icon(
-                              Icons.send_rounded,
-                              color: Colors.white,
-                              size: 20,
+                      Center(
+                        child: Material(
+                          color: _isListening
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFFE11D48),
+                          borderRadius: BorderRadius.circular(30),
+                          elevation: 6,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(30),
+                            onTap: _isListening
+                                ? () => _sendVoiceAndAdvance(topic)
+                                : () => _toggleListening(topic.passageEn),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 24, vertical: 13),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    _isListening
+                                        ? Icons.send_rounded
+                                        : Icons.mic_rounded,
+                                    color: Colors.white,
+                                    size: 22,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    _isListening ? 'Send Voice' : 'Tap to Speak',
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
